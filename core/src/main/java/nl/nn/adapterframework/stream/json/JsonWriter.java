@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -149,6 +149,20 @@ public class JsonWriter implements JsonEventHandler {
 		}
 	}
 
+
+	@Override
+	public void number(String value) throws SAXException {
+		try {
+			writeSeparatingComma(false);
+			if (value==null) {
+				writer.write("null");
+			} else {
+				writer.write(value);
+			}
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
+	}
 
 	@Override
 	public String toString() {

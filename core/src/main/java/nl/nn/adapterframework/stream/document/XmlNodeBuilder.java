@@ -62,4 +62,9 @@ public class XmlNodeBuilder implements INodeBuilder {
 		current.addValue(Boolean.toString(value)).close();
 	}
 
+	@Override
+	public void setNumberValue(String value) throws SAXException {
+		setValue(value);
+	}
+
 }

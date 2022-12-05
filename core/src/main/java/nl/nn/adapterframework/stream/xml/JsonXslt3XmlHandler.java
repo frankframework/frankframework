@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -184,6 +184,15 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 					simpleElement("string", parsedKey, value);
 				}
 			}
+		}
+	}
+
+	@Override
+	public void number(String value) throws SAXException {
+		if (value == null) {
+			simpleElement("null", parsedKey, value);
+		} else {
+			simpleElement("number", parsedKey, value);
 		}
 	}
 

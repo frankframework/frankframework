@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,6 +49,11 @@ public class JsonObjectBuilder extends ObjectBuilder {
 	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		handler.startObjectEntry(fieldName);
 		return new JsonArrayBuilder(handler);
+	}
+
+	@Override
+	public void addNumber(String name, String value) throws SAXException {
+		addField(name).setNumberValue(value);
 	}
 
 }

@@ -35,7 +35,8 @@ public class DocumentUtils {
 		case ARRAY:
 			try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME)) {
 				jsonArray2Builder((JsonArray)jValue, arrayBuilder);
-			}			break;
+			}
+			break;
 		case OBJECT:
 			try (ObjectBuilder objectBuilder = documentBuilder.asObjectBuilder()) {
 				jsonObject2Builder((JsonObject)jValue, objectBuilder);
