@@ -37,6 +37,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -227,6 +228,17 @@ public abstract class ClassUtils {
 	 */
 	public static Class<?> loadClass(String className) throws ClassNotFoundException {
 		return ClassUtils.getClassLoader().loadClass(className);
+	}
+
+	public static Object instantiateClass(String name) throws ConfigurationException {
+		try {
+			Class<?> clazz = Class.forName(name);
+			Constructor<?> constructor = clazz.getConstructor(new Class[0]);
+			return constructor.newInstance(new Object[0]);
+		}
+		catch(Exception e) {
+			throw new ConfigurationException("Could not instantiate class ["+name+"]", e);
+		}
 	}
 
 	/**
