@@ -88,6 +88,8 @@ public class Misc {
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
+	private static int maximumTransactionTimeout=-1;
+
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
 	 */
@@ -928,7 +930,7 @@ public class Misc {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server", e);
+			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server ({}): {}", () -> e.getClass().getName(), () -> e.getMessage());
 			return null;
 		}
 	}
@@ -1181,14 +1183,22 @@ public class Misc {
 		return null;
 	}
 
-	public static Integer getMaximumTransactionTimeout() {
-		String confSrvString = null;
-		try {
-			confSrvString = getConfigurationServer();
-		} catch (Exception e) {
-			log.warn("Exception getting configurationServer",e);
+	public static int getMaximumTransactionTimeout() {
+		if (maximumTransactionTimeout<0) {
+			Integer transactionTimeout=0;
+			try {
+				String confSrvString = null;
+				try {
+					confSrvString = getConfigurationServer();
+				} catch (Exception e) {
+					log.warn("Exception getting configurationServer ({}): {}", e.getClass().getName(), e.getMessage());
+				}
+				transactionTimeout=getMaximumTransactionTimeout(confSrvString);
+			} finally {
+				maximumTransactionTimeout=transactionTimeout!=null ? transactionTimeout : 0;
+			}
 		}
-		return getMaximumTransactionTimeout(confSrvString);
+		return maximumTransactionTimeout;
 	}
 
 	public static Integer getMaximumTransactionTimeout(String configServerXml) {

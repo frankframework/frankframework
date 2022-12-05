@@ -41,8 +41,8 @@ public class TransactionAttributes implements HasTransactionAttribute {
 
 	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
-			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
+			int maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+			if (maximumTransactionTimeout > 0 && transactionTimeout > maximumTransactionTimeout) {
 				ApplicationWarnings.add(log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 			}
 		}

@@ -93,14 +93,14 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				if (maxRecords==0) {
 					eor = true;
 				}
-				while (resultset.next() && !eor) {
+				while (!eor && resultset.next()) {
 					counter++;
 					processResultSet(resultset, fos, counter);
 					if (maxRecords>=0 && counter>=maxRecords) {
 						ResultSetMetaData rsmd = resultset.getMetaData();
 						if (rsmd.getColumnCount() >= 3) {
 							String group = resultset.getString(3);
-							while (resultset.next() && !eor) {
+							while (!eor && resultset.next()) {
 								String groupNext = resultset.getString(3);
 								if (groupNext.equals(group)) {
 									counter++;
