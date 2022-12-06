@@ -155,7 +155,7 @@ public class HealthCheck extends BusEndpointBase {
 	}
 
 	/**
-	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
+*Returns the status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
 	 * header configuration The name of the Configuration to delete
 	 */
 	public Message<String> getConfigurationHealth(Configuration configuration) {
