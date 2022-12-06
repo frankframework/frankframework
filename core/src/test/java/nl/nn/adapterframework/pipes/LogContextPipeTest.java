@@ -10,15 +10,15 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 
-public class MdcPipeTest extends PipeTestBase<MdcPipe>{
+public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 
 	@Override
-	public MdcPipe createPipe() throws ConfigurationException {
-		return new MdcPipe();
+	public LogContextPipe createPipe() throws ConfigurationException {
+		return new LogContextPipe();
 	}
 
 	@Test
-	public void testMdcPipe() throws Exception {
+	public void testLogContextPipe() throws Exception {
 		pipe.addParameter(new Parameter("paramName", "paramValue"));
 		configureAndStartPipe();
 
@@ -36,7 +36,7 @@ public class MdcPipeTest extends PipeTestBase<MdcPipe>{
 	}
 
 	@Test
-	public void testMdcPipeExport() throws Exception {
+	public void testLogContextPipeExport() throws Exception {
 		pipe.addParameter(new Parameter("paramName", "paramValue"));
 		pipe.setExport(true);
 		configureAndStartPipe();
