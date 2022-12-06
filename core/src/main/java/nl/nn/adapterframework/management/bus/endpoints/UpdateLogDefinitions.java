@@ -17,6 +17,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,8 +85,8 @@ public class UpdateLogDefinitions {
 		return ResponseMessage.ok(result);
 	}
 
-	public List<Object> getLogDefinitions(LoggerContext logContext) {
-		List<Object> defaultLoggers = new ArrayList<>();
+	public List<Map<String, Object>> getLogDefinitions(LoggerContext logContext) {
+		List<Map<String, Object>> defaultLoggers = new ArrayList<>();
 		Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
 		for(LoggerConfig config : loggerConfigs) {
 			String name = config.getName();
@@ -100,6 +101,7 @@ public class UpdateLogDefinitions {
 				defaultLoggers.add(logger);
 			}
 		}
+		Collections.sort(defaultLoggers, (a,b) -> a.get("name").toString().compareTo(b.get("name").toString()));
 		return defaultLoggers;
 	}
 
