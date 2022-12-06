@@ -20,8 +20,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -38,9 +36,6 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.Data;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
@@ -57,13 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public class TestPipeline extends FrankApiBase {
-
-	@Data
-	public static class PostedSessionKey {
-		int index;
-		String key;
-		String value;
-	}
+	public static final String RESULT_STATE_HEADER = "state";
 
 	@POST
 	@RolesAllowed("IbisTester")
@@ -82,13 +71,8 @@ public class TestPipeline extends FrankApiBase {
 
 		// resolve session keys
 		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
-		Map<String, String> sessionKeyMap = null;
-		if(StringUtils.isNotEmpty(sessionKeys)) {
-			try {
-				sessionKeyMap = Stream.of(new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class)).collect(Collectors.toMap(item -> item.key, item-> item.value));
-			} catch (Exception e) {
-				throw new ApiException("An exception occurred while parsing session keys", e);
-			}
+		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
+			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
@@ -124,16 +108,15 @@ public class TestPipeline extends FrankApiBase {
 		}
 
 		builder.setPayload(message);
-		Message response = getGateway().sendSyncMessage(builder.build());
-		String payload = (String) response.getPayload();
-		String state = (String) response.getHeaders().get("state");
-		return testPipelineResponse(payload, state, message);
+		Message response = sendSyncMessage(builder);
+		String state = (String) response.getHeaders().get(RESULT_STATE_HEADER);
+		return testPipelineResponse(response.getPayload(), state, message);
 	}
 
 	private Response testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
-	private Response testPipelineResponse(String payload, String state, String message) {
+	private Response testPipelineResponse(Object payload, String state, String message) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("state", state);
 		result.put("result", payload);
@@ -165,8 +148,11 @@ public class TestPipeline extends FrankApiBase {
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
 				builder.setPayload(currentMessage);
-				Message response = getGateway().sendSyncMessage(builder.build());
-				result.append(name + ":" + response.getHeaders().get("state"));
+				Message response = sendSyncMessage(builder);
+				result.append(name);
+				result.append(": ");
+				result.append(response.getHeaders().get(RESULT_STATE_HEADER));
+				result.append("\n");
 			}
 			archive.closeEntry();
 		}

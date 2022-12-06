@@ -14,24 +14,23 @@ import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-@Ignore("needs to be migrated to the bus!")
-public class TestPipelineTest extends ApiTestBase<TestPipeline>{
+public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 
 	@Override
 	public TestPipeline createJaxRsResource() {
-		return new TestPipeline();
+		return new TestPipeline() {
+			@Override
+			protected org.springframework.messaging.Message<?> sendSyncMessage(RequestMessageBuilder input) {
+				return ResponseMessage.Builder.create().withPayload(input).setHeader(TestPipeline.RESULT_STATE_HEADER, "SUCCESS").toJson();
+			}
+		};
 	}
 
 	private class CustomAttachment extends Attachment {
@@ -53,22 +52,6 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		}
 	}
 
-	@Override
-	protected void registerAdapter(TestConfiguration configuration) throws Exception {
-		Adapter adapter = spy(Adapter.class);
-		adapter.setName("HelloWorld");
-		getConfiguration().autowireByName(adapter);
-
-		PipeLineResult plr = new PipeLineResult();
-		plr.setResult(Message.asMessage("Success"));
-		plr.setState(ExitState.SUCCESS);
-
-		doReturn(plr).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
-
-		getConfiguration().registerAdapter(adapter);
-
-	}
-
 	@Test
 	public void testArchiveNotClosedDuringProcessing() throws ConfigurationException, IOException {
 		URL zip = TestFileUtils.getTestFileURL("/Webcontrol.api/temp.zip");
@@ -76,7 +59,14 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		CustomAttachment attachmentFile = new CustomAttachment("file", zip.openStream(), new ContentDisposition("attachment;filename=temp.zip"));
 		attachmentFile.setObject(zip.openStream());
 
-		Attachment attachmentAdapter = new Attachment("adapter", "application/text", new ByteArrayInputStream("HelloWorld".getBytes())) {
+		Attachment adapter = new Attachment("adapter", "text/plain", new ByteArrayInputStream("HelloWorld".getBytes())) {
+			@SuppressWarnings("unchecked")
+			@Override
+			public <T> T getObject(Class<T> cls) {
+				return (T) getObject();
+			}
+		};
+		Attachment configuration = new Attachment("configuration", "text/plain", new ByteArrayInputStream("TestConfiguration".getBytes())) {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <T> T getObject(Class<T> cls) {
@@ -86,10 +76,11 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		attachments.add(attachmentFile);
-		attachments.add(attachmentAdapter);
+		attachments.add(adapter);
+		attachments.add(configuration);
 
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
-		String expected="{\"result\":\"Test1.txt:SUCCESS\\nTest2.txt:SUCCESS\",\"state\":\"SUCCESS\"}";
+		String expected="{\"result\":\"Test1.txt: SUCCESS\\nTest2.txt: SUCCESS\\n\",\"state\":\"SUCCESS\"}";
 		assertEquals(expected, response.getEntity().toString());
 	}
 }

@@ -17,20 +17,24 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -51,12 +55,16 @@ public class TestPipeline extends BusEndpointBase {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean writeSecurityLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
-	public static final String PIPELINE_RESULT_STATE_ERROR="ERROR";
-	public static final String PIPELINE_RESULT_STATE="state";
-	public static final String PIPELINE_RESULT="result";
+	public static final String RESULT_STATE_HEADER="state";
 
 	private static AtomicInteger requestCount = new AtomicInteger();
 
+	@Data
+	public static class PostedSessionKey {
+		int index;
+		String key;
+		String value;
+	}
 
 	@ActionSelector(BusAction.UPLOAD)
 	public Message<Object> runTestPipeline(Message<?> message) {
@@ -70,28 +78,32 @@ public class TestPipeline extends BusEndpointBase {
 			throw new BusException("payload is not instance of String");
 		}
 
-		Map<String, String> threadContext = null;
+		Map<String, String> threadContext = new HashMap<>();
+
+		String sessionKeys = BusMessageUtils.getHeader(message, "sessionKeys");
+		if(StringUtils.isNotEmpty(sessionKeys)) {
+			threadContext.putAll(getSessionKeysFromHeader(sessionKeys));
+		}
+
 		String payload = (String) message.getPayload();
+		threadContext.putAll(getSessionKeysFromPayload(payload));
+
 		return processMessage(adapter, payload, threadContext, expectsReply);
 	}
 
 	//Does not support async requests because receiver requests are synchronous
-	private Message<Object> processMessage(IAdapter adapter, String payload, Map<String, String> sessionKeyMap, boolean expectsReply) {
+	private Message<Object> processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
-			if(sessionKeyMap != null) {
-				pls.putAll(sessionKeyMap);
-			}
-			Map<String, String> ibisContexts = getThreadContextFromPayload(payload);
-			if (ibisContexts != null) {
-				pls.putAll(ibisContexts);
+			if(threadContext != null) {
+				pls.putAll(threadContext);
 			}
 
 			Date now = new Date();
 			PipeLineSession.setListenerParameters(pls, messageId, correlationId, now, now);
 
-			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : "")));
+			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 
 			try {
 				PipeLineResult plr = adapter.processMessage(messageId, new nl.nn.adapterframework.stream.Message(payload), pls);
@@ -101,7 +113,7 @@ public class TestPipeline extends BusEndpointBase {
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);
-				return ResponseMessage.Builder.create().withPayload(plr.getResult()).setHeader("state", plr.getState().name()).raw();
+				return ResponseMessage.Builder.create().withPayload(plr.getResult()).setHeader(RESULT_STATE_HEADER, plr.getState().name()).raw();
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);
 			}
@@ -109,10 +121,28 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	/**
-	 * Parses the 'ibiscontext' processing instruction defined in the input
-	 * @return key value pair map
+	 * Parses SessionKeys from the sessionKeys header.
+	 * Format: [{"index":1,"key":"test","value":"123"}]
 	 */
-	protected Map<String, String> getThreadContextFromPayload(String input) {
+	@Nonnull
+	protected Map<String, String> getSessionKeysFromHeader(String sessionKeys) {
+		Map<String, String> context = new HashMap<>();
+		try {
+			PostedSessionKey[] postedSessionKeys = new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class);
+			for(PostedSessionKey psk : postedSessionKeys) {
+				context.put(psk.getKey(), psk.getValue());
+			}
+		} catch (Exception e) {
+			throw new BusException("An exception occurred while parsing session keys", e);
+		}
+		return context;
+	}
+
+	/**
+	 * Parses the 'ibiscontext' processing instruction defined in the input
+	 */
+	@Nonnull
+	protected Map<String, String> getSessionKeysFromPayload(String input) {
 		String str = findProcessingInstructions(input);
 		if(StringUtils.isEmpty(str)) {
 			return Collections.emptyMap();
