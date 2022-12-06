@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,7 +75,7 @@ public class UpdateLoggingConfig extends Base {
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
+		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR", "OFF"));
 		logSettings.put("errorLevels", errorLevels);
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
@@ -179,7 +180,7 @@ public class UpdateLoggingConfig extends Base {
 		Map<String, Object> result = new HashMap<>();
 
 		if(StringUtils.isEmpty(filter)) {
-			List<Object> defaultLoggers = new ArrayList<>();
+			List<Map<String, Object>> defaultLoggers = new ArrayList<>();
 			Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
 			for(LoggerConfig config : loggerConfigs) {
 				String name = config.getName();
@@ -194,6 +195,7 @@ public class UpdateLoggingConfig extends Base {
 					defaultLoggers.add(logger);
 				}
 			}
+			Collections.sort(defaultLoggers, (a,b) -> a.get("name").toString().compareTo(b.get("name").toString()));
 			result.put("definitions", defaultLoggers);
 
 			filter = FF_PACKAGE_PREFIX;
