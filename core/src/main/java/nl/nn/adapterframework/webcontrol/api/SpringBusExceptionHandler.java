@@ -23,12 +23,14 @@ import javax.ws.rs.ext.Provider;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Catch Spring Channel exceptions. When the cause is instanceof BusException, throw it directly.
+ * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
  * 
  * @author	Niels Meijer
  */
@@ -38,22 +40,41 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 
 	private Logger log = LogUtil.getLogger(this);
 
+	public enum ManagedException {
+		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationCredentialsNotFoundException.class),
+		AUTHORIZATION(Status.FORBIDDEN, AccessDeniedException.class),
+		BUS_EXCEPTION(Status.INTERNAL_SERVER_ERROR, BusException.class);
+
+		private final @Getter Status status;
+		private final Class<? extends Exception> exceptionClass;
+
+		private ManagedException(Status status, Class<? extends Exception> exceptionClass) {
+			this.status = status;
+			this.exceptionClass = exceptionClass;
+		}
+
+		public static ManagedException parse(Throwable cause) {
+			for(ManagedException me : ManagedException.values()) {
+				if(cause.getClass().isAssignableFrom(me.exceptionClass)) {
+					return me;
+				}
+			}
+			return null;
+		}
+	}
+
 	@Override
 	public Response toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
 		for(int i = 0; i < 5 && cause != null; i++) {
-			if(cause instanceof BusException || cause instanceof AccessDeniedException) {
-				break;
+			ManagedException mex = ManagedException.parse(cause);
+			if(mex != null) { //If a ManagedException is found, throw it directly
+				return ApiException.formatExceptionResponse(cause.getMessage(), mex.getStatus());
 			}
 			cause = cause.getCause();
 		}
 
-		if(cause != null) { //Found a BusException, throw it directly
-			log.info("caught exception while sending/receiving information from the Application Bus", cause);
-			return ApiException.formatException(cause.getMessage(), cause instanceof AccessDeniedException ? Status.FORBIDDEN : Status.INTERNAL_SERVER_ERROR);
-		}
-
 		log.warn("unhandled exception while sending/receiving information from the Application Bus", mhe);
-		return ApiException.formatException(mhe.getMessage(), Status.INTERNAL_SERVER_ERROR);
+		return ApiException.formatExceptionResponse(mhe.getMessage(), Status.INTERNAL_SERVER_ERROR);
 	}
 }

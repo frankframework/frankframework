@@ -55,7 +55,7 @@ public final class BrowseQueue extends FrankApiBase {
 	@Path("jms/browse")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response putBrowseQueue(Map<String, Object> json) throws ApiException {
+	public Response putBrowseQueue(Map<String, Object> json) {
 
 		String connectionFactory = getValue(json, "connectionFactory");
 		String destination = getValue(json, "destination");

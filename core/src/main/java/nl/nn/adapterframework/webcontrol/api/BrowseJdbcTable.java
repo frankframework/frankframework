@@ -39,7 +39,7 @@ public final class BrowseJdbcTable extends FrankApiBase {
 	@Path("/jdbc/browse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(Map<String, Object> json) throws ApiException {
+	public Response execute(Map<String, Object> json) {
 		int minRow = 1;
 		int maxRow = 100;
 

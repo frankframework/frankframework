@@ -217,11 +217,11 @@
 
 	<adapter name="JmsFFSender" description="Test the functioning of the JmsSender (FF)"
 		active="${active.jms}">
-		<receiver name="JmsFFSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSender" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -229,16 +229,17 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF1" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
-				<forward name="success" path="EXIT" />
+				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" 
+				>
+				<forward name="echo" path="EXIT" />
+				<forward name="listenerException" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
@@ -250,7 +251,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithDatasource" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -258,11 +259,10 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF2" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSenderJmsFFSenderWithDatasource" />
-				<forward name="success" path="fixedInsert" />
 			</pipe>
 			<pipe name="fixedInsert"
 				className="nl.nn.adapterframework.pipes.SenderPipe"
@@ -272,7 +272,6 @@
 					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
-				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
@@ -299,7 +298,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithRead" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -307,7 +306,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF3" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSenderWithRead" />
@@ -324,7 +323,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithDynamicDestination" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -349,20 +348,29 @@
 			hideMethod="firstHalf">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
-				messageSelector="SOURCE='${hostname}_FF3'" />
+				messageSelector="SOURCE='${hostname}_FF'" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				slotId="${applicationId}/JmsFFListener" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/JmsFFListener" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.LogContextPipe">
+				<param name="testMdc" value="testMdc" />
+			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe"
+				getInputFromFixedValue="ERROR">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -397,7 +405,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="JmsFFListener_subcall" serviceName="ibis4test-JmsFFListener_subcall" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -424,7 +432,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlJmsBrowserSender" />
 		</receiver>
-		<pipeline firstPipe="switchAction">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -433,10 +441,7 @@
 				<forward name="true" path="delay" />
 				<forward name="false" path="jmsBrowser" />
 			</pipe>
-			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe"
-				delayTime="1000">
-				<forward name="success" path="jmsBrowser" />
-			</pipe>
+			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="1000" />
 			<pipe name="jmsBrowser"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.XmlJmsBrowserSender" />

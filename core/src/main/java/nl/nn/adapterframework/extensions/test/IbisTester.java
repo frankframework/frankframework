@@ -81,7 +81,7 @@ public class IbisTester {
 		@Override
 		public String call() throws Exception {
 			MockHttpServletRequest request = new MockHttpServletRequest();
-			request.setServletPath("/larva/index.jsp");
+			request.setServletPath("/iaf/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
 				application = new MockServletContext("file:" + webAppPath, null);

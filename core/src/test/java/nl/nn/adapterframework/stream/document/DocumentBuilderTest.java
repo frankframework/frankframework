@@ -3,9 +3,15 @@ package nl.nn.adapterframework.stream.document;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -37,9 +43,11 @@ public class DocumentBuilderTest {
 		object.addAttribute(prefix+"attr4", "a b  c\td\re\nf\r\n\t\ng");
 		object.add(prefix+"veld1", prefix+"waarde1");
 		object.add(prefix+"veld2", 10);
-		try (ArrayBuilder array = object.addField(prefix+"array").startArray(prefix+"element")) {
-			array.addElement(prefix+"elem1");
-			array.addElement(prefix+"elem2");
+		try (INodeBuilder node=object.addField(prefix+"array")) {
+			try (ArrayBuilder array = node.startArray(prefix+"element")) {
+				array.addElement(prefix+"elem1");
+				array.addElement(prefix+"elem2");
+			}
 		}
 		try (ArrayBuilder repeatedField = object.addRepeatedField(prefix+"repField")) {
 			repeatedField.addElement(prefix+"rep1");
@@ -143,4 +151,52 @@ public class DocumentBuilderTest {
 		assertEquals(expected, writer.toString());
 	}
 
+	
+	@Test
+	public void Issue4106ContentAfterDuplicateArray() throws Exception {
+		String input="{ \"a\": [ 1 ], \"b\": [ 2 ], \"c\": \"cc\" }";
+		String expected = "<root>"+ 
+								"<a>1</a>"+ 
+								"<b>2</b>"+ 
+								"<c>cc</c>"+ 
+							"</root>";
+		try(JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue=null;
+			jValue = jr.read();
+			StringWriter writer = new StringWriter();
+			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer, true)) {
+				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+			}
+			assertXmlEquals(expected, writer.toString());
+		}
+	}
+
+
+	@Test
+	public void jsonToJsonObject() throws Exception {
+		String input="{\"a\":\"aa\"}";
+		try(JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue=null;
+			jValue = jr.read();
+			StringWriter writer = new StringWriter();
+			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
+				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+			}
+			assertEquals(input, writer.toString());
+		}
+	}
+
+	@Test
+	public void jsonToJsonArray() throws Exception {
+		String input="[\"a\",\"b\"]";
+		try(JsonReader jr = Json.createReader(new StringReader(input))) {
+			JsonValue jValue=null;
+			jValue = jr.read();
+			StringWriter writer = new StringWriter();
+			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
+				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
+			}
+			assertEquals(input, writer.toString());
+		}
+	}
 }

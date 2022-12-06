@@ -39,7 +39,7 @@ public class BusException extends RuntimeException {
 	 * Seen as ERROR
 	 * Stacktrace information is logged but not passed to the parent to limit sensitive information being sent over the 'bus'.
 	 */
-	public BusException(String message, Exception exception) {
+	public BusException(String message, Throwable exception) {
 		super(new IbisException(message, exception).getMessage());
 		if(exception == null) {
 			LOG.warn(super.getMessage()); // expanded message is logged directly

@@ -33,10 +33,14 @@ public class DocumentUtils {
 	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
 		switch (jValue.getValueType()) {
 		case ARRAY:
-			jsonArray2Builder((JsonArray)jValue, documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
+			try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME)) {
+				jsonArray2Builder((JsonArray)jValue, arrayBuilder);
+			}
 			break;
 		case OBJECT:
-			jsonObject2Builder((JsonObject)jValue, documentBuilder.asObjectBuilder());
+			try (ObjectBuilder objectBuilder = documentBuilder.asObjectBuilder()) {
+				jsonObject2Builder((JsonObject)jValue, objectBuilder);
+			}
 			break;
 		case NUMBER:
 			documentBuilder.setValue(jValue.toString()); // works for XML, but will be quoted in JSON

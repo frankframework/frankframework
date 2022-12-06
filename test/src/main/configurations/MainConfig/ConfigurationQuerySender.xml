@@ -76,6 +76,17 @@
 			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
+			
+			<pipe name="FixedQuerySenderWithTransform1" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" query="SELECT * FROM IBISPROP" />
+				<forward name="success" path="MapResults" />
+			</pipe>
+			<pipe name="FixedQuerySenderWithTransform2" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" outputFormat="XML" query="SELECT * FROM IBISPROP" />
+			</pipe>
+			<XsltPipe name="MapResults" xpathExpression="/result/rowset/row[1]" outputType="XML" >
+				<Forward name="success" path="EXIT"/>
+			</XsltPipe>
 		</pipeline>
 	</adapter>
 	<adapter name="XmlQuerySender" description="Test the functioning of the XmlQuerySender">

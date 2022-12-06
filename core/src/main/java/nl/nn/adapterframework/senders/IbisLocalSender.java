@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.Misc;
  * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
- * Any parameters are copied to the PipeLineSession of the service called.
+ * 
  *
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -84,6 +84,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
  *
+ * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
  *
  * @author Gerrit van Brakel

@@ -1009,8 +1009,10 @@ public class TestTool {
 					}
 					directory = getAbsolutePath(parent, directory, true);
 					if (new File(directory).exists()) {
+						debugMessage("directory for ["+description+"] exists: " + directory, writers);
 						scenariosRoots.put(description, directory);
 					} else {
+						debugMessage("directory ["+directory+"] for ["+description+"] does not exist, parent ["+parent+"]", writers);
 						scenariosRootsBroken.put(description, directory);
 					}
 				}
@@ -1753,9 +1755,7 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
 		if (windiffCommand == null) {
-			String servletPath = request.getServletPath();
-			int i = servletPath.lastIndexOf('/');
-			String realPath = application.getRealPath(servletPath.substring(0, i));
+			String realPath = application.getRealPath("/iaf/");
 			List<String> scenariosRootDirectories = new ArrayList<String>();
 			List<String> scenariosRootDescriptions = new ArrayList<String>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(

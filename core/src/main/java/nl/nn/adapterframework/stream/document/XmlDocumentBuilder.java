@@ -26,18 +26,24 @@ import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
 	private Writer writer;
+	private SaxDocumentBuilder saxDocumentBuilder;
 
 	public XmlDocumentBuilder(String rootElement) throws SAXException {
 		this(rootElement, new StringWriter(), true);
 	}
 
 	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
-		super(new SaxDocumentBuilder(null, writer), rootElement);
+		this(new SaxDocumentBuilder(null, writer), rootElement);
 		this.writer = writer;
 	}
 
 	public XmlDocumentBuilder(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
-		super(new SaxDocumentBuilder(null, handler, prettyPrint), rootElement);
+		this(new SaxDocumentBuilder(null, handler, prettyPrint), rootElement);
+	}
+
+	private XmlDocumentBuilder(SaxDocumentBuilder saxDocumentBuilder, String rootElement) throws SAXException {
+		super(saxDocumentBuilder, rootElement);
+		this.saxDocumentBuilder=saxDocumentBuilder;
 	}
 
 	@Override
@@ -58,7 +64,7 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 	@Override
 	public void close() throws SAXException {
 		super.close();
-		super.close(); // compensate for promotion in additional SaxDocumentBuilder in constructor
+		saxDocumentBuilder.close();
 	}
 
 }

@@ -40,6 +40,16 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
+	public String getFromForTablelessSelect() {
+		return "FROM SYSIBM.SYSDUMMY1";
+	}
+
+	@Override
 	public String emptyBlobValue() {
 		return "EMPTY_BLOB";
 	}
