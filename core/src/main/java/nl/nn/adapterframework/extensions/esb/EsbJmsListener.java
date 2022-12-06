@@ -55,14 +55,14 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
-	
+
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
 	private @Getter String xPathLoggingKeys=null;
 
 	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
 
-	private enum MessageProtocol {
+	protected enum MessageProtocol {
 		/** Fire & Forget protocol */
 		FF,
 		/** Request-Reply protocol */
@@ -221,7 +221,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		return getMessageProtocol() == MessageProtocol.FF;
 	}
 
-	/** 
+	/**
 	 * if true, all JMS properties in the request starting with "ae_" are copied to the reply.
 	 * @ff.default false
 	 */
