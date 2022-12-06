@@ -42,6 +42,25 @@ public class XmlObjectBuilder extends ObjectBuilder {
 		return new XmlNodeBuilder(current, fieldName);
 	}
 
+
+	@Override
+	public void addAttribute(String name, String value) throws SAXException {
+		current.addAttribute(XmlUtils.cleanseElementName(name), value);
+	}
+
+	@Override
+	public void addAttribute(String name, long value) throws SAXException {
+		addAttribute(name, Long.toString(value));
+	}
+	@Override
+	public void addAttribute(String name, boolean value) throws SAXException {
+		addAttribute(name, Boolean.toString(value));
+	}
+	@Override
+	public void addNumberAttribute(String name, String value) throws SAXException {
+		addAttribute(name, value);
+	}
+
 	@Override
 	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
 		return new XmlArrayBuilder(current, fieldName);
