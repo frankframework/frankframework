@@ -2833,7 +2833,7 @@ angular.module('iaf.beheerconsole')
 				$scope.file = null;
 				formData.message = returnData.message;
 			}
-		}, function(errorData, status, errorMsg) {
+		}, function(errorData) {
 			let error = (errorData && errorData.error) ? errorData.error : "An error occured!";
 			$scope.result = "";
 			$scope.addNote("warning", error);
