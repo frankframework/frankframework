@@ -19,15 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import lombok.Getter;
+
 /**
  * Reference to a resource, within the Configuration scope. Can be accessed multiple times.
- * 
+ *
  * @author Niels Meijer
  *
  */
 public class URLResource extends Resource {
 
-	private URL url;
+	private @Getter URL url;
 	private String systemId;
 
 	protected URLResource(IScopeProvider scopeProvider, URL url, String systemId) {
