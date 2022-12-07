@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,6 +10,10 @@ import org.junit.Test;
 import org.springframework.integration.support.MessageBuilder;
 
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock;
 
