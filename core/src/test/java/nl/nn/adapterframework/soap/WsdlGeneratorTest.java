@@ -16,9 +16,12 @@ import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class WsdlGeneratorTest {
+
+	private TestConfiguration configuration = new TestConfiguration();
 
 	private PipeLine createPipeline() throws Exception {
 		EchoPipe pipe = new EchoPipe();
@@ -63,7 +66,7 @@ public class WsdlGeneratorTest {
 	public void testWsdlXmlValidatorWithWsdl() throws Exception {
 		PipeLine pipeline = createPipeline();
 
-		WsdlXmlValidator inputValidator = new WsdlXmlValidator();
+		WsdlXmlValidator inputValidator = configuration.createBean(WsdlXmlValidator.class);
 		inputValidator.setWsdl(validateResource("/WsdlGenerator/HelloWorld.wsdl"));
 		inputValidator.setSoapBody("HelloWorld_Request");
 		inputValidator.setOutputSoapBody("HelloWorld_Response");

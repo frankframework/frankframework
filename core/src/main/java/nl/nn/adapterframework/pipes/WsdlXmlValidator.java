@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -54,13 +53,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.SharedResources;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -88,8 +88,8 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
+	private @Setter SharedResources<Definition> sharedResources;
 	private Definition definition;
-	private Map<String,Definition> definitions = new ConcurrentHashMap<>();
 
 
 	static {
@@ -107,7 +107,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
-		definition = definitions.computeIfAbsent(wsdl, this::getDefinition);
+		definition = sharedResources.getOrCompute(wsdl, this::getDefinition);
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
@@ -187,8 +187,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.configure();
 	}
 
-	@SneakyThrows(ConfigurationException.class)
-	protected Definition getDefinition(String wsdl) {
+	protected Definition getDefinition(String wsdl) throws ConfigurationException {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
@@ -372,22 +371,23 @@ public class WsdlXmlValidator extends SoapValidator {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 
-	@IbisDoc({"the wsdl to read the xsd's from", " "})
+	@IbisDoc({"The WSDL to read the XSDs from", " "})
 	public void setWsdl(String wsdl) {
 		this.wsdl = wsdl;
 	}
 
+	@Override
 	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body.", "" })
 	public void setSoapBody(String soapBody) {
 		super.setSoapBody(soapBody);
 	}
 
-	@IbisDoc({"pairs of uri references which will be added to the wsdl", " "})
+	@IbisDoc({"Pairs of URI references which will be added to the WSDL", " "})
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	@IbisDoc({"creates <code>schemalocation</code> attribute based on the wsdl and replaces the namespace of the soap body element", " " })
+	@IbisDoc({"Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element", " " })
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}

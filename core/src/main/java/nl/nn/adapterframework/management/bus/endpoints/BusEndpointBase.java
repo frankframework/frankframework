@@ -21,7 +21,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -66,5 +68,27 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message+" issued by "+issuedBy;
 		log.info(logMessage);
 		secLog.info(logMessage);
+	}
+
+	protected Adapter getAdapterByName(String configurationName, String adapterName) {
+		Configuration config = getConfigurationByName(configurationName);
+		Adapter adapter = config.getRegisteredAdapter(adapterName);
+
+		if(adapter == null){
+			throw new BusException("adapter ["+adapterName+"] does not exist");
+		}
+
+		return adapter;
+	}
+
+	protected Configuration getConfigurationByName(String configurationName) {
+		if(StringUtils.isEmpty(configurationName)) {
+			throw new BusException("no configuration name specified");
+		}
+		Configuration configuration = getIbisManager().getConfiguration(configurationName);
+		if(configuration == null) {
+			throw new BusException("configuration ["+configurationName+"] does not exists");
+		}
+		return configuration;
 	}
 }

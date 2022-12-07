@@ -59,7 +59,6 @@ import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
-import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -114,28 +113,6 @@ public class AdapterStatus extends BusEndpointBase {
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
 		return ResponseMessage.ok(adapterInfo);
-	}
-
-	private Adapter getAdapterByName(String configurationName, String adapterName) {
-		Configuration config = getConfigurationByName(configurationName);
-		Adapter adapter = config.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new BusException("adapter ["+adapterName+"] does not exist");
-		}
-
-		return adapter;
-	}
-
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {
