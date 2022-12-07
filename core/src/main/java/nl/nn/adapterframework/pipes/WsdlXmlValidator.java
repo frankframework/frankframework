@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -54,13 +53,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.SharedResources;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -88,8 +88,8 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
+	private @Setter SharedResources<Definition> sharedResources;
 	private Definition definition;
-	private static Map<String,Definition> definitions = new ConcurrentHashMap<>();
 
 
 	static {
@@ -107,7 +107,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
-		definition = definitions.computeIfAbsent(wsdl, this::getDefinition);
+		definition = sharedResources.getOrCompute(wsdl, this::getDefinition);
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
@@ -187,8 +187,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.configure();
 	}
 
-	@SneakyThrows(ConfigurationException.class)
-	protected Definition getDefinition(String wsdl) {
+	protected Definition getDefinition(String wsdl) throws ConfigurationException {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
 		reader.setFeature("javax.wsdl.importDocuments", true);
