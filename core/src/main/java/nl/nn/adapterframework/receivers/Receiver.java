@@ -1426,7 +1426,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		} finally {
 			ThreadContext.clearAll();
-			ThreadContext.removeStack();
 		}
 	}
 
