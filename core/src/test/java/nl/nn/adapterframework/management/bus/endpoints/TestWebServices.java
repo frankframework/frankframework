@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import org.junit.After;
 import org.junit.Before;
@@ -12,6 +12,8 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.receivers.Receiver;

@@ -1,4 +1,6 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
+
+import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
 import org.junit.Before;
@@ -9,18 +11,19 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class TestConnectionOverview extends BusTestBase {
+public class TestHealth extends BusTestBase {
 	private Adapter adapter;
 
-	@Override
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 		adapter = registerAdapter(getConfiguration());
@@ -56,10 +59,32 @@ public class TestConnectionOverview extends BusTestBase {
 	}
 
 	@Test
-	public void getAllConnections() throws Exception {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONNECTION_OVERVIEW);
+	public void getIbisHealth() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
 		Message<?> response = callSyncGateway(request);
-		String expectedJson = TestFileUtils.getTestFile("/Management/getAllConnections.json");
-		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
+
+		String result = response.getPayload().toString();
+		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
+	}
+
+	@Test
+	public void getConfigurationHealth() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		Message<?> response = callSyncGateway(request);
+
+		String result = response.getPayload().toString();
+		assertEquals("{\"errors\":[\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
+	}
+
+	@Test
+	public void getAdapterHealth() {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.HEALTH);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("adapter", "TestAdapter");
+		Message<?> response = callSyncGateway(request);
+
+		String result = response.getPayload().toString();
+		assertEquals("{\"errors\":[\"adapter[TestAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", result);
 	}
 }

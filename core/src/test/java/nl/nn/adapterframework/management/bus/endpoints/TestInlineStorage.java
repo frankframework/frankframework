@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
@@ -20,6 +20,8 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;

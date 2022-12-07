@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.net.URL;
 
@@ -6,6 +6,9 @@ import org.junit.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;

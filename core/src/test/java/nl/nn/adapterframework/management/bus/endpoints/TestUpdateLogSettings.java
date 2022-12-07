@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,6 +13,9 @@ import org.springframework.messaging.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTestBase;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class TestUpdateLogSettings extends BusTestBase {
