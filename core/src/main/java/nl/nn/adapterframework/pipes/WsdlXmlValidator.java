@@ -56,7 +56,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.HasSharedResources;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -79,7 +78,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class WsdlXmlValidator extends SoapValidator implements HasSharedResources<Definition> {
+public class WsdlXmlValidator extends SoapValidator {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
 	private static final WSDLFactory FACTORY;
