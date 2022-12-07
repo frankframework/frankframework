@@ -53,13 +53,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.HasSharedResources;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.SharedResources;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -77,7 +78,7 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
  * @author Michiel Meeuwissen
  * @author Jaco de Groot
  */
-public class WsdlXmlValidator extends SoapValidator {
+public class WsdlXmlValidator extends SoapValidator implements HasSharedResources<Definition> {
 	private static final Logger LOG = LogUtil.getLogger(WsdlXmlValidator.class);
 
 	private static final WSDLFactory FACTORY;
@@ -87,8 +88,8 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
+	private @Getter @Setter Map<String,Definition> sharedResources;
 	private Definition definition;
-	private static SharedResources<Definition, ConfigurationException> definitions = new SharedResources<>();
 
 
 	static {
@@ -106,7 +107,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
-		definition = definitions.getSharedResource(this, wsdl, ()->getDefinition(wsdl));
+		definition = getSharedResource(wsdl, this::getDefinition);
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");

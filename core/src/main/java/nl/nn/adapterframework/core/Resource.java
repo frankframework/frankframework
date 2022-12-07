@@ -109,8 +109,6 @@ public abstract class Resource implements IScopeProvider {
 	public abstract String getSystemId();
 
 	public abstract InputStream openStream() throws IOException;
-	
-	public abstract URL getUrl();
 
 	@Override
 	public final ClassLoader getConfigurationClassLoader() {
