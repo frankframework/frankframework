@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 import org.junit.Test;
 
 /**
- * This is a test class to test the {@link ApiTestBase} class.
+ * This is a test class to test the {@link FrankApiBase} class.
  * It tests path parameters, query parameters and json convertions
  */
 public class ApiTestBaseTest extends FrankApiBase {

@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -77,39 +78,46 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected Logger log = LogUtil.getLogger(this);
 	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
+	protected final Gateway getGateway() {
+		return getApplicationContext().getBean("gateway", Gateway.class);
+	}
+
+	@Nonnull
+	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
+		Message<?> message = getGateway().sendSyncMessage(input.build());
+		if(message == null) {
+			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
+			if(input.getAction() != null) {
+				errorMessage.append(" with action [");
+				errorMessage.append(input.getAction());
+				errorMessage.append("]");
+			}
+			throw new ApiException(errorMessage.toString());
+		}
+		return message;
+	}
+
 	public Response callSyncGateway(RequestMessageBuilder input) throws ApiException {
 		return callSyncGateway(input, false);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Response callSyncGateway(RequestMessageBuilder input, boolean evaluateEtag) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
-		Message<?> response = gateway.sendSyncMessage(input.build());
-		if(response != null) {
-			EntityTag eTag = null;
-			if(evaluateEtag) {
-				eTag = BusMessageUtils.generateETagHeaderValue(response);
-			}
-			if(eTag != null) {
-				ResponseBuilder builder = rsRequest.evaluatePreconditions(eTag);
-				if(builder != null) { //If the eTag matches the response will be non-null
-					return builder.tag(eTag).build(); //Append the tag and force a 304 (Not Modified) or 412 (Precondition Failed)
-				}
-			}
-			return BusMessageUtils.convertToJaxRsResponse(response).tag(eTag).build();
+		Message<?> response = sendSyncMessage(input);
+		EntityTag eTag = null;
+		if(evaluateEtag) {
+			eTag = BusMessageUtils.generateETagHeaderValue(response);
 		}
-
-		StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic ["+input.getTopic()+"]");
-		if(input.getAction() != null) {
-			errorMessage.append(" with action [");
-			errorMessage.append(input.getAction());
-			errorMessage.append("]");
+		if(eTag != null) {
+			ResponseBuilder builder = rsRequest.evaluatePreconditions(eTag);
+			if(builder != null) { //If the eTag matches the response will be non-null
+				return builder.tag(eTag).build(); //Append the tag and force a 304 (Not Modified) or 412 (Precondition Failed)
+			}
 		}
-		throw new ApiException(errorMessage.toString());
+		return BusMessageUtils.convertToJaxRsResponse(response).tag(eTag).build();
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
-		Gateway gateway = getApplicationContext().getBean("gateway", Gateway.class);
+		Gateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
 		return Response.ok().build();
 	}
