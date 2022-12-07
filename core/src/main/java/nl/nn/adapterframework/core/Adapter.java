@@ -667,7 +667,7 @@ public class Adapter implements IAdapter, NamedBean {
 			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
-						getName(), messageId, result.getState(), 
+						getName(), messageId, result.getState(),
 						DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC),
 						DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC),
 						duration);

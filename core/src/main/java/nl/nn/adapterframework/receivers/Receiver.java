@@ -1002,7 +1002,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Process the received message with {@link #processRequest(IListener, Object, Message, PipeLineSession)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
-	 * N.B. callers of this method should clear the remaining ThreadContext if its not to be returned to their callers. 
+	 * N.B. callers of this method should clear the remaining ThreadContext if its not to be returned to their callers.
 	 */
 	@Override
 	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
@@ -1189,13 +1189,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(getAdapter(), messageId, session)) {
 				lastMessageDate = startProcessingTimestamp;
 				log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
-		
+
 				if (StringUtils.isEmpty(messageId)) {
 					messageId=Misc.createSimpleUUID();
 					if (log.isDebugEnabled())
 						log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 				}
-		
+
 				if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 					log.debug(getLogPrefix()+"compact received message");
 					try {
@@ -1219,7 +1219,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						throw new ListenerException(msg, e);
 					}
 				}
-		
+
 				String businessCorrelationId=session.get(PipeLineSession.correlationIdKey, correlationId);
 				if (correlationIDTp!=null) {
 					try {
@@ -1280,13 +1280,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					error(msg, e);
 					throw wrapExceptionAsListenerException(e);
 				}
-		
+
 				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
-		
+
 				// update processing statistics
 				// count in processing statistics includes messages that are rolled back to input
 				startProcessingMessage(waitingDuration);
-		
+
 				String errorMessage="";
 				boolean messageInError = false;
 				Message result = null;
@@ -1307,7 +1307,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					} else {
 						pipelineMessage=message;
 					}
-		
+
 					numReceived.increase();
 					showProcessingContext(messageId, businessCorrelationId, session);
 		//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
@@ -1324,7 +1324,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 							setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 							session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, ""+ pipeLineResult.getExitCode());
 							result=pipeLineResult.getResult();
-		
+
 							errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
 							if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preserved
 								errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
@@ -1332,12 +1332,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 								errorMessage += result;
 							}
 							errorMessage += "]";
-		
+
 							int status = pipeLineResult.getExitCode();
 							if(status > 0) {
 								errorMessage += ", exitcode ["+status+"]";
 							}
-		
+
 							if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
 							messageInError=itx.isRollbackOnly();
 						} finally {
