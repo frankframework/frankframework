@@ -17,6 +17,8 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -42,6 +44,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
@@ -409,6 +412,40 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 					fail("missing argument ["+j+"] for method, expecting type ["+parameters[j]+"]");
 				}
 			}
+		}
+	}
+
+
+	protected class FileAttachment extends Attachment {
+		private InputStream stream;
+
+		public FileAttachment(String id, InputStream stream, String filename) {
+			super(id, (InputStream) null, new ContentDisposition("attachment;filename="+filename));
+			this.stream = stream;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> T getObject(Class<T> cls) {
+			return (T) getObject();
+		}
+
+		@Override
+		public Object getObject() {
+			return stream;
+		}
+	}
+
+	protected class StringAttachment extends Attachment {
+
+		public StringAttachment(String name, String value) {
+			super(name, "text/plain", new ByteArrayInputStream(value.getBytes()));
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <T> T getObject(Class<T> cls) {
+			return (T) getObject();
 		}
 	}
 }

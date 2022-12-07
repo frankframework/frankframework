@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +12,6 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,51 +31,38 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 		};
 	}
 
-	private class CustomAttachment extends Attachment {
+	@Test
+	public void testMessage() throws ConfigurationException, IOException {
+		List<Attachment> attachments = new ArrayList<Attachment>();
+		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
+		attachments.add(new StringAttachment("adapter", "HelloWorld"));
+		attachments.add(new StringAttachment("message", "<dummy-message/>"));
 
-		private Object data;
-
-		@Override
-		public <T> T getObject(Class<T> cls) {
-			return (T) data;
-		}
-
-		public CustomAttachment(String id, InputStream openStream, ContentDisposition contentDisposition) {
-			super(id, openStream, contentDisposition);
-			data = openStream;
-		}
-
-		public void setObject(Object o) {
-			data=o;
-		}
+		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
+		String expected="{\"result\":\"{\\\"topic\\\":\\\"TEST_PIPELINE\\\",\\\"action\\\":\\\"UPLOAD\\\"}\",\"state\":\"SUCCESS\",\"message\":\"<dummy-message/>\"}";
+		assertEquals(expected, response.getEntity().toString());
 	}
 
 	@Test
-	public void testArchiveNotClosedDuringProcessing() throws ConfigurationException, IOException {
+	public void testFileMessage() throws ConfigurationException, IOException {
+		List<Attachment> attachments = new ArrayList<Attachment>();
+		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
+		attachments.add(new StringAttachment("adapter", "HelloWorld"));
+		attachments.add(new FileAttachment("file", new ByteArrayInputStream("<dummy-message/>".getBytes()), "my-file.xml"));
+
+		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
+		String expected="{\"result\":\"{\\\"topic\\\":\\\"TEST_PIPELINE\\\",\\\"action\\\":\\\"UPLOAD\\\"}\",\"state\":\"SUCCESS\",\"message\":\"<dummy-message/>\"}";
+		assertEquals(expected, response.getEntity().toString());
+	}
+
+	@Test
+	public void testZipMessage() throws ConfigurationException, IOException {
 		URL zip = TestFileUtils.getTestFileURL("/Webcontrol.api/temp.zip");
 
-		CustomAttachment attachmentFile = new CustomAttachment("file", zip.openStream(), new ContentDisposition("attachment;filename=temp.zip"));
-		attachmentFile.setObject(zip.openStream());
-
-		Attachment adapter = new Attachment("adapter", "text/plain", new ByteArrayInputStream("HelloWorld".getBytes())) {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <T> T getObject(Class<T> cls) {
-				return (T) getObject();
-			}
-		};
-		Attachment configuration = new Attachment("configuration", "text/plain", new ByteArrayInputStream("TestConfiguration".getBytes())) {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <T> T getObject(Class<T> cls) {
-				return (T) getObject();
-			}
-		};
-
 		List<Attachment> attachments = new ArrayList<Attachment>();
-		attachments.add(attachmentFile);
-		attachments.add(adapter);
-		attachments.add(configuration);
+		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
+		attachments.add(new StringAttachment("adapter", "HelloWorld"));
+		attachments.add(new FileAttachment("file", zip.openStream(), "archive.zip"));
 
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
 		String expected="{\"result\":\"Test1.txt: SUCCESS\\nTest2.txt: SUCCESS\\n\",\"state\":\"SUCCESS\"}";
