@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -48,7 +47,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 
 /**
@@ -68,10 +66,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private @Getter DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
 	private @Getter ISender sender;
 
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
-	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
-	private @Getter String xPathLoggingKeys=null;
 
 	private @Getter boolean forceMessageIdAsCorrelationId=false;
 
@@ -98,28 +92,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		if (sender != null) {
 			sender.configure();
 		}
-		configurexPathLogging();
 
 		if (paramList!=null) {
 			paramList.configure();
-		}
-	}
-
-	protected Map<String, String> getxPathLogMap() {
-		return xPathLogMap;
-	}
-
-	private void configurexPathLogging() {
-		String logKeys = MSGLOG_KEYS;
-		if(getXPathLoggingKeys() != null) //Override on listener level
-			logKeys = getXPathLoggingKeys();
-
-		StringTokenizer tokenizer = new StringTokenizer(logKeys, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String name = tokenizer.nextToken();
-			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
-			if(xPath != null)
-				xPathLogMap.put(name, xPath);
 		}
 	}
 
@@ -482,12 +457,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		replySoapAction = string;
 	}
 
+	/** 
+	 * sessionKey to store the SOAP header of the incoming message 
+	 * @ff.default soapHeader
+	 */
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
 
-	@IbisDoc({"Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
-	public void setxPathLoggingKeys(String string) {
-		xPathLoggingKeys = string;
-	}
 }

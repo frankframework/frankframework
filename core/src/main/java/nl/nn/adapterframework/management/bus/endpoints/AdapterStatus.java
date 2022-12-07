@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener.MessageProtocol;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
@@ -368,7 +369,7 @@ public class AdapterStatus extends BusEndpointBase {
 			if (listener instanceof EsbJmsListener) {
 				EsbJmsListener ejl = (EsbJmsListener) listener;
 				if(ejl.getMessageProtocol() != null) {
-					if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+					if (ejl.getMessageProtocol()== MessageProtocol.FF) {
 						isEsbJmsFFListener = true;
 					}
 					if(showPendingMsgCount) {
