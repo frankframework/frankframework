@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,23 @@
 */
 package nl.nn.adapterframework.core;
 
-public interface HasSharedResources<R> extends IScopeProvider {
+import java.util.HashMap;
+import java.util.Map;
 
-	void setSharedResources(SharedResources<R> resources);
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.functional.ThrowingFunction;
+
+public class SharedResources<R> {
+
+	private Map<String, R> resources = new HashMap<>();
+
+	public synchronized R getOrCompute(String name, ThrowingFunction<String, R, ConfigurationException> creator) throws ConfigurationException {
+		R result = resources.get(name);
+		if (result==null) {
+			result = creator.apply(name);
+			resources.put(name, result);
+		}
+		return result;
+	}
 
 }

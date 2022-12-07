@@ -61,6 +61,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.SharedResources;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
@@ -88,7 +89,7 @@ public class WsdlXmlValidator extends SoapValidator implements HasSharedResource
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
-	private @Getter @Setter Map<String,Definition> sharedResources;
+	private @Setter SharedResources<Definition> sharedResources;
 	private Definition definition;
 
 
@@ -107,7 +108,7 @@ public class WsdlXmlValidator extends SoapValidator implements HasSharedResource
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
-		definition = getSharedResource(wsdl, this::getDefinition);
+		definition = sharedResources.getOrCompute(wsdl, this::getDefinition);
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");

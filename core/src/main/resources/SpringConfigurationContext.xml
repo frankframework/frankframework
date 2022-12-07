@@ -22,7 +22,7 @@
 
 	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
 
-	<bean name="sharedResources" class="java.util.HashMap" scope="singleton"/>
+	<bean name="sharedResources" class="nl.nn.adapterframework.core.SharedResources" scope="singleton"/>
 
 	<bean
 		name="adapterManager"
