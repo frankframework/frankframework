@@ -32,4 +32,6 @@
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
+
+	<bean name="sharedResources" class="nl.nn.adapterframework.core.SharedResources" scope="singleton"/>
 </beans>
