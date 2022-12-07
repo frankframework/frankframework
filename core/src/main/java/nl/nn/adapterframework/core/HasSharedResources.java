@@ -26,13 +26,12 @@ public interface HasSharedResources<R> extends IScopeProvider {
 	void setSharedResources(Map<String,R> resources);
 
 	default R getSharedResource(String name, ThrowingFunction<String, R, ConfigurationException> creator) throws ConfigurationException {
-		R result;
 		Map<String,R> resources = getSharedResources();
 		if (resources==null) {
 			return creator.apply(name);
 		}
 		synchronized (resources) {
-			result = resources.get(name);
+			R result = resources.get(name);
 			if (result==null) {
 				result = creator.apply(name);
 				resources.put(name, result);
