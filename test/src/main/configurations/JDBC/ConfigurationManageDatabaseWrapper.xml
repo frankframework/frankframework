@@ -16,7 +16,7 @@
 			<pipe name="InitSessionKeyDefaults" 
 				className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults" defaultValue="-1"/>
-				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="1"/>
+				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="10"/>
 				<forward name="success" path="SendToManageDatabase"/>
 			</pipe>
 			
@@ -64,7 +64,7 @@
 			</pipe>
 			
 			<pipe name="Wait" 
-				className="nl.nn.adapterframework.pipes.DelayPipe">
+				className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="1000">
 				<forward name="success" path="SendToManageDatabase" />
 			</pipe>
 		</pipeline>
