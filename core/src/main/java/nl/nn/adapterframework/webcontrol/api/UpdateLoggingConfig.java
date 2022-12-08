@@ -75,7 +75,7 @@ public class UpdateLoggingConfig extends Base {
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR", "OFF"));
+		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
