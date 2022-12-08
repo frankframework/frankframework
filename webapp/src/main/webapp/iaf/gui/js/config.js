@@ -435,7 +435,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc, $interval){
-			$scope.url = Misc.getServerPath() + "larva";
+			$scope.url = Misc.getServerPath() + "iaf/larva";
 		}
 	})
 	.state('pages.ladybug', {
