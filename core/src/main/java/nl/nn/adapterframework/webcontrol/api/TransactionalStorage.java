@@ -86,7 +86,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.PROCESS_STATES, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
 		builder.addHeader("adapter", adapterName);
 		if(storageSource == StorageSource.PIPES) {
@@ -115,7 +115,7 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.PROCESS_STATES, BusAction.DOWNLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
 		builder.addHeader("adapter", adapterName);
 		if(storageSource == StorageSource.PIPES) {
@@ -141,7 +141,7 @@ public class TransactionalStorage extends Base {
 			MultipartBody input
 		) {
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.PROCESS_STATES, BusAction.DOWNLOAD);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
 		builder.addHeader("adapter", adapterName);
 		if(storageSource == StorageSource.PIPES) {
@@ -216,7 +216,7 @@ public class TransactionalStorage extends Base {
 			) throws ApiException {
 
 
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.PROCESS_STATES, BusAction.FIND);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
 		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
 		builder.addHeader("adapter", adapterName);
 		if(storageSource == StorageSource.PIPES) {

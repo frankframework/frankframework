@@ -56,7 +56,7 @@ import nl.nn.adapterframework.webcontrol.api.ApiException;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
-@TopicSelector(BusTopic.PROCESS_STATES)
+@TopicSelector(BusTopic.MESSAGE_BROWSER)
 public class BrowseMessageBrowsers extends BusEndpointBase {
 	public static final String HEADER_MESSAGEID_KEY = "messageId";
 	public static final String HEADER_RECEIVER_NAME_KEY = "receiver";
@@ -64,7 +64,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	public static final String HEADER_PROCESSSTATE_KEY = "processState";
 
 	@ActionSelector(BusAction.GET)
-	public Message<String> getMessage(Message<?> message) {
+	public Message<String> getMessageById(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -84,13 +84,15 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 			storage = receiver.getMessageBrowser(processState);
 			storageItem = getMessageWithMetadata(storage, receiver.getListener(), messageId);
+		} else {
+			throw new BusException("no StorageSource provided");
 		}
 
 		return ResponseMessage.ok(storageItem);
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
-	public Message<Object> downloadMessage(Message<?> message) {
+	public Message<Object> downloadMessageById(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -108,6 +110,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 			IMessageBrowser<?> storage = receiver.getMessageBrowser(processState);
 			storageItem = getMessage(storage, receiver.getListener(), messageId);
+		} else {
+			throw new BusException("no StorageSource provided");
 		}
 
 		MediaType mediaType = getMediaType(storageItem);
@@ -140,12 +144,14 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 			storage = receiver.getMessageBrowser(processState);
 			targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(processState));
+		} else {
+			throw new BusException("no StorageSource provided");
 		}
 
 		String type = BusMessageUtils.getHeader(message, "type");
 		String host = BusMessageUtils.getHeader(message, "host");
 		String id = BusMessageUtils.getHeader(message, "idMask");
-		String messageId = BusMessageUtils.getHeader(message, "messageId");
+		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 		String correlationId = BusMessageUtils.getHeader(message, "correlationId");
 		String comment = BusMessageUtils.getHeader(message, "comment");
 		String messageMask = BusMessageUtils.getHeader(message, "message");
@@ -208,7 +214,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		return storage;
 	}
 
-	private StorageItemDTO getMessageWithMetadata(IMessageBrowser<?> storage, IListener listener, String messageId) {
+	private StorageItemDTO getMessageWithMetadata(IMessageBrowser<?> storage, IListener<?> listener, String messageId) {
 		String message = getMessage(storage, listener, messageId);
 		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
 			StorageItemDTO dto = new StorageItemDTO(item);
@@ -222,7 +228,11 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
 		return getMessage(messageBrowser, null, messageId);
 	}
-	private String getMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
+	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
+		if(messageBrowser == null) {
+			throw new BusException("no MessageBrowser found");
+		}
+
 		String msg = null;
 		try {
 			Object rawmsg = messageBrowser.browseMessage(messageId);
