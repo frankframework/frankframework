@@ -9,18 +9,15 @@
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
-				<forward name="success" path="echo" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.RetrieveContextPipe" />
 		</pipeline>
 	</adapter>
 	<adapter name="ForEachChildElementPipe_Record">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ForEachChildElementPipe_Record" />
 		</receiver>
-		<pipeline firstPipe="switch">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 				<exit path="ERROR" state="error" />

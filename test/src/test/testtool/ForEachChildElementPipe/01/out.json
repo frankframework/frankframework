@@ -1,0 +1,13 @@
+{
+    "message": "<results>\n<result item=\"1\">\n<reply>goodbye</reply>\n</result>\n<result item=\"2\">\n<reply>ha</reply>\n</result>\n</results>",
+    "messageContext": {
+    },
+    "logContext": {
+        "listener.type": "JavaListener",
+        "adapter": "ForEachChildElementPipe",
+        "exitState": "SUCCESS",
+        "pipeline.duration": "3",
+        "listener": "listener of [JavaListener]",
+        "cid": "Test Tool correlation id(6)"
+    }
+}
