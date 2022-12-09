@@ -42,7 +42,7 @@ public class MessageBrowsingFilter {
 	private @Getter Date startDate = null;
 	private @Getter Date endDate = null;
 
-	private @Getter int maxMessages = 0;
+	private @Getter int maxMessages = 100;
 	private @Getter int skipMessages = 0;
 
 	private @Getter @Setter SortOrder sortOrder = SortOrder.NONE;
@@ -50,7 +50,7 @@ public class MessageBrowsingFilter {
 	private IListener listener = null;
 
 	public MessageBrowsingFilter() {
-		this(AppConstants.getInstance().getInt("browse.messages.max", 0), 0);
+		this(AppConstants.getInstance().getInt("browse.messages.max", 100), 0);
 	}
 
 	public MessageBrowsingFilter(int maxMessages, int skipMessages) {
