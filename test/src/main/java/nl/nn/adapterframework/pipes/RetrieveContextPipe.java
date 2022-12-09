@@ -52,13 +52,13 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 						parameters.add(entry.getKey(), entry.getValue().toString());
 					}
 				} catch (ParameterException e) {
-					throw new PipeRunException(this, "Exception caught", e); 
+					throw new PipeRunException(this, "Exception caught", e);
 				}
 			}
 			document.close();
 			return new PipeRunResult(getSuccessForward(), document.toString());
 		} catch (SAXException | IOException e) {
-			throw new PipeRunException(this, "Exception caught", e); 
+			throw new PipeRunException(this, "Exception caught", e);
 		}
 	}
 
