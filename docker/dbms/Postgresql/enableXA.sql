@@ -1,1 +1,0 @@
-ALTER SYSTEM SET max_prepared_transactions = 100;
