@@ -47,7 +47,7 @@ public class StorageItemsDTO {
 	private final @Getter int recordsFiltered;
 	private final @Getter List<StorageItemDTO> messages;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	private @Getter @Setter Map<ProcessState, ProcessStateDTO> targetStates = new EnumMap<>(ProcessState.class);
 
 	public StorageItemsDTO(IMessageBrowser<?> transactionalStorage, MessageBrowsingFilter filter) {

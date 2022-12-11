@@ -3,12 +3,17 @@ package nl.nn.adapterframework.management.bus.endpoints;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,10 +23,13 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
+import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -32,15 +40,19 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class TestBrowseMessageBrowsers extends BusTestBase {
+	private static final String JSON_MESSAGE = "{\"dummy\":1}";
+	private static final String XML_MESSAGE = "<dummy>2</dummy>";
 	private Adapter adapter;
 
 	@Before
@@ -111,7 +123,35 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		String jsonResponse = (String) callSyncGateway(request).getPayload();
 
-		MatchUtils.assertJsonEquals("{\"id\": \"1234\",\"message\": \"<no message found/>\"}", jsonResponse);
+		MatchUtils.assertJsonEquals("{\"id\": \"1234\",\"originalId\": \"1234\",\"message\": \"<xml>1234</xml>\"}", jsonResponse);
+	}
+
+	@Test
+	public void downloadJsonMessageByIdFromReceiver() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("receiver", "ReceiverName");
+		request.setHeader("processState", "Error");
+		request.setHeader("messageId", "1");
+
+		Message<?> response = callSyncGateway(request);
+		assertEquals(JSON_MESSAGE, response.getPayload());
+		assertEquals("application/json", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+	}
+
+	@Test
+	public void downloadXmlMessageByIdFromReceiver() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("receiver", "ReceiverName");
+		request.setHeader("processState", "Error");
+		request.setHeader("messageId", "2");
+
+		Message<?> response = callSyncGateway(request);
+		assertEquals(XML_MESSAGE, response.getPayload());
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -125,8 +165,76 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		String jsonResponse = (String) callSyncGateway(request).getPayload();
 
-		MatchUtils.assertJsonEquals("{\"id\": \"1234\",\"message\": \"<no message found/>\"}", jsonResponse);
+		MatchUtils.assertJsonEquals("{\"id\": \"1234\",\"originalId\": \"1234\",\"message\": \"<xml>1234</xml>\"}", jsonResponse);
 	}
+
+	@Test
+	public void downloadJsonMessageByIdFromPipe() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("pipe", "PipeName");
+
+		request.setHeader("messageId", "1");
+
+		Message<?> response = callSyncGateway(request);
+		assertEquals(JSON_MESSAGE, response.getPayload());
+		assertEquals("application/json", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+	}
+
+	@Test
+	public void downloadXmlMessageByIdFromPipe() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("pipe", "PipeName");
+
+		request.setHeader("messageId", "2");
+
+		Message<?> response = callSyncGateway(request);
+		assertEquals(XML_MESSAGE, response.getPayload());
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+	}
+
+	@Test
+	public void findAllMessageById() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("pipe", "PipeName");
+
+		// filter should match any item
+		String jsonResponse = (String) callSyncGateway(request).getPayload();
+		MatchUtils.assertJsonEquals(TestFileUtils.getTestFile("/Management/MessageBrowserFindAll.json"), jsonResponse);
+	}
+
+	@Test
+	public void findNoneMessageById() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("pipe", "PipeName");
+
+		// filter should not match any item
+		request.setHeader("messageId", "1234");
+		String jsonResponse = (String) callSyncGateway(request).getPayload();
+		MatchUtils.assertJsonEquals(TestFileUtils.getTestFile("/Management/MessageBrowserFindNone.json"), jsonResponse);
+	}
+
+	@Test
+	public void findOneMessageById() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("receiver", "ReceiverName");
+		request.setHeader("processState", "Error");
+
+		// filter should match only 1 item
+		request.setHeader("messageId", "2");
+		String jsonResponse = (String) callSyncGateway(request).getPayload();
+		MatchUtils.assertJsonEquals(TestFileUtils.getTestFile("/Management/MessageBrowserFindOne.json"), jsonResponse);
+	}
+
 
 	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 
@@ -164,28 +272,83 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		ITransactionalStorage<String> browser = mock(ITransactionalStorage.class);
 		try {
 			doReturn("silly mock because the storage requires a name").when(browser).getName();
-			doAnswer(DummyMessageBrowsingIteratorItem.newInstance()).when(browser).getContext(anyString());
-			doReturn(1).when(browser).getMessageCount();
+			doAnswer(DummyMessageBrowsingIteratorItem.newMock()).when(browser).getContext(anyString());
+			DummyMessageBrowsingIterator iterator = new DummyMessageBrowsingIterator();
+			doReturn(iterator.size()).when(browser).getMessageCount();
+			doReturn(iterator).when(browser).getIterator(any(Date.class), any(Date.class), any(SortOrder.class));
+			doReturn(iterator).when(browser).getIterator(isNull(), isNull(), any(SortOrder.class));
+			doAnswer(this::messageMock).when(browser).browseMessage(anyString());
 		} catch (ListenerException e) {
 			fail(e.getMessage());
 		}
 		return browser;
 	}
 
+
+	public String messageMock(InvocationOnMock invocation) {
+		String id = (String) invocation.getArguments()[0];
+		switch (id) {
+		case "1":
+			return JSON_MESSAGE;
+		case "2":
+			return XML_MESSAGE;
+		default:
+			return "<xml>"+id+"</xml>";
+		}
+	}
+
+	public static class DummyMessageBrowsingIterator implements IMessageBrowsingIterator {
+		private Deque<IMessageBrowsingIteratorItem> items = new LinkedList<>();
+		public DummyMessageBrowsingIterator() {
+			items.add(DummyMessageBrowsingIteratorItem.newInstance("1"));
+			items.add(DummyMessageBrowsingIteratorItem.newInstance("2"));
+		}
+
+		@Override
+		public boolean hasNext() throws ListenerException {
+			return !items.isEmpty();
+		}
+
+		@Override
+		public IMessageBrowsingIteratorItem next() throws ListenerException {
+			return items.poll();
+		}
+
+		@Override
+		public void close() throws ListenerException {
+			items.clear();
+		}
+
+		public int size() {
+			return items.size();
+		}
+	}
+
 	public abstract static class DummyMessageBrowsingIteratorItem implements Answer<IMessageBrowsingIteratorItem>, IMessageBrowsingIteratorItem {
 		private String messageId;
-		public static DummyMessageBrowsingIteratorItem newInstance() {
+		public static DummyMessageBrowsingIteratorItem newMock() {
 			return mock(DummyMessageBrowsingIteratorItem.class, CALLS_REAL_METHODS);
+		}
+
+		public static DummyMessageBrowsingIteratorItem newInstance(String messageId) {
+			DummyMessageBrowsingIteratorItem item = newMock();
+			item.messageId = messageId;
+			return item;
 		}
 
 		@Override
 		public IMessageBrowsingIteratorItem answer(InvocationOnMock invocation) throws Throwable {
-			this.messageId = (String) invocation.getArguments()[0];
+			messageId = (String) invocation.getArguments()[0];
 			return this;
 		}
 
 		@Override
 		public String getId() throws ListenerException {
+			return messageId;
+		}
+
+		@Override
+		public String getOriginalId() throws ListenerException {
 			return messageId;
 		}
 	}

@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
@@ -45,7 +44,7 @@ public class MessageBrowsingFilter {
 	private @Getter int maxMessages = 100;
 	private @Getter int skipMessages = 0;
 
-	private @Getter @Setter SortOrder sortOrder = SortOrder.NONE;
+	private @Getter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;
 	private IListener listener = null;
 
@@ -196,6 +195,12 @@ public class MessageBrowsingFilter {
 			catch(CalendarParserException ex) {
 				throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
 			}
+		}
+	}
+
+	public void setSortOrder(SortOrder sortOrder) {
+		if(sortOrder != null) {
+			this.sortOrder = sortOrder;
 		}
 	}
 

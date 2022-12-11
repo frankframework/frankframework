@@ -158,7 +158,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		String label = BusMessageUtils.getHeader(message, "label");
 		String startDate = BusMessageUtils.getHeader(message, "startDate");
 		String endDate = BusMessageUtils.getHeader(message, "endDate");
-		SortOrder sortOrder = BusMessageUtils.getEnumHeader(message, "sort", SortOrder.class);
+		SortOrder sortOrder = BusMessageUtils.getEnumHeader(message, "sort", SortOrder.class, SortOrder.NONE);
 		int skipMessages = BusMessageUtils.getIntHeader(message, "skip", 0);
 		int maxMessages = BusMessageUtils.getIntHeader(message, "max", 100);
 
