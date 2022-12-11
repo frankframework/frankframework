@@ -87,8 +87,8 @@ public class TransactionalStorage extends Base {
 		messageId = Misc.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
-		builder.addHeader("adapter", adapterName);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
@@ -116,8 +116,8 @@ public class TransactionalStorage extends Base {
 		messageId = Misc.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
-		builder.addHeader("adapter", adapterName);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
@@ -142,8 +142,8 @@ public class TransactionalStorage extends Base {
 		) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
-		builder.addHeader("adapter", adapterName);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
@@ -217,8 +217,8 @@ public class TransactionalStorage extends Base {
 
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
-		builder.addHeader("adapter", adapterName);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {

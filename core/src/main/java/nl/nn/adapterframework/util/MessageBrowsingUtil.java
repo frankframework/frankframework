@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
@@ -45,7 +44,7 @@ public class MessageBrowsingUtil {
 			if (listener!=null) {
 				try {
 					msg = listener.extractMessage(rawmsg, null).asString();
-				} catch (ListenerException e) {
+				} catch (Exception e) {
 					log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage(), e);
 				}
 			}
