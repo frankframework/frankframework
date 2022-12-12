@@ -586,7 +586,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 		} finally {
 			if (ThreadContext.getDepth() == 0) {
-				ThreadContext.removeStack();
+				ThreadContext.clearAll();
 			}
 		}
 	}

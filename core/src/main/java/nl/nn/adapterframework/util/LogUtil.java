@@ -80,12 +80,16 @@ public class LogUtil {
 		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {
 			ctc.push("caller="+lastAdapter);
 		}
+		setIdsToThreadContext(ctc, messageId, session!=null ? session.getCorrelationId() : null);
+		return ctc;
+	}
+
+	public static void setIdsToThreadContext(CloseableThreadContext.Instance ctc, String messageId, String correlationId) {
 		if (StringUtils.isNotEmpty(messageId)) {
 			ctc.put("mid", messageId);
 		}
-		if (session!=null && StringUtils.isNotEmpty(session.getCorrelationId())) {
-			ctc.put("cid", session.getCorrelationId());
+		if (StringUtils.isNotEmpty(correlationId)) {
+			ctc.put("cid", correlationId);
 		}
-		return ctc;
 	}
 }

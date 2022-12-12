@@ -55,7 +55,7 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "Exception caught", e);
 				}
 			}
-			document.close();
+			document.close(); // must close documentbuilder before output can be obtained via toString()
 			return new PipeRunResult(getSuccessForward(), document.toString());
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(this, "Exception caught", e);
