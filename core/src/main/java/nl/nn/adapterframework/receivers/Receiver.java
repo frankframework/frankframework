@@ -840,7 +840,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if(currentRunState == RunState.EXCEPTION_STARTING && getListener() instanceof IPullingListener) {
 				runState.setRunState(RunState.STOPPING); //Nothing ever started, directly go to stopped
 				closeAllResources();
-				ThreadContext.removeStack(); //Clean up receiver ThreadContext
+				ThreadContext.clearAll(); //Clean up receiver ThreadContext
 				return; //Prevent tellResourcesToStop from being called
 			}
 
@@ -850,7 +850,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		tellResourcesToStop();
-		ThreadContext.removeStack(); //Clean up receiver ThreadContext
+		ThreadContext.clearAll(); //Clean up receiver ThreadContext
 	}
 
 	@Override
@@ -1102,6 +1102,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 				String messageId = (String)session.get(PipeLineSession.originalMessageIdKey);
+				LogUtil.setIdsToThreadContext(ctc, messageId, (String)session.get(PipeLineSession.businessCorrelationIdKey));
 				long endExtractingMessage = System.currentTimeMillis();
 				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
 				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
