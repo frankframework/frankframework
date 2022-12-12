@@ -111,6 +111,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), StreamUtil.DEFAULT_CHARSET)) {
 			jsonWriter.write(json);
 		}
+		response.setHeader("Content-Type", "application/json");
 	}
 
 	@Override
