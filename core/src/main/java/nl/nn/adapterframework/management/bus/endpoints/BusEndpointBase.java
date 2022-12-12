@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -64,6 +66,11 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		}
 
 		ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
+		doAfterPropertiesSet();
+	}
+
+	protected void doAfterPropertiesSet() {
+		//Override to initialize bean
 	}
 
 	protected final void log2SecurityLog(String message, String issuedBy) {
@@ -72,6 +79,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		secLog.info(logMessage);
 	}
 
+	@Nonnull
 	protected Configuration getConfigurationByName(String configurationName) {
 		if(StringUtils.isEmpty(configurationName)) {
 			throw new BusException("no configuration name specified");
@@ -83,6 +91,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return configuration;
 	}
 
+	@Nonnull
 	protected Adapter getAdapterByName(String configurationName, String adapterName) {
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			return getIbisManager().getRegisteredAdapter(adapterName);
@@ -98,6 +107,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return adapter;
 	}
 
+	@Nonnull
 	protected Receiver<?> getReceiverByName(Adapter adapter, String receiverName) {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
@@ -106,6 +116,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return receiver;
 	}
 
+	@Nonnull
 	protected IPipe getPipeByName(Adapter adapter, String pipeName) {
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
 		if(pipe == null) {

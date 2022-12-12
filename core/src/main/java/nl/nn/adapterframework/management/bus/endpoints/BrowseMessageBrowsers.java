@@ -26,6 +26,10 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
@@ -62,6 +66,20 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	public static final String HEADER_RECEIVER_NAME_KEY = "receiver";
 	public static final String HEADER_PIPE_NAME_KEY = "pipe";
 	public static final String HEADER_PROCESSSTATE_KEY = "processState";
+
+	private PlatformTransactionManager transactionManager;
+	private static final TransactionDefinition TXNEW_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+	@Override
+	protected void doAfterPropertiesSet() {
+		transactionManager = getApplicationContext().getBean("txManager", PlatformTransactionManager.class);
+
+		//Try to create a new transaction to verify if there is a connection to the database
+		TransactionStatus status = this.transactionManager.getTransaction(TXNEW_DEFINITION);
+		if(status != null) { //If there is a transaction (read connection) close it!
+			this.transactionManager.commit(status);
+		}
+	}
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMessageById(Message<?> message) {
@@ -184,13 +202,76 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		return ResponseMessage.ok(dto);
 	}
 
+	@ActionSelector(BusAction.STATUS)
+	public void resend(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
+		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+		Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 
+		try {
+			receiver.retryMessage(messageId);
+		} catch (ListenerException e) {
+			throw new BusException("unable to retry message with id ["+messageId+"]", e);
+		}
+	}
 
+	@ActionSelector(BusAction.DELETE)
+	public void delete(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
+		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+		Receiver<?> receiver = getReceiverByName(adapter, receiverName);
+		IMessageBrowser<?> browser = receiver.getMessageBrowser(ProcessState.ERROR);
 
+		TransactionStatus txStatus = null;
+		try {
+			txStatus = transactionManager.getTransaction(TXNEW_DEFINITION);
+			browser.deleteMessage(messageId);
+		} catch (Exception e) {
+			if (txStatus != null) {
+				txStatus.setRollbackOnly();
+			}
+			throw new BusException("unable to delete message with id ["+messageId+"]", e);
+		} finally {
+			if (txStatus != null) {
+				transactionManager.commit(txStatus);
+			}
+		}
+	}
 
+	@ActionSelector(BusAction.MANAGE)
+	public void changeProcessState(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
+		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
+		ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
+		ProcessState targetState = BusMessageUtils.getEnumHeader(message, "targetState", ProcessState.class);
 
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+		Receiver<?> receiver = getReceiverByName(adapter, receiverName);
+
+		Set<ProcessState> availableTargetStates = receiver.targetProcessStates().get(processState);
+		if(availableTargetStates != null && availableTargetStates.contains(targetState)) {
+			IMessageBrowser<?> store = receiver.getMessageBrowser(processState);
+			try {
+				if (receiver.changeProcessState(store.browseMessage(messageId), targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
+					throw new BusException("could not move message ["+messageId+"]");
+				}
+			} catch (ListenerException e) {
+				throw new BusException("could not move message ["+messageId+"]", e);
+			}
+		} else {
+			throw new BusException("it is not allowed to move messages from ["+processState+"] to ["+targetState+"]");
+		}
+	}
 
 	private IMessageBrowser<?> getStorageFromPipe(Adapter adapter, String pipeName) {
 		IPipe pipe = getPipeByName(adapter, pipeName);

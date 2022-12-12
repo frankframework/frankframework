@@ -10,6 +10,7 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import java.util.Date;
 import java.util.Deque;
@@ -47,6 +48,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.mock.TransactionManagerMock;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
@@ -68,9 +70,10 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
 		listener.setName("ListenerName");
-		Receiver<String> receiver = new Receiver<>();
+		Receiver<String> receiver = spy(Receiver.class);
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
+		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
 		adapter.registerReceiver(receiver);
 		PipeLine pipeline = new PipeLine();
 		SenderPipe pipe = SpringUtils.createBean(configuration, SenderPipe.class);
@@ -235,6 +238,46 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		MatchUtils.assertJsonEquals(TestFileUtils.getTestFile("/Management/MessageBrowserFindOne.json"), jsonResponse);
 	}
 
+	@Test
+	public void resendMessageById() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("receiver", "ReceiverName");
+
+		// filter should match only 1 item
+		request.setHeader("messageId", "2");
+		try {
+			callAsyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals("unable to retry message with id [2]: testing message ->2", be.getMessage());
+		}
+	}
+
+	@Test
+	public void deleteMessageById() throws Exception {
+		TransactionManagerMock.reset();
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader("receiver", "ReceiverName");
+
+		// filter should match only 1 item
+		request.setHeader("messageId", "2");
+		try {
+			callAsyncGateway(request);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof BusException);
+			BusException be = (BusException) e.getCause();
+			assertEquals("unable to delete message with id [2]: testing message ->2", be.getMessage());
+
+			assertTrue(TransactionManagerMock.peek().isCompleted());
+			assertTrue(TransactionManagerMock.peek().hasBeenRolledBack());
+		}
+	}
+
 
 	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 
@@ -278,6 +321,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 			doReturn(iterator).when(browser).getIterator(any(Date.class), any(Date.class), any(SortOrder.class));
 			doReturn(iterator).when(browser).getIterator(isNull(), isNull(), any(SortOrder.class));
 			doAnswer(this::messageMock).when(browser).browseMessage(anyString());
+			doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(browser).deleteMessage(anyString()); //does not actually test the delete mechanism
 		} catch (ListenerException e) {
 			fail(e.getMessage());
 		}
