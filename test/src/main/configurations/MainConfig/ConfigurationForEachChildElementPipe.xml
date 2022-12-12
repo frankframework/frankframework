@@ -10,7 +10,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe" />
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.RetrieveContextPipe" />
 		</pipeline>
 	</adapter>
 	<adapter name="ForEachChildElementPipe_Record">

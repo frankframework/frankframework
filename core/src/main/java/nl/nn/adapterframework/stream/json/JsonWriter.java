@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Stack;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.stream.JsonEventHandler;
@@ -138,11 +139,11 @@ public class JsonWriter implements JsonEventHandler {
 		try {
 			writeSeparatingComma(false);
 			if (value instanceof String) {
-				writer.write("\""+value+"\"");
+				writer.write("\""+StringEscapeUtils.escapeJson((String)value)+"\"");
 			} else if (value==null) {
 				writer.write("null");
 			} else {
-				writer.write(value.toString());
+				writer.write(StringEscapeUtils.escapeJson(value.toString()));
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);
