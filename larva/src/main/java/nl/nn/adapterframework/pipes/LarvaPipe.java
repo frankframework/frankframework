@@ -28,10 +28,11 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
@@ -39,19 +40,6 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Call Larva Test Tool
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWaitBeforeCleanup(String) waitBeforeCleanup}</td><td>ms</td><td>100</td></tr>
- * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
- * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
- * </table>
- * </p>
  *
  * @ff.forward success no errors and all tests passed
  * @ff.forward failure errors or failed tests
@@ -69,7 +57,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private @Getter String execute;
 	private @Getter String logLevel=DEFAULT_LOG_LEVEL;
 	private @Getter String waitBeforeCleanup="100";
-	private @Getter int timeout=30000;
+	private @Getter int timeout=2000;
 
 	private PipeForward failureForward;
 
@@ -124,10 +112,12 @@ public class LarvaPipe extends FixedForwardPipe {
 		return new PipeRunResult(forward, out.toString());
 	}
 
+	@Default("false")
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
+	@Default("false")
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
@@ -137,14 +127,23 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.execute = execute;
 	}
 
+	/** the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
+	 * @ff.default wrong pipeline messages
+	 */
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
 
+	/**
+	 * @ff.default 100ms
+	 */
 	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
 
+	 /** the larva timeout
+	 * @ff.default 30000
+	 */
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
