@@ -164,7 +164,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@IbisDocRef({"3", FIXEDQUERYSENDER})
-	public void setUseNamedParams(boolean b) {
+	public void setUseNamedParams(Boolean b) {
 		querySender.setUseNamedParams(b);
 	}
 
