@@ -20,6 +20,7 @@ Upcoming (7.9)
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by setting
   defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
+- Larva default timeout has been decreased to 2s
 
 
 7.8-RC1
