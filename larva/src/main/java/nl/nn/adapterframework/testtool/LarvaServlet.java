@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 @IbisInitializer
 public class LarvaServlet extends HttpServletBase {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
-	private static final String SERVLET_PATH = "/larva/";
+	private static final String SERVLET_PATH = "/iaf/larva/";
 	private final transient Logger log = LogUtil.getLogger(this);
 
 	private enum Assets {
