@@ -310,7 +310,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Key of session variable to store auto detected soapNamespace
-	 * @ff.default If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: DEFAULT_SOAP_NAMESPACE_SESSION_KEY
+	 * @ff.default If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: {@value #DEFAULT_SOAP_NAMESPACE_SESSION_KEY}
 	 */
 	public void setSoapNamespaceSessionKey(String string) {
 		soapNamespaceSessionKey = string;
@@ -318,7 +318,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Key of session variable to store soap header
-	 * @ff.default If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: DEFAULT_SOAP_HEADER_SESSION_KEY
+	 * @ff.default If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: {@value #DEFAULT_SOAP_HEADER_SESSION_KEY}
 	 */
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;

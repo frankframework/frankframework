@@ -188,7 +188,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 
 	/**
-	 * If <code>true</code>, the date/time returned will always be "+FIXEDDATETIME+" (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists
+	 * If <code>true</code>, the date/time returned will always be {@value #FIXEDDATETIME} (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists
 	 * @ff.default false
 	 */
 	public void setReturnFixedDate(boolean b) {

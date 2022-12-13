@@ -542,7 +542,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	/**
-	 * The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward "+IteratingPipe.MAX_ITEMS_REACHED_FORWARD+" can be configured to follow
+	 * The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward {@value #MAX_ITEMS_REACHED_FORWARD} can be configured to follow
 	 * @ff.default 0
 	 */
 	public void setMaxItems(int maxItems) {
@@ -550,7 +550,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	/**
-	 * Expression evaluated on each result and forwards to ["+IteratingPipe.STOP_CONDITION_MET_FORWARD+"] forward if configured.
+	 * Expression evaluated on each result and forwards to [{@value #STOP_CONDITION_MET_FORWARD}] forward if configured.
 	 * Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used.
 	 * This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>.
 	 * Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead

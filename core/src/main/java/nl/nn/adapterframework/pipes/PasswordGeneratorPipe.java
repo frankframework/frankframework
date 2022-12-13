@@ -157,7 +157,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 
 	/**
 	 * the uppercase characters to use
-	 * @ff.default ('a'..'z')
+	 * @ff.default ('A'..'Z')
 	 */
 	public void setUCharacters(String uCharacters) {
 		this.uCharacters = uCharacters;

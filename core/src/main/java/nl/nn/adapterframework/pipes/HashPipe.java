@@ -167,10 +167,7 @@ public class HashPipe extends FixedForwardPipe {
 		this.secret = secret;
 	}
 
-	/**
-	 * 5
-	 * @ff.default authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", "
-	 */
+	/** authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

@@ -370,10 +370,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 
-	/**
-	 * The WSDL to read the XSDs from
-	 * @ff.default  
-	 */
+	/** The WSDL to read the XSDs from */
 	public void setWsdl(String wsdl) {
 		this.wsdl = wsdl;
 	}
@@ -384,18 +381,12 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.setSoapBody(soapBody);
 	}
 
-	/**
-	 * Pairs of URI references which will be added to the WSDL
-	 * @ff.default  
-	 */
+	/** Pairs of URI references which will be added to the WSDL */
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	/**
-	 * Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element
-	 * @ff.default  
-	 */
+	/** Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element */
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}

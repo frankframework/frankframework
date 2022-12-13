@@ -676,7 +676,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists"
+	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
 	 * @ff.default false
 	 */
 	public void setOverwrite(boolean overwrite) {
@@ -746,7 +746,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		setExcludeWildcard(excludeWildcard);
 	}
 	/**
-	 * Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE +ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, "
+	 * Filter of files to be excluded when looking in inputFolder. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
 	 */
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
@@ -757,7 +757,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.removeNonEmptyFolder = removeNonEmptyFolder;
 	}
 
-	/** If set to <code>true</code> then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+" and "+ACTION_APPEND
+	/** If set to <code>true</code> then the system specific line separator will be appended to the file after executing the action. Works with actions {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}
 	 * @ff.default false
 	 */
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
