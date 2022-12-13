@@ -52,7 +52,6 @@
 
 	<modules>
 		<module>appserver</module>
-<!-- 		<module>dbms</module> -->
 	</modules>
 
 </project>
