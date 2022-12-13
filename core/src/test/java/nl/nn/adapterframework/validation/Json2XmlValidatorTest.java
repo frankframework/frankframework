@@ -184,31 +184,31 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	@Ignore // no such thing as unknown namespace, align() determines it from the schema
 	public void step5ValidationUnknownNamespaces() throws Exception {
 	}
-	
+
 	@Test
-	public void issue3973_missingLocalWarning() throws Exception {
-		
+	public void issue3973MissingLocalWarning() throws Exception {
+
 		TestConfiguration c = new TestConfiguration();
-		
+
 		Json2XmlValidator json2xml = c.createBean(Json2XmlValidator.class);
 		json2xml.setDeepSearch(true);
 		json2xml.setNoNamespaceSchemaLocation(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/main.xsd");
 		json2xml.setRoot("GetDocument_Error");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
-		
+
 		json2xml.addParameter(new Parameter("type", "aaa"));
 		json2xml.addParameter(new Parameter("title", "bbb"));
 		json2xml.addParameter(new Parameter("status", "ccc"));
 		json2xml.addParameter(new Parameter("detail", "ddd"));
 		json2xml.addParameter(new Parameter("instance", "eee"));
-		
+
 		json2xml.setThrowException(true);
-		
+
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		
+
 		PipeRunResult prr = json2xml.doPipe(new Message("{}"),pipeLineSession);
 		String expected = TestFileUtils.getTestFile(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/out.json");
 		assertEquals(expected, prr.getResult().asString());
