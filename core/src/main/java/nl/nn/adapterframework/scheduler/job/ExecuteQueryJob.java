@@ -81,7 +81,7 @@ public class ExecuteQueryJob extends JobDef {
 
 	/**
 	 * JNDI name of datasource to be used
-	 * @ff.default ${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}
+	 * @ff.default {@value #JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

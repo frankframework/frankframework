@@ -657,12 +657,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	/** If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter. */
+	/** If parameter [{@value #PARAMETER_ACTION}] is set, then the attribute action value will be overridden with the value of the parameter. */
 	public void setAction(FileSystemAction action) {
 		this.action = action;
 	}
 
-	/** Folder that is scanned for files when action="+ACTION_LIST+". When not set, the root is scanned */
+	/** Folder that is scanned for files when action={@value #ACTION_LIST}. When not set, the root is scanned */
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -676,21 +676,20 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * If set <code>true</code>, for actions "+ACTION_CREATE+
-	 * @ff.default +ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false
+	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists"
+	 * @ff.default false
 	 */
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 
-	/** Filename to operate on. If not set, the parameter "+PARAMETER_FILENAME+" is used. If that is not set either, the input is used */
+	/** Filename to operate on. If not set, the parameter {@value #PARAMETER_FILENAME} is used. If that is not set either, the input is used */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
 	/**
-	 * Destination for "+ACTION_MOVE+
-	 * @ff.default +ACTION_COPY+" or "+ACTION_RENAME+". If not set, the parameter "+PARAMETER_DESTINATION+" is used. If that is not set either, the input is used", "
+	 * Destination for {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}. If not set, the parameter {@value #PARAMETER_DESTINATION} is used. If that is not set either, the input is used
 	 */
 	public void setDestination(String destination) {
 		this.destination = destination;
@@ -698,7 +697,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 
 	/**
-	 * For action="+ACTION_APPEND+": If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides
+	 * For action={@value #ACTION_APPEND}: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides
 	 * @ff.default 0
 	 */
 	public void setRotateDays(int rotateDays) {
@@ -706,7 +705,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * For action="+ACTION_APPEND+": If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides
+	 * For action={@value #ACTION_APPEND}: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides
 	 * @ff.default 0
 	 */
 	public void setRotateSize(int rotateSize) {
@@ -714,7 +713,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * For the actions "+ACTION_WRITE1+" and "+ACTION_APPEND+", with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides
+	 * For the actions {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}, with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides
 	 * @ff.default 0
 	 */
 	public void setNumberOfBackups(int numberOfBackups) {
@@ -722,8 +721,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * For actions "+ACTION_READ1+
-	 * @ff.default +ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded", "
+	 * For actions {@value #ACTION_READ1}, {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}. When set the stream is base64 encoded or decoded
 	 */
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
@@ -736,8 +734,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		setWildcard(wildcard);
 	}
 	/**
-	 * Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions "+ACTION_MOVE+
-	 * @ff.default +ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, "
+	 * Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
 	 */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
@@ -767,12 +764,12 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.writeLineSeparator = writeLineSeparator;
 	}
 
-	/** Charset to be used for "+ACTION_READ1+" and "+ACTION_WRITE1+" action */
+	/** Charset to be used for {@value #ACTION_READ1} and {@value #ACTION_WRITE1} action */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
-	/** If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE */
+	/** If set to true then the folder will be deleted if it is empty after processing the action. Works with actions {@value #ACTION_DELETE}, {@value #ACTION_READ_DELETE} and {@value #ACTION_MOVE} */
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		this.deleteEmptyFolder = deleteEmptyFolder;
 	}
