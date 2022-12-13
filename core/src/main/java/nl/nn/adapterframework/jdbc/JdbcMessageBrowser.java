@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
@@ -469,42 +468,66 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 
-	@IbisDoc({"The name of the column that contains the primary key of the table", "MESSAGEKEY"})
+	/**
+	 * The name of the column that contains the primary key of the table
+	 * @ff.default MESSAGEKEY
+	 */
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
-	@IbisDoc({"The name of the column messageIds are stored in", "MESSAGEID"})
+	/**
+	 * The name of the column messageIds are stored in
+	 * @ff.default MESSAGEID
+	 */
 	public void setIdField(String idField) {
 		this.idField = idField;
 	}
 
-	@IbisDoc({"The name of the column correlation-ids are stored in", "CORRELATIONID"})
+	/**
+	 * The name of the column correlation-ids are stored in
+	 * @ff.default CORRELATIONID
+	 */
 	public void setCorrelationIdField(String string) {
 		correlationIdField = string;
 	}
 
-	@IbisDoc({"The name of the column message themselves are stored in", "MESSAGE"})
+	/**
+	 * The name of the column message themselves are stored in
+	 * @ff.default MESSAGE
+	 */
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;
 	}
 
-	@IbisDoc({"The name of the column the timestamp is stored in", "MESSAGEDATE"})
+	/**
+	 * The name of the column the timestamp is stored in
+	 * @ff.default MESSAGEDATE
+	 */
 	public void setDateField(String string) {
 		dateField = string;
 	}
 
-	@IbisDoc({"The name of the column comments are stored in", "COMMENTS"})
+	/**
+	 * The name of the column comments are stored in
+	 * @ff.default COMMENTS
+	 */
 	public void setCommentField(String string) {
 		commentField = string;
 	}
 
-	@IbisDoc({"The name of the column the timestamp for expiry is stored in", "EXPIRYDATE"})
+	/**
+	 * The name of the column the timestamp for expiry is stored in
+	 * @ff.default EXPIRYDATE
+	 */
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
 	}
 
-	@IbisDoc({"The name of the column labels are stored in", "LABEL"})
+	/**
+	 * The name of the column labels are stored in
+	 * @ff.default LABEL
+	 */
 	public void setLabelField(String string) {
 		labelField = string;
 	}
@@ -520,7 +543,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.hostField = hostField;
 	}
 
-	@IbisDoc({"Prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema"})
+	/** Prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema */
 	public void setPrefix(String string) {
 		prefix = string;
 	}

@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -81,7 +80,7 @@ public class IMSSender extends MQSender {
 	/**
 	 * The transaction code that should be added in the header, must be 8 characters
 	 */
-	@IbisDoc({"transaction code that should be added to the header, must be 8 characters", ""})
+	/** transaction code that should be added to the header, must be 8 characters */
 	public void setTransactionCode(String transactionCode) {
 		this.transactionCode = transactionCode;
 	}

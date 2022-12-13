@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -174,7 +173,10 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-	@IbisDoc({"Time <i>in milliseconds</i> between each poll interval", "3600000"})
+	/**
+	 * Time <i>in milliseconds</i> between each poll interval
+	 * @ff.default 3600000
+	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -182,7 +184,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		return responseTime;
 	}
 
-	@IbisDoc({"remote directory from which files have to be downloaded", ""})
+	/** remote directory from which files have to be downloaded */
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}

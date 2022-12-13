@@ -32,7 +32,6 @@ import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -269,7 +268,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	@Deprecated
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
-	@IbisDoc({"If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
+	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

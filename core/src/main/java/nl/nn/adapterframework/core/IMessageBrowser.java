@@ -17,7 +17,6 @@ package nl.nn.adapterframework.core;
 
 import java.util.Date;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 
 
 /**
@@ -83,11 +82,14 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	public void deleteMessage(String storageKey) throws ListenerException;
 	public int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt;", ""})
+	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
 	public void setHideRegex(String hideRegex);
 	public String getHideRegex();
 
-	@IbisDoc({"(Only used when hideRegex is not empty) Specifies the way to hide", "ALL"})
+	/**
+	 * (Only used when hideRegex is not empty) Specifies the way to hide
+	 * @ff.default ALL
+	 */
 	public void setHideMethod(HideMethod hideMethod);
 	public HideMethod getHideMethod();
 

@@ -69,7 +69,6 @@ import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -357,7 +356,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getShare() {
 		return shareName;
 	}
-	@IbisDoc({"the destination, aka smb://xxx/yyy share", "" })
+	/** the destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		this.shareName = share;
 	}
@@ -365,7 +364,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getPassword() {
 		return password;
 	}
-	@IbisDoc({"the smb share password", "" })
+	/** the smb share password */
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -373,7 +372,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getAuthAlias() {
 		return authAlias;
 	}
-	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
+	/** alias used to obtain credentials for the smb share */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -381,7 +380,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getDomain() {
 		return domain;
 	}
-	@IbisDoc({"domain, in case the user account is bound to a domain", "" })
+	/** domain, in case the user account is bound to a domain */
 	public void setDomain(String domain) {
 		this.domain = domain;
 	}
@@ -390,7 +389,10 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getAuthType() {
 		return authType;
 	}
-	@IbisDoc({"Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
+	/**
+	 * Type of the authentication either 'NTLM' or 'SPNEGO' 
+	 * @ff.default SPNEGO
+	 */
 	public void setAuthType(String authType) {
 		this.authType = authType;
 	}
@@ -398,7 +400,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public String getKdc() {
 		return kdc;
 	}
-	@IbisDoc({"Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
+	/** Kerberos Domain Controller, as set in java.security.krb5.kdc */
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
@@ -406,7 +408,10 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	public boolean isListHiddenFiles() {
 		return listHiddenFiles;
 	}
-	@IbisDoc({"controls whether hidden files are seen or not", "false" })
+	/**
+	 * controls whether hidden files are seen or not
+	 * @ff.default false
+	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}

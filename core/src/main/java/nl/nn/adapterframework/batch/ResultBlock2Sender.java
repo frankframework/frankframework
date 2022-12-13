@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -164,7 +163,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 	}
 
-	@IbisDoc({"Sender to which each block of results is sent"})
+	/** Sender to which each block of results is sent */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

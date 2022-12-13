@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -728,37 +727,52 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		this.mode = mode;
 	}
 
-	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
+	/**
+	 * <b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2
+	 * @ff.default 1
+	 */
 	public void setCmhVersion(int i) {
 		cmhVersion = i;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')", "false"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')
+	 * @ff.default false
+	 */
 	public void setAddOutputNamespace(boolean b) {
 		addOutputNamespace = b;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "true"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>
+	 * @ff.default true
+	 */
 	public void setRetrievePhysicalDestination(boolean b) {
 		retrievePhysicalDestination = b;
 	}
 
-	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "false"})
+	/**
+	 * If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)
+	 * @ff.default false
+	 */
 	public void setUseFixedValues(boolean b) {
 		useFixedValues = b;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "false"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed
+	 * @ff.default false
+	 */
 	public void setFixResultNamespace(boolean b) {
 		fixResultNamespace = b;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as P2P */
 	public void setP2pAlias(String p2pAlias) {
 		this.p2pAlias = p2pAlias;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as ESB */
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
 	}

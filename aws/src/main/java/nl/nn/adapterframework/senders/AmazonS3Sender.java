@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 
@@ -122,82 +121,56 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //		return super.sendMessage(message, session, next);
 //	}
 
-	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })
+	/** access key to access to the AWS resources owned by the account */
 	public void setAccessKey(String accessKey) {
 		getFileSystem().setAccessKey(accessKey);
 	}
 
-	@IbisDoc({ "secret key to access to the AWS resources owned by the account", "" })
+	/** secret key to access to the AWS resources owned by the account */
 	public void setSecretKey(String secretKey) {
 		getFileSystem().setSecretKey(secretKey);
 	}
 
-	@IbisDoc({ "alias used to obtain AWS credentials ", "" })
+	/** alias used to obtain AWS credentials  */
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "setting this flag will result in disabling chunked encoding for all requests.", "false" })
+	/**
+	 * setting this flag will result in disabling chunked encoding for all requests.
+	 * @ff.default false
+	 */
 	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
 		getFileSystem().setChunkedEncodingDisabled(chunkedEncodingDisabled);
 	}
 
-	@IbisDoc({ "set whether the client should be configured with global bucket access enabled.", "false" })
+	/**
+	 * set whether the client should be configured with global bucket access enabled.
+	 * @ff.default false
+	 */
 	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
 		getFileSystem().setForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled);
 	}
 
-	@IbisDoc({ "name of the region that the client will be created from", "eu-west-1" })
+	/**
+	 * name of the region that the client will be created from
+	 * @ff.default eu-west-1
+	 */
 	public void setClientRegion(String clientRegion) {
 		getFileSystem().setClientRegion(clientRegion);
 	}
 
-	@IbisDoc({ "name of the bucket to access", "" })
+	/** name of the bucket to access */
 	public void setBucketName(String bucketName) {
 		getFileSystem().setBucketName(bucketName);
 	}
 
-//	@IbisDoc({ "name of the destination bucket name can be used for copy action", "" }) 
-//	public void setDestinationBucketName(String destinationBucketName) {
-//		getFileSystem().setDestinationBucketName(destinationBucketName);
-//	}
-
-//	@IbisDoc({ "name of the bucket region for create action", "" }) 
-//	public void setBucketRegion(String bucketRegion) {
-//		getFileSystem().setBucketRegion(bucketRegion);
-//	}
-
-//	@IbisDoc({ "name of the storage class for copy action. If storage class is enabled must be specified", "" }) 
-//	public void setStorageClass(String storageClass) {
-//		getFileSystem().setStorageClass(storageClass);
-//	}
-
-//	@IbisDoc({ "name of tier for restore action", "" }) 
-//	public void setTier(String tier) {
-//		getFileSystem().setTier(tier);
-//	}
-
-//	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires. Use <code>-1</code> never expire", "-1" }) 
-//	public void setExpirationInDays(int expirationInDays) {
-//		getFileSystem().setExpirationInDays(expirationInDays);
-//	}
-
-//	@IbisDoc({ "enables storage class for copy action", "false" }) 
-//	public void setStorageClassEnabled(boolean storageClassEnabled) {
-//		getFileSystem().setStorageClassEnabled(storageClassEnabled);
-//	}
-
-//	@IbisDoc({ "enables creating bucket by upload and copy action if the bucket does not exist", "false" }) 
-//	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
-//		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
-//	}
-
-	@IbisDoc({ "setting proxy host", "" })
+	/** setting proxy host */
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
 
-	@IbisDoc({ "setting proxy port", "" })
+	/** setting proxy port */
 	public void setProxyPort(Integer proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}

@@ -32,7 +32,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -227,7 +226,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return recordIdentifyingFields;
 	}
 
-	@IbisDoc({"comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different", ""})
+	/** comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different */
 	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
@@ -260,13 +259,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"Name of the recordhandler", ""})
+	/** Name of the recordhandler */
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
+	/** Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed */
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -275,12 +274,15 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-	@IbisDoc({"Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
+	/** Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed */
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, trailing spaces are removed from each field", "false"})
+	/**
+	 * If set <code>true</code>, trailing spaces are removed from each field
+	 * @ff.default false
+	 */
 	public void setTrim(boolean b) {
 		trim = b;
 	}

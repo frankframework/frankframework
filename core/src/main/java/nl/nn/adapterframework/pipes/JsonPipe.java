@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentUtils;
@@ -137,17 +136,23 @@ public class JsonPipe extends FixedForwardPipe {
 
 
 
-	@IbisDoc({"Direction of the transformation.", "JSON2XML"})
+	/**
+	 * Direction of the transformation.
+	 * @ff.default JSON2XML
+	 */
 	public void setDirection(Direction value) {
 		direction = value;
 	}
 
-	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})
+	/**
+	 * When true, and direction is json2xml, it wraps a root element around the converted message
+	 * @ff.default true
+	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
 	}
 
-	@IbisDoc({"Format the output in easy legible way (currently only for XML)"})
+	/** Format the output in easy legible way (currently only for XML) */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}

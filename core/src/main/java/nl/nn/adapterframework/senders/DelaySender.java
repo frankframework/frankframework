@@ -20,7 +20,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -50,7 +49,10 @@ public class DelaySender extends SenderBase {
 	/**
 	 * the time the thread will be put to sleep.
 	 */
-	@IbisDoc({"the time the thread will be put to sleep", "5000 [ms]"})
+	/**
+	 * the time the thread will be put to sleep
+	 * @ff.default 5000 [ms]
+	 */
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}

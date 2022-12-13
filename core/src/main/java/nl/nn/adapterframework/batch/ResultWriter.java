@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
@@ -150,27 +149,42 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return writer;
 	}
 
-	@IbisDoc({"string that is written before any data of results is written", "&lt;document name=&quot;#name#&quot;&gt;"})
+	/**
+	 * string that is written before any data of results is written
+	 * @ff.default &lt;document name=&quot;#name#&quot;&gt;
+	 */
 	public void setOnOpenDocument(String line) {
 		onOpenDocument = line;
 	}
 
-	@IbisDoc({"string that is written after all data of results is written", "&lt;/document&gt;"})
+	/**
+	 * string that is written after all data of results is written
+	 * @ff.default &lt;/document&gt;
+	 */
 	public void setOnCloseDocument(String line) {
 		onCloseDocument = line;
 	}
 
-	@IbisDoc({"string that is written before the start of each logical block, as defined in the flow", "&lt;#name#&gt;"})
+	/**
+	 * string that is written before the start of each logical block, as defined in the flow
+	 * @ff.default &lt;#name#&gt;
+	 */
 	public void setOnOpenBlock(String line) {
 		onOpenBlock = line;
 	}
 
-	@IbisDoc({"string that is written after the end of each logical block, as defined in the flow", "&lt;/#name#&gt;"})
+	/**
+	 * string that is written after the end of each logical block, as defined in the flow
+	 * @ff.default &lt;/#name#&gt;
+	 */
 	public void setOnCloseBlock(String line) {
 		onCloseBlock = line;
 	}
 
-	@IbisDoc({"string that is replaced by name of block or name of stream in above strings", "#name#"})
+	/**
+	 * string that is replaced by name of block or name of stream in above strings
+	 * @ff.default #name#
+	 */
 	public void setBlockNamePattern(String pattern) {
 		blockNamePattern = pattern;
 	}

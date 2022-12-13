@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
@@ -132,7 +131,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
-	@IbisDoc("The scenario sub directory to execute")
+	/** The scenario sub directory to execute */
 	public void setExecute(String execute) {
 		this.execute = execute;
 	}

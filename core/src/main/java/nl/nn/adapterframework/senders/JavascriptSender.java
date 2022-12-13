@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
@@ -193,17 +192,23 @@ public class JavascriptSender extends SenderSeries {
 		return m.appendTail(sb).toString();
 	}
 
-	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
+	/** the name of the javascript file containing the functions to run */
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
 
-	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
+	/**
+	 * the name of the javascript function that will be called (first)
+	 * @ff.default main
+	 */
 	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
 
-	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
+	/**
+	 * the name of the javascript engine to be used
+	 * @ff.default J2V8
+	 */
 	public void setEngineName(JavaScriptEngines engineName) {
 		this.engine = engineName;
 	}

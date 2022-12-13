@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.nio.file.Path;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
@@ -27,7 +26,7 @@ public class LocalFileSystemSender extends FileSystemSender<Path, LocalFileSyste
 		setFileSystem(new LocalFileSystem());
 	}
 
-	@IbisDoc({"Optional base folder, that serves as root for all other folders", ""})
+	/** Optional base folder, that serves as root for all other folders */
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}

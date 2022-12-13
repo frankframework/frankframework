@@ -41,7 +41,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.senders.IbisJavaSender;
@@ -233,7 +232,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 
-	@IbisDoc({"Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
+	/** Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute. */
 	@Override
 	@Mandatory
 	public void setName(String name) {
@@ -241,7 +240,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 
-	@IbisDoc({"External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
+	/** External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute. */
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
 	}
@@ -257,7 +256,10 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Deprecated
-	@IbisDoc({"If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated", "true"})
+	/**
+	 * If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated
+	 * @ff.default true
+	 */
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
@@ -271,12 +273,18 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		returnedSessionKeys = string;
 	}
 
-	@IbisDoc({"Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
+	/**
+	 * Should the JavaListener throw a ListenerException when it occurs or return an error message
+	 * @ff.default true
+	 */
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
 
-	@IbisDoc({"If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
+	/**
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download 
+	 * @ff.default false
+	 */
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

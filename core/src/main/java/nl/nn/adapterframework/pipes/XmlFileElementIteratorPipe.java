@@ -36,7 +36,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxException;
@@ -223,7 +222,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return handler.stopReason;
 	}
 
-	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})
+	/** the name of the element to iterate over (alternatively: <code>elementchain</code>) */
 	public void setElementName(String string) {
 		elementName = string;
 	}
@@ -232,7 +231,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return elementName;
 	}
 
-	@IbisDoc({"the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
+	/** the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe) */
 	public void setElementChain(String string) {
 		elementChain = string;
 	}

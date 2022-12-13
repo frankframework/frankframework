@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -153,7 +152,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-	@IbisDoc({"The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	/** The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}

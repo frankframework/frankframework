@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * PullingListener extension that checks for available messages to retrieve
@@ -28,7 +27,10 @@ public interface IPeekableListener<M> extends IPullingListener<M> {
 
 	boolean hasRawMessageAvailable() throws ListenerException;
 
-	@IbisDoc({"when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server", "true"})
+	/**
+	 * when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server
+	 * @ff.default true
+	 */
 	public void setPeekUntransacted(boolean b);
 	boolean isPeekUntransacted();
 }

@@ -33,7 +33,6 @@ import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -636,7 +635,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
+	/** PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\" */
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);

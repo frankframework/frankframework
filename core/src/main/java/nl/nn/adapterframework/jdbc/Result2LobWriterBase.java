@@ -32,7 +32,6 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
@@ -119,7 +118,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	}
 
 
-	@IbisDoc({"The SQL query text", ""})
+	/** The SQL query text */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}

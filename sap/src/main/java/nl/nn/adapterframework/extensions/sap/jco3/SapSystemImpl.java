@@ -32,7 +32,6 @@ import com.sap.conn.jco.JCoRepository;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapSystem;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.SapSystemFactory;
@@ -190,13 +189,13 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		}).toString();
 	}
 
-	@IbisDoc({"Default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified)", ""})
+	/** Default value for ashost, gwhost and mshost (i.e. when ashost, gwhost and mshost are all the same, only host needs to be specified) */
 	@Override
 	public void setHost(String host) {
 		this.host = host;
 	}
 
-	@IbisDoc({"SAP application server", ""})
+	/** SAP application server */
 	@Override
 	public void setAshost(String ashost) {
 		this.ashost = ashost;
@@ -209,25 +208,28 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		return ashost;
 	}
 
-	@IbisDoc({"SAP system nr", "00"})
+	/**
+	 * SAP system nr
+	 * @ff.default 00
+	 */
 	@Override
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
 
-	@IbisDoc({"Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost", ""})
+	/** Group of SAP application servers, when specified logon group will be used and r3name and mshost need to be specified instead of ashost */
 	@Override
 	public void setGroup(String group) {
 		this.group = group;
 	}
 
-	@IbisDoc({"System ID of the SAP system", ""})
+	/** System ID of the SAP system */
 	@Override
 	public void setR3name(String r3name) {
 		this.r3name = r3name;
 	}
 
-	@IbisDoc({"SAP message server", ""})
+	/** SAP message server */
 	@Override
 	public void setMshost(String mshost) {
 		this.mshost = mshost;
@@ -247,13 +249,16 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		return String.valueOf(getMsservOffset() + Integer.parseInt(getSystemnr()));
 	}
 
-	@IbisDoc({"Number added to systemNr to find corresponding message server port", "3600"})
+	/**
+	 * Number added to systemNr to find corresponding message server port
+	 * @ff.default 3600
+	 */
 	@Override
 	public void setMsservOffset(int i) {
 		msservOffset = i;
 	}
 
-	@IbisDoc({"Gateway host", ""})
+	/** Gateway host */
 	@Override
 	public void setGwhost(String string) {
 		gwhost = string;
@@ -273,73 +278,97 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		return String.valueOf(getGwservOffset() + Integer.parseInt(getSystemnr()));
 	}
 
-	@IbisDoc({"Number added to systemNr to find corresponding gateway port", "3300"})
+	/**
+	 * Number added to systemNr to find corresponding gateway port
+	 * @ff.default 3300
+	 */
 	@Override
 	public void setGwservOffset(int i) {
 		gwservOffset = i;
 	}
 
-	@IbisDoc({"Mandant i.e. 'destination'", "100"})
+	/**
+	 * Mandant i.e. 'destination'
+	 * @ff.default 100
+	 */
 	@Override
 	public void setMandant(String string) {
 		mandant = string;
 	}
 
-	@IbisDoc({"Alias to obtain userid and password", ""})
+	/** Alias to obtain userid and password */
 	@Override
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"Userid used in the connection", ""})
+	/** Userid used in the connection */
 	@Override
 	public void setUserid(String string) {
 		userid = string;
 	}
 
-	@IbisDoc({"Passwd used in the connection", ""})
+	/** Passwd used in the connection */
 	@Override
 	public void setPasswd(String string) {
 		passwd = string;
 	}
 
-	@IbisDoc({"Language indicator", "NL"})
+	/**
+	 * Language indicator
+	 * @ff.default NL
+	 */
 	@Override
 	public void setLanguage(String string) {
 		language = string;
 	}
 
-	@IbisDoc({"If set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)", "false"})
+	/**
+	 * If set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)
+	 * @ff.default false
+	 */
 	@Override
 	public void setUnicode(boolean b) {
 		unicode = b;
 	}
 
-	@IbisDoc({"Maximum number of connections that may connect simultaneously to the SAP system", "10"})
+	/**
+	 * Maximum number of connections that may connect simultaneously to the SAP system
+	 * @ff.default 10
+	 */
 	@Override
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"Trace level (effective only when logging level is debug). 0=none, 10= maximum", "0"})
+	/**
+	 * Trace level (effective only when logging level is debug). 0=none, 10= maximum
+	 * @ff.default 0
+	 */
 	@Override
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
 
-	@IbisDoc({"Enable or disable SNC", "false"})
+	/**
+	 * Enable or disable SNC
+	 * @ff.default false
+	 */
 	@Override
 	public void setSncEnabled(boolean sncEnabled) {
 		this.sncEnabled = sncEnabled;
 	}
 
-	@IbisDoc({"Path where the SNC library has been installed", ""})
+	/** Path where the SNC library has been installed */
 	@Override
 	public void setSncLibrary(String sncLibPath) {
 		this.sncLibrary = sncLibPath;
 	}
 
-	@IbisDoc({"SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection", "8"})
+	/**
+	 * SNC Quality of Protection. 1: Authentication only, 2: Authentication and integrity protection, 3: Authentication, integrity and privacy protection (encryption), 8: Global default configuration, 9: Maximum protection
+	 * @ff.default 8
+	 */
 	@Override
 	public void setSncQop(int qop) throws ConfigurationException {
 		if(qop < 1 || qop > 9) {
@@ -348,25 +377,31 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		this.sncQop = qop;
 	}
 
-	@IbisDoc({"Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN", ""})
+	/** Own SNC name of the caller. For example: p:CN=MyUserID, O=ACompany, C=EN */
 	@Override
 	public void setMyName(String myName) {
 		this.myName = myName;
 	}
 
-	@IbisDoc({"SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN", ""})
+	/** SNC name of the communication partner server. For example: p:CN=SID, O=ACompany, C=EN */
 	@Override
 	public void setPartnerName(String partnerName) {
 		this.partnerName = partnerName;
 	}
 
-	@IbisDoc({"When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password", "0"})
+	/**
+	 * When using SNC, this specifies if SNC should authenticate via SSO or a username/password combination. 1=SSO, 0=username/password
+	 * @ff.default 0
+	 */
 	@Override
 	public void setSncAuthMethod(String sncAuthMethod) {
 		this.sncAuthMethod = sncAuthMethod;
 	}
 
-	@IbisDoc({"Use SAP Cookie Version 2 as logon ticket for SSO based authentication", "1"})
+	/**
+	 * Use SAP Cookie Version 2 as logon ticket for SSO based authentication
+	 * @ff.default 1
+	 */
 	@Override
 	public void setSncSSO2(String sncSSO2) {
 		this.sncSSO2 = sncSSO2;
