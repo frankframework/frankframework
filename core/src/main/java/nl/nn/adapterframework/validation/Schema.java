@@ -16,11 +16,11 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 
 public interface Schema {
 
-	InputStream getInputStream() throws IOException;
+	Reader getReader() throws IOException;
 
 	String getSystemId();
 

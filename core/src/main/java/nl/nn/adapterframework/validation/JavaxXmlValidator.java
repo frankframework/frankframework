@@ -166,7 +166,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	protected List<Source> getSchemaSources(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
 		List<Source> result = new ArrayList<Source>();
 		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
-			result.add(new StreamSource(schema.getInputStream(), schema.getSystemId()));
+			result.add(new StreamSource(schema.getReader(), schema.getSystemId()));
 		}
 		return result;
 	}

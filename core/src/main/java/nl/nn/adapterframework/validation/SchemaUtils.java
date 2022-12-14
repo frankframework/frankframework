@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,11 +212,11 @@ public class SchemaUtils {
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
-		try (InputStream in = xsd.getInputStream()) {
-			if (in == null) {
+		try (Reader reader = xsd.getReader()) {
+			if (reader == null) {
 				throw new IllegalStateException("" + xsd + " not found");
 			}
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
 				event = er.nextEvent();
 				switch (event.getEventType()) {
@@ -395,8 +395,8 @@ public class SchemaUtils {
 	}
 
 
-	public static InputStream toInputStream(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
-		return new ByteArrayInputStream(toString(wsdlDefinition, wsdlSchema).getBytes(StreamUtil.DEFAULT_CHARSET));
+	public static Reader toReader(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
+		return new StringReader(toString(wsdlDefinition, wsdlSchema));
 	}
 
 	public static String toString(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {

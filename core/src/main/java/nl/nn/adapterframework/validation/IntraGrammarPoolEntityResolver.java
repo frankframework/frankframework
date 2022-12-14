@@ -64,7 +64,7 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 			for(Schema schema:schemas) {
 				if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
 				if (targetNamespace.equals(schema.getSystemId())) {
-					return new XMLInputSource(null, targetNamespace, null, schema.getInputStream(), null);
+					return new XMLInputSource(null, targetNamespace, null, schema.getReader(), null);
 				}
 			}
 			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");

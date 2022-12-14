@@ -1,0 +1,3241 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+//	Generated with AlterGeneratedXMLSchema-v1.0, Parameters: FilterText[false] FilterAnnotation[false] ConvertType[true] SortSequences[annotation] SortEnumerations[false] AddFormat[] AddFieldLengthInfo[false]
+-->
+<xs:schema targetNamespace="http://www.syntel.nl/epp/cliout/statement/producer/message/out" version="01.05.012" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.syntel.nl/epp/cliout/statement/producer/message/out" xmlns:spmo="http://www.syntel.nl/epp/cliout/statement/producer/message/out">
+	<xs:annotation>
+		<xs:documentation>Version history:
+		
+01.05.013 (02-09-2021)
+	- Added defaultCashAccount
+	- Moved mutationCode to own class
+
+01.05.012 (18-02-2021)
+	- Removed Owner and ProductPartyRole
+	- Linked PartryRole to Party
+	- Added PartyRole.id
+	- Added entityId
+
+01.05.011 (17-02-2021)
+	- ManagementFeeLevel made optional
+
+01.05.010 (22-01-2021)
+	- Removed lastExchangeDealingDate
+	- Removed lastExchangeDealingTime
+	- Removed isPartialExecution
+	- Removed countryCodeNetherlands
+	- Removed internetDistributionChannelId
+	- Removed mortgageTypeSavingsBasedMortgage
+	- Removed nostroAccountRelationNumber
+	- Removed savingsAccountType
+
+01.05.009 (26-11-2020)
+	- Removed TransactionCharges
+	- Removed CostComponent
+
+01.05.008 (10-11-2020)
+	- Added attributes amountInSystemCurrency, baseAmountInAccountCurrency, tariffPercentage and tariffAmount  to class CalculatedCost
+
+01.05.007 (29-09-2020)
+	- Added ExternalIdentification and ExternalIdentificationType
+
+01.05.006 (30-08-2018)
+	- Added CalculatedCost
+	- Added CalculationCostsRule
+	- Added CostType
+
+01.05.005 (06-07-2018)
+	- Added Investment profile id
+	- Added Investment strategy id
+	- AddressBase made optional
+	- previousDate made optional
+	- expiryDate made optional
+	- StructuredAddress.location made optional
+	- StructuredAddress.numberSuffix made optional
+	- account description made optional
+	- AddressBase.city moved to StructuredAddress / PostofficeBox
+	- AddressBase.postalCode moved to StructuredAddress / PostofficeBox
+
+
+01.05.004 (23-08-2017)
+	- Added class PlaceOfExecution linked to class Transaction
+	- Added attribute isMultiplePlaceOfExecution to class BourseTransaction
+
+01.05.003 (24-05-2017)
+	- Added CURRENCY_COSTS to ComponentCategory
+
+01.05.002 (15-10-2015)
+	- Added attribute percentageVatTaxable to class ManagementFeeTransaction
+	- Added attribute vatRate to VatCharge (type of TransactionChargeBase)
+
+01.05.001 (07-05-2015)
+	- Gender is extended with enum value UNKNOWN
+01.05.000 (12-02-2015) 
+	- Added totalTransactions in BalanceDetails
+01.04.104 (16-10-2014)
+	- Added class PaymentResponseDetails and class SepaCode, both linked to InterbankPaymentDetails   
+	- Attributes removed from class InterbankPaymentDetails : purpose, recallReason, recallReference, returnReason, returnReference. 
+Purpose becomes association to new class SepaCode
+RecallReference as well as ReturnReference has become PaymentResponseDetails.reference
+RecallReason as well as ReturnReason has become association to new class SepaCode
+
+01.04.102 (28/08/2014)
+	- Added Costs
+	- Added generalization Costs - TransactionChargeBase
+
+01.04.101 (26-08-2014)
+	- Added CostComponent
+	- Added ComponentCategory
+	- Added association CostComponent - ComponentCategory
+	- Added association CostComponent - Currency
+	- Added association TransactionChargeBase - CostComponent
+
+01.04.100 (10-06-2014)
+	- Added mandateReference and acceptgiroReference in class InterbankPaymentDetails
+
+01.04.000 (25-02-2014)
+	- Changed currency attribute from string to association with Currency object for entities: Transaction, ConvertedSubTransaction, InterestScale
+	- Added Basket and BasketInstrument
+	- changed TransactionBase.referenceFundTransaction from (0..1) to (0..*)</xs:documentation>
+	</xs:annotation>
+	<xs:complexType name="account">
+		<xs:sequence>
+			<xs:element name="accountNumber" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Account number
+
+origin table rekeningen -&gt; cell RE_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="accountType" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Account type
+
+origin: origin table rekeningen -&gt; cell RE_SOORT</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the account
+
+origin: origin table rekeningen -&gt; cell RE_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="externalAccountNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>External account number
+
+origin: origin table rekeningen -&gt; cell RE_EXTERN_REKNR</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="iban" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="bank" type="bank" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="addressBase" abstract="true">
+		<xs:sequence>
+			<xs:element name="country" type="country" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="adjustmentTransaction">
+		<xs:annotation>
+			<xs:documentation>Transaction in case of an adjustment</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="assetCategory">
+		<xs:annotation>
+			<xs:documentation>Met Vermogensrubrieken wordt vermogen op basis van instrumenten gecategoriseerd voor bijvoorbeeld rapportages en doorbelasting</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De beschrijving van de Vermogensrubriek</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De identifier van de Vermogensrubriek binnen de Vermogensrubriek groep.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="classificationGroup" type="assetCategoryGroup" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assetCategoryGroup">
+		<xs:annotation>
+			<xs:documentation>Vermogensrubrieken worden via een groep met elkaar verbonden </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De identifier van de Vermogensrubriekgroep.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assignmentTransaction">
+		<xs:complexContent>
+			<xs:extension base="optionExpirationTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="balanceDetails">
+		<xs:annotation>
+			<xs:documentation>specific information for statements about an account</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="currentBalance" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>current balance
+
+origin: 
+if no BalanceMutations in message then same as previousBalance
+else
+table POSITIEMUTATIES_GELD -&gt; cell pmg_saldo_boekdatum 
+where account = CashAccount
+and MAX(pmg_boekdatum) from BalanceMutations in message
+and MAX(pmg_transactienr) from BalanceMutations on MAX(pmg_boekdatum)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="currentDate" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>current date
+
+origin:
+equals to Header.dateGenerated</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="previousBalance" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>balance on previous statement
+
+origin: 
+if exists from StatementHistory with account = CashAccount:
+table POSITIEMUTATIES_GELD -&gt; cell pmg_saldo_boekdatum 
+where account = CashAccount
+and pmg_transactienr = TransactionNumber from StatementHistory with MAX(dateGenerated) and account = CashAccount
+
+if NOT exists from StatementHistory with account = CashAccount:
+value = 0 (new account)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="previousDate" type="xs:date" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date of previous statement
+
+origin: 
+dateGenerated from StatementHistory 
+where MAX(dateGenerated) and account = CashAccount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="totalCreditTransactions" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>total amount of all credit transactions
+
+origin: 
+calculated amount of all credit transactions within daily statement based on de BalanceMutations</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="totalDebitTransactions" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>total amount of all debit transactions
+
+origin: 
+calculated amount of all debit transactions within daily statement based on de BalanceMutations</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="totalTransactions" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Total amount of all transactions:
+totalCreditTransactions -/- totalDebitTransactions</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="balanceMutation">
+		<xs:sequence>
+			<xs:element name="amount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>mutation amount
+
+origin: 
+table POSITIEMUTATIES_GELD -&gt; cell PMG_MUTATIE_AANTAL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="bookDate" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the book date of the balance mutation
+
+origin:
+POSITIEMUTATIES_GELD.PMG_BOEKDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="isCredit" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>returns true if the mutation is credit
+
+debitCredit = c</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="isDebit" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>returns true if the mutation is debit
+
+debitCredit = d</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="valueDate" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the value date of the balance mutation
+
+origin:
+POSITIEMUTATIES_GELD.PMG_VALUTADATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="cashAccount" type="cashAccount" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="debitCredit" type="debitCredit" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bank">
+		<xs:sequence>
+			<xs:element name="bic" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Bank Identification Code</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="baseInterestRate">
+		<xs:annotation>
+			<xs:documentation>base interest rate</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="baseRate" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>base interest rate
+
+origin: table RENTEBASISPERCENTAGE -&gt; cell RBP_BASIS</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dateFrom" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Date from
+
+origin:  table RENTEBASISPERCENTAGE -&gt; cell RBP_BASISPERCENTAGE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dateTill" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Date till
+
+
+Next date till when available, else base interest rate holds till 31/12/9999.
+
+origin:  table RENTEBASISPERCENTAGE -&gt; cell RBP_BASISPERCENTAGE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description
+
+origin: table RENTEBASISPERCENTAGE -&gt; cell RBP_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier
+
+origin:
+table RENTEBASISPERCENTAGE -&gt; cell RBP_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="interestRateSurcharge" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Sur charge on the base interest rate
+
+origin: table RENTEBASISPERCENTAGE -&gt; cell RBP_OPSLAG</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="basket">
+		<xs:complexContent>
+			<xs:extension base="instrumentBase">
+				<xs:sequence>
+					<xs:element name="basketInstruments" type="basketInstrument" minOccurs="1" maxOccurs="unbounded"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="basketInstrument">
+		<xs:sequence>
+			<xs:element name="basketFactor" type="xs:decimal" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="instrument" type="instrumentBase" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bond">
+		<xs:complexContent>
+			<xs:extension base="security">
+				<xs:sequence>
+					<xs:element name="couponExpiration" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>date coupon expires
+
+origin: table Beleggingsinstrument -&gt; cell BE_COUPON_VERVALDAT</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="hasFloatingRate" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>States if the percentage is based on a floating rather than fixed interest rate
+
+origin:
+true if beleggingsinstrument.be_floating_rate = 1, otherwise false</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interestRate" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest rate of the fund
+
+origin:
+table BELEGGINGSINSTRUMENT -&gt; cell 
+BE_RENTEPERC</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isDirtyPricing" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>is the fund priced with method dirty pricing?
+
+true when:  table BELEGGINGSINSTRUMENT -&gt; cell BE_DIRTYPRICING = 1</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="bondSubTransaction">
+		<xs:sequence>
+			<xs:element name="interest" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>interest in transaction currency
+
+origin: 
+TRANSAKTIES -&gt; cell TR_RENTE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="interestDays" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>interest days
+
+origin: table TRANSAKTIES -&gt; cell TR_RENTEDAGEN</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="interestInAccountCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>interest in account currency
+
+origin: calculated , based on table TRANSAKTIES -&gt; cell TR_RENTE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bourseTransaction" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract base class for all buy and sell transactions on the bourse for any instrument</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="dealingDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>(transaction) dealing date
+
+origin: 
+
+when transaction has a relation with an order and timezone of the exchange is set (timezone &lt;&gt; ' '), dealingDate is in UTC
+else dealingDate is in CET (local time)
+
+table TRANSAKTIES -&gt; cell TR_DEALINGDATUM</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="dealingTime" type="xs:time" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>transaction dealing time
+
+
+when transaction has a relation with an order and timezone of the exchange is set (timezone &lt;&gt; ' '), dealingDate is in UTC
+else dealingTime is in CET (local time)
+
+The time offset (Z or +01/+02 for CET) is included in the value.
+
+origin: 
+table TRANSAKTIES -&gt; cell TR_DEALINGTIJD</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeDealingDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>dealing date at the exchange in timezone of the exchange
+
+when transaction has a relation with an order and timezone of the exchange is set (timezone &gt; 1), dealingDate is in UTC
+else dealingDate is in CET (local time)
+
+origin: 
+based on entities dealingTime and dealingDate and timezone of exhange</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeDealingTime" type="xs:time" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the exchange dealing time in timezone of the exchange
+
+when transaction has a relation with an order and timezone of the exchange is set (timezone &gt; 1), dealingTime is in UTC
+else dealingTime is in CET (local time)
+
+origin: 
+based on entities dealingTime and dealingDate and timezone of exhange</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isMultiplePlaceOfExecution" type="xs:boolean" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>determines if the transaction is executed on multiple places of execution.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isPartialExecution" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>determine if the transaction is a partial execution of an order.
+
+origin:
+
+check is based on table TRANSAKTIES -&gt; cell TR_ORDERNR_ORD_SUBR and TR_REL1 
+true if ORD(H)_(H)UITVSTATUS in (1, 2)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isReinvestment" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>is the transaction a reinvestment?
+
+true when entity transaction -&gt; attribute originCode = HBCD</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchange" type="exchange" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="order" type="order" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="calculatedCost">
+		<xs:sequence>
+			<xs:element name="amountInAccountCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Amount of the cost in account currency.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountInSystemCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Amount of the cost in system currency.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="baseAmountInAccountCurrency" type="xs:decimal" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Amount of the base in account currency.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="tariffAmount" type="xs:decimal" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Tariff amount used for calculation.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="tariffPercentage" type="xs:decimal" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Tariff percentage used for calculation.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="costType" type="costType" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="rule" type="calculationCostsRule" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculatedManagementFee">
+		<xs:sequence>
+			<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>last date of charge period
+
+origin: table doorbelberekend -&gt; cell db_datum_doorbel
+technically this tabel does not exist, but the date is the group identifier</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fixedAmount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Fixed amount
+
+origin: table doorbelberekend -&gt; cell db_doorbel_vast
+where db_servicefeecategorie = 0</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fixedAmountInclusiveVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Vast bedrag inclusief BTW
+
+fixedAmount + fixedAmountVAT</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fixedAmountVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>BTW berekend over het vaste bedrag</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="detail" type="managementFeeDetail" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationCostsRule">
+		<xs:annotation>
+			<xs:documentation>A specific implementation of a calculationmethod</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Description of the calculated cost rule.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification of the calculated cost rule.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="cashAccount">
+		<xs:complexContent>
+			<xs:extension base="account">
+				<xs:sequence>
+					<xs:element name="CashAccountInterestSetting" type="cashAccountInterestSetting" minOccurs="0" maxOccurs="unbounded"></xs:element>
+					<xs:element name="currency" type="currency" minOccurs="1" maxOccurs="1"></xs:element>
+					<xs:element name="interestCalculationFrequency" type="frequency" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="cashAccountInterestSetting">
+		<xs:annotation>
+			<xs:documentation>settings for according interest rates for an account</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dateFrom" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date from when interest setting is effective
+
+origin: table REKENING_RENTECONDITIE -&gt; cell rr_begindatum</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dateTill" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date till interest setting is effective
+
+origin: table REKENING_RENTECONDITIE -&gt; cell rr_einddatum</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="premium" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>(extra) premium interest
+
+origin: table REKENING_RENTECONDITIE-&gt; cell RR_RENTETOESLAG</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="interestAgreement" type="interestAgreement" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="interestScale" type="interestScale" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="cashDividend">
+		<xs:complexContent>
+			<xs:extension base="entitlement"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="certificateType">
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>stuksoorten.stks_omschrijving</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>STUKSOORTEN.STKS_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="channelType">
+		<xs:annotation>
+			<xs:documentation>Geeft aan welke types van distributie worden ondersteund</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="EMAIL">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bericht wordt ge-emailed naar de klant</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SMS">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bericht wordt ge-sms-ed naar de klant</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="PRINT">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bericht wordt naar een printstraat gestuurd</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="FAX">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bestand wordt naar een fax gestuurd</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="DATABASE">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bericht wordt in een database opgeslagen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="FILE">
+				<xs:annotation>
+					<xs:documentation>Het geconverteerde bericht wordt als bestand opgeslagen</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="PAPERLESS"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="clientGroup">
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>client group number
+
+origin:
+
+table CLIENTGROEPEN -&gt; cell  CG_CODE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="combinationOrderKind">
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the combination order kind
+
+origin:
+table tabelgegevens -&gt; cell tb_nummer_oms
+where cell tb_soort = 'ORTC'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier of the combination order kind
+
+origin:
+table tabelgegevens -&gt; cell tb_nummer
+where cell tb_soort = 'ORTC'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="commercialText">
+		<xs:annotation>
+			<xs:documentation>Commercial text to be included on the daily statement
+
+Inclusion of one or more commercial texts is defined in the activity diagram 'Aanmaken dagafschriften'</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="priority" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>priority of commercial text
+
+origin: entity CommercialTextCondition -&gt; attribute priority</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="textLine" type="xs:string" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Commercial textline 1
+
+origin: entity CommercialTextTranslation or CommercialText -&gt; attribute textLine1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="commodity" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="instrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="contract">
+		<xs:annotation>
+			<xs:documentation>Contract between bank and relation
+
+Currently virtual and equals to Product as it is not yet implemented in EuroPort+.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="contractNumber" type="xs:string" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="product" type="product" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="convertableBond">
+		<xs:complexContent>
+			<xs:extension base="bond"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="convertedSubTransaction">
+		<xs:annotation>
+			<xs:documentation>Contains the extra fields of funds to be converted within transactions</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="amount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>amount to be paid/receive for the converted fund in the transaction currency
+
+origin: 
+result = attribute SecuritySubTransaction.quantity * attribute priceToBeSettled;
+
+IF TransactionType.symbol in (OMWL, OMWS):
+
+WHEN association of SecuritySubTransaction is fundTransaction and transaction is type Reversal THEN
+	result = -1 * result;
+
+WHEN association of SecuritySubTransaction is referenceFundTransaction and NOT transaction is type Reversal THEN
+	result = -1 * result;
+	
+END IF;
+
+IF Transaction.originCode in (PCNL, PCND):
+
+WHEN table TRANSAKTIES -&gt; cell tr_aantal &lt; 0 THEN
+	result = -1 * result;
+
+END IF;</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountInAccountCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the converted amount in account currency
+
+origin:
+amount * exchangeRateTransactionAndAccount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="priceToBeSettled" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the price for the converted fund
+
+origin: 
+
+if TransactionType.symbol in (OMWL, OMWS) &amp; association of SecuritySubTransaction is referenceFundTransaction:
+table TRANSAKTIES -&gt; cell tr_verrekenbedrag_nieuw_fonds
+
+if TransactionType.symbol in (OMWL, OMWS) &amp; association of SecuritySubTransaction is fundTransaction:
+table TRANSAKTIES -&gt; cell tr_verrekenbedrag_oud_fonds
+
+if Transaction.originCode = `PCND¿:
+table TRANSAKTIES -&gt; cell tr_verrekenbedrag_nieuw_fonds
+
+if Transaction.originCode = `PCNL¿:
+table TRANSAKTIES -&gt; cell tr_verrekenbedrag_oud_fonds</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="currency" type="currency" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="convertSecurityTransaction">
+		<xs:annotation>
+			<xs:documentation>Convert security into another security</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="exchangeRatio" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>exchange ratio of the conversion
+
+origin:
+attribute exchangeRatioReceive / attribute exchangeRationHandIn</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeRatioHandIn" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>part of exchangeRatio of securities to hand in
+
+origin: table TRANSAKTIES -&gt; cell tr_aantal_in_te_leveren </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeRatioReceive" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>part of exchangeRatio of securities to receive
+
+origin: table TRANSAKTIES -&gt; cell tr_aantal_te_ontvangen</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="costType">
+		<xs:annotation>
+			<xs:documentation>Cost type of the calculated cost This indicates where the costs involves taxes, commission, direct costs or indirect costs</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TAX"></xs:enumeration>
+			<xs:enumeration value="COMMISSION"></xs:enumeration>
+			<xs:enumeration value="COSTS"></xs:enumeration>
+			<xs:enumeration value="INDIRECT"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="country">
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the country's identifier
+
+origin:
+LANDEN.LAND_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="isoCode" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the country's ISO code
+
+origin:
+LANDEN.LAND_ISO_CODE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the country's name
+
+origin:
+LANDEN.LAND_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="coupon">
+		<xs:complexContent>
+			<xs:extension base="entitlement"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="couponPaymentTransaction">
+		<xs:annotation>
+			<xs:documentation>Payment for coupons</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="securitiesPaymentTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="currency">
+		<xs:annotation>
+			<xs:documentation>Een valuta, ofwel muntsoort</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De identificatie van de valuta, bijv. EUR, USD</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="currencyInstrument">
+		<xs:complexContent>
+			<xs:extension base="technicalInstrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="currencyOption">
+		<xs:complexContent>
+			<xs:extension base="option"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="custodyFeeTransaction">
+		<xs:complexContent>
+			<xs:extension base="feeTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="dailyStatementReport" type="dailyStatementReport"/>
+	<xs:complexType name="dailyStatementReport">
+		<xs:sequence>
+			<xs:element name="commercialText" type="commercialText" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:element name="header" type="header" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="letterHead" type="letterHead" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="relation" type="relation" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="staticData" type="staticData" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="targetSystemProperties" type="targetSystemProperties" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="transactionGroup" type="transactionGroup" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:element name="warningText" type="warningText" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="debitCredit">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="DEBIT"></xs:enumeration>
+			<xs:enumeration value="CREDIT"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="defaultTransactionGroup">
+		<xs:annotation>
+			<xs:documentation>default transaction group</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transactionGroup"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="depositSecuritiesTransaction">
+		<xs:annotation>
+			<xs:documentation>Deposit    securities transaction</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="derivative" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="instrument">
+				<xs:sequence>
+					<xs:element name="excercisePrice" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Excercise price
+
+origin: table BELEGGINGSINSTRUMENT -&gt; cell BE_EXERCISEPRIJS</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="expiryDate" type="xs:date" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>belegginginstrument.be_expiratiedatum</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="factorExcerciseAssignment" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Excercise / Assignment factor
+
+origin: table BELEGGINGSINSTRUMENT -&gt; cell BE_EXASS_FACTOR</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="underlyingInstrument" type="instrumentBase" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="derivativeBuyTransaction">
+		<xs:annotation>
+			<xs:documentation>Buy transaction for an option or a future</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="derivativeTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="derivativeSellTransaction">
+		<xs:annotation>
+			<xs:documentation>Sell transaction for an option or a future</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="derivativeTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="derivativeTransaction" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract base class for all derivative buy and sell transactions</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="bourseTransaction">
+				<xs:sequence>
+					<xs:element name="isClosing" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>True if the transaction is a closing buy or sell, false if the transaction is an opening buy or sell.
+
+Origin:
+TR_INDICATIE in (OK, OV, OK F, OV F)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isFuture" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>True if the instrument of the transaction is a future, false if the instrument is an option.
+
+Origin:
+TR_INDICATIE in (OK F, OV F, SK F, SV F)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="distributionChannel">
+		<xs:annotation>
+			<xs:documentation>Distribution channel
+
+Let op! Vertaling wordt nu direct in de klasse gestopt ipv de standaard waarde.
+
+origin:
+where tabelgeg_vertaald.tbv_nummer = DistributionChannel.id
+AND tabelgeg_vertaald.tbv_soort = 'DIKA'
+AND tabelgeg_vertaald.tbv_taalcode = '1' (Dutch)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description
+
+origin: 
+
+table TABELGEGEVENS_VERTAALD -&gt; cell tbv_nummer_oms
+where t.tbv_soort = 'DIKA'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier
+
+origin: 
+
+table TABELGEGEVENS_VERTAALD -&gt; cell tbv_nummer
+where t.tbv_soort = 'DIKA'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="dividendPaymentTransaction">
+		<xs:annotation>
+			<xs:documentation>Payment transction</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="securitiesPaymentTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="emailAddress">
+		<xs:sequence>
+			<xs:element name="address" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Het daadwerkelijke email adres.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="entitlement" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Afgeleid recht</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="portfolioInstrument">
+				<xs:sequence>
+					<xs:element name="referenceInstrument" type="instrument" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="excerciseTransaction">
+		<xs:complexContent>
+			<xs:extension base="optionExpirationTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="exchange">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>name of the exchange
+
+origin: table BEURZEN -&gt; cell BRS_NAAM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="timeZone" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>time zone of stock exchange based on UTC
+
+example AEX has got time zone UTC +1
+
+origin: table BEURZEN -&gt; cell brs_tijdzone_utc</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="externalIdentification">
+		<xs:annotation>
+			<xs:documentation>De identificatie van de partij zoals deze in een extern systeem van de klant is vastgelegd. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="externalId" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="type" type="externalIdentificationType" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="externalIdentificationType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="EXTERNAL_1"></xs:enumeration>
+			<xs:enumeration value="EXTERNAL_2"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="feeTransaction" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="fromDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>start date of the custody fee
+
+origin: table TRANS_OMSCHRIJVING -&gt; cell TO_OMSCHRIJVING2 (to date, format DD/MM/YYYY)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="tillDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>end date of the custody fee
+
+origin:
+table TRANS_OMSCHRIJVING -&gt; cell TO_OMSCHRIJVING3 (to date, format DD/MM/YYYY)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="forwardExchangeContract">
+		<xs:complexContent>
+			<xs:extension base="instrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="frequency">
+		<xs:annotation>
+			<xs:documentation>Period</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="DAILY">
+				<xs:annotation>
+					<xs:documentation>one day</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="WEEKLY"></xs:enumeration>
+			<xs:enumeration value="BIWEEKLY"></xs:enumeration>
+			<xs:enumeration value="MONTHLY">
+				<xs:annotation>
+					<xs:documentation>month</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="QUARTERLY">
+				<xs:annotation>
+					<xs:documentation>quarter</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="HALFYEARLY"></xs:enumeration>
+			<xs:enumeration value="YEARLY">
+				<xs:annotation>
+					<xs:documentation>year</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="fundDescription">
+		<xs:annotation>
+			<xs:documentation>Description of the fund</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the fund in the corresponding language 
+
+origin: 
+
+table Beleggingsinstrument-&gt; cell BE_OMS1 (voor Nederlands) OF
+table Beleggingsinstrument-&gt; cell BE_OMS2 (voor Engels)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="language" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>language</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="future">
+		<xs:complexContent>
+			<xs:extension base="derivative"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="futureOW">
+		<xs:complexContent>
+			<xs:extension base="technicalInstrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="gender">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="MALE">
+				<xs:annotation>
+					<xs:documentation>The male gender</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="FEMALE">
+				<xs:annotation>
+					<xs:documentation>The female gender</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="UNKNOWN">
+				<xs:annotation>
+					<xs:documentation>Gender is unknown</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="header">
+		<xs:annotation>
+			<xs:documentation>The header information of the daily statement</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dateGenerated" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>System date when XML is generated
+
+origin: system date</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="statementNumber" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Statementnumber
+
+Generated. See activity diagram 'Aanmaken dagafschriften'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="balanceDetails" type="balanceDetails" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="indexOption">
+		<xs:complexContent>
+			<xs:extension base="option"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="indexTracker">
+		<xs:complexContent>
+			<xs:extension base="technicalInstrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="instrument" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="portfolioInstrument">
+				<xs:sequence>
+					<xs:element name="exchange" type="exchange" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="instrumentBase" abstract="true">
+		<xs:sequence>
+			<xs:element name="priceFactor" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>price factor of the fund
+
+origin:
+
+table BELEGGINGSINSTRUMENT -&gt; cell BE_PRIJS_FACTOR</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="provisionDescription" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>translated description of the provision for the fund
+
+origin: 
+
+based on table Beleggingsinstrument -&gt; cell BE_PR_NUMMER
+
+Get translations
+
+where in table Tabelgegevens -&gt; cell TB_SOORT = 'PRFD' and table Beleggingsinstrument -&gt; cell BE_PR_NUMMER = table tabelgegevens -&gt; cell TB_NUMMER and table tabelgegevens -&gt; cell TB_WAARDE is the language code. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="symbol" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>symbol
+
+origin: table BELEGGINGSINSTRUMENT -&gt; cell BE_SYMBOOL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="currency" type="currency" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="description" type="fundDescription" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:element name="externalIdentifier" type="instrumentExternalIdentifier" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="instrumentExternalIdentifier">
+		<xs:annotation>
+			<xs:documentation>KOERSKODES</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the external identifier of the instrument for the specified instrument rate supplier
+
+origin:
+table KOERSCODES -&gt; cell KC_CODE_ALFA </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="supplier" type="instrumentRateSupplier" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="instrumentRateSupplier">
+		<xs:annotation>
+			<xs:documentation>Supplier of rates for instruments</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the identifier of the instrument rate supplier
+
+origin:
+TABELGEGEVENS.TB_NUMMER
+where TB_SOORT = 'KOLE'
+table KOERSCODES -&gt; cell KC_CODE_ALFA 
+ISIN =&gt; where kc_leverancier = tabelgegevens[SYST 1171].tb_waarde</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the name of the instrument rate supplier
+
+origin:
+TABELGEGEVENS.TB_NUMMER_OMS
+where TB_SOORT = 'KOLE'</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interbankPaymentDetails">
+		<xs:sequence>
+			<xs:element name="acceptgiroReference" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="counterAccountAddress" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="counterAccountBicCode" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="counterAccountIban" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="counterAccountId" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="counterAccountName" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="mandateReference" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="paymentCharacteristic" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>EtE-Reference: het end to end kenmerk van de betaling. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="retainedFee" type="xs:string" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="paymentResponseDetails" type="paymentResponseDetails" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="purpose" type="sepaCode" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interestAgreement">
+		<xs:annotation>
+			<xs:documentation>Interest agreement</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dateFrom" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date from where agreement exists
+
+origin: table RENTE_AFSPRAKEN -&gt; cell RT_INGANGSDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dateTill" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date till agreement exists
+
+next date, if available, from table RENTE_AFSPRAKEN -&gt; cell RT_INGANGSDATUM
+else data till holds till 31/12/9999</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the interest agreement
+
+origin: table RENTE_AFSPRAKEN -&gt; cell rt_omschrijving</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier
+
+origin:  table RENTE_AFSPRAKEN -&gt; cell RT_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="creditBaseInterestRate" type="baseInterestRate" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="debetBaseInterestRate" type="baseInterestRate" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interestLevel">
+		<xs:annotation>
+			<xs:documentation>Interest level</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="amountFrom" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>amount from
+
+origin: table RENTESCHALEN_DETAIL, cell SD_BEDRAG_VANAF</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountTill" type="xs:decimal" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>amount till
+
+origin: 'previous' entry table RENTESCHALEN_DETAIL, cell SD_BEDRAG_VANAF</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="margin" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>margin
+
+origin: table RENTESCHALEN_DETAIL -&gt; cell RD_RENTEMARGE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="baseInterestRate" type="baseInterestRate" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="debitCredit" type="debitCredit" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interestScale">
+		<xs:annotation>
+			<xs:documentation>Interest scale</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="dateFrom" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date from
+
+origin:
+table RENTESCHALEN_HEADER -&gt; cell  SH_INGANGSDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dateTill" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>date till
+
+Next date when available, else interest scale holds till 31/12/9999.
+
+origin:
+table RENTESCHALEN_HEADER -&gt; cell  SH_INGANGSDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description
+
+origin: RENTESCHALEN_HEADER, cell SH_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier
+
+origin:
+table RENTESCHALEN_HEADER-&gt; cell SH_CODE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="currency" type="currency" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="interestLevel" type="interestLevel" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interestTransaction">
+		<xs:annotation>
+			<xs:documentation>Interest transaction represents the booked interest of a completed interest period</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="fromDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest date from
+
+origin: 
+table TRANS_OMSCHRIJVING -&gt; cell TO_OMSCHRIJVING3 (to date, format DD/MM/YYYY)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interestDays" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest days
+
+origin: table TRANSAKTIES -&gt; cell TR_RENTEDAGEN</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="tillDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest date till
+
+origin: 
+table TRANS_OMSCHRIJVING -&gt; cell TO_OMSCHRIJVING4 (to date, format DD/MM/YYYY)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="cashAccountInterestSetting" type="cashAccountInterestSetting" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="investmentMethod">
+		<xs:annotation>
+			<xs:documentation>Investment method</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description
+
+origin: table BGS_METHODE -&gt; cell BME_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="investmentProfile">
+		<xs:annotation>
+			<xs:documentation>Profile of the model portfolio</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>id of the investement profile
+
+origin:
+table HEADER_PROFIEL -&gt; cell HPR_NUMMERl
+where table ON_LINE_DOSSIER -&gt; cell ONLD_ID_NUMMER = HEADER_PROFIEL -&gt; cell HPR_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the investment profile
+
+origin:
+table HEADER_PROFIEL -&gt; cell HPR_OMSCHRIJVING
+where table ON_LINE_DOSSIER -&gt; cell ONLD_ID_NUMMER = HEADER_PROFIEL -&gt; cell HPR_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="investorGiroSystemInstruction">
+		<xs:annotation>
+			<xs:documentation>Investment instruction</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the id of the investor giro system instruction
+
+origin:
+(HIST_)BELEGGINGSOPDRACHT_HEADER -&gt; (h)boh_opdrachtnummer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="instructionType" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>instruction type
+
+origin: table (HIST_)BELEGGINGSOPDRACHT_HEADER -&gt; cell (H)BOH_OPDRACHTTYPE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="isAutomaticGenerated" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>states if the instruction is automatically generated from a periodic instruction
+
+origin:
+(HIST_)BELEGGINGSOPDRACHT_HEADER.(H)BOH_PER_BEL_OPDRACHT_NUMMER &lt;&gt; 0</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="origin" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>origin code
+
+origin: table (HIST_)BELEGGINGSOPDRACHT_HEADER -&gt; cell (H)BOH_HERKOMST</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="investmentMethod" type="investmentMethod" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="standingOrder" type="standingOrder" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="investorGiroSystemRevisionProposal">
+		<xs:annotation>
+			<xs:documentation>Revision proposal based on the investor giro system</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="systemInstruction" type="investorGiroSystemInstruction" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="investorGiroSystemTransactionGroup">
+		<xs:annotation>
+			<xs:documentation>investor giro system information meant for a daily statement</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transactionGroup">
+				<xs:sequence>
+					<xs:element name="buyLinesNoReversal" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>number of buy lines without reversals within the transaction group
+
+origin: count of entity Transactions with attribute isReversal = false and transaction indication = K</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="buyLinesOnlyReversal" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>number of buy lines, only reversals, within the transaction group
+
+origin: count of entity Transactions with attribute isReversal = true and transaction indication = K</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="lastTransactionDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>last transaction date
+
+origin: last transaction date within transaction group</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="lastValueDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>last value date  of the investor giro system transaction group
+
+origin: last value date of the transactions within the entity TransactionGroup</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="sellLinesNoReversal" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>number of sell lines without reversals within the transaction group
+
+origin: count of entity Transactions with attribute isReversal = false and transaction indication = V</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="sellLinesOnlyReversal" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>number of sell lines, only reversals, within the transaction group
+
+origin: count of entity Transactions with attribute isReversal = true and transaction indication = V</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="totalProvisionNoReversal" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>calculated amount of provision (no reversals)
+
+origin: sum of provision (entity TransactionCommission, attribute provisionInAccountCurrency) without reversals within entity Transaction Group for transactions
+onlye where entity Transaction, attribute isReversal = false </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="totalProvisionOnlyReversal" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>calculated amount of provision only for reversals
+
+origin: sum of provision (entity TransactionCommission, attribute provisionInAccountCurrency) only for reversals within entity Transaction Group 
+only for transactions where entity Transaction, attribute isReversal = true</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="revisionProposal" type="investorGiroSystemRevisionProposal" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="issueTransaction">
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="offering" type="offering" minOccurs="1" maxOccurs="1"></xs:element>
+					<xs:element name="subscription" type="suborder" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="language">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="nl_NL"></xs:enumeration>
+			<xs:enumeration value="en_GB"></xs:enumeration>
+			<xs:enumeration value="en_US"></xs:enumeration>
+			<xs:enumeration value="de_DE"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="legalEntity">
+		<xs:annotation>
+			<xs:documentation>Bevat de gegevens van een rechtspersoon, ofwel bedrijf</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="party">
+				<xs:sequence>
+					<xs:element name="chamberOfCommerceId" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Het nummer van de kamer van koophandel van de rechtspersoon.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>De naam van de rechtspersoon.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="letterHead">
+		<xs:annotation>
+			<xs:documentation>Letter head of the daily statement</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="channelType" type="channelType" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="party" type="party" minOccurs="1" maxOccurs="unbounded"></xs:element>
+			<xs:element name="preferredLanguage" type="language" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="liquidateTurboSprinterTransaction">
+		<xs:annotation>
+			<xs:documentation>Transaction for MINI Short Certificates
+
+In Dutch: afwikkelen sprinters en turbo's</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="instrument" type="instrumentBase" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="managementFeeAgreement">
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier
+
+origin: table DOORBELHEADER -&gt; cell DH_DOORBEL_TABELNR</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the management fee agreement
+
+origin: table DOORBELHEADER -&gt; cell DH_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="type" type="managementFeeType" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="managementFeeDetail">
+		<xs:sequence>
+			<xs:element name="amount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Bedrag zonder BTW</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountInclusiveVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Bedrag inclusief BTW
+
+amount + amountVAT</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>BTW bedrag</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="baseValue" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>base value for management fee
+
+origin: table doorbelberekend -&gt; cell db_basis_waarde</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="classification" type="assetCategory" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="level" type="managementFeeLevel" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="managementFeeLevel">
+		<xs:annotation>
+			<xs:documentation>Level for management fee</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="amountFrom" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>amount from</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="amountTill" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>amount till
+
+origin: table doorbelregels -&gt; dr_t_m_bedrag_basis</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fixedAmount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>fixed amount
+
+origin: table doorbelregels -&gt; dr_vast_bedrag</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="percentage" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>percentage 
+
+origin: table doorbelregels -&gt; dr_percentage</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="percentageInclusiveVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>percentage Inclusive VAT
+
+table doorbelregels -&gt; dr_percentage * 
+(1 + (table btw_tabel -&gt; btw_percentage_hoog / 100 *
+(1 - table doorbelheader -&gt; dh_perc_btwvrij / 100)))</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="managementFeeTransaction">
+		<xs:annotation>
+			<xs:documentation>Service fee payment
+
+See attached document for detailed calculation</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="feeTransaction">
+				<xs:sequence>
+					<xs:element name="amountExemptFromVAT" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>amount exempt from VAT in account currency
+
+origin: 
+table DOORBELHEADER -&gt; cell DH_PERS_BTWVRIJ
+
+calculate (entity balanceMutation -&gt; amount - VatCharge.amountInAccountCurrency) * cell DH_PERS_BTWVRIJ</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="amountVATTaxablePortion" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>amount VAT taxable in account currency
+
+origin:
+
+amount exempt from VAT
+
+origin: 
+table DOORBELHEADER -&gt; cell DH_PERS_BTWVRIJ
+
+calculate (entity balanceMutation -&gt; amount - VatCharge.amountInAccountCurrency) * (1 - cell DH_PERS_BTWVRIJ)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="percentageVatTaxable" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>calculate: 
+100 -/- (table DOORBELHEADER -&gt; cell DH_PERS_BTWVRIJ)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="calculatedManagementFee" type="calculatedManagementFee" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="managementFeeType">
+		<xs:annotation>
+			<xs:documentation>Defines how the management fee is calculated</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CATEGORYSERVICEFEE">
+				<xs:annotation>
+					<xs:documentation>origin: table DOORBELHEADER -&gt; cell DH_NIVEAU_DOORBEL_BEREKENEN = C</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ACCOUNTBASED">
+				<xs:annotation>
+					<xs:documentation>origin: table DOORBELHEADER -&gt; cell DH_NIVEAU_DOORBEL_BEREKENEN = R</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="modelPortfolio">
+		<xs:annotation>
+			<xs:documentation>Modelportfolio</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description
+
+origin:
+
+HDR_MOD_PORT_BELGIRO -&gt; cell HMB_OMSCHRIJVING
+
+where ON_LINE_DOSSIER -&gt; cell ONDL_ID_NUMMER = table HDR_MOD_PORT_BELGIRO -&gt; cell HMB_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="moneySubTransaction">
+		<xs:complexContent>
+			<xs:extension base="subTransactionBase">
+				<xs:sequence>
+					<xs:element name="grossAmount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>gross amount 
+
+origin: 
+TRANSAKTIES.TR_BRUTOBEDRAG</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="nettAmount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Nett amount of the transaction
+
+origin:
+
+calculated: absolute(entity BalanceMutation -&gt; amount) -/- entity VatCharge-&gt; amountInAccountCurrency</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="valueDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>value date
+
+origin:
+
+table TRANSAKTIES -&gt; Cell TR_VALDATUM</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="balanceMutation" type="balanceMutation" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="moneyTransferTransaction">
+		<xs:annotation>
+			<xs:documentation>Transfer of a sum of money</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="isAutomaticallyGeneratedTransfer" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>True when the transaction is automatically generated, otherwise false.
+
+Origin:
+True when:
+Table Transakties -&gt; cell TR_HERKOMST_CODE_TR = Table GELDBATCH_DETAILS -&gt; cell GLBD_SOORT and
+Table Transakties -&gt; cell TR_BATCHCODE = Table GELDBATCH_DETAILS -&gt; cell GLBD_CODE and
+Table Transakties -&gt; cell TR_BATCHREGEL = Table GELDBATCH_DETAILS -&gt; cell GLBD_REGELNR and
+GLBD_BETALINGSKENMERK = GLBD_CODE &amp; GLDB_REGELNR</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interbankPaymentDetails" type="interbankPaymentDetails" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="otherParty" type="otherParty" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="mortgageContract">
+		<xs:annotation>
+			<xs:documentation>Contract information about morgage</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="contract">
+				<xs:sequence>
+					<xs:element name="mortgageType" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>type of mortage. origin from table HYPOTHEEKAANVRAGEN cell hyp_product_kenmerk</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="mutationCode">
+		<xs:sequence>
+			<xs:element name="code" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The mutation code</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The description of the mutation code</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>	
+	<xs:complexType name="naturalPerson">
+		<xs:annotation>
+			<xs:documentation>Bevat de gegevens van een individu, ofwel natuurlijk persoon.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="party">
+				<xs:sequence>
+					<xs:element name="gender" type="gender" minOccurs="1" maxOccurs="1"></xs:element>
+					<xs:element name="name" type="personNameBase" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="offering">
+		<xs:annotation>
+			<xs:documentation>Offering, like IPO</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="maturityDate" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>expiration date
+
+origin: table Emissies -&gt; cell EMI_VERVALDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="option" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="derivative">
+				<xs:sequence>
+					<xs:element name="optionStyle" type="optionStyle" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="optionExpirationTransaction" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="dealingDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>(transaction) dealing date
+
+origin: 
+calculated based on table TRANSAKTIES -&gt; cell TR_TRANSDATUM</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="dealingTime" type="xs:time" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>transaction dealing time
+
+origin: 
+table TRANSAKTIES -&gt; cell TR_DEALINGTIJD</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeDealingDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>dealing date at the exchange in timezone of the exchange
+
+when transaction has a relation with an order and timezone of the exchange is set (timezone &lt;&gt; ' '), dealingDate is in UTC
+else dealingDate is in CET (local time)
+
+origin: 
+based on entities dealingTime and dealingDate and timezone of exhange</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchangeDealingTime" type="xs:time" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>dealing time of the exchange
+
+origin: 
+based on table TRANSAKTIES -&gt; cell TR_DEALINGTIJD and timezone of exchange</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="totalAmountOptions" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>total amount (buy and sell) options
+
+origin: 
+total amount (buy and sell) options
+
+origin: 
+table TRANSAKTIES -&gt; cell TR_AANTAL * table TRANSAKTIES -&gt; cell TR_EXASS_FACTOR * table TRANSAKTIES -&gt; cell TR_PRIJSFACTOR</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="exchange" type="exchange" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="optionStyle">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="AMERICAN">
+				<xs:annotation>
+					<xs:documentation>American option style
+
+origin: table Beleggingsintrument -&gt; cell BE_OPTIESTIJLEURAM &lt;&gt; 1</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="EUROPEAN">
+				<xs:annotation>
+					<xs:documentation>European option style:
+
+origin: table Beleggingsintrument -&gt; cell BE_OPTIESTIJLEURAM = 1</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="order">
+		<xs:annotation>
+			<xs:documentation>Order</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="amount" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>order amount
+
+origin:
+
+table ORDERS cell ORD_AANTAL
+OR 
+table ORDHISORDERS -&gt; cell HORD_AANTAL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>order id
+
+origin:
+
+table ORDERS -&gt; cell ORD_ORDERNUMMER 
+OR
+table ORDHISORDERS -&gt; cell HORD_ORDERNUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="line" type="xs:long" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="type" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>order type
+
+origin:
+
+table ORDERS cell ORD_ORDERTYPE
+OR 
+table ORDHISORDERS -&gt; cell HORD_ORDERTYPE</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="combinationOrderKind" type="combinationOrderKind" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="distributionChannel" type="distributionChannel" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="orderKind" type="orderKind" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="orderKind">
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>order sort description
+
+origin:
+
+table ORDERS cell ORD_ORDERSOORT 
+OR 
+table ORDHISORDERS -&gt; cell HORD_ORDERSOORT
+
+select from table TABELGEGEVENS -&gt; cell TB_NUMMER_OMS
+
+where TABLE TABELGEGEVENS -&gt; cell TB_SOORT = ORDS
+and TABLE TABELGEGEVENS -&gt; cell TB_SYMBOOL = attribute type ((H)ORD_ORDERSOORT)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>order sort
+
+origin:
+
+select from table TABELGEGEVENS -&gt; cell TB_NUMMER_OMS
+
+where TABLE TABELGEGEVENS -&gt; cell TB_SOORT = ORTP 
+and TABLE TABELGEGEVENS -&gt; cell TB_SYMBOOL = attribute type ((H)ORD_ORDERSOORT)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherParty">
+		<xs:annotation>
+			<xs:documentation>Details about the other party in the transaction</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="accountNumber" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The account number of the other account
+
+origin:
+IF reported relation/cash account is TR_REL1/TR_REL1_REK2 THEN
+  TR_REL2_REK2
+ELSE
+  TR_REL1_REK2</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="accountType" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The account type of the other account
+
+origin:
+IF reported relation/cash account is TR_REL1/TR_REL1_REK2 THEN
+  TR_REL2_REK2_SOORT
+ELSE
+  TR_REL1_REK2_SOORT</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="isCounterParty" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>true if the other party is the counterparty in the transaction, otherwise false
+
+origin:
+IF reported relation/cash account is TR_REL1/TR_REL1_REK2 THEN
+  false
+ELSE
+  true</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="relationName" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The relation name of the other relation
+
+origin:
+IF reported relation/cash account is TR_REL1/TR_REL1_REK2 THEN
+  CL_NAAM1 from CLIENTEN  where CL_NUMMER = TR_REL2
+ELSE
+  CL_NAAM1 from CLIENTEN  where CL_NUMMER = TR_REL1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="relationNumber" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The relation number of the other relation
+
+origin:
+IF reported relation/cash account is TR_REL1/TR_REL1_REK2 THEN
+  TR_REL2
+ELSE
+  TR_REL1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="party" abstract="true">
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="address" type="addressBase" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="emailAddress" type="emailAddress" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:element name="externalIdentification" type="externalIdentification" minOccurs="0" maxOccurs="2"></xs:element>
+			<xs:element name="mobilePhone" type="phoneNumber" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="partyRole" type="partyRole" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="partyRole">
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Identification of the party role</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="paymentResponseDetails">
+		<xs:annotation>
+			<xs:documentation>De gegevens van een reactie op een betalingsbericht. Dit kan zijn een Return, Recall, Refund, Reversal, Reject van een Credit Transfer of een Direct Debit. Al deze reacties kennen een reference  en een reason. </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="reference" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De referentie die door de initiatiefnemer van de response is opgegeven. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="reason" type="sepaCode" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="personNameBase" abstract="true"></xs:complexType>
+	<xs:complexType name="phoneNumber">
+		<xs:sequence>
+			<xs:element name="number" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Het daadwerkelijke telefoonnummer.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="placeOfExecution">
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Code of the place of execution.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Description of the place of execution.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ploffenTurboTransaction">
+		<xs:annotation>
+			<xs:documentation>Transaction in case of een 'geplofte turbo' </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="portfolioInstrument" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="instrumentBase">
+				<xs:sequence>
+					<xs:element name="decimalsDisplay" type="xs:long" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Dispay decimals of the fund
+
+Origin:
+
+not( SubscriptionRight or StockDividend)
+	table: BELEGGINGSINSTRUMENT -&gt; cell BE_AANTAL_CIJFERS_DISPLAY
+SubscriptionRight or StockDividend
+	table: BELEGGINGSINSTRUMENT -&gt; cell BE_AANTAL_DECIMALEN_DRIPS</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="isFixedIncome" type="xs:boolean" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>is the fund a fixed income fund
+
+true when:
+
+attribute priceFactor is true and attribute description contains a '%'-character.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="certificateType" type="certificateType" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="positionMutation">
+		<xs:sequence>
+			<xs:element name="price" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>price in account currency (if applicable)
+
+origin:
+POSMUTTRANSDATUM.POM_MUTATIE_PRIJSCL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="quantity" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>mutation quantity
+
+origin: table POSMUTTRANSDATUM -&gt; cell POM_MUTATIE_AANTAL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="securitiesAccount" type="securitiesAccount" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="postofficeBox">
+		<xs:complexContent>
+			<xs:extension base="addressBase">
+				<xs:sequence>
+					<xs:element name="boxNumber" type="xs:long" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the boxnumber of the postofficebox address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="city" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the city of the postofficebox address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="postalCode" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the postal code of the postofficebox address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="preciousMetal">
+		<xs:complexContent>
+			<xs:extension base="commodity"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="product">
+		<xs:sequence>
+			<xs:element name="sequenceNumber" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>sequence number of the product for the relation
+
+origin: table PRODUCTEN_PER_RELATIE -&gt; cell PPR_VOLGNR_PER_PRODUCT  </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="cashAccount" type="cashAccount" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="defaultCashAccount" type="cashAccount" minOccurs="0" maxOccurs="1"></xs:element>			
+			<xs:element name="investmentProfile" type="investmentProfile" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="investmentStrategy" type="strategy" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="managementFeeAgreement" type="managementFeeAgreement" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="modelPortfolio" type="modelPortfolio" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="productDefinition" type="productDefinition" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="securitiesAccount" type="securitiesAccount" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="productConversion">
+		<xs:annotation>
+			<xs:documentation>Product Conversion</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the product conversion
+
+origin: 
+table PRODUCTCONVERSIESOORTEN cell CACS_OMSCHRIJVING</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="productConversionTransaction">
+		<xs:annotation>
+			<xs:documentation>Transactions originated from a product conversion</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="productConversion" type="productConversion" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="productDefinition">
+		<xs:annotation>
+			<xs:documentation>Product definition</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>product type description
+
+origin: 
+
+table producten -&gt; cell pr_omschrijving</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>product type identifier
+
+origin: 
+
+table producten -&gt; cell pr_productnummer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>product name
+
+origin: 
+
+table producten -&gt; cell pr_productnaam</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="managementFeeAgreement" type="managementFeeAgreement" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="redemptionTransaction">
+		<xs:annotation>
+			<xs:documentation>Transaction is case of a redemption</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="amount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>amount
+
+origin: table TRANSAKTIES -&gt; cell TR_AANTAL</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interest" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest in transaction currency
+
+origin: 
+TRANSAKTIES -&gt; cell TR_RENTE</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interestInAccountCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>interest in account currency
+
+origin: calculated , based on table TRANSAKTIES -&gt; cell TR_RENTE</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="lastRedemptionDate" type="xs:date" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>date of last redemption
+
+origin: 
+calculated last date table RENTESCHEMAS -&gt; cell RA_DATUM_UITKEREN
+where table RENTESCHEMAS -&gt; cell  RA_TYPE_RB_NA_VA = NA
+and table RENTESCHEMAS -&gt; cell  RA_SYMBOOL = entity Fund -&gt; symbol</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="redemptionDate" type="xs:date" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>date of redemption
+
+origin: 
+date table RENTESCHEMAS -&gt; cell RA_DATUM_UITKEREN
+where table RENTESCHEMAS -&gt; cell  RA_TYPE_RB_NA_VA = NA
+and table RENTESCHEMAS -&gt; cell  RA_SYMBOOL = entity Fund -&gt; symbol
+and max(table RENTESCHEMAS -&gt; cell  RA_ACTIEDATUM) &lt;= entity Transaction -&gt; transactionDate</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="relation">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Relation name
+
+origin: table clienten, cell CL_NAAM1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="number" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>relation number
+
+origin: Table Clienten, cell CL_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="clientGroup" type="clientGroup" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="contract" type="contract" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="relationCategory" type="relationCategory" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="relationCategory">
+		<xs:annotation>
+			<xs:documentation>Relation category</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="isBusiness" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>This attribute determines if the relation category is for business use 
+
+origin: table RELATIECATEGORIEEN -&gt; cell rc_particulier_zakelijk</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reversal">
+		<xs:complexContent>
+			<xs:extension base="transactionBase">
+				<xs:sequence>
+					<xs:element name="reversedTransaction" type="transaction" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="securitiesAccount">
+		<xs:complexContent>
+			<xs:extension base="account"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="securitiesPaymentTransaction">
+		<xs:annotation>
+			<xs:documentation>Abstract base for all payments originated from securities</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="interestRate" type="xs:decimal" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>In case of coupon payments the interest rate used to calculate the payment of current period
+
+Origin:
+select cell RA_RENTEPERC_DIVBEDR
+where table RENTESCHEMAS -&gt; cell RA_TYPE_RB_NA_VA = RB
+and cell RA_SYMBOOL = entity Fund -&gt; symbol
+and cell RA_DATUM_UITKEREN = entity Transaction -&gt; date</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="security" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="instrument"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="securityBuyTransaction">
+		<xs:annotation>
+			<xs:documentation>Buy transaction for a security</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="bourseTransaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="securitySellTransaction">
+		<xs:annotation>
+			<xs:documentation>Sell transaction for a security</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="bourseTransaction">
+				<xs:sequence>
+					<xs:element name="conversion" type="productConversion" minOccurs="0" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="securitySubTransaction">
+		<xs:complexContent>
+			<xs:extension base="subTransactionBase">
+				<xs:sequence>
+					<xs:element name="effectiveAmount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>effective amount in account currency
+
+origin:
+see linked document</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="effectiveAmountAccountCurrency" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>effective amount in transaction currency
+
+origin:
+attribute effectiveAmountTransactionCurrency * attribute exchangeRateTransactionAndAccount</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="presentationPrice" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Prijs zoals wordt gepresenteerd op bijvoorbeeld dagafschriften.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="presentationQuantity" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Presentatie van het aantal, bijvoorbeeld voor dagafschriften</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="price" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>price of instrument
+
+origin:
+table TRANSACTIES -&gt; cell TR_PRIJS_TR_MUNTSRT</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="quantity" type="xs:decimal" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>quantity of the transaction
+
+origin:
+IF TransactionType.symbol in (OMWL, OMWS):
+
+WHEN association of SecuritySubTransaction is fundTransaction THEN
+	result = table TRANSAKTIES -&gt; cell tr_aantal;
+
+WHEN association of SecuritySubTransaction is referenceFundTransaction THEN
+	result = table TRANSAKTIES -&gt; cell tr_aantal * entity ConvertSecurityTransaction -&gt; exchangeRatio;
+
+WHEN entity SecuritySubTransaction.instrument -&gt; decimalsDisplay &lt;&gt; 0 THEN
+result = result * entity SecuritySubTransaction.instrument -&gt; priceFactor; 
+
+ELSE IF Transaction.originCode in (PCNL, PCND):
+
+WHEN entity SecuritySubTransaction.instrument -&gt; decimalsDisplay &lt;&gt; 0 THEN 
+	result = table TRANSAKTIES -&gt; cell tr_aantal * entity SecuritySubTransaction.instrument -&gt; priceFactor 
+ELSE 
+	result = table TRANSAKTIES -&gt; cell tr_aantal;
+
+ELSE:
+
+IF entity SecuritySubTransaction.instrument -&gt; decimalsDisplay &lt;&gt; 0 THEN
+  table TRANSAKTIES -&gt; cell tr_aantal / (10 ^ entity FundSecuritySubTransaction.instrument-&gt; decimalsDisplay)
+ELSE
+  table TRANSAKTIES -&gt; cell tr_aantal
+	
+END IF;
+
+result = ABS(result);</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="bondSubTransaction" type="bondSubTransaction" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="converted" type="convertedSubTransaction" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="instrument" type="instrumentBase" minOccurs="1" maxOccurs="1"></xs:element>
+					<xs:element name="positionMutation" type="positionMutation" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="sepaCode">
+		<xs:annotation>
+			<xs:documentation>Diverse Sepa coderingen (redenen, doelen, instructies, proprietary, instructies etc.), zie sepaCodeType's.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="code" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>ISO code van de externe codering</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>De omschrijving van de reason of purpose</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="sepaCodeType" type="sepaCodeType" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="sepaCodeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PURPOSE"></xs:enumeration>
+			<xs:enumeration value="PROPRIETARY"></xs:enumeration>
+			<xs:enumeration value="RETURNREASON"></xs:enumeration>
+			<xs:enumeration value="STATUSREASON"></xs:enumeration>
+			<xs:enumeration value="OPERATION"></xs:enumeration>
+			<xs:enumeration value="INSTRUCTIONS"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="standingOrder">
+		<xs:annotation>
+			<xs:documentation>StandingOrder</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="isWithIncassoExcasso" type="xs:boolean" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>determines if standing order is with incasso or excasso
+
+origin: table PERIOD_BEL_OPDRACHT_HDR -&gt; cell PHB_MET_INCASSO_EXCASSO = 1</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="staticData">
+		<xs:annotation>
+			<xs:documentation>This class contains all static data required for processing daily statements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="entityId" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The identifier of the entity.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="systemCurrency" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>The system currency.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="stock">
+		<xs:complexContent>
+			<xs:extension base="security"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="stockDividend">
+		<xs:complexContent>
+			<xs:extension base="entitlement"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="stockOption">
+		<xs:complexContent>
+			<xs:extension base="option"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="strategy">
+		<xs:annotation>
+			<xs:documentation>Strategy</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>id of the investment strategy
+
+origin:
+table STRATEGIE_HEADER -&gt; cell STH_ID
+where table ON_LINE_DOSSIER -&gt; cell ONLD_ONDL_LIMIET = STRATEGIE_HEADER -&gt; cell STH_ID</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the investment strategy
+
+origin:
+table STRATEGIE_HEADER -&gt; cell STH_NAAM
+where table ON_LINE_DOSSIER -&gt; cell ONLD_ONDL_LIMIET = STRATEGIE_HEADER -&gt; cell STH_ID</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="structuredAddress">
+		<xs:complexContent>
+			<xs:extension base="addressBase">
+				<xs:sequence>
+					<xs:element name="city" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the city of the structured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="location" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the location of the structured address.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="number" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the house number of the structured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="numberSuffix" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the house number suffix of the structured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="postalCode" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the postalcode of the structured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="street" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>the street of the structured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="structuredPersonName">
+		<xs:annotation>
+			<xs:documentation>Een gestructureerde persoonsnaam</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="personNameBase">
+				<xs:sequence>
+					<xs:element name="firstName" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>De voornaam van een persoon</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="initials" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>De initialen van een persoon</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="surname" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>De achternaam van een persoon (zonder tussenvoegsel)</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="surnamePrefix" type="xs:string" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>Het tussenvoegsel</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="suborder">
+		<xs:sequence>
+			<xs:element name="quantity" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>suborder quantity
+
+origin:
+
+table ORDERSDETAILLERING cell ORX_AANTAL
+OR 
+table ORDHISDETAILLERING -&gt; cell HORX_AANTAL</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="subscriptionRight">
+		<xs:complexContent>
+			<xs:extension base="entitlement"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="subTransactionBase" abstract="true"></xs:complexType>
+	<xs:complexType name="targetSystemProperties">
+		<xs:annotation>
+			<xs:documentation>Instellingen ten behoeve van het doelsysteem waarvan de waardes door de bron worden bepaald.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="targetSystemProperty" type="targetSystemProperty" minOccurs="1" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="targetSystemProperty">
+		<xs:annotation>
+			<xs:documentation>Instelling van het doelsysteem waarvan de waarde door de bron wordt bepaald.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>naam van de instelling</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="value" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>waarde van de instelling.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="technicalInstrument">
+		<xs:complexContent>
+			<xs:extension base="instrumentBase"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="transaction" abstract="true">
+		<xs:annotation>
+			<xs:documentation>Abstract base class for all transactions</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transactionBase">
+				<xs:sequence>				
+					<xs:element name="originCode" type="xs:string" minOccurs="1" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>origin code of the transaction
+
+origin: 
+table TRANSAKTIES -&gt; cell TR_HERKOMST_CODE_TR</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="calculatedCost" type="calculatedCost" minOccurs="0" maxOccurs="unbounded"></xs:element>
+					<xs:element name="currency" type="currency" minOccurs="1" maxOccurs="1"></xs:element>
+					<xs:element name="description" type="transactionDescription" minOccurs="0" maxOccurs="unbounded"></xs:element>
+					<xs:element name="distributionChannel" type="distributionChannel" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="mutationCode" type="mutationCode" minOccurs="0" maxOccurs="1"></xs:element>					
+					<xs:element name="placeOfExecution" type="placeOfExecution" minOccurs="0" maxOccurs="1"></xs:element>
+					<xs:element name="transactionType" type="transactionType" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="transactionBase" abstract="true">
+		<xs:sequence>
+			<xs:element name="bookDate" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Book date
+
+origin:
+
+Table transakties -&gt; cell TR_BOEKDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the transaction date
+
+origin:
+TRANSAKTIES.TR_TRANSDATUM</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="exchangeRateSystemAndAccount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the exchange rate between the system currency and the account currency
+
+origin: 
+calculated based on the exchange rates in the transaction. class CalculatedExchangerate.calculate()
+
+parameters:
+
+
+sourceCurrency: BasicSetting.systemcurrency
+sourceExchangeRate: 1
+sourceFactor: 1
+sourceIsReciprocal: true
+
+targetCurrency: Account.currency
+targetExchangeRate: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_KRS or cell TR_VRUCHTREK_MNT_KRS
+targetFactor: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_FAC or cell TR_VRUCHTREK_MNT_FAC
+targetIsReciprocal: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_RCP or cell TR_VRUCHTREK_MNT_RCP (0 = false, 1 = true)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="exchangeRateTransactionAndAccount" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the exchange rate between the transaction currency and the account currency
+
+origin: 
+calculated based on the exchange rates in the transaction. class CalculatedExchangerate.calculate()
+
+parameters:
+
+
+sourceCurrency: table TRANSAKTIES -&gt; cell TR_TRANS_MUNTS
+sourceExchangeRate: table TRANSAKTIES -&gt; cell TR_TRANS_MUNTS_KRS
+sourceFactor: table TRANSAKTIES -&gt; cell TR_TRANS_MUNTS_FAC
+sourceIsReciprocal: table TRANSAKTIES -&gt; cell TR_TRANS_MUNTS_RCP
+
+targetCurrency: Account.currency
+targetExchangeRate: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_KRS or cell TR_VRUCHTREK_MNT_KRS
+targetFactor: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_FAC or cell TR_VRUCHTREK_MNT_FAC
+targetIsReciprocal: table TRANSAKTIES -&gt; cell TR_REL1_MUNTS_RCP or cell TR_VRUCHTREK_MNT_RCP (0 = false, 1 = true)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identifier for the transaction
+
+origin:
+
+Table transakties -&gt; cell TR_VOLGNUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="number" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>transaction number is an unique number when the transaction is fully processed.
+
+origin:
+Table Transakties , cell TR_TRANSNUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fundTransaction" type="securitySubTransaction" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="moneyTransaction" type="moneySubTransaction" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="referenceFundTransaction" type="securitySubTransaction" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:element name="usufructMoneyTransaction" type="moneySubTransaction" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="transactionDescription">
+		<xs:sequence>
+			<xs:element name="line" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Description line in the transaction
+
+Origin:  Table: TRANS_OMSCHRIJVING Cell: TO_OMSCHRIJVING1 / TO_OMSCHRIJVING2 / TO_OMSCHRIJVING3 / TO_OMSCHRIJVING4</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lineNumber" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Description line number in the transaction
+
+Origin:  Table: TRANS_OMSCHRIJVING Cell: TO_OMSCHRIJVING1 --&gt; lineNumber = 1
+TO_OMSCHRIJVING2 --&gt; lineNumber = 2
+TO_OMSCHRIJVING3 --&gt; lineNumber = 3
+TO_OMSCHRIJVING4 --&gt; lineNumber = 4</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="transactionGroup" abstract="true">
+		<xs:annotation>
+			<xs:documentation>additional data uses within a group of transactions</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="date" type="xs:date" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>the transaction date of all transactions within the transaction group</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of transaction group</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="totalMutation" type="xs:decimal" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Sum of all mutations within transaction group. If positive the total credit amount is bigger than the total debit amount</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="transaction" type="transactionBase" minOccurs="0" maxOccurs="unbounded"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="transactionType">
+		<xs:annotation>
+			<xs:documentation>Transaction type</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="description" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>description of the transaction type
+
+origin:
+
+table tabelgeg_vertaald -&gt; cell tbv_nummer_oms</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="id" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>identification of the transaction type
+
+origin:
+table tabelgeg_vertaald -&gt; cell TBV_NUMMER</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="symbol" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>symbol of the transaction type
+
+origin:
+tabelgeg_vertaald.tbv_symbool</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="transferSecuritiesTransaction">
+		<xs:complexContent>
+			<xs:extension base="transaction">
+				<xs:sequence>
+					<xs:element name="otherParty" type="otherParty" minOccurs="1" maxOccurs="1"></xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="unstructuredAddress">
+		<xs:complexContent>
+			<xs:extension base="addressBase">
+				<xs:sequence>
+					<xs:element name="addressLine" type="xs:string" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>a line of an unstructured address</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="unstructuredPersonName">
+		<xs:complexContent>
+			<xs:extension base="personNameBase">
+				<xs:sequence>
+					<xs:element name="nameLine" type="xs:string" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>line of an unstructured name
+
+origin:
+name is based on VERZEND_CLIENTEN if included with an address, fields:
+- VZ_NAAM1
+- VZ_NAAM2
+- VZ_NAAM3</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="warningText">
+		<xs:annotation>
+			<xs:documentation>Warning text to be included on the daily statement.
+
+Inclusion of one or more warning texts is defined in the activity diagram 'Aanmaken dagafschriften'</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="priority" type="xs:long" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>priority</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="text" type="xs:string" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>warning text</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="type" type="warningTextType" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="warningTextType">
+		<xs:annotation>
+			<xs:documentation>type of warning text</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="REDEMPTION"></xs:enumeration>
+			<xs:enumeration value="EXPIRATION">
+				<xs:annotation>
+					<xs:documentation>Expiration</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="DEFICITSPENDINGLIMIT">
+				<xs:annotation>
+					<xs:documentation>deficit spending limit</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="warrant">
+		<xs:complexContent>
+			<xs:extension base="derivative"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="withdrawSecuritiesTransaction">
+		<xs:annotation>
+			<xs:documentation>Withdraw securities transaction</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="transaction"></xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
