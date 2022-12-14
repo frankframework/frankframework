@@ -48,7 +48,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -701,7 +700,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return getRoot();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		validator.setFullSchemaChecking(fullSchemaChecking);
 	}
@@ -709,7 +708,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isFullSchemaChecking();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
@@ -718,7 +717,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isThrowException();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
@@ -726,7 +725,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
@@ -734,7 +733,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getXmlReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
@@ -742,7 +741,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isValidateFile();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
@@ -777,12 +776,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setWarn(boolean warn) {
 		validator.setWarn(warn);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
@@ -790,12 +789,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}

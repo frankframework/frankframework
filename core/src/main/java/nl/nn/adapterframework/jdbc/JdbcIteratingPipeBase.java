@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
@@ -157,39 +156,38 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setQuery(query);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setUseNamedParams(Boolean b) {
 		querySender.setUseNamedParams(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setTrimSpaces(boolean b) {
 		querySender.setTrimSpaces(b);
 	}
 
-	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
 
-	@IbisDocRef({"6", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"7", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
 
-	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
 	}
-
 }

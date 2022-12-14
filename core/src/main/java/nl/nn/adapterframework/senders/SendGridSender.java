@@ -44,7 +44,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
@@ -264,39 +263,39 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	//Properties inherited from HttpSenderBase
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTimeout(int i) {
 		super.setTimeout(i);
 		httpSender.setTimeout(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setMaxConnections(int i) {
 		httpSender.setMaxConnections(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setMaxExecuteRetries(int i) {
 		httpSender.setMaxExecuteRetries(i);
 	}
 
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyHost(String string) {
 		httpSender.setProxyHost(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyPort(int i) {
 		httpSender.setProxyPort(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyAuthAlias(String string) {
 		httpSender.setProxyAuthAlias(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyUsername(String string) {
 		httpSender.setProxyUsername(string);
 	}
@@ -306,12 +305,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyPassword(String string) {
 		httpSender.setProxyPassword(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProxyRealm(String string) {
 		httpSender.setProxyRealm(string);
 	}
@@ -341,7 +340,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystore(String keystore) {
 		httpSender.setKeystore(keystore);
 	}
@@ -351,7 +350,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSender.setKeystoreType(keystoreType);
 	}
@@ -361,7 +360,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSender.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -371,7 +370,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystorePassword(String keystorePassword) {
 		httpSender.setKeystorePassword(keystorePassword);
 	}
@@ -381,7 +380,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSender.setKeystoreAlias(keystoreAlias);
 	}
@@ -391,7 +390,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSender.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -401,7 +400,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSender.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -411,7 +410,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSender.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
@@ -421,7 +420,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTruststore(String truststore) {
 		httpSender.setTruststore(truststore);
 	}
@@ -431,7 +430,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTruststoreType(KeystoreType truststoreType) {
 		httpSender.setTruststoreType(truststoreType);
 	}
@@ -442,7 +441,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		httpSender.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
@@ -452,7 +451,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTruststorePassword(String truststorePassword) {
 		httpSender.setTruststorePassword(truststorePassword);
 	}
@@ -462,7 +461,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpSender.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
@@ -472,7 +471,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setVerifyHostname(boolean verifyHostname) {
 		httpSender.setVerifyHostname(verifyHostname);
 	}
@@ -482,7 +481,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		httpSender.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
@@ -492,7 +491,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSender.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
@@ -501,23 +500,23 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.isIgnoreCertificateExpiredException();
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setFollowRedirects(boolean b) {
 		httpSender.setFollowRedirects(b);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setStaleChecking(boolean b) {
 		httpSender.setStaleChecking(b);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setStaleTimeout(int timeout) {
 		httpSender.setStaleTimeout(timeout);
 	}
 
 
-	@IbisDocRef({HTTPSENDERBASE})
+	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
 	public void setProtocol(String protocol) {
 		httpSender.setProtocol(protocol);
 	}

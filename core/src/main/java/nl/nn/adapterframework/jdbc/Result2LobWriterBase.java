@@ -32,7 +32,6 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -123,17 +122,17 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		querySender.setQuery(query);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
