@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -368,6 +369,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							try {
 								fileSystem.deleteFile(file);
 								deleteEmptyFolder(file);
+							} catch (NoSuchFileException e) {
+								log.debug("ignore", e);
 							} catch (FileSystemException e) {
 								throw new IOException("Could not delete file", e);
 							}
