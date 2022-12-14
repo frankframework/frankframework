@@ -57,7 +57,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	private @Getter String execute;
 	private @Getter String logLevel=DEFAULT_LOG_LEVEL;
 	private @Getter String waitBeforeCleanup="100";
-	private @Getter int timeout=2000;
+	private @Getter int timeout=10000;
 
 	private PipeForward failureForward;
 
@@ -142,7 +142,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	}
 
 	 /** the larva timeout
-	 * @ff.default 30000
+	 * @ff.default 10000
 	 */
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;

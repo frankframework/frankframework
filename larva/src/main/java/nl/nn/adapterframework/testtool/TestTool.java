@@ -101,7 +101,7 @@ public class TestTool {
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
-	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 2000);
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 10000);
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
