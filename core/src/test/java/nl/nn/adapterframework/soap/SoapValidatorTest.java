@@ -171,7 +171,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	@Test
 	public void issue4183CharsetProblemInXSD() throws Exception {
 		configureSoapValidator(false);
-		pipe.setSchemaLocation("http://nn.nl/XSD/BankSavings/EuroPort/BankStatementTransformer Validation/CharsetProblem/BankSavings_EuroPort_BankStatementTransformer.xsd");
+		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
 		pipe.configure();
 		pipe.start();
 	}
