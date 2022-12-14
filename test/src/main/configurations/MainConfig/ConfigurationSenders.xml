@@ -241,4 +241,47 @@
 		</pipeline>
 	</adapter>
 
+	<adapter name="SendToLarva" >
+
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="SenderToLarva"
+				serviceName="ibis4test-SenderToLarva"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="InternalError" state="error"/>
+			</exits>
+
+			<pipe
+				name="Call Larva"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-SendToLarva"
+				/>
+				<forward name="success" path="Called successfully"/>
+				<forward name="exception" path="Called unsuccessfully"/>
+			</pipe>
+			
+			<pipe 
+				name="Fallthroug" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="fall through" >
+				<forward name="success" path="InternalError"/>
+			</pipe>
+			<pipe 
+				name="Called successfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="successful">
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe 
+				name="Called unsuccessfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="unsuccessful">
+				<forward name="success" path="InternalError"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
 </module>
