@@ -76,7 +76,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 
 	/** 
 	 * Comma separated list of fields to try as response address
-	 * @ff.default {@value #REPLY_ADDRESS_FIELDS_DEFAULT}
+	 * @ff.default {@value nl.nn.adapterframework.filesystem.IMailFileSystem#REPLY_ADDRESS_FIELDS_DEFAULT}
 	 */
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;

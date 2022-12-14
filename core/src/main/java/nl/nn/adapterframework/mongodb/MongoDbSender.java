@@ -380,7 +380,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 	/**
 	 * The MongoDB datasource
-	 * @ff.default {@value #JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value nl.nn.adapterframework.mongodb.JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
