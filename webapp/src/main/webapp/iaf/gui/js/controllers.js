@@ -1888,7 +1888,6 @@ angular.module('iaf.beheerconsole')
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
 	$scope.submit = function() {
@@ -1902,7 +1901,6 @@ angular.module('iaf.beheerconsole')
 		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
@@ -1922,7 +1920,6 @@ angular.module('iaf.beheerconsole')
 					description:"",
 					locker:false,
 					lockkey:"",
-					persistent:true,
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
@@ -1951,7 +1948,6 @@ angular.module('iaf.beheerconsole')
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
 	Api.Get(url, function(data) {
@@ -1967,7 +1963,6 @@ angular.module('iaf.beheerconsole')
 				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
-				persistent: true,
 		};
 	});
 
@@ -1984,7 +1979,6 @@ angular.module('iaf.beheerconsole')
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)
 			fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
