@@ -108,6 +108,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
+		response.setHeader("Content-Type", "application/json");
 		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), StreamUtil.DEFAULT_CHARSET)) {
 			jsonWriter.write(json);
 		}
