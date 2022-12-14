@@ -165,7 +165,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		int configurationExceptionCount = 0;
+		ConfigurationException configurationException = null;
 		INamedObject owner = getOwner();
 		Adapter adapter = null;
 		if (owner instanceof Adapter) {
@@ -215,7 +215,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			try {
 				configure(pipe);
 			} catch (ConfigurationException e) {
-				configurationExceptionCount++;
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
 			}
 		}
 		if (pipes.isEmpty()) {
@@ -243,7 +247,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			try {
 				configure(inputValidator);
 			} catch (ConfigurationException e) {
-				configurationExceptionCount++;
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
 			}
 		}
 		if (outputValidator!=null) {
@@ -255,7 +263,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			try {
 				configure(outputValidator);
 			} catch (ConfigurationException e) {
-				configurationExceptionCount++;
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
 			}
 		}
 
@@ -268,7 +280,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			try {
 				configure(getInputWrapper());
 			} catch (ConfigurationException e) {
-				configurationExceptionCount++;
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
 			}
 		}
 		if (getOutputWrapper()!=null) {
@@ -294,7 +310,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			try {
 				configure(getOutputWrapper());
 			} catch (ConfigurationException e) {
-				configurationExceptionCount++;
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
 			}
 		}
 		if (getLocker()!=null) {
@@ -314,8 +334,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		super.configure();
 		log.debug("successfully configured");
 		configurationSucceeded = true;
-		if (configurationExceptionCount>0) {
-			throw new ConfigurationException("found ["+configurationExceptionCount+"] problems configuring pipeline");
+		if (configurationException!=null) {
+			throw configurationException;
 		}
 	}
 
