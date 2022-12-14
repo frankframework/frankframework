@@ -110,12 +110,16 @@ public class LarvaPipe extends FixedForwardPipe {
 		return new PipeRunResult(forward, out.toString());
 	}
 
-	@Default("false")
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
-	@Default("false")
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
@@ -125,7 +129,8 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.execute = execute;
 	}
 
-	/** the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
+	/** 
+	 * the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
 	 * @ff.default wrong pipeline messages
 	 */
 	public void setLogLevel(String logLevel) {
