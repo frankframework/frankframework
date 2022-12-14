@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,8 +50,8 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 	public List<Schema> getSchemas() throws ConfigurationException {
 		return Collections.<Schema>singletonList(new Schema() {
 			@Override
-			public InputStream getInputStream() throws IOException {
-				return ClassUtils.getResourceURL(scopeProvider, xsd).openStream();
+			public Reader getReader() throws IOException {
+				return ClassUtils.urlToReader(ClassUtils.getResourceURL(scopeProvider, xsd));
 			}
 
 			@Override
