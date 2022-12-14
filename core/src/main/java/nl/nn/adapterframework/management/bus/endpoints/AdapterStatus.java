@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener.MessageProtocol;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
@@ -59,7 +60,6 @@ import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
-import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -114,28 +114,6 @@ public class AdapterStatus extends BusEndpointBase {
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
 		return ResponseMessage.ok(adapterInfo);
-	}
-
-	private Adapter getAdapterByName(String configurationName, String adapterName) {
-		Configuration config = getConfigurationByName(configurationName);
-		Adapter adapter = config.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new BusException("adapter ["+adapterName+"] does not exist");
-		}
-
-		return adapter;
-	}
-
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {
@@ -391,7 +369,7 @@ public class AdapterStatus extends BusEndpointBase {
 			if (listener instanceof EsbJmsListener) {
 				EsbJmsListener ejl = (EsbJmsListener) listener;
 				if(ejl.getMessageProtocol() != null) {
-					if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+					if (ejl.getMessageProtocol()== MessageProtocol.FF) {
 						isEsbJmsFFListener = true;
 					}
 					if(showPendingMsgCount) {

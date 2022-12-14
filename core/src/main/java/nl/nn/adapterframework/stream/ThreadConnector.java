@@ -52,6 +52,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
+		log.trace("[{}] announced thread [{}] for owner [{}] correlationId [{}]", this, threadInfo, owner, correlationId);
 		parentThread=Thread.currentThread();
 		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
@@ -87,10 +88,12 @@ public class ThreadConnector<T> implements AutoCloseable {
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
 			if (threadLifeCycleEventListener!=null) {
 				threadState = ThreadState.CREATED;
+				log.trace("[{}] start thread [{}]", this, threadInfo);
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
 		} else {
 			if (threadLifeCycleEventListener!=null) {
+				log.trace("[{}] cancel thread [{}]", this, threadInfo);
 				threadLifeCycleEventListener.cancelChildThread(threadInfo);
 				threadLifeCycleEventListener=null;
 			}
@@ -113,6 +116,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 			} finally {
 				if (threadLifeCycleEventListener!=null) {
 					threadState = ThreadState.FINISHED;
+					log.trace("[{}] end thread [{}]", this, threadInfo);
 					result = threadLifeCycleEventListener.threadEnded(threadInfo, response);
 				} else {
 					result = response;
@@ -139,6 +143,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 			} finally {
 				if (threadLifeCycleEventListener!=null) {
 					threadState = ThreadState.FINISHED;
+					log.trace("[{}] abort thread [{}]", this, threadInfo);
 					result = threadLifeCycleEventListener.threadAborted(threadInfo, t);
 					if (result==null) {
 						log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
@@ -162,10 +167,12 @@ public class ThreadConnector<T> implements AutoCloseable {
 			if (threadLifeCycleEventListener!=null) {
 				switch (threadState) {
 				case ANNOUNCED:
+					log.trace("[{}] cancel thread [{}] in close", this, threadInfo);
 					threadLifeCycleEventListener.cancelChildThread(threadInfo);
 					break;
 				case CREATED:
 					log.warn("thread was not properly closed");
+					log.trace("[{}] end thread [{}] in close", this, threadInfo);
 					threadLifeCycleEventListener.threadEnded(threadInfo, null);
 					break;
 				case FINISHED:

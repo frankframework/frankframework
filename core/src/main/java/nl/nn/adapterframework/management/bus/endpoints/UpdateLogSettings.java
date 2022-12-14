@@ -53,7 +53,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
-		List<String> errorLevels = new ArrayList<>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
+		List<String> errorLevels = new ArrayList<>(Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
