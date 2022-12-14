@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
@@ -80,13 +79,6 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	@Deprecated
 	public List<Adapter> getRegisteredAdapters();
-
-	/**
-	 * Get the Spring Platform Transaction Manager, for use by the Web Front End.
-	 * 
-	 * @return Instance of the Platform Transaction Manager.
-	 */
-	PlatformTransactionManager getTransactionManager();
 
 	public void dumpStatistics(Action action);
 

@@ -64,6 +64,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.management.bus.dao.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -318,10 +319,9 @@ public class AdapterStatus extends BusEndpointBase {
 			for (ProcessState state : knownStates) {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
 				if(ts != null) {
-					Map<String, Object> info = new HashMap<>();
-					info.put("numberOfMessages", getMessageCount(receiverRunState, ts));
-					info.put("name", state.getName());
-					tsInfo.put(state, info);
+					ProcessStateDTO psDto = new ProcessStateDTO(state);
+					psDto.setMessageCount(getMessageCount(receiverRunState, ts));
+					tsInfo.put(state, psDto);
 				}
 			}
 			receiverInfo.put("transactionalStores", tsInfo);

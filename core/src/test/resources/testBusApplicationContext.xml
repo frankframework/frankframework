@@ -27,6 +27,8 @@
 		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
 	</bean>
 
+	<bean id="txManager" class="nl.nn.adapterframework.testutil.mock.TransactionManagerMock" />
+
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 
 	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->

@@ -359,7 +359,7 @@
                                                 <span class="pull-right">
                                                 	<span ng-repeat="store in receiver.transactionalStores">
                                                 		<span class="text-{{::getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
-	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})" class="btn btn-xs btn-default" type="button">
 	                                                            <i class="fa {{::getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
 	                                                        </button>
 	                                                    </span>

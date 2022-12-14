@@ -341,11 +341,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		return registeredAdapters;
 	}
 
-	@Override
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		log.debug("setting transaction manager to [" + transactionManager + "]");
 		this.transactionManager = transactionManager;

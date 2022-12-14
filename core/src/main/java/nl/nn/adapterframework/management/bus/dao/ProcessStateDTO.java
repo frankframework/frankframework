@@ -13,30 +13,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.management.bus;
+package nl.nn.adapterframework.management.bus.dao;
 
-public enum BusTopic {
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-	APPLICATION,
-	CONFIGURATION,
-	ADAPTER,
-	FLOW,
-	IBISACTION,
-	LOGGING,
-	SECURITY_ITEMS,
-	JDBC,
-	DEBUG,
-	ENVIRONMENT,
-	LOG_CONFIGURATION,
-	LOG_DEFINITIONS,
-	CONNECTION_OVERVIEW,
-	IBISSTORE_SUMMARY,
-	INLINESTORAGE_SUMMARY,
-	QUEUE,
-	HEALTH,
-	WEBSERVICES,
-	SCHEDULER,
-	SERVICE_LISTENER,
-	TEST_PIPELINE,
-	MESSAGE_BROWSER
+import lombok.Getter;
+import nl.nn.adapterframework.core.ProcessState;
+
+public class ProcessStateDTO {
+	private final @Getter String name;
+
+	@JsonInclude(Include.NON_NULL)
+	private @Getter Object numberOfMessages;
+
+	public ProcessStateDTO(ProcessState ps) {
+		this.name = ps.getName();
+	}
+
+	public void setMessageCount(Object messageCount) {
+		this.numberOfMessages = messageCount;
+	}
 }

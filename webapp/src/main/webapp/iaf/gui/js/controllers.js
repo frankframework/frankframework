@@ -1410,15 +1410,15 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "id", "data": "messageId", bSortable: false },
-		{ "name": "insertDate", "data": "insertDate", className: "date" },
-		{ "name": "host", "data": "host", bSortable: false },
-		{ "name": "originalId", "data": "originalId", bSortable: false },
-		{ "name": "correlationId", "data": "correlationId", bSortable: false },
-		{ "name": "comment", "data": "comment", bSortable: false },
-		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
-		{ "name": "label", "data": "label", bSortable: false },
+		{ "name": "pos", "data": "position", bSortable: false, defaultContent:"" },
+		{ "name": "id", "data": "messageId", bSortable: false, defaultContent:"" },
+		{ "name": "insertDate", "data": "insertDate", className: "date", defaultContent:"" },
+		{ "name": "host", "data": "host", bSortable: false, defaultContent:"" },
+		{ "name": "originalId", "data": "originalId", bSortable: false, defaultContent:"" },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false, defaultContent:"" },
+		{ "name": "comment", "data": "comment", bSortable: false, defaultContent:"" },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false, defaultContent:"" },
+		{ "name": "label", "data": "label", bSortable: false, defaultContent:"" },
 	];
 	var filterCookie = Cookies.get($scope.processState+"Filter");
 	if(filterCookie) {
