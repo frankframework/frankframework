@@ -184,10 +184,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return filePattern;
 	}
 
-	/**
-	 * 
-	 * @ff.default  
-	 */
+	/** session key that contains the pattern of files to be deleted, only used if filePattern is not set */
 	public void setFilePatternSessionKey(String string) {
 		filePatternSessionKey = string;
 	}
