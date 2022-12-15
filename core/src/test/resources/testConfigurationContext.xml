@@ -26,6 +26,8 @@
 
 	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
 
+	<bean name="jdbcMigrator" class="nl.nn.adapterframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
+
 	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
 
 	<bean name="sharedResources" class="nl.nn.adapterframework.core.SharedResources" scope="singleton"/>
