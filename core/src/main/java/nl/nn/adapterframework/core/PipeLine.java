@@ -421,7 +421,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	private void handlePipeStat(INamedObject pipe, Map<String, StatisticsKeeper> pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, Action action) throws SenderException {
-		if (pipe == null) {
+		if (pipe == null || pipe.getName()==null) {
 			return;
 		}
 		StatisticsKeeper pstat = pipelineStatistics.get(pipe.getName());
