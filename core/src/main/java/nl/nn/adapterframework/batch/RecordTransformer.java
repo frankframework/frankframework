@@ -275,11 +275,6 @@ public class RecordTransformer extends AbstractRecordHandler {
 		setOutputFields(part.getValue());
 	}
 
-	/**
-	 * Translate a declaration string with functions to a list of function instances 
-	 * @param outputfieldsDef
-	 * @throws ConfigurationException
-	 */
 	/** semicolon separated list of output record field specifications (see table below) */
 	public void setOutputFields(String outputfieldsDef) throws ConfigurationException {
 		StringTokenizer st = new StringTokenizer(outputfieldsDef, ";");
