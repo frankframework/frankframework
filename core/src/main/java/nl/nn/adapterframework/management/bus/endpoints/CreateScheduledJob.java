@@ -104,7 +104,6 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		Configuration applicationContext = adapter.getConfiguration();
 
-		boolean persistent = BusMessageUtils.getBooleanHeader(message, "persistent", false);
 		boolean hasLocker = BusMessageUtils.getBooleanHeader(message, "locker", false);
 		String lockKey = BusMessageUtils.getHeader(message, "lockkey", "lock4["+name+"]");
 		String jobMessage = BusMessageUtils.getHeader(message, "message");
@@ -139,7 +138,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		}
 
 		//Save the job in the database
-		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
+		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
