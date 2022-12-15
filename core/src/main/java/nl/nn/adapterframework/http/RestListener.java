@@ -215,7 +215,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		this.etagSessionKey = etagSessionKey;
 	}
 
-	/** Key of Session variable that determines requested content type, overrides {@link #setProduces(String) produces} */
+	/** Key of Session variable that determines requested content type, overrides {@link #setProduces(MediaTypes) produces} */
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}

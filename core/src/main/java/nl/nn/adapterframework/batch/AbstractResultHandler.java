@@ -117,7 +117,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified
+	 * if set <code>true</code>, this resulthandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
 	 * @ff.default false
 	 */
 	@Override
