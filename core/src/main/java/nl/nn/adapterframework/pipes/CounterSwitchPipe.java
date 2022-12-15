@@ -80,10 +80,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		return divisor;
 	}
 
-	/**
-	 *  
-	 * @ff.default 2
-	 */
+	@Default (2)
 	public void setDivisor(int i) {
 		divisor = i;
 	}
