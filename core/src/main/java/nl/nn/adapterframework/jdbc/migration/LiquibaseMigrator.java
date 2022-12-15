@@ -63,7 +63,8 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private Resource getChangeLog() {
+	@Override
+	public Resource getChangeLog() {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
@@ -207,10 +208,5 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		} catch (Exception e) {
 			throw new JdbcException("unable to generate database migration script", e);
 		}
-	}
-
-	@Override
-	public boolean hasMigrationScript() {
-		return getChangeLog() != null;
 	}
 }
