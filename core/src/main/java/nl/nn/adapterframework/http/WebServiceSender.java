@@ -242,18 +242,12 @@ public class WebServiceSender extends HttpSender {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	/**
-	 * 
-	 * @ff.default  
-	 */
+	/** username used to obtain credentials for authentication to web services security */
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
 
-	/**
-	 * 
-	 * @ff.default  
-	 */
+	/** password used to obtain credentials for authentication to web services security */
 	public void setWssPassword(String string) {
 		wssPassword = string;
 	}
