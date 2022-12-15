@@ -168,7 +168,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.setFilename(filename);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */ 
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
