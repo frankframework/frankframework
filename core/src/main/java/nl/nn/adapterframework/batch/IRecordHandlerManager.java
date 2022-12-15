@@ -53,9 +53,6 @@ public interface IRecordHandlerManager extends INamedObject {
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
 
-	/**
-	 * @param initialFactory indicates if this manager is the initial manager
-	 */
 	/** indicates if this manager is the initial manager */
 	void setInitial(boolean initialFactory);
 	boolean isInitial();
