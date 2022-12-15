@@ -77,9 +77,6 @@ public class SkipPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Sets the number of bytes to skip
-	 */
-	/**
 	 * Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input
 	 * @ff.default 0
 	 */
