@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -284,10 +285,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest());
 	}
 
-	/**
-	 * 
-	 * @ff.default wrap
-	 */
+	@Default ("wrap")
 	public void setDirection(Direction value) {
 		direction = value;
 	}
