@@ -836,9 +836,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/**
-	 * This is a superset of mimetype + charset + optional payload metadata.
-	 */
-	/**
 	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods
 	 * @ff.default text/html, when postType=<code>RAW</code>
 	 */
