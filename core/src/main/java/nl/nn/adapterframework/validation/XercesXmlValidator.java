@@ -348,7 +348,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes)).
 		// See comment in method XmlValidator.getSchemas() too.
 		// See ClassLoaderXmlEntityResolver too.
-		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+		return new XMLInputSource(null, schema.getSystemId(), null, schema.getReader(), null);
 	}
 
 	@Override

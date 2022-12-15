@@ -59,7 +59,7 @@ public class XSDTest {
 		xsd.setAddNamespaceToSchema(true);
 
 		xsd.addTargetNamespace();
-		String actual = StreamUtil.streamToString(xsd.getInputStream(), null, null);
+		String actual = StreamUtil.readerToString(xsd.getReader(), null);
 		MatchUtils.assertXmlEquals(expectedSchema, actual);
 	}
 
