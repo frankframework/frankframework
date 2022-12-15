@@ -1022,7 +1022,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		setUsername(userName);
 	}
 
-	/**  */
+	/** Password used in authentication to host */
 	public void setPassword(String password) {
 		sessionBuilder.setPassword(password);
 		this.password = password;
