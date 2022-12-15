@@ -142,7 +142,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		SUCCESS,
 		ERROR,
 		REJECTED;
-		
+
 		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
 	}
 

@@ -155,7 +155,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.addActions(specificActions);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */ 
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
