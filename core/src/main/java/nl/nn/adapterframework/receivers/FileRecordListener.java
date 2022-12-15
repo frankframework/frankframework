@@ -313,11 +313,7 @@ public class FileRecordListener implements IPullingListener {
 		return name;
 	}
 
-	/**
-	 * set the directory name to look in for files.
-	 * @see #setWildcard(String)
-	 */
-	/** set the directory name to look in for files. */
+	/** the directory name to look in for files. */
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
@@ -325,9 +321,6 @@ public class FileRecordListener implements IPullingListener {
 		return inputDirectory;
 	}
 
-	/**
-	 * set the {@link WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
-	 */
 	/** the wildcard to look for files in the specified directory, e.g. \"*.inp\" */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
@@ -336,10 +329,6 @@ public class FileRecordListener implements IPullingListener {
 		return wildcard;
 	}
 
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
 	/** the directory to store processed files in */
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
@@ -348,9 +337,6 @@ public class FileRecordListener implements IPullingListener {
 		return directoryProcessedFiles;
 	}
 
-	/**
-	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
-	 */
 	/**
 	 * The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file
 	 * @ff.default 1000
