@@ -292,9 +292,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
-	/**
-	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
-	 */
 	/** Name of the {@link WebServiceListener} that should be called */
 	@Deprecated
 	public void setServiceName(String serviceName) {
@@ -327,9 +324,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		synchronous = b;
 	}
 
-	/**
-	 * When <code>true</code>, the call is made in a separate thread, possibly using separate transaction.
-	 */
 	/**
 	 * If <code>true</code>, the call is made in a separate thread, possibly using separate transaction
 	 * @ff.default false
