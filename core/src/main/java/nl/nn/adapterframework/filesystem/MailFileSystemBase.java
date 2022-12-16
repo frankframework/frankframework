@@ -15,10 +15,7 @@
  */
 package nl.nn.adapterframework.filesystem;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for {@link IMailFileSystem MailFileSystems}.
@@ -27,7 +24,6 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String authAlias;
 	private @Getter String username;
@@ -76,7 +72,7 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 
 	/** 
 	 * Comma separated list of fields to try as response address
-	 * @ff.default {@value nl.nn.adapterframework.filesystem.IMailFileSystem#REPLY_ADDRESS_FIELDS_DEFAULT}
+	 * @ff.default {@value #REPLY_ADDRESS_FIELDS_DEFAULT}
 	 */
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;

@@ -245,7 +245,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * JNDI name of datasource to be used, can be configured via jmsRealm, too
-	 * @ff.default {@value nl.nn.adapterframework.jndi.JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
