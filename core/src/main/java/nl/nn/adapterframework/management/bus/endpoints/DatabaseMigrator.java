@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.StringWriter;
+
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -29,6 +33,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
@@ -46,6 +51,32 @@ public class DatabaseMigrator extends BusEndpointBase {
 		}
 
 		Resource changelog = databaseMigrator.getChangeLog();
-		return ResponseMessage.Builder.create().withPayload(changelog).withMimeType(MediaType.TEXT_PLAIN).raw();
+		return ResponseMessage.Builder.create().withPayload(changelog).withMimeType(getMediaTypeFromName(changelog.getName())).raw();
+	}
+
+	@ActionSelector(BusAction.UPLOAD)
+	public Message<Object> getMigrationChanges(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		Configuration configuration = getConfigurationByName(configurationName);
+
+		if(!(message.getPayload() instanceof String)) {
+			throw new BusException("payload is not instance of String");
+		}
+
+		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		if(!databaseMigrator.hasMigrationScript()) {
+			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
+		}
+
+		String payload = (String) message.getPayload();
+
+		StringWriter writer = new StringWriter();
+		try {
+			Resource resource = new BytesResource(payload.getBytes(StreamUtil.DEFAULT_CHARSET), "sql-migrationscript-for-"+configurationName, configuration);
+			databaseMigrator.update(writer, resource);
+		} catch (JdbcException e) {
+			throw new BusException("unable to generate database changes", e);
+		}
+		return ResponseMessage.Builder.create().withPayload(writer.toString()).withMimeType(MediaType.TEXT_PLAIN).raw();
 	}
 }

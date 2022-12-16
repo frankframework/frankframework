@@ -39,10 +39,15 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -55,7 +60,7 @@ public final class ShowLiquibaseScript extends Base {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadScript() throws ApiException {
 
-		List<Configuration> configurations = new ArrayList<Configuration>();
+		List<Configuration> configurations = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
@@ -64,22 +69,26 @@ public final class ShowLiquibaseScript extends Base {
 			}
 		}
 
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
+
 		StreamingOutput stream = new StreamingOutput() {
 			@Override
 			public void write(OutputStream out) throws IOException, WebApplicationException {
 				try (ZipOutputStream zos = new ZipOutputStream(out)) {
 					for (Configuration configuration : configurations) {
-						AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+						builder.addHeader("configuration", configuration.getName());
+						Message<?> response = sendSyncMessage(builder);
+						String res = (String) response.getPayload();
+						System.err.println(res);
 
-						String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
-						try(InputStream file = configuration.getClassLoader().getResourceAsStream(changeLogFile)){
-							if(file != null) {
-								ZipEntry entry = new ZipEntry(changeLogFile);
-								zos.putNextEntry(entry);
-								zos.write(StreamUtil.streamToByteArray(file, false));
-								zos.closeEntry();
-							}
-						}
+//						try(InputStream file = ){
+//							if(file != null) {
+//								ZipEntry entry = new ZipEntry(changeLogFile);
+//								zos.putNextEntry(entry);
+//								zos.write(StreamUtil.streamToByteArray(file, false));
+//								zos.closeEntry();
+//							}
+//						}
 					}
 				} catch (IOException e) {
 					throw new ApiException("Failed to create zip file with scripts.", e);

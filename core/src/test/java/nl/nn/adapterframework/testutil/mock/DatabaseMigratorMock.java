@@ -10,27 +10,27 @@ public class DatabaseMigratorMock extends DatabaseMigratorBase {
 
 	@Override
 	public boolean validate() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public void update() throws JdbcException {
-		// TODO Auto-generated method stub
+		// Nothing to update
 	}
 
 	@Override
 	public void update(Writer writer) throws JdbcException {
-		// TODO Auto-generated method stub
+		// Nothing to update
 	}
 
 	@Override
 	public void update(Writer writer, Resource resource) throws JdbcException {
-		// TODO Auto-generated method stub
+		// Nothing to update
 	}
 
 	@Override
 	public Resource getChangeLog() {
-		return null;
+		return Resource.getResource(this, "/Migrator/DatabaseChangelog.xml");
 	}
 
 }
