@@ -458,8 +458,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	/** 
-	 * when this name is used, it will be followed by a number which is equal to the node's position
-	 * @ff.default attachment"
+	 * When this name is used, it will be followed by a number which is equal to the node's position
+	 * @ff.default attachment
 	 */
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;

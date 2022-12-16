@@ -170,9 +170,6 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		return initialContextFactoryName;
 	}
 
-	/**
-	 * @since 4.7
-	 */
 	/** key of session variable used to store cause of errors */
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;

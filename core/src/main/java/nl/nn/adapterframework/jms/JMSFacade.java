@@ -861,10 +861,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 *
 	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
 	 */
-	/**
-	 * Normally, if (lookupDestination=true AND destinationType=TOPIC) then the topic is created, instead of looked up. By setting persistent=true in that case, the topic will be looked up.
-	 * @ff.default false
-	 */
 	@Deprecated
 	public void setPersistent(boolean value) {
 		persistent = value;
@@ -879,19 +875,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
+	 * Used when {@link #setDestinationType DestinationType} = {@link DestinationType#QUEUE QUEUE}.
+	 * The JNDI-name of the queueConnectionFactory to use to connect to a <code>queue</code> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	/** JNDI-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code> */
 	public void setQueueConnectionFactoryName(String name) {
 		queueConnectionFactoryName=name;
 	}
 
 	/**
+	 * Used when {@link #setDestinationType DestinationType} = {@link DestinationType#TOPIC TOPIC}.
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
-	/** JNDI-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code> */
 	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
@@ -917,9 +913,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Controls whether messages are send under transaction control.
 	 * If set <code>true</code>, messages are committed or rolled back under control of an XA-transaction.
-	 */
-	/**
-	 * 
 	 * @ff.default false
 	 */
 	public void setTransacted(boolean transacted) {

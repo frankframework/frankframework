@@ -714,7 +714,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		ftpType = value;
 	}
 
-	/** File type */
 	public void setFileType(FileType value) {
 		fileType = value;
 	}

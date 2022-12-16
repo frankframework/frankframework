@@ -683,10 +683,18 @@ public class FileHandler implements IScopeProvider {
 	}
 
 	/**
-	 * Sets actions the pipe has to do. Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
-	 * You can also define combinations, like "read encode write".
-	 */
-	/** comma separated list of actions to be performed. Possible action values: <ul> <li>write: create a new file and write input to it</li> <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li> <li>create: create a new file, but do not write anything to it</li> <li>read: read from file</li> <li>delete: delete the file</li><li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li> <li>encode: encode base64</li> <li>decode: decode base64</li> <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link Dir2Xml}). If a directory is not specified, the fileName is expected to include the directory</li> <li>info: returns information about the file</li> </ul> */
+	 * Sets actions the pipe has to perform. Possible action values: 
+	 * <ul>
+	 *   <li>write: create a new file and write input to it</li>
+	 *   <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>
+	 *   <li>create: create a new file, but do not write anything to it</li>
+	 *   <li>read: read from file</li>
+	 *   <li>delete: delete the file</li>
+	 *   <li>read_delete: read the contents, then delete (when outputType is stream the file is deleted after the stream is read)</li>
+	 *   <li>encode: encode base64</li> <li>decode: decode base64</li>
+	 *   <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link Dir2Xml}). If a directory is not specified, the fileName is expected to include the directory</li>
+	 *   <li>info: returns information about the file</li>
+	 * </ul> */
 	public void setActions(String actions) {
 		this.actions = actions;
 	}
@@ -697,7 +705,6 @@ public class FileHandler implements IScopeProvider {
 	/**
 	 * Sets the directory in which the file resides or has to be created
 	 */
-	/** base directory where files are stored in or read from */
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -705,10 +712,7 @@ public class FileHandler implements IScopeProvider {
 		return directory;
 	}
 
-	/**
-	 * Sets suffix of the file that is written
-	 */
-	/** suffix of the file to be created (only used if filename and filenamesession are not set) */
+	/** Sets suffix of the file that is written (only used if filename and filenamesession are not set) */
 	public void setWriteSuffix(String suffix) {
 		this.writeSuffix = suffix;
 	}
@@ -721,10 +725,10 @@ public class FileHandler implements IScopeProvider {
 	public void setFileName(String filename) {
 		setFilename(filename);
 	}
+
 	/**
 	 * Sets filename of the file that is written
 	 */
-	/** the name of the file to use */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -738,10 +742,7 @@ public class FileHandler implements IScopeProvider {
 		setFilenameSessionKey(filenameSessionKey);
 	}
 
-	/**
-	 * Sets filenameSessionKey the session key that contains the name of the file to be created
-	 */
-	/** the session key that contains the name of the file to use (only used if filename is not set) */
+	/** Sets filenameSessionKey the session key that contains the name of the file to be created (only used if filename is not set) */
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}

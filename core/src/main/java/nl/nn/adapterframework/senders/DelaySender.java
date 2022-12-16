@@ -47,10 +47,7 @@ public class DelaySender extends SenderBase {
 	}
 
 	/**
-	 * the time the thread will be put to sleep.
-	 */
-	/**
-	 * the time the thread will be put to sleep
+	 * The time <i>in milliseconds</i> the thread will be put to sleep
 	 * @ff.default 5000 [ms]
 	 */
 	public void setDelayTime(long l) {

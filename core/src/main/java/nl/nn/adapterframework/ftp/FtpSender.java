@@ -156,7 +156,6 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 		return ftpSession.getFtpType();
 	}
 
-	/** file type */
 	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}

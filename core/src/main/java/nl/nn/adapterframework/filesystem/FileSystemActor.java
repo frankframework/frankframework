@@ -97,16 +97,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public static final String ACTION_FORWARD="forward";
 	public static final String ACTION_LIST_ATTACHMENTS="listAttachments";
 
-	public final String PARAMETER_ACTION="action";
-	public final String PARAMETER_CONTENTS1="contents";
-	public final String PARAMETER_CONTENTS2="file";
-	public final String PARAMETER_FILENAME="filename";
-	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
-	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
+	public static final String PARAMETER_ACTION="action";
+	public static final String PARAMETER_CONTENTS1="contents";
+	public static final String PARAMETER_CONTENTS2="file";
+	public static final String PARAMETER_FILENAME="filename";
+	public static final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
+	public static final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 
-	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
-	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
-	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
+	public static final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
+	public static final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
+	public static final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
 	private @Getter FileSystemAction action;
 	private @Getter String filename;

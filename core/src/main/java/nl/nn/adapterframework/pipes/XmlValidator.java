@@ -48,6 +48,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -799,14 +800,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
 
-	@Deprecated
 	/**
 	 * The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
 	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
-	 * Please note that this functionality is deprecated, using {@link SoapValidator}
-	 * is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value
+	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP 
+	 * message needs to be validated, in other cases give this property an empty value.
 	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
 	 */
+	@Deprecated
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}

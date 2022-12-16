@@ -108,12 +108,11 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter}
 	 */
-	/** stylesheet to use for transformation */
 	public void setStyleSheet(String newStyleSheet) {
 		styleSheet = newStyleSheet;
 	}
 
-	/** xpathexpression to use for transformation */
+	/** xPathExpression to use for transformation */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}

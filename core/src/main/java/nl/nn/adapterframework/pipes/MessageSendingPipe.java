@@ -1007,7 +1007,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 
-	/**
+	/*
 	 * For asynchronous communication, the server side may either use the messageID or the correlationID
 	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
 	 * <ul>

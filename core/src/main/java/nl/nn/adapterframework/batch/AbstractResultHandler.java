@@ -94,13 +94,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		this.pipe = pipe;
 	}
 
-	/** name of the resulthandler */
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	/** <i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record */
+	/** Prefix that has to be written before each record, if the record is in another block than the previous record */
 	@Deprecated
 	public void setPrefix(String string) {
 		prefix = string;
@@ -130,7 +129,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	}
 
 	/**
-	 * when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.
+	 * When set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType} is handled as a block.
 	 * @ff.default true
 	 */
 	public void setBlockByRecordType(boolean b) {

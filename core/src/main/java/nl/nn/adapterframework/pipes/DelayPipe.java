@@ -46,9 +46,6 @@ public class DelayPipe extends FixedForwardPipe {
 
 
 	/**
-	 * the time the thread will be put to sleep.
-	 */
-	/**
 	 * The time <i>in milliseconds</i> the thread will be put to sleep
 	 * @ff.default 5000
 	 */

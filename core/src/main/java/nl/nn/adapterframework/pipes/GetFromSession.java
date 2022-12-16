@@ -87,10 +87,6 @@ public class GetFromSession  extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	/**
-	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see PipeLineSession
-	 */
 	/** Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable */
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;

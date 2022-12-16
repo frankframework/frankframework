@@ -119,7 +119,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * Sets the string that is searched for.
 	 */
-	/** string to search for */
 	public void setFind(String find) {
 		this.find = find;
 	}
@@ -130,7 +129,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string.
 	 */
-	/** string that will replace each of the strings found */
 	public void setReplace(String replace) {
 		this.replace = replace;
 	}

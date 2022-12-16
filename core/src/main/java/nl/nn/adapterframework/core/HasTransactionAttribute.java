@@ -32,8 +32,8 @@ public interface HasTransactionAttribute {
 	 * The <code>transactionAttribute</code> declares transactional behavior of execution. It applies both to database transactions and XA transactions.
 	 * The pipeline uses this to start a new transaction or suspend the current one when required.
 	 * For developers: it is equal to <a href=\"https://docs.oracle.com/javaee/7/tutorial/transactions003.htm\">EJB transaction attribute</a>.
-	 * Possible values for transactionAttribute:"
-	 *   <table border=\"1\">"
+	 * Possible values for transactionAttribute:
+	 *   <table border=\"1\">
 	 *     <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
 	 *     <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>
 	 * 											      <tr><td>T1</td>  <td>T1</td></tr>

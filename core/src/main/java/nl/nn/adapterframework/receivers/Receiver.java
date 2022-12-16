@@ -2187,7 +2187,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'
+	 * If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable to {@value #RETRY_FLAG_SESSION_KEY}.
 	 * @ff.default false
 	 */
 	public void setForceRetryFlag(boolean b) {

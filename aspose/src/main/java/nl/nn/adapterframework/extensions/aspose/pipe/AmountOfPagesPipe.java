@@ -56,7 +56,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * charset to be used to encode the given input string 
+	 * Charset to be used to encode the given input string 
 	 * @ff.default UTF-8
 	 */
 	public void setCharset(String charset){

@@ -209,7 +209,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
 
-	/** file type */
 	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}

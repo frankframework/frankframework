@@ -1029,9 +1029,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * BindingType
-	 * @ff.default atompub
+	 * BindingType CMIS protocol to use
 	 */
+	@Mandatory
 	public void setBindingType(BindingTypes bindingType) {
 		sessionBuilder.setBindingType(bindingType);
 	}

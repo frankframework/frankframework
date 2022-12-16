@@ -23,6 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -81,7 +82,7 @@ public class ExecuteQueryJob extends JobDef {
 
 	/**
 	 * JNDI name of datasource to be used
-	 * @ff.default {@value nl.nn.adapterframework.jndi.JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

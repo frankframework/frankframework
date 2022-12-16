@@ -31,13 +31,17 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * @author Jaco de Groot
  */
 public class FxfXmlValidator extends WsdlXmlValidator {
-	private @Getter String direction = "send";
+	private Direction direction = Direction.SEND;
 	private @Getter String fxfVersion = "3.1";
+
+	public enum Direction {
+		SEND,RECEIVE
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setThrowException(true);
-		if (getDirection().equals("receive")) {
+		if(direction == Direction.RECEIVE) {
 			setWsdl("xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl");
 			setSoapBody("OnCompletedTransferNotify_Action");
 		} else {
@@ -55,11 +59,7 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		}
 	}
 
-	/**
-	 * either <code>send</code> or <code>receive</code>
-	 * @ff.default send
-	 */
-	public void setDirection(String direction) {
+	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
 

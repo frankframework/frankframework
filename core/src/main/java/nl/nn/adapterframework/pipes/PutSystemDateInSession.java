@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -180,7 +181,11 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 
 	/**
-	 * Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}
+	 * Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in 
+	 * this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the 
+	 * timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
+	 * <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use 
+	 * &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}.
 	 * @ff.default -1
 	 */
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {

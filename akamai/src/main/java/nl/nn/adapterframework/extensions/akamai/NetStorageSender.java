@@ -321,7 +321,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param nonce to use when logging in
 	 */
-	/** the nonce or api username */
 	public void setNonce(String nonce) {
 		this.nonce = nonce;
 	}
@@ -329,9 +328,6 @@ public class NetStorageSender extends HttpSenderBase {
 	/**
 	 * Version to validate queries made to NetStorage backend.
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
-	 */
-	/**
-	 * the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)
 	 * @ff.default 5
 	 */
 	public void setSignVersion(int signVersion) {
@@ -350,7 +346,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param accessToken to use when logging in
 	 */
-	/** the api accesstoken */
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}
