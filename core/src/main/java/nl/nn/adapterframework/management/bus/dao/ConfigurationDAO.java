@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
+import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -41,10 +42,11 @@ public class ConfigurationDAO {
 	private @Getter String exception = null;
 
 	private @Getter String filename;
-	private @Getter  String created;
+	private @Getter String created;
 	private @Getter String user;
 	private @Getter Boolean active = null;
 	private @Getter Boolean autoreload = null;
+	private @Getter boolean jdbcMigrator = false;
 
 	private @Getter String parent;
 
@@ -66,6 +68,11 @@ public class ConfigurationDAO {
 		ClassLoader classLoader = configuration.getClassLoader();
 		if(classLoader instanceof DatabaseClassLoader) {
 			setDatabaseAttributes((DatabaseClassLoader) classLoader);
+		}
+
+		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		if(databaseMigrator.hasMigrationScript()) {
+			jdbcMigrator = true;
 		}
 
 		String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);

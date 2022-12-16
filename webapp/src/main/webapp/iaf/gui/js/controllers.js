@@ -134,6 +134,7 @@ angular.module('iaf.beheerconsole')
 			else
 				$scope.configurations.push(config);
 		}
+		$rootScope.$broadcast('configurations', $scope.configurations);
 	}
 
 	$scope.adapterSummary = {
@@ -2207,6 +2208,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+	$scope.form = {};
 	$scope.file = null;
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
@@ -2216,12 +2218,17 @@ angular.module('iaf.beheerconsole')
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 
-	Api.Get("jdbc/liquibase", function(data) {
-		$.extend($scope, data);
-		if($scope.configurationsWithLiquibaseScript && $scope.configurationsWithLiquibaseScript.length > 0) {
-			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
+	let findFirstAvailabeConfiguration = function() {
+		for(let i in $scope.configurations) {
+			let configuration = $scope.configurations[i];
+			if(configuration.jdbcMigrator) {
+				$scope.form.configuration = configuration.name;
+				break;
+			}
 		}
-	});
+	}
+	findFirstAvailabeConfiguration();
+	$scope.$on('configurations', findFirstAvailabeConfiguration);
 
 	$scope.download = function() {
 		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");

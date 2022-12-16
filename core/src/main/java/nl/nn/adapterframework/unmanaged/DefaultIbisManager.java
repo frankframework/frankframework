@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -244,14 +245,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
+	@Nonnull
 	private Adapter getAdapterByName(String configurationName, String adapterName) {
 		Assert.notNull(configurationName, "no configurationName provided");
 		Configuration configuration = getConfiguration(configurationName);
-		Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+		if(configuration == null) {
+			throw new IllegalArgumentException("configuration ["+configuration+"] not found");
+		}
 
 		Assert.notNull(adapterName, "no adapterName provided");
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-		Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+		if(adapter == null) {
+			throw new IllegalArgumentException("adapter ["+adapterName+"] not found");
+		}
 
 		return adapter;
 	}

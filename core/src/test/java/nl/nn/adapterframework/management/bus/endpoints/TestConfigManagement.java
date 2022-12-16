@@ -52,7 +52,7 @@ public class TestConfigManagement extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\"}]", response.getPayload());
+		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":false}]", response.getPayload());
 	}
 
 	@Test
@@ -61,6 +61,6 @@ public class TestConfigManagement extends BusTestBase {
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\"}]", response.getPayload());
+		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":false}]", response.getPayload());
 	}
 }
