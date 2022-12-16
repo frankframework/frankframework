@@ -1107,7 +1107,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * 
+	 * When <code>true</code>, the result of sendMessage is the reply of the request.
 	 * @ff.default true
 	 */
 	public void setSynchronous(boolean synchronous) {
