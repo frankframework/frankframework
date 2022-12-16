@@ -134,6 +134,7 @@ angular.module('iaf.beheerconsole')
 			else
 				$scope.configurations.push(config);
 		}
+		$rootScope.$broadcast('configurations', $scope.configurations);
 	}
 
 	$scope.adapterSummary = {
@@ -1888,7 +1889,6 @@ angular.module('iaf.beheerconsole')
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
 	$scope.submit = function() {
@@ -1902,7 +1902,6 @@ angular.module('iaf.beheerconsole')
 		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
@@ -1922,7 +1921,6 @@ angular.module('iaf.beheerconsole')
 					description:"",
 					locker:false,
 					lockkey:"",
-					persistent:true,
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
@@ -1951,7 +1949,6 @@ angular.module('iaf.beheerconsole')
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
 	Api.Get(url, function(data) {
@@ -1967,7 +1964,6 @@ angular.module('iaf.beheerconsole')
 				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
-				persistent: true,
 		};
 	});
 
@@ -1984,7 +1980,6 @@ angular.module('iaf.beheerconsole')
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)
 			fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
@@ -2213,6 +2208,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+	$scope.form = {};
 	$scope.file = null;
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
@@ -2222,12 +2218,17 @@ angular.module('iaf.beheerconsole')
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 
-	Api.Get("jdbc/liquibase", function(data) {
-		$.extend($scope, data);
-		if($scope.configurationsWithLiquibaseScript && $scope.configurationsWithLiquibaseScript.length > 0) {
-			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
+	let findFirstAvailabeConfiguration = function() {
+		for(let i in $scope.configurations) {
+			let configuration = $scope.configurations[i];
+			if(configuration.jdbcMigrator) {
+				$scope.form.configuration = configuration.name;
+				break;
+			}
 		}
-	});
+	}
+	findFirstAvailabeConfiguration();
+	$scope.$on('configurations', findFirstAvailabeConfiguration);
 
 	$scope.download = function() {
 		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");

@@ -165,6 +165,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
+		ConfigurationException configurationException = null;
 		INamedObject owner = getOwner();
 		Adapter adapter = null;
 		if (owner instanceof Adapter) {
@@ -211,7 +212,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					}
 				}
 			}
-			configure(pipe);
+			try {
+				configure(pipe);
+			} catch (ConfigurationException e) {
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
+			}
 		}
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in PipeLine");
@@ -235,7 +244,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			inputValidator.registerForward(pf);
 			inputValidator.setName(INPUT_VALIDATOR_NAME);
-			configure(inputValidator);
+			try {
+				configure(inputValidator);
+			} catch (ConfigurationException e) {
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
+			}
 		}
 		if (outputValidator!=null) {
 			log.debug("configuring OutputValidator");
@@ -243,7 +260,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			outputValidator.registerForward(pf);
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME);
-			configure(outputValidator);
+			try {
+				configure(outputValidator);
+			} catch (ConfigurationException e) {
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
+			}
 		}
 
 		if (getInputWrapper()!=null) {
@@ -252,7 +277,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getInputWrapper().registerForward(pf);
 			getInputWrapper().setName(INPUT_WRAPPER_NAME);
-			configure(getInputWrapper());
+			try {
+				configure(getInputWrapper());
+			} catch (ConfigurationException e) {
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
+			}
 		}
 		if (getOutputWrapper()!=null) {
 			log.debug("configuring OutputWrapper");
@@ -274,7 +307,15 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 					}
 				}
 			}
-			configure(getOutputWrapper());
+			try {
+				configure(getOutputWrapper());
+			} catch (ConfigurationException e) {
+				if (configurationException==null) {
+					configurationException=e;
+				} else {
+					configurationException.addSuppressed(e);
+				}
+			}
 		}
 		if (getLocker()!=null) {
 			log.debug("configuring Locker");
@@ -293,6 +334,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		super.configure();
 		log.debug("successfully configured");
 		configurationSucceeded = true;
+		if (configurationException!=null) {
+			throw configurationException;
+		}
 	}
 
 	public void configure(IPipe pipe) throws ConfigurationException {
@@ -344,7 +388,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
-			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
+			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
+			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
+			throw e;
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Pipe successfully configured");

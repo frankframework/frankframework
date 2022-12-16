@@ -51,27 +51,6 @@ public final class ShowLiquibaseScript extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/jdbc/liquibase")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getConfigurations() throws ApiException {
-
-		List<String> configNames= new ArrayList<String>();
-
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(databaseMigrator.hasMigrationScript()) {
-				configNames.add(config.getName());
-			}
-		}
-
-		HashMap<String, Object> resultMap = new HashMap<>();
-		resultMap.put("configurationsWithLiquibaseScript", configNames);
-
-		return Response.status(Response.Status.OK).entity(resultMap).build();
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadScript() throws ApiException {
