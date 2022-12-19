@@ -1,0 +1,6 @@
+<MultiSubOK1>
+	MultiSubOK1 header
+	<Include ref="okA.xml"/>
+	<Include ref="sub/okB.xml"/>
+	MultiSubOK1 header
+</MultiSubOK1>

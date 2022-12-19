@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 import org.junit.Test;
 

@@ -9,10 +9,11 @@ import org.junit.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.BlockEnabledSenderBase;
 import nl.nn.adapterframework.senders.EchoSender;
@@ -68,11 +69,11 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		}
 
 		@Override
-		public Message sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			try {
 				String result = "["+message.asString()+"]";
 				resultLog.append(result+"\n");
-				return new Message(result);
+				return new SenderResult(result);
 			} catch (IOException e) {
 				throw new SenderException(e);
 			}
@@ -84,14 +85,14 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		EchoSender sender = new EchoSender() {
 
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					if (message.asString().contains("error")) {
 						throw new SenderException("Exception triggered", e);
 					}
 					String result = "["+message.asString()+"]";
 					resultLog.append(result+"\n");
-					return new Message(result);
+					return new SenderResult(result);
 				} catch (IOException e) {
 					throw new SenderException(getLogPrefix(),e);
 				}

@@ -20,13 +20,6 @@
 	<import resource="springUnmanagedDeployment.xml"/>
 
 	<bean
-		name="metrics"
-		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
-		autowire="byName"
-		scope="singleton"
-	/>
-
-	<bean
 		name="lowerCasePropertySourcePostProcessor"
 		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
 		autowire="byName"

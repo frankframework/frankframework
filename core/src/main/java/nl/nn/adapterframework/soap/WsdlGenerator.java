@@ -258,7 +258,7 @@ public class WsdlGenerator {
 						warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
 					}
 //					if (outputValidator != null || isMixedValidator) {
-					  if (outputValidator != null) {
+					if (outputValidator != null) {
 						String outputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(outputValidator);
 						if (outputParadigm != null) {
 							if (!"Response".equals(outputParadigm)) {
@@ -472,13 +472,13 @@ public class WsdlGenerator {
 	 *
 	 * @see #wsdl(java.io.OutputStream, String)
 	 */
-	public void zip(OutputStream stream, String servletName) throws IOException, ConfigurationException, XMLStreamException {
+	public void zip(OutputStream stream, String defaultLocation) throws IOException, ConfigurationException, XMLStreamException {
 		try (ZipOutputStream out = new ZipOutputStream(stream)) {
 
 			// First an entry for the WSDL itself:
 			ZipEntry wsdlEntry = new ZipEntry(getFilename() + ".wsdl");
 			out.putNextEntry(wsdlEntry);
-			wsdl(out, servletName);
+			wsdl(out, defaultLocation);
 			out.closeEntry();
 
 			// And then all XSD's
@@ -500,12 +500,8 @@ public class WsdlGenerator {
 
 	/**
 	 * Writes the WSDL to an output stream
-	 * @param out
-	 * @param servlet  The servlet what is used as the web service (because this needs to be present in the WSDL)
-	 * @throws XMLStreamException
-	 * @throws IOException
 	 */
-	public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, ConfigurationException {
+	public void wsdl(OutputStream out, String defaultLocation) throws XMLStreamException, IOException, ConfigurationException {
 		XMLStreamWriter w = WsdlGeneratorUtils.getWriter(out, isIndent());
 
 		w.writeStartDocument(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, "1.0");
@@ -542,7 +538,7 @@ public class WsdlGenerator {
 			messages(w);
 			portType(w);
 			binding(w);
-			service(w, servlet);
+			service(w, defaultLocation);
 		}
 		warnings(w);
 		w.writeEndDocument();
@@ -596,7 +592,7 @@ public class WsdlGenerator {
 		if (inputHeaderIsOptional) {
 			parts.clear();
 			if (inputHeaderElement != null) {
-			   	parts.add(inputHeaderElement);
+				parts.add(inputHeaderElement);
 			}
 			message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
 		}
@@ -612,7 +608,7 @@ public class WsdlGenerator {
 			if (outputHeaderIsOptional) {
 				parts.clear();
 				if (outputHeaderElement != null) {
-				   	parts.add(outputHeaderElement);
+					parts.add(outputHeaderElement);
 				}
 				message(w, outputRoot + "_"+ outputHeaderElement.getLocalPart(), parts);
 			}
@@ -786,7 +782,7 @@ public class WsdlGenerator {
 		w.writeEndElement();
 	}
 
-	protected void service(XMLStreamWriter w, String servlet) throws XMLStreamException {
+	protected void service(XMLStreamWriter w, String defaultLocation) throws XMLStreamException {
 		String httpPrefix = "";
 		String jmsPrefix = "";
 		if (httpActive && jmsActive) {
@@ -794,7 +790,7 @@ public class WsdlGenerator {
 			jmsPrefix = "Jms";
 		}
 		if (httpActive) {
-			httpService(w, servlet, httpPrefix);
+			httpService(w, defaultLocation, httpPrefix);
 		}
 		if (jmsActive) {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
@@ -805,14 +801,14 @@ public class WsdlGenerator {
 		}
 	}
 
-	protected void httpService(XMLStreamWriter w, String servlet, String namePrefix) throws XMLStreamException {
+	protected void httpService(XMLStreamWriter w, String defaultLocation, String namePrefix) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "service");
 		w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
 			w.writeStartElement(WSDL_NAMESPACE, "port");
 			w.writeAttribute("name", namePrefix + "Port_" + WsdlGeneratorUtils.getNCName(getName()));
 			w.writeAttribute("binding", getTargetNamespacePrefix() + ":" + namePrefix + "Binding_" + WsdlGeneratorUtils.getNCName(getName())); {
 				w.writeEmptyElement(wsdlSoapNamespace, "address");
-				w.writeAttribute("location", getLocation(servlet));
+				w.writeAttribute("location", getLocation(defaultLocation));
 			}
 			w.writeEndElement();
 		}

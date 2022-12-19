@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 
 public class NamespaceRemovingFilter extends FullXmlFilter {
 //	Logger log = LogUtil.getLogger(this.getClass());
-	
+
 	public NamespaceRemovingFilter(ContentHandler handler) {
 		super(handler);
 	}

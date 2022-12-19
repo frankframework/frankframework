@@ -43,10 +43,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private Logger log = LogUtil.getLogger(this);
 
 	public static final String originalMessageKey="originalMessage";
-	public static final String originalMessageIdKey="id";
-	public static final String messageIdKey="messageId";
-	public static final String businessCorrelationIdKey="cid";
-	public static final String technicalCorrelationIdKey="tcid";
+	public static final String messageIdKey="mid";           // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
+	public static final String correlationIdKey="cid";       // conversationId, e.g. JmsCorrelationID.
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
@@ -81,10 +79,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
+	/*
+	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
+	 * Ensure that a proper string is returned in those cases too.
+	 */
 	@SneakyThrows
 	public String getMessageId() {
-		return Message.asString(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
+		return getString(messageIdKey); // Allow Ladybug to wrap it in a Message
+	}
+
+	@SneakyThrows
+	public String getCorrelationId() {
+		return getString(correlationIdKey); // Allow Ladybug to wrap it in a Message
 	}
 
 	public Message getMessage(String key) {
@@ -126,12 +132,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	/**
 	 * Convenience method to set required parameters from listeners
 	 */
-	public static void setListenerParameters(Map<String, Object> map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
+	public static void setListenerParameters(Map<String, Object> map, String messageId, String correlationId, Date tsReceived, Date tsSent) {
 		if (messageId!=null) {
-			map.put(originalMessageIdKey, messageId);
+			map.put(messageIdKey, messageId);
 		}
-		if (technicalCorrelationId!=null) {
-			map.put(technicalCorrelationIdKey, technicalCorrelationId);
+		if (correlationId!=null) {
+			map.put(correlationIdKey, correlationId);
 		}
 		if (tsReceived==null) {
 			tsReceived=new Date();
@@ -169,7 +175,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private String getString(String key) {
 		try {
-			return (String) get(key);
+			return getMessage(key).asString();
 		} catch(Exception e) {
 			return get(key).toString();
 		}

@@ -42,8 +42,8 @@
 			<version>${mssql.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
 		<dependency>
@@ -55,6 +55,11 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
@@ -108,6 +113,25 @@
 							</artifactItems>
 							<excludeTransitive>true</excludeTransitive>
 							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>secrets</classifier>
+									<excludes>META-INF/</excludes>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

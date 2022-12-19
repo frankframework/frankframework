@@ -42,10 +42,8 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	public void setUp() throws Exception {
 		super.setUp();
 		session = new PipeLineSession();
-		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
-		session.put(PipeLineSession.messageIdKey, messageId);
-		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
+		session.put(PipeLineSession.messageIdKey, testMessageId);
+		session.put(PipeLineSession.correlationIdKey, testCorrelationId);
 		sender = createSender();
 		getConfiguration().autowireByType(sender);
 	}
@@ -66,7 +64,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		return sendMessage(message, session);
 	}
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sender.sendMessage(message, session);
+		return sender.sendMessageOrThrow(message, session);
 	}
 
 	/**

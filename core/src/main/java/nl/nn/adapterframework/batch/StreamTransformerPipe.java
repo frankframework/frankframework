@@ -36,6 +36,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
@@ -43,14 +45,15 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
- * 
+ *
  * For file containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
- * 
+ *
  * @author John Dekker / Gerrit van Brakel
  * @since   4.7
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey="originalBlock";
@@ -68,7 +71,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private @Getter IReaderFactory readerFactory=new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
-		return session.getMessageId();
+		return session.getCorrelationId();
 	}
 
 	/*
@@ -93,7 +96,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			}
 			return new BufferedReader(reader);
 		} catch (SenderException e) {
-			throw new PipeRunException(this,getLogPrefix(session)+"cannot create reader",e);
+			throw new PipeRunException(this, "cannot create reader", e);
 		}
 	}
 
@@ -101,7 +104,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (registeredManagers.size()==0) {
-			log.info(getLogPrefix(null)+"creating default manager");
+			log.info("creating default manager");
 			IRecordHandlerManager manager = new RecordHandlerManager();
 			manager.setInitial(true);
 			manager.setName("default");
@@ -145,7 +148,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
+				throw new PipeStartException("cannot start recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -153,7 +156,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start resulthandler ["+resultHandlerName+"]", e);
+				throw new PipeStartException("cannot start resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}
@@ -166,7 +169,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
+				log.error("exception on closing recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
@@ -174,7 +177,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			try {
 				handler.close();
 			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on closing resulthandler ["+resultHandlerName+"]", e);
+				log.error("exception on closing resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}
@@ -269,8 +272,8 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	/**
 	 * Open a reader for the file named according the input messsage and transform it.
 	 * Move the input file to a done directory when transformation is finished
-	 * and return the names of the generated files. 
-	 * 
+	 * and return the names of the generated files.
+	 *
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
@@ -289,7 +292,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					log.warn(getLogPrefix(session)+"Exception closing reader",e);
+					log.warn("Exception closing reader",e);
 				}
 			}
 		}
@@ -391,9 +394,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 
 	/*
-	 * Read all lines from the reader, treat every line as a record and transform 
+	 * Read all lines from the reader, treat every line as a record and transform
 	 * it using the registered managers, record- and result handlers.
-	 */	
+	 */
 	private String transform(String streamId, BufferedReader reader, PipeLineSession session, Map<String, Object> blocks) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
@@ -419,7 +422,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (flow == null) {
 					log.debug("<no flow>: "+rawRecord);
 					continue; // ignore line for which no handlers are registered
-				} 
+				}
 				//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
 				IResultHandler resultHandler = flow.getResultHandler();
 				closeBlock(session, resultHandler, streamId, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]",blocks);
@@ -466,7 +469,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 							if (log.isDebugEnabled()) log.debug("record handler ["+prevHandler.getName()+"] result handler ["+resultHandler.getName()+"] closing block for record type ["+prevRecordType+"]");
 							closeBlock(session, resultHandler, streamId, flow, prevRecordType, "record type change", blocks);
 						}
-						// the hasPrefix() call allows users use a suffix without a prefix. 
+						// the hasPrefix() call allows users use a suffix without a prefix.
 						// The suffix is then only written at the end of the file.
 						if (recordTypeChanged && resultHandler.hasPrefix()) {
 							if (prevHandler != null)  {
@@ -522,7 +525,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * finalizeResult is called when all records in the input file are handled
 	 * and gives the resulthandlers a chance to finalize.
 	 * @param blocks
-	 */	
+	 */
 	private String finalizeResult(PipeLineSession session, String inputFilename, boolean error, Map<String, Object> blocks) throws Exception {
 		// finalize result
 		List<String> results = new ArrayList<>();
@@ -538,7 +541,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return FileUtils.getNamesFromList(results, ';');
 	}
 
-	/** 
+	/**
 	 * If set <code>true</code> the original block is stored under the session key <code>originalBlock</code>.
 	 * @ff.default false
 	 */
@@ -546,7 +549,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		storeOriginalBlock = b;
 	}
 
-	/** 
+	/**
 	 * If set to <code>false</code>, the inputstream is not closed after it has been used.
 	 * @ff.default true
 	 */
@@ -554,7 +557,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		closeInputstreamOnExit = b;
 	}
 
-	/** 
+	/**
 	 * Characterset used for reading file or inputstream"
 	 * @ff.default UTF-8
 	 */

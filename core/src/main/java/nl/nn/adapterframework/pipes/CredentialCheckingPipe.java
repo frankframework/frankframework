@@ -43,10 +43,10 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 		super.configure();
 		if (getTargetUserid()==null) {
 			throw new ConfigurationException("targetUserid must be specified");
-		} 
+		}
 		if (getTargetPassword()==null) {
 			throw new ConfigurationException("targetPassword must be specified");
-		} 
+		}
 	}
 
 
@@ -60,10 +60,10 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 		if (!getTargetPassword().equals(cf.getPassword())) {
 			result+="password does not match target";
 		}
- 		if (StringUtils.isEmpty(result)) {
- 			result="OK";
- 		}
- 		return new PipeRunResult(getSuccessForward(),result);
+		if (StringUtils.isEmpty(result)) {
+			result="OK";
+		}
+		return new PipeRunResult(getSuccessForward(),result);
 	}
 
 	public void setAuthAlias(String string) {

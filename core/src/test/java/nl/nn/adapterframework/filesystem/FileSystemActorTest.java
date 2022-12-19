@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -20,10 +19,7 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -55,34 +51,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= new IConfigurable() {
-
-			@Override
-			public String getName() {
-				return "fake owner of FileSystemActor";
-			}
-			@Override
-			public void setName(String newName) {
-				throw new IllegalStateException("setName() should not be called");
-			}
-			@Override
-			public ClassLoader getConfigurationClassLoader() {
-				return Thread.currentThread().getContextClassLoader();
-			}
-			@Override
-			public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-				// Ignore
-			}
-			@Override
-			public void configure() throws ConfigurationException {
-				// Ignore
-			}
-			@Override
-			public ApplicationContext getApplicationContext() {
-				return null;
-			}
-		};
+		owner= adapter;
+		adapter.setName("fake owner of FileSystemActor");
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
 		actor=new FileSystemActor<F, FS>();
@@ -105,14 +77,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		thrown.expectMessage("either attribute [action] or parameter [action] must be specified");
-		thrown.expectMessage("fake owner of FileSystemActor");
+		exception.expectMessage("either attribute [action] or parameter [action] must be specified");
+		exception.expectMessage("fake owner of FileSystemActor");
 		actor.configure(fileSystem,null,owner);
 	}
 
 	@Test
 	public void fileSystemActorEmptyParameterAction() throws Exception {
-		thrown.expectMessage("unable to resolve the value of parameter");
+		exception.expectMessage("unable to resolve the value of parameter");
 		String filename = "emptyParameterAction" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -188,8 +160,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
-		thrown.expectMessage("inputFolder [xxx], canonical name [");
-		thrown.expectMessage("does not exist");
+		exception.expectMessage("inputFolder [xxx], canonical name [");
+		exception.expectMessage("does not exist");
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -228,8 +200,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
-		thrown.expectMessage("inputFolder [folder1], canonical name [");
-		thrown.expectMessage("does not exist");
+		exception.expectMessage("inputFolder [folder1], canonical name [");
+		exception.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 	}
@@ -256,7 +228,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
 		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
 
 		log.debug(result);
 
@@ -268,17 +239,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //			count++;
 //		}
 
-		String anchor=" count=\"";
-		int posCount=stringResult.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=stringResult.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(stringResult.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch",expectedNumberOfFiles, resultCount);
-		assertEquals("mismatch in number of files",expectedNumberOfFiles, resultCount);
+		assertFileCountEquals(result, expectedNumberOfFiles);
 	}
 
 	@Test
@@ -443,21 +404,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
 		Object result = actor.doAction(message, pvl, session);
-		System.err.println(result);
-		String stringResult=(String)result;
 		waitForActionToFinish();
 
-		String anchor=" count=\"";
-		int posCount=stringResult.indexOf(anchor);
-		if (posCount<0) {
-			fail("result does not contain anchor ["+anchor+"]");
-		}
-		int posQuote=stringResult.indexOf('"',posCount+anchor.length());
-
-		int resultCount = Integer.valueOf(stringResult.substring(posCount+anchor.length(), posQuote));
-		// test
-		assertEquals("count mismatch", 2, resultCount);
-		assertEquals("mismatch in number of files", 2, resultCount);
+		assertFileCountEquals(result, 2);
 	}
 
 	public void fileSystemActorInfoActionTest(boolean fileViaAttribute) throws Exception {
@@ -1224,7 +1173,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
-		thrown.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
+		exception.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
 		actor.configure(fileSystem,null,owner);
 	}
 
@@ -1279,7 +1228,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		exception.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemActorMoveActionTest(null,"folder",false,false);
 	}
 	@Test
@@ -1548,7 +1497,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
-		thrown.expectMessage("Cannot remove folder");
+		exception.expectMessage("Cannot remove folder");
 		String folder = DIR1;
 		String innerFolder = DIR1+"/innerFolder";
 		if (!_folderExists(DIR1)) {
@@ -1818,7 +1767,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //	@Test
 ////	@Ignore("MockFileSystem.exists appears not to work properly")
 //	public void fileSystemActorRenameActionTestDestinationExists() throws Exception {
-//		thrown.expectMessage("destination exists");
+//		exception.expectMessage("destination exists");
 //		fileSystemActorRenameActionTest(true);
 //	}
 

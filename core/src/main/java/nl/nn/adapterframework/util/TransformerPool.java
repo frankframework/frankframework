@@ -207,68 +207,62 @@ public class TransformerPool {
 		}
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
-			return configureTransformer(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+			return configureTransformer(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType, includeXmlDeclaration, params);
 		}
 		return null;
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return configureTransformer0(logPrefix,scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
+	public static TransformerPool configureTransformer(IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return configureTransformer0(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
-	public static TransformerPool configureTransformer0(String logPrefix, IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
-		if (logPrefix==null) {
-			logPrefix="";
-		}
+	public static TransformerPool configureTransformer0(IConfigurationAware scopeProvider, String namespaceDefs, String xPathExpression, String styleSheetName, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(xPathExpression)) {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
-				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
+				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, xsltVersion);
 		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
-				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
+				throw new ConfigurationException("cannot have namespaceDefs specified for a styleSheetName");
 			}
-			return configureStyleSheetTransformer(logPrefix, scopeProvider, styleSheetName, xsltVersion);
+			return configureStyleSheetTransformer(scopeProvider, styleSheetName, xsltVersion);
 		}
-		throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
+		throw new ConfigurationException("either xpathExpression or styleSheetName must be specified");
 	}
 
-	public static TransformerPool configureStyleSheetTransformer(String logPrefix, IConfigurationAware scopeProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureStyleSheetTransformer(IConfigurationAware scopeProvider, String styleSheetName, int xsltVersion) throws ConfigurationException {
 		TransformerPool result;
-		if (logPrefix==null) {
-			logPrefix="";
-		}
 		if (!StringUtils.isEmpty(styleSheetName)) {
 			Resource styleSheet=null;
 			try {
 				styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 				if (styleSheet==null) {
-					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
+					throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
 				}
-				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] resource ["+styleSheet+"]");
+				log.debug("configuring stylesheet [{}] resource [{}]", styleSheetName, styleSheet);
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {
 					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
 					if (xsltVersion!=detectedXsltVersion) {
-						ConfigurationWarnings.add(scopeProvider, log, logPrefix+"configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
+						ConfigurationWarnings.add(scopeProvider, log, "configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
 					}
 				}
 			} catch (IOException e) {
-				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "] resource ["+styleSheet+"]", e);
+				throw new ConfigurationException("cannot retrieve ["+ styleSheetName + "] resource ["+styleSheet+"]", e);
 			} catch (SAXException|TransformerException e) {
-				throw new ConfigurationException(logPrefix+" got error creating transformer from file [" + styleSheetName + "]", e);
+				throw new ConfigurationException("got error creating transformer from file [" + styleSheetName + "]", e);
 			}
 			if (XmlUtils.isAutoReload()) {
 				result.reloadResource=styleSheet;
 			}
 		} else {
-			throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
+			throw new ConfigurationException("either xpathExpression or styleSheetName must be specified");
 		}
 		return result;
 	}

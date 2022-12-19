@@ -239,7 +239,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSys
 		return getFileSystem().getKeyManagerAlgorithm();
 	}
 
-	
 	@Override
 	@IbisDocRef({FTPFILESYSTEM})
 	public void setTruststore(String truststore) {

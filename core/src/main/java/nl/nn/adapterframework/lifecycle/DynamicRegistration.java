@@ -25,7 +25,7 @@ import java.util.Map;
  *  ServletManager.register(this);
  * }
  * </code>
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -37,7 +37,7 @@ public interface DynamicRegistration {
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
 
-		/** 
+		/**
 		 * The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to.
 		 * This value may be overridden by setting property <code>servlet.servlet-name.urlMapping</code> to change path the servlet listens to
 		 */
@@ -66,7 +66,7 @@ public interface DynamicRegistration {
 	}
 
 	/**
-	 * Order in which to automatically instantiate and load the class.</br>
+	 * Order in which to automatically instantiate and load the class.<br/>
 	 * <code>0</code> to let the application server determine, <code>-1</code> to disable
 	 * This value may be overridden by setting property <code>servlet.servlet-name.loadOnStartup</code>
 	 */

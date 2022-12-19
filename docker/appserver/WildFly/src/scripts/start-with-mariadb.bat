@@ -1,4 +1,3 @@
-docker container stop iaf-test-as-wildfly
-docker container rm iaf-test-as-wildfly
+set DOCKER_OPTIONS=-e jdbc.dbms.default=mariadb
 
-docker run --publish 80:8080 -e jdbc.dbms.default=mariadb --name iaf-test-as-wildfly iaf-test-as-wildfly
+call start.bat

@@ -73,7 +73,7 @@ public class HttpListenerServlet extends HttpServletBase {
 			}
 			try {
 				log.debug("HttpListenerServlet calling service ["+service+"]");
-				String result=sd.dispatchRequest(service, null, message, messageContext);
+				String result=sd.dispatchRequest(service, message, messageContext);
 				response.getWriter().print(result);
 			} catch (ListenerException e) {
 				log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);

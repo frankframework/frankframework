@@ -93,7 +93,7 @@ public class JsonXsltSender extends XsltSender {
 		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
 		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
+			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
 		}
 		return handler;
 	}
@@ -102,12 +102,12 @@ public class JsonXsltSender extends XsltSender {
 	@Override
 	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler, closeOnCloseRegister);
+			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler, closeOnCloseRegister);
 		}
 		return new JsonXslt3XmlReader(handler);
 	}
 
-	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	@IbisDoc({"When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
 	public void setJsonResult(boolean jsonResult) {
 		this.jsonResult = jsonResult;
 	}
@@ -116,7 +116,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	@IbisDoc({"2", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

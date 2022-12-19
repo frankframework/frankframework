@@ -77,7 +77,7 @@
 					<h4>Log Definitions</h4>
 				</div>
 				<div class="ibox-content" ng-if="loggers">
-					<p>Custom Log Definitions can be removed by reconfiguring Log4J2.</p>
+					<p>Log levels can be changed to control the amount of logging of the framework and the libraries it uses. Custom Log Definitions can be removed by reconfiguring Log4J2.</p>
 					<table class="table table-striped">
 						<thead>
 							<tr>
@@ -113,10 +113,10 @@
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
-					<h4>Loggers</h4>
+					<h4>Framework Loggers</h4>
 				</div>
 				<div class="ibox-content" ng-if="loggers">
-					<p>Each logger uses the RootLogger log level by default. Changing the log level creates a new Log Definition for the specified package.</p><p>New Log Definitions takes precedence over the RootLogger!</p>
+					<p>Each logger in the Framework uses the log level from its Log Definition or from the RootLogger log level by default. Changing the log level creates a new Log Definition for the specified package.</p><p>New Log Definitions takes precedence over the RootLogger!</p>
 					<table class="table table-striped">
 						<thead>
 							<tr>

@@ -35,7 +35,7 @@ public class NodeSetFilter extends FullXmlFilter {
 	private String targetElement;
 	private boolean includeTarget=false;
 	private boolean includeRoot=false;
-	
+
 	private int level;
 	private int globalLevel;
 	private boolean inTargetElement;
@@ -55,14 +55,14 @@ public class NodeSetFilter extends FullXmlFilter {
 			this.targetElement=targetElement;
 		} else {
 			if (targetElement==null) {
-				this.targetNamespace=namespaceMap.get(null); 
+				this.targetNamespace=namespaceMap.get(null);
 			} else {
 				int colonPos=targetElement.indexOf(':');
 				if (colonPos<0) {
-					this.targetNamespace=namespaceMap.get(null); 
+					this.targetNamespace=namespaceMap.get(null);
 					this.targetElement=targetElement;
 				} else {
-					this.targetNamespace=namespaceMap.get(targetElement.substring(0,colonPos)); 
+					this.targetNamespace=namespaceMap.get(targetElement.substring(0,colonPos));
 					this.targetElement=targetElement.substring(colonPos+1);
 				}
 			}
@@ -81,7 +81,7 @@ public class NodeSetFilter extends FullXmlFilter {
 	public void endNode(String uri, String localName, String qName) throws SAXException {
 		// can be implemented by descender classes when necessary
 	}
-	
+
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		if (copying || includeRoot && globalLevel==0) {
@@ -97,7 +97,7 @@ public class NodeSetFilter extends FullXmlFilter {
 			super.endPrefixMapping(prefix);
 		} else {
 			if (pendingNamespaceDefinitions.size()<=0) {
-				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]"); 
+				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix ["+prefix+"]");
 				return;
 			}
 			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
@@ -107,7 +107,7 @@ public class NodeSetFilter extends FullXmlFilter {
 //			}
 		}
 	}
-	
+
 	private boolean onTargetElement(String uri, String localName) {
 		return (targetNamespace==null || targetNamespace.equals(uri)) && (targetElement==null || localName.equals(targetElement));
 	}
@@ -120,7 +120,7 @@ public class NodeSetFilter extends FullXmlFilter {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if (!inTargetElement) {

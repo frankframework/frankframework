@@ -435,7 +435,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc, $interval){
-			$scope.url = Misc.getServerPath() + "larva";
+			$scope.url = Misc.getServerPath() + "iaf/larva";
 		}
 	})
 	.state('pages.ladybug', {
@@ -447,7 +447,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc, $timeout){
-			$scope.url = Misc.getServerPath() + "testtool";
+			$scope.url = Misc.getServerPath() + "iaf/testtool";
 		}
 	})
 	.state('pages.ladybug_beta', {
@@ -459,7 +459,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc){
-			$scope.url = Misc.getServerPath() + "ladybug";
+			$scope.url = Misc.getServerPath() + "iaf/ladybug";
 		}
 	})
 	.state('pages.empty_page', {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * The message sent each time to the sender is the filename of the entry found in the archive.
  * The contents of the archive is available as a Stream or a String in a session variable.
  *
- * <br>
+ * <br/>
  *
  * @author  Gerrit van Brakel
  * @since   4.9.10
@@ -100,7 +100,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 		@Override
 		public boolean hasNext() throws SenderException {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"hasNext()");
+			log.debug("hasNext()");
 			try {
 				skipCurrent();
 				return current!=null;
@@ -111,19 +111,17 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 		@Override
 		public String next() throws SenderException {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"next()");
+			log.debug("next()");
 			try {
 				skipCurrent();
 				currentOpen=true;
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)+"found zipEntry name ["+current.getName()+"] size ["+current.getSize()+"] compressed size ["+current.getCompressedSize()+"]");
-				}
+				log.debug("found zipEntry name [{}] size [{}] compressed size [{}]", current::getName, current::getSize, current::getCompressedSize);
 				String filename=current.getName();
 				if (isStreamingContents()) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing stream to contents of zip entries under session key [{}]", ()->getContentsSessionKey());
 					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing contents of zip entry under session key [{}]", ()->getContentsSessionKey());
 					String content;
 					if (isSkipBOM()) {
 						byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
@@ -163,7 +161,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 				try {
 					filename = input.asString();
 				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot find filename ["+filename+"]", e);
+					throw new SenderException("cannot find filename ["+filename+"]", e);
 				}
 				source = new FileInputStream(filename);
 			} catch (FileNotFoundException e) {
@@ -173,7 +171,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 			try {
 				source = input.asInputStream();
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+				throw new SenderException("cannot open stream", e);
 			}
 		}
 		if (!(source instanceof BufferedInputStream)) {
@@ -187,7 +185,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		ZipInputStream source=getZipInputStream(input, session, threadContext);
 		if (source==null) {
-			throw new SenderException(getLogPrefix(session)+"no ZipInputStream found");
+			throw new SenderException("no ZipInputStream found");
 		}
 		return new ZipStreamIterator(source,session);
 	}

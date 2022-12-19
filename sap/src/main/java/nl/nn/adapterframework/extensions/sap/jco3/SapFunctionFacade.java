@@ -57,7 +57,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 
 	private @Getter String name;
 	private @Getter String sapSystemName;
-	
+
 	private @Getter int correlationIdFieldIndex=0;
 	private @Getter String correlationIdFieldName;
 	private @Getter int requestFieldIndex=0;
@@ -133,7 +133,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return result;
 	}
 
-	static protected void setParameters(JCoParameterList inputOrOutputParameterList, JCoParameterList tableParameterList, String message, int fieldIndex) throws SapException {
+	protected static void setParameters(JCoParameterList inputOrOutputParameterList, JCoParameterList tableParameterList, String message, int fieldIndex) throws SapException {
 		if (StringUtils.isNotEmpty(message)) {
 			if (fieldIndex>0) {
 				if (inputOrOutputParameterList != null) {

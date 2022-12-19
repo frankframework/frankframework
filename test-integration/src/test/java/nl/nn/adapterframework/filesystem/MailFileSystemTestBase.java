@@ -186,6 +186,15 @@ public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicF
 		MatchUtils.assertXmlEquals(expected,xml.toString());
 	}
 
+	@Test
+	public void testExtractMessageWithProblematicAttachement() throws Exception {
+		M emailMessage = getFirstFileFromFolder("AttachmentProblem");
+		SaxElementBuilder xml = new SaxElementBuilder("email");
+		fileSystem.extractEmail(emailMessage, xml);
+		xml.close();
+		String expected = TestFileUtils.getTestFile("/ExchangeMailAttachmentProblem.xml");
+		MatchUtils.assertXmlEquals(expected,xml.toString());
+	}
 
 //	@Test
 //	public void testExtractMessageWithProblematicAddress2() throws Exception {

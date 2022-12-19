@@ -29,9 +29,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -87,67 +87,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Returns HTTP status code as forward name to SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this</p>
+ * <p>GET methods expect a message looking like this:
  * <pre>
- *   param_name=param_value&another_param_name=another_param_value
+ *    param_name=param_value&another_param_name=another_param_value
  * </pre>
- * <p>POST AND PUT methods expect a message similar as GET, or looking like this</p>
+ * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
  * <pre>
  *   param_name=param_value
  *   another_param_name=another_param_value
  * </pre>
  *
- * <p>
- * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like
- * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
- * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
- * </p>
- * Replace in the directory java\jre\lib\security the following files:
- * <ul>
- * <li>local_policy.jar</li>
- * <li>US_export_policy.jar</li>
- * </ul>
- * <p>
- * Note 2:
- * To debug ssl-related problems, set the following system property:
- * <ul>
- * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
- * <li>SUN: <code>-Djavax.net.debug=all</code></li>
- * </ul>
- * </p>
- * <p>
- * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
- * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
- * <ul>
- *   <li>open the URL you are trying to reach in InternetExplorer</li>
- *   <li>click on the yellow padlock on the right in the bottom-bar. This opens the certificate information window</li>
- *   <li>click on tab 'Certificeringspad'</li>
- *   <li>double click on root certificate in the tree displayed. This opens the certificate information window for the root certificate</li>
- *   <li>click on tab 'Details'</li>
- *   <li>click on 'Kopieren naar bestand'</li>
- *   <li>click 'next', choose 'DER Encoded Binary X.509 (.CER)'</li>
- *   <li>click 'next', choose a filename</li>
- *   <li>click 'next' and 'finish'</li>
- * 	 <li>Start IBM key management tool ikeyman.bat, located in Program Files/IBM/WebSphere Studio/Application Developer/v5.1.2/runtimes/base_v51/bin (or similar)</li>
- *   <li>create a new key-database (Sleuteldatabase -> Nieuw...), or open the default key.jks (default password="changeit")</li>
- *   <li>add the generated certificate (Toevoegen...)</li>
- *   <li>store the key-database in JKS format</li>
- *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
- *   <li>use jks for the truststoreType-attribute</li>
- *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
- *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
- * </ul>
- * <p>
- * Note 4:
- * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the correspondig certificate.
- * </p>
- *
- * <p>
- * Note 5:
+ * Note:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * </p>
@@ -167,7 +117,6 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter boolean paramsInUrl=true;
-	private @Getter boolean ignoreRedirects=false;
 	private @Getter String firstBodyPartName=null;
 
 	private @Getter Boolean multipartResponse=null;
@@ -474,24 +423,9 @@ public class HttpSender extends HttpSenderBase {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
-		String name = partObject.isBinary() ? partSessionKey : partName;
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, partName)).build();
-	}
-
-	protected boolean validateResponseCode(int statusCode) {
-		boolean ok = false;
-		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			ok = true;
-		} else {
-			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
-				ok = true;
-			} else {
-				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
+		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
+		String filename = StringUtils.isNotBlank(partName) ? partName : null;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
 	}
 
 	@Override
@@ -509,7 +443,8 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "] body [" + body +"]");
+			log.warn(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "]");
+			return new Message(body);
 		}
 
 		HttpServletResponse response = null;
@@ -655,14 +590,9 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
+	@IbisDoc({"(Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content", ""})
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
-	}
-
-	@IbisDoc({"If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
-	public void setIgnoreRedirects(boolean b) {
-		ignoreRedirects = b;
 	}
 
 	@IbisDoc({"If set, the result is streamed to a file (instead of passed as a string)", ""})
@@ -713,7 +643,16 @@ public class HttpSender extends HttpSenderBase {
 		multipartResponse = b;
 	}
 
-	@IbisDoc({"If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body. For each part element in the session key a part in the multipart entity is created", ""})
+	/**
+	 * If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body.
+	 * For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
+	 * <ul>
+	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
+	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>mimeType: optional MIME type</li>
+	 * </ul>
+	 * The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

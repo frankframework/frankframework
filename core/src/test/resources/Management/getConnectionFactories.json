@@ -1,0 +1,6 @@
+{
+    "connectionFactories": [
+        "dummyMockConnectionFactory",
+        "dummyQCFAddedViaJmsRealm"
+    ]
+}

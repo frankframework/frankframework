@@ -25,9 +25,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Pipe for converting special characters to their xml equivalents. 
+ * Pipe for converting special characters to their xml equivalents.
  *
- * 
  * @author Peter Leeuwenburgh
  */
 @Deprecated
@@ -42,7 +41,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		try {
 			result = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (getSubstringStart() != null && getSubstringEnd() != null) {
 			int i = result.indexOf(getSubstringStart());

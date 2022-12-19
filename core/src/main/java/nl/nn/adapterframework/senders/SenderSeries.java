@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -35,7 +36,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Series of Senders, that are executed one after another.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -75,18 +76,23 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		String correlationID = session==null ? null : session.getCorrelationId();
+		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			message = sender.sendMessage(message,session);
+			result = sender.sendMessage(message, session);
+			if (!result.isSuccess()) {
+				return result;
+			}
+			message = result.getResult();
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
 			sk.addValue(t2-t1);
 			t1=t2;
 		}
-		return message;
+		return result!=null ? result : new SenderResult(message);
 	}
 
 	@Override
@@ -121,8 +127,8 @@ public class SenderSeries extends SenderWrapperBase {
 		registerSender(sender);
 	}
 
-	/** 
-	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
+	/**
+	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
 	 * @ff.mandatory
 	 */
 	public void registerSender(ISender sender) {

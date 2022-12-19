@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 import javax.jms.JMSException;
-import javax.mail.internet.AddressException;
+import jakarta.mail.internet.AddressException;
 
 import org.junit.Test;
 
@@ -135,7 +135,7 @@ public class IbisExceptionTest {
 		Exception exception3 = new ListenerException(exception2);
 		String result = exception3.getMessage();
 
-		assertEquals(message2+": ("+rootException.getClass().getSimpleName()+") "+rootMessage, result);
+		assertEquals("Pipe [null] "+message2+": ("+rootException.getClass().getSimpleName()+") "+rootMessage, result);
 	}
 
 	@Test
@@ -147,6 +147,6 @@ public class IbisExceptionTest {
 		Exception exception2 = new ListenerException(message2, rootException);
 		String result = exception2.getMessage();
 
-		assertEquals(message2+": "+rootMessage, result);
+		assertEquals(message2+": Pipe [null] "+rootMessage, result);
 	}
 }

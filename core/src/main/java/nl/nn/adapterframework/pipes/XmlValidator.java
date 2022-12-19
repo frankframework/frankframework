@@ -87,6 +87,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 @Category("Basic")
 public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
+	private @Getter String schemaLocation;
 	private @Getter String noNamespaceSchemaLocation;
 	private String soapNamespace = SoapVersion.SOAP11.namespace;
 	private @Getter String rootElementSessionKey;
@@ -135,6 +136,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void configure() throws ConfigurationException {
 		try {
 			super.configure();
+			checkSchemaSpecified();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
 				// Don't use this warning yet as it is used for the IFSA to Tibco
 				// migration where an adapter with Tibco listener (with SOAP
@@ -201,8 +203,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		super.stop();
 	}
 
-	@Override
 	protected void checkSchemaSpecified() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getSchemaLocation()) && StringUtils.isNotEmpty(getSchemaSessionKey())) {
+			throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation");
+		}
 		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) && StringUtils.isEmpty(getSchemaLocation()) && StringUtils.isEmpty(getSchemaSessionKey())) {
 			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
@@ -218,6 +222,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
+	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			Message messageToValidate;
@@ -231,7 +236,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
+			throw new PipeRunException(this, "Could not validate", e);
 		}
 
 	}
@@ -249,7 +254,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		if (storeRootFilter!=null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
-		ValidationResult resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
+		ValidationResult resultEvent = validator.validate(messageToValidate, session, validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
@@ -281,7 +286,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, "Envelope")) {
 			String inputRootNs;
@@ -291,7 +296,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
 			if (inputRootNs.equals(getSoapNamespace())) {
-				log.debug(getLogPrefix(session) + "message to validate is a SOAP message");
+				log.debug("message to validate is a SOAP message");
 				boolean extractSoapBody = true;
 				if (StringUtils.isNotEmpty(getSchemaLocation())) {
 					StringTokenizer st = new StringTokenizer(getSchemaLocation(), ", \t\r\n\f");
@@ -302,7 +307,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 					}
 				}
 				if (extractSoapBody) {
-					log.debug(getLogPrefix(session) + "extract SOAP body for validation");
+					log.debug("extract SOAP body for validation");
 					try {
 						input = transformerPoolExtractSoapBody.transform(input, null, true);
 					} catch (Exception e) {
@@ -314,7 +319,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}
 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
-						log.debug(getLogPrefix(session) + "remove namespaces from extracted SOAP body");
+						log.debug("remove namespaces from extracted SOAP body");
 						try {
 							input = transformerPoolRemoveNamespaces.transform(input, null, true);
 						} catch (Exception e) {
@@ -408,7 +413,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
 			} catch(Exception e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
+				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
@@ -553,10 +558,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				try {
 					return session.getMessage(schemaSessionKey).asString();
 				} catch(IOException e) {
-					throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+					throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 				}
 			}
-			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+			throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;
 	}
@@ -568,7 +573,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		if (getSchemaSessionKey() != null) {
 			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
-				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
+				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
 			try {
@@ -647,20 +652,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 
 	/**
-	 * <p>
-	 * The filename of the schema on the classpath. It is not possible to specify a
-	 * namespace using this attribute.
-	 * <p>
-	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
-	 * </p>
-	 * <p>
-	 * The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set
-	 * </p>
-	 *
-	 * @see ClassUtils#getResourceURL
+	 * The filename of the schema on the classpath. It is not possible to specify a namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
+	 * An example value would be "xml/xsd/GetPartyDetail.xsd".
+	 * The value of the schema attribute is only used if the schemaLocation attribute and the noNamespaceSchemaLocation are not set.
 	 */
-	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);
 	}
@@ -676,23 +671,25 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	 * <b>Note</b> that spaces are considered separators for this attributed. This means that, for example, spaces in filenames should be escaped to %20.
 	 */
 	public void setSchemaLocation(String schemaLocation) {
-		super.setSchemaLocation(schemaLocation);
+		this.schemaLocation = schemaLocation;
 	}
 
-	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	@IbisDoc({"A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
 
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@Override
+	@IbisDoc({"Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setRoot(String root) {
 		super.setRoot(root);
 		if (StringUtils.isNotEmpty(root)) {
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@Override
+	@IbisDoc({"Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
 	public void setResponseRoot(String responseRoot) {
 		super.setResponseRoot(responseRoot);
 		if (StringUtils.isNotEmpty(responseRoot)) {
@@ -717,6 +714,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
+	@Override
 	public boolean isThrowException() {
 		return validator.isThrowException();
 	}
@@ -800,7 +798,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	@Deprecated
 	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
 		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
-		"Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} "+
+		"Please note that this functionality is deprecated, using {@link SoapValidator} "+
 		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
@@ -810,12 +808,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return soapNamespace;
 	}
 
-	@IbisDoc({"40", "key of session variable to store the name of the root element",""})
+	@IbisDoc({"Key of session variable to store the name of the root element",""})
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
 
-	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
+	@IbisDoc({"Key of session variable to store the namespace of the root element",""})
 	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
 		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
 	}

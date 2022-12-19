@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
@@ -12,18 +14,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M> {
+public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
 	private final @Getter(onMethod = @__(@Override)) String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;
 	private boolean opened=false;
+
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public MockFileSystem() {
 		super("MOCKFILESYSTEM",null);
@@ -31,6 +38,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@Override
 	public void configure() throws ConfigurationException {
+		assertNotNull(applicationContext);
 		configured=true;
 	}
 

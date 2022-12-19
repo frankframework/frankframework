@@ -25,17 +25,19 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DB2XMLWriter;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
- * 
- * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
- * 
+ *
+ * <p><b>NOTE:</b> See {@link DB2XMLWriter} for Resultset!</p>
+ *
  * @ff.parameters All parameters present are applied to the query to be executed.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
@@ -115,8 +117,8 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return executeStatementSet(blockHandle, message, session, null).getResult();
+	public SenderResult sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return new SenderResult(executeStatementSet(blockHandle, message, session, null).getResult());
 	}
 
 	@Override
@@ -136,7 +138,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 
-	/** The SQL query text to be excecuted each time sendMessage() is called 
+	/** The SQL query text to be excecuted each time sendMessage() is called
 	 * @ff.mandatory
 	 */
 	public void setQuery(String query) {

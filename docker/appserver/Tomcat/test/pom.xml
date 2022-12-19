@@ -47,7 +47,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>configurations,resources,scenarios,secrets</excludeClassifiers>
 						</configuration>
 					</execution>
 				</executions>

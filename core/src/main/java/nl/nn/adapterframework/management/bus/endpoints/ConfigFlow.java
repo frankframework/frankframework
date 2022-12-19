@@ -21,12 +21,11 @@ import java.io.InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
-import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -34,15 +33,14 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @BusAware("frank-management-bus")
-public class ConfigFlow {
-	private @Getter @Setter IbisManager ibisManager;
+public class ConfigFlow extends BusEndpointBase {
 	private @Setter FlowDiagramManager flowDiagramManager;
 
 	@TopicSelector(BusTopic.FLOW)
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
 		if(flow != null) {
-			return ResponseMessage.ok(flow, flowDiagramManager.getMediaType());
+			return ResponseMessage.Builder.create().withPayload(flow).withMimeType(flowDiagramManager.getMediaType()).raw();
 		}
 
 		return ResponseMessage.noContent(); //No flow file present
@@ -52,6 +50,9 @@ public class ConfigFlow {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getIbisManager().getConfiguration(configurationName);
+			if (configuration==null) {
+				throw new IOException("configuration ["+configurationName+"] not found");
+			}
 			String adapterName = BusMessageUtils.getHeader(message, "adapter");
 			if(StringUtils.isNotEmpty(adapterName)) {
 				return getAdapterFlow(configuration, adapterName);
@@ -73,7 +74,7 @@ public class ConfigFlow {
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 		if(adapter == null) {
-			throw new IllegalStateException("Adapter not found!"); //should be wrapped in a message?
+			throw new BusException("Adapter not found!");
 		}
 
 		return flowDiagramManager.get(adapter);

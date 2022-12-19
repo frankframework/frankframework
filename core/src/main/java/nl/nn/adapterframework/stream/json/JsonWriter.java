@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Stack;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.stream.JsonEventHandler;
@@ -138,17 +139,31 @@ public class JsonWriter implements JsonEventHandler {
 		try {
 			writeSeparatingComma(false);
 			if (value instanceof String) {
-				writer.write("\""+value+"\"");
+				writer.write("\""+StringEscapeUtils.escapeJson((String)value)+"\"");
 			} else if (value==null) {
 				writer.write("null");
 			} else {
-				writer.write(value.toString());
+				writer.write(StringEscapeUtils.escapeJson(value.toString()));
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
 	}
 
+
+	@Override
+	public void number(String value) throws SAXException {
+		try {
+			writeSeparatingComma(false);
+			if (value==null) {
+				writer.write("null");
+			} else {
+				writer.write(value);
+			}
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
+	}
 
 	@Override
 	public String toString() {

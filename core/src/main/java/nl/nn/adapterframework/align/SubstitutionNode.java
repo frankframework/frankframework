@@ -28,7 +28,7 @@ public class SubstitutionNode<V> {
 
 	private Map<String,SubstitutionNode<V>> parents;
 	private V value;
-	
+
 	public void registerSubstitutes(Map<String,V> substitutes) {
 		for(Entry<String,V> entry:substitutes.entrySet()) {
 			registerSubstitute(entry.getKey(), entry.getValue());
@@ -40,7 +40,7 @@ public class SubstitutionNode<V> {
 		String[] elements = path.split("/");
 		registerSubstitute(elements, elements.length, value);
 	}
-	
+
 	protected void registerSubstitute(String[] elements, int index, V value) {
 		if (index==0) {
 			this.value=value;
@@ -57,19 +57,17 @@ public class SubstitutionNode<V> {
 				parents.put(key, parent);
 			}
 			parent.registerSubstitute(elements, index, value);
-		}	
+		}
 	}
-	
-	
+
 	public V getMatchingValue(AlignmentContext context, String elementName) {
-		if (parents==null || !parents.containsKey(elementName)) { 
+		if (parents==null || !parents.containsKey(elementName)) {
 			return value;
-		} 
+		}
 		SubstitutionNode<V> parent = parents.get(elementName);
 		if (context==null) {
 			return parent.getMatchingValue(null, null);
 		}
 		return parent.getMatchingValue(context.getParent(), context.getLocalName());
 	}
-	
 }

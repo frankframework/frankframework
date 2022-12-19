@@ -15,118 +15,85 @@
 */
 package nl.nn.adapterframework.compression;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
+import lombok.Getter;
+import nl.nn.adapterframework.collection.CollectionException;
+import nl.nn.adapterframework.collection.CollectorSender;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
- * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
+ * Filename and contents are taken from parameters. If one of the parameters is not present, the input message
  * is used for either filename or contents.
  *
  * @ff.parameter filename filename of the zipentry
  * @ff.parameter contents contents of the zipentry
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterSender extends SenderWithParametersBase {
+public class ZipWriterSender extends CollectorSender<IZipWritingElement, ZipWriter> implements IZipWritingElement {
 
-	private static final String PARAMETER_FILENAME="filename";
-	private static final String PARAMETER_CONTENTS="contents";
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter boolean closeOutputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean completeFileHeader=false;
 
-	private String zipWriterHandle="zipwriterhandle";
-	private boolean closeInputstreamOnExit=true;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-
-	private Parameter filenameParameter=null;
-	private Parameter contentsParameter=null;
+	public ZipWriterSender() {
+		super();
+		setCollection("zipwriterhandle");
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		filenameParameter=paramList.findParameter(PARAMETER_FILENAME);
-		contentsParameter=paramList.findParameter(PARAMETER_CONTENTS);
-		if (filenameParameter==null && contentsParameter==null) {
-			throw new ConfigurationException(getLogPrefix()+"parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
-		}
+		ZipWriter.configure(getAction(), getParameterList());
 	}
-
-
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		ParameterValueList pvl;
-		try {
-			pvl = paramList.getValues(message, session);
-		} catch (ParameterException e) {
-			throw new SenderException("cannot determine filename and/or contents of zip entry",e);
-		}
-
-		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
-		if (sessionData==null) {
-			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");
-		}
-		try {
-			String filename=filenameParameter==null?message.asString():(String)pvl.get(PARAMETER_FILENAME).getValue();
-			if (contentsParameter==null) {
-				if (message!=null) {
-					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());
-				}
-			} else {
-				Message paramValue=Message.asMessage(pvl.get(PARAMETER_CONTENTS).getValue());
-				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
-			}
-			return message;
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException(getLogPrefix()+"cannot encode zip entry", e);
-		} catch (CompressionException e) {
-			throw new SenderException(getLogPrefix()+"cannot store zip entry", e);
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix()+"cannot store zip entry", e);
-		}
+	public ZipWriter openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
+		return ZipWriter.openCollection(input, session, pvl, this);
 	}
 
 
-	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+
+	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	@Deprecated
-	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeInputstreamOnExit'")
-	public void setCloseStreamOnExit(boolean b) {
-		setCloseInputstreamOnExit(b);
+
+	@IbisDoc({"Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
+	public void setCloseOutputstreamOnExit(boolean b) {
+		closeOutputstreamOnExit = b;
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
+	@Deprecated
+	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeOutputstreamOnExit'")
+	public void setCloseStreamOnExit(boolean b) {
+		setCloseOutputstreamOnExit(b);
 	}
 
-	@IbisDoc({"characterset used for writing zip entry", "utf-8"})
+	@IbisDoc({"Only for action='write': Charset used to write strings to zip entries", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
+
+	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
+	@Deprecated
+	@ConfigurationWarning("Replaced with attribute collection")
+	public void setZipWriterHandle(String string) {
+		setCollection(string);
 	}
 
-	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
-	public void setZipWriterHandle(String string) {
-		zipWriterHandle = string;
+	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
+	public void setCompleteFileHeader(boolean b) {
+		completeFileHeader = b;
 	}
-	public String getZipWriterHandle() {
-		return zipWriterHandle;
-	}
+
+
 
 }

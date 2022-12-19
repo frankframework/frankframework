@@ -136,5 +136,5 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		dta.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 
 		return dta.translate(xmlIn);
- 	}
+	}
 }

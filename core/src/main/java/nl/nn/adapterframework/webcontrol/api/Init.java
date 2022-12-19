@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020 WeAreFrank!
+Copyright 2016-2017, 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.MethodDispatcher;
 import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -50,7 +49,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 
 @Path("/")
-public class Init extends Base implements ApplicationContextAware {
+public class Init extends FrankApiBase {
 	@Context HttpServletRequest httpServletRequest;
 
 	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
@@ -77,7 +76,7 @@ public class Init extends Base implements ApplicationContextAware {
 				if(method.getDeclaringClass() == getClass()) {
 					continue;
 				}
-				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && 
+				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") &&
 					!AppConstants.getInstance().getBoolean("monitoring.enabled", false)) {
 					continue;
 				}

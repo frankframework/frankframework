@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
@@ -66,13 +67,13 @@ public class XComSender extends SenderWithParametersBase {
 	private @Getter String workingDirName = ".";
 	private @Getter String xcomtcp = "xcomtcp";
 
-	
+
 	public enum FileOptionType {
 		CREATE,
 		APPEND,
 		REPLACE
 	}
-	
+
 	public enum CompressType {
 		YES,
 		COMPACT,
@@ -82,12 +83,12 @@ public class XComSender extends SenderWithParametersBase {
 		RLE,
 		NO
 	}
-	
+
 	public enum CodeType {
 		EBCDIC,
 		ASCII
 	}
-	
+
 	public enum CarriageFlagType {
 		YES,
 		VLR,
@@ -96,7 +97,7 @@ public class XComSender extends SenderWithParametersBase {
 		XPACK,
 		NO
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (! StringUtils.isEmpty(port)) {
@@ -124,7 +125,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String messageString;
 		try {
 			messageString = message.asString();
@@ -171,7 +172,7 @@ public class XComSender extends SenderWithParametersBase {
 				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);
 			}
 		}
-		return message;
+		return new SenderResult(message);
 	}
 
 	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {

@@ -4,34 +4,55 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.beans.BeansException;
 
 import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.testutil.TestClassLoader;
+import nl.nn.adapterframework.testutil.mock.MockIbisManager;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
 
 	private static final class IbisTestContext extends IbisContext {
-		private Map<String, String> configurations = new HashMap<>();
+		private Map<String, Class<? extends IConfigurationClassLoader>> configurations = new HashMap<>();
 
 		public IbisTestContext(String configurationToLoad) {
 			this(configurationToLoad, null);
 		}
 
 		public IbisTestContext(String configurationName, Class<? extends IConfigurationClassLoader> classLoaderClass) {
-			configurations.put(configurationName, (classLoaderClass == null) ? null : classLoaderClass.getCanonicalName());
+			configurations.put(configurationName, classLoaderClass);
 		}
 
 		@Override
-		protected Map<String, String> retrieveAllConfigNames() {
+		protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
 			return configurations;
+		}
+
+		@Override
+		protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+			List<String> springConfigurationFiles = new ArrayList<>();
+			springConfigurationFiles.add("testApplicationContext.xml");
+
+			return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+		}
+
+		@Override
+		protected void createApplicationContext() throws BeansException {
+			super.createApplicationContext();
+
+			IbisManager ibisManager = new MockIbisManager();
+			ibisManager.setIbisContext(this);
+			getApplicationContext().getBeanFactory().registerSingleton("ibisManager", ibisManager);
 		}
 	}
 
@@ -66,7 +87,7 @@ public class IbisContextTest {
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
 			assertNotNull("test configuration ["+configurationName+"] not found", config);
 			assertEquals(configurationName, config.getName());
-	
+
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull("configuration should have an exception", ex);
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
@@ -80,7 +101,7 @@ public class IbisContextTest {
 	public void nullClassLoader() {
 		String configurationName = "ConfigWithNullClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
+		try(IbisTestContext context = new IbisTestContext(configurationName, TestClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());

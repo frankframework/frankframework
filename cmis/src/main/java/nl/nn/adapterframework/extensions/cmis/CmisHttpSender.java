@@ -184,7 +184,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 
 		try {
 			// Message is unused, we use 'Output writer' instead
-			sendMessage(new Message(""), pls);
+			sendMessageOrThrow(new Message(""), pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

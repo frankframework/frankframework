@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -100,6 +100,7 @@ import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
@@ -151,7 +152,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String clientSecret = null;
 	private @Getter String tenantId = null;
 
-	/** SSL **/
+	/* SSL */
 	private @Getter @Setter String keystore;
 	private @Getter @Setter String keystoreAuthAlias;
 	private @Getter @Setter String keystorePassword;
@@ -170,6 +171,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter @Setter boolean verifyHostname=true;
 	private @Getter @Setter boolean ignoreCertificateExpiredException=false;
 
+	private @Getter CredentialFactory credentials=null;
+	private @Getter CredentialFactory proxyCredentials=null;
 
 	private ConfidentialClientApplication client;
 	private MsalClientAdapter msalClientAdapter;
@@ -189,14 +192,25 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
 
+		if (StringUtils.isNotEmpty(getTenantId())) {
+			credentials = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
+		} else {
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+		}
+		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
+			proxyCredentials = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+		}
+
 		if( StringUtils.isNotEmpty(getTenantId()) ){
-			msalClientAdapter = new MsalClientAdapter();
+			msalClientAdapter = applicationContext!=null ? SpringUtils.createBean(applicationContext, MsalClientAdapter.class): new MsalClientAdapter();
 			msalClientAdapter.setProxyHost(getProxyHost());
 			msalClientAdapter.setProxyPort(getProxyPort());
-			CredentialFactory proxyCredentials = getProxyCredentials();
-			msalClientAdapter.setProxyUsername(proxyCredentials.getUsername());
-			msalClientAdapter.setProxyPassword(proxyCredentials.getPassword());
-			
+			CredentialFactory proxyCf = getProxyCredentials();
+			if (proxyCf!=null) {
+				msalClientAdapter.setProxyUsername(proxyCf.getUsername());
+				msalClientAdapter.setProxyPassword(proxyCf.getPassword());
+			}
+
 			msalClientAdapter.setKeystore(getKeystore());
 			msalClientAdapter.setKeystoreType(getKeystoreType());
 			msalClientAdapter.setKeystoreAuthAlias(getKeystoreAuthAlias());
@@ -254,6 +268,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			super.close();
 			if(msalClientAdapter != null){
 				msalClientAdapter.close();
+				client = null;
 			}
 		} catch (SenderException e){
 			throw new FileSystemException("An exception occurred during closing of MSAL HttpClient", e);
@@ -261,9 +276,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if(executor != null) {
 				executor.shutdown();
 				executor = null;
-			}
-			if(msalClientAdapter != null){
-				msalClientAdapter = null;
 			}
 		}
 	}
@@ -318,17 +330,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			CredentialFactory cf = getCredentials();
 			// use deprecated Basic Authentication. Support will end 2021-Q3!
 			log.warn("Using deprecated Basic Authentication method for authentication to Exchange Web Services");
-			ExchangeCredentials credentials = new WebCredentials(cf.getUsername(), cf.getPassword());
-			exchangeService.setCredentials(credentials);
+			ExchangeCredentials exchangeCredentials = new WebCredentials(cf.getUsername(), cf.getPassword());
+			exchangeService.setCredentials(exchangeCredentials);
 		}
 
 		if(StringUtils.isNotEmpty(getMailAddress())){
 			setMailboxOnService(exchangeService, getMailAddress());
 		}
 
-		if (StringUtils.isNotEmpty(getProxyHost()) && (StringUtils.isNotEmpty(getProxyAuthAlias()) || StringUtils.isNotEmpty(getProxyUsername()) || StringUtils.isNotEmpty(getProxyPassword()))) {
-			CredentialFactory proxyCf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-			WebProxyCredentials webProxyCredentials = new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain());
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			CredentialFactory proxyCf = getProxyCredentials();
+			WebProxyCredentials webProxyCredentials = proxyCf !=null ? new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain()) : null;
 			WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
 			exchangeService.setWebProxy(webProxy);
 		}
@@ -1003,12 +1015,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public String getSubject(EmailMessage emailMessage) throws FileSystemException {
+		ItemId id=null;
 		try {
-			if (emailMessage.getId()!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
+			id = emailMessage.getId();
+			if (id!=null) { // attachments don't have an id, but appear to be loaded at the same time as the main message
 				emailMessage.load(new PropertySet(ItemSchema.Subject));
 			}
 			return emailMessage.getSubject();
 		} catch (Exception e) {
+			if (id==null) {
+				log.warn("Could not get Subject for message without ItemId", e);
+				return null;
+			}
 			throw new FileSystemException("Could not get Subject", e);
 		}
 	}
@@ -1074,14 +1092,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			log.warn("Could not get url", e);
 		}
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
-	}
-
-	private CredentialFactory getCredentials(){
-		return new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
-	}
-
-	private CredentialFactory getProxyCredentials(){
-		return new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 	}
 
 	private void setMailboxOnService(ExchangeService service, String mailbox){

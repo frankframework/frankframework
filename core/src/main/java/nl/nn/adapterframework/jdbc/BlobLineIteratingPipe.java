@@ -48,5 +48,4 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}
-	
 }

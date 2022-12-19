@@ -124,7 +124,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			return getDatasource().toString();
+			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
@@ -136,7 +136,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String user=md.getUserName();
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
-			log.warn("Exception determining databaseinfo",e);
+			log.warn("Exception determining databaseinfo", e);
 		}
 		return dsinfo;
 	}
@@ -191,7 +191,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		} finally {
 			if (tg.cancel()) {
 				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
-			} 
+			}
 		}
 	}
 
@@ -218,15 +218,21 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	@Override
 	public String getPhysicalDestinationName() {
 		try {
+			DataSource dataSource;
+			try {
+				dataSource = getDatasource();
+			} catch (Exception e) {
+				return "no datasource found for datasourceName ["+getDatasourceName()+"]";
+			}
 			//Try to minimise the amount of DB connections
-			if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getDestinationName();
+			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				return ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getDestinationName();
 			}
 
 			try (Connection connection = getConnection()) {
 				DatabaseMetaData metadata = connection.getMetaData();
 				String result = metadata.getURL();
-	
+
 				String catalog=null;
 				catalog=connection.getCatalog();
 				result += catalog!=null ? ("/"+catalog):"";
@@ -238,7 +244,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return "unknown";
 	}
 
-	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	@IbisDoc({"JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
@@ -246,15 +252,15 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return datasourceName;
 	}
 
-	@IbisDoc({ "3", "Authentication alias used to authenticate when connecting to database", "" })
+	@IbisDoc({"Authentication alias used to authenticate when connecting to database", "" })
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 	public String getAuthAlias() {
 		return authAlias;
 	}
-	
-	@IbisDoc({"4", "User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+
+	@IbisDoc({"User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -262,7 +268,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return username;
 	}
 
-	@IbisDoc({"5", "Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+	@IbisDoc({"Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -281,7 +287,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return transacted;
 	}
 
-	@IbisDoc({"6", "informs the sender that the obtained connection is from a pool", "true"})
+	@IbisDoc({"informs the sender that the obtained connection is from a pool", "true"})
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}

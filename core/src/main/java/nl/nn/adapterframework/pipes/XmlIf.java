@@ -29,7 +29,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -45,6 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@ElementType(ElementTypes.ROUTER)
 public class XmlIf extends AbstractPipe {
 
 	private @Getter String namespaceDefs = null;
@@ -76,7 +79,7 @@ public class XmlIf extends AbstractPipe {
 			try {
 				tp = TransformerPool.getInstance(makeStylesheet(getXpathExpression(), getExpressionValue()));
 			} catch (TransformerConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"could not create transformer from xpathExpression ["+getXpathExpression()+"], target expressionValue ["+getExpressionValue()+"]",e);
+				throw new ConfigurationException("could not create transformer from xpathExpression ["+getXpathExpression()+"], target expressionValue ["+getExpressionValue()+"]",e);
 			}
 		}
 	}
@@ -94,15 +97,15 @@ public class XmlIf extends AbstractPipe {
 				try {
 					sInput = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 			}
 		} else {
-			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
+			log.debug("taking input from sessionKey [{}]", getSessionKey());
 			try {
 				sInput=session.getMessage(getSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve session key ["+getSessionKey()+"]", e);
+				throw new PipeRunException(this, "unable to resolve session key ["+getSessionKey()+"]", e);
 			}
 		}
 
@@ -115,7 +118,7 @@ public class XmlIf extends AbstractPipe {
 				}
 				forward = tp.transform(sInput, parametervalues, isNamespaceAware());
 			} catch (Exception e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
+				throw new PipeRunException(this,"cannot evaluate expression",e);
 			}
 		} else if (StringUtils.isNotEmpty(getRegex())) {
 			forward = sInput.matches(getRegex()) ? thenForwardName : elseForwardName;
@@ -127,14 +130,14 @@ public class XmlIf extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session)+ "determined forward [" + forward + "]");
+		log.debug("determined forward [{}]", forward);
 
 		pipeForward=findForward(forward);
 
 		if (pipeForward == null) {
-			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException (this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 

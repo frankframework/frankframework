@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import nl.nn.adapterframework.stream.Message;
  * The <a href="http://quartz.sourceforge.net">Quartz scheduler</a> is used for scheduling.
  * <p>
  * Job is registered at runtime by the SchedulerSender
- * 
+ *
  * @author John Dekker
  */
 public class ServiceJob extends BaseJob {
@@ -57,7 +57,7 @@ public class ServiceJob extends BaseJob {
 
 			localSender.open();
 			try {
-				localSender.sendMessage(message, null);
+				localSender.sendMessageOrThrow(message, null);
 			}
 			finally {
 				localSender.close();

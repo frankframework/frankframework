@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -29,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -37,7 +39,6 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
-import software.amazon.awssdk.utils.StringUtils;
 
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender,
@@ -121,7 +122,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard primaryGuard = new Guard();
 		Guard shadowGuard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
@@ -151,14 +152,14 @@ public class ShadowSender extends ParallelSenders {
 				// Collect the results of the (Shadow)Sender and send them to the resultSender.
 				try {
 					Message result = collectResults(executorMap, message, session);
-					resultSender.sendMessage(result, session);
+					resultSender.sendMessageOrThrow(result, session);
 				} catch (IOException | SAXException e) {
 					log.error("unable to compose result message", e);
 				} catch(TimeoutException | SenderException se) {
 					log.error("failed to send ShadowSender result to ["+resultSender.getName()+"]");
 				}
 			} catch (InterruptedException e) {
-				log.warn(getLogPrefix()+"result collection thrad was interupted", e);
+				log.warn(getLogPrefix()+"result collection thread was interupted", e);
 			}
 		};
 
@@ -183,7 +184,7 @@ public class ShadowSender extends ParallelSenders {
 	private Message collectResults(Map<ISender, ParallelSenderExecutor> executorMap, Message message, PipeLineSession session) throws SAXException, IOException {
 		SaxDocumentBuilder builder = new SaxDocumentBuilder("results");
 
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session==null ? null : session.getCorrelationId();
 		builder.addAttribute("correlationID", correlationID);
 
 		builder.addElement("originalMessage", XmlUtils.skipXmlDeclaration(message.asString()));
@@ -200,20 +201,26 @@ public class ShadowSender extends ParallelSenders {
 	}
 
 	protected void addResult(SaxDocumentBuilder builder, ISender sender, Map<ISender, ParallelSenderExecutor> executorMap, String tagName) throws SAXException, IOException {
-		try (SaxElementBuilder senderResult = builder.startElement(tagName)) {
+		try (SaxElementBuilder resultXml = builder.startElement(tagName)) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
-			senderResult.addAttribute("duration", ""+sk.getLast());
+			resultXml.addAttribute("duration", ""+sk.getLast());
 
-			senderResult.addAttribute("senderClass", ClassUtils.nameOf(sender));
-			senderResult.addAttribute("senderName", sender.getName());
+			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Message result = pse.getReply();
-				senderResult.addValue(XmlUtils.skipXmlDeclaration(result.asString()));
+				SenderResult senderResult = pse.getReply();
+				resultXml.addAttribute("success", Boolean.toString(senderResult.isSuccess()));
+				if (senderResult.getForwardName()!=null) {
+					resultXml.addAttribute("forwardName", senderResult.getForwardName());
+				}
+				Message result = senderResult.getResult();
+				resultXml.addValue(XmlUtils.skipXmlDeclaration(result.asString()));
 			} else {
-				senderResult.addValue(throwable.getMessage());
+				resultXml.addAttribute("success", "false");
+				resultXml.addValue(throwable.getMessage());
 			}
 		}
 	}

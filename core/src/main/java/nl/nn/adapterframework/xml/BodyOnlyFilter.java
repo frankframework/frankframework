@@ -43,6 +43,11 @@ public class BodyOnlyFilter extends FullXmlFilter {
 		super(handler);
 	}
 
+	public BodyOnlyFilter(ContentHandler handler, boolean skipRoot) {
+		this(handler);
+		this.skipRoot = skipRoot;
+	}
+
 	@Override
 	public void endDocument() throws SAXException {
 		// skip this method

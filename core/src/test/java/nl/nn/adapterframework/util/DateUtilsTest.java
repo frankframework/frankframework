@@ -14,7 +14,7 @@ import org.junit.Test;
 /**
  * DateUtils Tester.
  * The assertions are in the form of testing the date in most cases, not the time
- * because of the time difference between the EU and US where Travis servers are located.
+ * because of the time difference between timezones that might occur.
  * 
  * @author Ricardo
  */

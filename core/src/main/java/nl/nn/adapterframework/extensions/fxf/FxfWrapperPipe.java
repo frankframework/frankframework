@@ -146,14 +146,14 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			try {
 				transferFlowIdTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start transfer flow id TransformerPool", e);
+				throw new PipeStartException("cannot start transfer flow id TransformerPool", e);
 			}
 		}
 		if (clientFilenameTp != null) {
 			try {
 				clientFilenameTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start client filename TransformerPool", e);
+				throw new PipeStartException("cannot start client filename TransformerPool", e);
 			}
 		}
 	}
@@ -187,7 +187,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				try {
 					filename = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 				if (isTransformFilename()) {
 					String filenameOnIufState = FILEPATH_PREFIX + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
@@ -218,7 +218,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			clientFilename = clientFilenameTp.transform(soapBody, null);
 			session.put(getClientFilenameSessionKey(), clientFilename);
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, "Unexpected exception during (un)wrapping ", t);
 		}
 		String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
 		session.put(getFlowIdSessionKey(), flowId);
@@ -244,17 +244,17 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	@IbisDoc({"1", "The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
+	@IbisDoc({"The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
 
-	@IbisDoc({"2", "specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
+	@IbisDoc({"specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
 	public void setFlowOutFolder(String flowOutFolder) {
 		this.flowOutFolder = flowOutFolder;
 	}
 
-	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
+	@IbisDoc({"when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}

@@ -38,13 +38,13 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 	protected class ResultStreamIterator extends ReaderLineIterator {
 		Connection conn;
 		ResultSet rs;
-		
+
 		ResultStreamIterator(Connection conn, ResultSet rs, Reader reader) throws SenderException {
 			super(reader);
 			this.conn=conn;
 			this.rs=rs;
 		}
-		
+
 		@Override
 		public void close() throws SenderException {
 			try {

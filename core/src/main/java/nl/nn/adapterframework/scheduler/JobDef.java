@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * <br/>
  * All registered jobs are displayed in the IbisConsole under 'Scheduler'.
  * <p>
- * <br>
+ * <br/>
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(IJob) Configuration.registerScheduledJob()} is called; </li>
@@ -168,7 +168,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * <p>The legal characters and the names of months and days of the week are not
  * case sensitive.</p>
  *
- * <p>Here are some full examples:<br>
+ * <p>Here are some full examples:<br/>
  * <table cellspacing="8">
  *   <tr>
  *     <th align="left">Expression</th>
@@ -485,7 +485,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return messageKeeper;
 	}
 
-	/** Number of message displayed in ibisconsole
+	/** Number of messages displayed in ibisconsole
 	 * @ff.default 10
 	 */
 	public void setMessageKeeperSize(int size) {

@@ -28,7 +28,7 @@
 		</Pipeline>
 	</Adapter>
 	<Adapter name="readIbisstore">
-		<Receiver name="readIbisstoreReceiver" pollInterval="1">
+		<Receiver name="readIbisstoreReceiver" pollInterval="1" maxRetries="-1">
 			<listener name="MyListener"
 				className="nl.nn.adapterframework.jdbc.MessageStoreListener"
 				slotId="TestMessageStoreSenderAndListener-Queue"

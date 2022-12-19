@@ -38,7 +38,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -47,7 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Assumes input to be the file name of a ZIP archive, and unzips it to a
  * directory and/or an XML message.
- * <br>
+ * <br/>
  * The output of each unzipped item is returned in XML as follows when
  * collectFileContents is false:
  * <pre>
@@ -64,7 +66,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *  &lt;/results&gt;
  * </pre>
  *
- * <br>
+ * <br/>
  * The output of each unzipped item is returned in XML as follows when
  * collectFileContents is true:
  * <pre>
@@ -80,18 +82,19 @@ import nl.nn.adapterframework.util.XmlUtils;
  *       ...
  *  &lt;/results&gt;
  * </pre>
- * <br>
+ * <br/>
  * By default, this pipe takes care
  * to produce unique file names, as follows. When the filename within
  * the archive is:
  * <pre>&lt;basename&gt; + "." + &lt;extension&gt;</pre>
  * then the extracted filename (path omitted) becomes
  * <pre>&lt;basename&gt; + &lt;unique number&gt; + "." + &lt;extension&gt;</pre>
- * <br>
+ * <br/>
  *
  * @since   4.9
  * @author  Gerrit van Brakel
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;
@@ -147,7 +150,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 			return message.asInputStream();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 	}
@@ -189,12 +192,12 @@ public class UnzipPipe extends FixedForwardPipe {
 						tmpFile = tmpFile.isDirectory() ? tmpFile : tmpFile.getParentFile();
 						if (!tmpFile.exists()) {
 							if (tmpFile.mkdirs()) {	// Create directories included in the path
-								log.debug(getLogPrefix(session)+"created directory ["+tmpFile.getPath()+"]");
+								log.debug("created directory [{}]", tmpFile.getPath());
 							} else {
-								log.warn(getLogPrefix(session)+"directory ["+tmpFile.getPath()+"] could not be created");
+								log.warn("directory [{}] could not be created", tmpFile.getPath());
 							}
 						} else {
-							log.debug(getLogPrefix(session)+"directory entry ["+tmpFile.getPath()+"] already exists");
+							log.debug("directory entry [{}] already exists", tmpFile.getPath());
 						}
 					}
 
@@ -206,7 +209,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						if (dotPos>=0) {
 							extension=entryname.substring(dotPos);
 							entryNameWithoutExtension=entryname.substring(0,dotPos);
-							log.debug(getLogPrefix(session)+"parsed filename ["+entryNameWithoutExtension+"] extension ["+extension+"]");
+							log.debug("parsed filename [{}] extension [{}]", entryNameWithoutExtension, extension);
 						} else {
 							entryNameWithoutExtension=entryname;
 						}
@@ -240,7 +243,7 @@ public class UnzipPipe extends FixedForwardPipe {
 								tmpFile.deleteOnExit();
 							}
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
-								log.debug(getLogPrefix(session)+"writing ZipEntry ["+entryname+"] to file ["+tmpFile.getPath()+"]");
+								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
 								Misc.streamToStream(inputStream, fileOutputStream);
 							}

@@ -42,10 +42,11 @@ import com.tibco.tibjms.TibjmsTopicConnectionFactory;
  */
 public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 
-	static private Map tibcoMessagingSourceMap = new HashMap();
+	private static Map<String,MessagingSource> tibcoMessagingSourceMap = new HashMap<>();
 	private boolean useTopic;
-	
-	protected Map getMessagingSourceMap() {
+
+	@Override
+	protected Map<String,MessagingSource> getMessagingSourceMap() {
 		return tibcoMessagingSourceMap;
 	}
 
@@ -54,18 +55,20 @@ public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 		this.useTopic=useTopic;
 	}
 
+	@Override
 	protected MessagingSource createMessagingSource(String serverUrl, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination, useJms102); 
 		return new TibcoMessagingSource(serverUrl, null, connectionFactory, getMessagingSourceMap(),authAlias);
 	}
 
+	@Override
 	protected Context createContext() throws NamingException {
 		return null;
 	}
 
 	protected ConnectionFactory createConnectionFactory(Context context, String serverUrl) throws IbisException {
 		ConnectionFactory connectionFactory;
-		
+
 		if (useTopic) {
 			connectionFactory = new TibjmsTopicConnectionFactory(serverUrl);
 		} else {

@@ -639,7 +639,7 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		session = new HashMap<String, Object>();
-		session.put("exitcode", "234");
+		session.put("exitCode", "234");
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(234, result.getStatus());
@@ -1181,7 +1181,7 @@ public class ApiListenerServletTest extends Mockito {
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			if(session != null) {
 				context.putAll(session);
 			}

@@ -54,8 +54,23 @@ public class ChecksumPipe extends StreamingPipe {
 	public enum ChecksumType {
 		MD5,
 		SHA,
+		SHA256("SHA-256"),
+		SHA512("SHA-512"),
 		CRC32,
-		ADLER32
+		ADLER32;
+
+		private String algorithm;
+
+		ChecksumType(String algorithm) {
+			this.algorithm = algorithm;
+		}
+		ChecksumType() {
+			this(null);
+		}
+
+		public String getAlgorithm() {
+			return algorithm!=null ? algorithm : name();
+		}
 	}
 
 	protected interface ChecksumGenerator {
@@ -68,6 +83,8 @@ public class ChecksumPipe extends StreamingPipe {
 		switch(getType()) {
 			case MD5:
 			case SHA:
+			case SHA256:
+			case SHA512:
 				return new MessageDigestChecksumGenerator(getType());
 			case CRC32:
 				return new ZipChecksumGenerator(new CRC32());
@@ -110,7 +127,7 @@ public class ChecksumPipe extends StreamingPipe {
 
 		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
 			super();
-			this.messageDigest=MessageDigest.getInstance(type.name());
+			this.messageDigest=MessageDigest.getInstance(type.getAlgorithm());
 		}
 
 		@Override

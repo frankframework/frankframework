@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,13 +39,13 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Rhino JavaScript Runtime Factory Pipe.
- * 
+ *
  * This pipe takes all input and pushes it into javascript runtime.
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
- * 
+ *
  * @ff.parameters Any parameters defined on the pipe will be concatenated into one string and added to the input
- * 
+ *
  * @author Barry Jacobs
  * @deprecated Please use {@link JavascriptSender} instead
  */
@@ -87,11 +87,11 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
 		}
-		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
+		if ((StringUtils.isEmpty(fileInput)) && inputString == null) {
 			// No input from file or input string. Only from session-keys?
 			throw new ConfigurationException("has neither fileName nor inputString specified");
 		}
-		if (StringUtils.isEmpty(jsfunctionName)) { 
+		if (StringUtils.isEmpty(jsfunctionName)) {
 			// Cannot run the code in factory without any function start point
 			throw new ConfigurationException("JavaScript functionname not specified!");
 		}
@@ -102,31 +102,30 @@ public class RhinoPipe extends FixedForwardPipe {
 		//INIT
 		String eol = System.getProperty("line.separator");
 		if (message==null || message.isEmpty()) {
-			//No input from previous pipes. We will use filename and or string input.
-	        if ((StringUtils.isEmpty(fileInput)) && inputString==null && isLookupAtRuntime()) {  // No input from file or input string. Nowhere to GO!
-				throw new PipeRunException(this,getLogPrefix(session)+"No input specified anywhere. No string input, no file input and no previous pipe input");
-	        }
+			// No input from previous pipes. We will use filename and or string input.
+			if((StringUtils.isEmpty(fileInput)) && inputString == null && isLookupAtRuntime()) { // No input from file or input string. Nowhere to GO!
+				throw new PipeRunException(this, "No input specified anywhere. No string input, no file input and no previous pipe input");
+			}
 		}
-		
-		
-		//Default console bindings. Used to map javascript commands to java commands as CONSTANT
-		//Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("hello world!");
-		
-		//Get the input from the file at Run Time
-		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+
+		// Default console bindings. Used to map javascript commands to java commands as CONSTANT
+		// Console bindings do not work in Rhino. To print from jslib use java.lang.System.out.print("hello world!");
+
+		// Get the input from the file at Run Time
+		if(StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
 				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
+				throw new PipeRunException(this,"got exception searching for ["+getFileName()+"]", e);
 			}
 			if (resource==null) {
-				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
+				throw new PipeRunException(this,"cannot find resource ["+getFileName()+"]");
 			}
 			try {
 				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
+				throw new PipeRunException(this,"got exception loading ["+getFileName()+"]", e);
 			}
 		}
 		//Get all params as input
@@ -135,7 +134,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
+				throw new PipeRunException(this,"exception extracting parameters",e);
 			}
 			for(ParameterValue pv : pvl) {
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
@@ -160,7 +159,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			cx.setLanguageVersion(Context.VERSION_1_2);
 			cx.setGeneratingDebug(true);
 		}
-		
+
 		// Load javascript factory with javascript functions from file, stringinput and paraminput
 		String jsResult = "";
 		try {
@@ -172,10 +171,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			Object result = fct.call(cx, scope, scope, new Object[] { message.asString() });
 
 			jsResult = (String) Context.jsToJava(result, String.class);
-			if (isDebug() && log.isDebugEnabled()) {
-				log.debug(getLogPrefix(session)+"jsResult ["+ jsResult+"]");
-			}
-
+			if (isDebug()) log.debug("jsResult [{}]", jsResult);
 
 		} catch (EcmaError ex) {
 			throw new PipeRunException(this, "org.mozilla.javascript.EcmaError -> ", ex);
@@ -231,7 +227,7 @@ public class RhinoPipe extends FixedForwardPipe {
 	public String getjsfunctionArguments() {
 		return jsfunctionArguments;
 	}
-	
+
 	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
 	public void setLookupAtRuntime(boolean b) {
 		lookupAtRuntime = b;

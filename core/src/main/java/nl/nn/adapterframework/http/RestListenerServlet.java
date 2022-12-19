@@ -73,9 +73,9 @@ public class RestListenerServlet extends HttpServletBase {
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
-				Map methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
+				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
 				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
-					Iterator iter = sd.getAvailableMethods(pattern).iterator();
+					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
 					StringBuilder sb = new StringBuilder();
 					sb.append("OPTIONS"); //Append preflight OPTIONS request
 					while (iter.hasNext()) {
@@ -102,9 +102,9 @@ public class RestListenerServlet extends HttpServletBase {
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 
-			Enumeration paramnames=request.getParameterNames();
+			Enumeration<String> paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
-				String paramname = (String)paramnames.nextElement();
+				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
@@ -116,8 +116,8 @@ public class RestListenerServlet extends HttpServletBase {
 				log.trace("RestListenerServlet calling service ["+path+"]");
 				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
 
-				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
-					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(result == null && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
+					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 					response.setStatus(status);
 					log.trace("aborted request with status [{}]", status);
 					return;
@@ -128,8 +128,8 @@ public class RestListenerServlet extends HttpServletBase {
 					response.setHeader("etag", etag);
 
 				int statusCode = 0;
-				if(messageContext.containsKey("exitcode"))
-					statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
+					statusCode = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 				if(statusCode > 0)
 					response.setStatus(statusCode);
 

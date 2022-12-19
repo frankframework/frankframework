@@ -45,9 +45,9 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private long defaultTimeout = TestTool.globalTimeout;
 
 	@Override
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
 		try {
-			ListenerMessage requestMessage = new ListenerMessage(correlationId, message.asString(), session);
+			ListenerMessage requestMessage = new ListenerMessage(message.asString(), session);
 			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
@@ -131,9 +131,8 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	@Override
 	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
-		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		Message message = origin.extractMessage(rawMessage, threadContext);
-		processRequest(origin, correlationId, rawMessage, message, threadContext);
+		processRequest(origin, rawMessage, message, threadContext);
 	}
 
 

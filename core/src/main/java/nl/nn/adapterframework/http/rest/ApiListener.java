@@ -22,13 +22,16 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
 
+import com.nimbusds.jose.proc.SecurityContext;
+
 import lombok.Getter;
 import lombok.Setter;
-import com.nimbusds.jose.proc.SecurityContext;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.Default;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -38,7 +41,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
  * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
  * also an OpenAPI specification for all ApiListeners in all configurations. You can
@@ -71,7 +74,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter @Setter Receiver<String> receiver;
 
-	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
+	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", HttpSenderBase.MESSAGE_ID_HEADER);
+	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", HttpSenderBase.CORRELATION_ID_HEADER);
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
@@ -133,8 +137,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
-		Message result = super.processRequest(correlationId, message, requestContext);
+	public Message processRequest(Message message, PipeLineSession requestContext) throws ListenerException {
+		Message result = super.processRequest(message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
 		if(Message.isEmpty(result)) {
@@ -285,15 +289,23 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Name of the header which contains the message-id
-	 * @ff.default message-id
+	 * Name of the header which contains the Message-Id.
 	 */
+	@Default(HttpSenderBase.MESSAGE_ID_HEADER)
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
 
 	/**
-	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema
+	 * Name of the header which contains the Correlation-Id.
+	 */
+	@Default(HttpSenderBase.CORRELATION_ID_HEADER)
+	public void setCorrelationIdHeader(String correlationIdHeader) {
+		this.correlationIdHeader = correlationIdHeader;
+	}
+
+	/**
+	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema.
 	 */
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;

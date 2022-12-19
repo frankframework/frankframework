@@ -105,9 +105,9 @@ public class NetStorageCmsSigner {
 
 	/**
 	 * Computes the value for the the X-Akamai-ACS-Action: header. This is an url query-string encoded separated
-	 * list of parameters in the form of name=value&name2=value2. 
+	 * list of parameters in the form of name=value&name2=value2.
 	 * @param action the set of action parameters to be sent in the API request
-	 * @return an url encoded query string of name-value pairs from the {@link nl.nn.adapterframework.extensions.akamai.NetStorageRequest}
+	 * @return an url encoded query string of name-value pairs from the {@link NetStorageRequest}
 	 */
 	protected String getActionHeaderValue(NetStorageRequest action) {
 		return action.compileHeader();

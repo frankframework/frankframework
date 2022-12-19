@@ -20,15 +20,6 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 public class MiscBinarySearchTest {
-	@Parameters
-	public static Collection<Object[]> data() {
-		return asList(new Object[][] {
-			{asList(), "A", asList("A"), asList("A")},
-			{asList("A"), "A", asList("A", "A"), asList("A")},
-			{asList("A", "C"), "B", asList("A", "B", "C"), asList("A", "B", "C")},
-			{asList("A", "B", "C"), "B", asList("A", "B", "B", "C"), asList("A", "B", "C")}
-		});
-	}
 
 	@Parameter(value = 0)
 	public List<String> start;
@@ -41,6 +32,16 @@ public class MiscBinarySearchTest {
 
 	@Parameter(value = 3)
 	public List<String> afterAddUnique;
+
+	@Parameters
+	public static Collection<Object[]> data() {
+		return asList(new Object[][] {
+			{asList(), "A", asList("A"), asList("A")},
+			{asList("A"), "A", asList("A", "A"), asList("A")},
+			{asList("A", "C"), "B", asList("A", "B", "C"), asList("A", "B", "C")},
+			{asList("A", "B", "C"), "B", asList("A", "B", "B", "C"), asList("A", "B", "C")}
+		});
+	}
 
 	@Test
 	public void testNonUnique() {

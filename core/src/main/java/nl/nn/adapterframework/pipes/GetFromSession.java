@@ -24,7 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -37,7 +39,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  * @see PipeLineSession
  */
-
+@ElementType(ElementTypes.SESSION)
 public class GetFromSession  extends FixedForwardPipe {
 
 	private String sessionKey;
@@ -50,7 +52,7 @@ public class GetFromSession  extends FixedForwardPipe {
 			try {
 				key = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
 
@@ -58,7 +60,7 @@ public class GetFromSession  extends FixedForwardPipe {
 
 		if (result == null) {
 			//why is null returned when nothing can be found?
-			log.warn(getLogPrefix(session)+"got null value from session under key ["+getSessionKey()+"]");
+			log.warn("got null value from session under key ["+getSessionKey()+"]");
 		}
 		else {
 			if (getType()==ParameterType.MAP && result instanceof Map) {
@@ -73,7 +75,7 @@ public class GetFromSession  extends FixedForwardPipe {
 				}
 				result = itemsXml.toXML();
 			}
-			log.debug(getLogPrefix(session) + "got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("got [" + result.toString() + "] from pipeLineSession under key [" + getSessionKey() + "]");
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);
@@ -90,12 +92,12 @@ public class GetFromSession  extends FixedForwardPipe {
 	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see PipeLineSession
 	 */
-	@IbisDoc({"1", "Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
+	@IbisDoc({"Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"2", "<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	@IbisDoc({"<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
 	public void setType(ParameterType type) {
 		this.type = type;
 	}

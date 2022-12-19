@@ -18,7 +18,7 @@ package nl.nn.adapterframework.validation;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,8 +151,8 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	private void init() throws ConfigurationException {
 		try {
-			InputStream in = getInputStream();
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			Reader reader = getReader();
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			int elementDepth = 0;
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -256,13 +256,13 @@ public class XSD implements Schema, Comparable<XSD> {
 			// normally also be imported by the XSD for the business response
 			// message (for the Result part).
 			try {
-				InputSource control = new InputSource(getInputStream());
-				InputSource test = new InputSource(x.getInputStream());
+				InputSource control = new InputSource(getReader());
+				InputSource test = new InputSource(x.getReader());
 				Diff diff = new Diff(control, test);
 				if (diff.similar()) {
 					return 0;
 				} else if (wsdlSchema != null || url == null) {
-					return Misc.streamToString(getInputStream(), "\n", false).compareTo(Misc.streamToString(x.getInputStream(), "\n", false));
+					return Misc.readerToString(getReader(), "\n", false).compareTo(Misc.readerToString(x.getReader(), "\n", false));
 				}
 			} catch (Exception e) {
 				LOG.warn("Exception during XSD compare", e);
@@ -272,17 +272,17 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException {
+	public Reader getReader() throws IOException {
 		if (wsdlSchema != null) {
 			try {
-				return SchemaUtils.toInputStream(wsdlDefinition, wsdlSchema);
+				return SchemaUtils.toReader(wsdlDefinition, wsdlSchema);
 			} catch (WSDLException e) {
 				throw new IOException(e);
 			}
 		} else if (byteArrayOutputStream != null) {
-			return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
 		} else {
-			return url.openStream();
+			return StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		}
 	}
 
@@ -293,11 +293,11 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		try {
-			InputStream in = getInputStream();
-			if (in == null) {
+			Reader reader = getReader();
+			if (reader == null) {
 				return null;
 			}
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
 				switch (e.getEventType()) {
@@ -401,7 +401,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			if (getImportedNamespaces().contains(xsd.getTargetNamespace())) {
 				return true;
 			}
- 		}
+		}
 		return false;
 	}
 

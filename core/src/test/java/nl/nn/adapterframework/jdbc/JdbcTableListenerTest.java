@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -15,6 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,9 +26,10 @@ import org.mockito.Mockito;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
@@ -114,6 +117,18 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
+
+	@Test
+	public void testSelectQueryWithMessageIdAndCorrelationId() throws ConfigurationException {
+		listener.setMessageIdField("MIDFIELD");
+		listener.setCorrelationIdField("CIDFIELD");
+		listener.configure();
+
+		String expected = "SELECT TKEY,MIDFIELD,CIDFIELD FROM "+TEST_TABLE+" t WHERE TINT='1'";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
 	@Test
 	public void testUpdateStatusQuery() throws ConfigurationException {
 		listener.configure();
@@ -377,6 +392,28 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testGetIdFromRawMessage() throws Exception {
+		listener.setMessageIdField("tVARCHAR");
+		listener.setCorrelationIdField("tCLOB");
+		listener.configure();
+		listener.open();
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
+
+		Map<String,Object> context = new HashMap<>();
+
+		Object rawMessage = listener.getRawMessage(context);
+
+		String mid = listener.getIdFromRawMessage(rawMessage, context);
+		String cid = (String)context.get(PipeLineSession.correlationIdKey);
+
+		assertEquals("fakeMid", mid);
+		assertEquals("fakeCid", cid);
+
+	}
+
+
+	@Test
 	public void testParallelGet() throws Exception {
 		if (!dbmsSupport.hasSkipLockedFunctionality()) {
 			listener.setStatusValueInProcess("4");
@@ -598,44 +635,48 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 
 		try (Connection connection = getConnection()) {
-			connection.setAutoCommit(false);
+			try {
+				connection.setAutoCommit(false);
 
-			if (checkpoint==1) secondaryRead = getMessageInParallel();
+				if (checkpoint==1) secondaryRead = getMessageInParallel();
 
-			String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM "+TEST_TABLE+" WHERE TINT='1'");
-			log.debug("prepare query ["+query+"]");
-			try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
+				String query = dbmsSupport.prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM "+TEST_TABLE+" WHERE TINT='1'");
+				log.debug("prepare query ["+query+"]");
+				try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 
-				if (checkpoint==2) secondaryRead = getMessageInParallel();
+					if (checkpoint==2) secondaryRead = getMessageInParallel();
 
-				try (ResultSet rs = stmt.executeQuery()) {
+					try (ResultSet rs = stmt.executeQuery()) {
 
-					if (checkpoint==3) secondaryRead = getMessageInParallel();
+						if (checkpoint==3) secondaryRead = getMessageInParallel();
 
-					if (rs.next()) {
+						if (rs.next()) {
 
-						if (checkpoint==4) secondaryRead = getMessageInParallel();
+							if (checkpoint==4) secondaryRead = getMessageInParallel();
 
-						if (useUpdateRow) {
-							rs.updateInt(2, 4);
-							if (checkpoint==5) secondaryRead = getMessageInParallel();
-							rs.updateRow();
-						} else {
-							int key = rs.getInt(1);
-							try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE "+TEST_TABLE+" SET TINT='4' WHERE TKEY=?")) {
-								stmt2.setInt(1, key);
+							if (useUpdateRow) {
+								rs.updateInt(2, 4);
 								if (checkpoint==5) secondaryRead = getMessageInParallel();
-								stmt2.execute();
+								rs.updateRow();
+							} else {
+								int key = rs.getInt(1);
+								try (PreparedStatement stmt2 = connection.prepareStatement("UPDATE "+TEST_TABLE+" SET TINT='4' WHERE TKEY=?")) {
+									stmt2.setInt(1, key);
+									if (checkpoint==5) secondaryRead = getMessageInParallel();
+									stmt2.execute();
+								}
 							}
+
+							if (checkpoint==6) secondaryRead = getMessageInParallel();
+
+							connection.commit();
+							primaryRead = true;
+							if (checkpoint==7) secondaryRead = getMessageInParallel();
 						}
-
-						if (checkpoint==6) secondaryRead = getMessageInParallel();
-
-						connection.commit();
-						primaryRead = true;
-						if (checkpoint==7) secondaryRead = getMessageInParallel();
 					}
 				}
+			} finally {
+				connection.rollback(); // required for DB2
 			}
 		}
 		assertFalse("At most one attempt should have passed",primaryRead && secondaryRead);

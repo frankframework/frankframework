@@ -43,86 +43,65 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class WsdlGeneratorUtils {
 
-    private WsdlGeneratorUtils() {
-        // this class has no instances
-    }
+	private WsdlGeneratorUtils() {
+		// this class has no instances
+	}
 
 	public static Collection<IListener> getListeners(IAdapter adapter) {
-		List<IListener> result = new ArrayList<IListener>();
+		List<IListener> result = new ArrayList<>();
 		for (Receiver receiver: adapter.getReceivers()) {
 			result.add(receiver.getListener());
 		}
 		return result;
 	}
 
-      // 2017-10-17 Previous version, before 
-//    public static String getEsbSoapParadigm(XmlValidator xmlValidator, boolean outputMode) {
-//        if (xmlValidator instanceof SoapValidator) {
-//        	String soapBody;
-//        	if (outputMode) {
-//            	soapBody = ((SoapValidator)xmlValidator).getOutputSoapBody();
-//        	} else {
-//            	soapBody = ((SoapValidator)xmlValidator).getSoapBody();
-//        	}
-//            if (soapBody != null) {
-//                int i = soapBody.lastIndexOf('_');
-//                if (i != -1) {
-//                    return soapBody.substring(i + 1);
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    
-    
-    
-    public static String getEsbSoapParadigm(IXmlValidator xmlValidator) {
-    	String soapBody = xmlValidator.getMessageRoot();
-        if (soapBody != null) {
-            int i = soapBody.lastIndexOf('_');
-            if (i != -1) {
-                return soapBody.substring(i + 1);
-            }
-        }
-        return null;
-    }
+	public static String getEsbSoapParadigm(IXmlValidator xmlValidator) {
+		String soapBody = xmlValidator.getMessageRoot();
+		if(soapBody != null) {
+			int i = soapBody.lastIndexOf('_');
+			if(i != -1) {
+				return soapBody.substring(i + 1);
+			}
+		}
+		return null;
+	}
 
-    public static String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
-        String schemaLocation = inputValidator.getSchemaLocation();
-        if (schemaLocation != null) {
-            String[] split =  schemaLocation.trim().split("\\s+");
-            if (split.length > 0) {
-                return split[0];
-            }
-        }
-        return null;
-    }
+	public static String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
+		String schemaLocation = inputValidator.getSchemaLocation();
+		if(schemaLocation != null) {
+			String[] split = schemaLocation.trim().split("\\s+");
+			if(split.length > 0) {
+				return split[0];
+			}
+		}
+		return null;
+	}
 
-    public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-        if (indentWsdl) {
-            IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
-            iw.setIndent("\t");
-            w = iw;
-        }
-        return w;
-    }
+	public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
+		XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		if(indentWsdl) {
+			IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
+			iw.setIndent("\t");
+			w = iw;
+		}
+		return w;
+	}
 
-    static String getNCName(String name) {
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < name.length(); i++) {
-            if (i == 0) {
-                buf.append(XMLChar.isNCNameStart(name.charAt(i)) ? name.charAt(i) : '_');
-            } else {
-                buf.append(XMLChar.isNCName(name.charAt(i)) ? name.charAt(i) : '_');
-            }
-        }
-        return buf.toString();
-    }
+	static String getNCName(String name) {
+		StringBuilder buf = new StringBuilder();
+		for(int i = 0; i < name.length(); i++) {
+			if(i == 0) {
+				buf.append(XMLChar.isNCNameStart(name.charAt(i)) ? name.charAt(i) : '_');
+			} else {
+				buf.append(XMLChar.isNCName(name.charAt(i)) ? name.charAt(i) : '_');
+			}
+		}
+		return buf.toString();
+	}
 
-    static String validUri(String uri) {
-        return uri == null ? null : uri.replaceAll(" ", "_");
-    }
+	static String validUri(String uri) {
+		return uri == null ? null : uri.replaceAll(" ", "_");
+	}
 
 	// Check if the adapter has WebServiceListener with an InputValidator OR 
 	// InputValidator==SoapValidator OR

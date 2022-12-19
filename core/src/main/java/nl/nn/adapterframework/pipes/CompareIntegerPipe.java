@@ -22,7 +22,9 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -45,6 +47,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author     Richard Punt / Gerrit van Brakel
  */
 @Category("Basic")
+@ElementType(ElementTypes.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";
@@ -85,7 +88,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		Integer operand1 = getOperandValue(pvl, OPERAND1, getSessionKey1(), message, session);
@@ -113,14 +116,14 @@ public class CompareIntegerPipe extends AbstractPipe {
 				try {
 					operand = Integer.parseInt(session.getMessage(sessionkey).asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
 				}
 			}
 			if (operand == null) {
 				try {
 					operand = new Integer(message.asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from input message", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from input message", e);
 				}
 			}
 		}

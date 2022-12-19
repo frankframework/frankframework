@@ -156,7 +156,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			 * https://www.mkyong.com/spring/jdbctemplate-queryforint-is-deprecated/
 			 * return jdbcTemplate.queryForInt("select count(*) from " + table);
 			 */
-			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);			
+			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
 		}
@@ -480,8 +480,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
 			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
-		} catch (JdbcException e) {
-			throw new SQLException("JdbcException reading value");
 		} catch (IOException e) {
 			throw new SQLException("IOException reading value");
 		}

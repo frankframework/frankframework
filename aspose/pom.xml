@@ -24,11 +24,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
-		<!-- Explicitly here to enforce this version of databind being used when the aspose dependency is declared before(!) the core dependency -->
+
+		<!-- Explicit dependency to mitigate CVE-2022-3171 -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.13.4</version>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.21.12</version>
 		</dependency>
 
 		<!-- Tika library -->
@@ -193,6 +194,19 @@
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
+				<!-- excluded to enforce the correct version of jackson is being used when the aspose dependency is declared before(!) the core dependency -->
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -204,7 +218,7 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>dsn</artifactId>
-			<version>1.6.7</version>
+			<version>2.0.1</version>
 		</dependency>
 
 		<!-- LOG4J to SLF4J Bridge required for ehcache -->
@@ -270,8 +284,13 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -282,13 +301,13 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.26</version>
+			<version>2.0.27</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>2.0.26</version>
+			<version>2.0.27</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

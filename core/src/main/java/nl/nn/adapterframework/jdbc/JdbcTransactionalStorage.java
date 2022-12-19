@@ -241,9 +241,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			return;
 		}
 		checkedSequences.add(storageRefKey);
-		if (getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
-			//no more checks
-		} else {
+		if (!getDbmsSupport().isSequencePresent(connection, getSchemaOwner4Check(), getTableName(), getSequenceName())) {
 			ConfigurationWarnings.add(this, log, "sequence ["+getSequenceName()+"] not present");
 		}
 	}
@@ -413,7 +411,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					if (!isCreateTable() && tableMustBeCreated) {
 						throw new SenderException("table ["+getPrefix()+getTableName()+"] does not exist");
 					}
-					 log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
+					log.info("table ["+getPrefix()+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
 				} catch (JdbcException e) {
 					log.warn(getLogPrefix()+"exception determining existence of table ["+getPrefix()+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
 					tableMustBeCreated=true;
@@ -453,7 +451,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						getMessageField()+" "+getMessageFieldType()+", "+
 						getExpiryDateField()+" "+getDateFieldType()+
 						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
-					  ")";
+					")";
 
 			log.debug(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] using query ["+query+"]");
 			stmt.execute(query);
@@ -820,25 +818,25 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	@Override
-	@IbisDoc({"1", "The name of the column slotids are stored in", "SLOTID"})
+	@IbisDoc({"The name of the column slotids are stored in", "SLOTID"})
 	public void setSlotIdField(String string) {
 		super.setSlotIdField(string);
 	}
 
 	@Override
-	@IbisDoc({"2", "The name of the column types are stored in", "TYPE"})
+	@IbisDoc({"The name of the column types are stored in", "TYPE"})
 	public void setTypeField(String typeField) {
 		super.setTypeField(typeField);
 	}
 
 	@Override
-	@IbisDoc({"3", "The name of the column that stores the hostname of the server", "HOST"})
+	@IbisDoc({"The name of the column that stores the hostname of the server", "HOST"})
 	public void setHostField(String hostField) {
 		super.setHostField(hostField);
 	}
 
 
-	@IbisDoc({"4", "The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle", "seq_ibisstore"})
+	@IbisDoc({"The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle", "seq_ibisstore"})
 	public void setSequenceName(String string) {
 		sequenceName = string;
 	}
@@ -849,32 +847,32 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		setCheckTable(b);
 	}
 
-	@IbisDoc({"5", "If set to <code>true</code>, checks are performed if the table exists and is properly created", "false"})
+	@IbisDoc({"If set to <code>true</code>, checks are performed if the table exists and is properly created", "false"})
 	public void setCheckTable(boolean b) {
 		checkTable = b;
 	}
 
-	@IbisDoc({"6", "If set to <code>true</code>, the table is created if it does not exist", "false"})
+	@IbisDoc({"If set to <code>true</code>, the table is created if it does not exist", "false"})
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}
 
-	@IbisDoc({"7", "The type of the column message themselves are stored in", ""})
+	@IbisDoc({"The type of the column message themselves are stored in", ""})
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
 
-	@IbisDoc({"8", "The type of the column that contains the primary key of the table", ""})
+	@IbisDoc({"The type of the column that contains the primary key of the table", ""})
 	public void setKeyFieldType(String string) {
 		keyFieldType = string;
 	}
 
-	@IbisDoc({"9", "The type of the column the timestamps are stored in", ""})
+	@IbisDoc({"The type of the column the timestamps are stored in", ""})
 	public void setDateFieldType(String string) {
 		dateFieldType = string;
 	}
 
-	@IbisDoc({"10", "The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments.", ""})
+	@IbisDoc({"The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments.", ""})
 	public void setTextFieldType(String string) {
 		textFieldType = string;
 	}

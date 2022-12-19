@@ -20,31 +20,18 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.kairos.KairosConfig;
 import io.micrometer.kairos.KairosMeterRegistry;
 
-public class KairosDbRegistryConfigurator extends MetricsRegistryConfiguratorBase {
+public class KairosDbRegistryConfigurator extends MetricsRegistryConfiguratorBase<KairosConfig> {
 
-	public KairosDbRegistryConfigurator() {
-		super("kairos");
+	private class Config extends MeterRegistryConfigBase implements KairosConfig {}
+
+	@Override
+	protected KairosConfig createConfig() {
+		return new Config();
 	}
 
 	@Override
-	protected MeterRegistry createRegistry() {
-
-		KairosConfig kairosConfig = new KairosConfig() {
-			@Override
-			public String get(String s) {
-				return getProperty(s);
-			}
-
-			@Override
-			public String userName() {
-				return getCredentialFactory().getUsername();
-			}
-
-			@Override
-			public String password() {
-				return getCredentialFactory().getPassword();
-			}
-		};
-		return new KairosMeterRegistry(kairosConfig, Clock.SYSTEM);
+	protected MeterRegistry createRegistry(KairosConfig config) {
+		return new KairosMeterRegistry(config, Clock.SYSTEM);
 	}
+
 }

@@ -29,8 +29,8 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
- * 
- * @author Johan Verrips 
+ *
+ * @author Johan Verrips
  */
 public class StringResolver {
 	// Not allowed to use a static reference to the logger in this class.
@@ -52,12 +52,12 @@ public class StringResolver {
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
 	 * {@link SecurityException} is hidden.
-	 * 
+	 *
 	 * @param key The key to search for.
 	 * @param def The default value to return.
 	 * @return the string value of the system property, or the default value if
 	 *         there is no property with that key.
-	 * 
+	 *
 	 * @since 1.1
 	 */
 	public static String getSystemProperty(String key, String def) {
@@ -79,7 +79,7 @@ public class StringResolver {
 
 	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br>
+	 * property x2. This is done recursive, so that <br/>
 	 * <code><pre>
 	 * Properties prop = new Properties();
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -92,7 +92,7 @@ public class StringResolver {
 	 * <code>Properties</code> object. If two <code>Properties</code> objects are
 	 * specified, first it look in the first object. If none is found, it looks in
 	 * the second object.
-	 * 
+	 *
 	 */
 	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, false);
@@ -221,7 +221,7 @@ public class StringResolver {
 			if(resolveWithPropertyName) {
 				sb.append(delimStop);
 			}
-			if(containsDefault) { // tail points to index of ':-' update tail to point delimStop 
+			if(containsDefault) { // tail points to index of ':-' update tail to point delimStop
 				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
 			}
 			head = tail + delimStop.length();

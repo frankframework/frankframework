@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -38,19 +37,17 @@ import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.testtool.TestTool;
-import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.EnumUtils;
 
 public class QueueCreator {
 
-	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, Map<String, Object> writers, int parameterTimeout, String correlationId) {
-		Map<String, Map<String, Object>> queues = new HashMap<>();
+	public static Map<String, Queue> openQueues(String scenarioDirectory, Properties properties, IbisContext ibisContext, Map<String, Object> writers, int parameterTimeout, String correlationId) {
+		Map<String, Queue> queues = new HashMap<>();
 		debugMessage("Get all queue names", writers);
 
 		List<String> jmsSenders = new ArrayList<>();
 		List<String> jmsListeners = new ArrayList<>();
 		List<String> jdbcFixedQuerySenders = new ArrayList<>();
-		List<String> xsltProviderListeners = new ArrayList<>();
 
 		List<String> manuallyCreatedQueues = new ArrayList<>();
 
@@ -84,9 +81,6 @@ public class QueueCreator {
 						} else if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className")) && !jdbcFixedQuerySenders.contains(queueName)) {
 							debugMessage("Adding jdbcFixedQuerySender queue: " + queueName, writers);
 							jdbcFixedQuerySenders.add(queueName);
-						} else if ("nl.nn.adapterframework.testtool.XsltProviderListener".equals(properties.get(queueName + ".className")) && !xsltProviderListeners.contains(queueName)) {
-							debugMessage("Adding xsltProviderListeners queue: " + queueName, writers);
-							xsltProviderListeners.add(queueName);
 						} else {
 							String className = properties.getProperty(queueName+".className");
 							if(StringUtils.isEmpty(className)) continue;
@@ -97,7 +91,7 @@ public class QueueCreator {
 								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
 							}
 
-							QueueWrapper queue = QueueWrapper.createQueue(className, queueProperties, parameterTimeout, correlationId);
+							Queue queue = QueueWrapper.createQueue(className, queueProperties, parameterTimeout, correlationId);
 							queue.configure();
 							queue.open();
 							queues.put(queueName, queue);
@@ -106,6 +100,9 @@ public class QueueCreator {
 					}
 				}
 			}
+			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
+			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
+			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
 		} catch (Exception e) {
 			closeQueues(queues, properties, writers, null);
 			queues = null;
@@ -116,18 +113,10 @@ public class QueueCreator {
 			}
 		}
 
-		createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
-
-		createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
-
-		createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
-
-		createXsltProviderListeners(queues, xsltProviderListeners, properties, writers);
-
 		return queues;
 	}
 
-	private static void createJmsSenders(Map<String, Map<String, Object>> queues, List<String> jmsSenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
+	private static void createJmsSenders(Map<String, Queue> queues, List<String> jmsSenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) throws ConfigurationException {
 		debugMessage("Initialize jms senders", writers);
 		Iterator<String> iterator = jmsSenders.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -172,26 +161,16 @@ public class QueueCreator {
 					debugMessage("Set replyToName to " + replyToName, writers);
 					jmsSender.setReplyToName(replyToName);
 				}
-				try {
-					jmsSender.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
-				jmsSenderInfo.put("jmsSender", jmsSender);
-				jmsSenderInfo.put("useCorrelationIdFrom", useCorrelationIdFrom);
-				String jmsCorrelationId = properties.getProperty(queueName + ".jmsCorrelationId");
-				if (jmsCorrelationId!=null) {
-					jmsSenderInfo.put("jmsCorrelationId", jmsCorrelationId);
-					debugMessage("Property '" + queueName + ".jmsCorrelationId': " + jmsCorrelationId, writers);
-				}
+				Queue jmsSenderInfo = new JmsSenderQueue(jmsSender, useCorrelationIdFrom, properties.getProperty(queueName + ".jmsCorrelationId"));
+				jmsSenderInfo.configure();
+				//jmsSenderInfo.open(); // TODO: JmsSender was not opened here. Check if that should be done.
 				queues.put(queueName, jmsSenderInfo);
 				debugMessage("Opened jms sender '" + queueName + "'", writers);
 			}
 		}
 	}
 
-	private static void createJmsListeners(Map<String, Map<String, Object>> queues, List<String> jmsListeners, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId, int defaultTimeout) {
+	private static void createJmsListeners(Map<String, Queue> queues, List<String> jmsListeners, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId, int defaultTimeout) throws ConfigurationException {
 		debugMessage("Initialize jms listeners", writers);
 		Iterator<String> iterator = jmsListeners.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -210,7 +189,7 @@ public class QueueCreator {
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
+				PullingJmsListener pullingJmsListener = ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
 				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
@@ -241,13 +220,9 @@ public class QueueCreator {
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
 				}
-				try {
-					pullingJmsListener.configure();
-				} catch (ConfigurationException e) {
-					throw new RuntimeException(e);
-				}
-				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
-				jmsListenerInfo.put("jmsListener", pullingJmsListener);
+				Queue jmsListenerInfo = new JmsListenerQueue(pullingJmsListener);
+				jmsListenerInfo.configure();
+				//jmsListenerInfo.open(); // TODO: jmsListener was not opened here. Check if that should be done.
 				queues.put(queueName, jmsListenerInfo);
 				debugMessage("Opened jms listener '" + queueName + "'", writers);
 				if (TestTool.jmsCleanUp(queueName, pullingJmsListener, writers)) {
@@ -257,7 +232,7 @@ public class QueueCreator {
 		}
 	}
 
-	private static void createFixedQuerySenders(Map<String, Map<String, Object>> queues, List<String> jdbcFixedQuerySenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
+	private static void createFixedQuerySenders(Map<String, Queue> queues, List<String> jdbcFixedQuerySenders, Properties properties, Map<String, Object> writers, IbisContext ibisContext, String correlationId) {
 		debugMessage("Initialize jdbc fixed query senders", writers);
 		Iterator<String> iterator = jdbcFixedQuerySenders.iterator();
 		while (queues != null && iterator.hasNext()) {
@@ -272,7 +247,7 @@ public class QueueCreator {
 				queueProperties.setProperty("blobSmartGet", getBlobSmartString);
 			}
 
-			Map<String, Object> querySendersInfo = new HashMap<>();
+			Queue querySendersInfo = new QuerySenderQueue();
 			while (!allFound && queues != null) {
 				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 				if (preDelete != null) {
@@ -286,7 +261,7 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessage(TestTool.TESTTOOL_DUMMY_MESSAGE, null);
+						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null);
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, writers, correlationId);
@@ -333,8 +308,8 @@ public class QueueCreator {
 					if (queues != null) {
 						try {
 							PipeLineSession session = new PipeLineSession();
-							session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
-							String result = prePostFixedQuerySender.sendMessage(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
+							session.put(PipeLineSession.correlationIdKey, correlationId);
+							String result = prePostFixedQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
 						} catch(TimeoutException e) {
@@ -392,69 +367,9 @@ public class QueueCreator {
 		}
 	}
 
-	private static void createXsltProviderListeners(Map<String, Map<String, Object>> queues, List<String> xsltProviderListeners, Properties properties, Map<String, Object> writers) {
-		debugMessage("Initialize xslt provider listeners", writers);
-		Iterator<String> iterator = xsltProviderListeners.iterator();
-		while (queues != null && iterator.hasNext()) {
-			String queueName = iterator.next();
-			String filename  = (String)properties.get(queueName + ".filename");
-			if (filename == null) {
-				closeQueues(queues, properties, writers, null);
-				queues = null;
-				errorMessage("Could not find filename property for " + queueName, writers);
-			} else {
-				Boolean fromClasspath = new Boolean((String)properties.get(queueName + ".fromClasspath"));
-				if (!fromClasspath) {
-					filename = (String)properties.get(queueName + ".filename.absolutepath");
-				}
-				XsltProviderListener xsltProviderListener = new XsltProviderListener();
-				xsltProviderListener.setFromClasspath(fromClasspath);
-				xsltProviderListener.setFilename(filename);
-				String xsltVersionString = (String)properties.get(queueName + ".xsltVersion");
-				if (xsltVersionString != null) {
-					try {
-						int xsltVersion = Integer.valueOf(xsltVersionString).intValue();
-						xsltProviderListener.setXsltVersion(xsltVersion);
-						debugMessage("XsltVersion set to '" + xsltVersion + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String xslt2String = (String)properties.get(queueName + ".xslt2");
-				if (xslt2String != null) {
-					try {
-						boolean xslt2 = Boolean.valueOf(xslt2String).booleanValue();
-						xsltProviderListener.setXslt2(xslt2);
-						debugMessage("Xslt2 set to '" + xslt2 + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				String namespaceAwareString = (String)properties.get(queueName + ".namespaceAware");
-				if (namespaceAwareString != null) {
-					try {
-						boolean namespaceAware = Boolean.valueOf(namespaceAwareString).booleanValue();
-						xsltProviderListener.setNamespaceAware(namespaceAware);
-						debugMessage("Namespace aware set to '" + namespaceAware + "'", writers);
-					} catch(Exception e) {
-					}
-				}
-				try {
-					xsltProviderListener.init();
-					Map<String, Object> xsltProviderListenerInfo = new HashMap<String, Object>();
-					xsltProviderListenerInfo.put("xsltProviderListener", xsltProviderListener);
-					queues.put(queueName, xsltProviderListenerInfo);
-					debugMessage("Opened xslt provider listener '" + queueName + "'", writers);
-				} catch(ListenerException e) {
-					closeQueues(queues, properties, writers, null);
-					queues = null;
-					errorMessage("Could not create xslt provider listener for '" + queueName + "': " + e.getMessage(), e, writers);
-				}
-			}
-		}
-	}
 
 
-
-	private static void closeQueues(Map<String, Map<String, Object>> queues, Properties properties, Map<String, Object> writers, String correlationId) {
+	private static void closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		TestTool.closeQueues(queues, properties, writers, correlationId);
 	}
 

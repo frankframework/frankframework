@@ -76,18 +76,19 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Miscellaneous conversion functions.
  */
+//Be careful: UTIL classes should NOT depend on the Servlet-API
 public class Misc {
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	@Deprecated
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
-	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
 
 	private static Long messageSizeWarnByDefault = null;
-	private static Long responseBodySizeWarnByDefault = null;
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 	public static final String LINE_SEPARATOR = System.lineSeparator();
+
+	private static int maximumTransactionTimeout=-1;
 
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -112,9 +113,8 @@ public class Misc {
 		String uuidString = java.util.UUID.randomUUID().toString();
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
-		} else {
-			return uuidString;
 		}
+		return uuidString;
 	}
 
 	public static String createRandomUUID() {
@@ -188,7 +188,7 @@ public class Misc {
 	 * @return integer that is converted from unsigned byte.
 	 */
 	public static int unsignedByteToInt(byte b) {
-		return (int) b & 0xFF;
+		return b & 0xFF;
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class Misc {
 		}
 		return url;
 	}
-	
+
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *
@@ -258,7 +258,7 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
-	
+
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
@@ -333,7 +333,7 @@ public class Misc {
 				}
 				out.write(buffer, 0, r);
 			}
-	
+
 			return out.toByteArray();
 		} finally {
 			inputStream.close();
@@ -369,6 +369,7 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
@@ -527,7 +528,7 @@ public class Misc {
 	}
 
 	/**
-	 * Concatenates two strings, if specified, uses the separator in between two strings. 
+	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
@@ -598,9 +599,8 @@ public class Misc {
 			char firstChar = string.charAt(0);
 			char lastChar = string.charAt(len - 1);
 			return firstChar + StringUtils.repeat("*", len - 2) + lastChar;
-		} else {
-			return StringUtils.repeat("*", len);
 		}
+		return StringUtils.repeat("*", len);
 	}
 
 	/**
@@ -839,15 +839,53 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
-		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
-			StringTokenizer st = new StringTokenizer(keys,",;");
-			while (st.hasMoreTokens()) {
-				String key=st.nextToken();
-				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to, requester);
-				to.put(key,value);
+	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		if (to!=null) {
+			log.debug("returning context, returned sessionkeys ["+keys+"]");
+			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
+			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
+			if (StringUtils.isNotEmpty(keys)) {
+				StringTokenizer st = new StringTokenizer(keys,",;");
+				while (st.hasMoreTokens()) {
+					String key=st.nextToken();
+					copySessionKey(key, from, to, requester);
+				}
+			} else if (keys==null) { // if keys are not set explicitly ...
+				for (String key:from.keySet()) { // ... all keys will be copied
+					copySessionKey(key, from, to, requester);
+				}
 			}
+		}
+	}
+
+	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		Object value=from.get(key);
+		Message message = Message.asMessage(value);
+		if (from instanceof PipeLineSession) {
+			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
+		}
+		if (to instanceof PipeLineSession) {
+			message.closeOnCloseOf((PipeLineSession)to, requester);
+		}
+		to.put(key,value);
+	}
+
+	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
+		if (from.containsKey(key)) {
+			to.put(key, from.get(key));
+		}
+	}
+
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptorPath() throws IOException {
+		try {
+			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
+		} catch (Exception e) {
+			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
+				throw new IOException(e);
+			}
+			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server", e);
+			return null;
 		}
 	}
 
@@ -864,19 +902,6 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
-		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
-				throw new IOException(e);
-			}
-			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getApplicationDeploymentDescriptor() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -889,12 +914,12 @@ public class Misc {
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getConfigurationResources() throws IOException {
+	public static String getConfigurationResources() {
 		try {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -905,7 +930,7 @@ public class Misc {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
 			return fileToString(path);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server ({}): {}", () -> e.getClass().getName(), () -> e.getMessage());
 			return null;
 		}
 	}
@@ -925,7 +950,7 @@ public class Misc {
 					.getMethod("getConnectionPoolProperties", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server: " + e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -941,8 +966,7 @@ public class Misc {
 					.getMethod("getJmsDestinations", args_types)
 					.invoke(null, args);
 		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server: "
-					+ e.getMessage());
+			log.debug("Caught NoClassDefFoundError for getJmsDestinations, just not on Websphere Application Server", e);
 			return null;
 		}
 	}
@@ -1028,16 +1052,13 @@ public class Misc {
 			if (format) {
 				if (value > 0) {
 					return "1 kB";
-				} else {
-					return "0 kB";
 				}
-			} else {
-				return Long.toString(value) + (floor ? "B" : "");
+				return "0 kB";
 			}
-		} else {
-			float f = (float) value / divider;
-			return Math.round(f) + (format ? " " : "") + suffix;
+			return Long.toString(value) + (floor ? "B" : "");
 		}
+		float f = (float) value / divider;
+		return Math.round(f) + (format ? " " : "") + suffix;
 	}
 
 	public static synchronized long getMessageSizeWarnByDefault() {
@@ -1047,16 +1068,6 @@ public class Misc {
 			messageSizeWarnByDefault = new Long(definition);
 		}
 		return messageSizeWarnByDefault.longValue();
-	}
-
-	public static synchronized long getResponseBodySizeWarnByDefault() {
-		if (responseBodySizeWarnByDefault == null) {
-			String definitionString = AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY,
-					null);
-			long definition = toFileSize(definitionString, -1);
-			responseBodySizeWarnByDefault = new Long(definition);
-		}
-		return responseBodySizeWarnByDefault.longValue();
 	}
 
 	/**
@@ -1172,14 +1183,22 @@ public class Misc {
 		return null;
 	}
 
-	public static Integer getMaximumTransactionTimeout() {
-		String confSrvString = null;
-		try {
-			confSrvString = getConfigurationServer();
-		} catch (Exception e) {
-			log.warn("Exception getting configurationServer",e);
+	public static int getMaximumTransactionTimeout() {
+		if (maximumTransactionTimeout<0) {
+			Integer transactionTimeout=0;
+			try {
+				String confSrvString = null;
+				try {
+					confSrvString = getConfigurationServer();
+				} catch (Exception e) {
+					log.warn("Exception getting configurationServer ({}): {}", e.getClass().getName(), e.getMessage());
+				}
+				transactionTimeout=getMaximumTransactionTimeout(confSrvString);
+			} finally {
+				maximumTransactionTimeout=transactionTimeout!=null ? transactionTimeout : 0;
+			}
 		}
-		return getMaximumTransactionTimeout(confSrvString);
+		return maximumTransactionTimeout;
 	}
 
 	public static Integer getMaximumTransactionTimeout(String configServerXml) {
@@ -1355,9 +1374,8 @@ public class Misc {
 				if ("WebContent".equalsIgnoreCase(name)
 						|| "target".equalsIgnoreCase(name)) {
 					return dir.getParent();
-				} else {
-					dir = dir.getParentFile();
 				}
+				dir = dir.getParentFile();
 			}
 		}
 		return null;

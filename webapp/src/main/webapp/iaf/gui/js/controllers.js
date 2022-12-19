@@ -54,12 +54,14 @@ angular.module('iaf.beheerconsole')
 					Debug.setLevel(3);
 				}
 
-				$scope.updateConfigurations(data.configurations);
-
 				//Was it able to retrieve the serverinfo without logging in?
 				if(!$scope.loggedin) {
 					Idle.setTimeout(false);
 				}
+
+				Api.Get("server/configurations", function(data) {
+					$scope.updateConfigurations(data);
+				});
 				Hooks.call("init", false);
 			}, function(message, statusCode, statusText) {
 				if(statusCode == 500) {
@@ -132,6 +134,7 @@ angular.module('iaf.beheerconsole')
 			else
 				$scope.configurations.push(config);
 		}
+		$rootScope.$broadcast('configurations', $scope.configurations);
 	}
 
 	$scope.adapterSummary = {
@@ -479,13 +482,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-
-	$scope.showStrutsConsoleDisabled = function () {
-		SweetAlert.Warning({
-			title: "Struts Console Disabled",
-			text: "The struts console has been disabled. In order to enable it, set the property [strutsConsole.enabled] to true.",
-		});
-	}
 }])
 
 .controller('LoadingPageCtrl', ['$scope', 'Api', '$state', function($scope, Api, $state) {
@@ -775,18 +771,22 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 	$scope.stopAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "stop", "adapters": adapters});
+		Api.Put("adapters", {"action": "stop", "adapters": compiledAdapterList});
 	};
 	$scope.startAll = function() {
-		var adapters = Array();
-		for(adapter in $filter('configurationFilter')($scope.adapters, $scope)) {
-			adapters.push(adapter);
+		let compiledAdapterList = Array();
+		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+		for(adapter in adapters) {
+			let configuration = adapters[adapter].configuration;
+			compiledAdapterList.push(configuration+"/"+adapter);
 		}
-		Api.Put("adapters", {"action": "start", "adapters": adapters});
+		Api.Put("adapters", {"action": "start", "adapters": compiledAdapterList});
 	};
 	$scope.reloadConfiguration = function() {
 		if($scope.selectedConfiguration == "All") return;
@@ -835,7 +835,7 @@ angular.module('iaf.beheerconsole')
 	$scope.showReferences = function() {
 		window.open($scope.configurationFlowDiagram);
 	};
-	$scope.configurationFlowDiagram;
+	$scope.configurationFlowDiagram = null;
 	$scope.updateConfigurationFlowDiagram = function(configurationName) {
 		var url = Misc.getServerPath() + 'iaf/api/configurations/';
 		if(configurationName == "All") {
@@ -878,27 +878,27 @@ angular.module('iaf.beheerconsole')
 
 	$scope.startAdapter = function(adapter) {
 		adapter.state = 'starting';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "start"});
 	};
 	$scope.stopAdapter = function(adapter) {
 		adapter.state = 'stopping';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name), {"action": "stop"});
 	};
 	$scope.startReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "start"});
 	};
 	$scope.stopReceiver = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "stop"});
 	};
 	$scope.addThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "incthread"});
 	};
 	$scope.removeThread = function(adapter, receiver) {
 		receiver.state = 'loading';
-		Api.Put("adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
+		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
 }])
@@ -1237,6 +1237,12 @@ angular.module('iaf.beheerconsole')
 		var timeBoundaries = appConstants["Statistics.boundaries"].split(",");
 		var sizeBoundaries = appConstants["Statistics.size.boundaries"].split(",");
 		var percBoundaries = appConstants["Statistics.percentiles"].split(",");
+
+		var publishPercentiles   = appConstants["Statistics.percentiles.publish"] == "true";
+		var publishHistograms    = appConstants["Statistics.histograms.publish"] == "true";
+		var calculatePercentiles = appConstants["Statistics.percentiles.internal"] == "true";
+		var displayPercentiles = publishPercentiles || publishHistograms || calculatePercentiles;
+
 		Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
 
 		for(i in timeBoundaries) {
@@ -1247,10 +1253,12 @@ angular.module('iaf.beheerconsole')
 			var j = sizeBoundaries[i];
 			$scope.statisticsSizeBoundaries[j+"B"] = "< " + j + "B";
 		}
-		for(i in percBoundaries) {
-			var j = "p"+percBoundaries[i];
-			$scope.statisticsTimeBoundaries[j] = j;
-			$scope.statisticsSizeBoundaries[j] = j;
+		if (displayPercentiles) {
+			for(i in percBoundaries) {
+				var j = "p"+percBoundaries[i];
+				$scope.statisticsTimeBoundaries[j] = j;
+				$scope.statisticsSizeBoundaries[j] = j;
+			}
 		}
 	};
 	if(appConstants["Statistics.boundaries"]) {
@@ -1403,15 +1411,15 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "position", bSortable: false },
-		{ "name": "id", "data": "messageId", bSortable: false },
-		{ "name": "insertDate", "data": "insertDate", className: "date" },
-		{ "name": "host", "data": "host", bSortable: false },
-		{ "name": "originalId", "data": "originalId", bSortable: false },
-		{ "name": "correlationId", "data": "correlationId", bSortable: false },
-		{ "name": "comment", "data": "comment", bSortable: false },
-		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
-		{ "name": "label", "data": "label", bSortable: false },
+		{ "name": "pos", "data": "position", bSortable: false, defaultContent:"" },
+		{ "name": "id", "data": "messageId", bSortable: false, defaultContent:"" },
+		{ "name": "insertDate", "data": "insertDate", className: "date", defaultContent:"" },
+		{ "name": "host", "data": "host", bSortable: false, defaultContent:"" },
+		{ "name": "originalId", "data": "originalId", bSortable: false, defaultContent:"" },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false, defaultContent:"" },
+		{ "name": "comment", "data": "comment", bSortable: false, defaultContent:"" },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false, defaultContent:"" },
+		{ "name": "label", "data": "label", bSortable: false, defaultContent:"" },
 	];
 	var filterCookie = Cookies.get($scope.processState+"Filter");
 	if(filterCookie) {
@@ -1701,17 +1709,16 @@ angular.module('iaf.beheerconsole')
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
 	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
-		$scope.metadata=JSON.parse(data);
-	}, function(_, statusCode, statusText) {
+		$scope.metadata = data;
+	}, function(errorData, statusCode, errorMsg) {
+		let error = (errorData) ? errorData.error : errorMsg;
 		if(statusCode == 500) {
-			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+error+"]");
 		} else {
-			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+statusText+"]");
+			SweetAlert.Warning("Message not found", "message id ["+$scope.message.id+"] error ["+error+"]");
 		}
 		$state.go("pages.storage.list", {adapter:$scope.adapterName, storageSource:$scope.storageSource, storageSourceName:$scope.storageSourceName, processState:$scope.processState});
-	}, {responseType:'text', transformResponse: function(data) {
-		return data;
-	}});
+	});
 
 	$scope.resendMessage = function(message) {
 		$scope.doResendMessage(message, function(messageId) {
@@ -1840,23 +1847,23 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.pause = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "pause"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "pause"});
 	};
 
 	$scope.resume = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "resume"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "resume"});
 	};
 
 	$scope.remove = function(jobGroup, jobName) {
 		SweetAlert.Confirm({title:"Please confirm the deletion of '"+jobName+"'"}, function(imSure) {
 			if(imSure) {
-				Api.Delete("schedules/"+jobGroup+"/job/"+jobName);
+				Api.Delete("schedules/"+jobGroup+"/jobs/"+jobName);
 			}
 		});
 	};
 
 	$scope.trigger = function(jobGroup, jobName) {
-		Api.Put("schedules/"+jobGroup+"/job/"+jobName, {action: "trigger"});
+		Api.Put("schedules/"+jobGroup+"/jobs/"+jobName, {action: "trigger"});
 	};
 
 	$scope.edit = function(jobGroup, jobName) {
@@ -1870,18 +1877,18 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
+	$scope.selectedConfiguration = "";
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
 	$scope.submit = function() {
@@ -1890,11 +1897,11 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		fd.append("cron", $scope.form.cron);
 		fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
@@ -1902,18 +1909,18 @@ angular.module('iaf.beheerconsole')
 
 		Api.Post("schedules", fd, function(data) {
 			$scope.addLocalAlert("success", "Successfully added schedule!");
+			$scope.selectedConfiguration = "";
 			$scope.form = {
 					name:"",
 					group:"",
 					adapter:"",
-					receiver:"",
+					listener:"",
 					cron:"",
 					interval:"",
 					message:"",
 					description:"",
 					locker:false,
 					lockkey:"",
-					persistent:true,
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
@@ -1927,53 +1934,37 @@ angular.module('iaf.beheerconsole')
 	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
-	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
+	var url ="schedules/"+$stateParams.group+"/jobs/"+$stateParams.name;
 	$scope.editMode = true;
+	$scope.selectedConfiguration = "";
 
 	$scope.form = {
 			name:"",
 			group:"",
 			adapter:"",
-			receiver:"",
+			listener:"",
 			cron:"",
 			interval:"",
 			message:"",
 			description:"",
 			locker:false,
 			lockkey:"",
-			persistent:true,
 	};
 
-	function findReceiver() {
-		let adapter = $scope.form.adapter;
-		let listener = $scope.form.listener;
-		let receivers = ($scope.adapters && $scope.adapters[adapter]) ? $scope.adapters[adapter].receivers : null;
-		if(receivers != null) {
-			for(i in receivers) {
-				let receiver = receivers[i];
-				if(listener == receiver.listener.name) {
-					$scope.form.receiver = receiver.name;
-				}
-			}
-		}
-	}
-
 	Api.Get(url, function(data) {
+		$scope.selectedConfiguration = data.configuration;
 		$scope.form = {
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
 				listener: data.listener,
-				receiver: null,
 				cron: data.triggers[0].cronExpression || "",
 				interval: data.triggers[0].repeatInterval || "",
 				message: data.message,
 				description: data.description,
 				locker: data.locker,
 				lockkey: data.lockkey,
-				persistent: true,
 		};
-		findReceiver();
 	});
 
 	$scope.submit = function(form) {
@@ -1982,13 +1973,13 @@ angular.module('iaf.beheerconsole')
 
 		fd.append("name", $scope.form.name);
 		fd.append("group", $scope.form.group);
+		fd.append("configuration", $scope.selectedConfiguration);
 		fd.append("adapter", $scope.form.adapter);
-		fd.append("receiver", $scope.form.receiver);
+		fd.append("listener", $scope.form.listener);
 		if($scope.form.cron)
 			fd.append("cron", $scope.form.cron);
 		if($scope.form.interval)
 			fd.append("interval", $scope.form.interval);
-		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
@@ -2217,6 +2208,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+	$scope.form = {};
 	$scope.file = null;
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
@@ -2226,12 +2218,17 @@ angular.module('iaf.beheerconsole')
 		$scope.file = files[0]; //Can only parse 1 file!
 	};
 
-	Api.Get("jdbc/liquibase", function(data) {
-		$.extend($scope, data);
-		if($scope.configurationsWithLiquibaseScript && $scope.configurationsWithLiquibaseScript.length > 0) {
-			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
+	let findFirstAvailabeConfiguration = function() {
+		for(let i in $scope.configurations) {
+			let configuration = $scope.configurations[i];
+			if(configuration.jdbcMigrator) {
+				$scope.form.configuration = configuration.name;
+				break;
+			}
 		}
-	});
+	}
+	findFirstAvailabeConfiguration();
+	$scope.$on('configurations', findFirstAvailabeConfiguration);
 
 	$scope.download = function() {
 		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");
@@ -2269,6 +2266,15 @@ angular.module('iaf.beheerconsole')
 		angular.element("select[name='type']").val($scope.destinationTypes[0]);
 	});
 
+	$scope.file = null;
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files[0]; //Can only parse 1 file!
+	};
+
 	$scope.submit = function(formData) {
 		$scope.processing = true;
 		if(!formData) return;
@@ -2293,25 +2299,29 @@ angular.module('iaf.beheerconsole')
 		if(formData.lookupDestination && formData.lookupDestination != "")
 			fd.append("lookupDestination", formData.lookupDestination);
 
-		if(!formData.message && !formData.file) {
-			$scope.error = "Please specify a file or message!";
-			return;
-		}
-
 		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
 			fd.append("property", formData.propertyKey+","+formData.propertyValue);
-		if(formData.message && formData.message != "")
-			fd.append("message", formData.message);
+		if(formData.message && formData.message != "") {
+			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
+		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 
+		if(!formData.message && !$scope.file) {
+			$scope.error = "Please specify a file or message!";
+			$scope.processing = false;
+			return;
+		}
+
 		Api.Post("jms/message", fd, function(returnData) {
-			//?
+			$scope.error = null;
 			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
 			$scope.processing = false;
+			errorMsg = (errorMsg) ? errorMsg : "An unknown error occured, check the logs for more info.";
 			$scope.error = (errorData.error) ? errorData.error : errorMsg;
 		});
 	};
@@ -2731,9 +2741,12 @@ angular.module('iaf.beheerconsole')
 .controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
+	$scope.selectedConfiguration = "";
+
 	$scope.addNote = function(type, message, removeQueue) {
 		$scope.state.push({type:type, message: message});
 	};
+
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
 			$scope.file = null;
@@ -2777,27 +2790,28 @@ angular.module('iaf.beheerconsole')
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
-		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter!");
+		if(!formData && $scope.selectedConfiguration == "") {
+			$scope.addNote("warning", "Please specify a configuration");
 			return;
 		}
 
-		var fd = new FormData();
-		if(formData.adapter && formData.adapter != "")
+		let fd = new FormData();
+		fd.append("configuration", $scope.selectedConfiguration);
+		if(formData && formData.adapter && formData.adapter != "") {
 			fd.append("adapter", formData.adapter);
+		} else {
+			$scope.addNote("warning", "Please specify an adapter!");
+			return;
+		}
 		if(formData.encoding && formData.encoding != "")
 			fd.append("encoding", formData.encoding);
 		if(formData.message && formData.message != "") {
-			var encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
+			let encoding = (formData.encoding && formData.encoding != "") ? ";charset="+formData.encoding : "";
 			fd.append("message", new Blob([formData.message], {type: "text/plain"+encoding}), 'message');
 		}
 		if($scope.file)
 			fd.append("file", $scope.file, $scope.file.name);
 
-		if(!formData.adapter) {
-			$scope.addNote("warning", "Please specify an adapter!");
-			return;
-		}
 		if(sessionKeys.length > 0){
 			let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
 			if(incompleteKeyIndex < 0) {
@@ -2820,8 +2834,10 @@ angular.module('iaf.beheerconsole')
 				$scope.file = null;
 				formData.message = returnData.message;
 			}
-		}, function(returnData) {
+		}, function(errorData) {
+			let error = (errorData && errorData.error) ? errorData.error : "An error occured!";
 			$scope.result = "";
+			$scope.addNote("warning", error);
 			$scope.processingMessage = false;
 		});
 	};

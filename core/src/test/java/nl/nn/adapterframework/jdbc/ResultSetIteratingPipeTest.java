@@ -20,6 +20,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
@@ -149,13 +150,13 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			if(delay > 0) {
 				try {
 					Thread.sleep(delay);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					return Message.nullMessage();
+					return new SenderResult(Message.nullMessage());
 				}
 			}
 

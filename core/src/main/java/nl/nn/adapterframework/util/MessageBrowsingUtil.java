@@ -23,44 +23,35 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 public class MessageBrowsingUtil {
 	private static Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
 	public static String getMessageText(Object rawmsg, IListener listener) throws IOException {
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-				try {
-					msg = ((Message)rawmsg).asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else if(rawmsg instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
-				msg = (String)rawmsg;
-			} else {
-				if (listener!=null) {
-					try {
-						msg = listener.extractMessage(rawmsg, null).asString();
-					} catch (Exception e) {
-						log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-					}
-				}
-				if (StringUtils.isEmpty(msg)) {
-					msg = Message.asString(rawmsg);
-				}
-			}
+		if (rawmsg == null) {
+			return null;
 		}
 
-		return msg;
+		if(rawmsg instanceof MessageWrapper) {
+			MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
+			return msgsgs.getMessage().asString();
+		} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+			return ((Message)rawmsg).asString();
+		} else if(rawmsg instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
+			return (String)rawmsg;
+		} else {
+			String msg = null;
+			if (listener!=null) {
+				try {
+					msg = listener.extractMessage(rawmsg, null).asString();
+				} catch (Exception e) {
+					log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage(), e);
+				}
+			}
+			if (StringUtils.isEmpty(msg)) {
+				msg = Message.asString(rawmsg);
+			}
+			return msg;
+		}
 	}
-
 }

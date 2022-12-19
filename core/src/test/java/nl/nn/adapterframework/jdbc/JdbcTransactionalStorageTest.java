@@ -1,9 +1,11 @@
 package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.sql.Connection;
@@ -37,6 +39,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setKeyField(keyField);
 		storage.setCheckTable(false);
 		storage.setSequenceName("SEQ_"+tableName);
+		storage.setSlotId("test");
 		System.setProperty("tableName", tableName);
 		autowire(storage);
 
@@ -61,30 +64,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		assertEquals(expected, query);
 
 		String message = createMessage();
-		String storageKey = null;
-
-		// insert a record
-		try (Connection connection = getConnection()) {
-			try (PreparedStatement stmt = prepareStatement(connection)) {
-
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
-				try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
-					oos.writeObject(message);
-				}
-				stmt.setBytes(1, baos.toByteArray());
-				stmt.execute();
-
-				try (ResultSet rs = stmt.getGeneratedKeys()) {
-					if(rs.next()) {
-						// check inserted data being correctly retrieved
-						storageKey = rs.getString(1);
-					} else {
-						Assert.fail("The query ["+storage.selectDataQuery+"] returned empty result set expected 1");
-					}
-				}
-			}
-		}
+		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
 		String data = storage.browseMessage(storageKey);
 		assertEquals(message, data);
@@ -107,7 +87,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String message = createMessage();
 
 		// insert a record
-		try (PreparedStatement stmt = prepareStatement(connection)) {
+		try (PreparedStatement stmt = prepareStatement(connection,'E')) {
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
@@ -130,7 +110,47 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		}
 	}
 
-	private PreparedStatement prepareStatement(Connection connection) throws SQLException {
+	@Test
+	public void testBrowseMessage() throws Exception {
+		boolean blobsCompressed = true;
+		storage.setBlobsCompressed(blobsCompressed);
+		storage.configure();
+
+		String message = createMessage();
+		String storageKey = insertARecord(blobsCompressed, message, 'E');
+
+		Object o = storage.browseMessage(storageKey);
+		assertNotNull(o);
+		assertEquals(message, o);
+
+	}
+
+
+	private String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
+		try (Connection connection = getConnection()) {
+			try (PreparedStatement stmt = prepareStatement(connection, type)) {
+
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
+				try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+					oos.writeObject(message);
+				}
+				stmt.setBytes(1, baos.toByteArray());
+				stmt.execute();
+
+				try (ResultSet rs = stmt.getGeneratedKeys()) {
+					if(rs.next()) {
+						// check inserted data being correctly retrieved
+						return rs.getString(1);
+					}
+					Assert.fail("The query ["+storage.selectDataQuery+"] returned empty result set expected 1");
+					return null;
+				}
+			}
+		}
+	}
+
+	private PreparedStatement prepareStatement(Connection connection, char type) throws SQLException {
 		String query ="INSERT INTO "+tableName+" (" +
 			(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 			+ storage.getTypeField() + ","
@@ -143,7 +163,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			+ storage.getMessageField() + ","
 			+ storage.getExpiryDateField()  +","
 			+ storage.getLabelField() + ")"
-			+ " VALUES("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? 1+"," : "")+"'E','test','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(new Date())+",'comments', ? ,"+dbmsSupport.getDatetimeLiteral(new Date())+",'label')";
+			+ " VALUES("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? 1+"," : "")+"'"+type+"','test','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(new Date())+",'comments', ? ,"+dbmsSupport.getDatetimeLiteral(new Date())+",'label')";
 		return !dbmsSupport.autoIncrementKeyMustBeInserted() ? connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(query, new String[]{storage.getKeyField()});
 	}
 

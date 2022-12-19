@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -33,7 +34,7 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * FTP client voor het versturen van files via FTP.
  *
- *  
+ *
  * @author John Dekker
  */
 @Deprecated
@@ -41,14 +42,14 @@ import nl.nn.adapterframework.stream.Message;
 public class FtpSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private FtpSession ftpSession;
-	
+
 	private String remoteDirectory;
-	private String remoteFilenamePattern=null;
-	
+	private String remoteFilenamePattern = null;
+
 	public FtpSender() {
 		this.ftpSession = new FtpSession();
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -61,7 +62,7 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {
@@ -69,13 +70,10 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 		} catch(Exception e) {
 			throw new SenderException("Error during ftp-ing " + message, e);
 		}
-		return message;
+		return new SenderResult(message);
 	}
-	
 
-
-	
-	@IbisDoc({"remote directory in which files have to be uploaded", ""})
+	@IbisDoc({ "remote directory in which files have to be uploaded", "" })
 	public void setRemoteDirectory(String remoteDirectory) {
 		this.remoteDirectory = remoteDirectory;
 	}
@@ -91,10 +89,7 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 		return remoteFilenamePattern;
 	}
 
-
-	
-
-	@IbisDoc({"name or ip adres of remote host", ""})
+	@IbisDoc({ "name or ip adres of remote host", "" })
 	public void setHost(String host) {
 		ftpSession.setHost(host);
 	}

@@ -103,7 +103,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 		sender.configure();
 		// sender.open(); // Do not open the sender, no MQ connections are set
 		String input = "TESTMESSAGE1234%éáöî?";
-		Message response = sender.sendMessage(new Message(input), session);
+		Message response = sender.sendMessageOrThrow(new Message(input), session);
 
 		// For testing purposes the response BytesMessage is the same as the input BytesMessage
 		// The transaction code is thus part of the response message

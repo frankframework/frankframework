@@ -1,0 +1,62 @@
+{
+    "fielddefinition": [
+        {
+            "name": "NAME",
+            "type": "VARCHAR",
+            "columnDisplaySize": "100",
+            "precision": "100",
+            "scale": "0",
+            "isCurrency": "false",
+            "columnTypeName": "VARCHAR",
+            "columnClassName": "java.lang.String"
+        },
+        {
+            "name": "VERSION",
+            "type": "VARCHAR",
+            "columnDisplaySize": "50",
+            "precision": "50",
+            "scale": "0",
+            "isCurrency": "false",
+            "columnTypeName": "VARCHAR",
+            "columnClassName": "java.lang.String"
+        }
+    ],
+    "rowset": [
+        {
+            "NAME": "DBTEST",
+            "VERSION": "003_20201112-1500"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "010_20201112-1700"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "011_20201112-1800"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "100_20201112-1900"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "110_20201112-2000"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "120_20201112-2100"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "400_20201112-2200"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "001_20201112-1300"
+        },
+        {
+            "NAME": "DBTEST",
+            "VERSION": "002_20201112-1400"
+        }
+    ]
+}

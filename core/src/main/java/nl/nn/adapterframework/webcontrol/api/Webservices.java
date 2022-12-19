@@ -17,15 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
@@ -44,18 +36,13 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
-import nl.nn.adapterframework.http.rest.ApiListener;
-import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
-import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
-import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * Shows all monitors.
@@ -72,76 +59,8 @@ public final class Webservices extends Base {
 	@Path("/webservices")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getWebServices() throws ApiException {
-
-		Map<String, Object> returnMap = new HashMap<String, Object>();
-
-		List<Map<String, Object>> webServices = new ArrayList<Map<String, Object>>();
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
-				IListener listener = receiver.getListener();
-				if (listener instanceof RestListener) {
-					RestListener rl = (RestListener) listener;
-					Map<String, Object> service = new HashMap<String, Object>();
-					service.put("name", adapter.getName() + " "+  receiver.getName());
-					service.put("method", rl.getMethod());
-					service.put("view", rl.isView());
-					service.put("uriPattern", rl.getUriPattern());
-					webServices.add(service);
-				}
-			}
-		}
-		returnMap.put("services", webServices);
-
-		List<Map<String, Object>> wsdls = new ArrayList<Map<String, Object>>();
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			Map<String, Object> wsdlMap = null;
-			try {
-				if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
-					wsdlMap = new HashMap<String, Object>(2);
-					WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
-					wsdlMap.put("name", wsdl.getName());
-					wsdlMap.put("extension", getWsdlExtension());
-				}
-			} catch (Exception e) {
-				wsdlMap.put("name", adapter.getName());
-
-				if (e.getMessage() != null) {
-					wsdlMap.put("error", e.getMessage());
-				} else {
-					wsdlMap.put("error", e.toString());
-				}
-			}
-			if(wsdlMap != null) {
-				wsdls.add(wsdlMap);
-			}
-		}
-		returnMap.put("wsdls", wsdls);
-
-		//ApiListeners
-		List<Map<String, Object>> apiListeners = new LinkedList<Map<String, Object>>();
-		SortedMap<String, ApiDispatchConfig> patternClients = ApiServiceDispatcher.getInstance().getPatternClients();
-		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
-			ApiDispatchConfig config = client.getValue();
-
-			Set<HttpMethod> methods = config.getMethods();
-			for (HttpMethod method : methods) {
-				ApiListener listener = config.getApiListener(method);
-				Receiver receiver = listener.getReceiver();
-				IAdapter adapter = receiver == null? null : receiver.getAdapter();
-				Map<String, Object> endpoint = new HashMap<>();
-				String uriPattern = listener.getUriPattern();
-				endpoint.put("uriPattern", uriPattern);
-				endpoint.put("method", method);
-				if (adapter!=null) endpoint.put("adapter", adapter.getName());
-				if (receiver!=null) endpoint.put("receiver", receiver.getName());
-
-				apiListeners.add(endpoint);
-			}
-		}
-		returnMap.put("apiListeners", apiListeners);
-
-		return Response.status(Response.Status.OK).entity(returnMap).build();
+	public Response getWebServices() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES));
 	}
 
 	@GET
@@ -152,7 +71,7 @@ public final class Webservices extends Base {
 	public Response getWsdl(
 		@PathParam("resourceName") String resourceName,
 		@DefaultValue("true") @QueryParam("indent") boolean indent,
-		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) throws ApiException {
+		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) {
 
 		String adapterName;
 		boolean zip;
@@ -217,9 +136,9 @@ public final class Webservices extends Base {
 				} else {
 					endpoint = "rpcrouter";
 				}
-				String protocol = request.isSecure() ? "https://" : "http://";
-				int port = request.getServerPort();
-				String restBaseUrl = protocol + request.getServerName() + (port != 0 ? ":" + port : "") + request.getContextPath() + "/services/";
+				String protocol = servletRequest.isSecure() ? "https://" : "http://";
+				int port = servletRequest.getServerPort();
+				String restBaseUrl = protocol + servletRequest.getServerName() + (port != 0 ? ":" + port : "") + servletRequest.getContextPath() + "/services/";
 				endpoint = restBaseUrl + endpoint;
 				break;	//what if there are more than 1 WebServiceListener
 			}

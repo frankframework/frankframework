@@ -19,6 +19,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.scheduler.job.IJob;
 
 
@@ -35,8 +36,7 @@ import nl.nn.adapterframework.scheduler.job.IJob;
  * <li>receiverName: the name of the receiver<li>
  * </ul>
  *<p><b>Design consideration</b></p>
- * <p>Currently, the {@link nl.nn.adapterframework.configuration.Configuration configuration}
- * is stored in the job data map. As the configuration is not serializable, due to the nature of the
+ * <p>Currently, the {@link Configuration} is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
  * </p>
  *
@@ -55,9 +55,9 @@ public class ConfiguredJob extends BaseJob {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
-			log.info(getLogPrefix(jobDef) + "executing");
+			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob();
-			log.debug(getLogPrefix(jobDef) + "completed");
+			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "completed");
 		}
 		catch (Exception e) {
 			log.error("JobExecutionException while running "+getLogPrefix(context), e);
@@ -67,5 +67,5 @@ public class ConfiguredJob extends BaseJob {
 			Thread.currentThread().setName(ctName);
 		}
 	}
-	
+
 }

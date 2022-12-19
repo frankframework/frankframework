@@ -80,19 +80,19 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	public static final String DELEGATE_PREFIX="delegate_";
 
 	@Override
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
 		try {
 			Reference ref = (Reference)obj; // For Tomcat, obj will always be an object of type Reference
-			
+
 			String objectName = name.toString();
 			String targetClassName = ref.getClassName();
 			//Class targetClass = Class.forName(targetClassName);
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
-			
+
 			// fetch and set delegate properties
 			for (Enumeration<RefAddr> refAddrEnum=ref.getAll(); refAddrEnum.hasMoreElements();) {
 				RefAddr refAddr = refAddrEnum.nextElement();

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.ICredentials;
 
@@ -35,8 +36,16 @@ public class CredentialFactory  {
 
 	private ICredentials credentials=null;
 
+	public CredentialFactory(String alias) {
+		this(alias, (Supplier<String>)null, (Supplier<String>)null);
+	}
+
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
-		credentials = nl.nn.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
+		this(alias, ()->defaultUsername, ()->defaultPassword);
+	}
+
+	public CredentialFactory(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		credentials = nl.nn.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 

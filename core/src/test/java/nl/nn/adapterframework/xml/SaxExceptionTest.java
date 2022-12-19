@@ -4,7 +4,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -49,13 +49,12 @@ public class SaxExceptionTest {
 		Exception cause = createCause();
 		Locator locator = createLocator();
 		SAXException se = SaxException.createSaxException(null, locator, cause);
-		System.out.println("original stacktrace");
 		se.printStackTrace();
 		inspectSAXException(se,null,locator);
 		assertThat(se.toString(), StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
 	}
 
-	
+
 	@Test
 	public void testSaxExceptionWithMessageWrappedInSenderException() {
 		Exception cause = createCause();
@@ -95,7 +94,6 @@ public class SaxExceptionTest {
 	}
 
 
-	
 	@Test
 	public void testSaxExceptionWithMessageWrappedInTransformerException() {
 		Exception cause = createCause();
@@ -135,8 +133,6 @@ public class SaxExceptionTest {
 	}
 
 
-	
-	
 	@Test
 	public void testSaxExceptionWithMessageWrappedInSenderAndTransformerException() {
 		Exception cause = createCause();
@@ -189,7 +185,7 @@ public class SaxExceptionTest {
 		fail("Expected exception");
 		return null;
 	}
-	
+
 	public void inspectViaSenderAndTransformerException(SenderException e, SAXException originalException, String expectedInSaxExceptionMessage, Locator locator) {
 		System.out.println("multiwrapped getMessage() ["+e.getMessage()+"]");
 		System.out.println("multiwrapped toString() ["+e.toString()+"]");
@@ -281,7 +277,6 @@ public class SaxExceptionTest {
 		};
 		return locator;
 	}
-	
 
 	public void catchAndRethrow() throws IOException {
 		try {
@@ -290,11 +285,10 @@ public class SaxExceptionTest {
 			throw new IOException("caught you!",e);
 		}
 	}
-	
+
 	@SuppressWarnings("null")
 	public void throwNullPointer() {
 		String testString=null;
-		
 		testString.toString();
 	}
 }

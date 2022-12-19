@@ -25,7 +25,9 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -40,6 +42,7 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @author Johan Verrips
  */
+@ElementType(ElementTypes.SESSION)
 public class PutInSession extends FixedForwardPipe {
 
 	private @Getter String sessionKey;
@@ -59,14 +62,14 @@ public class PutInSession extends FixedForwardPipe {
 				try {
 					message.preserve();
 				} catch (IOException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message", e);
+					throw new PipeRunException(this,"cannot preserve message", e);
 				}
 				v = message;
 			} else {
 				v = Message.asMessage(getValue());
 			}
 			session.put(getSessionKey(), v);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
+			log.debug("stored [{}] in pipeLineSession under key [{}]", v, getSessionKey());
 		}
 
 		ParameterList parameterList = getParameterList();
@@ -78,23 +81,23 @@ public class PutInSession extends FixedForwardPipe {
 						String name  = pv.getName();
 						Object value = pv.getValue();
 						session.put(name, value);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"stored ["+value+"] in pipeLineSession under key ["+name+"]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);
 					}
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
+	@IbisDoc({"Key of the session variable to store the input in", "" })
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@IbisDoc({"2", "Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
+	@IbisDoc({"Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
 	public void setValue(String value) {
 		this.value = value;
 	}

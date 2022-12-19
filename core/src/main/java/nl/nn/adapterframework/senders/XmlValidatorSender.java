@@ -21,6 +21,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -66,26 +67,26 @@ public class XmlValidatorSender extends XercesXmlValidator implements ISenderWit
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String fullReasons="tja";
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		String fullReasons="";
 		try {
 			ValidationResult validationResult = validate(message, session, getLogPrefix(),null,null);
 
 			if (validationResult == ValidationResult.VALID || validationResult == ValidationResult.VALID_WITH_WARNINGS) {
-				return message;
+				return new SenderResult(message);
 			}
 			fullReasons = validationResult.getEvent(); // TODO: find real fullReasons
 			if (isThrowException()) {
 				throw new SenderException(fullReasons);
 			}
 			log.warn(fullReasons);
-			return message;
+			return new SenderResult(message);
 		} catch (Exception e) {
 			if (isThrowException()) {
 				throw new SenderException(e);
 			}
 			log.warn(fullReasons, e);
-			return message;
+			return new SenderResult(message);
 		}
 	}
 

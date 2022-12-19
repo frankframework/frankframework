@@ -110,7 +110,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		try {
 			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.iterateOverStatistics(hski,groupData,action);
+				if (adapter.isConfigurationSucceeded()) {
+					adapter.iterateOverStatistics(hski,groupData,action);
+				}
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -432,6 +434,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
+	 * Include the referenced Module in this configuration
+	 */
+	public void registerInclude(Include module) {
+		// method exists to trigger FrankDoc.
+	}
+
+	/**
 	 * Add adapter.
 	 */
 	public void registerAdapter(Adapter adapter) {
@@ -479,7 +488,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 *
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
 	 */
-	@Protected
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
@@ -489,6 +497,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			setBeanName(name);
 		}
 	}
+
 	@Override
 	public String getName() {
 		return getId();
@@ -591,8 +600,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
-
-
+	/**
+	 * Overwrite the DisplayName created by the super.setBeanName which prepends 'ApplicationContext'.
+	 * The BeanName can only be set once, after which it only updates the DisplayName.
+	 */
 	@Override
 	@Protected
 	public void setBeanName(String name) {

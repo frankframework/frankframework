@@ -1,1 +1,1 @@
-default: [Pipe 1]
+fall through IbisLocal: [<request sender="IbisLocalSender" path="ExitS0"/>]

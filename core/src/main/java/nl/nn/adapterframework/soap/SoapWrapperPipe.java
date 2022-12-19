@@ -40,9 +40,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
- * 
+ *
  * @ff.parameters Any parameters defined on the pipe will be applied to the created transformer.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
@@ -66,16 +66,11 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private @Getter String root = null;
 	private @Getter boolean ignoreSoapFault = false;
 	private @Getter boolean allowPlainXml = false;
-	
+
 	private @Getter String wssAuthAlias;
 	private @Getter String wssUserName;
 	private @Getter String wssPassword;
 	private @Getter boolean wssPasswordDigest = true;
-
-	private @Getter String onlyIfSessionKey;
-	private @Getter String onlyIfValue;
-	private @Getter String unlessSessionKey;
-	private @Getter String unlessValue;
 
 	private CredentialFactory wssCredentialFactory = null;
 
@@ -109,10 +104,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			soapVersion=SoapVersion.AUTO;
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
-			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getSoapHeaderStyleSheet(), 0);
+			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(this, getSoapHeaderStyleSheet(), 0);
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
-			soapBodyTp = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, getSoapBodyStyleSheet(), 0);
+			soapBodyTp = TransformerPool.configureStyleSheetTransformer(this, getSoapBodyStyleSheet(), 0);
 		}
 		if (isRemoveOutputNamespaces()) {
 			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
@@ -128,7 +123,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
-			log.debug(getLogPrefix(null) + "created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
+			log.debug("created CredentialFactory for username=[{}]", wssCredentialFactory.getUsername());
 		}
 	}
 
@@ -139,42 +134,42 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			try {
 				soapHeaderTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Header TransformerPool", e);
+				throw new PipeStartException("cannot start SOAP Header TransformerPool", e);
 			}
 		}
 		if (soapBodyTp != null) {
 			try {
 				soapBodyTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start SOAP Body TransformerPool", e);
+				throw new PipeStartException("cannot start SOAP Body TransformerPool", e);
 			}
 		}
 		if (removeOutputNamespacesTp != null) {
 			try {
 				removeOutputNamespacesTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Output Namespaces TransformerPool", e);
+				throw new PipeStartException("cannot start Remove Output Namespaces TransformerPool", e);
 			}
 		}
 		if (removeUnusedOutputNamespacesTp != null) {
 			try {
 				removeUnusedOutputNamespacesTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Remove Unused Output Namespaces TransformerPool", e);
+				throw new PipeStartException("cannot start Remove Unused Output Namespaces TransformerPool", e);
 			}
 		}
 		if (outputNamespaceTp != null) {
 			try {
 				outputNamespaceTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Output Namespace TransformerPool", e);
+				throw new PipeStartException("cannot start Output Namespace TransformerPool", e);
 			}
 		}
 		if (rootTp != null) {
 			try {
 				rootTp.open();
 			} catch (Exception e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start Root TransformerPool", e);
+				throw new PipeStartException("cannot start Root TransformerPool", e);
 			}
 		}
 	}
@@ -204,20 +199,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
-			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
-			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
-				if (log.isDebugEnabled()) log.debug("onlyIfSessionKey ["+getOnlyIfSessionKey()+"] value ["+onlyIfActualValue+"]: not found or not equal to value ["+getOnlyIfValue()+"]");
-				return new PipeRunResult(getSuccessForward(), message);
-			}
-		}
-		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
-			Object unlessActualValue = session.get(getUnlessSessionKey());
-			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
-				if (log.isDebugEnabled()) log.debug("unlessSessionKey ["+getUnlessSessionKey()+"] value ["+unlessActualValue+"]: not found or not equal to value ["+getUnlessValue()+"]");
-				return new PipeRunResult(getSuccessForward(), message);
-			}
-		}
 		Message result;
 		try {
 			if (getDirection() == Direction.WRAP) {
@@ -250,10 +231,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				message.preserve();
 				result = unwrapMessage(message, session);
 				if (Message.isEmpty(result)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body is empty or message is not a SOAP Message");
+					throw new PipeRunException(this, "SOAP Body is empty or message is not a SOAP Message");
 				}
 				if (!isIgnoreSoapFault() && soapWrapper.getFaultCount(message) > 0) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP Body contains SOAP Fault");
+					throw new PipeRunException(this, "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 					String soapHeader = soapWrapper.getHeader(message);
@@ -270,7 +251,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				}
 			}
 		} catch (Exception t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, "Unexpected exception during (un)wrapping ", t);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -291,7 +272,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		return soapNamespace;
 	}
-	
+
 	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
@@ -324,7 +305,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		soapNamespaceSessionKey = string;
 	}
 
-	@IbisDoc({"Key of session variable to store soap header", "If configured as Pipeline Input Wrapper and direction=<code>unwrap<code>: "+ DEFAULT_SOAP_HEADER_SESSION_KEY})
+	@IbisDoc({"Key of session variable to store soap header", "If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: "+ DEFAULT_SOAP_HEADER_SESSION_KEY})
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
@@ -398,25 +379,4 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}
-
-	@IbisDoc({"Key of session variable to check if action must be executed. The wrap or unwrap action is only executed if the session variable exists", ""})
-	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
-		this.onlyIfSessionKey = onlyIfSessionKey;
-	}
-
-	@IbisDoc({"Value of session variable 'onlyIfSessionKey' to check if action must be executed. The wrap or unwrap action is only executed if the session variable has the specified value", ""})
-	public void setOnlyIfValue(String onlyIfValue) {
-		this.onlyIfValue = onlyIfValue;
-	}
-
-	@IbisDoc({"Key of session variable to check if action must be executed. The wrap or unwrap action is not executed if the session variable exists", ""})
-	public void setUnlessSessionKey(String unlessSessionKey) {
-		this.unlessSessionKey = unlessSessionKey;
-	}
-
-	@IbisDoc({"Value of session variable 'unlessSessionKey' to check if action must be executed. The wrap or unwrap action is not executed if the session variable has the specified value", ""})
-	public void setUnlessValue(String unlessValue) {
-		this.unlessValue = unlessValue;
-	}
-
 }

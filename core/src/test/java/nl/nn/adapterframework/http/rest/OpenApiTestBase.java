@@ -57,8 +57,9 @@ public class OpenApiTestBase extends Mockito {
 
 	@Before
 	public void setUp() throws ServletException {
-		configuration = new TestConfiguration();
 		AppConstants.getInstance().setProperty("hostname", "hostname");
+		AppConstants.getInstance().setProperty("dtap.stage", "xxx");
+		configuration = new TestConfiguration();
 	}
 
 	@After

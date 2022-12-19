@@ -93,14 +93,14 @@ public class ResultSet2FileSender extends FixedQuerySender {
 				if (maxRecords==0) {
 					eor = true;
 				}
-				while (resultset.next() && !eor) {
+				while (!eor && resultset.next()) {
 					counter++;
 					processResultSet(resultset, fos, counter);
 					if (maxRecords>=0 && counter>=maxRecords) {
 						ResultSetMetaData rsmd = resultset.getMetaData();
 						if (rsmd.getColumnCount() >= 3) {
 							String group = resultset.getString(3);
-							while (resultset.next() && !eor) {
+							while (!eor && resultset.next()) {
 								String groupNext = resultset.getString(3);
 								if (groupNext.equals(group)) {
 									counter++;
@@ -133,7 +133,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		String rec_str = resultset.getString(1);
 		if (log.isDebugEnabled()) {
 			log.debug("iteration [" + counter + "] item [" + rec_str + "]");
-		} 
+		}
 		if ("timestamp".equalsIgnoreCase(getStatusFieldType())) {
 			//TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
 			resultset.updateTimestamp(2 , new Timestamp((new Date()).getTime()));
@@ -144,7 +144,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		}
 		fos.write(eolArray);
 	}
-	
+
 	/** type of the optional status field which is set after the row is written to the file: timestamp */
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
@@ -155,7 +155,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		setFilenameSessionKey(filenameSessionKey);
 	}
-	
+
 	/** 
 	 * Key of session variable that contains the name of the file to use.
 	 * @ff.mandatory

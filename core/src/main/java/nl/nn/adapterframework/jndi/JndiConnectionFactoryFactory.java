@@ -34,7 +34,7 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
 		return get(connectionFactoryName);
 	}
-	
+
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
 		return get(connectionFactoryName, jndiEnvironment);

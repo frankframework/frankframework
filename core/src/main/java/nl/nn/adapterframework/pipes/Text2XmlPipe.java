@@ -29,6 +29,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -40,6 +42,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author J. Dekker
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class Text2XmlPipe extends StreamingPipe {
 	private @Getter String xmlTag;
 	private @Getter boolean splitLines = false;
@@ -148,7 +151,7 @@ public class Text2XmlPipe extends StreamingPipe {
 	}
 
 	/**
-	 * Replace all non xml chars (not in the <a href=\"http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char\">character range as specified by the xml specification</a>)
+	 * Replace all non xml chars (not in the <a href="http://www.w3.org/tr/2006/rec-xml-20060816/#nt-char">character range as specified by the xml specification</a>)
 	 * with the inverted question mark (0x00bf)
 	 * @ff.default true
 	 */

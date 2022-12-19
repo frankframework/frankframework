@@ -11,7 +11,4 @@ COPY --chown=tomcat target/dependencies/ibis-adapterframework-test.war /usr/loca
 # copy any additional drivers
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# provide database credentials
-RUN mkdir -p /opt/frank/secrets/testiaf_user \
-	&& echo "testiaf_user"   > /opt/frank/secrets/testiaf_user/username \
-	&& echo "testiaf_user00" > /opt/frank/secrets/testiaf_user/password
+# Credentials need to be mounted in /opt/frank/secrets at runtime

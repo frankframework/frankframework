@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><TIMEOUT>
-<errorMessage message="Pipe [send2ws_multiple_with_forwards] msgId [Test Tool correlation id] : nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out" originator="IAF_ss9 7.0-RC3-SNAPSHOT" timestamp="Tue May 15 15:02:41 CEST 2018">
+<errorMessage message="Pipe [send2ws_multiple_with_forwards] msgId [Test Tool correlation id]: nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out" originator="IAF_ss9 7.0-RC3-SNAPSHOT" timestamp="Tue May 15 15:02:41 CEST 2018">
   <location class="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="send2ws_multiple_with_forwards"/>
   <details>nl.nn.adapterframework.core.TimeoutException: nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out&#13;
 	at nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase.sendMessage(TimeoutGuardSenderWithParametersBase.java:118)&#13;

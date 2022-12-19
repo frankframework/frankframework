@@ -13,7 +13,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlPrettyPrintFilterTest {
 
-	
 	@Test
 	public void testBasic() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -23,7 +22,7 @@ public class XmlPrettyPrintFilterTest {
 		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
-	
+
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -40,7 +39,7 @@ public class XmlPrettyPrintFilterTest {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedNoLexicalHandler.xml");
 		XmlWriter xmlWriter = new XmlWriter();
-		
+
 		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter);
 
 		InputSource inputSource = new InputSource(new StringReader(input));

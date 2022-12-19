@@ -24,7 +24,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -34,6 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Peter Leeuwenburgh
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class EscapePipe extends FixedForwardPipe {
 
 	private @Getter String substringStart;

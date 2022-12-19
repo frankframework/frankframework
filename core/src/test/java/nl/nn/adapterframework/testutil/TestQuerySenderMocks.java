@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import org.junit.Test;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**

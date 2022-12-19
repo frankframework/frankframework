@@ -24,17 +24,17 @@ import nl.nn.adapterframework.stream.StreamingException;
 
 public class DocumentBuilderFactory {
 
-	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
+	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
 		switch (format) {
 		case XML:
-			return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler());
+			return new XmlDocumentBuilder(rootElement, outputStream.asContentHandler(), prettyPrint);
 		case JSON:
 			return new JsonDocumentBuilder(outputStream.asJsonEventHandler());
 		default:
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
 	}
-	
+
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement) throws SAXException {
 		switch (format) {
 		case XML:
@@ -45,25 +45,25 @@ public class DocumentBuilderFactory {
 			throw new IllegalArgumentException("Unknown document format ["+format+"]");
 		}
 	}
-	
-	public static IDocumentBuilder startDocument(String rootElement, ContentHandler handler) throws SAXException {
-		return new XmlDocumentBuilder(rootElement, handler);
+
+	public static IDocumentBuilder startDocument(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
+		return new XmlDocumentBuilder(rootElement, handler, prettyPrint);
 	}
-	
+
 	public static IDocumentBuilder startDocument(JsonEventHandler handler) throws SAXException {
 		return new JsonDocumentBuilder(handler);
 	}
-	
-	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream) throws SAXException, StreamingException {
-		return startDocument(format, rootElement, outputStream).asObjectBuilder();
+
+	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
+		return startDocument(format, rootElement, outputStream, prettyPrint).asObjectBuilder();
 	}
 
 	public static ObjectBuilder startObjectDocument(DocumentFormat format, String rootElement) throws SAXException {
 		return startDocument(format, rootElement).asObjectBuilder();
 	}
 
-	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageOutputStream outputStream) throws SAXException, StreamingException {
-		return startDocument(format, rootElement, outputStream).asArrayBuilder(elementName);
+	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName, MessageOutputStream outputStream, boolean prettyPrint) throws SAXException, StreamingException {
+		return startDocument(format, rootElement, outputStream, prettyPrint).asArrayBuilder(elementName);
 	}
 
 	public static ArrayBuilder startArrayDocument(DocumentFormat format, String rootElement, String elementName) throws SAXException {

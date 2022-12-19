@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.MessageUtils;
 
 /**
  * Pipe to manage RESTFUL etag caching
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -80,7 +80,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
+			throw new PipeRunException(this, "got null input");
 		}
 
 		String uriPatternSessionKey = null;
@@ -96,7 +96,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 					}
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
@@ -109,7 +109,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		if(cache != null && cache.containsKey(cacheKey)) {
 			Object returnCode = false;
 
-			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
+			log.debug("found eTag cacheKey [{}] with action [{}]", cacheKey, getAction());
 			switch (getAction()) {
 			case GENERATE:
 				String hash = MessageUtils.generateMD5Hash(message);
@@ -125,7 +125,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				try {
 					cache.put(cacheKey, message.asString());
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 				returnCode = true;
 				break;
@@ -144,26 +144,24 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 				break;
 
 			default:
-				throw new PipeRunException(this, getLogPrefix(session)+"action not found ["+getAction()+"]"); 
+				throw new PipeRunException(this, "action not found ["+getAction()+"]");
 			}
 
 			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
-		else {
-			PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
-			String msg;
+		PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
+		String msg;
 
-			if(cache == null)
-				msg = "failed to locate cache";
-			else
-				msg = "failed to locate eTag ["+cacheKey+"] in cache";
+		if(cache == null)
+			msg = "failed to locate cache";
+		else
+			msg = "failed to locate eTag ["+cacheKey+"] in cache";
 
-			if (pipeForward==null) {
-				throw new PipeRunException (this, getLogPrefix(session)+msg);
-			}
-
-			return new PipeRunResult(pipeForward, "");
+		if (pipeForward==null) {
+			throw new PipeRunException (this, msg);
 		}
+
+		return new PipeRunResult(pipeForward, "");
 	}
 
 	public void setAction(EtagAction action) {
@@ -175,12 +173,12 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 	}
 
 	public String getUriPattern() {
-		if(uriPattern != null)
+		if(uriPattern != null) {
 			return uriPattern.toLowerCase();
-		else {
-			return null;
 		}
+		return null;
 	}
+
 	public void setRestPath(String string) {
 		restPath = string;
 	}

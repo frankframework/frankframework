@@ -47,11 +47,11 @@ public class PutParametersInSession extends FixedForwardPipe {
 						String name  = pv.getName();
 						Object value = pv.getValue();
 						session.put(name, value);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"stored ["+value+"] in pipeLineSession under key ["+name+"]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", value, name);
 					}
 				}
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		return new PipeRunResult(getSuccessForward(), message);

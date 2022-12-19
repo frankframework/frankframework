@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
+
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.logging.log4j.Logger;
-import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -47,15 +49,15 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, null);
+	public void callServiceAsynchronous(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, null);
 		getTaskExecutor().execute(ise);
 	}
 
-	public Message callServiceIsolated(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
+	public SenderResult callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, guard);
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, guard);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();

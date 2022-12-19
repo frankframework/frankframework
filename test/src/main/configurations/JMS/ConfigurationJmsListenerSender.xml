@@ -1,20 +1,106 @@
 <module>
-	<adapter name="JmsRRSender" description="Test the functioning of the JmsSender (RR)"
+	<adapter name="JmsRRSender" description="Test the functioning of the JmsSender (RR) with listener embedded response sender"
 		active="${active.jms}">
-		<receiver name="JmsRRSender">
+		<receiver correlationIDXPath="*/@cid" >
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsRRSender" />
 		</receiver>
-		<pipeline firstPipe="Send2Jms">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Send2Jms"
+			<XmlSwitchPipe name="select branch" xpathExpression="*/@branch" />
+			
+			<FixedResultPipe name="defaultExit" returnString="&lt;/root&gt;branch not found&lt;/root&gt;">
+				<forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			
+			<pipe name="CallListenerWithListenerEmbeddedResponseSender,LinkViaMessageID"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
 					replyToName="${jms.destination.i4testiaf_out}">
-					<param name="SOURCE" value="${hostname}_I4TIAF1" />
+					<param name="SOURCE" value="${hostname}_I4TIAF1a" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerWithReceiverEmbeddedResponseSender,LinkViaMessageID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1b" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerThatUsesReplyTo,LinkViaMessageID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1c" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerThatUsesFixedReplyDestination,LinkViaMessageID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1d" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerWithDynamicReplyQueue,LinkViaMessageID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true">
+					<param name="SOURCE" value="${hostname}_I4TIAF1e" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="CallListenerWithListenerEmbeddedResponseSender,LinkViaCorrelationID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1f" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerWithReceiverEmbeddedResponseSender,LinkViaCorrelationID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1g" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerThatUsesReplyTo,LinkViaCorrelationID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1h" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerThatUsesFixedReplyDestination,LinkViaCorrelationID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID"
+					replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF1i" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="CallListenerWithDynamicReplyQueue,LinkViaCorrelationID"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID">
+					<param name="SOURCE" value="${hostname}_I4TIAF1j" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -22,32 +108,120 @@
 	</adapter>
 	<adapter name="JmsRRListener" description="Test the functioning of the JmsListener (RR)"
 		active="${active.jms}">
-		<receiver name="JmsRRListener">
+		<receiver name="JmsRRListener with listener embedded response sender, ignore inbound correlationId">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
-				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1'">
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1a'">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
-					<param name="SOURCE" value="${hostname}_I4TIAF1" />
+					<param name="SOURCE" value="${hostname}_I4TIAF1a" />
 				</sender>
 			</listener>
 		</receiver>
-		<pipeline firstPipe="EchoPipe">
+		<receiver name="JmsRRListener with receiver embedded response sender, ignore inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1b'">
+			</listener>
+			<sender className="nl.nn.adapterframework.jms.JmsSender"
+				destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
+				<param name="SOURCE" value="${hostname}_I4TIAF1b" />
+			</sender>
+		</receiver>
+		<receiver name="JmsRRListener using isReplyTo, ignore inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1c'">
+			</listener>
+		</receiver>
+		<receiver name="JmsRRListener using replyDestinationName, ignore inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" replyDestinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1d'">
+			</listener>
+		</receiver>
+		<receiver name="JmsRRListener using dynamic reply queue, ignore inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1e'">
+			</listener>
+		</receiver>
+
+		<receiver name="JmsRRListener with listener embedded response sender, use inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1f'">
+				<sender className="nl.nn.adapterframework.jms.JmsSender"
+					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
+					<param name="SOURCE" value="${hostname}_I4TIAF1f" />
+				</sender>
+			</listener>
+		</receiver>
+		<receiver name="JmsRRListener with receiver embedded response sender, use inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1g'">
+			</listener>
+			<sender className="nl.nn.adapterframework.jms.JmsSender"
+				destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
+				<param name="SOURCE" value="${hostname}_I4TIAF1g" />
+			</sender>
+		</receiver>
+		<receiver name="JmsRRListener using isReplyTo, use inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1h'">
+			</listener>
+		</receiver>
+		<receiver name="JmsRRListener using replyDestinationName, use inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" replyDestinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1i'">
+			</listener>
+		</receiver>
+		<receiver name="JmsRRListener using dynamic reply queue, use inbound correlationId">
+			<listener className="nl.nn.adapterframework.jms.JmsListener"
+				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1j'">
+			</listener>
+		</receiver>
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+
+			<CompareStringPipe name="compareIdAndCid" >
+				<param name="operand1" sessionKey="id"/>
+				<param name="operand2" sessionKey="cid"/>
+				<forward name="equals" path="IdAndCidSame" />
+				<forward name="lessthan" path="IdAndCidDifferent" />
+				<forward name="greaterthan" path="IdAndCidDifferent" />
+			</CompareStringPipe>
+			
+			<FixedResultPipe name="IdAndCidSame" returnString="true" storeResultInSessionKey="IdAndCidSame">
+				<forward name="success" path="displayKeys" />
+			</FixedResultPipe>
+			<FixedResultPipe name="IdAndCidDifferent" returnString="false" storeResultInSessionKey="IdAndCidSame">
+				<forward name="success" path="displayKeys" />
+			</FixedResultPipe>
+			
+			<pipe name="displayKeys" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="branch [BRANCH] Orignal Id [MID] cid [CID] id=cid [SAME]" replaceFixedParams="true">
+				<param name="BRANCH" sessionKey="originalMessage" xpathExpression="*/@branch" />
+				<param name="MID" sessionKey="id" />
+				<param name="CID" sessionKey="cid" />
+				<param name="SAME" sessionKey="IdAndCidSame" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
+
 	<adapter name="JmsFFSender" description="Test the functioning of the JmsSender (FF)"
 		active="${active.jms}">
-		<receiver name="JmsFFSender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSender" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -55,16 +229,17 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF1" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
-				<forward name="success" path="EXIT" />
+				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" 
+				>
+				<forward name="echo" path="EXIT" />
+				<forward name="listenerException" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
@@ -76,7 +251,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithDatasource" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -84,11 +259,10 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF2" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSenderJmsFFSenderWithDatasource" />
-				<forward name="success" path="fixedInsert" />
 			</pipe>
 			<pipe name="fixedInsert"
 				className="nl.nn.adapterframework.pipes.SenderPipe"
@@ -98,7 +272,6 @@
 					queryType="insert">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
-				<forward name="success" path="switchAction" />
 			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
@@ -125,7 +298,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithRead" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -133,7 +306,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
-					<param name="SOURCE" value="${hostname}_FF3" />
+					<param name="SOURCE" value="${hostname}_FF" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/JmsFFSenderWithRead" />
@@ -150,7 +323,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-JmsFFSenderWithDynamicDestination" />
 		</receiver>
-		<pipeline firstPipe="send2Jms" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -175,20 +348,29 @@
 			hideMethod="firstHalf">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_ff}" useReplyTo="false" jmsRealm="qcf"
-				messageSelector="SOURCE='${hostname}_FF3'" />
+				messageSelector="SOURCE='${hostname}_FF'" />
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				slotId="${applicationId}/JmsFFListener" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/JmsFFListener" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
+			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.LogContextPipe">
+				<param name="testMdc" value="testMdc" />
+			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe"
+				getInputFromFixedValue="ERROR">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -223,7 +405,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="JmsFFListener_subcall" serviceName="ibis4test-JmsFFListener_subcall" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -250,7 +432,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlJmsBrowserSender" />
 		</receiver>
-		<pipeline firstPipe="switchAction">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -259,10 +441,7 @@
 				<forward name="true" path="delay" />
 				<forward name="false" path="jmsBrowser" />
 			</pipe>
-			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe"
-				delayTime="1000">
-				<forward name="success" path="jmsBrowser" />
-			</pipe>
+			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="1000" />
 			<pipe name="jmsBrowser"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.XmlJmsBrowserSender" />

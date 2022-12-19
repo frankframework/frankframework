@@ -86,8 +86,8 @@
 						</table>
 					</div>
 					<div class="col-md-12 space-15">
-						<div class="input-group">
-							<input type="text" class="form-control" placeholder="Search ..." ng-model="searchFilter" ng-model-options="{debounce: 500}" name="search" />
+						<div class="input-group" id="searchbar">
+							<input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" ng-model="searchFilter" ng-model-options="{debounce: 500}" name="search" />
 							<i ng-show="searchFilter.length" ng-click="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
 							<span class="input-group-addon">
 								<i class="fa fa-search" aria-hidden="true"></i>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -27,9 +28,11 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.credentialprovider.util.Misc;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
@@ -38,7 +41,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <br/>
  * <code><pre>
  * &lt;errorMessage&gt;
- *    &lt;message timestamp="Mon Oct 13 12:01:57 CEST 2003" 
+ *    &lt;message timestamp="Mon Oct 13 12:01:57 CEST 2003"
  *             originator="NN IOS AdapterFramework(set from 'application.name' and 'application.version')"
  *             message="<i>message describing the error that occurred</i>" &gt;
  *    &lt;location class="nl.nn.adapterframework.pipes.XmlSwitch" name="ServiceSwitch"/&gt
@@ -48,7 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *    &lt;/originalMessage&gt;
  * &lt;/errorMessage&gt;
  * </pre></code>
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
@@ -68,6 +71,11 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
+		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
+		if (StringUtils.isNotEmpty(messageId)) {
+			prefix = Misc.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+		}
+		errorMessage = Misc.concatStrings(prefix, ": ", errorMessage);
 
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
 		// Build a Base xml
@@ -97,7 +105,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
 		try {
-			originalMessageXml.setValue(originalMessage.asString(), true);
+			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
 		} catch (IOException e) {
 			log.warn("Could not convert originalMessage for messageId ["+messageId+"]",e);
 			originalMessageXml.setValue(originalMessage.toString(), true);

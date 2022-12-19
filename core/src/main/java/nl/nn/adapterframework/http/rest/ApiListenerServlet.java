@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -108,6 +108,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
+		response.setHeader("Content-Type", "application/json");
 		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), StreamUtil.DEFAULT_CHARSET)) {
 			jsonWriter.write(json);
 		}
@@ -544,8 +545,18 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageId = messageIdHeader;
 					}
 				}
-				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
-				Message result = listener.processRequest(null, body, messageContext);
+				String correlationId = null;
+				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
+					String correlationIdHeaderValue = request.getHeader(listener.getCorrelationIdHeader());
+					if(StringUtils.isNotEmpty(correlationIdHeaderValue)) {
+						messageId = correlationIdHeaderValue;
+					}
+				}
+				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
+					correlationId = messageId;
+				}
+				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+				Message result = listener.processRequest(body, messageContext);
 
 				/**
 				 * Calculate an eTag over the processed result and store in cache
@@ -618,7 +629,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/**
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
-				int statusCode = messageContext.get("exitcode", 0);
+				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}

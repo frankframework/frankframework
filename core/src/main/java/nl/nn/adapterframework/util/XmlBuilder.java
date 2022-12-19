@@ -49,7 +49,7 @@ public class XmlBuilder {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final String CDATA_END="]]>";
-	
+
 	private String root;
 	private AttributesImpl attributes = new AttributesImpl();
 	private List<XmlBuilder> subElements;
@@ -64,10 +64,10 @@ public class XmlBuilder {
 	public static XmlBuilder create(String tagName) {
 		return new XmlBuilder(tagName);
 	}
-	
+
 	public void addAttribute(String name, String value) {
 		if (value != null) {
-			attributes.addAttribute("", name, name, "STRING", value);
+			attributes.addAttribute("", name, name, "STRING", XmlUtils.normalizeAttributeValue(value));
 		}
 	}
 
@@ -138,11 +138,11 @@ public class XmlBuilder {
 		}
 		return writer.toString();
 	}
-	
+
 	public void toXML(ContentHandler handler) throws SAXException, IOException {
 		toXML(handler, true);
 	}
-	
+
 	public void toXML(ContentHandler handler, boolean asDocument) throws SAXException, IOException {
 		if (asDocument) {
 			handler.startDocument();
@@ -182,7 +182,7 @@ public class XmlBuilder {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return toXML();

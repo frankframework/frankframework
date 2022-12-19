@@ -9,7 +9,9 @@
 	default-autowire="byName"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean name="configurationDigester" class="nl.nn.adapterframework.testutil.ConfigurationDigesterMock" scope="singleton" />
+	<import resource="testApplicationContext.xml"/>
+
+	<bean name="configurationDigester" class="nl.nn.adapterframework.testutil.mock.ConfigurationDigesterMock" scope="singleton" />
 
 	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
 
@@ -22,14 +24,11 @@
 	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
 	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
 
-	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
-
-	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
 	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
 
-	<!-- Suppress Spring initialisation warnings by providing a dummy class -->
-	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
+	<bean name="jdbcMigrator" class="nl.nn.adapterframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
 
-	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
+
+	<bean name="sharedResources" class="nl.nn.adapterframework.core.SharedResources" scope="singleton"/>
 </beans>

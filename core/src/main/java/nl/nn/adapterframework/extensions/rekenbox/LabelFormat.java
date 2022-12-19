@@ -54,12 +54,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *          ...
  * 	EINDEREKENVERZOEK :EINDE
+ * </pre></code>
  * </p>
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values 
+ * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values
  * <ul>
  *   <li>"Xml2Label": transform an XML file to ascii</li>
  *   <li>"Label2Xml": transform an ascii file to XML</li>
@@ -83,7 +84,7 @@ public class LabelFormat extends FixedForwardPipe {
 				DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				Document document = documentBuilder.parse(message.asInputSource());
 
-				result = XmlToLabelFormat.doTransformation(document).toString();
+				result = XmlToLabelFormat.doTransformation(document);
 				return new PipeRunResult(getSuccessForward(), result);
 			}
 			else {
@@ -95,12 +96,12 @@ public class LabelFormat extends FixedForwardPipe {
 			}
 		}
 		catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot transform", e);
+			throw new PipeRunException(this, "cannot transform", e);
 		}
 	}
 
 	/**
-	 * sets transformation direction. Possible values 
+	 * sets transformation direction. Possible values
 	 * <ul>
 	 *   <li>"Xml2Label": transform an XML file to ascii</li>
 	 *   <li>"Label2Xml": transform an ascii file to XML</li>

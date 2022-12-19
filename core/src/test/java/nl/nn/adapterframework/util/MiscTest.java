@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -412,9 +415,39 @@ public class MiscTest {
 		from.put("a", 15);
 		from.put("b", 16);
 		Misc.copyContext(keys, from, to, null);
-		assertTrue(from.equals(to));
+		assertEquals(from,to);
 	}
 
+	@Test
+	public void testCopyContextNullKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(null, from, to, null);
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testCopyContextLimitedKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a";
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext(keys, from, to, null);
+		assertEquals(1,to.size());
+	}
+
+	@Test
+	public void testCopyContextEmptyKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		Misc.copyContext("", from, to, null);
+		assertEquals(0,to.size());
+	}
 	/**
 	 * Method: toFileSize(String value, long defaultValue)
 	 */
@@ -657,4 +690,21 @@ public class MiscTest {
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
+	@Test
+	public void testIbmDescriptorResources() throws Exception {
+		String descriptorPath = Misc.getApplicationDeploymentDescriptorPath();
+		assertThat(descriptorPath, Matchers.endsWith("META-INF"));
+		String applBindings = Misc.getDeployedApplicationBindings();
+		assertNotNull(applBindings);
+		String deploymentDescriptor = Misc.getApplicationDeploymentDescriptor();
+		assertNotNull(deploymentDescriptor);
+	}
+
+	@Test
+	public void testIbmConfigurationResources() throws Exception {
+		String configurationResources = Misc.getConfigurationResources();
+		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
+		String server = Misc.getConfigurationServer();
+		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+	}
 }

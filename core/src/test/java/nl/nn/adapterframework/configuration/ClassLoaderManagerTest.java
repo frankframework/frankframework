@@ -18,6 +18,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -142,7 +144,15 @@ public class ClassLoaderManagerTest extends Mockito {
 		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
-		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		IbisManager ibisManager = mock(IbisManager.class);
+		doReturn(ibisManager).when(ibisContext).getIbisManager();
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		doReturn(applicationContext).when(ibisManager).getApplicationContext();
+		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 	private ClassLoader getClassLoader() throws Exception {

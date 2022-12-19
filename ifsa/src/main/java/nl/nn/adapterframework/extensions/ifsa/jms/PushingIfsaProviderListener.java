@@ -96,6 +96,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </pre></code>
  * This is due to a IFSA requirement, that sessions be created using a parameter transacted=true, indicating
  * JMS transacted sessions.
+ * </p>
  *
  * @author  Gerrit van Brakel
  * @since   4.2
@@ -187,8 +188,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 
-	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
+		// on request-reply send the reply.
+		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessageOrWrapper instanceof javax.jms.Message) {
 				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;
@@ -196,7 +197,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {
@@ -217,7 +218,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
 				}
 			}
-	    }
+		}
 	}
 
 
@@ -265,73 +266,73 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 		return getIdFromWrapper((IMessageWrapper)rawMessage,threadContext);
 	 	}
 
-	    try {
-	        message = (IFSAMessage) rawMessage;
-	    } catch (ClassCastException e) {
-	        log.error(getLogPrefix()+
-	            "message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
-	        return null;
-	    }
-	    String mode = "unknown";
-	    String id = "unset";
-	    String cid = "unset";
-	    Date tsSent = null;
-	    Destination replyTo = null;
-	    String messageText = null;
+		try {
+			message = (IFSAMessage) rawMessage;
+		} catch (ClassCastException e) {
+			log.error(getLogPrefix()+
+				"message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
+			return null;
+		}
+		String mode = "unknown";
+		String id = "unset";
+		String cid = "unset";
+		Date tsSent = null;
+		Destination replyTo = null;
+		String messageText = null;
 		String fullIfsaServiceName = null;
-	    IFSAServiceName requestedService = null;
-	    String ifsaServiceName=null, ifsaGroup=null, ifsaOccurrence=null, ifsaVersion=null;
-	    try {
-	        if (message.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT) {
-	            mode = "NON_PERSISTENT";
-	        } else
-	            if (message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT) {
-	                mode = "PERSISTENT";
-	            }
-	    } catch (JMSException ignore) {
-	    }
-	    // --------------------------
-	    // retrieve MessageID
-	    // --------------------------
-	    try {
-	        id = message.getJMSMessageID();
-	    } catch (JMSException ignore) {
-	    }
-	    // --------------------------
-	    // retrieve CorrelationID
-	    // --------------------------
-	    try {
-	        cid = message.getJMSCorrelationID();
-	    } catch (JMSException ignore) {
-	    }
-	    // --------------------------
-	    // retrieve TimeStamp
-	    // --------------------------
-	    try {
-	        long lTimeStamp = message.getJMSTimestamp();
+		IFSAServiceName requestedService = null;
+		String ifsaServiceName=null, ifsaGroup=null, ifsaOccurrence=null, ifsaVersion=null;
+		try {
+			if (message.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT) {
+				mode = "NON_PERSISTENT";
+			} else
+				if (message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT) {
+					mode = "PERSISTENT";
+				}
+		} catch (JMSException ignore) {
+		}
+		// --------------------------
+		// retrieve MessageID
+		// --------------------------
+		try {
+			id = message.getJMSMessageID();
+		} catch (JMSException ignore) {
+		}
+		// --------------------------
+		// retrieve CorrelationID
+		// --------------------------
+		try {
+			cid = message.getJMSCorrelationID();
+		} catch (JMSException ignore) {
+		}
+		// --------------------------
+		// retrieve TimeStamp
+		// --------------------------
+		try {
+			long lTimeStamp = message.getJMSTimestamp();
 			tsSent = new Date(lTimeStamp);
 
-	    } catch (JMSException ignore) {
-	    }
-	    // --------------------------
-	    // retrieve ReplyTo address
-	    // --------------------------
-	    try {
-	        replyTo = message.getJMSReplyTo();
+		} catch (JMSException ignore) {
+		}
+		// --------------------------
+		// retrieve ReplyTo address
+		// --------------------------
+		try {
+			replyTo = message.getJMSReplyTo();
 
-	    } catch (JMSException ignore) {
-	    }
-	    // --------------------------
-	    // retrieve message text
-	    // --------------------------
-	    try {
-	        messageText = ((TextMessage)message).getText();
-	    } catch (Throwable ignore) {
-	    }
-	    // --------------------------
-	    // retrieve ifsaServiceDestination
-	    // --------------------------
-	    try {
+		} catch (JMSException ignore) {
+		}
+		// --------------------------
+		// retrieve message text
+		// --------------------------
+		try {
+			messageText = ((TextMessage)message).getText();
+		} catch (Throwable ignore) {
+		}
+		// --------------------------
+		// retrieve ifsaServiceDestination
+		// --------------------------
+		try {
 			fullIfsaServiceName = message.getServiceString();
 			requestedService = message.getService();
 
@@ -340,9 +341,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			ifsaOccurrence = requestedService.getServiceOccurance();
 			ifsaVersion = requestedService.getServiceVersion();
 
-	    } catch (JMSException e) {
-	        log.error(getLogPrefix() + "got error getting serviceparameter", e);
-	    }
+		} catch (JMSException e) {
+			log.error(getLogPrefix() + "got error getting serviceparameter", e);
+		}
 
 		String BIFname=null;
 		try {
@@ -388,14 +389,14 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //		}
 
 		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
-	    threadContext.put("timestamp", tsSent);
-	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
-	    threadContext.put("messageText", messageText);
-	    threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
-	    threadContext.put("ifsaServiceName", ifsaServiceName);
-	    threadContext.put("ifsaGroup", ifsaGroup);
-	    threadContext.put("ifsaOccurrence", ifsaOccurrence);
-	    threadContext.put("ifsaVersion", ifsaVersion);
+		threadContext.put("timestamp", tsSent);
+		threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
+		threadContext.put("messageText", messageText);
+		threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
+		threadContext.put("ifsaServiceName", ifsaServiceName);
+		threadContext.put("ifsaGroup", ifsaGroup);
+		threadContext.put("ifsaOccurrence", ifsaOccurrence);
+		threadContext.put("ifsaVersion", ifsaVersion);
 		threadContext.put("ifsaBifName", BIFname);
 		threadContext.put("ifsaBtcData", btcData);
 
@@ -413,7 +414,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			}
 		}
 
-	    return BIFname;
+		return BIFname;
 	}
 
 	private String displayHeaders(IFSAMessage message) {
@@ -470,20 +471,20 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					"</poisonmessage>");
 		}
 
-	    TextMessage message = null;
-	    try {
-	        message = (TextMessage) rawMessage;
-	    } catch (ClassCastException e) {
-	        log.warn(getLogPrefix()+ "message received was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-	        return null;
-	    }
-	    try {
-	    	String result=message.getText();
+		TextMessage message = null;
+		try {
+			message = (TextMessage) rawMessage;
+		} catch (ClassCastException e) {
+			log.warn(getLogPrefix()+ "message received was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
+			return null;
+		}
+		try {
+			String result=message.getText();
 			threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
-	    	return new Message(result);
-	    } catch (JMSException e) {
-		    throw new ListenerException(getLogPrefix(),e);
-	    }
+			return new Message(result);
+		} catch (JMSException e) {
+			throw new ListenerException(getLogPrefix(),e);
+		}
 	}
 
 

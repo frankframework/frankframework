@@ -26,14 +26,14 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
-	
+
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
 				messageId=Misc.createSimpleUUID();
 				log.error("null value for messageId, setting to ["+messageId+"]");
-	
+
 		}
 		if (message == null) {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] received null message");

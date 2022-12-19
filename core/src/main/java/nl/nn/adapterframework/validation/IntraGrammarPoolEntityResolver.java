@@ -60,19 +60,18 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 		}
 
 		String targetNamespace = resourceIdentifier.getNamespace();
-		if (targetNamespace==null) {
-			log.warn("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"] has no namespace to resolve to");
-			return null;
-		}
-		for(Schema schema:schemas) {
-			if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
-			if (targetNamespace.equals(schema.getSystemId())) {
-				return new XMLInputSource(null, targetNamespace, null, schema.getInputStream(), null);
+		if (targetNamespace!=null) {
+			for(Schema schema:schemas) {
+				if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
+				if (targetNamespace.equals(schema.getSystemId())) {
+					return new XMLInputSource(null, targetNamespace, null, schema.getReader(), null);
+				}
 			}
+			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
 		}
-		log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
-
-		return null;
+		log.warn("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"] falling back to external resource");
+		// return explicit resource reference, do not rely on default mechanism by returning null. This appears to be unreliable. See https://github.com/ibissource/iaf/issues/3973
+		return new XMLInputSource(resourceIdentifier);
 	}
 
 }

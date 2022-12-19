@@ -29,7 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public interface HasTransactionAttribute {
 
-	@IbisDoc({"1", "The <code>transactionAttribute</code> declares transactional behavior of execution. It "
+	@IbisDoc({"The <code>transactionAttribute</code> declares transactional behavior of execution. It "
 			+ "applies both to database transactions and XA transactions."
 			+ "The pipeline uses this to start a new transaction or suspend the current one when required. "
 			+ "For developers: it is equal"
@@ -53,7 +53,7 @@ public interface HasTransactionAttribute {
 	public void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
 	public TransactionAttribute getTransactionAttribute();
 
-	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"}) //TODO use Integer and set to NULL by default
+	@IbisDoc({"Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"}) //TODO use Integer and set to NULL by default
 	public void setTransactionTimeout(int i);
 	public int getTransactionTimeout();
 

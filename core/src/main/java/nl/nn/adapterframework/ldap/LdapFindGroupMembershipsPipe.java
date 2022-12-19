@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Pipe that returns the memberships of a userDN.
  * The input is a fullDn, of a user or a group.
- * </pre></code> <br/>
+ * <br/>
  * Sample result:<br/><code><pre>
  *	&lt;ldap&gt;
  *	 &lt;entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext"&gt;
@@ -57,13 +57,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *   .....
  *	&lt;/ldap&gt;
  * </pre></code> <br/>
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
-	
+
 	private boolean recursiveSearch = true;
-	
+
 	private LdapClient ldapClient;
 	private ICache<String, Set<String>> cache;
 
@@ -95,7 +95,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		try {
 			ldapClient.close();
 		} catch (SenderException e) {
-			log.warn(getLogPrefix(null)+"cannot close ldapClient",e);
+			log.warn("cannot close ldapClient",e);
 		} finally {
 			super.stop();
 		}
@@ -105,14 +105,14 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	@Override
 	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
+			throw new PipeRunException(this, "input is null");
 		}
-		
+
 		String searchedDN;
 		try {
 			searchedDN = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
+			throw new PipeRunException(this, "Failure converting input to string", e);
 		}
 
 		Set<String> memberships;
@@ -134,7 +134,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 			}
 			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
+			throw new PipeRunException(this, "exception on ldap lookup", e);
 		}
 	}
 
@@ -148,8 +148,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		return cache;
 	}
 
-	
-	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
+	@IbisDoc({"when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,6 +34,7 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -54,12 +56,15 @@ import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.document.ArrayBuilder;
+import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
@@ -121,6 +126,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter boolean writeLineSeparator=false;
 	private @Getter String charset;
 	private @Getter boolean deleteEmptyFolder;
+	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
 
 	private Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
 
@@ -340,7 +346,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						// nothing to write
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
 				}
 				case DELETE: {
 					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
@@ -348,7 +354,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
 				}
 				case READ: {
 					F file=getFile(input, pvl);
@@ -368,6 +374,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							try {
 								fileSystem.deleteFile(file);
 								deleteEmptyFolder(file);
+							} catch (NoSuchFileException e) {
+								log.debug("ignore", e);
 							} catch (FileSystemException e) {
 								throw new IOException("Could not delete file", e);
 							}
@@ -391,18 +399,19 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
-					XmlBuilder dirXml = new XmlBuilder("directory");
+					ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "directory", "file");
 					try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
-						int count = 0;
 						Iterator<F> it = stream.iterator();
 						while(it.hasNext()) {
 							F file = it.next();
-							dirXml.addSubElement(FileSystemUtils.getFileInfo(fileSystem, file));
-							count++;
+							try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+								FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+							}
 						}
-						dirXml.addAttribute("count", count);
+					} finally {
+						directoryBuilder.close();
 					}
-					return dirXml.toXML();
+					return directoryBuilder.toString();
 				}
 				case WRITE: {
 					F file=getFile(input, pvl);
@@ -413,7 +422,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -428,7 +437,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
 				}
 				case MKDIR: {
 					String folder = determineInputFoldername(input, pvl);
@@ -487,23 +496,24 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	 * Helper method to process delete, move and copy actions.
 	 * @throws FileSystemException
 	 * @throws IOException
+	 * @throws SAXException
 	 */
-	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException {
+	private String processAction(Message input, ParameterValueList pvl, FileAction<F> action) throws FileSystemException, IOException, SAXException {
 		if(StringUtils.isNotEmpty(getWildcard()) || StringUtils.isNotEmpty(getExcludeWildcard())) {
 			String folder = arrangeFolder(determineInputFoldername(input, pvl));
-			XmlBuilder dirXml = new XmlBuilder(action+"FilesList");
+			ArrayBuilder directoryBuilder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), action+"FilesList", "file");
 			try(Stream<F> stream = FileSystemUtils.getFilteredStream(fileSystem, folder, getWildcard(), getExcludeWildcard())) {
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
 					F file = it.next();
-					XmlBuilder item = FileSystemUtils.getFileInfo(fileSystem, file);
-					if(action.execute(file) != null) {
-						dirXml.addSubElement(item);
+					try (INodeBuilder nodeBuilder = directoryBuilder.addElement()){
+						FileSystemUtils.getFileInfo(fileSystem, file, nodeBuilder);
+						action.execute(file);
 					}
 				}
 			}
 			deleteEmptyFolder(folder);
-			return dirXml.toXML();
+			return directoryBuilder.toString();
 		}
 		F file=getFile(input, pvl);
 		F resultFile = action.execute(file);
@@ -633,7 +643,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				@Override
 				public Message getResponse() {
 					try {
-						return new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML());
+						return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 					} catch (FileSystemException e) {
 						log.warn("cannot get file information", e);
 						return null;
@@ -666,7 +676,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.createFolder = createFolder;
 	}
 
-	@IbisDoc({"If set <code>true</code>, for actions "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
+	@IbisDoc({"If set <code>true</code>, for actions "+ACTION_CREATE+", "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
@@ -738,8 +748,14 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.charset = charset;
 	}
 
-	@IbisDoc({"16", "If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
+	@IbisDoc({"If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		this.deleteEmptyFolder = deleteEmptyFolder;
 	}
+
+	@IbisDoc({"OutputFormat", "XML"})
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		this.outputFormat = outputFormat;
+	}
+
 }

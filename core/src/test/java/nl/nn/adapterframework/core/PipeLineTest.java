@@ -137,7 +137,7 @@ public class PipeLineTest {
 		pipeline.configure();
 
 		assertEquals("pipes should cause a configuration warning", 1, configuration.getConfigurationWarnings().getWarnings().size());
-		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has forward [success] which is already registered"));
+		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] forward [success] is already registered"));
 		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
 		assertEquals("pipe1 forward should default to next pipe", pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
 

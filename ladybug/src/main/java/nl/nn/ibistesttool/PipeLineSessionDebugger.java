@@ -38,7 +38,7 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		this.pipeLineSession = pipeLineSession;
 		this.ibisDebugger = ibisDebugger;
 	}
-	
+
 	public static PipeLineSession newInstance(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setSuperclass(PipeLineSession.class);
@@ -63,13 +63,13 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	private Object getMessage(String name) {
 		Object value = pipeLineSession.getMessage(name);
-		ibisDebugger.showValue(pipeLineSession.getMessageId(), "SessionKey "+name, value);
+		ibisDebugger.showValue(pipeLineSession.getCorrelationId(), "SessionKey "+name, value);
 		return value;
 	}
 
 	private Object put(String name, Object value) {
 		Object oldValue = value;
-		value = ibisDebugger.storeInSessionKey(pipeLineSession.getMessageId(), name, value);
+		value = ibisDebugger.storeInSessionKey(pipeLineSession.getCorrelationId(), name, value);
 		if (value != oldValue && value instanceof Message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).

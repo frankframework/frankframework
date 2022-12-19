@@ -29,7 +29,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentUtils;
 import nl.nn.adapterframework.stream.document.XmlDocumentBuilder;
@@ -42,9 +44,11 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
 	private @Getter boolean addXmlRootElement=true;
+	private @Getter boolean prettyPrint=false;
 
 	private TransformerPool tpXml2Json;
 
@@ -62,7 +66,7 @@ public class JsonPipe extends FixedForwardPipe {
 			throw new ConfigurationException("direction must be set");
 		}
 		if (dir == Direction.XML2JSON) {
-			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
+			tpXml2Json = TransformerPool.configureStyleSheetTransformer(this, "/xml/xsl/xml2json.xsl", 0);
 		}
 	}
 
@@ -70,7 +74,7 @@ public class JsonPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		if (Message.isEmpty(message)) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got "+(Message.isNull(message)?"null":"empty")+" input");
+			throw new PipeRunException(this, "got "+(Message.isNull(message)?"null":"empty")+" input");
 		}
 
 		try {
@@ -99,17 +103,17 @@ public class JsonPipe extends FixedForwardPipe {
 							root = firstElem.getKey();
 							jValue = firstElem.getValue();
 						}
-						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+						try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
 							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 						}
 					} else {
 						if (isAddXmlRootElement()) {
-							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
+							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer, isPrettyPrint())) {
 								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 							}
 						} else {
 							for (JsonValue item:(JsonArray)jValue) {
-								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer)) {
+								try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("item", writer, isPrettyPrint())) {
 									DocumentUtils.jsonValue2Document(item, documentBuilder);
 								}
 							}
@@ -127,7 +131,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
 	}
 
@@ -141,5 +145,10 @@ public class JsonPipe extends FixedForwardPipe {
 	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
+	}
+
+	@IbisDoc({"Format the output in easy legible way (currently only for XML)"})
+	public void setPrettyPrint(boolean prettyPrint) {
+		this.prettyPrint = prettyPrint;
 	}
 }

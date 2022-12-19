@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -33,9 +34,9 @@ import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
- * 
+ *
  * @ff.parameters All parameters present are appended as arguments to the command.
- * 
+ *
  * @since   4.8
  * @author  Gerrit van Brakel
  */
@@ -47,7 +48,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
@@ -69,7 +70,7 @@ public class CommandSender extends SenderWithParametersBase {
 				commandline.add(pv.getValue());
 			}
 		}
-		return new Message(ProcessUtil.executeCommand(commandline, timeOut));
+		return new SenderResult(ProcessUtil.executeCommand(commandline, timeOut));
 	}
 
 	private List commandToList(String command) {
@@ -88,7 +89,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return synchronous;
 	}
 
-	@IbisDoc({ "1", "The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
+	@IbisDoc({"The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
 	public void setCommand(String string) {
 		command = string;
 	}
@@ -96,7 +97,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return command;
 	}
 
-	@IbisDoc({ "2", "The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0" })
+	@IbisDoc({"The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0" })
 	public void setTimeOut(int timeOut) {
 		this.timeOut = timeOut;
 	}
@@ -104,7 +105,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return timeOut;
 	}
 
-	@IbisDoc({ "3", "In case the command that will be executed contains arguments then this flag should be set to true", "false" })
+	@IbisDoc({"In case the command that will be executed contains arguments then this flag should be set to true", "false" })
 	public void setCommandWithArguments(boolean commandWithArguments) {
 		this.commandWithArguments = commandWithArguments;
 	}

@@ -15,75 +15,84 @@
 */
 package nl.nn.adapterframework.management.bus;
 
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
-import nl.nn.adapterframework.webcontrol.api.Base;
+import lombok.Getter;
+import nl.nn.adapterframework.http.HttpUtils;
+import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
 
-	private final Base base;
-	private final BusTopic topic;
+	private final FrankApiBase base;
+	private final @Getter BusTopic topic;
+	private final @Getter BusAction action;
 	private Object payload = "NONE";
 
-	public RequestMessageBuilder(Base base, BusTopic topic) {
+	public RequestMessageBuilder(FrankApiBase base, BusTopic topic) {
+		this(base, topic, null);
+	}
+
+	public RequestMessageBuilder(FrankApiBase base, BusTopic topic, BusAction action) {
 		this.base = base;
 		this.topic = topic;
+		this.action = action;
 	}
 
 	public RequestMessageBuilder addHeader(String key, Object value) {
+		if(TopicSelector.TOPIC_HEADER_NAME.equals(key)) {
+			throw new IllegalStateException("unable to override topic header");
+		}
 		customHeaders.put(key, value);
 		return this;
 	}
 
-	public static RequestMessageBuilder create(Base base, BusTopic topic) {
+	public RequestMessageBuilder setPayload(Object payload) {
+		this.payload = payload;
+		return this;
+	}
+
+	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic) {
 		return new RequestMessageBuilder(base, topic);
+	}
+
+	public static RequestMessageBuilder create(FrankApiBase base, BusTopic topic, BusAction action) {
+		return new RequestMessageBuilder(base, topic, action);
 	}
 
 	public Message<?> build() {
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
+		if(action != null) {
+			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action.name());
+		}
 
 		UriInfo uriInfo = base.getUriInfo();
 		builder.setHeader("uri", uriInfo.getRequestUri());
-		builder.setHeader("method", base.getRequest().getMethod());
+		builder.setHeader("method", base.getServletRequest().getMethod());
 
-		if(!uriInfo.getQueryParameters().isEmpty()) {
+		if(uriInfo.getQueryParameters() != null && !uriInfo.getQueryParameters().isEmpty()) {
 			builder.setHeader("query", uriInfo.getQueryParameters());
 		}
-		if(!uriInfo.getPathParameters().isEmpty()) {
+		if(uriInfo.getPathParameters() != null && !uriInfo.getPathParameters().isEmpty()) {
 			builder.setHeader("path", uriInfo.getPathParameters());
 		}
 
-		String user = getUserPrincipalName(base.getSecurityContext());
-		if(StringUtils.isNotEmpty(user)) {
-			builder.setHeader("issuedBy", user);
-		}
+		builder.setHeader("issuedBy", HttpUtils.getExtendedCommandIssuedBy(base.getServletRequest()));
 
 		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
 			builder.setHeader(customHeader.getKey(), customHeader.getValue());
 		}
 
 		return builder.build();
-	}
-
-	private static String getUserPrincipalName(SecurityContext securityContext) {
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
-			return principal.getName();
-		}
-		return null;
 	}
 }

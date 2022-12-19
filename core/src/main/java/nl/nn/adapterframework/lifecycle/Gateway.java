@@ -24,11 +24,14 @@ import org.springframework.messaging.Message;
  */
 public class Gateway<T> extends MessagingGatewaySupport {
 
-	/*
-	 * T in T out.
-	 */
+	// T in T out.
 	@SuppressWarnings("unchecked")
-	public Message<T> execute(Message<T> in) {
+	public Message<T> sendSyncMessage(Message<T> in) {
 		return (Message<T>) super.sendAndReceiveMessage(in);
+	}
+
+	// T in, no reply
+	public void sendAsyncMessage(Message<T> in) {
+		super.send(in);
 	}
 }

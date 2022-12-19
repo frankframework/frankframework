@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>wrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code>: </td><td>/xml/xsl/api/soapHeader.xsl</td></tr>
  * </table>
- * <p>
+ * </p><p>
  * <b>/xml/xsl/api/soapHeader.xsl:</b>
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * <tr><td>from_out</td><td>property 'instance.name'</td></tr>
  * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * </table>
- * <p>
+ * </p>
  * @author Peter Leeuwenburgh
  */
 

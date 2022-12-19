@@ -15,16 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -37,18 +29,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.spi.StandardLevel;
-import org.springframework.context.ApplicationEventPublisher;
 
-import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 
 /**
  * Read and update logging configuration
@@ -58,31 +43,14 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 
 @Path("/")
-public class UpdateLoggingConfig extends Base {
-
-	private static final String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
+public class UpdateLoggingConfig extends FrankApiBase {
 
 	@GET
 	@PermitAll
 	@Path("/server/logging")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogConfiguration() throws ApiException {
-
-		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		LoggerContext logContext = LoggerContext.getContext(false);
-		Logger rootLogger = logContext.getRootLogger();
-
-		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
-
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
-		logSettings.put("errorLevels", errorLevels);
-		logSettings.put("loglevel", rootLogger.getLevel().toString());
-
-		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
-
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
-
-		return Response.status(Response.Status.CREATED).entity(logSettings).build();
+	public Response getLogConfiguration() {
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.GET));
 	}
 
 	@PUT
@@ -90,82 +58,18 @@ public class UpdateLoggingConfig extends Base {
 	@Path("/server/logging")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
+	public Response updateLogConfiguration(Map<String, Object> json) {
+		Level loglevel = Level.toLevel(getValue(json, "loglevel"), null);
+		Boolean logIntermediaryResults = getBooleanValue(json, "logIntermediaryResults");
+		Integer maxMessageLength = getIntegerValue(json, "maxMessageLength");
+		Boolean enableDebugger = getBooleanValue(json, "enableDebugger");
 
-		Boolean logIntermediaryResults = null;
-		int maxMessageLength = IbisMaskingLayout.getMaxLength();
-		Boolean enableDebugger = null;
-		StringBuilder msg = new StringBuilder();
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("loglevel")) {
-				Level loglevel = Level.toLevel(""+value, null);
-				LoggerContext logContext = LoggerContext.getContext(false);
-				Logger rootLogger = logContext.getRootLogger();
-				if(loglevel != null) {
-					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
-					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append(changmsg);
-				}
-			}
-			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
-				logIntermediaryResults = Boolean.parseBoolean(""+value);
-			}
-			else if(key.equalsIgnoreCase("maxMessageLength")) {
-				maxMessageLength = Integer.parseInt(""+value);
-			}
-			else if(key.equalsIgnoreCase("enableDebugger")) {
-				enableDebugger = Boolean.parseBoolean(""+value);
-			}
-		}
-
-		if(logIntermediaryResults != null) {
-			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-			if(logIntermediary != logIntermediaryResults) {
-				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-
-				if(msg.length() > 0)
-					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-				else
-					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			}
-		}
-
-		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			if(msg.length() > 0)
-				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			else
-				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			IbisMaskingLayout.setMaxLength(maxMessageLength);
-		}
-
-		if (enableDebugger != null) {
-			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
-			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
-				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
-				if (applicationEventPublisher!=null) {
-					log.info("setting debugger enabled ["+enableDebugger+"]");
-					if(msg.length() > 0)
-						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					else
-						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					applicationEventPublisher.publishEvent(event);
-				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
-				}
-			}
- 		}
-
-		if(msg.length() > 0) {
-			log.warn(msg.toString());
-			LogUtil.getLogger("SEC").info(msg.toString());
-		}
-
-		return Response.status(Response.Status.NO_CONTENT).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
+		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());
+		builder.addHeader("logIntermediaryResults", logIntermediaryResults);
+		builder.addHeader("maxMessageLength", maxMessageLength);
+		builder.addHeader("enableDebugger", enableDebugger);
+		return callAsyncGateway(builder);
 	}
 
 	@GET
@@ -174,95 +78,36 @@ public class UpdateLoggingConfig extends Base {
 	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogSettings(@QueryParam("filter") String filter) {
-
-		LoggerContext logContext = LoggerContext.getContext(false);
-		Map<String, Object> result = new HashMap<>();
-
-		if(StringUtils.isEmpty(filter)) {
-			List<Object> defaultLoggers = new ArrayList<>();
-			Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
-			for(LoggerConfig config : loggerConfigs) {
-				String name = config.getName();
-				if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith("MSG.")) {
-					Map<String, Object> logger = new HashMap<>();
-					logger.put("name", name);
-					logger.put("level", config.getLevel().getStandardLevel());
-					Set<String> appenders = config.getAppenders().keySet();
-					if(!appenders.isEmpty()) {
-						logger.put("appenders", config.getAppenders().keySet());
-					}
-					defaultLoggers.add(logger);
-				}
-			}
-			result.put("definitions", defaultLoggers);
-
-			filter = FF_PACKAGE_PREFIX;
-		}
-
-		Map<String, StandardLevel> registeredLoggers = new TreeMap<>(); // A list with all Loggers that are logging to Log4j2
-		for (Logger log : logContext.getLoggers()) {
-			String logName = log.getName();
-			String packageName = null;
-			if(logName.contains(".")) {
-				packageName = logName.substring(0, logName.lastIndexOf("."));
-			} else {
-				packageName = logName;
-			}
-
-			if(filter == null || packageName.startsWith(filter)) {
-				StandardLevel newLevel = log.getLevel().getStandardLevel();
-				StandardLevel oldLevel = registeredLoggers.get(packageName);
-				if(oldLevel != null && oldLevel.compareTo(newLevel) < 1) {
-					continue;
-				}
-				registeredLoggers.put(packageName, newLevel);
-			}
-		}
-		result.put("loggers", registeredLoggers);
-
-		return Response.status(Response.Status.OK).entity(result).build();
+		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.GET);
+		request.addHeader("filter", filter);
+		return callSyncGateway(request);
 	}
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/server/logging/settings")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateLogger(LinkedHashMap<String, Object> json) {
-		Level level = null;
-		String logPackage = null;
-		boolean reconfigure = false;
+	public Response updateLogger(Map<String, Object> json) {
+		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("level")) {
-				level = Level.toLevel(""+value, null);
+				Level level = Level.toLevel(""+value, null);
+				if(level != null) {
+					request.addHeader("level", level.name());
+				}
 			} else if(key.equalsIgnoreCase("logger")) {
-				logPackage = (String) value;
+				String logPackage = (String) value;
+				request.addHeader("logPackage", logPackage);
 			} else if(key.equalsIgnoreCase("reconfigure")) {
-				reconfigure = Boolean.parseBoolean(""+value);
+				boolean reconfigure = Boolean.parseBoolean(""+value);
+				request.addHeader("reconfigure", reconfigure);
 			}
 		}
 
-		if(reconfigure) {
-			LoggerContext logContext = LoggerContext.getContext(false);
-			logContext.reconfigure();
-			log2SecurityLog("reconfigured logdefinitions");
 
-			return Response.status(Response.Status.CREATED).build();
-		}
-
-		if(StringUtils.isNotEmpty(logPackage) && level != null) {
-			Configurator.setLevel(logPackage, level);
-			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return Response.status(Response.Status.ACCEPTED).build();
-		}
-
-		return Response.status(Response.Status.BAD_REQUEST).build();
-	}
-
-	private void log2SecurityLog(String logMessage) {
-		log.warn(logMessage);
-		LogUtil.getLogger("SEC").info(logMessage);
+		return callSyncGateway(request);
 	}
 }

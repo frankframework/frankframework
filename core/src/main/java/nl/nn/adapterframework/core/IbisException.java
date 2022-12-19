@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.mail.internet.AddressException;
+import jakarta.mail.internet.AddressException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
@@ -134,11 +134,15 @@ public class IbisException extends Exception {
 	}
 
 	public static String expandMessage(String msg, Throwable e) {
+		return expandMessage(msg, e, IbisException.class::isInstance);
+	}
+
+	public static String expandMessage(String msg, Throwable e, ExcludeClassInfoExceptionFilter filter) {
 		String result=null;
 		List<String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for(String message:msgChain) {
-			String exceptionType = t instanceof IbisException ? "" : "("+t.getClass().getSimpleName()+")";
+			String exceptionType = filter.accept(t) ? "" : "("+t.getClass().getSimpleName()+")";
 			message = Misc.concatStrings(exceptionType, " ", message);
 			result = Misc.concatStrings(result, ": ", message);
 			t = getCause(t);
@@ -148,6 +152,11 @@ public class IbisException extends Exception {
 			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(e);
 		}
 		return result;
+	}
+
+	@FunctionalInterface
+	public interface ExcludeClassInfoExceptionFilter {
+		boolean accept(Throwable t);
 	}
 
 	/**

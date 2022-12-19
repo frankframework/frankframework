@@ -35,7 +35,7 @@ public class MessageKeeperMessage {
 	private Date messageDate=new Date();
 	private String messageText;
 	private MessageKeeperLevel messageLevel;
-	
+
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
 	*/

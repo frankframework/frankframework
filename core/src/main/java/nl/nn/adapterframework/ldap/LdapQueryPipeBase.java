@@ -31,11 +31,11 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Base pipe for querying LDAP.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
-	
+
 	private String ldapProviderURL;
 	private String host;
 	private int port = -1;
@@ -80,18 +80,17 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 			try {
 				return doPipeWithException(message, session);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
+				log.warn("exception occured, forwarding to exception-forward [{}]", exceptionForward.getPath(), t);
 				return new PipeRunResult(exceptionForward, message);
 			}
-		} else {
-			return doPipeWithException(message, session);
 		}
+		return doPipeWithException(message, session);
 	}
 
 	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
-		String url; 
+		String url;
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			url=getLdapProviderURL();
 		} else {
@@ -105,7 +104,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://DOMAIN.EXT'.", ""})
+	@IbisDoc({"Url to context to search in, e.g. 'ldaps://DOMAIN.EXT'.", ""})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -113,7 +112,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return ldapProviderURL;
 	}
 
-	@IbisDoc({"2", "Host part of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
+	@IbisDoc({"Host part of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
 	public void setHost(String string) {
 		host = string;
 	}
@@ -121,7 +120,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return host;
 	}
 
-	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified"})
+	@IbisDoc({"Port of ldapProviderUrl. Only used when ldapProviderUrl not specified"})
 	public void setPort(int i) {
 		port = i;
 	}
@@ -129,7 +128,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return port;
 	}
 
-	@IbisDoc({"4", "Indication to use ldap or ldaps in ldapProviderUrl. Only used when ldapProviderUrl not specified", "false"})
+	@IbisDoc({"Indication to use ldap or ldaps in ldapProviderUrl. Only used when ldapProviderUrl not specified", "false"})
 	public void setUseSsl(boolean b) {
 		useSsl = b;
 	}
@@ -137,7 +136,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return useSsl;
 	}
 
-	@IbisDoc({"5", "BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT", "false"})
+	@IbisDoc({"BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT", "false"})
 	public void setBaseDN(String baseDN) {
 		this.baseDN = baseDN;
 	}
@@ -147,12 +146,12 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
 
 
-	@IbisDoc({"6", "Alias used to obtain credentials to connect to ldap server", ""})
+	@IbisDoc({"Alias used to obtain credentials to connect to ldap server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"7", "Username used to obtain credentials to connect to ldap server", ""})
+	@IbisDoc({"Username used to obtain credentials to connect to ldap server", ""})
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -162,7 +161,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		setUsername(username);
 	}
 
-	@IbisDoc({"8", "Password used to obtain credentials to connect to ldap server", ""})
+	@IbisDoc({"Password used to obtain credentials to connect to ldap server", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -176,7 +175,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"9", "PipeForward used when an exception is caught", ""})
+	@IbisDoc({"PipeForward used when an exception is caught", ""})
 	public void setExceptionForwardName(String string) {
 		exceptionForwardName = string;
 	}

@@ -52,34 +52,22 @@ import nl.nn.adapterframework.validation.XmlValidatorException;
  */
 public abstract class ValidatorBase extends FixedForwardPipe implements IDualModeValidator {
 
-	private @Getter String schemaLocation;
 	private @Getter String schemaSessionKey;
 	private @Getter String root;
 	private @Getter String responseRoot;
 	private @Getter boolean forwardFailureToSuccess = false;
 
 	private @Getter boolean throwException = false;
-	private @Getter String reasonSessionKey = "failureReason";
 
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isNotEmpty(getSchemaLocation()) && StringUtils.isNotEmpty(getSchemaSessionKey())) {
-			throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation");
-		}
-		checkSchemaSpecified();
 
 		registerEvent(ValidationResult.PARSER_ERROR.getEvent());
 		registerEvent(ValidationResult.INVALID.getEvent());
 		registerEvent(ValidationResult.VALID_WITH_WARNINGS.getEvent());
 		registerEvent(ValidationResult.VALID.getEvent());
-	}
-
-	protected void checkSchemaSpecified() throws ConfigurationException {
-		if (StringUtils.isEmpty(getSchemaLocation()) && StringUtils.isEmpty(getSchemaSessionKey())) {
-			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation");
-		}
 	}
 
 	@Override
@@ -98,7 +86,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 			PipeForward forward = validate(input, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
+			throw new PipeRunException(this, "Could not validate", e);
 		}
 
 	}
@@ -239,11 +227,6 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		public boolean consumesSessionVariable(String sessionKey) {
 			return owner.consumesSessionVariable(sessionKey);
 		}
-	}
-
-	/** Reference to schema */
-	public void setSchemaLocation(String schemaLocation) {
-		this.schemaLocation = schemaLocation;
 	}
 
 	/** Session key for retrieving a schema */

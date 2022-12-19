@@ -1108,12 +1108,15 @@ angular.module('iaf.beheerconsole')
 									}
 								}
 								break;
+							case 400:
+								Toastr.error("Request failed", "Bad Request, check the application logs for more information.");
+								break;
 							case 401:
 								sessionStorage.clear();
 								$location.path("login");
 								break;
 							case 403:
-								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
+								Toastr.error("Forbidden", "You do not have the permissions to complete this operation.");
 								break;
 							case 500:
 								if(rejection.config.intercept != undefined && rejection.config.intercept === false) return $q.reject(rejection); //Don't capture when explicitly disabled

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -31,12 +32,13 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
  * </table>
  * @author  Gerrit van Brakel
@@ -87,18 +89,21 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message rawMessage, PipeLineSession session) throws ListenerException {
+	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
 		Message message = extractMessage(rawMessage, session);
 		try {
-			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, rawMessage, message, session);
+			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+session.getCorrelationId()+"]");
+			return handler.processRequest(this, rawMessage, message, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
 			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
+			String correlationId = session.getCorrelationId();
 			return handler.formatException(null,correlationId, message, e);
+		} finally {
+			ThreadContext.clearAll();
 		}
 	}
 

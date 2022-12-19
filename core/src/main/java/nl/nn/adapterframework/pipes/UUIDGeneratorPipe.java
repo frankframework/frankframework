@@ -19,6 +19,8 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -29,6 +31,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * @author Peter Leeuwenburgh
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	private @Getter Type type = Type.ALPHANUMERIC;
@@ -39,7 +42,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		/** a UUID with fixed length 31 will be generated */
 		NUMERIC
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 

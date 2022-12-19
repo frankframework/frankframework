@@ -28,11 +28,9 @@ import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * General Cache provider.
- * 
+ *
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
- * </p>
- * 
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */
@@ -153,7 +151,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		}
 	}
 
-	@IbisDoc({"1", "The maximum number of elements in memory, before they are evicted", "100"})
+	@IbisDoc({"The maximum number of elements in memory, before they are evicted", "100"})
 	public void setMaxElementsInMemory(int maxElementsInMemory) {
 		this.maxElementsInMemory = maxElementsInMemory;
 	}
@@ -161,7 +159,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return maxElementsInMemory;
 	}
 
-	@IbisDoc({"2", "Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out", "LRU"})
+	@IbisDoc({"Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out", "LRU"})
 	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}
@@ -169,7 +167,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return memoryStoreEvictionPolicy;
 	}
 
-	@IbisDoc({"3", "If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "false"})
+	@IbisDoc({"If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "false"})
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
 	}
@@ -177,7 +175,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return eternal;
 	}
 
-	@IbisDoc({"4", "The amount of time <i>in seconds</i> to live for an element from its creation date", "36000"})
+	@IbisDoc({"The amount of time <i>in seconds</i> to live for an element from its creation date", "36000"})
 	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
 		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
@@ -185,7 +183,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToLiveSeconds;
 	}
 
-	@IbisDoc({"5", "The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date", "36000"})
+	@IbisDoc({"The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date", "36000"})
 	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
 		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
@@ -193,7 +191,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToIdleSeconds;
 	}
 
-	@IbisDoc({"6", "If <code>true</code>, the elements that are evicted from memory are spooled to disk", "false"})
+	@IbisDoc({"If <code>true</code>, the elements that are evicted from memory are spooled to disk", "false"})
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
 	}
@@ -201,7 +199,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return overflowToDisk;
 	}
 
-	@IbisDoc({"7", "The maximum number of elements on disk, before they are removed", "10000"})
+	@IbisDoc({"The maximum number of elements on disk, before they are removed", "10000"})
 	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
 		this.maxElementsOnDisk = maxElementsOnDisk;
 	}
@@ -209,7 +207,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return maxElementsOnDisk;
 	}
 
-	@IbisDoc({"8", "If <code>true</code>, the the cache is reloaded after the JVM restarts", "false"})
+	@IbisDoc({"If <code>true</code>, the the cache is reloaded after the JVM restarts", "false"})
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}
@@ -217,7 +215,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return diskPersistent;
 	}
 
-	@IbisDoc({"9", "How often to run the disk store expiry thread", "600"})
+	@IbisDoc({"How often to run the disk store expiry thread", "600"})
 	public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}
