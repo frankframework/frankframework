@@ -1,0 +1,14 @@
+<map xmlns="http://www.w3.org/2005/xpath-functions">
+	<array key="content">
+		<map>
+			<number key="id">70805774</number>
+			<string key="value">1001</string>
+			<array key="position">
+				<number>1004.0</number>
+				<number>288.0</number>
+				<number>1050.0</number>
+				<number>324.0</number>
+			</array>
+		</map>
+	</array>
+</map>
