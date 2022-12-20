@@ -35,7 +35,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
@@ -242,7 +241,10 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 
-	@IbisDoc({"Timeout <i>in milliseconds</i> for receiving a message from the queue", "3000"})
+	/**
+	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
+	 * @ff.default 3000
+	 */
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}

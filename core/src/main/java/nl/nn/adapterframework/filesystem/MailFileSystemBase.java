@@ -15,11 +15,7 @@
  */
 package nl.nn.adapterframework.filesystem;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for {@link IMailFileSystem MailFileSystems}.
@@ -28,7 +24,6 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String authAlias;
 	private @Getter String username;
@@ -42,35 +37,43 @@ public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends Co
 		return "baseFolder ["+getBaseFolder()+"]";
 	}
 
-	@IbisDoc({"Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " +
-			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " +
-			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
+	/** 
+	 * Alias used to obtain accessToken or username and password for authentication to Exchange mail server.
+	 * If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used.
+	 * If the alias refers to a password without a username, the password is treated as the accessToken.
+	 */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({"Username for authentication to mail server.", ""})
+	/** Username for authentication to mail server. */
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	@IbisDoc({"Password for authentication to mail server.", ""})
+	/** Password for authentication to mail server. */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
 
-	@IbisDoc({"Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
+	/** Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used */
 	public void setBaseFolder(String baseFolder) {
 		this.baseFolder = baseFolder;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the contents will be read in MIME format", "false"})
+	/**
+	 * If set <code>true</code>, the contents will be read in MIME format
+	 * @ff.default false
+	 */
 	public void setReadMimeContents(boolean readMimeContents) {
 		this.readMimeContents = readMimeContents;
 	}
 
-	@IbisDoc({"Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	/** 
+	 * Comma separated list of fields to try as response address
+	 * @ff.default {@value #REPLY_ADDRESS_FIELDS_DEFAULT}
+	 */
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
 	}

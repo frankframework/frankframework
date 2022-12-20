@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -66,7 +65,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 
 
-	@IbisDoc({"Sender that needs to handle the (XML) record"})
+	/** Sender that needs to handle the (XML) record */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

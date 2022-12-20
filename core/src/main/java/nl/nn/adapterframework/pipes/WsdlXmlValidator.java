@@ -61,7 +61,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SharedResources;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
@@ -371,23 +370,23 @@ public class WsdlXmlValidator extends SoapValidator {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 
-	@IbisDoc({"The WSDL to read the XSDs from", " "})
+	/** The WSDL to read the XSDs from */
 	public void setWsdl(String wsdl) {
 		this.wsdl = wsdl;
 	}
 
 	@Override
-	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body.", "" })
+	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body. */
 	public void setSoapBody(String soapBody) {
 		super.setSoapBody(soapBody);
 	}
 
-	@IbisDoc({"Pairs of URI references which will be added to the WSDL", " "})
+	/** Pairs of URI references which will be added to the WSDL */
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	@IbisDoc({"Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element", " " })
+	/** Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element */
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}

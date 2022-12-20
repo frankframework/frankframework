@@ -42,7 +42,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -398,13 +397,19 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
-	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	/**
+	 * Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-
+	 * @ff.default 1000
+	 */
 	public void setTimeout(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
 
 
-	@IbisDoc({"", "true"})
+	/**
+	 * 
+	 * @ff.default true
+	 */
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
 	}
@@ -417,30 +422,45 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		this.replyDestinationName = destinationName;
 	}
 
-	@IbisDoc({"Value of the JMSType field of the reply message", "not set by application"})
+	/**
+	 * Value of the JMSType field of the reply message
+	 * @ff.default not set by application
+	 */
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
 
 
-	@IbisDoc({"Controls mode that reply messages are sent with", "NON_PERSISTENT"})
+	/**
+	 * Controls mode that reply messages are sent with
+	 * @ff.default NON_PERSISTENT
+	 */
 	public void setReplyDeliveryMode(DeliveryMode replyDeliveryMode) {
 		this.replyDeliveryMode = replyDeliveryMode;
 	}
 
 
-	@IbisDoc({"Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default", "-1"})
+	/**
+	 * Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default
+	 * @ff.default -1
+	 */
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
 
 
-	@IbisDoc({"Time <i>in milliseconds</i> after which the reply-message will expire", "0"})
+	/**
+	 * Time <i>in milliseconds</i> after which the reply-message will expire
+	 * @ff.default 0
+	 */
 	public void setReplyMessageTimeToLive(long l) {
 		replyMessageTimeToLive = l;
 	}
 
-	@IbisDoc({"If <code>true</code>, messages sent are put in a SOAP envelope", "false"})
+	/**
+	 * If <code>true</code>, messages sent are put in a SOAP envelope
+	 * @ff.default false
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
 	}

@@ -48,8 +48,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -674,14 +673,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		this.schemaLocation = schemaLocation;
 	}
 
-	@IbisDoc({"A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	/** A uri reference as a hint as to the location of a schema document with no target namespace. */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
 
 
 	@Override
-	@IbisDoc({"Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	/** Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
 	public void setRoot(String root) {
 		super.setRoot(root);
 		if (StringUtils.isNotEmpty(root)) {
@@ -689,7 +688,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 	}
 	@Override
-	@IbisDoc({"Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	/** Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
 	public void setResponseRoot(String responseRoot) {
 		super.setResponseRoot(responseRoot);
 		if (StringUtils.isNotEmpty(responseRoot)) {
@@ -702,7 +701,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return getRoot();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		validator.setFullSchemaChecking(fullSchemaChecking);
 	}
@@ -710,7 +709,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isFullSchemaChecking();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
@@ -719,7 +718,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isThrowException();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
@@ -727,7 +726,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
@@ -735,7 +734,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getXmlReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
@@ -743,7 +742,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isValidateFile();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
@@ -751,33 +750,39 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return  validator.getCharset();
 	}
 
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
+	/**
+	 * If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace
+	 * @ff.default false
+	 */
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
 
-	@IbisDoc({"Comma separated list of schemaLocations which are excluded from an import or include in the schema document", ""})
+	/** Comma separated list of schemaLocations which are excluded from an import or include in the schema document */
 	public void setImportedSchemaLocationsToIgnore(String string) {
 		importedSchemaLocationsToIgnore = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
+	/**
+	 * If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
+	 * @ff.default false
+	 */
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"Comma separated list of namespaces which are excluded from an import or include in the schema document", ""})
+	/** Comma separated list of namespaces which are excluded from an import or include in the schema document */
 	public void setImportedNamespacesToIgnore(String string) {
 		importedNamespacesToIgnore = string;
 	}
 
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setWarn(boolean warn) {
 		validator.setWarn(warn);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
@@ -785,21 +790,24 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
 
+	/**
+	 * The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
+	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
+	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP 
+	 * message needs to be validated, in other cases give this property an empty value.
+	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
+	 */
 	@Deprecated
-	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
-		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
-		"Please note that this functionality is deprecated, using {@link SoapValidator} "+
-		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
@@ -808,12 +816,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return soapNamespace;
 	}
 
-	@IbisDoc({"Key of session variable to store the name of the root element",""})
+	/** Key of session variable to store the name of the root element */
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
 
-	@IbisDoc({"Key of session variable to store the namespace of the root element",""})
+	/** Key of session variable to store the namespace of the root element */
 	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
 		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
 	}

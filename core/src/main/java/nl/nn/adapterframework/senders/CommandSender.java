@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -89,7 +88,7 @@ public class CommandSender extends SenderWithParametersBase {
 		return synchronous;
 	}
 
-	@IbisDoc({"The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}'", "" })
+	/** The command to be executed. Note: Executing a command in WAS requires &lt;&lt;ALL FILES&gt;&gt; execute permission to avoid that provide the absolute path of the command. Absolute path can be found with the following command 'which -a {commandName}' */
 	public void setCommand(String string) {
 		command = string;
 	}
@@ -97,7 +96,10 @@ public class CommandSender extends SenderWithParametersBase {
 		return command;
 	}
 
-	@IbisDoc({"The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0" })
+	/**
+	 * The number of seconds to execute a command. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 * @ff.default 0
+	 */
 	public void setTimeOut(int timeOut) {
 		this.timeOut = timeOut;
 	}
@@ -105,7 +107,10 @@ public class CommandSender extends SenderWithParametersBase {
 		return timeOut;
 	}
 
-	@IbisDoc({"In case the command that will be executed contains arguments then this flag should be set to true", "false" })
+	/**
+	 * In case the command that will be executed contains arguments then this flag should be set to true
+	 * @ff.default false
+	 */
 	public void setCommandWithArguments(boolean commandWithArguments) {
 		this.commandWithArguments = commandWithArguments;
 	}

@@ -21,7 +21,6 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -68,7 +67,10 @@ public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
 		return count;
 	}
 
-	@IbisDoc({"The maximum number of messages to be retrieved from a folder. ", "-1 (unlimited)"})
+	/**
+	 * The maximum number of messages to be retrieved from a folder. 
+	 * @ff.default -1 (unlimited)
+	 */
 	public void setMaxNumberOfMessagesToList(int maxNumberOfMessagesToList) {
 		this.maxNumberOfMessagesToList = maxNumberOfMessagesToList;
 	}

@@ -24,7 +24,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -139,7 +138,10 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	}
 
 
-	@IbisDoc({"name of the cache, will be lowercased", "<code>&lt;ownerName&gt;</code>_cache"})
+	/**
+	 * name of the cache, will be lowercased
+	 * @ff.default <code>&lt;ownerName&gt;</code>_cache
+	 */
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			this.name=name.toLowerCase();
@@ -150,37 +152,43 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		return "cache ["+getName()+"] ";
 	}
 
-	@IbisDoc({"xpath expression to extract cache key from request message", ""})
+	/** xpath expression to extract cache key from request message */
 	public void setKeyXPath(String keyXPath) {
 		this.keyXPath = keyXPath;
 	}
 
-	@IbisDoc({"output type of xpath expression to extract cache key from request message", "text"})
+	/**
+	 * output type of xpath expression to extract cache key from request message
+	 * @ff.default text
+	 */
 	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
 		this.keyXPathOutputType = keyXPathOutputType;
 	}
 
-	@IbisDoc({"namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	/** namespace defintions for keyxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		this.keyNamespaceDefs = keyNamespaceDefs;
 	}
 
-	@IbisDoc({"stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages", ""})
+	/** stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages */
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		this.keyStyleSheet = keyStyleSheet;
 	}
 
-	@IbisDoc({"session key to use as input for transformation of request message to key by keyxpath or keystylesheet", ""})
+	/** session key to use as input for transformation of request message to key by keyxpath or keystylesheet */
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		this.keyInputSessionKey = keyInputSessionKey;
 	}
 
-	@IbisDoc({"controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist.", "false"})
+	/**
+	 * controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist.
+	 * @ff.default false
+	 */
 	public void setCacheEmptyKeys(boolean cacheEmptyKeys) {
 		this.cacheEmptyKeys = cacheEmptyKeys;
 	}
 
-	@IbisDoc({"xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(boolean) cacheEmptyValues} to inhibit caching for certain groups of response messages", ""})
+	/** xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(boolean) cacheEmptyValues} to inhibit caching for certain groups of response messages */
 	public void setValueXPath(String valueXPath) {
 		this.valueXPath = valueXPath;
 	}
@@ -188,22 +196,25 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		this.valueXPathOutputType = valueXPathOutputType;
 	}
 
-	@IbisDoc({"namespace defintions for valuexpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	/** namespace defintions for valuexpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setValueNamespaceDefs(String valueNamespaceDefs) {
 		this.valueNamespaceDefs = valueNamespaceDefs;
 	}
 
-	@IbisDoc({"stylesheet to extract value to be cached from response message", ""})
+	/** stylesheet to extract value to be cached from response message */
 	public void setValueStyleSheet(String valueStyleSheet) {
 		this.valueStyleSheet = valueStyleSheet;
 	}
 
-	@IbisDoc({"session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet", ""})
+	/** session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet */
 	public void setValueInputSessionKey(String valueInputSessionKey) {
 		this.valueInputSessionKey = valueInputSessionKey;
 	}
 
-	@IbisDoc({"controls whether empty values will be cached. when set true, empty cache entries can exist for any key.", "false"})
+	/**
+	 * controls whether empty values will be cached. when set true, empty cache entries can exist for any key.
+	 * @ff.default false
+	 */
 	public void setCacheEmptyValues(boolean cacheEmptyValues) {
 		this.cacheEmptyValues = cacheEmptyValues;
 	}

@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -396,49 +395,70 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		peekUntransacted = b;
 	}
 
-	@IbisDoc({"(only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
+	/**
+	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
+	 * @ff.default selectQuery
+	 */
 	public void setPeekQuery(String string) {
 		peekQuery = string;
 	}
 
 
-	@IbisDoc({"Primary key field of the table, used to identify messages", ""})
+	/** Primary key field of the table, used to identify messages */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 
-	@IbisDoc({"Field containing the message data", "<i>same as keyField</i>"})
+	/**
+	 * Field containing the message data
+	 * @ff.default <i>same as keyField</i>
+	 */
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 
-	@IbisDoc({"Type of the field containing the message data", "<i>String</i>"})
+	/**
+	 * Type of the field containing the message data
+	 * @ff.default <i>String</i>
+	 */
 	public void setMessageFieldType(MessageFieldType value) {
 		messageFieldType = value;
 	}
 
-	@IbisDoc({"Field containing the message Id", "<i>same as keyField</i>"})
+	/**
+	 * Field containing the message Id
+	 * @ff.default <i>same as keyField</i>
+	 */
 	public void setMessageIdField(String fieldname) {
 		messageIdField = fieldname;
 	}
 
-	@IbisDoc({"Field containing the correlationId", "<i>same as messageIdField</i>"})
+	/**
+	 * Field containing the correlationId
+	 * @ff.default <i>same as messageIdField</i>
+	 */
 	public void setCorrelationIdField(String fieldname) {
 		correlationIdField = fieldname;
 	}
 
-	@IbisDoc({"Controls whether BLOB is considered stored compressed in the database", "true"})
+	/**
+	 * Controls whether BLOB is considered stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
 	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
+	 * @ff.default false
+	 */
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

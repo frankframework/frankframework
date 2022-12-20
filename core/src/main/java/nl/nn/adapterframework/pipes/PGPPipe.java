@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.pgp.Decrypt;
 import nl.nn.adapterframework.pgp.Encrypt;
@@ -139,35 +138,37 @@ public class PGPPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"Action to be taken when pipe is executed."})
+	/** Action to be taken when pipe is executed. */
 	public void setAction(Action action) {
 		this.action = action;
 	}
 
-	@IbisDoc({"Recipients to be used during encryption stage. If multiple, separate with ';' (semicolon)"})
+	/** Recipients to be used during encryption stage. If multiple, separate with ';' (semicolon) */
 	public void setRecipients(String recipients) {
 		this.recipients = split(recipients);
 	}
 
-	@IbisDoc({"Emails of the senders. This will be used to verify that all the senders have signed the given message. " +
-			"If not set, and the action is verify; this pipe will validate that at least one person has signed. " +
-			"For signing action, it needs to be set to the email that was used to generate the private key " +
-			"that is being used for this process."})
+	/**
+	 * Emails of the senders. This will be used to verify that all the senders have signed the given message.
+	 * If not set, and the action is verify; this pipe will validate that at least one person has signed.
+	 * For signing action, it needs to be set to the email that was used to generate the private key
+	 * "that is being used for this process.
+	 */
 	public void setVerificationAddresses(String verificationAddresses) {
 		this.verificationAddresses = split(verificationAddresses);
 	}
 
-	@IbisDoc({"Path to the private key. It will be used when signing or decrypting."})
+	/** Path to the private key. It will be used when signing or decrypting. */
 	public void setSecretKey(String secretKey) {
 		this.secretKey = secretKey;
 	}
 
-	@IbisDoc({"Password for the private key."})
+	/** Password for the private key. */
 	public void setSecretPassword(String secretPassword) {
 		this.secretPassword = secretPassword;
 	}
 
-	@IbisDoc({"Path to the recipient's public key. It will be used for encryption and verification."})
+	/** Path to the recipient's public key. It will be used for encryption and verification. */
 	public void setPublicKeys(String publicKeys) {
 		this.publicKeys = split(publicKeys);
 	}

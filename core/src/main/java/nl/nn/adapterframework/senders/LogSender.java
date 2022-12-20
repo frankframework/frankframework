@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -96,7 +95,10 @@ public class LogSender extends SenderWithParametersBase {
 		return this.getClass().getName();
 	}
 
-	@IbisDoc({"category under which messages are logged", "name of the sender"})
+	/**
+	 * category under which messages are logged
+	 * @ff.default name of the sender
+	 */
 	public void setLogCategory(String string) {
 		logCategory = string;
 	}
@@ -105,7 +107,10 @@ public class LogSender extends SenderWithParametersBase {
 		return logLevel;
 	}
 
-	@IbisDoc({"level on which messages are logged", "info"})
+	/**
+	 * level on which messages are logged
+	 * @ff.default info
+	 */
 	public void setLogLevel(String string) {
 		logLevel = string;
 	}

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.tibco;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.MessagingSourceFactory;
@@ -59,7 +58,7 @@ public class TibcoSender extends JmsSender {
 		return getServerUrl();
 	}
 
-	@IbisDoc("URL (hostname and port, separated by ':') of Tibco-Server")
+	/** URL (hostname and port, separated by ':') of Tibco-Server */
 	public void setServerUrl(String string) {
 		serverUrl = string;
 	}

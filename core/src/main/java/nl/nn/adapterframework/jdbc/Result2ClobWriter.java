@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 
@@ -59,7 +58,10 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"Column that contains the CLOB to be updated", "1"})
+	/**
+	 * Column that contains the CLOB to be updated
+	 * @ff.default 1
+	 */
 	public void setClobColumn(int column) {
 		querySender.setClobColumn(column);
 	}

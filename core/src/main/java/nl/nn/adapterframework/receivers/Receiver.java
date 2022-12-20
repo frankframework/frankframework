@@ -83,7 +83,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
@@ -1998,13 +1997,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
-	@IbisDoc({"Storage to keep track of messages that failed processing"})
+	/** Storage to keep track of messages that failed processing */
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		this.errorStorage = errorStorage;
 	}
 
 
-	@IbisDoc({"Storage to keep track of all messages processed correctly"})
+	/** Storage to keep track of all messages processed correctly */
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		this.messageLog = messageLog;
 	}
@@ -2015,14 +2014,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	@IbisDoc({"Name of the Receiver as known to the Adapter", ""})
+	/** Name of the Receiver as known to the Adapter */
 	@Override
 	public void setName(String newName) {
 		name = newName;
 		propagateName();
 	}
 
-	@IbisDoc({"One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "CONTINUE"})
+	/**
+	 * One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously
+	 * @ff.default CONTINUE
+	 */
 	public void setOnError(OnError value) {
 		this.onError = value;
 	}
@@ -2030,17 +2032,26 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
-	@IbisDoc({"The number of threads that may execute a Pipeline concurrently (only for pulling listeners)", "1"})
+	/**
+	 * The number of threads that may execute a Pipeline concurrently (only for pulling listeners)
+	 * @ff.default 1
+	 */
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
 
-	@IbisDoc({"The number of threads that are actively polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)", "1"})
+	/**
+	 * The number of threads that are actively polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)
+	 * @ff.default 1
+	 */
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
 
-	@IbisDoc({"The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners", "10"})
+	/**
+	 * The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
+	 * @ff.default 10
+	 */
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
@@ -2054,27 +2065,42 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		stopTimeout = i;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})
+	/**
+	 * If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!
+	 * @ff.default false
+	 */
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
 	}
 
-	@IbisDoc({"(Only used when <code>checkForDuplicates=true</code>) Indicates whether the messageid or the correlationid is used for checking presence in the message log", "MESSAGEID"})
+	/**
+	 * (Only used when <code>checkForDuplicates=true</code>) Indicates whether the messageid or the correlationid is used for checking presence in the message log
+	 * @ff.default MESSAGEID
+	 */
 	public void setCheckForDuplicatesMethod(CheckForDuplicatesMethod method) {
 		checkForDuplicatesMethod=method;
 	}
 
-	@IbisDoc({"The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored", "5"})
+	/**
+	 * The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored
+	 * @ff.default 5
+	 */
 	public void setMaxDeliveries(int i) {
 		maxDeliveries = i;
 	}
 
-	@IbisDoc({"The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite", "1"})
+	/**
+	 * The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite
+	 * @ff.default 1
+	 */
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
 
-	@IbisDoc({"Size of the cache to keep process results, used by maxRetries", "100"})
+	/**
+	 * Size of the cache to keep process results, used by maxRetries
+	 * @ff.default 100
+	 */
 	public void setProcessResultCacheSize(int processResultCacheSize) {
 		this.processResultCacheSize = processResultCacheSize;
 	}
@@ -2085,52 +2111,55 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// no longer used
 	}
 
-	@IbisDoc({"XPath expression to extract correlationid from message", ""})
+	/** XPath expression to extract correlationid from message */
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	/** Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"Stylesheet to extract correlationID from message", ""})
+	/** Stylesheet to extract correlationID from message */
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
 
-	@IbisDoc({"XPath expression to extract label from message", ""})
+	/** XPath expression to extract label from message */
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	/** Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
 
-	@IbisDoc({"Stylesheet to extract label from message", ""})
+	/** Stylesheet to extract label from message */
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
 
-	@IbisDoc({"If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
+	/** If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment) */
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
 
-	@IbisDoc({"If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + }", ""})
+	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + } */
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
 
-	@IbisDoc({"(Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored", "ref_ + the name of the element"})
+	/**
+	 * (Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored
+	 * @ff.default ref_ + the name of the element
+	 */
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
 
-	@IbisDoc({"Like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
+	/** Like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe) */
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
 	}
@@ -2139,27 +2168,36 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		removeCompactMsgNamespaces = b;
 	}
 
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt;", ""})
+	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
 
-	@IbisDoc({"Only used when hideRegex is not empty", "all"})
+	/**
+	 * Only used when hideRegex is not empty
+	 * @ff.default all
+	 */
 	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 
-	@IbisDoc({"Comma separated list of keys of session variables which are available when the <code>PipelineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)", ""})
+	/** Comma separated list of keys of session variables which are available when the <code>PipelineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks) */
 	public void setHiddenInputSessionKeys(String string) {
 		hiddenInputSessionKeys = string;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
+	/**
+	 * If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable to {@value #RETRY_FLAG_SESSION_KEY}.
+	 * @ff.default false
+	 */
 	public void setForceRetryFlag(boolean b) {
 		forceRetryFlag = b;
 	}
 
-	@IbisDoc({"Number of connection attemps to put the adapter in warning status", "5"})
+	/**
+	 * Number of connection attemps to put the adapter in warning status
+	 * @ff.default 5
+	 */
 	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {
 		this.numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = number;
 	}

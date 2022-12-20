@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -75,7 +74,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"Name of the cache from which items are to be removed", ""})
+	/** Name of the cache from which items are to be removed */
 	public void setCacheName(String cacheName) {
 		this.cacheName = cacheName;
 	}
@@ -83,7 +82,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return cacheName;
 	}
 
-	@IbisDoc({"XPath expression to extract cache key from request message", ""})
+	/** XPath expression to extract cache key from request message */
 	public void setKeyXPath(String keyXPath) {
 		keyTransformer.setKeyXPath(keyXPath);
 	}
@@ -91,7 +90,10 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyXPath();
 	}
 
-	@IbisDoc({"Output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'", "text"})
+	/**
+	 * Output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'
+	 * @ff.default text
+	 */
 	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
 		keyTransformer.setKeyXPathOutputType(keyXPathOutputType);
 	}
@@ -99,7 +101,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyXPathOutputType();
 	}
 
-	@IbisDoc({"Namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	/** Namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
 	public void setKeyNamespaceDefs(String keyNamespaceDefs) {
 		keyTransformer.setKeyNamespaceDefs(keyNamespaceDefs);
 	}
@@ -107,7 +109,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyNamespaceDefs();
 	}
 
-	@IbisDoc({"Stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(boolean) cacheEmptyKeys} to inhibit caching for certain groups of request messages", ""})
+	/** Stylesheet to extract cache key from request message. Use in combination with {@link EhCache#setCacheEmptyKeys cacheEmptyKeys} to inhibit caching for certain groups of request messages */
 	public void setKeyStyleSheet(String keyStyleSheet) {
 		keyTransformer.setKeyStyleSheet(keyStyleSheet);
 	}
@@ -115,7 +117,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		return keyTransformer.getKeyStyleSheet();
 	}
 
-	@IbisDoc({"Session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet", ""})
+	/** Session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet */
 	public void setKeyInputSessionKey(String keyInputSessionKey) {
 		keyTransformer.setKeyInputSessionKey(keyInputSessionKey);
 	}

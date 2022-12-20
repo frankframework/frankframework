@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -120,7 +119,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 
-	@IbisDocRef({"1", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -128,7 +127,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getQuery();
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -136,9 +135,8 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getDatasourceName();
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-
 }

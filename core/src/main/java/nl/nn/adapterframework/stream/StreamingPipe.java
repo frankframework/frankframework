@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -132,7 +131,10 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	}
 
 
-	@IbisDoc({"If true, then this pipe can provide an OutputStream to the previous pipe, to write its output to. Can be used to switch this streaming off for debugging purposes","set by appconstant streaming.auto"})
+	/**
+	 * If true, then this pipe can provide an OutputStream to the previous pipe, to write its output to. Can be used to switch this streaming off for debugging purposes
+	 * @ff.default set by appconstant streaming.auto
+	 */
 	public void setStreamingActive(boolean streamingActive) {
 		this.streamingActive = streamingActive;
 	}

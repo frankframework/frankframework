@@ -23,7 +23,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -85,7 +84,7 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 	}
 
 
-	@IbisDoc({"name of the sender", ""})
+	/** name of the sender */
 	@Override
 	public void setName(String name) {
 		this.name=name;

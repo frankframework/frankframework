@@ -41,7 +41,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -374,10 +373,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
-	 *  A value of 0 indicates an unlimited number of threads.
+	 * The maximum number of threads that may {@link #doPipe process messages} simultaneously.
+	 * A value of 0 indicates an unlimited number of threads.
+	 * @ff.default 0
 	 */
-	@IbisDoc({"Maximum number of threads that may call {@link #doPipe(Message message, PipeLineSession session)} simultaneously, use 0 to disable limit", "0"})
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
 	}

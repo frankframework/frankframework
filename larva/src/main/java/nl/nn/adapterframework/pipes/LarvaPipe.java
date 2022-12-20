@@ -32,8 +32,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.Default;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
@@ -112,22 +110,27 @@ public class LarvaPipe extends FixedForwardPipe {
 		return new PipeRunResult(forward, out.toString());
 	}
 
-	@Default("false")
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
-	@Default("false")
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
-	@IbisDoc("The scenario sub directory to execute")
+	/** The scenario sub directory to execute */
 	public void setExecute(String execute) {
 		this.execute = execute;
 	}
 
-	/** the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
+	/** 
+	 * the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
 	 * @ff.default wrong pipeline messages
 	 */
 	public void setLogLevel(String logLevel) {

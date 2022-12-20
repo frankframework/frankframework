@@ -92,7 +92,6 @@ import microsoft.exchange.webservices.data.search.filter.SearchFilter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
@@ -1135,46 +1134,51 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	@IbisDoc({"The mail address of the mailbox connected to (also used for auto discovery)", ""})
+	/** The mail address of the mailbox connected to (also used for auto discovery) */
 	public void setMailAddress(String mailAddress) {
 		this.mailAddress = mailAddress;
 	}
 
-	@IbisDoc({"When <code>true</code>, all redirect uris are accepted when connecting to the server", "true"})
+	/**
+	 * When <code>true</code>, all redirect uris are accepted when connecting to the server
+	 * @ff.default true
+	 */
 	public void setValidateAllRedirectUrls(boolean validateAllRedirectUrls) {
 		this.validateAllRedirectUrls = validateAllRedirectUrls;
 	}
 
-	@IbisDoc({"Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery", ""})
+	/** Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery */
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
 
-	@IbisDoc({"Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	/** Client ID that represents a registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview. */
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
 
-	@IbisDoc({"Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets", ""})
+	/** Client secret that belongs to registered application in Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Certificates and Secrets */
 	public void setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
 	}
 
-	@IbisDoc({"Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview.", ""})
+	/** Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -> App Registrations -> MyApp -> Overview. */
 	public void setTenantId(String tenantId) {
 		this.tenantId = tenantId;
 	}
 
-	@IbisDoc({"Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server. " +
-			"If the attribute tenantId is empty, the deprecated Basic Authentication method is used. " +
-			"If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.", ""})
+	/** 
+	 * Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
+	 * If the attribute tenantId is empty, the deprecated Basic Authentication method is used.
+	 * If the attribute tenantId is not empty, the username and password are treated as the client ID and secret.
+	 */
 	@Override
 	public void setAuthAlias(String authAlias) {
 		super.setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({"Username for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	/** Username for authentication to Exchange mail server. Ignored when tenantId is also specified */
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
@@ -1183,7 +1187,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		setClientId(username);
 	}
 
-	@IbisDoc({"Password for authentication to Exchange mail server. Ignored when tenantId is also specified", ""})
+	/** Password for authentication to Exchange mail server. Ignored when tenantId is also specified */
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret!")
 	@Override
@@ -1192,38 +1196,41 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		setClientSecret(password);
 	}
 
-	@IbisDoc({"If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved", ""})
+	/** If empty, all mails are retrieved. If set to <code>NDR</code> only Non-Delivery Report mails ('bounces') are retrieved */
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
 
 
-	@IbisDoc({"proxy host", ""})
+	/** proxy host */
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
 
-	@IbisDoc({"proxy port", "8080"})
+	/**
+	 * proxy port
+	 * @ff.default 8080
+	 */
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
 
-	@IbisDoc({"proxy username", ""})
+	/** proxy username */
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
 
-	@IbisDoc({"proxy password", ""})
+	/** proxy password */
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
 
-	@IbisDoc({"proxy authAlias", ""})
+	/** proxy authAlias */
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
 
-	@IbisDoc({"proxy domain", ""})
+	/** proxy domain */
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
