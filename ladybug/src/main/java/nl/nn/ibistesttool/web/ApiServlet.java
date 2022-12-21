@@ -32,7 +32,7 @@ public class ApiServlet extends nl.nn.testtool.web.ApiServlet implements Dynamic
 
 	@Override
 	public String getUrlMapping() {
-		return getDefaultMapping();
+		return "/iaf" +getDefaultMapping();
 	}
 
 	@Override

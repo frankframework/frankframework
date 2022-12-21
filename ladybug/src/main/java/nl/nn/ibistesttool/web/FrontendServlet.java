@@ -30,7 +30,7 @@ public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implemen
 
 	@Override
 	public String getUrlMapping() {
-		return getDefaultMapping();
+		return "/iaf" +getDefaultMapping();
 	}
 
 	@Override
