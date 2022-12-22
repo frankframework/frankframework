@@ -409,6 +409,15 @@
 					<version>3.3.2</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+								<Enable-CDI>false</Enable-CDI>
+							</manifestEntries>
+						</archive>
 					</configuration>
 				</plugin>
 				<plugin>
