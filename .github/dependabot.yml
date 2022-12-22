@@ -6,7 +6,7 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
+      - "Dependencies"
     ignore:
       - dependency-name: "org.ibissource:ibis-ladybug"
       - dependency-name: "com.aspose:*"
@@ -22,6 +22,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "Dependencies"
+      - "Backport"
     target-branch: "7.8-release"
     ignore:
       - dependency-name: "org.ibissource:ibis-ladybug"
