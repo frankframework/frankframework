@@ -124,7 +124,16 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
 		}
-		pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+		ibisDebugger.showValue(correlationId, "exitState", pipeLineResult.getState().name());
+		if (pipeLineResult.getExitCode()!=0) {
+			ibisDebugger.showValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
+		}
+		if (!pipeLineResult.isSuccessful()) {
+			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
+			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
+		} else {
+			pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+		}
 		return pipeLineResult;
 	}
 
