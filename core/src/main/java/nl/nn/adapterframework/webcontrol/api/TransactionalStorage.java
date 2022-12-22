@@ -1,29 +1,26 @@
 /*
-Copyright 2018-2021 WeAreFrank!
+   Copyright 2018-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -35,103 +32,166 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.messaging.Message;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.MessageBrowsingFilter;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
+import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
-public class TransactionalStorage extends Base {
+public class TransactionalStorage extends FrankApiBase {
 
 	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/messages/{messageId}")
-	public Response browseReceiverMessage(
-				@PathParam("adapterName") String adapterName,
-				@PathParam("receiverName") String receiverName,
-				@PathParam("processState") String processState,
-				@PathParam("messageId") String messageId
-			) throws ApiException {
+	public enum StorageSource {
+		RECEIVERS, PIPES;
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
+		public static StorageSource fromString(String value) {
+			return EnumUtils.parse(StorageSource.class, value);
 		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-
-		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
-
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
-
-		return getMessage(storage, receiver.getListener(), messageId);
 	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/messages/{messageId}/download")
+	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response browseMessage(
+				@PathParam("adapterName") String adapterName,
+				@PathParam("storageSource") StorageSource storageSource,
+				@PathParam("storageSourceName") String storageSourceName,
+				@PathParam("processState") String processState,
+				@PathParam("messageId") String messageId
+			) {
+
+		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+		messageId = Misc.urlDecode(messageId);
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		builder.addHeader("messageId", messageId);
+		return callSyncGateway(builder);
+	}
+
+	@GET
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
 			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
+			@PathParam("storageSource") StorageSource storageSource,
+			@PathParam("storageSourceName") String storageSourceName,
 			@PathParam("processState") String processState,
 			@PathParam("messageId") String messageId
-		) throws ApiException {
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-
-		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+		) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		return getMessage(storage, receiver.getListener(), messageId);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		builder.addHeader("messageId", messageId);
+		return callSyncGateway(builder);
+	}
+
+	@POST
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadMessages(
+			@PathParam("adapterName") String adapterName,
+			@PathParam("storageSource") StorageSource storageSource,
+			@PathParam("storageSourceName") String storageSourceName,
+			@PathParam("processState") String processState,
+			MultipartBody input
+		) {
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
+		}
+
+		String[] messageIdArray = getMessageIds(input);
+
+		StreamingOutput stream = new StreamingOutput() {
+			@Override
+			public void write(OutputStream out) throws IOException {
+				try (ZipOutputStream zos = new ZipOutputStream(out)) {
+					for (String messageId : messageIdArray) {
+						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+						messageId = Misc.urlDecode(messageId);
+
+						builder.addHeader("messageId", messageId);
+						Message<?> message = sendSyncMessage(builder);
+						String mimeType = (String) message.getHeaders().get(ResponseMessage.MIMETYPE_KEY);
+
+						String filenameExtension = ".txt";
+						if(MediaType.APPLICATION_JSON.equals(mimeType)) {
+							filenameExtension = ".json";
+						} else if(MediaType.APPLICATION_XML.equals(mimeType)) {
+							filenameExtension = ".xml";
+						}
+
+						String payload = (String) message.getPayload();
+						ZipEntry entry = new ZipEntry("msg-"+messageId+filenameExtension);
+						zos.putNextEntry(entry);
+						zos.write(payload.getBytes());
+						zos.closeEntry();
+					}
+				} catch (IOException e) {
+					throw new ApiException("Failed to create zip file with messages.", e);
+				}
+			}
+		};
+
+		return Response.ok(stream)
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"messages.zip\"")
+				.build();
 	}
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}")
+	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response browseReceiverMessages(
+	public Response browseMessages(
 				@PathParam("adapterName") String adapterName,
-				@PathParam("receiverName") String receiverName,
+				@PathParam("storageSource") StorageSource storageSource,
+				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,
+
 				@QueryParam("type") String type,
 				@QueryParam("host") String host,
 				@QueryParam("id") String id,
@@ -145,80 +205,54 @@ public class TransactionalStorage extends Base {
 				@QueryParam("sort") String sort,
 				@QueryParam("skip") int skipMessages,
 				@QueryParam("max") int maxMessages
-			) throws ApiException {
+			) {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		if(storageSource == StorageSource.PIPES) {
+			builder.addHeader("pipe", storageSourceName);
+		} else {
+			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader("processState", processState);
 		}
 
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-
-		//StorageType
-		ProcessState state = ProcessState.getProcessStateFromName(processState); 
-		IMessageBrowser<?> storage = receiver.getMessageBrowser(state);
-		Map<ProcessState, Map<String, String>> targetPSInfo = getTargetProcessStateInfo(receiver.targetProcessStates().get(state));
-
-		if(storage == null) {
-			throw new ApiException("no IMessageBrowser found");
-		}
-
-		//Apply filters
-		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
-		filter.setTypeMask(type);
-		filter.setHostMask(host);
-		filter.setIdMask(id);
-		filter.setMessageIdMask(messageId);
-		filter.setCorrelationIdMask(correlationId);
-		filter.setCommentMask(comment);
-		filter.setMessageMask(message, storage, receiver.getListener());
-		filter.setLabelMask(label);
-		filter.setStartDateMask(startDateStr);
-		filter.setEndDateMask(endDateStr);
-
-		if("desc".equalsIgnoreCase(sort))
-			filter.setSortOrder(SortOrder.DESC);
-		if("asc".equalsIgnoreCase(sort))
-			filter.setSortOrder(SortOrder.ASC);
-		Map<String, Object> resultObj = getMessages(storage, filter);
-		if(targetPSInfo != null && targetPSInfo.size()>0) {
-			resultObj.put("targetStates", targetPSInfo);
-		}
-		return Response.status(Response.Status.OK).entity(resultObj).build();
+		builder.addHeader("type", type);
+		builder.addHeader("host", host);
+		builder.addHeader("idMask", id);
+		builder.addHeader("messageId", messageId);
+		builder.addHeader("correlationId", correlationId);
+		builder.addHeader("comment", comment);
+		builder.addHeader("message", message);
+		builder.addHeader("label", label);
+		builder.addHeader("startDate", startDateStr);
+		builder.addHeader("endDate", endDateStr);
+		builder.addHeader("sort", sort);
+		builder.addHeader("skip", skipMessages);
+		builder.addHeader("max", maxMessages);
+		return callSyncGateway(builder);
 	}
+
+
+
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response resendReceiverMessage(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
-			@PathParam("messageId") String messageId
-		) throws ApiException {
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+	public Response resendReceiverMessage(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @PathParam("messageId") String messageId) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		resendMessage(receiver, messageId);
-
-		return Response.status(Response.Status.OK).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader("messageId", messageId);
+		return callAsyncGateway(builder);
 	}
 
 	@POST
@@ -227,42 +261,32 @@ public class TransactionalStorage extends Base {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response resendReceiverMessages(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
-			MultipartBody input
-		) throws ApiException {
+	public Response resendReceiverMessages(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		String[] messageIds = getMessageIds(input);
 
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-
-		String[] messageIds = getMessages(input);
-
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				resendMessage(receiver, messageIds[i]);
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			}
+			catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
 			}
 			catch(Exception e) {
-				if(e instanceof ApiException) {
-					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
-					errorMessages.add(e.getCause().getMessage());
-				}
-				else
-					errorMessages.add(e.getMessage());
+				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
@@ -273,48 +297,33 @@ public class TransactionalStorage extends Base {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response changeProcessState(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
-			@PathParam("processState") String processState,
-			@PathParam("targetState") String targetState,
-			MultipartBody input
-		) throws ApiException {
+	public Response changeProcessState(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver,
+			@PathParam("processState") String processState, @PathParam("targetState") String targetState, MultipartBody input) {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader("processState", processState);
+		builder.addHeader("targetState", targetState);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		String[] messageIds = getMessageIds(input);
 
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-		String[] messageIds = getMessages(input);
-
-		ProcessState currentState = ProcessState.getProcessStateFromName(processState);
-		Set<ProcessState> targetProcessStates = receiver.targetProcessStates().get(currentState);
-		ProcessState targetPS = ProcessState.getProcessStateFromName(targetState);
-
-		List<String> errorMessages = new ArrayList<String>();
-		if(targetProcessStates != null && targetProcessStates.contains(targetPS)) {
-			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
-			for(int i=0; i < messageIds.length; i++) {
-				try {
-					if (receiver.changeProcessState(store.browseMessage(messageIds[i]), targetPS, "admin requested move")==null) {
-						errorMessages.add("could not move message ["+messageIds[i]+"]");
-					}
-				} catch (ListenerException e) {
-					errorMessages.add(e.getMessage());
-				}
+		List<String> errorMessages = new ArrayList<>();
+		for(int i=0; i < messageIds.length; i++) {
+			try {
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			} catch(Exception e) {
+				errorMessages.add(e.getMessage());
 			}
-		} else {
-			throw new ApiException("It is not allowed to move messages from ["+processState+"] " + "to ["+targetState+"]");
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
@@ -324,29 +333,18 @@ public class TransactionalStorage extends Base {
 	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteReceiverMessage(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
-			@PathParam("messageId") String messageId
-		) throws ApiException {
+	public Response deleteReceiverMessage(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @PathParam("messageId") String messageId) {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageId);
-
-		return Response.status(Response.Status.OK).build();
+		builder.addHeader("messageId", messageId);
+		return callAsyncGateway(builder);
 	}
 
 	@DELETE
@@ -355,327 +353,36 @@ public class TransactionalStorage extends Base {
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response deleteReceiverMessages(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("receiverName") String receiverName,
-			MultipartBody input
-		) throws ApiException {
+	public Response deleteReceiverMessages(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
 
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
+		String[] messageIds = getMessageIds(input);
 
-		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-		if(receiver == null) {
-			throw new ApiException("Receiver ["+receiverName+"] not found!");
-		}
-
-		String[] messageIds = getMessages(input);
-
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
-				deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageIds[i]);
-			}
-			catch(Exception e) {
-				if(e instanceof ApiException) {
-					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
-					errorMessages.add(e.getCause().getMessage());
-				}
-				else
-					errorMessages.add(e.getMessage());
+				builder.addHeader("messageId", messageIds[i]);
+				callAsyncGateway(builder);
+			} catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			} catch(Exception e) {
+				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
 
-	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/pipes/{pipeName}/messages/{messageId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response browsePipeMessage(
-				@PathParam("adapterName") String adapterName,
-				@PathParam("pipeName") String pipeName,
-				@PathParam("messageId") String messageId
-			) throws ApiException {
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
-		if(pipe == null) {
-			throw new ApiException("Pipe ["+pipeName+"] not found!");
-		}
-
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
-
-		return getMessage(pipe.getMessageLog(), messageId);
-	}
-
-	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/pipes/{pipeName}/messages/{messageId}/download")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadPipeMessage(
-			@PathParam("adapterName") String adapterName,
-			@PathParam("pipeName") String pipeName,
-			@PathParam("messageId") String messageId
-		) throws ApiException {
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
-		if(pipe == null) {
-			throw new ApiException("Pipe ["+pipeName+"] not found!");
-		}
-
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
-
-		return getMessage(pipe.getMessageLog(), messageId);
-	}
-
-	@GET
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/pipes/{pipeName}/messages")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response browsePipeMessages(
-				@PathParam("adapterName") String adapterName,
-				@PathParam("pipeName") String pipeName,
-				@QueryParam("type") String type,
-				@QueryParam("host") String host,
-				@QueryParam("id") String id,
-				@QueryParam("messageId") String messageId,
-				@QueryParam("correlationId") String correlationId,
-				@QueryParam("comment") String comment,
-				@QueryParam("message") String message,
-				@QueryParam("label") String label,
-				@QueryParam("startDate") String startDateStr,
-				@QueryParam("endDate") String endDateStr,
-				@QueryParam("sort") String sort,
-				@QueryParam("skip") int skipMessages,
-				@QueryParam("max") int maxMessages
-			) throws ApiException {
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
-
-		MessageSendingPipe pipe = (MessageSendingPipe) adapter.getPipeLine().getPipe(pipeName);
-		if(pipe == null) {
-			throw new ApiException("Pipe ["+pipeName+"] not found!");
-		}
-
-		IMessageBrowser<?> storage = pipe.getMessageLog();
-
-		//Apply filters
-		MessageBrowsingFilter filter = new MessageBrowsingFilter(maxMessages, skipMessages);
-		filter.setTypeMask(type);
-		filter.setHostMask(host);
-		filter.setIdMask(id);
-		filter.setMessageIdMask(messageId);
-		filter.setCorrelationIdMask(correlationId);
-		filter.setCommentMask(comment);
-		filter.setMessageMask(message, storage);
-		filter.setLabelMask(label);
-		filter.setStartDateMask(startDateStr);
-		filter.setEndDateMask(endDateStr);
-
-		if("desc".equalsIgnoreCase(sort))
-			filter.setSortOrder(SortOrder.DESC);
-		if("asc".equalsIgnoreCase(sort))
-			filter.setSortOrder(SortOrder.ASC);
-
-		return Response.status(Response.Status.OK).entity(getMessages(storage, filter)).build();
-	}
-
-	private String[] getMessages(MultipartBody inputDataMap) {
+	private String[] getMessageIds(MultipartBody inputDataMap) {
 		String messageIds = resolveStringFromMap(inputDataMap, "messageIds");
 		return messageIds.split(",");
 	}
-
-	private void deleteMessage(IMessageBrowser<?> storage, String messageId) {
-		PlatformTransactionManager transactionManager = getIbisManager().getTransactionManager();
-		TransactionStatus txStatus = null;
-		try {
-			txStatus = transactionManager.getTransaction(TXNEW);
-			storage.deleteMessage(messageId);
-		} catch (Exception e) {
-			if (txStatus!=null) {
-				txStatus.setRollbackOnly();
-			}
-			throw new ApiException(e);
-		} finally { 
-			transactionManager.commit(txStatus);
-		}
-	}
-
-	private void resendMessage(Receiver<?> receiver, String messageId) {
-		try {
-			receiver.retryMessage(messageId);
-		} catch (ListenerException e) {
-			throw new ApiException(e);
-		}
-	}
-
-	private Response getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
-		return getMessage(messageBrowser, null, messageId);
-	}
-
-	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
-		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
-	}
-
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
-		Object rawmsg = null;
-		try {
-			rawmsg = messageBrowser.browseMessage(messageId);
-		}
-		catch(ListenerException e) {
-			throw new ApiException(e, 404);
-		}
-
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e, 500);
-				}
-			} else {
-				try {
-					if (listener!=null) {
-						msg = listener.extractMessage(rawmsg, null).asString();
-					} 
-				} catch (Exception e) {
-					log.warn("Exception reading value raw message", e);
-				}
-				try {
-					if (StringUtils.isEmpty(msg)) {
-						msg = Message.asString(rawmsg);
-					}
-				} catch (Exception e) {
-					log.warn("Cannot convert message", e);
-					msg = rawmsg.toString();
-				}
-			}
-		}
-		if (StringUtils.isEmpty(msg)) {
-			msg = "<no message found/>";
-		} else {
-			msg=Misc.cleanseMessage(msg, messageBrowser.getHideRegex(), messageBrowser.getHideMethod());
-		}
-
-		return msg;
-	}
-
-	private Response buildResponse(String msg, String fileName) {
-		MediaType type = MediaType.TEXT_PLAIN_TYPE;
-		String fileNameExtension = "txt";
-		if (StringUtils.isEmpty(msg)) {
-			throw new ApiException("message not found");
-		} else {
-			if(msg.startsWith("<")) {
-				type = MediaType.APPLICATION_XML_TYPE;
-				fileNameExtension = "xml";
-			} else if(msg.startsWith("{") || msg.startsWith("[")) {
-				type = MediaType.APPLICATION_JSON_TYPE;
-				fileNameExtension = "json";
-			}
-		}
-
-		return Response.status(Response.Status.OK)
-				.type(type)
-				.entity(msg)
-				.header("Content-Disposition", "attachment; filename=\"msg-"+fileName+"."+fileNameExtension+"\"")
-				.build();
-	}
-
-	private Map<String, Object> getMessages(IMessageBrowser<?> transactionalStorage, MessageBrowsingFilter filter) {
-		int messageCount = 0;
-		try {
-			messageCount = transactionalStorage.getMessageCount();
-		} catch (Exception e) {
-			log.warn("unable to get messagecount from storage", e);
-			messageCount = -1;
-		}
-
-		Map<String, Object> returnObj = new HashMap<String, Object>(3);
-		returnObj.put("totalMessages", messageCount);
-		returnObj.put("skipMessages", filter.skipMessages());
-		returnObj.put("messageCount", messageCount - filter.skipMessages());
-
-		Date startDate = null;
-		Date endDate = null;
-		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
-			int count;
-			List<Object> messages = new LinkedList<Object>();
-			
-			for (count=0; iterator.hasNext(); ) {
-				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
-					if(!filter.matchAny(iterItem))
-						continue;
-
-					count++;
-					if (count > filter.skipMessages()) { 
-						Map<String, Object> message = new HashMap<String, Object>(3);
-
-						message.put("id", iterItem.getId());
-						message.put("pos", count);
-						message.put("originalId", iterItem.getOriginalId());
-						message.put("correlationId", iterItem.getCorrelationId());
-						message.put("type", iterItem.getType());
-						message.put("host", iterItem.getHost());
-						message.put("insertDate", iterItem.getInsertDate());
-						message.put("expiryDate", iterItem.getExpiryDate());
-						message.put("comment", iterItem.getCommentString());
-						message.put("label", iterItem.getLabel());
-						messages.add(message);
-					}
-	
-					if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
-						log.warn("stopped iterating messages after ["+count+"]: limit reached");
-						break;
-					}
-				}
-			}
-			returnObj.put("messages", messages);
-		} catch (ListenerException|IOException e) {
-			throw new ApiException(e);
-		}
-
-		return returnObj;
-	}
-	
-	public Map<ProcessState, Map<String, String>> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
-		if(targetProcessStates == null) {
-			return null;
-		}
-		Map<ProcessState, Map<String, String>> result = new LinkedHashMap<ProcessState, Map<String,String>>();
-		for (ProcessState ps : targetProcessStates) {
-			Map<String, String> psInfo = new HashMap<String, String>();
-			psInfo.put("name", ps.getName());
-			result.put(ps, psInfo);
-		}
-		return result;
-	}
-
 }

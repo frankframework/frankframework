@@ -1,0 +1,3 @@
+<request destination="${jms.destination.i4testiaf_out}">
+	<value>test</value>
+</request>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden. 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
@@ -71,11 +72,11 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	private Map<String, Schema> javaxSchemas = new LinkedHashMap<String, Schema>();
 
 	@Override
-	public void configure(String logPrefix) throws ConfigurationException {
+	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
 			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
 		}
-		super.configure(logPrefix);
+		super.configure(owner);
 	}
 
 	@Override
@@ -92,7 +93,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	public JavaxValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
-	
+
 		String schemasId;
 		Schema schema;
 		Set<String> namespaceSet=new HashSet<String>();
@@ -165,7 +166,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	protected List<Source> getSchemaSources(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
 		List<Source> result = new ArrayList<Source>();
 		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
-			result.add(new StreamSource(schema.getInputStream(), schema.getSystemId()));
+			result.add(new StreamSource(schema.getReader(), schema.getSystemId()));
 		}
 		return result;
 	}
@@ -192,7 +193,7 @@ class JavaxValidationContext extends ValidationContext {
 	Schema schema;
 	Set<String> namespaceSet;
 	List<XSModel> xsModels;
-	
+
 	JavaxValidationContext(String schemasId, Schema schema, Set<String> namespaceSet, List<XSModel> xsModels) {
 		super();
 		this.schemasId=schemasId;
@@ -215,5 +216,5 @@ class JavaxValidationContext extends ValidationContext {
 	public List<XSModel> getXsModels() {
 		return xsModels;
 	}
-	
+
 }

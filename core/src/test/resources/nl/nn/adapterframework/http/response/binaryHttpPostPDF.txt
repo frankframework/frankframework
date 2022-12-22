@@ -1,7 +1,0 @@
-POST / HTTP/1.1
-Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
-custom-header: value
-Content-Type: application/pdf; charset=UTF-8
-
-%PDF-1.4
-...25049 more characters

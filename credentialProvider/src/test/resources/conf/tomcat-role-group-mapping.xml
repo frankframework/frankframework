@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<security-role-mappings>
+	<security-role-mapping>
+		<role-name>Admin</role-name>
+		<group-name>director</group-name>
+	</security-role-mapping>
+	<security-role-mapping>
+		<role-name>Admin2</role-name>
+		<group-name>director2</group-name>
+	</security-role-mapping>
+	<security-role-mapping>
+		<role-name>PowerUser</role-name>
+		<group-name>cn=UserGroup1,ou=Groups,dc=myorg,dc=com</group-name>
+	</security-role-mapping>
+</security-role-mappings>

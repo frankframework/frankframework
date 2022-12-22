@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,15 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
@@ -37,41 +39,25 @@ import nl.nn.adapterframework.util.AppConstants;
 /**
  * Call Larva Test Tool
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWaitBeforeCleanup(String) waitBeforeCleanup}</td><td>ms</td><td>100</td></tr>
- * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]</td><td>wrong pipeline messages</td></tr>
- * <tr><td>{@link #setWriteToLog(boolean) writeToLog}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setWriteToSystemOut(boolean) writeToSystemOut}</td><td></td><td>false</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
- * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
- * </table>
- * 
+ * @ff.forward success no errors and all tests passed
+ * @ff.forward failure errors or failed tests
+ *
  * @author Jaco de Groot
  *
  */
 public class LarvaPipe extends FixedForwardPipe {
-	
-	public final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
-	public final String FORWARD_FAIL="fail";
-	
-	private boolean writeToLog = false;
-	private boolean writeToSystemOut = false;
-	private String execute;
-	private String logLevel=DEFAULT_LOG_LEVEL;
-	private String waitBeforeCleanup="100";
-	private int timeout=30000;
-	
-	private PipeForward failForward;
+
+	public static final String DEFAULT_LOG_LEVEL = "wrong pipeline messages";
+	public static final String FORWARD_FAILURE="failure";
+
+	private @Getter boolean writeToLog = false;
+	private @Getter boolean writeToSystemOut = false;
+	private @Getter String execute;
+	private @Getter String logLevel=DEFAULT_LOG_LEVEL;
+	private @Getter String waitBeforeCleanup="100";
+	private @Getter int timeout=10000;
+
+	private PipeForward failureForward;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -80,111 +66,97 @@ public class LarvaPipe extends FixedForwardPipe {
 			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		} else {
-			String[] LOG_LEVELS = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
-			if (!Arrays.asList(LOG_LEVELS).contains("["+getLogLevel()+"]")) {
+			String[] logLevels = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
+			if (!Arrays.asList(logLevels).contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
 		}
-		failForward=findForward(FORWARD_FAIL);
-		if (failForward==null) {
-			failForward=getSuccessForward();
+		failureForward=findForward(FORWARD_FAILURE);
+		if(failureForward == null && (failureForward = findForward("fail")) != null) {
+			ConfigurationWarnings.add(this, log, "forward 'fail' has been deprecated, use forward 'failure' instead");
+		}
+		if (failureForward==null) {
+			failureForward=getSuccessForward();
 		}
 	}
 
-	
-	
-	
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
-		// Property webapp.realpath is not available in appConstants which was
-		// created with AppConstants.getInstance(ClassLoader classLoader), this
-		// should be fixed but for now use AppConstants.getInstance().
-		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "larva/";
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "iaf/";
+		List<String> scenariosRootDirectories = new ArrayList<>();
+		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
-				appConstants, realPath,
+				realPath,
 				null, scenariosRootDirectories,
 				scenariosRootDescriptions, null);
 		String paramScenariosRootDirectory = currentScenariosRootDirectory;
 		String paramExecute = currentScenariosRootDirectory;
-		if (StringUtils.isNotEmpty(execute)) {
-			paramExecute = paramExecute + execute;
+		if (StringUtils.isNotEmpty(getExecute())) {
+			paramExecute = paramExecute + getExecute();
 		}
 		String paramLogLevel = getLogLevel();
 		String paramAutoScroll = "true";
 		String paramWaitBeforeCleanUp = getWaitBeforeCleanup();
-		LogWriter out = new LogWriter();
-		out.setLogger(log);
-		out.setWriteToLog(writeToLog);
-		out.setWriteToSystemOut(writeToSystemOut);
+		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		boolean silent = true;
 		TestTool.setTimeout(getTimeout());
-		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
+		int numScenariosFailed=TestTool.runScenarios(ibisContext, paramLogLevel,
 								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, realPath,
+								paramWaitBeforeCleanUp, getTimeout(), realPath,
 								paramScenariosRootDirectory,
 								out, silent);
-		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;
+		PipeForward forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
+	/**
+	 * @ff.default false
+	 */
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
-	@IbisDoc("The scenario sub directory to execute")
+	/** The scenario sub directory to execute */
 	public void setExecute(String execute) {
 		this.execute = execute;
 	}
 
-	public String getLogLevel() {
-		return logLevel;
-	}
+	/** 
+	 * the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
+	 * @ff.default wrong pipeline messages
+	 */
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
 
-
-	public String getWaitBeforeCleanup() {
-		return waitBeforeCleanup;
-	}
+	/**
+	 * @ff.default 100ms
+	 */
 	public void setWaitBeforeCleanup(String waitBeforeCleanup) {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
 
-
-	public int getTimeout() {
-		return timeout;
-	}
+	 /** the larva timeout
+	 * @ff.default 10000
+	 */
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
-
 }
 
+@AllArgsConstructor
 class LogWriter extends StringWriter {
 	private Logger log;
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
-
-	public void setLogger(Logger log) {
-		this.log = log;
-	}
-
-	public void setWriteToLog(boolean writeToLog) {
-		this.writeToLog = writeToLog;
-	}
-
-	public void setWriteToSystemOut(boolean writeToSystemOut) {
-		this.writeToSystemOut = writeToSystemOut;
-	}
 
 	@Override
 	public void write(String str) {

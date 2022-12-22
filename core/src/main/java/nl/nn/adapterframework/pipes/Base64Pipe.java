@@ -18,8 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -27,13 +25,17 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -44,22 +46,25 @@ import nl.nn.adapterframework.util.StreamUtil;
 /**
  * Pipe that performs base64 encoding and decoding.
  *
- *
  * @since   4.4
  * @author  Niels Meijer
  * @version 2.0
  */
+@Category("Basic")
+@SupportsOutputStreaming
+@ElementType(ElementTypes.TRANSLATOR)
 public class Base64Pipe extends StreamingPipe {
 
-	private Direction direction = Direction.ENCODE;
-	private int lineLength = 76;
-	private String lineSeparator = "auto";
-	private String charset = null;
+	private @Getter Direction direction = Direction.ENCODE;
+	private @Getter String charset = null;
+	private @Getter String lineSeparator = "auto";
+	private @Getter int lineLength = 76;
+
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
-	private byte lineSeparatorArray[];
-	
+	private byte[] lineSeparatorArray;
+
 	public enum Direction {
 		ENCODE,
 		DECODE;
@@ -72,7 +77,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Direction dir=getDirectionEnum();
+		Direction dir=getDirection();
 		if (dir==Direction.ENCODE) {
 			if (StringUtils.isEmpty(getLineSeparator())) {
 				setLineSeparatorArray("");
@@ -86,11 +91,11 @@ public class Base64Pipe extends StreamingPipe {
 				setLineSeparatorArray(getLineSeparator());
 			}
 		}
-		
+
 		if (dir==Direction.DECODE && convertToString) {
 			setOutputType("string");
 		}
-		
+
 		if (getOutputTypeEnum()==null) {
 			setOutputType(dir==Direction.DECODE ? "bytes" : "string");
 		}
@@ -103,7 +108,7 @@ public class Base64Pipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 
 		InputStream binaryInputStream;
 		try {
@@ -114,7 +119,7 @@ public class Base64Pipe extends StreamingPipe {
 
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		Message result = new Message(base64, directionEncode ? StandardCharsets.US_ASCII.name() : getCharset());
+		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
 			try {
 				result = new Message(result.asReader());
@@ -129,7 +134,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
 		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
@@ -137,24 +142,14 @@ public class Base64Pipe extends StreamingPipe {
 		} else {
 			targetStream = target.asStream(outputCharset);
 		}
+
 		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		if (directionEncode && StringUtils.isNotEmpty(getCharset())) {
-			try {
-				return new MessageOutputStream(this, new OutputStreamWriter(base64, getCharset()), target);
-			} catch (UnsupportedEncodingException e) {
-				throw new StreamingException("cannot open OutputStreamWriter", e);
-			}
-		}
-		return new MessageOutputStream(this, base64, target);
+		return new MessageOutputStream(this, base64, target, directionEncode ? getCharset() : null);
 	}
 
-	
-	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
-	public void setDirection(String direction) {
-		this.direction = EnumUtils.parse(Direction.class, direction);
-	}
-	public Direction getDirectionEnum() {
-		return direction;
+	/** @ff.default ENCODE */
+	public void setDirection(Direction direction) {
+		this.direction = direction;
 	}
 
 	@Deprecated
@@ -163,7 +158,12 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
+	/**
+	 * Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible
+	 * @ff.default string for direction=encode, bytes for direction=decode
+	 */
+	@Deprecated
+	@ConfigurationWarning("It should not be necessary to specify outputType. If you encounter a situation where it is, please report to Frank!Framework Core Team")
 	public void setOutputType(String outputType) {
 		if (outputType.equalsIgnoreCase("Stream")) {
 			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used. Streaming is automatic where possible");
@@ -175,27 +175,24 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
+	/** Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode. */
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	/**
+	 *  (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf
+	 * @ff.default auto
+	 */
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
-	public String getLineSeparator() {
-		return lineSeparator;
-	}
 
-	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
+	/**
+	 *  (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines
+	 * @ff.default 76
+	 */
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
-	}
-	public int getLineLength() {
-		return lineLength;
 	}
 }

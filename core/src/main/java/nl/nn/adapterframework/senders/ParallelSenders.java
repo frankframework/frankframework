@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,17 +19,20 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
@@ -39,20 +42,15 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Collection of Senders, that are executed all at the same time.
- * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
- * </table>
- * </p>
-
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Category("Advanced")
 public class ParallelSenders extends SenderSeries {
 
-	private int maxConcurrentThreads = 0;
-	private TaskExecutor executor;
+	private @Getter int maxConcurrentThreads = 0;
+	private @Getter TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -68,9 +66,11 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
+		boolean success=true;
+		String errorMessage=null;
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -101,34 +101,48 @@ public class ParallelSenders extends SenderSeries {
 		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
-			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderClass", org.springframework.util.ClassUtils.getUserClass(sender).getSimpleName());
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Message result = pse.getReply();
+				SenderResult senderResult = pse.getReply();
+				success &= senderResult.isSuccess();
+				resultXml.addAttribute("success", senderResult.isSuccess());
+				if (senderResult.getForwardName()!=null) {
+					resultXml.addAttribute("forwardName", senderResult.getForwardName());
+				}
+				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+					resultXml.addAttribute("errorMessage", senderResult.getErrorMessage());
+					if (errorMessage==null) {
+						errorMessage=senderResult.getErrorMessage();
+					}
+				}
+				Message result = senderResult.getResult();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
-						resultXml.addAttribute("type", ClassUtils.nameOf(result.getRequestClass()));
+						resultXml.addAttribute("type", result.getRequestClass());
 						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 					} catch (IOException e) {
 						throw new SenderException(getLogPrefix(),e);
 					}
 				}
 			} else {
+				success=false;
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
+				resultXml.addAttribute("success", false);
 				resultXml.setValue(throwable.getMessage());
 			}
-			resultsXml.addSubElement(resultXml); 
+			resultsXml.addSubElement(resultXml);
 		}
-		return new Message(resultsXml.toXML());
+		return new SenderResult(success, new Message(resultsXml.toXML()), errorMessage, null);
 	}
 
 	@Override
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
-			super.setSynchronous(value); 
+			super.setSynchronous(value);
 		}
 	}
 
@@ -144,14 +158,20 @@ public class ParallelSenders extends SenderSeries {
 		return executor;
 	}
 
-	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
+	/** one or more specifications of senders. Each will receive the same input message, to be processed in parallel */
+	@Override
+	public void registerSender(ISender sender) {
+		super.registerSender(sender);
+	}
+
+	/**
+	 * Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.
+	 * @ff.default 0
+	 */
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
 
 		this.maxConcurrentThreads = maxThreads;
-	}
-	public int getMaxConcurrentThreads() {
-		return maxConcurrentThreads;
 	}
 }

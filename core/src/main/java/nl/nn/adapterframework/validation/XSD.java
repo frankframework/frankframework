@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.adapterframework.validation;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +31,7 @@ import javax.wsdl.WSDLException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
@@ -42,6 +43,8 @@ import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -52,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The representation of a XSD.
- * 
+ *
  * @author Michiel Meeuwissen
  * @author  Jaco de Groot
  */
@@ -63,22 +66,21 @@ public class XSD implements Schema, Comparable<XSD> {
 	private javax.wsdl.Definition wsdlDefinition;
 	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
-	private String resourceInternalReference;
+	private @Setter String resourceInternalReference;
 	private URL url;
-	private String noNamespaceSchemaLocation;
-	private ByteArrayOutputStream byteArrayOutputStream;
-	private String resourceTarget;
+	private @Setter ByteArrayOutputStream byteArrayOutputStream;
+	private @Getter String resourceTarget;
 	private String toString;
-	private String namespace;
-	private boolean addNamespaceToSchema = false;
-	private String importedSchemaLocationsToIgnore;
-	protected boolean useBaseImportedSchemaLocationsToIgnore = false;
-	private String importedNamespacesToIgnore;
-	private String parentLocation;
-	private boolean isRootXsd = true;
-	private String targetNamespace;
-	private List<String> rootTags = new ArrayList<String>();
-	private Set<String> importedNamespaces = new HashSet<String>();
+	private @Getter String namespace;
+	private @Getter @Setter boolean addNamespaceToSchema = false;
+	private @Getter @Setter String importedSchemaLocationsToIgnore;
+	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter @Setter String importedNamespacesToIgnore;
+	private @Getter @Setter String parentLocation;
+	private @Getter @Setter boolean rootXsd = true;
+	private @Getter @Setter String targetNamespace;
+	private @Getter List<String> rootTags = new ArrayList<String>();
+	private @Getter Set<String> importedNamespaces = new HashSet<String>();
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
 
@@ -88,76 +90,9 @@ public class XSD implements Schema, Comparable<XSD> {
 		this.wsdlSchema = wsdlSchema;
 	}
 
-	public void setResourceInternalReference(String resourceInternalReference) {
-		this.resourceInternalReference = resourceInternalReference;
-	}
 
-	public void setByteArrayOutputStream(ByteArrayOutputStream byteArrayOutputStream) {
-		this.byteArrayOutputStream = byteArrayOutputStream;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		this.addNamespaceToSchema = addNamespaceToSchema;
-	}
-
-	public boolean isAddNamespaceToSchema() {
-		return addNamespaceToSchema;
-	}
-
-	public void setImportedSchemaLocationsToIgnore(String string) {
-		importedSchemaLocationsToIgnore = string;
-	}
-
-	public String getImportedSchemaLocationsToIgnore() {
-		return importedSchemaLocationsToIgnore;
-	}
-
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
-	}
-
-	public void setImportedNamespacesToIgnore(String string) {
-		importedNamespacesToIgnore = string;
-	}
-
-	public String getImportedNamespacesToIgnore() {
-		return importedNamespacesToIgnore;
-	}
-
-	public void setParentLocation(String parentLocation) {
-		this.parentLocation = parentLocation;
-	}
-
-	public String getParentLocation() {
-		return parentLocation;
-	}
-
-	public void setRootXsd(boolean isRootXsd) {
-		this.isRootXsd = isRootXsd;
-	}
-
-	public boolean isRootXsd() {
-		return isRootXsd;
-	}
-
-	public void setTargetNamespace(String targetNamespace) {
-		this.targetNamespace = targetNamespace;
-	}
-
-	public String getTargetNamespace() {
-		return targetNamespace;
-	}
 
 	public void initNoNamespace(IScopeProvider scopeProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
-		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
 		this.scopeProvider=scopeProvider;
 		this.resource=noNamespaceSchemaLocation;
 		url = ClassUtils.getResourceURL(scopeProvider, noNamespaceSchemaLocation);
@@ -189,7 +124,7 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		init();
 	}
- 
+
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<XSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
 		this.scopeProvider=scopeProvider;
@@ -213,11 +148,11 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		init();
 	}
-	
+
 	private void init() throws ConfigurationException {
 		try {
-			InputStream in = getInputStream();
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			Reader reader = getReader();
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			int elementDepth = 0;
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -286,10 +221,6 @@ public class XSD implements Schema, Comparable<XSD> {
 		return resource.substring(0, resource.lastIndexOf('/') + 1);
 	}
 
-	public String getResourceTarget() {
-		return resourceTarget;
-	}
-
 	@Override
 	public String toString() {
 		return toString;
@@ -325,13 +256,13 @@ public class XSD implements Schema, Comparable<XSD> {
 			// normally also be imported by the XSD for the business response
 			// message (for the Result part).
 			try {
-				InputSource control = new InputSource(getInputStream());
-				InputSource test = new InputSource(x.getInputStream());
+				InputSource control = new InputSource(getReader());
+				InputSource test = new InputSource(x.getReader());
 				Diff diff = new Diff(control, test);
 				if (diff.similar()) {
 					return 0;
 				} else if (wsdlSchema != null || url == null) {
-					return Misc.streamToString(getInputStream(), "\n", false).compareTo(Misc.streamToString(x.getInputStream(), "\n", false));
+					return Misc.readerToString(getReader(), "\n", false).compareTo(Misc.readerToString(x.getReader(), "\n", false));
 				}
 			} catch (Exception e) {
 				LOG.warn("Exception during XSD compare", e);
@@ -341,43 +272,32 @@ public class XSD implements Schema, Comparable<XSD> {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException, ConfigurationException {
+	public Reader getReader() throws IOException {
 		if (wsdlSchema != null) {
 			try {
-				return SchemaUtils.toInputStream(wsdlDefinition, wsdlSchema);
+				return SchemaUtils.toReader(wsdlDefinition, wsdlSchema);
 			} catch (WSDLException e) {
-				throw new ConfigurationException(e);
+				throw new IOException(e);
 			}
 		} else if (byteArrayOutputStream != null) {
-			return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+			return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
 		} else {
-			return url.openStream();
+			return StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		}
 	}
 
-	public Set<String> getImportedNamespaces() {
-		return importedNamespaces;
+
+	public Set<XSD> getXsdsRecursive(boolean supportRedifine) throws ConfigurationException {
+		return getXsdsRecursive(new HashSet<XSD>(), supportRedifine);
 	}
 
-	public Set<XSD> getXsdsRecursive() throws ConfigurationException {
-		return getXsdsRecursive(true);
-	}
-
-	public Set<XSD> getXsdsRecursive(boolean ignoreRedefine) throws ConfigurationException {
-		return getXsdsRecursive(new HashSet<XSD>(), ignoreRedefine);
-	}
-
-	public Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
-		return getXsdsRecursive(xsds, true);
-	}
-
-	public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
+	public Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		try {
-			InputStream in = getInputStream();
-			if (in == null) {
+			Reader reader = getReader();
+			if (reader == null) {
 				return null;
 			}
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
 				switch (e.getEventType()) {
@@ -385,12 +305,11 @@ public class XSD implements Schema, Comparable<XSD> {
 					StartElement el = e.asStartElement();
 					if (el.getName().equals(SchemaUtils.IMPORT) ||
 						el.getName().equals(SchemaUtils.INCLUDE)||
-						(el.getName().equals(SchemaUtils.REDEFINE) && !ignoreRedefine)
+						(el.getName().equals(SchemaUtils.REDEFINE) && supportRedefine)
 						) {
 						Attribute schemaLocationAttribute = el.getAttributeByName(SchemaUtils.SCHEMALOCATION);
 						Attribute namespaceAttribute = el.getAttributeByName(SchemaUtils.NAMESPACE);
 						String namespace = this.namespace;
-						boolean addNamespaceToSchema = this.addNamespaceToSchema;
 						if (el.getName().equals(SchemaUtils.IMPORT)) {
 							if (namespaceAttribute == null && StringUtils.isEmpty(xsdDefaultNamespace) && StringUtils.isNotEmpty(xsdTargetNamespace)) {
 								// TODO: concerning import without namespace when in head xsd default namespace doesn't exist and targetNamespace does)
@@ -437,7 +356,7 @@ public class XSD implements Schema, Comparable<XSD> {
 							}
 							if (!skip) {
 								XSD x = new XSD();
-								x.setAddNamespaceToSchema(addNamespaceToSchema);
+								x.setAddNamespaceToSchema(isAddNamespaceToSchema());
 								x.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 								x.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 								x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
@@ -445,7 +364,7 @@ public class XSD implements Schema, Comparable<XSD> {
 								x.setRootXsd(false);
 								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
 								if (xsds.add(x)) {
-									x.getXsdsRecursive(xsds, ignoreRedefine);
+									x.getXsdsRecursive(xsds, supportRedefine);
 								}
 							}
 						}
@@ -468,18 +387,13 @@ public class XSD implements Schema, Comparable<XSD> {
 	private List<String> listOf(String commaSeparatedItems) {
 		return Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1));
 	}
-	
-	public List<String> getRootTags() {
-		return rootTags;
-	}
 
 	@Override
 	public String getSystemId() {
-		if (noNamespaceSchemaLocation == null) {
-			return null;
-		} else {
-			return url.toExternalForm();
+		if (url == null) {
+			return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
 		}
+		return url.toExternalForm();
 	}
 
 	public boolean hasDependency(Set<XSD> xsds) {
@@ -487,8 +401,23 @@ public class XSD implements Schema, Comparable<XSD> {
 			if (getImportedNamespaces().contains(xsd.getTargetNamespace())) {
 				return true;
 			}
- 		}
+		}
 		return false;
+	}
+
+	public void addTargetNamespace() throws ConfigurationException {
+		try {
+			List<Attribute> rootAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
+			List<XMLEvent> imports = new ArrayList<XMLEvent>();
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, false);
+			setByteArrayOutputStream(byteArrayOutputStream);
+		} catch (XMLStreamException | IOException e) {
+			throw new ConfigurationException(toString(), e);
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,12 +14,17 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
@@ -26,17 +32,19 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MatchUtils {
-	
-    public static Map<String,Object> stringToMap(String mapInStr) throws IOException {
-		Properties inProps=new Properties();
+
+	private static final Logger LOG = LogUtil.getLogger(MatchUtils.class);
+
+	public static Map<String, Object> stringToMap(String mapInStr) throws IOException {
+		Properties inProps = new Properties();
 		inProps.load(new StringReader(mapInStr));
-		Map<String,Object> mapIn=new HashMap<String,Object>();
-		for (Object key:inProps.keySet()) {
-			mapIn.put((String)key, inProps.getProperty((String)key));
+		Map<String, Object> mapIn = new HashMap<String, Object>();
+		for(Object key : inProps.keySet()) {
+			mapIn.put((String) key, inProps.getProperty((String) key));
 		}
 		return mapIn;
-    }
-    
+	}
+
 	public static String mapToString(Map<String,String> map) {
 		StringBuffer buf=new StringBuffer();
 		for (String key:map.keySet()) {
@@ -48,7 +56,7 @@ public class MatchUtils {
 		}
 		return buf.toString();
 	}
-	
+
 	public static void assertMapEquals(Map<String,String> exp, Map<String,String> act) {
 		SortedMap<String,String> exps=new TreeMap<String,String>(exp);
 		String expStr=mapToString(exps);
@@ -56,11 +64,14 @@ public class MatchUtils {
 		String actStr=mapToString(acts);
 		assertEquals(expStr,actStr);
 	}
- 
-	public static String xmlPretty(String xml, boolean removeNamespaces) {
+
+	public static String xmlPretty(String xml, boolean removeNamespaces, boolean includeComments) {
+		if (StringUtils.isAllBlank(xml)) {
+			return "";
+		}
 		XmlWriter xmlWriter = new XmlWriter();
-		xmlWriter.setIncludeComments(false);
-		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter);
+		xmlWriter.setIncludeComments(includeComments);
+		ContentHandler contentHandler = new PrettyPrintFilter(xmlWriter, true);
 		if (removeNamespaces) {
 			contentHandler = new NamespaceRemovingFilter(contentHandler);
 		}
@@ -79,19 +90,53 @@ public class MatchUtils {
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
 		assertXmlEquals(description, xmlExp, xmlAct, false);
 	}
-	
+
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
-		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces);
-		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);
+		assertXmlEquals(description, xmlExp, xmlAct, ignoreNamespaces, false);
+	}
+
+	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
+		String xmlExpPretty;
+		String xmlActPretty;
+		try {
+			xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
+		} catch (RuntimeException e) {
+			xmlExpPretty = e.getMessage();
+		}
+		try {
+			xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
+		} catch (RuntimeException e) {
+			xmlActPretty = e.getMessage();
+		}
 		assertEquals(description,xmlExpPretty,xmlActPretty);
 	}
-	
+
+	public static void assertXmlSimilar(String expected, String actual) {
+		try {
+			String expectedCanonalized = XmlUtils.canonicalize(expected);
+			String actualCanonalized = XmlUtils.canonicalize(actual);
+
+			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, actualCanonalized));
+			if(!diff.similar()) {
+				LOG.debug("expected: \n"+ expectedCanonalized);
+				LOG.debug("actual: \n"+ actualCanonalized);
+				assertEquals("xml not similar: " + diff.toString(), expectedCanonalized, actualCanonalized);
+			}
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;
 	}
 
-	public static void assertJsonEqual(String description, String jsonExp, String jsonAct) {
+	public static void assertJsonEquals(String jsonExp, String jsonAct) {
+		assertJsonEquals(null, jsonExp, jsonAct);
+	}
+
+	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
 		assertEquals(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
 	}
 
@@ -99,7 +144,7 @@ public class MatchUtils {
 		assertNotNull("url to compare to ["+file1+"] should not be null",url);
 		assertTestFileEquals(file1,url.openStream());
 	}
-	
+
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
 		assertTestFileEquals(file1, Misc.streamToString(fileStream));
 	}

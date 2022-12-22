@@ -1,0 +1,13 @@
+<result>
+	<statuscode>200</statuscode>
+	<headers>
+		<header name="connection" value="Keep-Alive"/>
+		<header name="content-type" value="text/plain"/>
+	</headers>
+	<message>POST / HTTP/1.1
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
+Content-Type: text/html; charset=UTF-8
+
+hallo this is my message</message>
+</result>

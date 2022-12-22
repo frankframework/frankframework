@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,18 +26,24 @@ import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuilder {
 
 	private Writer writer;
-	
+	private SaxDocumentBuilder saxDocumentBuilder;
+
 	public XmlDocumentBuilder(String rootElement) throws SAXException {
-		this(rootElement, new StringWriter());
+		this(rootElement, new StringWriter(), true);
 	}
-	
-	public XmlDocumentBuilder(String rootElement, Writer writer) throws SAXException {
-		super(new SaxDocumentBuilder(null, writer), rootElement);
+
+	public XmlDocumentBuilder(String rootElement, Writer writer, boolean prettyPrint) throws SAXException {
+		this(new SaxDocumentBuilder(null, writer), rootElement);
 		this.writer = writer;
 	}
-	
-	public XmlDocumentBuilder(String rootElement, ContentHandler handler) throws SAXException {
-		super(new SaxDocumentBuilder(null, handler), rootElement);
+
+	public XmlDocumentBuilder(String rootElement, ContentHandler handler, boolean prettyPrint) throws SAXException {
+		this(new SaxDocumentBuilder(null, handler, prettyPrint), rootElement);
+	}
+
+	private XmlDocumentBuilder(SaxDocumentBuilder saxDocumentBuilder, String rootElement) throws SAXException {
+		super(saxDocumentBuilder, rootElement);
+		this.saxDocumentBuilder=saxDocumentBuilder;
 	}
 
 	@Override
@@ -53,6 +59,12 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 	@Override
 	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException {
 		return ArrayBuilder.asArrayBuilder(this, elementName);
+	}
+
+	@Override
+	public void close() throws SAXException {
+		super.close();
+		saxDocumentBuilder.close();
 	}
 
 }

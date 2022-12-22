@@ -50,8 +50,10 @@ import com.tibco.tibjms.admin.TibjmsAdminInvalidNameException;
 import com.tibco.tibjms.admin.UserInfo;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.ldap.LdapSender;
@@ -74,45 +76,37 @@ import nl.nn.adapterframework.util.XmlUtils;
  * else
  * <ul><li>one message on a specific Tibco queue including information about this message is returned (without removing it)</li></ul>
  * </p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSkipTemporaryQueues(boolean) skipTemporaryQueues}</td><td>when set to <code>true</code>, temporary queues are skipped</td><td>false</td></tr>
- * <tr><td>{@link #setHideMessage(boolean) hideMessage}</td><td>when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)</td><td>false</td></tr>
- * </table>
- * </p>
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>url</td><td>string</td><td>When a parameter with name url is present, it is used instead of the url specified by the attribute</td></tr>
- * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
- * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
- * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
- * <tr><td>queueName</td><td>string</td><td>the name of the queue which is used for browsing one queue</code></td></tr>
- * <tr><td>queueItem</td><td>string</td><td>the number of the queue message which is used for browsing one queue (default is 1)</td></tr>
- * <tr><td>showAge</td><td>boolean</td><td>when set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)</td></tr>
- * <tr><td>countOnly</td><td>boolean</td><td>when set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)</td></tr>
- * <tr><td>ldapUrl</td><td>string</td><td>When present, principal descriptions are retrieved from this LDAP server</td></tr>
- * </table>
- * </p>
- * 
+ *
+ * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
+ * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
+ * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
+ * @ff.parameter password When a parameter with name password is present, it is used instead of the password specified by the attribute
+ * @ff.parameter queueName The name of the queue which is used for browsing one queue
+ * @ff.parameter queueItem The number of the queue message which is used for browsing one queue (default is 1)
+ * @ff.parameter showAge When set to <code>true</code> and <code>pendingMsgCount&gt;0</code> and <code>receiverCount=0</code>, the age of the current first message in the queue is shown in the queues overview (default is false)
+ * @ff.parameter countOnly When set to <code>true</code> and <code>queueName</code> is filled, only the number of pending messages is returned (default is false)
+ * @ff.parameter ldapUrl When present, principal descriptions are retrieved from this LDAP server
+ *
  * @author Peter Leeuwenburgh
  */
 
 public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String url;
 	private String authAlias;
-	private String userName;
+	private String username;
 	private String password;
 	private boolean skipTemporaryQueues = false;
 	private boolean hideMessage = false;
 	private String queueRegex;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		super.configure();
+	}
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
@@ -128,7 +122,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			try {
 				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 
@@ -140,9 +134,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		userName_work = getParameterValue(pvl, "userName");
+		userName_work = (pvl.contains("username")) ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
 		if (userName_work == null) {
-			userName_work = getUserName();
+			userName_work = getUsername();
 		}
 		password_work = getParameterValue(pvl, "password");
 		if (password_work == null) {
@@ -177,7 +171,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			if (StringUtils.isNotEmpty(queueName_work)) {
 				String queueItem_work = getParameterValue(pvl, "queueItem");
@@ -194,22 +188,21 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 			}
 		} catch (Exception e) {
-			String msg = getLogPrefix(session) + "exception on showing Tibco queues, url [" + url_work + "]"
-					+ (StringUtils.isNotEmpty(queueName_work) ? " queue [" + queueName_work + "]" : "");
+			String msg = "exception on showing Tibco queues, url [" + url_work + "]" + (StringUtils.isNotEmpty(queueName_work) ? " queue [" + queueName_work + "]" : "");
 			throw new PipeRunException(this, msg, e);
 		} finally {
 			if (admin != null) {
 				try {
 					admin.close();
 				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(session) + "exception on closing Tibjms Admin", e);
+					log.warn("exception on closing Tibjms Admin", e);
 				}
 			}
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(session) + "exception on closing connection", e);
+					log.warn("exception on closing connection", e);
 				}
 			}
 		}
@@ -238,7 +231,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			ldapSender.configure();
 			return ldapSender;
 		} catch (ConfigurationException e) {
-			log.warn(getLogPrefix(null) + "exception on retrieving ldapSender", e);
+			log.warn("exception on retrieving ldapSender", e);
 		}
 		return null;
 	}
@@ -337,7 +330,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				try {
 					queueBrowser.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(null) + "exception on closing queue browser", e);
+					log.warn("exception on closing queue browser", e);
 				}
 			}
 		}
@@ -555,7 +548,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		String principalDescription = null;
 		nl.nn.adapterframework.stream.Message ldapRequest = new nl.nn.adapterframework.stream.Message("<req>" + principal + "</req>");
 		try {
-			String ldapResult = ldapSender.sendMessage(ldapRequest, null).asString();
+			String ldapResult = ldapSender.sendMessageOrThrow(ldapRequest, null).asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
 				if (c != null && c.size() > 0) {
@@ -627,6 +620,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return url;
 	}
 
+	/** URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state */
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -635,22 +629,30 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return authAlias;
 	}
 
+	/** alias used to obtain credentials for authentication to host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setUserName(String string) {
-		userName = string;
+	/** username used in authentication to host */
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
+	/** password used in authentication to host */
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -659,6 +661,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return skipTemporaryQueues;
 	}
 
+	/** when set to <code>true</code>, temporary queues are skipped
+	 * @ff.default false
+	 */
 	public void setSkipTemporaryQueues(boolean b) {
 		skipTemporaryQueues = b;
 	}
@@ -667,6 +672,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return hideMessage;
 	}
 
+	/** when set to <code>true</code>, the length of the queue message is returned instead of the queue message self (when parameter <code>queueName</code> is not empty)
+	 * @ff.default false
+	 */
 	public void setHideMessage(boolean b) {
 		hideMessage = b;
 	}

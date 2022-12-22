@@ -5,8 +5,8 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
 	<changeSet id="one" author="Niels Meijer">
-		<comment>Create DummyTable</comment>
-		<createTable tableName="DummyTable">
+		<comment>Create DUMMYTABLE</comment>
+		<createTable tableName="DUMMYTABLE">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
 			</column>
@@ -16,7 +16,7 @@
 	</changeSet>
 
 	<changeSet id="two" author="Niels Meijer">
-		<comment>Drop DummyTable</comment>
-		<dropTable tableName="DummyTable" cascadeConstraints="true"/>
+		<comment>Drop DUMMYTABLE</comment>
+		<dropTable tableName="DUMMYTABLE" cascadeConstraints="true"/>
 	</changeSet>
 </databaseChangeLog>

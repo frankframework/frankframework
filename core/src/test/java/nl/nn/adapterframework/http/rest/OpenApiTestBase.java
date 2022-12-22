@@ -30,15 +30,19 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -53,8 +57,9 @@ public class OpenApiTestBase extends Mockito {
 
 	@Before
 	public void setUp() throws ServletException {
-		configuration = new TestConfiguration();
 		AppConstants.getInstance().setProperty("hostname", "hostname");
+		AppConstants.getInstance().setProperty("dtap.stage", "xxx");
+		configuration = new TestConfiguration();
 	}
 
 	@After
@@ -107,10 +112,17 @@ public class OpenApiTestBase extends Mockito {
 		return taskExecutor;
 	}
 
-	protected HttpServletRequest createRequest(String method, String uri) {
+	protected MockHttpServletRequest createRequest(String method, String uri) {
+		if(!uri.startsWith("/")) {
+			fail("uri must start with a '/'");
+		}
+
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
-		request.setServerName("dummy");
-		request.setPathInfo(uri);
+		request.setServerName("mock-hostname");
+		request.setPathInfo(Misc.urlDecode(uri)); //Should be decoded by the web container
+		request.setContextPath("/mock-context-path");
+		request.setServletPath("/mock-servlet-path");
+		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
 		return request;
 	}
 
@@ -126,7 +138,8 @@ public class OpenApiTestBase extends Mockito {
 
 			servlet.service(request, response);
 
-			return response.getContentAsString();
+			String res = response.getContentAsString();
+			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
 			assertTrue(ExceptionUtils.getStackTrace(t), false);
@@ -159,9 +172,9 @@ public class OpenApiTestBase extends Mockito {
 		}
 		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
-			listener.setMethod(method);
+			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method));
 			listener.setUriPattern(uriPattern);
-			listener.setProduces(produces);
+			if (produces!=null) listener.setProduces(EnumUtils.parse(MediaTypes.class,produces));
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}
@@ -179,7 +192,7 @@ public class OpenApiTestBase extends Mockito {
 			listener.setMessageIdHeader(messageIdHeader);
 			return this;
 		}
-		
+
 		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf("."))+"-"+responseRoot;
 			inputValidator = new Json2XmlValidator();
@@ -214,22 +227,22 @@ public class OpenApiTestBase extends Mockito {
 			return this;
 		}
 		public AdapterBuilder addExit(String exitCode) {
-			return addExit(exitCode, null, "false");
+			return addExit(exitCode, null, false);
 		}
-		public AdapterBuilder addExit(String exitCode, String responseRoot, String isEmpty) {
+		public AdapterBuilder addExit(String exitCode, String responseRoot, boolean isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
 			ple.setResponseRoot(responseRoot);
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
 				case "200":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				case "201":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
-					ple.setState("error");
+					ple.setState(ExitState.ERROR);
 					break;
 			}
 			this.exits.add(ple);
@@ -239,7 +252,7 @@ public class OpenApiTestBase extends Mockito {
 			return build(false);
 		}
 		/**
-		 * Create the adapter 
+		 * Create the adapter
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
@@ -278,7 +291,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (!adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				while (adapter.getRunState()!=RunState.STARTED) {
 					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
 					try {
 						Thread.sleep(1000);

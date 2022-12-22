@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.digester3.ObjectCreationFactory;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.digester3.binder.LinkedRuleBuilder;
@@ -31,12 +30,15 @@ import lombok.Setter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
+/**
+ * @author Niels Meijer
+ */
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker;
-	private Set<String> parsedPatterns = new HashSet<String>();
+	private Set<String> parsedPatterns = new HashSet<>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
 		this.digester = digester;
@@ -46,17 +48,17 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	@Override
 	protected void handle(DigesterRule rule) {
 		if(log.isTraceEnabled()) log.trace("adding digesterRule " + rule.toString());
-		
+
 		String pattern = rule.getPattern();
 
 		if (parsedPatterns.contains(pattern)) {
-			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity. 
+			// Duplicate patterns are used to tell FrankDoc parser about changed multiplicity.
 			// Original method will still be available to be used by digester, so second instance of rule can be ignored here.
-			log.warn("pattern [{}] already parsed", pattern); 
+			log.warn("pattern [{}] already parsed", pattern);
 			return;
 		}
 		parsedPatterns.add(pattern);
-		
+
 		LinkedRuleBuilder ruleBuilder = rulesBinder.forPattern(pattern);
 
 
@@ -65,15 +67,13 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			return;
 		}
 
-		if(StringUtils.isNotEmpty(rule.getObject())) { //If a class is specified, load the class through the digester create-object-rule
-//			ruleBuilder.createObject().ofTypeSpecifiedByAttribute(rule.getObject()); //Can't use 'ruleBuilder' as this tries to load the class at configure time and not runtime
-			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
-		} else {
-			ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
-			if(factory != null) {
-				factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
-				ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
-			}
+		ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
+		if(factory instanceof IDigesterRuleAware) {
+			((IDigesterRuleAware)factory).setDigesterRule(rule);
+		}
+		if(factory != null) {
+			factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
+			ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object
 		}
 		if(rule.getRegisterMethod() != null) { //set the register method (set-next-rule)
 			ruleBuilder.setNext(rule.getRegisterMethod());
@@ -104,7 +104,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			}
 			if(object instanceof ObjectCreationFactory) {
 				return (ObjectCreationFactory) object;
-			} 
+			}
 			throw new IllegalArgumentException("factory type must implement ObjectCreationFactory");
 		}
 		if(log.isTraceEnabled()) log.trace("no factory specified, returing default ["+GenericFactory.class.getCanonicalName()+"]");
@@ -122,8 +122,7 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 	protected <T> T autoWireAndInitializeBean(Class<T> clazz) {
 		if(applicationContext != null) {
 			return SpringUtils.createBean(applicationContext, clazz); //Wire the factory through Spring
-		} else {
-			throw new IllegalStateException("ApplicationContext not set");
 		}
+		throw new IllegalStateException("ApplicationContext not set");
 	}
 }

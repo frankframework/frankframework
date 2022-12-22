@@ -1,54 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.ibissource</groupId>
-    <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.7-SNAPSHOT</version>
-  </parent>
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
 
-  <artifactId>ibis-adapterframework-sap</artifactId>
-  <name>Ibis AdapterFramework support for SAP</name>
+	<artifactId>ibis-adapterframework-sap</artifactId>
+	<name>Ibis AdapterFramework support for SAP</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.ibissource</groupId>
-      <artifactId>ibis-adapterframework-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.jco2</groupId>
-      <artifactId>sapidoc</artifactId>
-      <version>1.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.jco2</groupId>
-      <artifactId>sapidocjco</artifactId>
-      <version>1.0.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.jco2</groupId>
-      <artifactId>sapjco</artifactId>
-      <version>2.1.5</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.jco3</groupId>
-      <artifactId>sapidoc</artifactId>
-      <version>3.0.12</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.jco3</groupId>
-      <artifactId>sapjco</artifactId>
-      <version>3.0.16</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-		<groupId>org.projectlombok</groupId>
-		<artifactId>lombok</artifactId>
-	</dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sap.jco3</groupId>
+			<artifactId>sapidoc</artifactId>
+			<version>3.1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sap.jco3</groupId>
+			<artifactId>sapjco</artifactId>
+			<version>3.1.6</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+	</dependencies>
 
 </project>

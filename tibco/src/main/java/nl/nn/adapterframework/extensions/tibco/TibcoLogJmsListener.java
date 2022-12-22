@@ -1,9 +1,12 @@
 /*
    Copyright 2013 Nationale-Nederlanden
+
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
+
        http://www.apache.org/licenses/LICENSE-2.0
+
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,8 +38,8 @@ import nl.nn.adapterframework.util.DateUtils;
 
 public class TibcoLogJmsListener extends JmsListener {
 
-	private final static int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
-	private final static String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
+	private static final int[] LOGLEVELS = { 5, 10, 30, 50, 70, 90 };
+	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
 	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {

@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Parameters" description="Test the resolution of parameters">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Parameters" />
@@ -42,6 +42,11 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
+			<pipe name="HiddenParam" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
+				<param name="param" hidden="true" value="xyz" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -49,12 +50,12 @@ import nl.nn.adapterframework.util.Misc;
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	protected final static String KEYWORD_SELECT="select";
+	protected static final String KEYWORD_SELECT="select";
 
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
-	
+
 	protected static Map<String,ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
@@ -99,7 +100,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public String getAutoIncrementKeyFieldType() {
 		return "INT DEFAULT AUTOINCREMENT";
 	}
-	
+
 	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
@@ -114,7 +115,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public boolean autoIncrementUsesSequenceObject() {
 		return false;
 	}
-	
+
 	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return null;
@@ -196,7 +197,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		rs.updateClob(column, (Clob)clobHandle);
 	}
 
-	
+
 	@Override
 	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
 		return stmt.getConnection().createClob();
@@ -265,7 +266,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
 		return rs.getBlob(column);
 	}
-	
+
 	protected  OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return ((Blob)blobUpdateHandle).setBinaryStream(1L);
 	}
@@ -317,19 +318,19 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return blob.getBinaryStream();
 	}
 
-	
-	
+
+
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
-	
-	
+
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
 		return prepareQueryTextForWorkQueueReading(batchSize, selectQuery, -1);
 	}
-	
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
@@ -353,7 +354,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
 		String query="select * from "+tableName+" where ROWNUM=1";
 		return query;
-	} 
+	}
 
 	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
@@ -386,6 +387,25 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException {
+		return getTableColumns(conn, null, tableName);
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return getTableColumns(conn, schemaName, tableName, null);
+	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
+		try {
+			return conn.getMetaData().getColumns(null, schemaName, tableName, columnNamePattern);
+		} catch (SQLException e) {
+			throw new JdbcException("exception retrieving columns for table [" + tableName + "]", e);
+		}
+	}
+
+	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
 		return isTablePresent(conn, null, tableName);
 	}
@@ -398,7 +418,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			throw new JdbcException("exception checking for existence of table [" + tableName + "]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
 		}
 	}
-	
+
 	@Override
 	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException {
 		return this.isColumnPresent(conn, null, tableName, columnName);
@@ -413,6 +433,43 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getIndexInfo(null, schemaName, tableName, false, true)) {
+			while (rs.next()) {
+				if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME")) && columnName.equalsIgnoreCase(rs.getString("COLUMN_NAME")) && rs.getInt("ORDINAL_POSITION")==1) {
+					return true;
+				}
+			}
+			return false;
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+
+	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName,
+			String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
+		StringBuilder query= new StringBuilder("select count(*) from "+indexTableName+" ai");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(", "+indexColumnTableName+" aic"+i);
+		}
+		query.append(" where ai."+tableNameColumnName+"='"+tableName+"'");
+		if (tableOwnerColumnName!=null) {
+			query.append(" and ai."+tableOwnerColumnName+"='"+schemaOwner+"'");
+		}
+		for (int i=1;i<=columns.size();i++) {
+//			query.append(" and ai."+indexOwnerColumnName+"=aic"+i+"."+indexOwnerColumnName);
+			query.append(" and ai."+indexNameColumnName+"=aic"+i+"."+indexNameColumnName);
+			query.append(" and aic"+i+"."+columnNameColumnName+"='"+columns.get(i-1)+"'");
+			query.append(" and aic"+i+"."+columPositionColumnName+"="+i);
+		}
+		try {
+			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
 
 	/**
 	 * Alternative implementation of isTablePresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
@@ -467,25 +524,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return -1;
-	}
-
-	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
 		log.warn("could not determine presence of index columns on table ["+tableName+"]");
 		return true;
 	}
@@ -501,7 +540,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		String sqlState = e.getSQLState();
 		return sqlState!=null && sqlState.startsWith("23");
 	}
-	
+
 	@Override
 	public String getRowNumber(String order, String sort) {
 		return "";
@@ -538,10 +577,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			ISqlTranslator translator = sqlTranslators.get(translatorKey);
 			if (translator==null) {
 				if (sqlTranslators.containsKey(sqlDialectFrom)) {
-					// if translator==null, but the key is present in the map, 
-					// then we already tried to setup this translator, and did not succeed. 
+					// if translator==null, but the key is present in the map,
+					// then we already tried to setup this translator, and did not succeed.
 					// No need to try again.
-					warnConvertQuery(sqlDialectFrom); 
+					warnConvertQuery(sqlDialectFrom);
 					return;
 				}
 				try {
@@ -576,7 +615,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
 	}
-	
+
 	protected void warnConvertQuery(String sqlDialectFrom) {
 		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
 	}
@@ -614,5 +653,11 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return splittedQueries;
 	}
 
-
+	@Override
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
+		String query = ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
+		+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+		+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
+		return query;
+	}
 }

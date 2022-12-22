@@ -33,7 +33,7 @@ public class RootValidations implements Iterable<RootValidation> {
 	public RootValidations() {
 		this.rootValidations = new LinkedHashSet<>();
 	}
-	
+
 	public RootValidations(RootValidation rootValidation) {
 		this();
 		this.rootValidations.add(rootValidation);
@@ -42,7 +42,7 @@ public class RootValidations implements Iterable<RootValidation> {
 	public RootValidations(String... rootElement) {
 		this(new RootValidation(rootElement));
 	}
-	
+
 	public void check(IConfigurationAware source, Set<XSD> xsds) throws ConfigurationException {
 		for (RootValidation path: rootValidations) {
 			path.check(source, xsds);
@@ -55,13 +55,12 @@ public class RootValidations implements Iterable<RootValidation> {
 	public void add(String rootElement) {
 		add(new RootValidation(rootElement));
 	}
-	
+
 	@Override
 	public Iterator<RootValidation> iterator() {
 		return rootValidations.iterator();
 	}
 
-	
 	public boolean contains(RootValidation rootValidation) {
 		return rootValidations.contains(rootValidation);
 	}

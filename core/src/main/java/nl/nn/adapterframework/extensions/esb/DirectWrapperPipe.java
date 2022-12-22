@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2020 Nationale-Nederlanden
+   Copyright 2015, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Kind of extension to EsbSoapWrapperPipe for real time destinations.
@@ -33,21 +34,20 @@ import nl.nn.adapterframework.stream.Message;
  * @author Peter Leeuwenburgh
  */
 
+@Category("NN-Special")
 public class DirectWrapperPipe extends TimeoutGuardPipe {
-	protected final static String DESTINATION = "destination";
-	protected final static String CMHVERSION = "cmhVersion";
-	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
+	protected static final String DESTINATION = "destination";
+	protected static final String CMHVERSION = "cmhVersion";
+	protected static final String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
-		Message result;
-
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 
@@ -55,31 +55,29 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		String cmhVersion = getParameterValue(pvl, CMHVERSION);
 		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
 
-		EsbSoapWrapperPipe eswPipe = new EsbSoapWrapperPipe();
+		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext(), EsbSoapWrapperPipe.class);
 		if (addOutputNamespace != null) {
 			if ("on".equalsIgnoreCase(addOutputNamespace)) {
 				eswPipe.setAddOutputNamespace(true);
 			}
 		}
 		if (destination != null) {
-			Parameter p = new Parameter();
-			p.setName(DESTINATION);
-			p.setValue(destination);
-			eswPipe.addParameter(p);
+			Parameter destinationParameter = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			destinationParameter.setName(DESTINATION);
+			destinationParameter.setValue(destination);
+			eswPipe.addParameter(destinationParameter);
 		}
 		if (cmhVersion != null) {
 			if (StringUtils.isNumeric(cmhVersion)) {
 				eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
 			}
 		}
-		PipeForward pf = new PipeForward();
-		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		try {
-			eswPipe.registerForward(pf);
+			eswPipe.registerForward(getSuccessForward());
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "Exception on wrapping input", e);
+			throw new PipeRunException(this, "Exception on wrapping input", e);
 		}
 	}
 }

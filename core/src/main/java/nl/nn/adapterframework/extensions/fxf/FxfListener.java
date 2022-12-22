@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ListenerException;
@@ -31,38 +32,34 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * FxF extension of EsbJmsListener.
- * 
+ *
  * <p><b>Configuration </b><i>(where deviating from EsbJmsListener)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>"jms/FileTransferAction"</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>"qcf_tibco_p2p_ff"</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
+ * <tr><td>{@link #setMessageProtocol(MessageProtocol) messageProtocol}</td><td>protocol of ESB service to be called. Possible values
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>"FF"</td></tr>
- * <tr><td>{@link #setFxfFileSessionKey(String) fxfFileSessionKey}</td><td>name of the session key to store the name of the received file in</td><td>fxfFile</td></tr>
- * <tr><td>{@link #setMoveProcessedFile(boolean) moveProcessedFile}</td><td>when set to <code>true</code>, the received file if moved after being processed</td><td>true</td></tr>
- * <tr><td>{@link #setProcessedSiblingDirectory(String) processedSiblingDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed</td><td>"processed"</td></tr>
- * <tr><td>{@link #setCreateProcessedDirectory(boolean) createProcessedDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist</td><td>false</td></tr>
  * </table></p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class FxfListener extends EsbJmsListener {
-	private String fxfFileSessionKey = "fxfFile";
-	private boolean moveProcessedFile = true;
-	private String processedSiblingDirectory = "processed";
-	private boolean createProcessedDirectory = false;
+	private @Getter String fxfFileSessionKey = "fxfFile";
+	private @Getter boolean moveProcessedFile = true;
+	private @Getter String processedSiblingDirectory = "processed";
+	private @Getter boolean createProcessedDirectory = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJmsRealmName())) {
 			setJmsRealm("qcf_tibco_p2p_ff");
 		}
-		if (StringUtils.isEmpty(getMessageProtocol())) {
-			setMessageProtocol("FF");
+		if (getMessageProtocol()==null) {
+			setMessageProtocol(MessageProtocol.FF);
 		}
 		if (StringUtils.isEmpty(getDestinationName())) {
 			setDestinationName("jms/FileTransferAction");
@@ -75,7 +72,7 @@ public class FxfListener extends EsbJmsListener {
 		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.
-		// The message will be placed in the errorstore due to this, 
+		// The message will be placed in the errorstore due to this,
 		// when solving the NPE this no longer happens
 		if (isMoveProcessedFile() && plr.isSuccessful()) {
 			File srcFile = null;
@@ -132,35 +129,35 @@ public class FxfListener extends EsbJmsListener {
 		}
 	}
 
-	public String getFxfFileSessionKey() {
-		return fxfFileSessionKey;
-	}
-
+	/**
+	 * name of the session key to store the name of the received file in
+	 * @ff.default fxfFile
+	 */
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	/**
+	 * If set to <code>true</code>, the received file is moved after being processed
+	 * @ff.default true
+	 */
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
 
-	public boolean isMoveProcessedFile() {
-		return moveProcessedFile;
-	}
-
+	/**
+	 * (only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed
+	 * @ff.default processed
+	 */
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
 
-	public String getProcessedSiblingDirectory() {
-		return processedSiblingDirectory;
-	}
-
+	/**
+	 * (only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
-	}
-
-	public boolean isCreateProcessedDirectory() {
-		return createProcessedDirectory;
 	}
 }

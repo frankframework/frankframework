@@ -1,5 +1,5 @@
 /*
-   Copyright 2013,2019 Nationale-Nederlanden
+   Copyright 2013,2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 
 /**
@@ -23,9 +24,10 @@ import nl.nn.adapterframework.core.INamedObject;
  * @author Gerrit van Brakel
  * @since  7.3
  */
-public interface ISapSystem extends INamedObject {
+public interface ISapSystem extends INamedObject, nl.nn.adapterframework.configuration.extensions.ISapSystem {
 
 
+	@Override
 	public void registerItem(Object dummyParent);
 
 	public void setGwhost(String string);
@@ -39,5 +41,22 @@ public interface ISapSystem extends INamedObject {
 	public void setTraceLevel(int i);
 	public void setServiceOffset(int i);
 	public void setSystemnr(String string);
+
+	public void setHost(String string);
+	public void setAshost(String string);
+	public void setGroup(String string);
+	public void setR3name(String string);
+	public void setMshost(String string);
+	public void setMsservOffset(int i);
+	public void setGwservOffset(int i);
+
+	public void setSncEnabled(boolean sncEnabled);
+	public void setSncLibrary(String sncLibPath);
+	public void setSncQop(int qop) throws ConfigurationException;
+
+	public void setMyName(String myName);
+	public void setPartnerName(String partnerName);
+	public void setSncAuthMethod(String sncAuthMethod);
+	public void setSncSSO2(String sncSSO2);
 
 }

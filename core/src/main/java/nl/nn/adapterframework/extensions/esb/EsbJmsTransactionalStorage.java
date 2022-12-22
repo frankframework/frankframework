@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -41,7 +42,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
- * 
+ *
  * <p>
  * Depending on the <code>type</code> of the <code>TransactionalStorage</code>
  * one of the following messages is sent:
@@ -51,7 +52,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <li><code>messageLog</code>:
  * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
  * </ul>
- * 
+ * </p>
  * <p>
  * <b>Configuration </b><i>(where deviating from
  * JmsTransactionalStorage)</i><b>:</b>
@@ -63,9 +64,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * </tr>
  * </table>
  * </p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -27,8 +28,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -37,23 +40,24 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
+ *
  * @author Johan Verrips
  */
-
+@Category("Basic")
+@SupportsOutputStreaming
+@ElementType(ElementTypes.TRANSLATOR)
 public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
-	private XsltSender sender = createXsltSender();
+	private @Getter XsltSender sender = createXsltSender();
 
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
@@ -69,7 +73,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}
-	
+
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -90,27 +94,32 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 			throw new PipeStartException(e);
 		}
 	}
-	
+
 	@Override
 	public void stop() {
 		try {
 			sender.close();
 		} catch (SenderException e) {
-			log.warn(getLogPrefix(null)+"exception closing XsltSender",e);
+			log.warn("exception closing XsltSender",e);
 		}
 		super.stop();
 	}
 
-	
+
 	@Override
 	public boolean canStreamToNextPipe() {
 		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
 	}
 
 	@Override
+	protected boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && StringUtils.isEmpty(getSessionKey());
+	}
+
+	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if (input==null) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
+		if (Message.isEmpty(input)) {
+			throw new PipeRunException(this, "got null input");
 		}
 		try {
 			IForwardTarget nextPipe;
@@ -134,13 +143,21 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 			}
 			return new PipeRunResult(forward, result);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
+			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
 	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
+	}
+
+	/**
+	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
+	 * @ff.default set by appconstant xslt.streaming.default
+	 */
+	public void setStreamingXslt(boolean streamingActive) {
+		sender.setStreamingXslt(streamingActive);
 	}
 
 
@@ -159,24 +176,22 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.addParameter(rhs);
 	}
 
-
-
-	@IbisDocRef({"1", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDocRef({"2", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDocRef({"3", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
 
-	@IbisDocRef({"4", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -184,12 +199,17 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDocRef({"5", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
-	
-	@IbisDocRef({"6", XSLTSENDER})
+
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	public void setDisableOutputEscaping(boolean b) {
+		sender.setDisableOutputEscaping(b);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -197,31 +217,36 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDocRef({"7", XSLTSENDER})
-	public void setOutputType(String string) {
-		sender.setOutputType(string);
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	public void setOutputType(OutputType outputType) {
+		sender.setOutputType(outputType);
 	}
 
-	@IbisDocRef({"8", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDocRef({"9", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDocRef({"10", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	public void setHandleLexicalEvents(boolean b) {
+		sender.setHandleLexicalEvents(b);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDocRef({"11", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDocRef({"12", XSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -230,21 +255,21 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
 	}
-	
-	@IbisDocRef({"14", XSLTSENDER})
-	@Override
+
+	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
 	public void setNamespaceAware(boolean b) {
 		sender.setNamespaceAware(b);
 	}
-	@Override
-	public boolean isNamespaceAware() {
-		return sender.isNamespaceAware();
-	}
 
-	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
+	@Deprecated
+	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
+	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+	@Deprecated
 	public String getSessionKey() {
 		return sessionKey;
 	}
@@ -253,10 +278,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
-	}
-
-	protected XsltSender getSender() {
-		return sender;
 	}
 
 }

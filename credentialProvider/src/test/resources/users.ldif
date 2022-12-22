@@ -1,0 +1,119 @@
+version: 1
+
+##########################################################
+# MICROSOFT SCHEMA for memberOf
+# this attribute is not defined in Apache Directory Server
+##########################################################
+
+dn: dc=myorg,dc=com
+objectClass: domain
+objectClass: top
+dc: myorg
+
+dn: ou=schema, dc=myorg,dc=com
+objectclass: organizationalUnit
+objectclass: top
+cn: schema
+
+dn: cn=microsoft, ou=schema, dc=myorg, dc=com
+objectclass: metaSchema
+objectclass: top
+cn: microsoft
+
+dn: ou=attributetypes, cn=microsoft, ou=schema, dc=myorg, dc=com
+objectclass: organizationalUnit
+objectclass: top
+ou: attributetypes
+
+dn: m-oid=1.2.840.113556.1.4.222, ou=attributetypes, cn=microsoft, ou=schema, dc=myorg, dc=com
+objectclass: metaAttributeType
+objectclass: metaTop
+objectclass: top
+m-oid: 1.2.840.113556.1.4.222
+m-name: memberOf
+m-equality: caseIgnoreMatch
+m-syntax: 1.3.6.1.4.1.1466.115.121.1.15
+m-singleValue: FALSE
+
+dn: ou=objectclasses, cn=microsoft, ou=schema, dc=myorg, dc=com
+objectclass: organizationalUnit
+objectclass: top
+ou: objectclasses
+
+dn: m-oid=1.2.840.113556.1.5.6, ou=objectclasses, cn=microsoft, ou=schema, dc=myorg, dc=com
+objectclass: metaObjectClass
+objectclass: metaTop
+objectclass: top
+m-oid: 1.2.840.113556.1.5.6
+m-name: simulatedMicrosoftObject
+m-supObjectClass: top
+m-typeObjectClass: AUXILIARY
+m-may: memberOf
+
+## End of memberof definitions
+
+dn: ou=Users,dc=myorg,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: ou=Groups,dc=myorg,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+dn: ou=SubGroups,ou=Groups,dc=myorg,dc=com
+objectClass: organizationalUnit
+objectClass: top
+ou: SubGroups
+
+dn: cn=LdapTester1,ou=Users,dc=myorg,dc=com
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: LdapTester1
+sn: Ldap
+uid: ldaptest1
+userPassword: 12345
+memberOf: cn=UserGroup1,ou=Groups,dc=myorg,dc=com
+
+dn: cn=UserGroup1,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: UserGroup1
+member:
+memberOf:cn=ApplGroup1,ou=Groups,dc=myorg,dc=com
+
+dn: cn=ApplGroup1,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:
+memberOf:cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com
+memberOf:cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com
+
+dn: cn=ApplSubGroup1,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:
+memberOf:cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com
+
+dn: cn=ApplSubGroup2,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:
+
+dn: cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com
+objectClass: GroupOfNames
+objectClass: top
+objectclass: simulatedMicrosoftObject
+cn: ApplGroup1
+member:

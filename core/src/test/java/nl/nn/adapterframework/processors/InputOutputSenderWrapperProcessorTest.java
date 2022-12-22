@@ -9,7 +9,8 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -32,37 +33,38 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
 		
 		processor.setSenderWrapperProcessor(target);
 
-		Message actual = processor.sendMessage(sender, new Message(input), session);
+		SenderResult actual = processor.sendMessage(sender, new Message(input), session);
 		
 		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.asString());
+		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.getResult().asString());
+		assertEquals("unexpected wrapper output", true, actual.isSuccess());
 		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
 	}
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new Message("Sender 1: ["+message.asString()+"]");
+					return new SenderResult("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
 			}});
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
-					return new Message(secondSenderOutput);
+					return new SenderResult(secondSenderOutput);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,17 +20,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Support for H2.
- * 
+ *
  * @author Jaco de Groot
  */
 public class H2DbmsSupport extends GenericDbmsSupport {
-	public final static String dbmsName = "H2";
 
 	@Override
 	public Dbms getDbms() {
@@ -64,7 +65,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return rs.getStatement().getConnection().createClob();
 	}
 
-	
+
 	@Override
 	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		return rs.getStatement().getConnection().createBlob();
@@ -84,8 +85,36 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 //			public void close() throws Exception {
 //				JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
 //			}
-//			
+//
 //		}
 //	}
+
+	@Override
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
+		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern!=null ? columnNamePattern.toUpperCase() : null);
+	}
+
+	@Override
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return super.isTablePresent(conn, schemaName, tableName.toUpperCase());
+	}
+
+	@Override
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
+	}
+
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return super.hasIndexOnColumn(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
+	}
+
+	@Override
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+		List<String> columnsUC = columns.stream().map(c -> c.toUpperCase()).collect(Collectors.toList());
+		return doHasIndexOnColumns(conn, "PUBLIC", tableName.toUpperCase(), columnsUC,
+				"INFORMATION_SCHEMA.INDEXES", "INFORMATION_SCHEMA.INDEX_COLUMNS",
+				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
+	}
 
 }

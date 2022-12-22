@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,14 @@ package nl.nn.adapterframework.xml;
 
 import org.xml.sax.Attributes;
 
+/**
+ * AttributesWrapper that removes all namespaces, retaining only local names.
+ * 
+ * @author Gerrit van Brakel
+ *
+ */
 public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
-	
+
 	public NamespaceRemovingAttributesWrapper(Attributes source) {
 		super(source,"xmlns");
 	}

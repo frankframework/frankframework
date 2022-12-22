@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
@@ -38,11 +35,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
-import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;
@@ -50,15 +47,17 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.Schema;
@@ -72,31 +71,30 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
-*<code>Pipe</code> that validates the input message against a XML-Schema.
-*
-* <table border="1">
-* <tr><th>state</th><th>condition</th></tr>
-* <tr><td>"success"</td><td>default</td></tr>
-* <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
-* </table>
-* <br>
-* 
-* @author Johan Verrips IOS
-* @author Jaco de Groot
-*/
-public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
+ * Pipe that validates the input message against a XML Schema.
+ *
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
+ * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward warnings warnings occurred. If not specified, <code>success</code> is used.
+ * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
+ * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
+ * @ff.forward outputWarnings warnings occurred when validating a response. If not specified, <code>warnings</code> is used.
+ *
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
+ */
+@Category("Basic")
+public class XmlValidator extends ValidatorBase implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
 
-	private String schemaLocation;
-	private String noNamespaceSchemaLocation;
-	private String schemaSessionKey;
-	private String root;
-	private String responseRoot;
-	private boolean forwardFailureToSuccess = false;
+	private @Getter String schemaLocation;
+	private @Getter String noNamespaceSchemaLocation;
 	private String soapNamespace = SoapVersion.SOAP11.namespace;
-	private String rootElementSessionKey;
-	private String rootNamespaceSessionKey;
+	private @Getter String rootElementSessionKey;
+	private @Getter String rootNamespaceSessionKey;
+	private @Getter boolean addNamespaceToSchema = false;
+	private @Getter String importedSchemaLocationsToIgnore;
+	private @Getter boolean useBaseImportedSchemaLocationsToIgnore = false;
+	private @Getter String importedNamespacesToIgnore;
 
 	/*
 	 * Root validations are a set of lists.
@@ -118,9 +116,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected ConfigurationException configurationException;
 
 	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
-	{
-		setNamespaceAware(true);
-	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -140,11 +135,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void configure() throws ConfigurationException {
 		try {
 			super.configure();
-			if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-					StringUtils.isNotEmpty(getSchemaLocation())) &&
-					StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
-			}
 			checkSchemaSpecified();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
 				// Don't use this warning yet as it is used for the IFSA to Tibco
@@ -155,21 +145,21 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
+					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
-	
+
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
 				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
-	
+
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
-					throw new ConfigurationException("must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
+					throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
 				}
 			}
-	
+
 			// Different default value for ignoreUnknownNamespaces when using
 			// noNamespaceSchemaLocation.
 			if (validator.getIgnoreUnknownNamespaces() == null) {
@@ -186,10 +176,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				getSchemas(true);
 			}
 
-			validator.configure(getLogPrefix(null));
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			validator.configure(this);
 		} catch(ConfigurationException e) {
 			configurationException = e;
 			throw e;
@@ -216,9 +203,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	protected void checkSchemaSpecified() throws ConfigurationException {
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
-				StringUtils.isEmpty(getSchemaLocation()) &&
-				StringUtils.isEmpty(getSchemaSessionKey())) {
+		if (StringUtils.isNotEmpty(getSchemaLocation()) && StringUtils.isNotEmpty(getSchemaSessionKey())) {
+			throw new ConfigurationException("cannot have schemaSessionKey together with schemaLocation");
+		}
+		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) && StringUtils.isEmpty(getSchemaLocation()) && StringUtils.isEmpty(getSchemaSessionKey())) {
 			throw new ConfigurationException("must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
 	}
@@ -231,25 +219,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public List<XSModel> getXSModels() {
 		return validator.getXSModels();
 	}
- 
-	/**
-	 * Validate the XML string
-	 * 
-	 * @param message   a String
-	 * @param session a {@link PipeLineSession Pipelinesession}
-	 * 
-	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
-	 */
-	@Override
-	public final PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		return doPipe(message, session, false, null);
-	}
+
 
 	@Override
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
-		return doPipe(message, session, false, messageRoot);
-	}
-
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			Message messageToValidate;
@@ -259,19 +231,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			} else {
 				messageToValidate = input;
 			}
-		
+
 			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session), e);
+			throw new PipeRunException(this, "Could not validate", e);
 		}
 
 	}
 
-	protected final PipeForward validate(String messageToValidate, PipeLineSession session) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		return validate(new Message(messageToValidate), session, false, null);
-	}
-
+	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = null;
 		if(StringUtils.isNotEmpty(messageRoot)) {
@@ -284,44 +253,30 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (storeRootFilter!=null) {
 			validatorHandler.setContentHandler(storeRootFilter);
 		}
-		String resultEvent = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, storeRootFilter, context);
+		ValidationResult resultEvent = validator.validate(messageToValidate, session, validatorHandler, storeRootFilter, context);
 		return determineForward(resultEvent, session, responseMode);
 	}
 
 	protected RootValidations createRootValidation(String messageRoot) {
 		return new RootValidations(messageRoot);
 	}
-	
-	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		throwEvent(resultEvent);
-		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
-			return getSuccessForward();
+
+	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode) throws PipeRunException {
+		return determineForward(validationResult, session, responseMode, ()-> {
+			String errorMessage=session.get(getReasonSessionKey(), null);
+			if (StringUtils.isEmpty(errorMessage)) {
+				errorMessage = session.get(getXmlReasonSessionKey(), "unknown error");
+			}
+			return errorMessage;
+		});
+	}
+
+	protected PipeRunResult getErrorResult(ValidationResult result, String reason, PipeLineSession session, boolean responseMode) throws PipeRunException {
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			session.put(getReasonSessionKey(), reason);
 		}
-		PipeForward forward = null;
-		if (AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT.equals(resultEvent)) {
-			if (responseMode) {
-				forward = findForward("outputParserError");
-			}
-			if (forward == null) {
-				forward = findForward("parserError");
-			}
-		}
-		if (forward == null) {
-			if (responseMode) {
-				forward = findForward("outputFailure");
-			}
-			if (forward == null) {
-				forward = findForward("failure");
-			}
-		}
-		if (forward == null) {
-			if (isForwardFailureToSuccess()) {
-				forward = getSuccessForward();
-			} else {
-				throw new PipeRunException(this, "not implemented: should get reason from validator");
-			}
-		}
-		return forward;
+		PipeForward forward = determineForward(ValidationResult.PARSER_ERROR, session, responseMode);
+		return new PipeRunResult(forward, Message.nullMessage());
 	}
 
 	@Deprecated
@@ -330,7 +285,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, "Envelope")) {
 			String inputRootNs;
@@ -340,7 +295,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				throw new PipeRunException(this, "cannot extract root namespace", e);
 			}
 			if (inputRootNs.equals(getSoapNamespace())) {
-				log.debug(getLogPrefix(session) + "message to validate is a SOAP message");
+				log.debug("message to validate is a SOAP message");
 				boolean extractSoapBody = true;
 				if (StringUtils.isNotEmpty(getSchemaLocation())) {
 					StringTokenizer st = new StringTokenizer(getSchemaLocation(), ", \t\r\n\f");
@@ -351,7 +306,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 					}
 				}
 				if (extractSoapBody) {
-					log.debug(getLogPrefix(session) + "extract SOAP body for validation");
+					log.debug("extract SOAP body for validation");
 					try {
 						input = transformerPoolExtractSoapBody.transform(input, null, true);
 					} catch (Exception e) {
@@ -363,7 +318,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}
 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
-						log.debug(getLogPrefix(session) + "remove namespaces from extracted SOAP body");
+						log.debug("remove namespaces from extracted SOAP body");
 						try {
 							input = transformerPoolRemoveNamespaces.transform(input, null, true);
 						} catch (Exception e) {
@@ -376,21 +331,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return new Message(input);
 	}
 
+	@Override
 	protected boolean isConfiguredForMixedValidation() {
 		return responseRootValidations!=null;
 	}
 
-
-	
 	public String getMessageRoot(boolean responseMode) {
-		return responseMode?getResponseRoot():getMessageRoot();
+		return responseMode ? getResponseRoot() : getMessageRoot();
 	}
-    /**
-     * Not ready yet (namespace not yet correctly parsed)
-     */
-    public QName getRootTag() {
-        return new QName(getSchema()/* TODO*/, getRoot());
-    }
 
 
 	@Override
@@ -405,14 +353,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new HashSet<XSD>();
+		Set<XSD> xsds = new LinkedHashSet<XSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			XSD xsd = new XSD();
 			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
 			xsds.add(xsd);
 		} else {
-			String[] split =  schemaLocation.trim().split("\\s+");
-			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
+			String[] split =  getSchemaLocation().trim().split("\\s+");
+			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + getSchemaLocation());
 			for (int i = 0; i < split.length; i += 2) {
 				XSD xsd = new XSD();
 				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
@@ -433,19 +381,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
 		Set<XSD> xsds = getXsds();
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation())) {
-			xsds = SchemaUtils.getXsdsRecursive(xsds);
-			if (checkRootValidations) {
-				checkInputRootValidations(xsds);
-				checkOutputRootValidations(xsds);
-			}
-			try {
-				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
-				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null);
-			} catch(Exception e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not merge schema's", e);
-			}
-		} else {
+		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			// Support redefine for noNamespaceSchemaLocation for backwards
 			// compatibility. It's deprecated in the latest specification:
 			// http://www.w3.org/TR/xmlschema11-1/#modify-schema
@@ -461,10 +397,22 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, false);
+			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
+			}
+		} else {
+			xsds = SchemaUtils.getXsdsRecursive(xsds);
+			if (checkRootValidations) {
+				checkInputRootValidations(xsds);
+				checkOutputRootValidations(xsds);
+			}
+			try {
+				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
+			} catch(Exception e) {
+				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
 		List<Schema> schemas = new ArrayList<Schema>();
@@ -482,7 +430,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 	public class ResponseValidatorWrapper implements IXmlValidator {
 
-		private String name;
+		private @Getter @Setter String name;
+
 		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
 
 		protected XmlValidator owner;
@@ -490,17 +439,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			super();
 			this.owner=owner;
 			name="ResponseValidator of "+owner.getName();
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@IbisDoc({"name of the pipe", ""})
-		@Override
-		public void setName(String name) {
-			this.name=name;
 		}
 
 		@Override
@@ -526,7 +464,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public String getMessageRoot() {
 			return owner.getResponseRoot();
 		}
-		
+
 		@Override
 		public int getMaxThreads() {
 			return 0;
@@ -584,15 +522,20 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public void setApplicationContext(ApplicationContext applicationContext) {
 			//Can ignore this as it's not set through Spring
 		}
-	}
-	
-	public boolean isMixedValidator(Object outputValidator) {
-		return outputValidator==null && isConfiguredForMixedValidation();
+
+		@Override
+		public boolean consumesSessionVariable(String sessionKey) {
+			return owner.consumesSessionVariable(sessionKey);
+		}
 	}
 
+//	public boolean isMixedValidator(Object outputValidator) {
+//		return outputValidator==null && isConfiguredForMixedValidation();
+//	}
+//
 	public RootValidations getRootValidations(boolean responseMode) {
 		return responseMode ? responseRootValidations : requestRootValidations;
-	} 
+	}
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getRequestRootValidations() != null) {
@@ -606,28 +549,6 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		}
 	}
 
-	private void checkRootValidation(List<String> path, Set<XSD> xsds) throws ConfigurationException {
-		boolean found = false;
-		String validElements = path.get(path.size() - 1);
-		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
-		for (String validElement : validElementsAsList) {
-			if (StringUtils.isNotEmpty(validElement)) {
-				List<String> allRootTags = new ArrayList<String>();
-				for (XSD xsd : xsds) {
-					for (String rootTag : xsd.getRootTags()) {
-						allRootTags.add(rootTag);
-						if (validElement.equals(rootTag)) {
-							found = true;
-						}
-					}
-				}
-				if (!found) {
-					ConfigurationWarnings.add(this, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
-				}
-			}
-		}
-	}
-
 	@Override
 	public String getSchemasId(PipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
@@ -636,10 +557,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				try {
 					return session.getMessage(schemaSessionKey).asString();
 				} catch(IOException e) {
-					throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+					throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 				}
 			}
-			throw new PipeRunException(null, getLogPrefix(session) + "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
+			throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
 		return null;
 	}
@@ -651,7 +572,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		if (getSchemaSessionKey() != null) {
 			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
-				throw new PipeRunException(this, getLogPrefix(session) + "could not find schema at [" + schemaLocation + "]");
+				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");
 			}
 			XSD xsd = new XSD();
 			try {
@@ -683,7 +604,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected void addRootValidation(RootValidation path) {
 		addRequestRootValidation(path);
 	}
-	
+
 	protected void addRequestRootValidation(RootValidation path) {
 		if (requestRootValidations == null) {
 			requestRootValidations = new RootValidations(path);
@@ -730,20 +651,10 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 
 
 	/**
-	 * <p>
-	 * The filename of the schema on the classpath. It is not possible to specify a
-	 * namespace using this attribute.
-	 * <p>
-	 * An example value would be "xml/xsd/GetPartyDetail.xsd"
-	 * </p>
-	 * <p>
-	 * The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set
-	 * </p>
-	 * 
-	 * @see ClassUtils#getResourceURL
+	 * The filename of the schema on the classpath. It is not possible to specify a namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
+	 * An example value would be "xml/xsd/GetPartyDetail.xsd".
+	 * The value of the schema attribute is only used if the schemaLocation attribute and the noNamespaceSchemaLocation are not set.
 	 */
-	@IbisDoc({"1", "the filename of the schema on the classpath. see doc on the method. (effectively the same as noNamespaceSchemaLocation)", "" })
 	public void setSchema(String schema) {
 		setNoNamespaceSchemaLocation(schema);
 	}
@@ -753,62 +664,36 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	/**
-	 * <p>Pairs of URI references (one for the namespace name, and one for a
-	 * hint as to the location of a schema document defining names for that
-	 * namespace name).</p>
-	 * <p> The syntax is the same as for schemaLocation attributes
-	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-	 * <p>The user can specify more than one XML Schema in the list.</p>
-	 * <p><b>Note</b> that spaces are considered separators for this attributed.
-	 * This means that, for example, spaces in filenames should be escaped to %20.
-	 * </p>
-	 *
-	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
+	 * Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name).<br/>
+	 * The syntax is the same as for schemaLocation attributes in instance documents: e.g, "http://www.example.com file%20name.xsd".<br/>
+	 * The user can specify more than one XML Schema in the list.<br/>
+	 * <b>Note</b> that spaces are considered separators for this attributed. This means that, for example, spaces in filenames should be escaped to %20.
 	 */
-	@IbisDoc({"2", "Pairs of uri references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). see doc on the method.", ""})
 	public void setSchemaLocation(String schemaLocation) {
 		this.schemaLocation = schemaLocation;
 	}
-	@Override
-	public String getSchemaLocation() {
-		return schemaLocation;
-	}
 
-	@IbisDoc({"3", "A uri reference as a hint as to the location of a schema document with no target namespace.", ""})
+	/** A uri reference as a hint as to the location of a schema document with no target namespace. */
 	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
 		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
 	}
-	public String getNoNamespaceSchemaLocation() {
-		return noNamespaceSchemaLocation;
-	}
 
-	@IbisDoc({"4", "session key for retrieving a schema", ""})
-	public void setSchemaSessionKey(String schemaSessionKey) {
-		this.schemaSessionKey = schemaSessionKey;
-	}
-	public String getSchemaSessionKey() {
-		return schemaSessionKey;
-	}
 
-	@IbisDoc({"5", "Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@Override
+	/** Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
 	public void setRoot(String root) {
-		this.root = root;
+		super.setRoot(root);
 		if (StringUtils.isNotEmpty(root)) {
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
-	public String getRoot() {
-		return root;
-	}
-	@IbisDoc({"6", "Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used", ""})
+	@Override
+	/** Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
 	public void setResponseRoot(String responseRoot) {
-		this.responseRoot = responseRoot;
+		super.setResponseRoot(responseRoot);
 		if (StringUtils.isNotEmpty(responseRoot)) {
 			addResponseRootValidation(new RootValidation(responseRoot));
 		}
-	}
-	protected String getResponseRoot() {
-		return responseRoot;
 	}
 
 	@Override
@@ -816,18 +701,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return getRoot();
 	}
 
-	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "false"})
-	@Deprecated
-	@ConfigurationWarning("please specify a forward with name=failure instead")
-	public void setForwardFailureToSuccess(boolean b) {
-		this.forwardFailureToSuccess = b;
-	}
-	@Deprecated
-	private boolean isForwardFailureToSuccess() {
-		return forwardFailureToSuccess;
-	}
-
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		validator.setFullSchemaChecking(fullSchemaChecking);
 	}
@@ -835,15 +709,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.isFullSchemaChecking();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
+	@Override
 	public boolean isThrowException() {
 		return validator.isThrowException();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
@@ -851,7 +726,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
@@ -859,7 +734,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getXmlReasonSessionKey();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
@@ -867,7 +742,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.isValidateFile();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
@@ -875,45 +750,39 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return  validator.getCharset();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/**
+	 * If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace
+	 * @ff.default false
+	 */
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
-		validator.setAddNamespaceToSchema(addNamespaceToSchema);
-	}
-	public boolean isAddNamespaceToSchema() {
-		return validator.isAddNamespaceToSchema();
+		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** Comma separated list of schemaLocations which are excluded from an import or include in the schema document */
 	public void setImportedSchemaLocationsToIgnore(String string) {
-		validator.setImportedSchemaLocationsToIgnore(string);
-	}
-	public String getImportedSchemaLocationsToIgnore() {
-		return validator.getImportedSchemaLocationsToIgnore();
+		importedSchemaLocationsToIgnore = string;
 	}
 
-
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/**
+	 * If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path
+	 * @ff.default false
+	 */
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
-		validator.setUseBaseImportedSchemaLocationsToIgnore(useBaseImportedSchemaLocationsToIgnore);
-	}
-	public boolean isUseBaseImportedSchemaLocationsToIgnore() {
-		return validator.isUseBaseImportedSchemaLocationsToIgnore();
+		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** Comma separated list of namespaces which are excluded from an import or include in the schema document */
 	public void setImportedNamespacesToIgnore(String string) {
-		validator.setImportedNamespacesToIgnore(string);
-	}
-	public String getImportedNamespacesToIgnore() {
-		return validator.getImportedNamespacesToIgnore();
+		importedNamespacesToIgnore = string;
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setWarn(boolean warn) {
 		validator.setWarn(warn);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
@@ -921,21 +790,24 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
-	@IbisDocRef({ABSTRACTXMLVALIDATOR})
+	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
-	
+
+	/**
+	 * The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
+	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
+	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP 
+	 * message needs to be validated, in other cases give this property an empty value.
+	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
+	 */
 	@Deprecated
-	@IbisDoc({"The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message, " +
-		"the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate. " +
-		"Please note that this functionality is deprecated, using {@link nl.nn.adapterframework.soap.SoapValidator} "+
-		"is now the preferred solution in case a SOAP message needs to be validated, in other cases give this property an empty value", "http://schemas.xmlsoap.org/soap/envelope/"})
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
@@ -944,20 +816,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return soapNamespace;
 	}
 
-	@IbisDoc({"40", "key of session variable to store the name of the root element",""})
+	/** Key of session variable to store the name of the root element */
 	public void setRootElementSessionKey(String rootElementSessionKey) {
 		this.rootElementSessionKey = rootElementSessionKey;
 	}
-	public String getRootElementSessionKey() {
-		return rootElementSessionKey;
-	}
 
-	@IbisDoc({"41", "key of session variable to store the namespace of the root element",""})
+	/** Key of session variable to store the namespace of the root element */
 	public void setRootNamespaceSessionKey(String rootNamespaceSessionKey) {
 		this.rootNamespaceSessionKey = rootNamespaceSessionKey;
-	}
-	public String getRootNamespaceSessionKey() {
-		return rootNamespaceSessionKey;
 	}
 
 }

@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
-	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
+angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider', 
+	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -7,6 +7,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	}
 
 	$urlRouterProvider.otherwise("/");
+	$locationProvider.html5Mode(false);
+	$anchorScrollProvider.disableAutoScrolling();
 
 	$cookiesProvider.defaults.secure = (location.protocol == "https:");
 	$cookiesProvider.defaults.samesite = 'strict';
@@ -26,6 +28,14 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			serie: true,
 			name: 'chartjs',
 			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
+		},
+		{
+			name: 'mermaid',
+			serie: true,
+			files: [
+				'js/plugins/mermaid/mermaid.min.js',
+				'js/plugins/mermaid/ng-mermaid.js',
+			]
 		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
@@ -103,16 +113,17 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage', {
 		abstract: true,
-		url: "/adapters/:adapter/receivers/:receiver/",
+		url: "/adapters/:adapter/:storageSource/:storageSourceName/",
 		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
 		controller: function($state) {
 			$state.current.data.pageTitle = $state.params.processState + " List";
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List";
+			$state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "") + $state.params.processState+" List";
 		},
 		params: {
 			adapter: { value: '', squash: true},
-			receiver: { value: '', squash: true},
+			storageSourceName: { value: '', squash: true},
 			processState: { value: '', squash: true},
+			storageSource: { value: '', squash: true},
 		},
 		data: {
 			pageTitle: '',
@@ -135,42 +146,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			messageId: { value: '', squash: true},
 		},
 		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > "+$state.params.processState+" List > View Message "+$state.params.messageId;
+			$state.current.data.breadcrumbs = "Adapter > "+($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "")+$state.params.processState+" List > View Message "+$state.params.messageId;
 		},
-	})
-	
-	.state('pages.pipemessagelog', {
-		abstract: true,
-		url: "/adapters/:adapter/pipes/:pipe",
-		template: "<div ui-view></div>",
-		controller: 'PipeMessageLogBaseCtrl',
-		data: {
-			pageTitle: 'Adapter',
-			breadcrumbs: 'Adapter > Pipe > MessageLog'
-		},
-		params: {
-			adapter: { value: '', squash: true},
-			pipe: { value: '', squash: true},
-		},
-	})
-	.state('pages.pipemessagelog.list', {
-		url: "/messages",
-		templateUrl: "views/txstorage/pipe_messagelog_list.html",
-		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
-			},
-		},
-	})
-	.state('pages.pipemessagelog.view', {
-		url: "/messages/:messageId",
-		templateUrl: "views/txstorage/pipe_messagelog_view.html",
-		params: {
-			messageId: { value: '', squash: true},
-		},
-		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > Pipe > MessageLog > View Message "+$state.params.messageId;
-		}
 	})
 	.state('pages.notifications', {
 		url: "/notifications",
@@ -185,11 +162,16 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		controller: 'NotificationsCtrl'
 	})
 	.state('pages.configuration', {
-		url: "/configurations",
+		url: "/configurations?name&loaded",
 		templateUrl: "views/ShowConfiguration.html",
+		reloadOnSearch: false,
 		data: {
 			pageTitle: 'Configurations',
 			breadcrumbs: 'Configurations > Show',
+		},
+		params: {
+			name: { value: 'All', squash: true},
+			loaded: { value: '', squash: true},
 		}
 	})
 	.state('pages.upload_configuration', {
@@ -347,6 +329,27 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			breadcrumbs: 'Security Items'
 		}
 	})
+	.state('pages.connection_overview', {
+		url: "/connections",
+		templateUrl: "views/ShowConnectionOverview.html",
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('datatables');
+			},
+		},
+		data: {
+			pageTitle: 'Connection Overview',
+			breadcrumbs: 'Connection Overview'
+		}
+	})
+	.state('pages.inlinestore_overview', {
+		url: "/inlinestores/overview",
+		templateUrl: "views/ShowInlineMessageStoreOverview.html",
+		data: {
+			pageTitle: 'InlineStore Overview',
+			breadcrumbs: 'InlineStore Overview'
+		}
+	})
 	.state('pages.monitors', {
 		url: "/monitors?configuration",
 		templateUrl: "views/ShowMonitors.html",
@@ -432,7 +435,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc, $interval){
-			$scope.url = Misc.getServerPath() + "larva";
+			$scope.url = Misc.getServerPath() + "iaf/larva";
 		}
 	})
 	.state('pages.ladybug', {
@@ -444,7 +447,19 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			iframe: true
 		},
 		controller: function($scope, Misc, $timeout){
-			$scope.url = Misc.getServerPath() + "testtool";
+			$scope.url = Misc.getServerPath() + "iaf/testtool";
+		}
+	})
+	.state('pages.ladybug_beta', {
+		url: "/testing/ladybug-beta",
+		templateUrl: "views/iFrame.html",
+		data: {
+			pageTitle: 'Ladybug (beta)',
+			breadcrumbs: 'Testing > Ladybug (beta)',
+			iframe: true
+		},
+		controller: function($scope, Misc){
+			$scope.url = Misc.getServerPath() + "iaf/ladybug";
 		}
 	})
 	.state('pages.empty_page', {
@@ -470,8 +485,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		url: "/error",
 		templateUrl: "views/common/errorpage.html",
 	});
-
-	$locationProvider.html5Mode(false);
 
 }]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
 	// Set this asap on localhost to capture all debug data

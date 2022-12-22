@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -62,7 +64,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 			//Auth
 			if(session.get(SessionParameter.USER) != null)
-				sender.setUserName((String) session.get(SessionParameter.USER));
+				sender.setUsername((String) session.get(SessionParameter.USER));
 			if(session.get(SessionParameter.PASSWORD) != null)
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
@@ -78,12 +80,16 @@ public class CmisHttpInvoker implements HttpInvoker {
 			}
 
 			//SSL
-			if(session.get("certificateUrl") != null)
-				sender.setCertificate((String) session.get("certificateUrl"));
-			if(session.get("certificatePassword") != null)
-				sender.setCertificatePassword((String) session.get("certificatePassword"));
+			if(session.get("keystoreUrl") != null)
+				sender.setKeystore((String) session.get("keystoreUrl"));
+			if(session.get("keystorePassword") != null)
+				sender.setKeystorePassword((String) session.get("keystorePassword"));
+			if(session.get("keystoreAlias") != null)
+				sender.setKeystoreAlias((String) session.get("keystoreAlias"));
+			if(session.get("keystoreAliasPassword") != null)
+				sender.setKeystoreAliasPassword((String) session.get("keystoreAliasPassword"));
 			if(session.get("keystoreType") != null)
-				sender.setKeystoreType((String) session.get("keystoreType"));
+				sender.setKeystoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("keystoreType")));
 			if(session.get("keyManagerAlgorithm") != null)
 				sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
 			if(session.get("truststoreUrl") != null)
@@ -91,7 +97,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(session.get("truststorePassword") != null)
 				sender.setTruststorePassword((String) session.get("truststorePassword"));
 			if(session.get("truststoreType") != null)
-				sender.setTruststoreType((String) session.get("truststoreType"));
+				sender.setTruststoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("truststoreType")));
 			if(session.get("trustManagerAlgorithm") != null)
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 

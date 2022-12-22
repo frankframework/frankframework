@@ -68,7 +68,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
 	@Test
 	public void validate12Explicitversion() throws Exception {
-		configureSoapValidator(true, "1.2");
+		configureSoapValidator(true, SoapVersion.SOAP12);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request");
 		pipe.configure();
@@ -84,7 +84,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	public void validate12Invalid() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-		pipe.setSoapVersion("1.2");
+		pipe.setSoapVersion(SoapVersion.SOAP12);
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
@@ -99,7 +99,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	public void validate12Invalid_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-		pipe.setSoapVersion("1.1");
+		pipe.setSoapVersion(SoapVersion.SOAP11);
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
@@ -114,7 +114,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	public void validate12Unknown_namespace_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-		pipe.setSoapVersion("1.1");
+		pipe.setSoapVersion(SoapVersion.SOAP11);
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
@@ -167,6 +167,15 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		assertEquals(expected, prr.getResult().asString());
 	}
 
+	
+	@Test
+	public void issue4183CharsetProblemInXSD() throws Exception {
+		configureSoapValidator(false);
+		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
+		pipe.configure();
+		pipe.start();
+	}
+	
 
 	private void configureSoapValidator() throws ConfigurationException {
 		configureSoapValidator(false);
@@ -176,7 +185,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		configureSoapValidator(addNamespaceToSchema, null);
 	}
 
-	private void configureSoapValidator(boolean addNamespaceToSchema, String soapVersion) throws ConfigurationException {
+	private void configureSoapValidator(boolean addNamespaceToSchema, SoapVersion soapVersion) throws ConfigurationException {
 		if (addNamespaceToSchema) {
 			pipe.setAddNamespaceToSchema(addNamespaceToSchema);
 		}

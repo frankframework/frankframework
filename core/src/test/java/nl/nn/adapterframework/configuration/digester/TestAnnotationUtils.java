@@ -3,7 +3,6 @@ package nl.nn.adapterframework.configuration.digester;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -31,7 +30,7 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 
-import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.configuration.IbisManager;
 
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
@@ -195,7 +194,7 @@ public class TestAnnotationUtils {
 
 	@Test
 	public void findInterfacesWithAnnotations() throws Exception {
-		assumeTrue(TestAssertions.isTestRunningOnCI());
+		//assumeTrue(TestAssertions.isTestRunningOnCI());
 
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
@@ -235,8 +234,9 @@ public class TestAnnotationUtils {
 			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)) {
 				for(Method method : interfaze.getDeclaredMethods()) {
 					for(Annotation annotation : method.getAnnotations()) {
+						if(IbisManager.class.getCanonicalName().equals(interfaze.getCanonicalName())) continue;
 						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
-							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"]");
+							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
 						}
 					}
 				}

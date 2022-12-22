@@ -28,6 +28,11 @@
 				<type>number</type>
 			</column>
 			<column>
+				<name>tdatetime</name>
+				<value>SYSTIMESTAMP</value>
+				<type>function</type>
+			</column>
+			<column>
 				<name>ttimestamp</name>
 				<value>2009-08-26T09:20:41.016</value>
 				<type>xmldatetime</type>
@@ -38,7 +43,12 @@
 				<type>function</type>
 			</column>
 			<column>
-				<name>tblob1</name>
+				<name>ttime</name>
+				<value>SYSTIMESTAMP</value>
+				<type>function</type>
+			</column>
+			<column>
+				<name>tblob</name>
 				<value>hallo---------1</value> <!--  this inserts a BLOB using an INSERT, rather then via a SELECT FOR UPDATE  -->
 				<type>blob</type>
 			</column>
@@ -46,11 +56,6 @@
 				<name>tclob</name>
 				<value>hallo---------2</value>
 				<type>clob</type>
-			</column>
-			<column>
-				<name>tblob2</name>
-				<value>hallo---------3</value>
-				<type>blob</type>
 			</column>
 		</columns>
 	</insert>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,21 +27,14 @@ import org.xml.sax.SAXException;
 /**
  * Base class for XML Schema guided Map to XML conversion;
  * ToXml Container C: Map M<K,V>
- * ToXml Node N: V
+ * ToXml Node N: N
+ *
  * @author Gerrit van Brakel
  */
-public abstract class Map2Xml<K,V,M extends Map<K,V>> extends ToXml<M,V> {
+public abstract class Map2Xml<K,V,N,M extends Map<K,V>> extends ToXml<M,N> {
 
 	{
 		setDeepSearch(true);
-	}
-	
-	public Map2Xml() {
-		super();
-	}
-
-	public Map2Xml(ValidatorHandler validatorHandler) {
-		super(validatorHandler);
 	}
 
 	public Map2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
@@ -49,17 +42,17 @@ public abstract class Map2Xml<K,V,M extends Map<K,V>> extends ToXml<M,V> {
 	}
 
 	@Override
-	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, V node) throws SAXException {
+	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		return null;
 	}
 
 	@Override
-	public boolean isNil(XSElementDeclaration elementDeclaration, V node) {
+	public boolean isNil(XSElementDeclaration elementDeclaration, N node) {
 		return false;
 	}
 
 	@Override
-	public V getRootNode(M container) {
+	public N getRootNode(M container) {
 		return null;
 	}
 

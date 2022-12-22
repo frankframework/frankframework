@@ -18,8 +18,8 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 import java.io.IOException;
@@ -29,16 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Pipe that throws an exception, based on the input message.
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
- * 
  * @author  Gerrit van Brakel
  */
-
+@ElementType(ElementTypes.ERRORHANDLING)
 public class ExceptionPipe extends FixedForwardPipe {
 
 	private boolean throwException = true;
@@ -50,22 +43,24 @@ public class ExceptionPipe extends FixedForwardPipe {
 		try {
 			errorMessage = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isEmpty(errorMessage)) {
 			errorMessage="exception: "+getName();
 		}
 
-		if (isThrowException())
+		if (isThrowException()) {
 			throw new PipeRunException(this, errorMessage);
-		else {
-			log.error(errorMessage);
-			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
+		log.error(errorMessage);
+		return new PipeRunResult(getSuccessForward(), errorMessage);
 	}
 
 
-	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and no rollback is performed).", "true"})
+	/**
+	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and no rollback is performed).
+	 * @ff.default true
+	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}

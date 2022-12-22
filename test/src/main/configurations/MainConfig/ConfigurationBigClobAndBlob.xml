@@ -70,7 +70,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
+					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					queryType="insert" />
 				<forward name="success" path="insertBigBlobText2" />
@@ -80,7 +80,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromSessionKey="base64">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateBlob">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
@@ -89,7 +89,7 @@
 
 			<pipe name="readBigBlobText">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
@@ -107,7 +107,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;" storeResultInSessionKey="tKey">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
+					query="INSERT INTO IBISTEMP (TKEY, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, EMPTY_BLOB())"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					queryType="insert" />
 				<forward name="success" path="insertBigBlobBinary2" />
@@ -116,7 +116,7 @@
 			<pipe name="insertBigBlobBinary2"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE"
 					queryType="updateBlob" blobSessionKey="fileContent">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>
@@ -125,7 +125,7 @@
 
 			<pipe name="readBigBlobBinary">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true" blobBase64Direction="encode">
 					<param name="tKey" sessionKey="tKey" />
 				</sender>

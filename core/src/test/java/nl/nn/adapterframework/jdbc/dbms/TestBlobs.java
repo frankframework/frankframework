@@ -23,7 +23,7 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@Ignore("Tests for Blobs take much time and memory to test regularly")
+@Ignore("Tests for Blobs take too much time and memory to test regularly")
 public class TestBlobs extends JdbcTestBase {
 
 	boolean testBigBlobs = false;
@@ -44,7 +44,7 @@ public class TestBlobs extends JdbcTestBase {
 		getBigString(numBlocks, blockSize, s -> result.append(s));
 		return result.toString();
 	}
-	
+
 	public static int readStream(InputStream inputStream) throws IOException {
 		byte[] buffer = new byte[1000];
 		int result = 0;
@@ -55,11 +55,11 @@ public class TestBlobs extends JdbcTestBase {
 		}
 		return result;
 	}
-	
+
 	public void testWriteAndReadBlobUsingSetBinaryStream(int numBlocks, int blockSize) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
-		String insertQuery = "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,?)";
-		String selectQuery = "SELECT TBLOB FROM TEMP WHERE TKEY=20";
+		String insertQuery = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
+		String selectQuery = "SELECT TBLOB FROM "+TEST_TABLE+" WHERE TKEY=20";
 //		String deleteQuery = "DELETE FROM IBISCONFIG WHERE NAME='X'";
 //		String insertQuery = "INSERT INTO IBISCONFIG (NAME,VERSION,CONFIG) VALUES ('X','X',?)";
 //		String selectQuery = "SELECT CONFIG FROM IBISCONFIG WHERE NAME='X'";
@@ -68,7 +68,7 @@ public class TestBlobs extends JdbcTestBase {
 			stmt.setBinaryStream(1, new ByteArrayInputStream(blobContents.getBytes("UTF-8")));
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -82,25 +82,25 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingSetBinaryStream15MB() throws Exception {
 		testWriteAndReadBlobUsingSetBinaryStream(1000,15000);
 	}
-	
+
 	@Test
 	public void testWriteAndReadBlobUsingSetBinaryStream20MB() throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse("MariaDb cannot handle statement packets> 16M", productKey.equals("MariaDB"));
 		testWriteAndReadBlobUsingSetBinaryStream(1000,20000);
 	}
-	
+
 	public void testWriteAndReadBlobUsingSetBytes(int numBlocks, int blockSize) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
-		String query = "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,?)";
+		String query = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
 		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
-		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
+
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM "+TEST_TABLE+" WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
@@ -113,17 +113,17 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingSetBytes7MB() throws Exception {
 		testWriteAndReadBlobUsingSetBytes(1000,7000);
 	}
-	
+
 	@Test
 	public void testWriteAndReadBlobUsingBytes20MB() throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse("MariaDb cannot handle statement packets> 16M", productKey.equals("MariaDB"));
 		testWriteAndReadBlobUsingSetBytes(1000,20000);
 	}
-	
+
 	public void testWriteAndReadBlobUsingDbmsSupport(int numOfBlocks, int blockSize) throws Exception {
 		String block = getBigString(1,blockSize);
-		String query = "INSERT INTO TEMP (TKEY,TBLOB) VALUES (20,?)";
+		String query = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
 		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -136,8 +136,8 @@ public class TestBlobs extends JdbcTestBase {
 			dbmsSupport.applyBlobParameter(stmt, 1, blobInsertHandle);
 			stmt.execute();
 		}
-		
-		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM TEMP WHERE TKEY=20", QueryType.SELECT)) {
+
+		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM "+TEST_TABLE+" WHERE TKEY=20", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				try (InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1)) {
@@ -146,13 +146,13 @@ public class TestBlobs extends JdbcTestBase {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	public void testWriteAndReadClobUsingDbmsSupport(int numOfBlocks, int blockSize) throws Exception {
 		String block = getBigString(1,blockSize);
-		String insertQuery = "INSERT INTO TEMP (TKEY,TCLOB) VALUES (20,?)";
-		String selectQuery = "SELECT TCLOB FROM TEMP WHERE TKEY=20";
+		String insertQuery = "INSERT INTO "+TEST_TABLE+" (TKEY,TCLOB) VALUES (20,?)";
+		String selectQuery = "SELECT TCLOB FROM "+TEST_TABLE+" WHERE TKEY=20";
 		try (PreparedStatement stmt = connection.prepareStatement(insertQuery)) {
 			Object clobInsertHandle = dbmsSupport.getClobHandle(stmt, 1);
 			try (Writer clobWriter = dbmsSupport.getClobWriter(stmt, 1, clobInsertHandle)) {
@@ -163,7 +163,7 @@ public class TestBlobs extends JdbcTestBase {
 			dbmsSupport.applyClobParameter(stmt, 1, clobInsertHandle);
 			stmt.execute();
 		}
-		
+
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
@@ -173,9 +173,9 @@ public class TestBlobs extends JdbcTestBase {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	@Test
 	public void testWriteAndReadBlobUsingDbmsSupport15MB() throws Exception {
 		testWriteAndReadBlobUsingDbmsSupport(10000,1500);

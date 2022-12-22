@@ -26,7 +26,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -36,27 +37,28 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Milan Tomc
  * @since   4.5
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class PasswordGeneratorPipe extends FixedForwardPipe {
-	
+
 	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
 	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private String numbers="0123456789";
 	private String signs=";:_%$#@!><";
-	
+
 	private SecureRandom random;
 	private boolean useSecureRandom = true; // more secure but mutch slower
- 
-	int numOfLCharacters=2; 
-	int numOfUCharacters=2; 
+
+	int numOfLCharacters=2;
+	int numOfUCharacters=2;
 	int numOfDigits=2;
-	int numOfSigns=2; 
+	int numOfSigns=2;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+
 		if (useSecureRandom){
-			 try {
+			try {
 				random= SecureRandom.getInstance("SHA1PRNG");
 			} catch (NoSuchAlgorithmException e) {
 				try{
@@ -69,12 +71,11 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
-	
+
 	@Override
 	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
-		
 		String result;
-		 try {
+		try {
 				//generate password containing: 2 LC-letters, 2 UC-letters, 2 symbols and 2 numbers
 				result =  generate(getNumOfLCharacters(),getNumOfUCharacters(),getNumOfSigns(),getNumOfDigits());
 			} catch (Exception e) {
@@ -130,7 +131,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return useSecureRandom;
 	}
 
-	@IbisDoc({"whether the securerandom algorithm is to be used (slower)", "true"})
+	/**
+	 * whether the securerandom algorithm is to be used (slower)
+	 * @ff.default true
+	 */
 	public void setUseSecureRandom(boolean b) {
 		useSecureRandom = b;
 	}
@@ -139,7 +143,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return lCharacters;
 	}
 
-	@IbisDoc({"the lowercase characters to use", "('a'..'z')"})
+	/**
+	 * the lowercase characters to use
+	 * @ff.default ('a'..'z')
+	 */
 	public void setLCharacters(String lCharacters) {
 		this.lCharacters = lCharacters;
 	}
@@ -148,7 +155,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return uCharacters;
 	}
 
-	@IbisDoc({"the uppercase characters to use", "('a'..'z')"})
+	/**
+	 * the uppercase characters to use
+	 * @ff.default ('A'..'Z')
+	 */
 	public void setUCharacters(String uCharacters) {
 		this.uCharacters = uCharacters;
 	}
@@ -157,7 +167,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return numbers;
 	}
 
-	@IbisDoc({"the numbers to use", "('0'..'9')"})
+	/**
+	 * the numbers to use
+	 * @ff.default ('0'..'9')
+	 */
 	public void setNumbers(String numbers) {
 		this.numbers = numbers;
 	}
@@ -166,7 +179,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return signs;
 	}
 
-	@IbisDoc({"the signs to use", "(;:_%$#@!&gt;&lt;)"})
+	/**
+	 * the signs to use
+	 * @ff.default (;:_%$#@!&gt;&lt;)
+	 */
 	public void setSigns(String signs) {
 		this.signs = signs;
 	}
@@ -187,22 +203,34 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 		return numOfUCharacters;
 	}
 
-	@IbisDoc({"the number of lowercase characters in the generated password", "2"})
+	/**
+	 * the number of lowercase characters in the generated password
+	 * @ff.default 2
+	 */
 	public void setNumOfLCharacters(int i) {
 		numOfLCharacters = i;
 	}
 
-	@IbisDoc({"the number of digits in the generated password", "2"})
+	/**
+	 * the number of digits in the generated password
+	 * @ff.default 2
+	 */
 	public void setNumOfDigits(int i) {
 		numOfDigits = i;
 	}
 
-	@IbisDoc({"the number of sign characters in the generated password", "2"})
+	/**
+	 * the number of sign characters in the generated password
+	 * @ff.default 2
+	 */
 	public void setNumOfSigns(int i) {
 		numOfSigns = i;
 	}
 
-	@IbisDoc({"the number of uppercase characters in the generated password", "2"})
+	/**
+	 * the number of uppercase characters in the generated password
+	 * @ff.default 2
+	 */
 	public void setNumOfUCharacters(int i) {
 		numOfUCharacters = i;
 	}

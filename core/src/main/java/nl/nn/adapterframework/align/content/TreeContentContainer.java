@@ -22,7 +22,7 @@ import org.apache.xerces.xs.XSTypeDefinition;
 
 public abstract class TreeContentContainer<E extends ElementContainer> implements DocumentContainer {
 
-	private Stack<E> elementStack=new Stack<E>(); 
+	private Stack<E> elementStack=new Stack<>();
 	private E root=createElementContainer(null, false, false, null);
 	private E elementContainer=root;
 

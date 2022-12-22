@@ -4,14 +4,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
@@ -19,8 +20,6 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	public JsonXsltSender createSender() {
 		return new JsonXsltSender();
 	}
-
-
 
 	@Test
 	public void basic() throws Exception {
@@ -54,7 +53,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	@Test
 	public void testXPath() throws Exception {
 		sender.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
-		sender.setOutputType("text");
+		sender.setOutputType(OutputType.TEXT);
 		sender.setJsonResult(false);
 		sender.configure();
 		sender.open();
@@ -66,7 +65,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		String textOut=result.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
-	
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;

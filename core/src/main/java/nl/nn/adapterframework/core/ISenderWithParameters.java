@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.parameters.Parameter;
+
 /**
- * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
+ * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link Parameter parameters} 
  * 
  * @author  Gerrit van Brakel
  */
 public interface ISenderWithParameters extends ISender, IWithParameters {
-	
+
+	@Override
+	default boolean consumesSessionVariable(String sessionKey) {
+		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+	}
+
 }

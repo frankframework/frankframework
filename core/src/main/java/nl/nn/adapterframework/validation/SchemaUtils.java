@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -78,16 +80,15 @@ public class SchemaUtils {
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds)
-			throws ConfigurationException {
-		return getXsdsRecursive(xsds, true);
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
+		return getXsdsRecursive(xsds, false);
 	}
-	
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean ignoreRedefine) throws ConfigurationException {
-		Set<XSD> xsdsRecursive = new HashSet<XSD>();
+
+	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
+		Set<XSD> xsdsRecursive = new LinkedHashSet<XSD>();
 		xsdsRecursive.addAll(xsds);
 		for (XSD xsd : xsds) {
-			xsdsRecursive.addAll(xsd.getXsdsRecursive(ignoreRedefine));
+			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
 		}
 		return xsdsRecursive;
 	}
@@ -97,7 +98,7 @@ public class SchemaUtils {
 		if (sort) {
 			result = new TreeMap<String, Set<XSD>>();
 		} else {
-			result = new HashMap<String, Set<XSD>>();
+			result = new LinkedHashMap<String, Set<XSD>>();
 		}
 		for (XSD xsd : xsds) {
 			Set<XSD> set = result.get(xsd.getNamespace());
@@ -105,7 +106,7 @@ public class SchemaUtils {
 				if (sort) {
 					set = new TreeSet<XSD>();
 				} else {
-					set = new HashSet<XSD>();
+					set = new LinkedHashSet<XSD>();
 				}
 				result.put(xsd.getNamespace(), set);
 			}
@@ -127,18 +128,22 @@ public class SchemaUtils {
 		}
 	}
 
-	
+	public static void addTargetNamespaceToXsds(Set<XSD> xsds) throws ConfigurationException {
+		for (XSD xsd:xsds) {
+			xsd.addTargetNamespace();
+		}
+	}
+
 	/**
-	 * @return XSD's when xmlStreamWriter is null, otherwise write to
-	 *		 xmlStreamWriter
+	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
-		Set<XSD> resultXsds = new HashSet<XSD>();
+		Set<XSD> resultXsds = new LinkedHashSet<XSD>();
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
 			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-			List<Attribute> rootNamespaceAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
 			for (XSD xsd: xsds) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -193,34 +198,25 @@ public class SchemaUtils {
 	}
 
 	/**
-	 * Including a {@link nl.nn.adapterframework.validation.XSD} into an
-	 * {@link javax.xml.stream.XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link javax.xml.stream.XMLEventReader} so that
-	 * certain things can be corrected on the fly.
+	 * Including a {@link XSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
+	 * (using a low level {@link XMLEventReader} so that certain things can be corrected on the fly.
+	 *
 	 * @param xsd
 	 * @param xmlStreamWriter
-	 * @param standalone
-	 * When standalone the start and end document contants are ignored, hence
-	 * the xml declaration is ignored.
-	 * @param stripSchemaLocationFromImport
-	 * Useful when generating a WSDL which should contain all XSD's inline
-	 * (without includes or imports). The XSD might have an import with
-	 * schemaLocation to make it valid on it's own, when
-	 * stripSchemaLocationFromImport is true it will be removed.
-	 * @throws java.io.IOException, XMLStreamException
+	 * @param standalone When standalone the start and end document contants are ignored, hence the xml declaration is ignored.
+	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
+	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
-	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Attribute> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
+	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
-		InputStream in = null;
-		in = xsd.getInputStream();
-		if (in == null) {
-			throw new IllegalStateException("" + xsd + " not found");
-		}
 		XMLEvent event = null;
-		try {
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		try (Reader reader = xsd.getReader()) {
+			if (reader == null) {
+				throw new IllegalStateException("" + xsd + " not found");
+			}
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
 				event = er.nextEvent();
 				switch (event.getEventType()) {
@@ -257,11 +253,11 @@ public class SchemaUtils {
 											rootAttributes.add(attribute);
 										}
 									}
-									iterator = startElement.getNamespaces();
-									while (iterator.hasNext()) {
-										Attribute attribute = iterator.next();
+									Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
+									while (namespaceIterator.hasNext()) {
+										Namespace attribute = namespaceIterator.next();
 										boolean add = true;
-										for (Attribute attribute2 : rootNamespaceAttributes) {
+										for (Namespace attribute2 : rootNamespaceAttributes) {
 											if (XmlUtils.attributesEqual(attribute, attribute2)) {
 												add = false;
 											}
@@ -394,13 +390,13 @@ public class SchemaUtils {
 			}
 			streamEventWriter.flush();
 		} catch (XMLStreamException e) {
-			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + "): " + e.getMessage(), e);
+			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + ")", e);
 		}
 	}
 
 
-	public static InputStream toInputStream(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
-		return new ByteArrayInputStream(toString(wsdlDefinition, wsdlSchema).getBytes(StreamUtil.DEFAULT_CHARSET));
+	public static Reader toReader(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
+		return new StringReader(toString(wsdlDefinition, wsdlSchema));
 	}
 
 	public static String toString(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
@@ -418,7 +414,7 @@ public class SchemaUtils {
 	}
 
 	public static void sortByDependencies(Set<XSD> xsds, List<Schema> schemas) throws ConfigurationException {
-		Set<XSD> xsdsWithDependencies = new HashSet<XSD>();
+		Set<XSD> xsdsWithDependencies = new LinkedHashSet<XSD>();
 		Iterator<XSD> iterator = xsds.iterator();
 		while (iterator.hasNext()) {
 			XSD xsd = iterator.next();
@@ -429,11 +425,15 @@ public class SchemaUtils {
 			}
 		}
 		if (xsds.size() == xsdsWithDependencies.size()) {
-			String message = "Circular dependencies between schemas:";
-			for (XSD xsd : xsdsWithDependencies) {
-				message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+			if (LOG.isDebugEnabled()) {
+				String message = "Circular dependencies between schemas:";
+				for (XSD xsd : xsdsWithDependencies) {
+					message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+				}
+				LOG.debug(message);
 			}
-			throw new ConfigurationException(message);
+			schemas.addAll(xsds);
+			return;
 		}
 		if (xsdsWithDependencies.size() > 0) {
 			sortByDependencies(xsdsWithDependencies, schemas);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,29 +25,32 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for {@link IPipe Pipe}.
@@ -72,20 +75,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
- * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself<p>
- * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
- * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
- * <p>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
- * </table>
- * </p>
+ * @ff.forward success successful processing of the message of the pipe
+ * @ff.forward exception an exception was caught when processing the message
  *
  * @author     Johan Verrips / Gerrit van Brakel
  *
@@ -95,33 +88,33 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
-	private String name;
-	private String getInputFromSessionKey=null;
-	private String getInputFromFixedValue=null;
-	private String storeResultInSessionKey=null;
-	private boolean preserveInput=false;
+	private @Getter String name;
+	private @Getter String getInputFromSessionKey=null;
+	private @Getter String getInputFromFixedValue=null;
+	private @Getter String storeResultInSessionKey=null;
+	private @Getter boolean preserveInput=false;
 
-	private int maxThreads = 0;
-	private long durationThreshold = -1;
+	private @Getter int maxThreads = 0;
+	private @Getter long durationThreshold = -1;
 
-	private String chompCharSize = null;
-	private String elementToMove = null;
-	private String elementToMoveSessionKey = null;
-	private String elementToMoveChain = null;
-	private boolean removeCompactMsgNamespaces = true;
-	private boolean restoreMovedElements=false;
-	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	
+	private @Getter String chompCharSize = null;
+	private @Getter String elementToMove = null;
+	private @Getter String elementToMoveSessionKey = null;
+	private @Getter String elementToMoveChain = null;
+	private @Getter boolean removeCompactMsgNamespaces = true;
+	private @Getter boolean restoreMovedElements=false;
+
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
-	private Locker locker;
-	private String emptyInputReplacement=null;
-	private boolean writeToSecLog = false;
-	private String secLogSessionKeys = null;
-	private String logIntermediaryResults = null;
-	private String hideRegex = null;
+	private @Getter Locker locker;
+	private @Getter String emptyInputReplacement=null;
+	private @Getter boolean writeToSecLog = false;
+	private @Getter String secLogSessionKeys = null;
+	private @Getter String logIntermediaryResults = null;
+	private @Getter String hideRegex = null;
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
+	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
@@ -144,13 +137,17 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	//For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
+		if(StringUtils.isNotEmpty(getName()) && getName().contains("/")) {
+			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
+		}
 		ParameterList params = getParameterList();
-
 		if (params!=null) {
 			try {
+				params.setNamesMustBeUnique(parameterNamesMustBeUnique);
 				params.configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
+				throw new ConfigurationException("while configuring parameters",e);
 			}
 		}
 
@@ -158,15 +155,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe (default success/exception forwards) || no global forwards
-			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		}
-
 		if (getLocker() != null) {
 			getLocker().configure();
 		}
-
-		super.configure();
 	}
 
 	/**
@@ -174,6 +165,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
+		if(!(applicationContext instanceof Configuration)) {
+			throw new IllegalArgumentException("ApplicationContext is not instance of Configuration");
+		}
 		this.applicationContext = applicationContext;
 	}
 
@@ -189,29 +183,91 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
 
+	@Override
+	public void start() throws PipeStartException {}
+
+	@Override
+	public void stop() {}
+
+
 	/**
-	 * looks up a key in the pipeForward hashtable. <br/>
+	 * Add a parameter to the list of parameters
+	 */
+	public void addParameter(Parameter param) {
+		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
+		parameterList.add(param);
+	}
+
+	/**
+	 * return the Parameters
+	 */
+	public ParameterList getParameterList() {
+		return parameterList;
+	}
+
+	@Override
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+	}
+
+	@Override
+	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
+	public void registerForward(PipeForward forward) throws ConfigurationException {
+		String forwardName = forward.getName();
+		if(forwardName != null) {
+			PipeForward current = pipeForwards.get(forwardName);
+			if (current==null){
+				pipeForwards.put(forwardName, forward);
+			} else {
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "forward ["+forwardName+"] is already registered");
+				} else {
+					log.info("PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
+			}
+		} else {
+			throw new ConfigurationException("forward without a name");
+		}
+	}
+
+	/**
+	 * Looks up a key in the pipeForward hashtable. <br/>
 	 * A typical use would be on return from a Pipe: <br/>
 	 * <code><pre>
 	 * return new PipeRunResult(findForward("success"), result);
 	 * </pre></code>
-	 * In the pipeForward hashtable are available:
-	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li> All global forwards defined in xml under the PipeLine element</li>
-	 * <li> All pipenames with their (identical) path</li>
+	 * findForward searches:<ul>
+	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
+	 * <li>All global forwards defined in xml under the PipeLine element</li>
+	 * <li>All pipe names with their (identical) path</li>
 	 * </ul>
-	 * Therefore, you can directly jump to another pipe, although this is not recommended
-	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-	 * may come in handy for switcher-pipes.<br/><br/>
-	 * @param forward   Name of the forward
-	 * @return PipeForward
 	 */
-	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
 	public PipeForward findForward(String forward){
-		if (StringUtils.isEmpty(forward)) {
-			return null;
+		if (StringUtils.isNotEmpty(forward)) {
+			if (pipeForwards.containsKey(forward)) {
+				return pipeForwards.get(forward);
+			}
+			if (pipeLine!=null) {
+				PipeForward result = pipeLine.getGlobalForwards().get(forward);
+				if (result == null) {
+					IPipe pipe = pipeLine.getPipe(forward);
+					if (pipe!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result == null) {
+					PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+					if (exit!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result!=null) {
+					pipeForwards.put(forward, result);
+				}
+				return result;
+			}
 		}
-		return pipeForwards.get(forward);
+		return null;
 	}
 
 	@Override
@@ -232,102 +288,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return forwards;
 	}
 
-
-	/**
-	 * Convenience method for building up log statements.
-	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
-	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
-	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
-	 * @return String with the name of the pipe and the message id of the current message.
-	 */
-	protected String getLogPrefix(PipeLineSession session) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Pipe ["+getName()+"] ");
-		if (session!=null) {
-			sb.append("msgId ["+session.getMessageId()+"] ");
-		}
-		return sb.toString();
-	}
-
-	@Override
-	@IbisDoc({"30"})
-	public void registerForward(PipeForward forward) throws ConfigurationException {
-		String forwardName = forward.getName();
-		if(forwardName != null) {
-			PipeForward current = pipeForwards.get(forwardName);
-			if (current==null){
-				pipeForwards.put(forwardName, forward);
-			} else {
-				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
-				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
-				}
-			}
-		} else {
-			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
-		}
-	}
-
-	@Override
-	public void start() throws PipeStartException {
-//		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
-//			try {
-//				// getUserTransaction, to make sure its available
-//				JtaUtil.getUserTransaction();
-//			} catch (NamingException e) {
-//				throw new PipeStartException(getLogPrefix(null)+"cannot obtain UserTransaction",e);
-//			}
-//		}
-	}
-
-	@Override
-	public void stop() {}
-
-//	/**
-//	 * The <code>toString()</code> method retrieves its value
-//	 * by reflection, so overriding this method is mostly not
-//	 * useful.
-//	 * @see ToStringBuilder#reflectionToString
-//	 *
-//	 **/
-//	@Override
-//	public String toString() {
-//		try {
-//			return (new ReflectionToStringBuilder(this) {
-//				@Override
-//				protected boolean accept(Field f) {
-//					//TODO create a blacklist or whitelist
-//					return super.accept(f) && !f.getName().contains("appConstants");
-//				}
-//			}).toString();
-//		} catch (Throwable t) {
-//			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
-//		}
-//		return null;
-//	}
-
-	/**
-	 * Add a parameter to the list of parameters
-	 * @param param the PipeParameter.
-	 */
-	@IbisDoc({"10"})
-	public void addParameter(Parameter param) {
-		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
-		parameterList.add(param);
-	}
-
-	/**
-	 * return the Parameters
-	 */
-	public ParameterList getParameterList() {
-		return parameterList;
-	}
-
 	@Override
 	public String getEventSourceName() {
-		return getLogPrefix(null).trim();
+		return getName().trim();
 	}
+
 	@Override
 	public void registerEvent(String description) {
 		if (eventPublisher != null) {
@@ -349,168 +314,116 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return null;
 	}
 
-	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
-	 *  A value of 0 indicates an unlimited number of threads.
-	 */
-	@IbisDoc({"Maximum number of threads that may call {@link #doPipe(Message message, PipeLineSession session)} simultaneously, use 0 to disable limit", "0"})
-	public void setMaxThreads(int newMaxThreads) {
-		maxThreads = newMaxThreads;
-	}
 	@Override
-	public int getMaxThreads() {
-		return maxThreads;
+	public boolean consumesSessionVariable(String sessionKey) {
+		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
+	}
+
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws PipeRunException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new PipeRunException(this,"cannot determine parameter values", e);
+		}
+	}
+
+	protected <T> T getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, T attributeValue) {
+		T result = pvl!=null ? (T)pvl.get(parameterName) : null;
+		return result!=null ? result : attributeValue;
 	}
 
 	/**
-	 * The functional name of this pipe
+	 * The functional name of this pipe. Can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
 	 */
-	@IbisDoc({"1", "name of the pipe", ""})
 	@Override
+	@Mandatory
 	public void setName(String name) {
 		this.name=name;
 		inSizeStatDummyObject.setName(getName() + " (in)");
 		outSizeStatDummyObject.setName(getName() + " (out)");
-	}
-	@Override
-	public String getName() {
-		return this.name;
 	}
 
 	@Override
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
-	@Override
-	public String getGetInputFromSessionKey() {
-		return getInputFromSessionKey;
-	}
 
 	@Override
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
-	}
-	@Override
-	public String getGetInputFromFixedValue() {
-		return getInputFromFixedValue;
 	}
 
 	@Override
 	public void setEmptyInputReplacement(String string) {
 		emptyInputReplacement = string;
 	}
-	@Override
-	public String getEmptyInputReplacement() {
-		return emptyInputReplacement;
-	}
 
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
-	@Override
-	public boolean isPreserveInput() {
-		return preserveInput;
-	}
 
+	/**
+	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. The
+	 * pipe result is still written as the output message as usual.
+	 */
 	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
-	@Override
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
+
+	/**
+	 * The maximum number of threads that may {@link #doPipe process messages} simultaneously.
+	 * A value of 0 indicates an unlimited number of threads.
+	 * @ff.default 0
+	 */
+	public void setMaxThreads(int newMaxThreads) {
+		maxThreads = newMaxThreads;
 	}
 
 	@Override
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
-	@Override
-	public String getChompCharSize() {
-		return chompCharSize;
-	}
 
 	@Override
 	public void setElementToMove(String string) {
 		elementToMove = string;
-	}
-	@Override
-	public String getElementToMove() {
-		return elementToMove;
 	}
 
 	@Override
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
-	@Override
-	public String getElementToMoveSessionKey() {
-		return elementToMoveSessionKey;
-	}
-	
+
 	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
-	}
-	@Override
-	public String getElementToMoveChain() {
-		return elementToMoveChain;
 	}
 
 	@Override
 	public void setDurationThreshold(long maxDuration) {
 		this.durationThreshold = maxDuration;
 	}
-	@Override
-	public long getDurationThreshold() {
-		return durationThreshold;
-	}
 
 	@Override
 	public void setRemoveCompactMsgNamespaces(boolean b) {
 		removeCompactMsgNamespaces = b;
-	}
-	@Override
-	public boolean isRemoveCompactMsgNamespaces() {
-		return removeCompactMsgNamespaces;
 	}
 
 	@Override
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;
 	}
-	@Override
-	public boolean isRestoreMovedElements() {
-		return restoreMovedElements;
-	}
-
-	
-	@IbisDoc({"controls namespace-awareness of possible xml parsing in descender-classes", "application default"})
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
-	}
-	public boolean isNamespaceAware() {
-		return namespaceAware;
-	}
 
 
-	@Override
-	public boolean hasSizeStatistics() {
-		return sizeStatistics;
-	}
+
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
 	}
-
 	@Override
-	@IbisDoc({"20"})
-	public void setLocker(Locker locker) {
-		this.locker = locker;
-	}
-	@Override
-	public Locker getLocker() {
-		return locker;
+	public boolean hasSizeStatistics() {
+		return sizeStatistics;
 	}
 
 	public DummyNamedObject getInSizeStatDummyObject() {
@@ -521,36 +434,29 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return outSizeStatDummyObject;
 	}
 
+	/** when set to <code>true</code> a record is written to the security log when the pipe has finished successfully */
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
 	}
-	@Override
-	public boolean isWriteToSecLog() {
-		return writeToSecLog;
-	}
 
+	/** (only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record */
 	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
 	}
-	@Override
-	public String getSecLogSessionKeys() {
-		return secLogSessionKeys;
-	}
 
+	/** when set, the value in AppConstants is overwritten (for this pipe only) */
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}
-	public String getLogIntermediaryResults() {
-		return logIntermediaryResults;
-	}
 
-	@IbisDoc({"Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
+	/**
+	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code>
+	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level,
+	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)
+	 */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
-	}
-	public String getHideRegex() {
-		return hideRegex;
 	}
 }

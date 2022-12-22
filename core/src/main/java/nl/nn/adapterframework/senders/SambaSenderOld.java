@@ -31,11 +31,11 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -68,6 +68,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author	Niels Meijer
  * @since	7.1-B4
  */
+@Deprecated
 public class SambaSenderOld extends SenderWithParametersBase {
 
 	private String domain = null;
@@ -128,15 +129,14 @@ public class SambaSenderOld extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "Sender [" + getName()
-					+ "] caught exception evaluating parameters", e);
+			throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}
 
 		SmbFile file;
@@ -150,27 +150,17 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			if (getAction().equalsIgnoreCase("download")) {
 				SmbFileInputStream is = new SmbFileInputStream(file);
 				InputStream base64 = new Base64InputStream(is, true);
-				return new Message(Misc.streamToString(base64));
+				return new SenderResult(Misc.streamToString(base64));
 			} else if (getAction().equalsIgnoreCase("list")) {
-				return new Message(listFilesInDirectory(file));
+				return new SenderResult(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {
-				Object paramValue = pvl.getParameterValue("file").getValue();
-				byte[] fileBytes = null;
-				if (paramValue instanceof InputStream)
-					fileBytes = Misc.streamToBytes((InputStream) paramValue);
-				else if (paramValue instanceof byte[])
-					fileBytes = (byte[]) paramValue;
-				else if (paramValue instanceof String)
-					fileBytes = ((String) paramValue).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING);
-				else
-					throw new SenderException("expected InputStream, ByteArray or String but got ["
-							+ paramValue.getClass().getName() + "] instead");
+				Message paramValue = pvl.get("file").asMessage();
 
-				SmbFileOutputStream out = new SmbFileOutputStream(file);
-				out.write(fileBytes);
-				out.close();
+				try(SmbFileOutputStream out = new SmbFileOutputStream(file)) {
+					out.write(paramValue.asByteArray());
+				}
 
-				return new Message(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
+				return new SenderResult(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
 			} else if (getAction().equalsIgnoreCase("delete")) {
 				if (!file.exists())
 					throw new SenderException("file not found");
@@ -193,7 +183,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 				else
 					throw new SenderException("trying to remove a file instead of a directory");
 			} else if (getAction().equalsIgnoreCase("rename")) {
-				String destination = pvl.getParameterValue("destination").asStringValue(null);
+				String destination = pvl.get("destination").asStringValue();
 				if (destination == null)
 					throw new SenderException("unknown destination[+destination+]");
 
@@ -208,7 +198,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 					+ file.getCanonicalPath() + "]", e);
 		}
 
-		return new Message("<result>ok</result>");
+		return new SenderResult("<result>ok</result>");
 	}
 
 	private String listFilesInDirectory(SmbFile directory) throws IOException {
@@ -247,7 +237,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return fileXml;
 	}
 
-	@IbisDoc({ "the destination, aka smb://xxx/yyy share", "" })
+	/** the destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		if (!share.endsWith("/"))
 			share += "/";
@@ -258,7 +248,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return share;
 	}
 
-	@IbisDoc({ "possible values: delete, download, list, mkdir, rename, rmdir, upload", "" })
+	/** possible values: delete, download, list, mkdir, rename, rmdir, upload */
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
@@ -267,9 +257,10 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return action;
 	}
 
-	@IbisDoc({
-			"used when creating folders or overwriting existing files (when renaming or moving)",
-			"false" })
+	/**
+	 * used when creating folders or overwriting existing files (when renaming or moving)
+	 * @ff.default false
+	 */
 	public void setForce(boolean force) {
 		this.force = force;
 	}
@@ -278,7 +269,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return force;
 	}
 
-	@IbisDoc({ "in case the user account is bound to a domain", "" })
+	/** in case the user account is bound to a domain */
 	public void setAuthDomain(String domain) {
 		this.domain = domain;
 	}
@@ -287,7 +278,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return domain;
 	}
 
-	@IbisDoc({ "the smb share username", "" })
+	/** the smb share username */
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -296,7 +287,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return username;
 	}
 
-	@IbisDoc({ "the smb share password", "" })
+	/** the smb share password */
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -305,7 +296,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return password;
 	}
 
-	@IbisDoc({ "alias used to obtain credentials for the smb share", "" })
+	/** alias used to obtain credentials for the smb share */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden
+   Copyright 2021 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.credentialprovider;
 
 
 
+import java.util.Collection;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +34,7 @@ public class CredentialFactory {
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
 	private static String optionalPrefix;
-	
+
 	private ICredentialFactory delegate;
 
 	private static CredentialFactory self;
@@ -66,13 +68,14 @@ public class CredentialFactory {
 	void forceDelegate(ICredentialFactory delegate) {
 		this.delegate=delegate;
 	}
-	
+
 	private boolean tryFactory(String factoryClassName) {
 		if (Misc.isNotEmpty(factoryClassName)) {
 			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
 				delegate = factoryClass.newInstance();
+				delegate.initialize();
 				log.info("installed CredentialFactory ["+factoryClassName+"]");
 				return true;
 			} catch (Exception e) {
@@ -81,28 +84,33 @@ public class CredentialFactory {
 		}
 		return false;
 	}
-	
+
 	private static String findAlias(String rawAlias) {
 		if (optionalPrefix!=null && rawAlias!=null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
 			return rawAlias.substring(optionalPrefix.length());
 		}
 		return rawAlias;
 	}
-	
+
 	public static boolean hasCredential(String rawAlias) {
 		ICredentialFactory delegate = getInstance().delegate;
 		return delegate==null || delegate.hasCredentials(findAlias(rawAlias));
 	}
-	
-	public static ICredentials getCredentials(String rawAlias, String defaultUsername, String defaultPassword) {
+
+	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		ICredentialFactory delegate = getInstance().delegate;
 		if (delegate!=null) {
-			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsername, defaultPassword);
+			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
 			if (result!=null) {
 				return result;
 			}
 		}
-		return new Credentials(findAlias(rawAlias), defaultUsername, defaultPassword);
+		return new Credentials(findAlias(rawAlias), defaultUsernameSupplier, defaultPasswordSupplier);
+	}
+
+	public static Collection<String> getConfiguredAliases() throws Exception {
+		ICredentialFactory delegate = getInstance().delegate;
+		return delegate!=null ? delegate.getConfiguredAliases() : null;
 	}
 
 }

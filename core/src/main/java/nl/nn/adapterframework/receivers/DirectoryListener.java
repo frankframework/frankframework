@@ -17,10 +17,11 @@ package nl.nn.adapterframework.receivers;
 
 import java.nio.file.Path;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
+@Category("Basic")
 public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>{
 
 	@Override
@@ -28,7 +29,7 @@ public class DirectoryListener extends FileSystemListener<Path, LocalFileSystem>
 		return new LocalFileSystem();
 	}
 
-	@IbisDoc({"1", "Optional base folder, that serves as root for all other folders", ""})
+	/** Optional base folder, that serves as root for all other folders */
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}

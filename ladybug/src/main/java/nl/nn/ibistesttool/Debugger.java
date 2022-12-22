@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
@@ -35,6 +36,8 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -45,7 +48,9 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
+	private Logger log = LogUtil.getLogger(this);
+
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEGY_NEVER = "Never";
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
@@ -53,15 +58,15 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private TestTool testTool;
 	protected IbisManager ibisManager;
 	private PipeDescriptionProvider pipeDescriptionProvider;
-	private List<String> rerunRoles;
+	private List<String> testerRoles;
 
 	protected Set<String> inRerun = new HashSet<String>();
-	private ApplicationEventPublisher applicationEventPublisher;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
+	@Override
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
@@ -70,8 +75,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		this.pipeDescriptionProvider = pipeDescriptionProvider;
 	}
 
-	public void setRerunRoles(List<String> rerunRoles) {
-		this.rerunRoles = rerunRoles;
+	public void setTesterRoles(List<String> testerRoles) {
+		this.testerRoles = testerRoles;
 	}
 
 	@Override
@@ -109,7 +114,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		}
 		return result;
 	}
-	
+
 	@Override
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
@@ -145,7 +150,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public String replyListenerOutput(IListener<?> listener, String correlationId, String output) {
+	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
 		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
 	}
 
@@ -157,12 +162,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void createThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.threadCreatepoint(correlationId, threadId); 
+		testTool.threadCreatepoint(correlationId, threadId);
 	}
 
 	@Override
 	public void cancelThread(Object sourceObject, String threadId, String correlationId) {
-		testTool.close(correlationId, threadId); 
+		testTool.close(correlationId, threadId);
 	}
 
 	@Override
@@ -202,8 +207,20 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
+		if (parameter.isHidden()) {
+			String hiddenValue=null;
+			try {
+				hiddenValue = Misc.hide(Message.asString(value));
+			} catch (IOException e) {
+				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
+				log.warn(hiddenValue, e);
+			}
+			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue);
+			return value;
+		}
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
+
 	@Override
 	public Object storeInSessionKey(String correlationId, String sessionKey, Object result) {
 		return testTool.outputpoint(correlationId, null, "SessionKey " + sessionKey, result);
@@ -211,19 +228,41 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public <T> T showValue(String correlationId, String label, T value) {
-		return testTool.outputpoint(correlationId, null, label, value);
+		return testTool.inputpoint(correlationId, null, label, value);
 	}
 
-	
+
 	@Override
 	public Message preserveInput(String correlationId, Message input) {
 		return testTool.outputpoint(correlationId, null, "PreserveInput", input);
 	}
-	
+
+	/** Get all configurations */
+	private List<IAdapter> getRegisteredAdapters() {
+		List<IAdapter> registeredAdapters = new ArrayList<>();
+		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if(configuration.isActive()) {
+				registeredAdapters.addAll(configuration.getRegisteredAdapters());
+			}
+		}
+		return registeredAdapters;
+	}
+
+	/** Best effort attempt to locate the adapter. */
+	private IAdapter getRegisteredAdapter(String name) {
+		List<IAdapter> adapters = getRegisteredAdapters();
+		for (IAdapter adapter : adapters) {
+			if (name.equals(adapter.getName())) {
+				return adapter;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		String errorMessage = null;
-		if (securityContext.isUserInRoles(rerunRoles)) {
+		if (securityContext.isUserInRoles(testerRoles)) {
 			int i = 0;
 			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
 			Checkpoint checkpoint = checkpoints.get(i);
@@ -231,7 +270,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			if (checkpointName.startsWith("Pipeline ")) {
 				String pipelineName = checkpointName.substring("Pipeline ".length());
 				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
-				IAdapter adapter = ibisManager.getRegisteredAdapter(pipelineName);
+				IAdapter adapter = getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
 					synchronized(inRerun) {
 						inRerun.add(correlationId);
@@ -341,14 +380,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			// listener handled by this class. A reply listener is always linked
 			// to a sender, so stub when senders should be stubbed.
 			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
-		} 
+		}
 		if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
 			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
 			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
 			// the report with the correlationId used by the rerun method
 			&& !"SessionKey messageId".equals(checkpointName)) {
 			return true;
-		} 
+		}
 		return false;
 	}
 
@@ -376,14 +415,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
-	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
+	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in AppConstants testtool.enabled for use by GUI
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		if (applicationEventPublisher != null) {
+		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
-			applicationEventPublisher.publishEvent(event);
+			ibisManager.getApplicationEventPublisher().publishEvent(event);
 		}
 	}
 
@@ -392,10 +431,5 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		if (event.getSource()!=this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
-	}
-	
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }

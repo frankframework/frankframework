@@ -36,7 +36,7 @@ public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBui
 		this(new JsonWriter(writer));
 		this.writer = writer;
 	}
-	
+
 	public JsonDocumentBuilder(JsonEventHandler handler) throws SAXException {
 		super(handler);
 		this.handler=handler;

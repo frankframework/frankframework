@@ -26,26 +26,26 @@ import java.util.Map;
  */
 public class ProcessMetrics {
 
-	private final static long K_LIMIT=10*1024;
-	private final static long M_LIMIT=K_LIMIT*1024;
-	private final static long G_LIMIT=M_LIMIT*1024;
-	private final static long T_LIMIT=G_LIMIT*1024;
-	
+	private static final long K_LIMIT=10*1024;
+	private static final long M_LIMIT=K_LIMIT*1024;
+	private static final long G_LIMIT=M_LIMIT*1024;
+	private static final long T_LIMIT=G_LIMIT*1024;
+
 	public static String normalizedNotation(long value) {
 		String valueString;
-		
+
 		if (value < K_LIMIT) {
 			valueString = Long.toString(value);
 		} else {
 			if (value < M_LIMIT) {
 				valueString = Long.toString(value/1024)+"K";
-			} else { 
+			} else {
 				if (value < G_LIMIT) {
 					valueString = Long.toString(value/(1024*1024))+"M";
-				} else { 
+				} else {
 					if (value < T_LIMIT) {
 						valueString = Long.toString(value/(1024*1024*1024))+"G";
-					} else { 
+					} else {
 						valueString = Long.toString(value/(1024*1024*1024*1024))+"T";
 					}
 				}
@@ -53,11 +53,11 @@ public class ProcessMetrics {
 		}
 		return valueString;
 	}
-	
+
 	public static void addNumberProperty(XmlBuilder list, String name, long value) {
 		addProperty(list,name,normalizedNotation(value));
 	}
-	
+
 	public static void addProperty(XmlBuilder list, String name, String value) {
 		XmlBuilder p=new XmlBuilder("property");
 		p.addAttribute("name", name);
@@ -69,11 +69,11 @@ public class ProcessMetrics {
 		XmlBuilder xmlh=new XmlBuilder("processMetrics");
 		XmlBuilder props=new XmlBuilder("properties");
 		xmlh.addSubElement(props);
-		
+
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		long maxMemory = Runtime.getRuntime().maxMemory();
-		
+
 		addNumberProperty(props, "freeMemory", freeMem);
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
@@ -84,11 +84,11 @@ public class ProcessMetrics {
 
 	public static Map<String, String> toMap() {
 		Map<String, String> memoryStatistics = new Hashtable<String, String>(3);
-		
+
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		long maxMemory = Runtime.getRuntime().maxMemory();
-		
+
 		memoryStatistics.put("freeMemory", normalizedNotation(freeMem));
 		memoryStatistics.put("totalMemory", normalizedNotation(totalMem));
 		memoryStatistics.put("heapSize", normalizedNotation(totalMem-freeMem));

@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -47,7 +48,9 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
+@Category("NN-Special")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	private @Getter @Setter String sessionKey = "file";
@@ -58,7 +61,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());
 		if (fileInSession == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
+			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File tempDir;
@@ -75,7 +78,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				file.deleteOnExit();
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
+			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
 		}
 
 		File propertiesFile = new File(tempDir, getPropertiesFileName());
@@ -99,7 +102,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				pipeLine = createPipeLineFromXsdFile(xsdFile);
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on generating wsdl", e);
+			throw new PipeRunException(this, "Exception on generating wsdl", e);
 		} finally {
 			if (originalClassLoader != null) {
 				Thread.currentThread().setContextClassLoader(originalClassLoader);
@@ -145,8 +148,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			dx.setPath(wsdlDir.getPath());
 			result = dx.getDirList();
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ " Exception on generating wsdl", e);
+			throw new PipeRunException(this, "Exception on generating wsdl", e);
 		} finally {
 			try {
 				if (zipOut != null) {
@@ -220,7 +222,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, OutputType.TEXT));
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
@@ -249,7 +251,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", "text"));
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", OutputType.TEXT));
 					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
@@ -279,7 +281,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				String xsdRoot = null;
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, "text"));
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, OutputType.TEXT));
 					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");

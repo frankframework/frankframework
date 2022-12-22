@@ -1,7 +1,8 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -10,10 +11,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
@@ -23,10 +26,10 @@ public class AnsibleVaultCredentialFactoryTest {
 	public String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
 
 	public String ANSIBLE_VAULT_PASSWORD="GEHEIM";
-	
+
 	private AnsibleVaultCredentialFactory credentialFactory;
-	
-	@Before
+
+	@BeforeEach
 	public void setup() throws IOException {
 		String vaultUrl = this.getClass().getResource(ANSIBLE_VAULT_FILE).toExternalForm();
 		String vaultFile =  Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/")+2)).toString();
@@ -35,26 +38,27 @@ public class AnsibleVaultCredentialFactoryTest {
 		String keyUrl = this.getClass().getResource(ANSIBLE_VAULT_KEY_FILE).toExternalForm();
 		String keyFile =  Paths.get(keyUrl.substring(keyUrl.indexOf(":/")+2)).toString();
 		assumeTrue(Files.exists(Paths.get(keyFile)));
-		
+
 		System.setProperty("credentialFactory.ansibleVault.vaultFile", vaultFile);
 		System.setProperty("credentialFactory.ansibleVault.keyFile", keyFile);
-		
+
 		credentialFactory = new AnsibleVaultCredentialFactory();
+		credentialFactory.initialize();
 	}
-	
+
 	public void setupVault(Properties aliases, String title) throws IOException {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		aliases.store(credentialData, title);
 
 		System.out.println("Vault data before encryption:\n"+new String(credentialData.toByteArray()));
-		
+
 		byte[] encryptedVault = VaultHandler.encrypt(credentialData.toByteArray(), ANSIBLE_VAULT_PASSWORD);
-		
+
 		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
 
 	}
-	
-	
+
+
 	//@Test
 	// run this to obtain a fresh ansible vault
 	public void testSetupVault() throws IOException {
@@ -74,23 +78,23 @@ public class AnsibleVaultCredentialFactoryTest {
 		properties.forEach((k,v) -> System.out.println(k+": "+v));
 		setupVault(properties, "");
 	}
-	
+
 	//@Test
 	public void testCreateVaultFromProperties() throws IOException {
 		testCreateVaultFromProperties("","");
 	}
-	
+
 
 	public void testReadVault(String file, String password) throws IOException {
 		FileInputStream fis = new FileInputStream(file);
-		
+
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		VaultHandler.decrypt(fis, credentialData, password);
 
 		System.out.println("Decrypted Vault data:\n"+new String(credentialData.toByteArray()));
 	}
-	
-	
+
+
 	public void decryptFile(String file, String password) throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(file+".txt")) {
 			try (FileInputStream fis = new FileInputStream(file+".vault")) {
@@ -106,64 +110,96 @@ public class AnsibleVaultCredentialFactoryTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testNoAlias() {
-		
+
 		String alias = null;
 		String username = "fakeUsername";
 		String password = "fakePassword";
-		
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-		
+
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}
 
 	@Test
 	public void testPlainAlias() {
-		
+
 		String alias = "straight";
 		String username = "fakeUsername";
 		String password = "fakePassword";
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
-		
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-		
+
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
 
 	@Test
 	public void testAliasWithoutUsername() {
-		
+
 		String alias = "noUsername";
 		String username = "fakeUsername";
 		String password = "fakePassword";
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
-		
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-		
+
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
 
 	@Test
+	public void testUnknownAliasNoDefaults() {
+
+		String alias = "fakeAlias";
+		String username = null;
+		String password = null;
+
+		assertThrows(NoSuchElementException.class, () -> {
+			ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+			assertEquals(username, mc.getUsername());
+			assertEquals(password, mc.getPassword());
+		});
+	}
+
+	@Test
+	public void testUnknownAlias() {
+
+		String alias = "fakeAlias";
+		String username = "fakeUsername";
+		String password = "fakePassword";
+
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		assertEquals(username, mc.getUsername());
+		assertEquals(password, mc.getPassword());
+	}
+
+
+	@Test
 	public void testPlainCredential() {
-		
+
 		String alias = "singleValue";
 		String username = null;
 		String password = "fakePassword";
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
-		
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-		
+
+		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
-	
-	
+
+	@Test
+	public void testGetAliases() throws Exception {
+		Collection<String> aliases = credentialFactory.getConfiguredAliases();
+		assertEquals("[straight, singleValue, noUsername]", aliases.toString());
+	}
+
 }

@@ -80,7 +80,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeLookupAtRuntimeFailAsWrongFileName() throws Exception {
-        exception.expectMessage("msgId [null] cannot find resource [wrong name]");
+        exception.expectMessage("cannot find resource [wrong name]");
         pipe.setFileName("wrong name");
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("2");

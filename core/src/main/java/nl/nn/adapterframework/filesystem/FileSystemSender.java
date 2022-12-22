@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,53 +21,41 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Base class for Senders that use a {@link IBasicFileSystem FileSystem}.
- * 
- * <table align="top" border="1">
- * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
- * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>write</td><td>write contents to a file<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <table>
- * 
+ *
+ * @see FileSystemActor
+ *
+ * @ff.parameter action overrides attribute <code>action</code>.
+ * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
+ * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
+ * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
+ * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
+ *
  * @author Gerrit van Brakel
  */
-public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
-	
+@ElementType(ElementTypes.ENDPOINT)
+@SupportsOutputStreaming
+public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
+
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
@@ -75,14 +63,16 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		getFileSystem().configure();
-		try { 
+		FS fileSystem = getFileSystem();
+		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
+		fileSystem.configure();
+		try {
 			actor.configure(fileSystem, getParameterList(), this);
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(),e);
 		}
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		try {
@@ -93,7 +83,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 			throw new SenderException("Cannot open fileSystem",e);
 		}
 	}
-	
+
 	@Override
 	public void close() throws SenderException {
 		try {
@@ -109,9 +99,9 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
-		
+
 		try {
 			if (paramList !=null) {
 				pvl=paramList.getValues(message, session);
@@ -137,6 +127,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return getFileSystem().getPhysicalDestinationName();
 	}
 
+	@Override
+	public String getDomain() {
+		return getFileSystem().getDomain();
+	}
+
 	public void setFileSystem(FS fileSystem) {
 		this.fileSystem=fileSystem;
 	}
@@ -144,63 +139,61 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return fileSystem;
 	}
 
-	protected void addActions(List<String> specificActions) {
+	protected void addActions(List<FileSystemAction> specificActions) {
 		actor.addActions(specificActions);
 	}
 
-
-
-	@IbisDocRef({"1", FILESYSTEMACTOR})
-	public void setAction(String action) {
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
-	public String getAction() {
+	public FileSystemAction getAction() {
 		return actor.getAction();
 	}
 
-	@IbisDocRef({"2", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	@IbisDocRef({"2", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	@IbisDocRef({"3", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
-	
-	@IbisDocRef({"4", FILESYSTEMACTOR})
+
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	@IbisDocRef({"5", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	@IbisDocRef({"6", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({"7", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({"8", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
-	
-	@IbisDocRef({"9", FILESYSTEMACTOR})
+
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	@Deprecated
-	public void setBase64(String base64) {
+	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
 	}
 
@@ -209,7 +202,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDocRef({"10", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -219,23 +212,33 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDocRef({"11", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	@IbisDocRef({"12", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	@IbisDocRef({"13", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@IbisDocRef({"14", FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
+		actor.setDeleteEmptyFolder(deleteEmptyFolder);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	public void setOutputFormat(DocumentFormat outputFormat) {
+		actor.setOutputFormat(outputFormat);
 	}
 }

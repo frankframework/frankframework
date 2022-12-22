@@ -25,7 +25,7 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 public class XmlTee extends FullXmlFilter {
 
 	private ContentHandler handler=null;
-	
+
 	public XmlTee() {
 		super();
 	}

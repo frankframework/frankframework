@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,17 +33,17 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser<M> {
@@ -64,9 +64,9 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter String hostField=null;
 
 	private @Getter @Setter String hideRegex = null;
-	private @Getter @Setter String hideMethod = "all";
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
-	private SortOrder sortOrder = null;
+	private @Getter SortOrder order = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
 	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
@@ -77,16 +77,16 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	protected String checkMessageIdQuery;
 	protected String checkCorrelationIdQuery;
 	protected String getMessageCountQuery;
-	
+
 	private String selector;
 
 	protected boolean selectKeyQueryIsDbmsSupported;
-	
-	
+
+
 	protected static final String CONTROL_PROPERTY_PREFIX="jdbc.storage.";
 	protected static final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
 	protected static final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";
-	
+
 	private boolean useParameters;
 	private boolean assumePrimaryKeyUnique;
 
@@ -110,6 +110,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	public void copyFacadeSettings(JdbcFacade facade) throws JdbcException {
 		if (facade!=null) {
+			SpringUtils.autowireByName(facade.getApplicationContext(), this);
 			datasource=facade.getDatasource();
 			setAuthAlias(facade.getAuthAlias());
 			setUsername(facade.getUsername());
@@ -122,12 +123,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		return datasource!=null ? datasource : super.getDatasource();
 	}
 
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
 		selector = createSelector();
+		if(getOrder() == null) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); //Defaults to ASC
+			} else {
+				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); //Defaults to DESC
+			}
+		}
 	}
 
 
@@ -139,16 +146,16 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		if (primaryKeyIsPartOfClause && assumePrimaryKeyUnique || StringUtils.isEmpty(selector)) {
 			if (StringUtils.isEmpty(clause)) {
 				return "";
-			}  
-			return " WHERE "+clause; 
+			}
+			return " WHERE "+clause;
 		}
 		return Misc.concatStrings(" WHERE "+selector," AND ", clause);
 	}
-	
+
 	protected String createSelector() {
 		return Misc.concatStrings(
-				(StringUtils.isNotEmpty(getSlotIdField()) ? getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'") : ""), 
-				" AND ", 
+				(StringUtils.isNotEmpty(getSlotIdField()) ? getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'") : ""),
+				" AND ",
 				(StringUtils.isNotEmpty(getType()) && StringUtils.isNotEmpty(getTypeField()) ? getTypeField()+"="+(useParameters?"?":"'"+getTypeField()+"'") : ""));
 	}
 
@@ -167,22 +174,23 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 		return position;
 	}
+
 	protected int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
 		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchRequired());
 		return position;
 	}
 
-	
-	
+
+
 
 	private class ResultSetIterator implements IMessageBrowsingIterator {
-		
+
 		private Connection conn;
 		private ResultSet  rs;
 		private boolean current;
 		private boolean eof;
-		
+
 		ResultSetIterator(Connection conn, ResultSet rs) throws SQLException {
 			this.conn=conn;
 			this.rs=rs;
@@ -227,7 +235,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 			} catch (SQLException e) {
 				throw new ListenerException("error closing browser session",e);
 			}
-		} 
+		}
 	}
 
 	@Override
@@ -276,8 +284,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	
-	
+
+
 
 	@Override
 	public void deleteMessage(String storageKey) throws ListenerException {
@@ -332,6 +340,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
+				applyStandardParameters(stmt, correlationId, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
 					return rs.next();
 				}
@@ -343,17 +352,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, storageKey, true);
-				try (ResultSet rs =  stmt.executeQuery()) {
-	
-					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
-					}
-					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
-				}
+		// result set needs to stay open to access the fields of a record
+		// The caller may use try-with-resources to call the close method of IMessageBrowsingIteratorItem to close the open resources
+		try {
+			Connection conn = getConnection();
+			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
+			applyStandardParameters(stmt, storageKey, true);
+			ResultSet rs = stmt.executeQuery();
+			if (!rs.next()) {
+				throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 			}
+
+			return new JdbcMessageBrowserIteratorItem(conn, rs, true);
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}
@@ -365,7 +375,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
-	
+
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
@@ -385,14 +395,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		private Connection conn;
 		private ResultSet rs;
 		private boolean closeOnRelease;
-		
+
 		public JdbcMessageBrowserIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
 			super();
 			this.conn=conn;
 			this.rs=rs;
 			this.closeOnRelease=closeOnRelease;
 		}
-		
+
 		public String fieldValue(String field) throws ListenerException {
 			try {
 				return StringUtils.isNotEmpty(field)?rs.getString(field):null;
@@ -407,7 +417,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 				throw new ListenerException(e);
 			}
 		}
-		
+
 		@Override
 		public String getId() throws ListenerException {
 			return fieldValue(getKeyField());
@@ -453,47 +463,71 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 				JdbcUtil.fullClose(conn, rs);
 			}
 		}
-		
-		
+
+
 	}
 
 
-	@IbisDoc({"1", "The name of the column that contains the primary key of the table", "MESSAGEKEY"})
+	/**
+	 * The name of the column that contains the primary key of the table
+	 * @ff.default MESSAGEKEY
+	 */
 	public void setKeyField(String string) {
 		keyField = string;
 	}
 
-	@IbisDoc({"2", "The name of the column messageIds are stored in", "MESSAGEID"})
+	/**
+	 * The name of the column messageIds are stored in
+	 * @ff.default MESSAGEID
+	 */
 	public void setIdField(String idField) {
 		this.idField = idField;
 	}
 
-	@IbisDoc({"3", "The name of the column correlation-ids are stored in", "CORRELATIONID"})
+	/**
+	 * The name of the column correlation-ids are stored in
+	 * @ff.default CORRELATIONID
+	 */
 	public void setCorrelationIdField(String string) {
 		correlationIdField = string;
 	}
 
-	@IbisDoc({"4", "The name of the column message themselves are stored in", "MESSAGE"})
+	/**
+	 * The name of the column message themselves are stored in
+	 * @ff.default MESSAGE
+	 */
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;
 	}
 
-	@IbisDoc({"5", "The name of the column the timestamp is stored in", "MESSAGEDATE"})
+	/**
+	 * The name of the column the timestamp is stored in
+	 * @ff.default MESSAGEDATE
+	 */
 	public void setDateField(String string) {
 		dateField = string;
 	}
 
-	@IbisDoc({"6", "The name of the column comments are stored in", "COMMENTS"})
+	/**
+	 * The name of the column comments are stored in
+	 * @ff.default COMMENTS
+	 */
 	public void setCommentField(String string) {
 		commentField = string;
 	}
 
-	@IbisDoc({"7", "The name of the column the timestamp for expiry is stored in", "EXPIRYDATE"})
+	/**
+	 * The name of the column the timestamp for expiry is stored in
+	 * @ff.default EXPIRYDATE
+	 */
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
 	}
 
-	@IbisDoc({"8", "The name of the column labels are stored in", "LABEL"})
+	/**
+	 * The name of the column labels are stored in
+	 * @ff.default LABEL
+	 */
 	public void setLabelField(String string) {
 		labelField = string;
 	}
@@ -509,7 +543,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.hostField = hostField;
 	}
 
-	@IbisDoc({"9", "prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema", ""})
+	/** Prefix to be prefixed on all database objects (tables, indices, sequences), e.g. to access a different Oracle schema */
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -522,22 +556,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.type = type;
 	}
 
-
-
-
-	public void setOrder(String string) {
-		sortOrder = EnumUtils.parse(SortOrder.class, "order", string);
-	}
-
-	public SortOrder getOrderEnum() {
-		if(sortOrder == null) {
-			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				setOrder(errorsOrder); //Defaults to ASC
-			} else {
-				setOrder(messagesOrder); //Defaults to DESC
-			}
-		}
-		return sortOrder;
+	public void setOrder(SortOrder value) {
+		order = value;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,29 +20,33 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -52,29 +56,24 @@ import nl.nn.adapterframework.util.EnumUtils;
  */
 public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
 
-	private long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
-	private boolean useReplyTo=true;
-	private String replyMessageType=null;
-	private long replyMessageTimeToLive=0;
-	private int replyPriority=-1;
-	private DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
-	private ISender sender;
-	
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
-	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
-	private String xPathLoggingKeys=null;
-	
-	private boolean forceMessageIdAsCorrelationId=false;
- 
-	private String commitOnState="success";
+	private @Getter long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
+	private @Getter boolean useReplyTo=true;
+	private @Getter String replyDestinationName;
+	private @Getter String replyMessageType=null;
+	private @Getter long replyMessageTimeToLive=0;
+	private @Getter int replyPriority=-1;
+	private @Getter DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
+	private @Getter ISender sender;
 
-	private boolean soap=false;
-	private String replyEncodingStyleURI=null;
-	private String replyNamespaceURI=null;
-	private String replySoapAction=null;
-	private String soapHeaderSessionKey="soapHeader";
-	
+
+	private @Getter boolean forceMessageIdAsCorrelationId=false;
+
+	private @Getter boolean soap=false;
+	private @Getter String replyEncodingStyleURI=null;
+	private @Getter String replyNamespaceURI=null;
+	private @Getter String replySoapAction=null;
+	private @Getter String soapHeaderSessionKey="soapHeader";
+
 	private SoapWrapper soapWrapper=null;
 
 	private ParameterList paramList = null;
@@ -92,28 +91,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		if (sender != null) {
 			sender.configure();
 		}
-		configurexPathLogging();
 
 		if (paramList!=null) {
 			paramList.configure();
-		}
-	}
-	
-	protected Map<String, String> getxPathLogMap() {
-		return xPathLogMap;
-	}
-	
-	private void configurexPathLogging() {
-		String logKeys = MSGLOG_KEYS;
-		if(getxPathLoggingKeys() != null) //Override on listener level
-			logKeys = getxPathLoggingKeys();
-
-		StringTokenizer tokenizer = new StringTokenizer(logKeys, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String name = tokenizer.nextToken();
-			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
-			if(xPath != null)
-				xPathLogMap.put(name, xPath);
 		}
 	}
 
@@ -148,7 +128,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * Fill in thread-context with things needed by the JMSListener code.
 	 * This includes a Session. The Session object can be passed in
 	 * externally.
-	 * 
+	 *
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
@@ -162,44 +142,33 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		}
 		return retrieveIdFromMessage(message, threadContext);
 	}
-	
-	
+
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
+		String id = "unset";
 		String cid = "unset";
 		DeliveryMode mode = null;
-		String id = "unset";
 		Date tsSent = null;
 		Destination replyTo=null;
 		try {
 			mode = DeliveryMode.parse(message.getJMSDeliveryMode());
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSDeliveryMode()", e);
 		}
 		// --------------------------
 		// retrieve MessageID
 		// --------------------------
 		try {
 			id = message.getJMSMessageID();
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSMessageID()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSMessageID()", e);
 		}
 		// --------------------------
 		// retrieve CorrelationID
 		// --------------------------
 		try {
-			if (isForceMessageIdAsCorrelationId()){
-				if (log.isDebugEnabled()) log.debug("forcing the messageID to be the correlationID");
-				cid =id;
-			}
-			else {
-				cid = message.getJMSCorrelationID();
-				if (cid==null) {
-				  cid = id;
-				  log.debug("Setting correlation ID to MessageId");
-				}
-			}
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSCorrelationID()", ignore);
+			cid = message.getJMSCorrelationID();
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSCorrelationID()", e);
 		}
 		// --------------------------
 		// retrieve TimeStamp
@@ -208,8 +177,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			long lTimeStamp = message.getJMSTimestamp();
 			tsSent = new Date(lTimeStamp);
 
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSTimestamp()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSTimestamp()", e);
 		}
 		// --------------------------
 		// retrieve ReplyTo address
@@ -217,20 +186,21 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		try {
 			replyTo = message.getJMSReplyTo();
 
-		} catch (JMSException ignore) {
-			log.debug("ignoring JMSException in getJMSReplyTo()", ignore);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSReplyTo()", e);
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"listener on ["+ getDestinationName() 
+			log.debug(getLogPrefix()+"listener on ["+ getDestinationName()
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
+				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
 				+ "] \n Message=[" + message.toString()
 				+ "]");
-		}    
+		}
+
 		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
@@ -242,7 +212,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		} catch (JMSException e) {
 			log.error("Warning in ack", e);
 		}
-		return cid;
+		return id;
 	}
 
 
@@ -282,14 +252,77 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessage;
 	}
 
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+		String replyCid = null;
+
+		if (!isForceMessageIdAsCorrelationId()) {
+			replyCid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		}
+		if (StringUtils.isEmpty(replyCid)) {
+			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
+		}
+
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
+		try {
+			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
+			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
+				replyTo = getDestination(getReplyDestinationName());
+			}
+
+			// handle reply
+			if (replyTo != null) {
+
+				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
+				long timeToLive = getReplyMessageTimeToLive();
+				boolean ignoreInvalidDestinationException = false;
+				if (timeToLive == 0) {
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+replyCid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
+						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
+					}
+				}
+				Map<String, Object> properties = getMessageProperties(threadContext);
+				sendReply(plr, replyTo, replyCid, timeToLive, ignoreInvalidDestinationException, threadContext, properties);
+			} else {
+				if (getSender()==null) {
+					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
+					}
+					PipeLineSession pipeLineSession = new PipeLineSession();
+					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
+					getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
+				}
+			}
+		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException | JmsException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
+		send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+	}
+
+	@Deprecated
 	public void setSender(ISender newSender) {
 		sender = newSender;
-			log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
-    
-	}
-	@Override
-	public ISender getSender() {
-		return sender;
+		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 	}
 
 	/**
@@ -352,126 +385,104 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	/**
-	 * By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
-	 * correlation id of the reply. When you set ForceMessageIdAsCorrelationId to <code>true</code>,
-	 * the messageID set in the correlationID of the reply.
-	 * @param force
+	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
+	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
+	 * @ff.default false
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
-	   forceMessageIdAsCorrelationId=force;
-	}
-	public boolean isForceMessageIdAsCorrelationId(){
-	  return forceMessageIdAsCorrelationId;
+		forceMessageIdAsCorrelationId = force;
 	}
 
-	/**
-	 * Controls when the JmsListener will commit it's local transacted session, that is created when
-	 * jmsTransacted = <code>true</code>. This is probably not what you want. 
-	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
-	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
-	 */
-	@IbisDoc({"<i>deprecated</i> exit state to control commit or rollback of jmssession. only used if <code>jmstransacted</code> is set true.", "success"})
-	public void setCommitOnState(String newCommitOnState) {
-		commitOnState = newCommitOnState;
-	}
-	public String getCommitOnState() {
-		return commitOnState;
-	}
-
-	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
+	@Deprecated
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
-	public long getTimeOut() {
-		return timeOut;
+	/**
+	 * Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-
+	 * @ff.default 1000
+	 */
+	public void setTimeout(long newTimeOut) {
+		timeOut = newTimeOut;
 	}
 
 
-	@IbisDoc({"", "true"})
+	/**
+	 * 
+	 * @ff.default true
+	 */
 	public void setUseReplyTo(boolean newUseReplyTo) {
 		useReplyTo = newUseReplyTo;
 	}
-	public boolean isUseReplyTo() {
-		return useReplyTo;
+
+	/**
+	 * Name of the JMS destination (queue or topic) to use for sending replies. If <code>useReplyTo</code>=<code>true</code>,
+	 * the sender specified reply destination takes precedence over this one.
+	 */
+	public void setReplyDestinationName(String destinationName) {
+		this.replyDestinationName = destinationName;
 	}
 
-	@IbisDoc({"Value of the jmstype field of the reply message", "not set by application"})
+	/**
+	 * Value of the JMSType field of the reply message
+	 * @ff.default not set by application
+	 */
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
-	public String getReplyMessageType() {
-		return replyMessageType;
+
+
+	/**
+	 * Controls mode that reply messages are sent with
+	 * @ff.default NON_PERSISTENT
+	 */
+	public void setReplyDeliveryMode(DeliveryMode replyDeliveryMode) {
+		this.replyDeliveryMode = replyDeliveryMode;
 	}
 
 
-	@IbisDoc({"Controls mode that reply messages are sent with", "NON_PERSISTENT"})
-	public void setReplyDeliveryMode(String replyDeliveryMode) {
-		this.replyDeliveryMode = EnumUtils.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
-	}
-	public DeliveryMode getReplyDeliveryModeEnum() {
-		return replyDeliveryMode;
-	}
-
-
-	@IbisDoc({"Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default", "-1"})
+	/**
+	 * Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default
+	 * @ff.default -1
+	 */
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
-	public int getReplyPriority() {
-		return replyPriority;
-	}
 
 
-	@IbisDoc({"Time <i>in milliseconds</i> after which the reply-message will expire", "0"})
+	/**
+	 * Time <i>in milliseconds</i> after which the reply-message will expire
+	 * @ff.default 0
+	 */
 	public void setReplyMessageTimeToLive(long l) {
 		replyMessageTimeToLive = l;
 	}
-	public long getReplyMessageTimeToLive() {
-		return replyMessageTimeToLive;
-	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "false"})
+	/**
+	 * If <code>true</code>, messages sent are put in a SOAP envelope
+	 * @ff.default false
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
-	}
-	public boolean isSoap() {
-		return soap;
 	}
 
 	public void setReplyEncodingStyleURI(String string) {
 		replyEncodingStyleURI = string;
 	}
-	public String getReplyEncodingStyleURI() {
-		return replyEncodingStyleURI;
-	}
 
 	public void setReplyNamespaceURI(String string) {
 		replyNamespaceURI = string;
-	}
-	public String getReplyNamespaceURI() {
-		return replyNamespaceURI;
 	}
 
 	public void setReplySoapAction(String string) {
 		replySoapAction = string;
 	}
-	public String getReplySoapAction() {
-		return replySoapAction;
-	}
 
+	/** 
+	 * sessionKey to store the SOAP header of the incoming message 
+	 * @ff.default soapHeader
+	 */
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
-	public String getSoapHeaderSessionKey() {
-		return soapHeaderSessionKey;
-	}
 
-	@IbisDoc({"comma separated list of all xpath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
-	public void setxPathLoggingKeys(String string) {
-		xPathLoggingKeys = string;
-	}
-	
-	public String getxPathLoggingKeys() {
-		return xPathLoggingKeys;
-	}
 }

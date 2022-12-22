@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:tom="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+	<!--****************************************TOM PartyAgreementRole SimpleTypes***********************-->
+	<xsd:simpleType name="PartyAgreementRoleStatus">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyAgreementRoleTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyAgreementRoleInternalExternalIndicator">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+				<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyAgreementRoleProcessingStage">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PartyAgreementRoleRoleTypeSequenceNumber">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

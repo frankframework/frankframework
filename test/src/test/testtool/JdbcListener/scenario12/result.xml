@@ -6,22 +6,22 @@
 		<result item="1">
 			<result>
 				<fielddefinition>
-					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
-					<field name="TCLOB" type="CLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="oracle.jdbc.OracleClob"/>
-					<field name="TNUMBER" type="NUMERIC" columnDisplaySize="19" precision="17" scale="5" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
-					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+					<field name="TCLOB" type="CLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="CHARACTER LARGE OBJECT" columnClassName="java.sql.Clob"/>
+					<field name="TNUMBER" type="DECIMAL" columnDisplaySize="19" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
 				</fielddefinition>
 				<rowset>
 					<row number="0">
 						<field name="TCHAR">6</field>
 						<field name="TCLOB">success</field>
-						<field name="TNUMBER">IGNORE</field>
-						<field name="TVARCHAR">exitState [success], result [String: &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;]</field>
+						<field name="TNUMBER">IGNORE.00000</field>
+						<field name="TVARCHAR" null="true"/>
 					</row>
 					<row number="1">
 						<field name="TCHAR">X</field>
 						<field name="TCLOB" null="true"/>
-						<field name="TNUMBER">IGNORE</field>
+						<field name="TNUMBER">IGNORE.00000</field>
 						<field name="TVARCHAR" null="true"/>
 					</row>
 				</rowset>
@@ -30,8 +30,8 @@
 		<result item="2">
 			<result>
 				<fielddefinition>
-					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
-					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
 				</fielddefinition>
 				<rowset/>
 			</result>

@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2021 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
@@ -34,8 +34,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
-import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,14 +49,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 @Path("/")
-public final class SendJmsMessage extends Base {
+public final class SendJmsMessage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) {
 
 		String message = null, fileName = null;
 		InputStream file = null;
@@ -71,16 +72,26 @@ public final class SendJmsMessage extends Base {
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
 		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
+		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
 
-		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
+		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
+		builder.addHeader("destination", destinationName);
+		builder.addHeader("type", destinationType);
+		builder.addHeader("replyTo", replyTo);
+		builder.addHeader("persistent", persistent);
+		builder.addHeader("synchronous", synchronous);
+		builder.addHeader("lookupDestination", lookupDestination);
+		builder.addHeader("messageProperty", messageProperty);
+
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );
+			file = filePart.getObject(InputStream.class);
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
-					processZipFile(file, qms);
-
+					processZipFile(file, builder);
 					return Response.status(Response.Status.OK).build();
 				} catch (IOException e) {
 					throw new ApiException("error processing zip file", e);
@@ -99,35 +110,16 @@ public final class SendJmsMessage extends Base {
 			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(message != null && message.length() > 0) {
-			processMessage(qms, message);
-			return Response.status(Response.Status.OK).build();
+		if(StringUtils.isEmpty(message)) {
+			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
-		else {
-			throw new ApiException("must provide either a message or file", 400);
-		}
+
+		builder.setPayload(message);
+		return (synchronous) ? callSyncGateway(builder) : callAsyncGateway(builder);
 	}
 
-	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
-		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
-		qms.setName("SendJmsMessageAction");
-		if(type.equals("QUEUE")) {
-			qms.setQueueConnectionFactoryName(connectionFactory);
-		} else {
-			qms.setTopicConnectionFactoryName(connectionFactory);
-		}
-		qms.setDestinationName(destination);
-		qms.setPersistent(persistent);
-		qms.setDestinationType(type);
-		if (StringUtils.isNotEmpty(replyTo)) {
-			qms.setReplyToName(replyTo);
-		}
-		qms.setSynchronous(synchronous);
-		qms.setLookupDestination(lookupDestination);
-		return qms;
-	}
 
-	private void processZipFile(InputStream file, JmsSender qms) throws IOException {
+	private void processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 			int size = (int)entry.getSize();
@@ -141,32 +133,14 @@ public final class SendJmsMessage extends Base {
 						break;
 					}
 					rb+=chunk;
-				} 
+				}
 				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
-				processMessage(qms, currentMessage);
+				builder.setPayload(currentMessage);
+				callAsyncGateway(builder);
 			}
 			archive.closeEntry();
 		}
 		archive.close();
-	}
-
-	private void processMessage(JmsSender qms, String message) throws ApiException {
-		try {
-			qms.open();
-			/*
-			 * this used to be:
-			 *   qms.sendMessage(technicalCorrelationId,new Message(message), null);
-			 * Be aware that 'technicalCorrelationId' will not be used by default
-			 */
-			qms.sendMessage(new Message(message), null);
-		} catch (Exception e) {
-			throw new ApiException("Error occured sending message", e);
-		} 
-		try {
-			qms.close();
-		} catch (Exception e) {
-			throw new ApiException("Error occured on closing connection", e);
-		}
 	}
 }

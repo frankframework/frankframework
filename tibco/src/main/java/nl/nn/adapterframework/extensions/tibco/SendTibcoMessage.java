@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,70 +35,62 @@ import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Sends a message to a Tibco queue.
- * 
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of Tibco service to be called. Possible values
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)</td><td>5000</td></tr>
- * <tr><td>{@link #setQueueName(String) queueName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
- * </table>
- * </p>
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>url</td><td>string</td><td>When a parameter with name serviceId is present, it is used instead of the serviceId specified by the attribute</td></tr>
- * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
- * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
- * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
- * <tr><td>queueName</td><td>string</td><td>When a parameter with name queueName is present, it is used instead of the queueName specified by the attribute</td></tr>
- * <tr><td>messageProtocol</td><td>string</td><td>When a parameter with name messageProtocol is present, it is used instead of the messageProtocol specified by the attribute</td></tr>
- * <tr><td>replyTimeout</td><td>string</td><td>When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute</td></tr>
- * <tr><td>soapAction</td><td>string</td><td>When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute</td></tr>
- * </table>
- * </p>
- * 
+ *
+ * @ff.parameter url When a parameter with name url is present, it is used instead of the url specified by the attribute
+ * @ff.parameter authAlias When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute
+ * @ff.parameter username When a parameter with name userName is present, it is used instead of the userName specified by the attribute
+ * @ff.parameter password When a parameter with name password is present, it is used instead of the password specified by the attribute
+ * @ff.parameter queueName When a parameter with name queueName is present, it is used instead of the queueName specified by the attribute
+ * @ff.parameter messageProtocol When a parameter with name messageProtocol is present, it is used instead of the messageProtocol specified by the attribute
+ * @ff.parameter replyTimeout When a parameter with name replyTimeout is present, it is used instead of the replyTimeout specified by the attribute
+ * @ff.parameter When a parameter with name soapAction is present, it is used instead of the soapAction specified by the attribute
+ *
  * @author Peter Leeuwenburgh
- * @version $Id: SendTibcoMessage.java,v 1.13 2016/12/22 13:59:24 m99f706 Exp $
  */
-
 public class SendTibcoMessage extends TimeoutGuardPipe {
-	private final static String REQUEST_REPLY = "RR";
-	private final static String FIRE_AND_FORGET = "FF";
 
 	private String url;
 	private String authAlias;
-	private String userName;
+	private String username;
 	private String password;
 	private String queueName;
-	private String messageProtocol;
+	private MessageProtocol messageProtocol;
 	private int replyTimeout = 5000;
 	private String soapAction;
+
+	public enum MessageProtocol implements DocumentedEnum {
+		/** Request-Reply */
+		@EnumLabel("RR") REQUEST_REPLY,
+		/** Fire & Forget */
+		@EnumLabel("FF") FIRE_AND_FORGET;
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		super.configure();
+	}
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
@@ -112,7 +104,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		String userName_work;
 		String password_work;
 		String queueName_work;
-		String messageProtocol_work;
+		MessageProtocol protocol = getMessageProtocol();
 		int replyTimeout_work;
 		String soapAction_work;
 
@@ -127,7 +119,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 
@@ -139,9 +131,9 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		userName_work = getParameterValue(pvl, "userName");
+		userName_work = (pvl.contains("username")) ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
 		if (userName_work == null) {
-			userName_work = getUserName();
+			userName_work = getUsername();
 		}
 		password_work = getParameterValue(pvl, "password");
 		if (password_work == null) {
@@ -151,9 +143,9 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (queueName_work == null) {
 			queueName_work = getQueueName();
 		}
-		messageProtocol_work = getParameterValue(pvl, "messageProtocol");
-		if (messageProtocol_work == null) {
-			messageProtocol_work = getMessageProtocol();
+		String protocolParam = getParameterValue(pvl, "messageProtocol");
+		if (protocolParam != null) {
+			protocol = EnumUtils.parse(MessageProtocol.class, protocolParam);
 		}
 		String replyTimeout_work_str = getParameterValue(pvl, "replyTimeout");
 		if (replyTimeout_work_str == null) {
@@ -179,26 +171,18 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		}
 
 		if (StringUtils.isEmpty(soapAction_work)) {
-			log.debug(getLogPrefix(session) + "deriving default soapAction");
+			log.debug("deriving default soapAction");
 			try {
 				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
 				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {
-				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");
+				log.error("failed to execute soapAction.xsl");
 			}
 		}
 
-		if (messageProtocol_work == null) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "messageProtocol must be set");
-		}
-		if (!messageProtocol_work.equalsIgnoreCase(REQUEST_REPLY)
-				&& !messageProtocol_work.equalsIgnoreCase(FIRE_AND_FORGET)) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "illegal value for messageProtocol ["
-					+ messageProtocol_work + "], must be '" + REQUEST_REPLY
-					+ "' or '" + FIRE_AND_FORGET + "'");
+		if (protocol == null) {
+			throw new PipeRunException(this, "messageProtocol must be set");
 		}
 
 		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
@@ -207,7 +191,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			try {
 				admin = TibcoUtils.getActiveServerAdmin(url_work, cf);
 			} catch (TibjmsAdminException e) {
-				log.debug(getLogPrefix(session) + "caught exception", e);
+				log.debug("caught exception", e);
 				admin = null;
 			}
 			if (admin != null) {
@@ -215,34 +199,29 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				try {
 					queueInfo = admin.getQueue(queueName_work);
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session)
-							+ " exception on getting queue info", e);
+					throw new PipeRunException(this, "exception on getting queue info", e);
 				}
 				if (queueInfo == null) {
-					throw new PipeRunException(this, getLogPrefix(session)
-							+ " queue [" + queueName_work + "] does not exist");
+					throw new PipeRunException(this, "queue [" + queueName_work + "] does not exist");
 				}
 
 				try {
 					admin.close();
 				} catch (TibjmsAdminException e) {
-					log.warn(getLogPrefix(session)
-							+ "exception on closing Tibjms Admin", e);
+					log.warn("exception on closing Tibjms Admin", e);
 				}
-			}			
-			
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(
-					url_work);
+			}
+
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false,
-					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			destination = jSession.createQueue(queueName_work);
-			
+
 			msgProducer = jSession.createProducer(destination);
 			TextMessage msg = jSession.createTextMessage();
 			msg.setText(input.asString());
 			Destination replyQueue = null;
-			if (messageProtocol_work.equalsIgnoreCase(REQUEST_REPLY)) {
+			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				replyQueue = jSession.createTemporaryQueue();
 				msg.setJMSReplyTo(replyQueue);
 				msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -253,61 +232,41 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
 			if (StringUtils.isNotEmpty(soapAction_work)) {
-				log.debug(getLogPrefix(session) + "setting [SoapAction] property to value [" + soapAction_work + "]");
+				log.debug("setting [SoapAction] property to value [" + soapAction_work + "]");
 				msg.setStringProperty("SoapAction", soapAction_work);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix(session) + "sent message ["
-						+ msg.getText() + "] " + "to ["
-						+ msgProducer.getDestination() + "] " + "msgID ["
-						+ msg.getJMSMessageID() + "] " + "correlationID ["
-						+ msg.getJMSCorrelationID() + "] " + "replyTo ["
-						+ msg.getJMSReplyTo() + "]");
+				log.debug("sent message ["+ msg.getText() + "] " + "to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session) + "sent message to ["
-							+ msgProducer.getDestination() + "] " + "msgID ["
-							+ msg.getJMSMessageID() + "] " + "correlationID ["
-							+ msg.getJMSCorrelationID() + "] " + "replyTo ["
-							+ msg.getJMSReplyTo() + "]");
+					log.info("sent message to ["+ msgProducer.getDestination() + "] " + "msgID ["+ msg.getJMSMessageID() + "] " + "correlationID ["+ msg.getJMSCorrelationID() + "] " + "replyTo ["+ msg.getJMSReplyTo() + "]");
 				}
 			}
-			if (messageProtocol_work.equalsIgnoreCase(REQUEST_REPLY)) {
+			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
-				MessageConsumer msgConsumer = jSession.createConsumer(
-						replyQueue, "JMSCorrelationID='" + replyCorrelationId
-								+ "'");
-				log.debug(getLogPrefix(session)
-						+ "] start waiting for reply on [" + replyQueue
-						+ "] selector [" + replyCorrelationId + "] for ["
-						+ replyTimeout_work + "] ms");
-				try {
-					connection.start();
-					javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
-					if (rawReplyMsg == null) {
-						throw new PipeRunException(this, getLogPrefix(session)
-								+ "did not receive reply on [" + replyQueue
-								+ "] replyCorrelationId [" + replyCorrelationId
-								+ "] within [" + replyTimeout_work + "] ms");
-					}
-					TextMessage replyMsg = (TextMessage) rawReplyMsg;
-					result = replyMsg.getText();
-				} finally {
+				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
+				log.debug("start waiting for reply on [" + replyQueue+ "] selector [" + replyCorrelationId + "] for ["+ replyTimeout_work + "] ms");
+
+				connection.start();
+				javax.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
+				if (rawReplyMsg == null) {
+					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}
+				TextMessage replyMsg = (TextMessage) rawReplyMsg;
+				result = replyMsg.getText();
 
 			} else {
 				result = msg.getJMSMessageID();
 			}
 		} catch (IOException|JMSException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+ " exception on sending message to Tibco queue", e);
+			throw new PipeRunException(this, "exception on sending message to Tibco queue", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (JMSException e) {
-					log.warn(getLogPrefix(session)
-							+ "exception on closing connection", e);
+					log.warn("exception on closing connection", e);
 				}
 			}
 		}
@@ -318,6 +277,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return url;
 	}
 
+	/** URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state */
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -326,22 +286,30 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return authAlias;
 	}
 
+	/** alias used to obtain credentials for authentication to host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setUserName(String string) {
-		userName = string;
+	/** username used in authentication to host */
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
+	/** password used in authentication to host */
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -350,15 +318,17 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return queueName;
 	}
 
+	/** The name of the queue which is used for browsing one queue */
 	public void setQueueName(String string) {
 		queueName = string;
 	}
 
-	public String getMessageProtocol() {
+	public MessageProtocol getMessageProtocol() {
 		return messageProtocol;
 	}
 
-	public void setMessageProtocol(String string) {
+	/** Protocol of Tibco service to be called */
+	public void setMessageProtocol(MessageProtocol string) {
 		messageProtocol = string;
 	}
 
@@ -366,10 +336,14 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		return replyTimeout;
 	}
 
+	/** Maximum time in milliseconds to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR)
+	 * @ff.default 5000
+	 */
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
 
+	/** If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion) */
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,38 +23,48 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class XmlValidatorErrorHandler implements ErrorHandler {
-	private boolean errorOccured = false;
-	private String reasons;
+	private @Getter boolean warningsOccurred = false;
+	private @Getter boolean errorOccurred = false;
+	private @Getter String reasons;
 	private final XmlValidatorContentHandler xmlValidatorContentHandler;
 	private XmlBuilder xmlReasons = new XmlBuilder("reasons");
+
+	public enum ReasonType {
+		WARNING,
+		ERROR;
+	}
 
 
 	public XmlValidatorErrorHandler(XmlValidatorContentHandler xmlValidatorContentHandler, String mainMessage) {
 		this.xmlValidatorContentHandler = xmlValidatorContentHandler;
-		XmlBuilder message = new XmlBuilder("message");;
+		XmlBuilder message = new XmlBuilder("message");
 		message.setValue(mainMessage);
 		xmlReasons.addSubElement(message);
 		reasons = mainMessage + ":";
 	}
 
-	protected void addReason(String message, String xpath, String location) {
+	protected void addReason(String message, String xpath, String location, ReasonType reasonType) {
 		if (xpath == null) {
 			xpath = xmlValidatorContentHandler.getXpath();
 		}
 
 		XmlBuilder reason = new XmlBuilder("reason");
+		reason.addAttribute("type", reasonType.name());
 		XmlBuilder detail;
 
 		detail = new XmlBuilder("xpath");
 		detail.setValue(xpath);
 		reason.addSubElement(detail);
 
-		detail = new XmlBuilder("location");
-		detail.setValue(location);
-		reason.addSubElement(detail);
+		if (StringUtils.isNotEmpty(location)) {
+			detail = new XmlBuilder("location");
+			detail.setValue(location);
+			reason.addSubElement(detail);
+		}
 
 		detail = new XmlBuilder("message");
 		detail.setValue(message);
@@ -67,7 +77,11 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		}
 		message = xpath + ": " + message;
 
-		errorOccured = true;
+		if (reasonType==ReasonType.WARNING) {
+			warningsOccurred=true;
+		} else {
+			errorOccurred = true;
+		}
 
 		if (reasons == null) {
 			reasons = message;
@@ -76,11 +90,15 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		}
 	}
 
-	protected void addReason(Throwable t) {
+	protected void addReason(Throwable t, ReasonType reasonType) {
 		String location = null;
 		if (t instanceof SAXParseException) {
 			SAXParseException spe = (SAXParseException)t;
-			location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
+			int lineNumber = spe.getLineNumber();
+			int columnNumber = spe.getColumnNumber();
+			if (lineNumber>=0 || columnNumber>=0) {
+				location = "at ("+lineNumber+ ","+columnNumber+")";
+			}
 		}
 		String message;
 		if (t instanceof SAXException) {
@@ -92,30 +110,22 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 			}
 			message = stringWriter.toString();
 		}
-		addReason(message, null, location);
+		addReason(message, null, location, reasonType);
 	}
 
 	@Override
 	public void warning(SAXParseException exception) {
-		addReason(exception);
+		addReason(exception, ReasonType.WARNING);
 	}
 
 	@Override
 	public void error(SAXParseException exception) {
-		addReason(exception);
+		addReason(exception, ReasonType.ERROR);
 	}
 
 	@Override
 	public void fatalError(SAXParseException exception) {
-		addReason(exception);
-	}
-
-	public boolean hasErrorOccured() {
-		return errorOccured;
-	}
-
-	public String getReasons() {
-		return reasons;
+		addReason(exception, ReasonType.ERROR);
 	}
 
 	public String getXmlReasons() {

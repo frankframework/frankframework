@@ -15,6 +15,8 @@
 								<tr>
 									<th>&nbsp;</th>
 									<th>Name</th>
+									<th>Method</th>
+									<th>IsView</th>
 									<th>UriPattern</th>
 								</tr>
 							</thead>
@@ -22,6 +24,8 @@
 								<tr ng-repeat="service in services">
 									<td>{{::$index}}</td>
 									<td>{{::service.name}}</a></td>
+									<td>{{::service.method}}</td>
+									<td>{{::service.view}}</td>
 									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.uriPattern}}</a></td>
 								</tr>
 							</tbody>
@@ -47,8 +51,8 @@
 									<td>{{::apiListener.uriPattern}}</td>
 									<td>{{::apiListener.method}}</td>
 									<td ng-if="::apiListener.error">{{::apiListener.error}}</td>
-									<td ng-if="::apiListener.schemaResource" class="hideBtn1170">
-										<a target="_blank" href="{{::rootURL}}api{{::apiListener.uriPattern}}/{{::apiListener.schemaResource}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>OpenAPI 3.0</span></a>
+									<td class="hideBtn1170">
+										<a target="_blank" href="{{::compileURL(apiListener)}}" class="btn btn-xs pull-right default" type="button"><i class="fa fa-arrow-circle-o-down aria-hidden="true"></i> <span>OpenAPI 3.0</span></a>
 									</td>
 								</tr>
 							</tbody>

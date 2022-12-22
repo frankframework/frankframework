@@ -23,7 +23,7 @@ package nl.nn.adapterframework.core;
  * @since  4.1
  */
 public interface IXAEnabled {
-	
+
 	/**
 	 *  indicates implementing object is under transaction control, using XA-transactions
 	 */

@@ -21,10 +21,10 @@ import org.w3c.dom.Document;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -54,12 +54,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *          ...
  * 	EINDEREKENVERZOEK :EINDE
+ * </pre></code>
  * </p>
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values 
+ * <tr><td>{@link #setDirection(String) direction}</td><td>transformation direction. Possible values
  * <ul>
  *   <li>"Xml2Label": transform an XML file to ascii</li>
  *   <li>"Label2Xml": transform an ascii file to XML</li>
@@ -68,43 +69,39 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * @author Gerrit van Brakel
  */
+@Category("NN-Special")
 public class LabelFormat extends FixedForwardPipe {
-	 
-	private String direction=null;
-	private final String DIRECTION_XML2LABEL = "Xml2Label";
 
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-	}	
-	
+	private String direction=null;
+	private static final String DIRECTION_XML2LABEL = "Xml2Label";
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String result;
 			if (getDirection().equalsIgnoreCase(DIRECTION_XML2LABEL)) {
-				
+
 				DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				Document document = documentBuilder.parse(message.asInputSource());
 
-				result = XmlToLabelFormat.doTransformation(document).toString();
+				result = XmlToLabelFormat.doTransformation(document);
 				return new PipeRunResult(getSuccessForward(), result);
 			}
 			else {
 				XMLReader reader = XMLReaderFactory.createXMLReader("nl.nn.adapterframework.extensions.rekenbox.CalcboxOutputReader");
 				CalcboxContentHandler handler = new CalcboxContentHandler(message.asString());
 				reader.setContentHandler(handler);
-				
+
 				return new PipeRunResult(getSuccessForward(), handler.getStringResult());
 			}
 		}
 		catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot transform", e);
+			throw new PipeRunException(this, "cannot transform", e);
 		}
 	}
 
 	/**
-	 * sets transformation direction. Possible values 
+	 * sets transformation direction. Possible values
 	 * <ul>
 	 *   <li>"Xml2Label": transform an XML file to ascii</li>
 	 *   <li>"Label2Xml": transform an ascii file to XML</li>

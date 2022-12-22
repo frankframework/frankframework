@@ -20,33 +20,46 @@ import java.util.Map;
 
 import org.springframework.beans.factory.DisposableBean;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+@FrankDocGroup(name = "Monitoring", order = 80)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
+	public enum TriggerType {
+		ALARM,
+		CLEARING
+	}
+
 	boolean isAlarm();
 	void clearEvents();
-	boolean isConfigured();
 	void configure();
+	boolean isConfigured();
+	void setMonitor(Monitor monitor);
 	void toXml(XmlBuilder monitor);
-	String getType();
-	String[] getEventCodes();
-	SeverityEnum getSeverityEnum();
-	String getSeverity();
-	int getThreshold();
-	int getPeriod();
-	Map<String, AdapterFilter> getAdapterFilters();
+
+	void setSourceFilteringEnum(SourceFiltering filtering);
 	SourceFiltering getSourceFilteringEnum();
 	String getSourceFiltering();
+
 	void setEventCodes(String[] arr);
-	void setType(String type);
+	String[] getEventCodes();
+
 	void setSeverityEnum(SeverityEnum enumeration);
+	String getSeverity();
+	SeverityEnum getSeverityEnum();
+
 	void setThreshold(int i);
+	int getThreshold();
+
 	void setPeriod(int i);
-	void clearAdapterFilters();
-	void setSourceFilteringEnum(SourceFiltering filtering);
+	int getPeriod();
+
 	void registerAdapterFilter(AdapterFilter af);
-	void setMonitor(Monitor monitor);
-	void setAlarm(boolean b);
+	Map<String, AdapterFilter> getAdapterFilters();
+	void clearAdapterFilters();
+
+	void setTriggerType(TriggerType type);
+	TriggerType getTriggerType();
 }

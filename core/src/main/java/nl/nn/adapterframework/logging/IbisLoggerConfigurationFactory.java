@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,6 +53,10 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+
+	static {
+		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
+	}
 
 	/**
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
@@ -129,6 +133,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		}
 
 		log4jProperties.putAll(System.getProperties()); //Set these after reading DeploymentSpecifics as we want to override the properties
+		log4jProperties.putAll(System.getenv()); // let environment properties override system properties and appConstants
 		setInstanceNameLc(log4jProperties); //Set instance.name.lc for log file names
 
 		return log4jProperties;

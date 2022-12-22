@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="JdbcListener" description="Test the functioning of the JdbcQueryListener and JdbcTableListener">
 		<receiver
 				name="JdbcQueryListener"
@@ -58,7 +58,7 @@
 			</pipe>
 			<pipe
 				name="do_success"
-				className="nl.nn.adapterframework.pipes.EchoPipe">
+				className="nl.nn.adapterframework.pipes.EchoPipe" getInputFromFixedValue="short text">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -113,7 +113,10 @@
 			</pipe>
 			<pipe name="Exec_Query"
 				storeResultInSessionKey="xml">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabase" />
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabaseWrapper" >
+					<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults"/>
+					<param name="numberOfAttempts" sessionKey="numberOfAttempts"/>
+				</sender>
 				<forward name="success" path="AddIgnores"/>
 			</pipe>
 			<pipe name="AddIgnores" className="nl.nn.adapterframework.pipes.XsltPipe"
@@ -130,4 +133,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

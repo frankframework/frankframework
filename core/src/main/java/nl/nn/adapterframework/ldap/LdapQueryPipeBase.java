@@ -17,32 +17,33 @@ package nl.nn.adapterframework.ldap;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Base pipe for querying LDAP.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
-	
+
 	private String ldapProviderURL;
 	private String host;
 	private int port = -1;
 	private boolean useSsl = false;
 	private String baseDN;
 
-	private String authAlias;
-	private String userName;
-	private String password;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
 
 	private String notFoundForwardName = "notFound";
 	private String exceptionForwardName = null;
@@ -63,7 +64,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 				throw new ConfigurationException("either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
 			}
 		}
-		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
 			notFoundForward = findForward(getNotFoundForwardName());
 		}
@@ -78,18 +79,17 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 			try {
 				return doPipeWithException(message, session);
 			} catch (Throwable t) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
+				log.warn("exception occured, forwarding to exception-forward [{}]", exceptionForward.getPath(), t);
 				return new PipeRunResult(exceptionForward, message);
 			}
-		} else {
-			return doPipeWithException(message, session);
 		}
+		return doPipeWithException(message, session);
 	}
 
 	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
-		String url; 
+		String url;
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			url=getLdapProviderURL();
 		} else {
@@ -103,7 +103,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://insim.biz'.", ""})
+	/** Url to context to search in, e.g. 'ldaps://DOMAIN.EXT'. */
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -111,7 +111,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return ldapProviderURL;
 	}
 
-	@IbisDoc({"2", "Host part of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
+	/** Host part of ldapProviderUrl. Only used when ldapProviderUrl not specified */
 	public void setHost(String string) {
 		host = string;
 	}
@@ -119,7 +119,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return host;
 	}
 
-	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
+	/** Port of ldapProviderUrl. Only used when ldapProviderUrl not specified */
 	public void setPort(int i) {
 		port = i;
 	}
@@ -127,7 +127,10 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return port;
 	}
 
-	@IbisDoc({"4", "Indication to use ldap or ldaps in ldapProviderUrl. Only used when ldapProviderUrl not specified", "false"})
+	/**
+	 * Indication to use ldap or ldaps in ldapProviderUrl. Only used when ldapProviderUrl not specified
+	 * @ff.default false
+	 */
 	public void setUseSsl(boolean b) {
 		useSsl = b;
 	}
@@ -135,7 +138,10 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return useSsl;
 	}
 
-	@IbisDoc({"5", "BaseDN, e.g. OU=Tenants,DC=INSIM,DC=BIZ", "false"})
+	/**
+	 * BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT
+	 * @ff.default false
+	 */
 	public void setBaseDN(String baseDN) {
 		this.baseDN = baseDN;
 	}
@@ -145,30 +151,25 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
 
 
-	@IbisDoc({"6", "Alias used to obtain credentials to connect to ldap server", ""})
+	/** Alias used to obtain credentials to connect to ldap server */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
+
+	/** Username used to obtain credentials to connect to ldap server */
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
-	@IbisDoc({"7", "Username used to obtain credentials to connect to ldap server", ""})
-	public void setUserName(String string) {
-		userName = string;
-	}
-	public String getUserName() {
-		return userName;
-	}
-
-	@IbisDoc({"8", "Password used to obtain credentials to connect to ldap server", ""})
+	/** Password used to obtain credentials to connect to ldap server */
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
-
 
 
 	public void setNotFoundForwardName(String string) {
@@ -179,7 +180,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"9", "PipeForward used when an exception is caught", ""})
+	/** PipeForward used when an exception is caught */
 	public void setExceptionForwardName(String string) {
 		exceptionForwardName = string;
 	}

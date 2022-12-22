@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,19 +25,18 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.stream.ThreadConnector;
 
 public class TransformerFilter extends FullXmlFilter {
 
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
-	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
+	private ThreadConnectingFilter threadConnectingFilter;
+
+	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) {
 		super();
-		if (expectChildThreads) {
-			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
+		if (threadConnector != null) {
+			handler = threadConnectingFilter = new ThreadConnectingFilter(threadConnector, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
@@ -48,9 +47,9 @@ public class TransformerFilter extends FullXmlFilter {
 		transformerHandler.setResult(transformedStream);
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
-		if (expectChildThreads) {
+		if (threadConnectingFilter != null) {
 			/*
-			 * If XSLT processing is done in another thread than the SAX events are provided, which is the 
+			 * If XSLT processing is done in another thread than the SAX events are provided, which is the
 			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up
 			 * through the transformerHandler automatically.
 			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
@@ -58,7 +57,7 @@ public class TransformerFilter extends FullXmlFilter {
 			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
 			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
-				
+
 				@Override
 				public void error(TransformerException paramTransformerException) throws TransformerException {
 					try {
@@ -69,7 +68,7 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
 				}
 
@@ -83,9 +82,9 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
-					
+
 				}
 
 				@Override
@@ -98,13 +97,19 @@ public class TransformerFilter extends FullXmlFilter {
 						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
-						throw e; 
+						throw e;
 					}
-					
+
 				}
 			});
 		}
+		if (removeNamespacesFromInput) {
+			inputHandler = new NamespaceRemovingFilter(inputHandler);
+		}
 		setContentHandler(inputHandler);
+		if (!handleLexicalEvents) {
+			setLexicalHandler(null);
+		}
 	}
 
 

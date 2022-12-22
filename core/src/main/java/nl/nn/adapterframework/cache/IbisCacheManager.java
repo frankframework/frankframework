@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.cache;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -23,12 +26,11 @@ import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.statistics.StatisticsGateway;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Common manager for caching.
@@ -39,33 +41,33 @@ import org.apache.logging.log4j.Logger;
 public class IbisCacheManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final String CACHE_DIR_KEY="cache.dir";
-	
+	private static final String CACHE_DIR_KEY="cache.dir";
+
 	private static IbisCacheManager self;
 	private CacheManager cacheManager=null;
-	
+
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
 		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
-			log.debug("setting cache directory to ["+cacheDir+"]");
+			log.debug("setting cache directory to [{}]", cacheDir);
 			DiskStoreConfiguration diskStoreConfiguration = new DiskStoreConfiguration();
 			diskStoreConfiguration.setPath(cacheDir);
 			cacheManagerConfig.addDiskStore(diskStoreConfiguration);
-		} 
+		}
 		CacheConfiguration defaultCacheConfig = new CacheConfiguration();
 		cacheManagerConfig.addDefaultCache(defaultCacheConfig);
 		cacheManager= new CacheManager(cacheManagerConfig);
 	}
-	
-	public synchronized static IbisCacheManager getInstance() {
+
+	public static synchronized IbisCacheManager getInstance() {
 		if (self==null) {
 			self=new IbisCacheManager();
 		}
 		return self;
 	}
-	
-	public synchronized static void shutdown() {
+
+	public static synchronized void shutdown() {
 		if (self!=null) {
 			self.log.debug("shutting down cacheManager...");
 			self.cacheManager.shutdown();
@@ -74,15 +76,15 @@ public class IbisCacheManager {
 			self=null;
 		}
 	}
-	
+
 	public Ehcache addCache(Cache cache) {
-		log.debug("registering cache ["+cache.getName()+"]");
-		cacheManager.addCache(cache);
+		log.debug("registering cache [{}]", cache.getName());
+		cacheManager.addCache(cache); //ObjectExistsException
 		return cacheManager.getEhcache(cache.getName());
 	}
 
-	public void removeCache(String cacheName) {
-		log.debug("deregistering cache ["+cacheName+"]");
+	public void destroyCache(String cacheName) {
+		log.debug("destroying cache [{}]", cacheName);
 		cacheManager.removeCache(cacheName);
 	}
 
@@ -90,23 +92,27 @@ public class IbisCacheManager {
 		return cacheManager.getCache(cacheName);
 	}
 
-	public static void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public static <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException {
 		if (self==null) {
 			return;
 		}
-		String cacheNames[]=self.cacheManager.getCacheNames();
+		String[] cacheNames = self.cacheManager.getCacheNames();
 		for (int i=0;i<cacheNames.length;i++) {
-			Object subdata=hski.openGroup(data, cacheNames[i], "cache");
+			D subdata=hski.openGroup(data, cacheNames[i], "cache");
 			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
-			StatisticsGateway stats = cache.getStatistics();
-			hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
-			hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
-			hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
-			hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
-			hski.handleScalar(subdata, "ObjectCount", cache.getSize());
-			hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
-			hski.closeGroup(subdata);
+			if (hski instanceof MetricsInitializer) {
+				((MetricsInitializer)hski).configureCache(cache);
+			} else {
+				StatisticsGateway stats = cache.getStatistics();
+				hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
+				hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
+				hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
+				hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
+				hski.handleScalar(subdata, "ObjectCount", cache.getSize());
+				hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
+				hski.closeGroup(subdata);
+			}
 		}
 	}
-	
+
 }

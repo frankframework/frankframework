@@ -1,45 +1,29 @@
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="https://java.sun.com/xml/ns/javaee"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		 version="3.0">
-	<display-name>IBIS AdapterFramework</display-name>
+	<display-name>Frank!Framework</display-name>
 
-	<description>The IBIS AdapterFramework provides functionality to listen to some
-	event (e.g. a JMS message arrival) and perform some predefined actions. These actions
-	are configured in an XML file. On the event several actions, called pipes, grouped in
-	a pipeline, are fired.
+	<description>
+		The Frank!Framework provides functionality to listen to some event (e.g. a JMS message arrival) and perform some predefined actions.
+		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
-
-	<context-param>
-		<param-name>restListenerPathPrefix</param-name>
-		<param-value>rest</param-value>
-	</context-param>
-
-	<filter>
-		<filter-name>LoginFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
-		<init-param>
-			<param-name>allowedExtensions</param-name>
-			<param-value>css js gif jpg png svg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /FileViewerServlet /testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedDataAdminPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedTesterPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-	</filter>
 
 	<filter>
 		<filter-name>CacheControlFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
+
+	<!-- Spring Security -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
@@ -56,14 +40,9 @@
 		<url-pattern>/iaf/api/*</url-pattern>
 	</filter-mapping>
 
-	<filter-mapping>
-		<filter-name>LoginFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 	<!--
 		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
-		After loading the ROOT context with all HTTP/CXF servlets (endpoints), the all servlets will be initialized.
+		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
 		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
 	-->
 	<listener>
@@ -76,83 +55,6 @@
 		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-
-	<servlet>
-		<description>CXF Servlet for SOAP WebServices</description>
-		<display-name>CXF Servlet</display-name>
-		<servlet-name>CXFServlet</servlet-name>
-		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>CXFServlet</servlet-name>
-		<url-pattern>/services/*</url-pattern>
-	</servlet-mapping>
-
-	<!-- legacy; to be removed in the year 2020 -->
-	<servlet-mapping>
-		<servlet-name>CXFServlet</servlet-name>
-		<url-pattern>/servlet/*</url-pattern>
-	</servlet-mapping>
-	<!-- END Soap Router -->
-
-	<!-- Index Servlet -->
-	<servlet>
-		<display-name>Webapp index redirect</display-name>
-		<servlet-name>IndexProxy</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.RedirectIndexProxy</servlet-class>
-	</servlet>
-
-	<!-- Test Tool Servlet -->
-	<servlet>
-		<servlet-name>TestToolServlet</servlet-name>
-		<servlet-class>nl.nn.ibistesttool.Servlet</servlet-class>
-	</servlet>
-
-	<!-- AdapterFramework servlets -->
-	<servlet>
-		<display-name>file viewer</display-name>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.webcontrol.FileViewerServlet</servlet-class>
-	</servlet>
-	<servlet>
-		<display-name>HttpListener</display-name>
-		<servlet-name>HttpListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.HttpListenerServlet</servlet-class>
-	</servlet>
-	<servlet>
-		<display-name>RestListener</display-name>
-		<servlet-name>RestListener</servlet-name>
-		<servlet-class>nl.nn.adapterframework.http.RestListenerServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>FileViewerServlet</servlet-name>
-		<url-pattern>/FileViewerServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>HttpListener</servlet-name>
-		<url-pattern>/HttpListener</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>RestListener</servlet-name>
-		<url-pattern>/rest-public/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>IndexProxy</servlet-name>
-		<url-pattern>/index.jsp</url-pattern>
-	</servlet-mapping>
-
-	<!-- Test Tool Servlet Mapping -->
-	<servlet-mapping>
-		<servlet-name>TestToolServlet</servlet-name>
-		<url-pattern>/testtool</url-pattern>
-	</servlet-mapping>
 
 	<!-- Welcome File List -->
 	<mime-mapping>
@@ -175,17 +77,52 @@
 	<!-- TODO: find a way to dynamically set this! -->
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>Ibis</realm-name>
+		<realm-name>Frank</realm-name>
 	</login-config>
 
+	<security-constraint>
+		<display-name>PublicAccess</display-name>
+		<web-resource-collection>
+			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
+			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
+			<url-pattern>/*</url-pattern>
+			<url-pattern>/iaf/api/server/health</url-pattern>
+		</web-resource-collection>
+	</security-constraint>
+
 	<!--
-	When a security-constraint element is present Tomcat will autenticate the
+	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
+	See nl.nn.adapterframework.lifecycle.ServletManager
+
+	When a security-constraint element is present Tomcat will authenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
 	-->
 
 	<!-- security-constraint>
+		<web-resource-collection>
+			<web-resource-name>GUI login</web-resource-name>
+			<description></description>
+			<url-pattern>/iaf/</url-pattern>
+			<url-pattern>/iaf/index.jsp</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<description></description>
+			<role-name>IbisObserver</role-name>
+			<role-name>IbisAdmin</role-name>
+			<role-name>IbisDataAdmin</role-name>
+			<role-name>IbisTester</role-name>
+			<role-name>IbisWebService</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+
+	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
@@ -223,100 +160,19 @@
 			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
 			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
 			<url-pattern>/*</url-pattern>
+			<url-pattern>/iaf/api/server/health</url-pattern>
 		</web-resource-collection>
 		<user-data-constraint>
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
-	<security-constraint>
-		<display-name>ObserverAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>ObserverAccessResourceCollection</web-resource-name>
-			<description>collection of url's for observer access</description>
-			<url-pattern>/FileViewerServlet</url-pattern>
-			<url-pattern>/testtool</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>AdminAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>AdminAccessResourceCollection</web-resource-name>
-			<description>collection of url's for administrator access</description>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>DataAdminAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>DataAdminAccessResourceCollection</web-resource-name>
-			<description>collection of url's for data administrator access</description>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>TesterAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>TesterAccessResourceCollection</web-resource-name>
-			<description>collection of url's for tester access</description>
-			<url-pattern>/larva/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
+	<security-role>
+		<description>all authenticated users</description>
+		<role-name>**</role-name>
+	</security-role -->
+	<!-- The above role exists solely for the ibis-war-plugin which removes the 'dashes' from the endElement tag -->
 
-	<security-constraint>
-		<display-name>WebServiceAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
-			<description>collection of url's for webservice access</description>
-			<url-pattern>/servlet/rpcrouter/*</url-pattern>
-			<url-pattern>/servlet/messagerouter</url-pattern>
-			<url-pattern>/services/*</url-pattern>
-			<url-pattern>/HttpListener</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-			<url-pattern>/cmis/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisWebService</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>NONE</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
+	<!-- These roles are parsed when Spring Security is enabled and uses JEE container authorization. -->
 	<security-role>
 		<description>can call Ibis WebServices</description>
 		<role-name>IbisWebService</role-name>
@@ -326,16 +182,15 @@
 		<role-name>IbisObserver</role-name>
 	</security-role>
 	<security-role>
-		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions too</description>
+		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions</description>
 		<role-name>IbisDataAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can do a full reload and test a pipeline, has all IbisDataAdmin permissions too</description>
+		<description>can do a full reload and has all IbisDataAdmin permissions</description>
 		<role-name>IbisAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
+		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
 		<role-name>IbisTester</role-name>
-	</security-role -->
-
+	</security-role>
 </web-app>

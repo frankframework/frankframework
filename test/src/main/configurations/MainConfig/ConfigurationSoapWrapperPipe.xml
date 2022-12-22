@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="SoapWrapperPipe" description="Test the functioning of the SoapWrapperPipe">
 		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
@@ -76,4 +76,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

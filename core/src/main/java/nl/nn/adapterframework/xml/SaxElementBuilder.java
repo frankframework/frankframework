@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,18 +24,21 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.util.XmlUtils;
+
 public class SaxElementBuilder implements AutoCloseable {
 
 	private ContentHandler handler;
 	private String elementName;
 	private SaxElementBuilder parent;
-	
+
 	private AttributesImpl attributes=null;
+	private boolean promotedToObject = false;
 
 	public SaxElementBuilder() throws SAXException {
 		this(new XmlWriter());
 	}
-	
+
 	public SaxElementBuilder(Writer writer) throws SAXException {
 		this(new XmlWriter(writer));
 	}
@@ -47,7 +50,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	public SaxElementBuilder(String elementName) throws SAXException {
 		this(elementName, new XmlWriter());
 	}
-	
+
 	public SaxElementBuilder(String elementName, Writer writer) throws SAXException {
 		this(elementName, new XmlWriter(writer));
 	}
@@ -55,7 +58,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	public SaxElementBuilder(String elementName, ContentHandler handler) throws SAXException {
 		this(elementName, handler, null);
 	}
-	
+
 	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) throws SAXException {
 		this.handler = handler;
 		this.elementName = elementName;
@@ -68,7 +71,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	public SaxElementBuilder addAttribute(String name, int value) throws SAXException {
 		return addAttribute(name, Integer.toString(value));
 	}
-	
+
 	public SaxElementBuilder addAttribute(String name, String value) throws SAXException {
 		if (attributes==null) {
 			throw new SaxException("start of element ["+elementName+"] already written");
@@ -77,7 +80,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		String attrlocalName = name;
 		String attrqName = attrlocalName;
 		String attrType = "";
-		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, value);
+		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, XmlUtils.normalizeAttributeValue(value));
 		return this;
 	}
 
@@ -100,7 +103,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 		return this;
 	}
-	
+
 	public SaxElementBuilder endElement() throws SAXException {
 		writePendingStartElement();
 		String uri = "";
@@ -110,7 +113,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		elementName = null;
 		return parent;
 	}
-	
+
 	public SaxElementBuilder addValue(String value) throws SAXException {
 		if (StringUtils.isNotEmpty(value)) {
 			char[] chars = value.toCharArray();
@@ -122,8 +125,12 @@ public class SaxElementBuilder implements AutoCloseable {
 		writePendingStartElement();
 		handler.characters(chars, offset, len);
 	}
-	
+
 	public SaxElementBuilder startElement(String elementName) throws SAXException {
+		if (elementName==null) {
+			promotedToObject = true;
+			return this;
+		}
 		writePendingStartElement();
 		return new SaxElementBuilder(elementName, handler, this);
 	}
@@ -131,7 +138,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	public void addElement(String elementName) throws SAXException {
 		addElement(elementName, null, null);
 	}
-	
+
 	public void addElement(String elementName, Map<String,String> attributes) throws SAXException {
 		addElement(elementName, attributes, null);
 	}
@@ -150,8 +157,12 @@ public class SaxElementBuilder implements AutoCloseable {
 
 	@Override
 	public void close() throws SAXException {
-		if (elementName != null) {
-			endElement();
+		if (promotedToObject) {
+			promotedToObject=false;
+		} else {
+			if (elementName != null) {
+				endElement();
+			}
 		}
 	}
 
@@ -163,5 +174,4 @@ public class SaxElementBuilder implements AutoCloseable {
 	public ContentHandler getHandler() {
 		return handler;
 	}
-	
 }

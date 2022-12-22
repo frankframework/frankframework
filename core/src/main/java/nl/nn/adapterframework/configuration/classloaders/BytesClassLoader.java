@@ -21,19 +21,19 @@ import java.net.URLStreamHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.IbisContext;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
 
-	private Map<String, byte[]> resources = new HashMap<String, byte[]>();
+	private Map<String, byte[]> resources = new HashMap<>();
 
-	public BytesClassLoader(ClassLoader classLoader) {
+	protected BytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
 	@Override
-	public final void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+	public final void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
 		super.configure(ibisContext, configurationName);
 		resources = loadResources();
 	}
@@ -57,7 +57,7 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	 * Tries to load new resources, upon success, clears all resources, calls it's super.reload() and sets the new resources
 	 */
 	@Override
-	public final void reload() throws ConfigurationException {
+	public final void reload() throws ClassLoaderException {
 		Map<String, byte[]> newResources = loadResources();
 		if (newResources != null) {
 			clearResources();
@@ -75,7 +75,7 @@ public abstract class BytesClassLoader extends ClassLoaderBase {
 	/**
 	 * Called during a reload for a green/blue deployment, and after the classloader has been configured to load new resources
 	 */
-	protected abstract Map<String, byte[]> loadResources() throws ConfigurationException;
+	protected abstract Map<String, byte[]> loadResources() throws ClassLoaderException;
 
 	/**
 	 * Clears all resources

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,12 +30,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
-import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.io.input.CountingInputStream;
@@ -49,30 +46,32 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.functional.ThrowingRunnable;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
- * 
+ *
  * @author  Gerrit van Brakel
  */
+//Be careful: UTIL classes should NOT depend on the Servlet-API
 public class StreamUtil {
 
-	public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
+	public static final String AUTO_DETECT_CHARSET = "auto";
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
-	
+
 	@Deprecated
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
-		} 
+		}
 		if (target instanceof String) {
 			return getFileOutputStream((String)target);
-			
 		}
 		if (target instanceof Message) {
 			if(((Message) target).asObject() instanceof String) {
@@ -96,18 +95,6 @@ public class StreamUtil {
 		}
 	}
 
-	@Deprecated
-	public static Writer getWriter(Object target) throws IOException {
-		if (target instanceof HttpServletResponse) {
-			return ((HttpServletResponse)target).getWriter();
-		}
-		if (target instanceof Writer) {
-			return (Writer)target;
-		}
-		
-		return null;
-	}
-	
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {
 			public NonClosingInputStreamFilter(InputStream in) {
@@ -117,8 +104,8 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingInputStreamFilter(stream);
 	}
 
@@ -131,11 +118,25 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingReaderFilter(reader);
 	}
-	
+
+	public static OutputStream dontClose(OutputStream stream) {
+		class NonClosingOutputStreamFilter extends FilterOutputStream {
+			public NonClosingOutputStreamFilter(OutputStream out) {
+				super(out);
+			}
+			@Override
+			public void close() throws IOException {
+				// do not close
+			}
+		}
+
+		return new NonClosingOutputStreamFilter(stream);
+	}
+
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		try {
 			StringBuffer sb = new StringBuffer();
@@ -173,14 +174,14 @@ public class StreamUtil {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		return Misc.streamToBytes(bOMInputStream);
 	}
-	
+
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, the default character set UTF-8 is used.
 	 */
 	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
 		return getCharsetDetectingInputStreamReader(inputStream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
-	
+
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
@@ -195,11 +196,11 @@ public class StreamUtil {
 
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
-	
+
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in!=null) {
-			byte buffer[]=new byte[chunkSize]; 
-					
+			byte[] buffer=new byte[chunkSize];
+
 			int bytesRead=1;
 			while (bytesRead>0) {
 				bytesRead=in.read(buffer,0,chunkSize);
@@ -215,8 +216,8 @@ public class StreamUtil {
 
 	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
 		if (reader!=null) {
-			char buffer[]=new char[chunkSize]; 
-					
+			char[] buffer=new char[chunkSize];
+
 			int charsRead=1;
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
@@ -243,15 +244,7 @@ public class StreamUtil {
 		}
 	}
 
-	public static ZipOutputStream openZipDownload(HttpServletResponse response, String filename) throws IOException {
-		OutputStream out = response.getOutputStream();
-		response.setContentType("application/x-zip-compressed");
-		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
-		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
-		return zipOutputStream;
-	}
-
-	public static InputStream onClose(InputStream stream, Runnable onClose) {
+	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {
 		return new FilterInputStream(stream) {
 			@Override
 			public void close() throws IOException {
@@ -264,7 +257,7 @@ public class StreamUtil {
 		};
 	}
 
-	public static OutputStream onClose(OutputStream stream, Runnable onClose) {
+	public static OutputStream onClose(OutputStream stream, ThrowingRunnable<IOException> onClose) {
 		return new FilterOutputStream(stream) {
 			@Override
 			public void close() throws IOException {
@@ -276,8 +269,8 @@ public class StreamUtil {
 			}
 		};
 	}
-	
-	public static Reader onClose(Reader reader, Runnable onClose) {
+
+	public static Reader onClose(Reader reader, ThrowingRunnable<IOException> onClose) {
 		return new FilterReader(reader) {
 			@Override
 			public void close() throws IOException {
@@ -290,7 +283,7 @@ public class StreamUtil {
 		};
 	}
 
-	public static Writer onClose(Writer writer, Runnable onClose) {
+	public static Writer onClose(Writer writer, ThrowingRunnable<IOException> onClose) {
 		return new FilterWriter(writer) {
 			@Override
 			public void close() throws IOException {
@@ -303,7 +296,7 @@ public class StreamUtil {
 		};
 	}
 
-	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below) 
+	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below)
 	private static void closeResource(AutoCloseable resource) {
 		resource.close();
 	}
@@ -319,23 +312,21 @@ public class StreamUtil {
 	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
 		return onClose(reader, () -> closeResource(resource));
 	}
-	
+
 	public static Writer closeOnClose(Writer writer, AutoCloseable resource) {
 		return onClose(writer, () -> closeResource(resource));
 	}
 
-	
-	
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
-		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
+		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; });
 	}
-	
+
 	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
 		class WatchedInputStream extends FilterInputStream {
 			public WatchedInputStream(InputStream in) {
 				super(in);
 			}
-			
+
 			private IOException handleException(IOException e) {
 				if (onException!=null) {
 					IOException r = onException.apply(e);
@@ -345,7 +336,7 @@ public class StreamUtil {
 				}
 				return e;
 			}
-			
+
 			@Override
 			public void close() throws IOException {
 				try {
@@ -412,19 +403,68 @@ public class StreamUtil {
 				}
 			}
 
-		};
+		}
 
 		return new WatchedInputStream(stream);
 	}
 
+	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
+		return new MarkCompensatingOutputStream(stream);
+	}
+
+	static class MarkCompensatingOutputStream extends FilterOutputStream {
+		private int bytesToSkip = 0;
+
+		public MarkCompensatingOutputStream(OutputStream out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if(bytesToSkip > 0) {
+				--bytesToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) throws IOException {
+			if(bytesToSkip == 0) {
+				out.write(b, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if(bytesToSkip < sizeToRead) {
+				out.write(b, off + bytesToSkip, len - bytesToSkip);
+				reset();
+			} else {
+				bytesToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int bytesToSkip) {
+			this.bytesToSkip = bytesToSkip;
+		}
+		public void reset() {
+			mark(0);
+		}
+	}
+
+	/**
+	 * Triggers the next byte after the threshold has been reached.
+	 * If bytes are written in chunks it triggers after processing the entire chunk.
+	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
 		return new ThresholdingOutputStream(maxSize) {
-			
+
 			@Override
 			protected void thresholdReached() throws IOException {
 				stream.close();
 			}
-			
+
 			@Override
 			protected OutputStream getStream() throws IOException {
 				if (isThresholdExceeded()) {
@@ -438,7 +478,7 @@ public class StreamUtil {
 
 	public static Writer limitSize(Writer writer, int maxSize) {
 		return new Writer() {
-			
+
 			private long written;
 
 			@Override
@@ -470,10 +510,11 @@ public class StreamUtil {
 		return captureInputStream(in, capture, 10000, true);
 	}
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
-		
+
 		CountingInputStream counter = new CountingInputStream(in);
-		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
-			
+		MarkCompensatingOutputStream markCompensatingOutputStream = markCompensatingOutputStream(limitSize(capture, maxSize));
+		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
+
 			@Override
 			public void close() throws IOException {
 				try {
@@ -488,8 +529,19 @@ public class StreamUtil {
 				}
 			}
 
+			@Override
+			public synchronized void mark(int readlimit) {
+				markCompensatingOutputStream.mark(readlimit);
+				super.mark(readlimit);
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				markCompensatingOutputStream.reset();
+				super.reset();
+			}
 		};
-		
+
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
@@ -498,7 +550,7 @@ public class StreamUtil {
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
 		return new TeeOutputStream(stream, limitSize(capture,maxSize));
 	}
-	
+
 	private static interface ReadMethod {
 		int read() throws IOException;
 	}
@@ -508,10 +560,9 @@ public class StreamUtil {
 	}
 	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
 		return new TeeReader(in, limitSize(capture, maxSize), true) {
-			
+
 			private int charsRead;
-			
-			
+
 			private int readCounted(ReadMethod reader) throws IOException {
 				int len = reader.read();
 				if (len>0) {
@@ -519,7 +570,7 @@ public class StreamUtil {
 				}
 				return len;
 			}
-			
+
 			@Override
 			public int read() throws IOException {
 				return readCounted(() -> super.read());

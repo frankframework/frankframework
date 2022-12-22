@@ -1,6 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
-
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,8 +25,10 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -73,7 +74,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getAutoIncrementKeyFieldType() {
 		return "INT IDENTITY";
 	}
-	
+
 	@Override
 	public boolean autoIncrementKeyMustBeInserted() {
 		return false;
@@ -88,10 +89,10 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getTimestampFieldType() {
 		return "DATETIME";
 	}
-	
+
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 		String formattedDate = formatter.format(date);
 		return "CONVERT(datetime, '" + formattedDate + "', 120)";
 	}
@@ -118,14 +119,14 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return (rsmeta.getColumnType(colNum)==Types.VARCHAR || rsmeta.getColumnType(colNum)==Types.NVARCHAR) && rsmeta.getPrecision(colNum)>CLOB_SIZE_TRESHOLD;
 	}
-	
+
 
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
-	
-	
+
+
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
@@ -163,7 +164,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		String query="select top(1) * from "+tableName;
 		return query;
-	} 
+	}
 
 	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
@@ -228,17 +229,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
-		String query="select count(*) from sys.index_columns where object_id = object_id('"+tableName+"') and col_name(object_id, column_id)=?";
-		try {
-			return JdbcUtil.executeIntQuery(conn, query, columnName)>=1;
-		} catch (Exception e) {
-			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
-			return false;
-		}
-	}
-
-	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
 		StringBuilder query= new StringBuilder("select count(*) from sys.indexes si");
 		for (int i=1;i<=columns.size();i++) {
@@ -258,12 +248,21 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
-	
+	@Override
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
+		String query = "DELETE "+(maxRows>0?"TOP("+maxRows+") ":"")
+					+ "FROM " + tableName
+					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+					+ "') AND " + expiryDateField + " < ?";
+		return query;
+	}
+
+
 	@Override
 	public String getBooleanFieldType() {
 		return "BIT";
 	}
-	
+
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value? "1":"0";

@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.LocalFileSystemSender;
 import nl.nn.adapterframework.stream.Message;
@@ -25,14 +26,14 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		result.setRoot(folder.getRoot().getAbsolutePath());
 		return result;
 	}
-	
+
 	@Override
 	public void setUp() throws Exception {
 		folder = new TemporaryFolder();
 		folder.create();
 		super.setUp();
 	}
-	
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(folder);
@@ -47,29 +48,24 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
-		sender.setAction("rename");
-		Parameter param1 = new Parameter();
-		param1.setName("filename");
-		param1.setValue(src.getPath());
-		sender.addParameter(param1);
+		sender.setAction(FileSystemAction.RENAME);
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		Parameter param2 = new Parameter();
-		param2.setName("destination");
-		param2.setValue(dest.getPath());
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
+		autowireByName(sender);
 		sender.configure();
 		sender.open();
-	
+
 		try (FileOutputStream fout = new FileOutputStream(src)) {
 			fout.write("tja".getBytes());
 		}
-		
-		Message result = sender.sendMessage(Message.nullMessage(), null);
-		
+
+		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
+
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());
-	
+
 	}
 
 	@Test
@@ -81,24 +77,19 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
-		sender.setAction("rename");
-		Parameter param1 = new Parameter();
-		param1.setName("filename");
-		param1.setValue(src.getPath());
-		sender.addParameter(param1);
+		autowireByName(sender);
+		sender.setAction(FileSystemAction.RENAME);
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		Parameter param2 = new Parameter();
-		param2.setName("destination");
-		param2.setValue(dest.getPath());
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();
-	
+
 		try (FileOutputStream fout = new FileOutputStream(src)) {
 			fout.write("tja".getBytes());
 		}
-		Message result = sender.sendMessage(Message.nullMessage(), null);
+		Message result = sender.sendMessageOrThrow(Message.nullMessage(), null);
 
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
+import nl.nn.adapterframework.stream.document.Json2XmlHandler;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -43,71 +45,93 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.ThreadConnectingFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
-	
+
 	private INamedObject owner;
 	protected Object requestStream;
 	private Message response;
 	private PipeForward forward;
-	
+	private String conversionCharset;
+
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
-	
+
 	private Set<AutoCloseable> resourcesToClose;
-	
+
 	private ThreadConnector<?> threadConnector;
-	
-	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
+	private ThreadConnector<?> targetThreadConnector;
+
+	protected MessageOutputStream(INamedObject owner, IForwardTarget next, String conversionCharset) {
 		this.owner=owner;
+		this.conversionCharset=conversionCharset;
 		tail=this;
 		setForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, next==null?null:next.getName()));
 	}
-	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream) {
+	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream, String conversionCharset) {
 		this.owner=owner;
+		this.conversionCharset=conversionCharset;
 		connect(nextStream);
 	}
-	
+
 	public MessageOutputStream(INamedObject owner, OutputStream stream, IForwardTarget next) {
-		this(owner, next);
-		this.requestStream=stream;
+		this(owner, stream, next, null);
 	}
 	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream) {
-		this(owner, nextStream);
+		this(owner, stream, nextStream, null);
+	}
+	public MessageOutputStream(INamedObject owner, OutputStream stream, IForwardTarget next, String conversionCharset) {
+		this(owner, next, conversionCharset);
 		this.requestStream=stream;
 	}
-	
+	public MessageOutputStream(INamedObject owner, OutputStream stream, MessageOutputStream nextStream, String conversionCharset) {
+		this(owner, nextStream, conversionCharset);
+		this.requestStream=stream;
+	}
+
 	public MessageOutputStream(INamedObject owner, Writer writer, IForwardTarget next) {
-		this(owner, next);
-		this.requestStream=writer;
+		this(owner, writer, next, null);
 	}
 	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream) {
-		this(owner, nextStream);
+		this(owner, writer, nextStream, null);
+	}
+	public MessageOutputStream(INamedObject owner, Writer writer, IForwardTarget next, String conversionCharset) {
+		this(owner, next, conversionCharset);
 		this.requestStream=writer;
 	}
-	
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
-		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+	public MessageOutputStream(INamedObject owner, Writer writer, MessageOutputStream nextStream, String conversionCharset) {
+		this(owner, nextStream, conversionCharset);
+		this.requestStream=writer;
 	}
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, nextStream);
-		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+
+	// this constructor for testing only
+	<T> MessageOutputStream(ContentHandler handler) {
+		this(null, (IForwardTarget)null, null);
+		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
+		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
 	}
-	
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
-		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
+		this(owner, nextStream, null);
+		threadConnector = new ThreadConnector<T>(owner, "ContentHandler-MessageOutputStream", threadLifeCycleEventListener, txManager, session);
+		this.requestStream=new ThreadConnectingFilter(threadConnector, handler);
+		this.targetThreadConnector = targetThreadConnector;
 	}
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, nextStream);
+
+	// this constructor for testing only
+	<T> MessageOutputStream(JsonEventHandler handler) {
+		this(null, (IForwardTarget)null, null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(null, null, null, null, (PipeLineSession)null);
+	}
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
+		this(owner, nextStream, null);
+		this.requestStream=handler;
+		threadConnector = new ThreadConnector<T>(owner, "JsonEventHandler-MessageOutputStream", threadLifeCycleEventListener, txManager, session);
+		this.targetThreadConnector = targetThreadConnector;
+		//TODO apply ThreadConnectingFilter, to make sure transaction is properly resumed in child thread
 	}
 
 
@@ -115,12 +139,12 @@ public class MessageOutputStream implements AutoCloseable {
 	private void connect(MessageOutputStream nextStream) {
 		this.nextStream=nextStream;
 		if (nextStream==null) {
-			tail=this;			
+			tail=this;
 		} else {
 			tail=nextStream.tail;
 		}
 	}
-	
+
 	protected void setRequestStream(Object requestStream) {
 		this.requestStream = requestStream;
 	}
@@ -138,14 +162,14 @@ public class MessageOutputStream implements AutoCloseable {
 	public void afterClose() throws Exception {
 		// can be overridden when necessary
 	}
-	
+
 	public void closeOnClose(AutoCloseable resource) {
 		if (resourcesToClose==null) {
 			resourcesToClose = new LinkedHashSet<>();
 		}
 		resourcesToClose.add(resource);
 	}
-	
+
 	@Override
 	public final void close() throws Exception {
 		try {
@@ -157,16 +181,28 @@ public class MessageOutputStream implements AutoCloseable {
 				}
 			} finally {
 				try {
-					afterClose();
+					try {
+						if (targetThreadConnector!=null) {
+							targetThreadConnector.close();
+						}
+					} finally {
+						if (threadConnector!=null) {
+							threadConnector.close();
+						}
+					}
 				} finally {
-					if (resourcesToClose!=null) {
-						resourcesToClose.forEach(r -> {
-							try {
-								r.close();
-							} catch (Exception e) {
-								log.warn("Could not close resource", e);
-							}
-						});
+					try {
+						afterClose();
+					} finally {
+						if (resourcesToClose!=null) {
+							resourcesToClose.forEach(r -> {
+								try {
+									r.close();
+								} catch (Exception e) {
+									log.warn("Could not close resource", e);
+								}
+							});
+						}
 					}
 				}
 			}
@@ -178,6 +214,7 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 
 	public Object asNative() {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning native["+ClassUtils.nameOf(requestStream)+"]");
 		return requestStream;
 	}
 
@@ -185,13 +222,13 @@ public class MessageOutputStream implements AutoCloseable {
 		if (owner==null) {
 			return "";
 		}
-		return "MessageOutputStream of ("+owner.getClass().getName()+") ["+owner.getName()+"] ";
+		return "MessageOutputStream of "+ClassUtils.nameOf(owner)+" ";
 	}
-	
+
 	public OutputStream asStream() throws StreamingException {
 		return asStream(null);
 	}
-	
+
 	public OutputStream asStream(String charset) throws StreamingException {
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning OutputStream as OutputStream");
@@ -199,7 +236,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		if (requestStream instanceof Writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning Writer as OutputStream");
-			return new WriterOutputStream((Writer) requestStream, StringUtils.isNotEmpty(charset)?charset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return new WriterOutputStream((Writer) requestStream, StringUtils.isNotEmpty(charset)?charset:StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 		if (requestStream instanceof ContentHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix() + "returning ContentHandler as OutputStream");
@@ -211,7 +248,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		return null;
 	}
-	
+
 	public Writer asWriter() throws StreamingException {
 		if (requestStream instanceof Writer) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning Writer as Writer");
@@ -220,7 +257,7 @@ public class MessageOutputStream implements AutoCloseable {
 		if (requestStream instanceof OutputStream) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as Writer");
-				return new OutputStreamWriter((OutputStream) requestStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				return new OutputStreamWriter((OutputStream) requestStream, StringUtils.isNotEmpty(conversionCharset)?conversionCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new StreamingException(e);
 			}
@@ -271,7 +308,7 @@ public class MessageOutputStream implements AutoCloseable {
 			return (JsonEventHandler) requestStream;
 		}
 		if (requestStream instanceof ContentHandler) {
-			throw new StreamingException("Cannot handle JSON as XML");
+			return new Json2XmlHandler((ContentHandler) requestStream, false);
 		}
 		if (requestStream instanceof OutputStream) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning OutputStream as JsonEventHandler");
@@ -314,7 +351,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		log.warn("captureCharacterStream() called before stream is installed.");
 	}
-	
+
 	public ByteArrayOutputStream captureBinaryStream() {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
@@ -345,7 +382,7 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		log.warn("captureBinaryStream() called before stream is installed.");
 	}
-	
+
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
 	 * after processing the stream. It is the responsibility of the
@@ -390,10 +427,10 @@ public class MessageOutputStream implements AutoCloseable {
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
 		if (target!=null) {
-			log.debug("OutputStream for {} [{}] is provided by {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName(), ()->next.getClass().getSimpleName(), ()->next.getName());
+			log.debug("OutputStream for {} is provided by {}", ()->ClassUtils.nameOf(owner), ()->ClassUtils.nameOf(next));
 			return target;
 		}
-		log.debug("providing MessageOutputStreamCap for {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName());
+		log.debug("providing MessageOutputStreamCap for {}", ()->ClassUtils.nameOf(owner));
 		return new MessageOutputStreamCap(owner, next);
 	}
 }

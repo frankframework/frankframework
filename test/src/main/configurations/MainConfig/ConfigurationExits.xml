@@ -5,7 +5,8 @@
 		</receiver>
 		<pipeline>
 			<exits>
-				<exit path="EXIT" state="success" code="200"/>
+				<!-- First test config to use name attribute instead of path attribute for Exit. Keep path attribute in other configs for now so backports to 7.7 for issues that need it are easier -->
+				<exit name="EXIT" state="success" code="200"/>
 			</exits>
 	
 			<pipe name="XmlSwitch1" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@channel" />
@@ -18,14 +19,21 @@
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="api">
-				<sender className="nl.nn.adapterframework.http.HttpSender" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/" 
-					methodType="POST" resultStatusCodeSessionKey="statuscode"/>
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/" 
+					methodType="POST" resultStatusCodeSessionKey="statuscode"
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="soap">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
+				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
 					serviceNamespace="urn:exits-soap"
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -34,7 +42,7 @@
 		<receiver >
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
 		</receiver>
-		<receiver maxRetries="-1">
+		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
 		</receiver>
 		<receiver>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,24 +17,23 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+//import jakarta.activation.CommandMap;
+import jakarta.activation.DataHandler;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -43,14 +42,17 @@ import org.w3c.dom.Node;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * {@link nl.nn.adapterframework.core.ISender sender} that sends a mail specified by an XML message.
+ * {@link ISender sender} that sends a mail specified by an XML message.
  * <p>
  * Sample email.xml:
  * <code><pre>
@@ -74,73 +76,38 @@ import nl.nn.adapterframework.util.XmlUtils;
  *       &lt;/attachments&gt;&lt;!-- Optional --&gt;
  *   &lt;/email&gt;
  * </pre></code>
- * <p>
+ * </p><p>
  * Notice: the XML message must be valid XML. Therefore, especially the message element
  * must be plain text or be wrapped as CDATA. Example:
  * <code><pre>
  *    &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
  * </pre></code>
- * <p>
+ * </p><p>
  * The <code>sessionKey</code> attribute for attachment can contain an inputstream or a string. Other types are not supported at this moment.
- * <p>
+ * </p><p>
  * The attribute order for attachments is as follows:
  * <ol>
  *    <li>sessionKey</li>
  *    <li>url</li>
  *    <li><i>value of the attachment element</i></li>
  * </ol>
- * <p>
+ * </p><p>
  * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
  * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
- * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserId(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpUserid(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
- * </table>
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
- * <tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>
- * <tr><td>threadTopic</td><td>string</td><td>(optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same</td></tr>
- * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
- * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
- * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
- * <tr><td>charSet</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: UTF-8)</td></tr>
- * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
- *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- * </pre></code></td></tr>
- * <tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre>
- *       &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *       &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *       &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- * </pre></code></td></tr>
- * </table>
- * <p>
+ * </p><p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
- * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
- * 
+ * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
+ * </p>
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */
 
+@Category("Advanced")
 public class MailSender extends MailSenderBase {
 
-	private String smtpHost;
+	private @Getter String smtpHost;
+	private @Getter int smtpPort=25;
+
 	private Properties properties = new Properties();
 	private Session session = null;
 
@@ -152,6 +119,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		properties.put("mail.smtp.host", getSmtpHost());
+		properties.put("mail.smtp.port", getSmtpPort());
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
 		String userId = getCredentialFactory().getUsername();
@@ -177,11 +145,6 @@ public class MailSender extends MailSenderBase {
 		createSession(); //Test connection to SMTP host
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return false;
-	}
-
 	/**
 	 * Create the session during runtime
 	 */
@@ -200,44 +163,25 @@ public class MailSender extends MailSenderBase {
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSessionBase mailSession) throws SenderException {
 		Session session = createSession();
-		log.debug("sending mail using session ["+session+"]");
-		sendEmail(session, mailSession);
+		log.debug("sending mail using session [{}]", session);
+		return sendEmail(session, (MailSession)mailSession);
 	}
 
-	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
-		boolean recipientsFound = false;
-		List<EMail> emailList = mailSession.getRecipientList();
-		for (EMail recipient : emailList) {
-			String type = recipient.getType();
-			Message.RecipientType recipientType;
-			if ("cc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.CC;
-			} else if ("bcc".equalsIgnoreCase(type)) {
-				recipientType = Message.RecipientType.BCC;
-			} else {
-				recipientType = Message.RecipientType.TO;
-			}
-			msg.addRecipient(recipientType, recipient.getInternetAddress());
-			recipientsFound = true;
-			if (log.isDebugEnabled()) {
-				sb.append("[recipient [" + recipient + "]]");
-			}
-		}
-		if (!recipientsFound) {
-			throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
-		}
+	@Override
+	protected MailSession createMailSession() throws SenderException {
+		return new MailSession();
 	}
 
-	private void setAttachments(MailSession mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
+	private void setAttachments(MailSessionBase mailSession, MimeMessage msg, String messageTypeWithCharset) throws MessagingException {
 		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
 		String message = mailSession.getMessage();
-		if (attachmentList == null || attachmentList.size() == 0) {
+		if (attachmentList == null || attachmentList.isEmpty()) {
 			log.debug("no attachments found to attach to mailSession");
 			msg.setContent(message, messageTypeWithCharset);
 		} else {
-			if(log.isDebugEnabled()) log.debug("found ["+attachmentList.size()+"] attachments to attach to mailSession");
+			log.debug("found [{}] attachments to attach to mailSession", attachmentList::size);
 			Multipart multipart = new MimeMultipart();
 			BodyPart messagePart = new MimeBodyPart();
 			messagePart.setContent(message, messageTypeWithCharset);
@@ -250,7 +194,7 @@ public class MailSender extends MailSenderBase {
 				if (StringUtils.isEmpty(name)) {
 					name = getDefaultAttachmentName() + counter;
 				}
-				log.debug("found attachment [" + attachment + "]");
+				log.debug("found attachment [{}]", attachment);
 
 				BodyPart messageBodyPart = new MimeBodyPart();
 				messageBodyPart.setFileName(name);
@@ -287,9 +231,13 @@ public class MailSender extends MailSenderBase {
 
 		MimeMessage msg = createMessage(session, mailSession, logBuffer);
 
-
 		// send the message
-		putOnTransport(session, msg);
+		// Only send if some recipients remained after whitelisting
+		if (mailSession.hasWhitelistedRecipients()) {
+			putOnTransport(session, msg);
+		} else if (log.isDebugEnabled()) {
+			log.debug("No recipients left after whitelisting, mail is not send");
+		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
@@ -303,6 +251,8 @@ public class MailSender extends MailSenderBase {
 
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
+		mailSession.setSmtpMessage(msg);
+
 		try {
 			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
@@ -328,7 +278,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		try {
-			setRecipient(mailSession, msg, logBuffer);
+			mailSession.setRecipientsOnMessage(logBuffer);
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while processing recipients", e);
 		}
@@ -364,7 +314,7 @@ public class MailSender extends MailSenderBase {
 
 		try {
 			msg.saveChanges();
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);
 		}
 
@@ -372,7 +322,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private void setHeader(Collection<Node> headers, MimeMessage msg) throws MessagingException {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			for (Node headerElement : headers) {
 				String headerName = ((Element) headerElement).getAttribute("name");
 				String headerValue = XmlUtils.getStringValue(((Element) headerElement));
@@ -395,7 +345,7 @@ public class MailSender extends MailSenderBase {
 		} else {
 			messageTypeWithCharset = messageType;
 		}
-		log.debug("MailSender [" + getName() + "] uses encoding [" + messageTypeWithCharset + "]");
+		log.debug("MailSender {}] uses encoding [{}]", getName(), messageTypeWithCharset);
 		return messageTypeWithCharset;
 	}
 
@@ -405,9 +355,7 @@ public class MailSender extends MailSenderBase {
 		try {
 			transport = session.getTransport("smtp");
 			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(), getCredentialFactory().getPassword());
-			if (log.isDebugEnabled()) {
-				log.debug("MailSender [" + getName() + "] connected transport to URL [" + transport.getURLName() + "]");
-			}
+			log.debug("MailSender [{}] connected transport to URL [{}]", getName(), transport.getURLName());
 			transport.sendMessage(msg, msg.getAllRecipients());
 		} catch (Exception e) {
 			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]", e);
@@ -416,25 +364,62 @@ public class MailSender extends MailSenderBase {
 				try {
 					transport.close();
 				} catch (MessagingException e1) {
-					log.warn("MailSender [" + getName() + "] got exception closing connection", e1);
+					log.warn("MailSender [{}] got exception closing connection", getName(), e1);
 				}
 			}
 		}
 	}
 
-	/**
-	 * Name of the SMTP Host.
-	 */
-	@IbisDoc({ "name of the host by which the messages are to be send", "" })
+	/** Name of the SMTP-host by which the messages are to be send */
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
 
-	public String getSmtpHost() {
-		return smtpHost;
+	/**
+	 * Port of the SMTP-host by which the messages are to be send
+	 * @ff.default 25
+	 */
+	public void setSmtpPort(int newSmtpPort) {
+		smtpPort = newSmtpPort;
 	}
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+
+	public class MailSession extends MailSessionBase {
+		private @Getter @Setter SMTPMessage smtpMessage = null;
+
+		public MailSession() throws SenderException {
+			super();
+		}
+
+		@Override
+		protected void addRecipientToMessage(EMail recipient) throws SenderException {
+			String type = recipient.getType();
+			Message.RecipientType recipientType;
+			if ("cc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.CC;
+			} else if ("bcc".equalsIgnoreCase(type)) {
+				recipientType = Message.RecipientType.BCC;
+			} else {
+				recipientType = Message.RecipientType.TO;
+			}
+
+			try {
+				smtpMessage.addRecipient(recipientType, recipient.getInternetAddress());
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while processing recipients", e);
+			}
+		}
+
+		@Override
+		protected boolean hasWhitelistedRecipients() throws SenderException {
+			try {
+				return smtpMessage.getAllRecipients() != null && smtpMessage.getAllRecipients().length > 0;
+			} catch (MessagingException e) {
+				throw new SenderException("Error occurred while getting mail recipients", e);
+			}
+		}
 	}
 }

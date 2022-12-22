@@ -30,7 +30,7 @@ public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M
 	public JmsBrowser(String selector) {
 		super(selector);
 	}
-	
+
 	@Override
 	public M browseMessage(String messageId) throws ListenerException {
 		return browseJmsMessage(messageId);

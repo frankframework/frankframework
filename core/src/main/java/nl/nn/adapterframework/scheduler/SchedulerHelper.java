@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -39,14 +43,24 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author John Dekker
  */
 public class SchedulerHelper {
+	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
 
 	public static final String DEFAULT_GROUP = Scheduler.DEFAULT_GROUP;
 
-	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
+	private @Getter @Setter Scheduler scheduler;
 
-	private Scheduler scheduler;
+	public static void validateJob(JobDetail jobDetail, String cronExpression) throws ConfigurationException {
+		TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
+		if (StringUtils.isNotEmpty(cronExpression)) {
+			try {
+				createCronTrigger(triggerKey, cronExpression);
+			} catch (Exception e) {
+				throw new ConfigurationException("invalid job", e);
+			}
+		}
+	}
 
-	public void scheduleJob(JobDef jobdef) throws SchedulerException {
+	public void scheduleJob(IJob jobdef) throws SchedulerException {
 		JobDetail jobDetail = jobdef.getJobDetail();
 		scheduleJob(jobDetail, jobdef.getCronExpression(), jobdef.getInterval(), true);
 	}
@@ -88,11 +102,7 @@ public class SchedulerHelper {
 
 		TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
 		if (StringUtils.isNotEmpty(cronExpression)) {
-			CronTrigger cronTrigger = newTrigger()
-					.withIdentity(triggerKey)
-					.withSchedule(cronSchedule(cronExpression))
-					.build();
-			scheduler.scheduleJob(jobDetail, cronTrigger);
+			scheduler.scheduleJob(jobDetail, createCronTrigger(triggerKey, cronExpression));
 		} else if (interval > -1) {
 			SimpleScheduleBuilder schedule = simpleSchedule();
 			if(interval == 0) {
@@ -108,8 +118,15 @@ public class SchedulerHelper {
 					.forJob(jobDetail).withSchedule(schedule).build();
 			scheduler.scheduleJob(jobDetail, simpleTrigger);
 		} else {
-			log.warn("no cronexpression or interval for job [" + jobDetail.getKey().getName() + "], cannot schedule");
+			log.error("no cronexpression or interval for job [{}], cannot schedule", jobDetail::getKey);
 		}
+	}
+
+	protected static CronTrigger createCronTrigger(TriggerKey triggerKey, String cronExpression) {
+		return newTrigger()
+				.withIdentity(triggerKey)
+				.withSchedule(cronSchedule(cronExpression))
+				.build();
 	}
 
 	public boolean contains(String name) throws SchedulerException {
@@ -149,7 +166,7 @@ public class SchedulerHelper {
 		return scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroup));
 	}
 
-	public void deleteTrigger(JobDef jobDef) throws SchedulerException {
+	public void deleteTrigger(IJob jobDef) throws SchedulerException {
 		deleteTrigger(jobDef.getName(), jobDef.getJobGroup());
 	}
 
@@ -165,14 +182,6 @@ public class SchedulerHelper {
 			key = TriggerKey.triggerKey(name, group);
 
 		getScheduler().unscheduleJob(key);
-	}
-
-	public Scheduler getScheduler() throws SchedulerException {
-		return scheduler;
-	}
-
-	public void setScheduler(Scheduler scheduler) {
-		this.scheduler = scheduler;
 	}
 
 	public void startScheduler() throws SchedulerException {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -27,8 +28,6 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
@@ -45,17 +44,23 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
+	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
 
 		@Override
 		public void configure() throws ConfigurationException {
-			super.configure(query!=null);
+			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
+			if(query!=null) {
+				super.configure(true);
+			} else {
+				super.configure(getAdapter());
+			}
 		}
 
 		@Override
@@ -95,7 +100,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -126,7 +131,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			} catch (Throwable t2) {
 				t.addSuppressed(t2);
 			}
-			throw new SenderException(getLogPrefix(session), t);
+			throw new SenderException(t);
 		}
 	}
 
@@ -141,49 +146,48 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	/** The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
-	public void setUseNamedParams(boolean b) {
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	public void setUseNamedParams(Boolean b) {
 		querySender.setUseNamedParams(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setTrimSpaces(boolean b) {
 		querySender.setTrimSpaces(b);
 	}
 
-	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
-	
-	@IbisDocRef({"6", FIXEDQUERYSENDER})
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"7", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
 
-	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
 	}
-
 }

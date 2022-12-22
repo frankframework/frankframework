@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,18 +77,18 @@ public class ProcessUtil {
 	public static String executeCommand(String command) throws SenderException {
 		try {
 			return executeCommand(splitUpCommandString(command),0);
-		} catch (TimeOutException e) {
+		} catch (TimeoutException e) {
 			throw new SenderException(e);
 		}
 	}
-	public static String executeCommand(String command, int timeout) throws TimeOutException, SenderException {
+	public static String executeCommand(String command, int timeout) throws TimeoutException, SenderException {
 		return executeCommand(splitUpCommandString(command),timeout);
 	}
 	/**
 	 * Execute a command as a process in the operating system. 
 	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
-	public static String executeCommand(List command, int timeout) throws TimeOutException, SenderException {
+	public static String executeCommand(List command, int timeout) throws TimeoutException, SenderException {
 		String output;
 		String errors;
 
@@ -112,7 +112,7 @@ public class ProcessUtil {
 			process.waitFor();
 		} catch(InterruptedException e) {
 			if (tg.threadKilled()) {
-				throw new TimeOutException("command ["+getCommandLine(command)+"] timed out",e);
+				throw new TimeoutException("command ["+getCommandLine(command)+"] timed out",e);
 			} else {
 				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
 			}

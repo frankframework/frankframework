@@ -41,7 +41,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	@Before
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();
-		schedulerSender = new SchedulerSender();
+		schedulerSender = configuration.createBean(SchedulerSender.class);
 		schedulerSender.setName(JOB_NAME);
 		schedulerSender.setSchedulerHelper(schedulerHelper);
 	}
@@ -78,7 +78,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage(new Message("message"), null);
+		Message name = schedulerSender.sendMessage(new Message("message"), null).getResult();
 		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));

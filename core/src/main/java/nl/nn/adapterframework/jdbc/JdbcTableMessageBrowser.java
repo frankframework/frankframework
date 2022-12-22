@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -34,32 +33,37 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	private @Getter String tableName="IBISSTORE";
 	private @Getter String indexName="IX_IBISSTORE";
 	private String selectCondition=null;
-	
+	private String tableAlias;
+
 	private JdbcFacade parent=null;
-	
 	private JdbcTableListener<M> tableListener;
-	
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
-	
+
 	protected boolean useIndexHint;
 	private boolean useFirstRowsHint;
 
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener) {
 		this.tableListener = tableListener;
 	}
-	
+
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener, String statusValue, StorageType storageType) {
 		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
-		setIdField(tableListener.getKeyField());
+		setIdField(tableListener.getMessageIdField());
+		setCorrelationIdField(tableListener.getCorrelationIdField());
 		setTableName(tableListener.getTableName());
+		tableAlias = tableListener.getTableAlias();
 		setMessageField(StringUtils.isNotEmpty(tableListener.getMessageField())?tableListener.getMessageField():tableListener.getKeyField());
 		setDateField(tableListener.getTimestampField());
+		setCommentField(tableListener.getCommentField());
 		setType(storageType.getCode());
-		selectCondition=Misc.concatStrings(tableListener.getStatusField()+ "='"+statusValue+"'", " AND ", tableListener.getSelectCondition());
+		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
+		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
+			selectCondition += " AND ("+tableListener.getSelectCondition()+")";
+		}
 	}
 
 	@Override
@@ -83,7 +87,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		createQueryTexts(getDbmsSupport());
 	}
-	
+
 	@Override
 	protected void setOperationControls() {
 		super.setOperationControls();
@@ -99,22 +103,25 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		return (M)rs.getString(columnIndex);
 	}
-	
+
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
-		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		String listClause=getListClause();
-		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
-		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
+		deleteQuery = "DELETE" + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
+		selectContextQuery = "SELECT "+getListClause(true)+ getWhereClause(getKeyField()+"=?",true);
+		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+ getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
+		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() + getFromClause(false) + getWhereClause(getIdField() +"=?",false);
+		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() + getFromClause(false) + getWhereClause(getCorrelationIdField() +"=?",false);
 		try {
-			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*)"+ getFromClause(false) + getWhereClause(null,false));
 		} catch (JdbcException e) {
 			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
 		}
 	}
 
-	private String getListClause() {
+	protected String getFromClause(boolean noAlias) {
+		return " FROM "+getPrefix()+getTableName() + (!noAlias && StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"");
+	}
+
+	private String getListClause(boolean noAlias) {
 		return getKeyField()+
 		(StringUtils.isNotEmpty(getIdField())?","+getIdField():"")+
 		(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
@@ -124,7 +131,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
 		(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
 		(StringUtils.isNotEmpty(getCommentField())?","+getCommentField():"")+
-		" FROM "+getPrefix()+getTableName();
+		getFromClause(noAlias);
 	}
 
 	@Override
@@ -136,19 +143,25 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if (endTime!=null) {
 			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
-		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
-			order = getOrderEnum();
+		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
+			order = getOrder();
+			if (order == null) {
+				order = SortOrder.ASC;
+			}
 		}
-		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
+		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
-	
-	
-	
+
+
+
 	@Override
 	protected String createSelector() {
-		return Misc.concatStrings(super.createSelector()," AND ",selectCondition);
+		if (StringUtils.isNotEmpty(selectCondition)) {
+			return Misc.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
+		}
+		return super.createSelector();
 	}
 
 
@@ -181,13 +194,19 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 
-	@IbisDoc({"1", "Name of the table messages are stored in", "IBISSTORE"})
+	/**
+	 * Name of the table messages are stored in.
+	 * @ff.default IBISSTORE
+	 */
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
 
 
-	@IbisDoc({"2", "Name of the index, to be used in hints for query optimizer too (only for Oracle)", "IX_IBISSTORE"})
+	/**
+	 * Name of the index, to be used in hints for query optimizer too (only for Oracle).
+	 * @ff.default IX_IBISSTORE
+	 */
 	public void setIndexName(String string) {
 		indexName = string;
 	}

@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
 
@@ -37,19 +36,19 @@ import nl.nn.adapterframework.util.FileUtils;
  * @author  John Dekker
  */
 public class Result2Filewriter extends ResultWriter {
-	
+
 	private @Getter String outputDirectory;
 	private @Getter String move2dirAfterFinalize;
 	private @Getter String filenamePattern;
-	
+
 	private Map<String,File> openFiles = Collections.synchronizedMap(new HashMap<>());
-	
+
 	public Result2Filewriter() {
 		super();
 		setOnOpenDocument("");
 		setOnCloseDocument("");
 	}
-	
+
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		log.debug("create writer ["+streamId+"]");
@@ -72,7 +71,7 @@ public class Result2Filewriter extends ResultWriter {
 		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);
-		
+
 		File file = openFiles.get(streamId);
 		if (file==null) {
 			return null;
@@ -93,18 +92,18 @@ public class Result2Filewriter extends ResultWriter {
 		return file.getAbsolutePath();
 	}
 
-	
-	@IbisDoc({"1", "Directory in which the resultfile must be stored", ""})
+
+	/** Directory in which the resultfile must be stored */
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
 
-	@IbisDoc({"2", "Directory to which the created file must be moved after finalization (is optional)", ""})
+	/** Directory to which the created file must be moved after finalization (is optional) */
 	public void setMove2dirAfterFinalize(String string) {
 		move2dirAfterFinalize = string;
 	}
 
-	@IbisDoc({"3", "Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date", ""})
+	/** Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date */
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}

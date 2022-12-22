@@ -21,11 +21,11 @@ import java.util.Map;
 import org.springframework.context.ApplicationListener;
 
 import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
-	private static final String ALL_CONFIGS_KEY = "*ALL*";
 
 	private Map<String, MessageKeeper> messageKeepers = new HashMap<>();
 
@@ -40,7 +40,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	 * @return MessageKeeper for the application
 	 */
 	public MessageKeeper getMessageKeeper() {
-		return getMessageKeeper(ALL_CONFIGS_KEY);
+		return getMessageKeeper(IbisManager.ALL_CONFIGS_KEY);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	}
 
 	private MessageKeeper globalLog() {
-		return configLog(ALL_CONFIGS_KEY);
+		return configLog(IbisManager.ALL_CONFIGS_KEY);
 	}
 
 	private MessageKeeper configLog(String key) {

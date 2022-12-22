@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden
+   Copyright 2021 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
 */
 package nl.nn.credentialprovider;
 
+import java.util.Collection;
+import java.util.function.Supplier;
+
 public class WebSphereCredentialFactory implements ICredentialFactory {
 
 	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new WebSphereCredentials(alias, defaultUsername, defaultPassword);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		return new WebSphereCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 
@@ -29,4 +32,8 @@ public class WebSphereCredentialFactory implements ICredentialFactory {
 		return credentials.isAliasFound();
 	}
 
+	@Override
+	public Collection<String> getConfiguredAliases() {
+		return null; // don't know how to list JAAS authentication aliases programmatically
+	}
 }

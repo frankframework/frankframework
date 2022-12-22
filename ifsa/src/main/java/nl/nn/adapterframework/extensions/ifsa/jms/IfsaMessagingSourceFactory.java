@@ -46,10 +46,9 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  */
 public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 
-	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
-	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
-	
-	static private Map ifsaMessagingSourceMap = new HashMap();	
+	private static final String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
+	private static final String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
+	private static Map ifsaMessagingSourceMap = new HashMap();	
 
 	@Override
 	protected Map getMessagingSourceMap() {

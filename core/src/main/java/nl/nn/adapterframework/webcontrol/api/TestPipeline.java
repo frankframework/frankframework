@@ -1,25 +1,24 @@
 /*
-Copyright 2016-2017, 2020, 2021 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -35,158 +34,130 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.apache.logging.log4j.Logger;
+import org.springframework.messaging.Message;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Test a PipeLine.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
 
 @Path("/")
-public class TestPipeline extends Base {
+public class TestPipeline extends FrankApiBase {
+	public static final String RESULT_STATE_HEADER = "state";
 
-	protected Logger secLog = LogUtil.getLogger("SEC");
-	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
-
-	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
-	
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	@Path("/test-pipeline")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
-		Map<String, Object> result = new HashMap<>();
-
-		IbisManager ibisManager = getIbisManager();
-		if (ibisManager == null) {
-			throw new ApiException("Config not found!");
-		}
-
 		String message = null;
-		InputStream file = null;
 
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
+		String configuration = resolveStringFromMap(inputDataMap, "configuration");
+		builder.addHeader("configuration", configuration);
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
-		//Make sure the adapter exists!
-		IAdapter adapter = ibisManager.getRegisteredAdapter(adapterName);
-		if(adapter == null) {
-			throw new ApiException("Adapter ["+adapterName+"] not found");
+		builder.addHeader("adapter", adapterName);
+
+		// resolve session keys
+		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
+		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
+			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
-			String fileName = filePart.getContentDisposition().getParameter( "filename" );
+			String fileName = filePart.getContentDisposition().getParameter("filename");
+			InputStream file = filePart.getObject(InputStream.class);
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
-					file = filePart.getObject(InputStream.class);
-					processZipFile(result, file, fileEncoding, adapter, secLogMessage);
+					String zipResults = processZipFile(file, builder);
+					return testPipelineResponse(zipResults);
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
-			} else {
-				message = resolveStringWithEncoding(inputDataMap, "file", fileEncoding);
+			}
+			else {
+				try {
+					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
+				} catch (UnsupportedEncodingException e) {
+					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				} catch (IOException e) {
+					throw new ApiException("error reading file", e);
+				}
 			}
 		} else {
 			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(message == null && file == null) {
-			throw new ApiException("must provide either a message or file", 400);
+		if(StringUtils.isEmpty(message)) {
+			throw new ApiException("Neither a file nor a message was supplied", 400);
 		}
 
-		if (StringUtils.isNotEmpty(message)) {
+		builder.setPayload(message);
+		Message response = sendSyncMessage(builder);
+		String state = (String) response.getHeaders().get(RESULT_STATE_HEADER);
+		return testPipelineResponse(response.getPayload(), state, message);
+	}
+
+	private Response testPipelineResponse(String payload) {
+		return testPipelineResponse(payload, "SUCCESS", null);
+	}
+	private Response testPipelineResponse(Object payload, String state, String message) {
+		Map<String, Object> result = new HashMap<>();
+		result.put("state", state);
+		result.put("result", payload);
+		if(message != null) {
 			result.put("message", message);
-			try {
-				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
-				try {
-					result.put("state", plr.getState());
-					result.put("result", plr.getResult().asString());
-				} catch (Exception e) {
-					String msg = "An Exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
-					log.warn(msg, e);
-					result.put("state", PIPELINE_RESULT_STATE_ERROR);
-					result.put("result", msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
-				}
-			} catch (Exception e) {
-				String msg = "An Exception occurred while processing the message"; 
-				log.warn(msg, e);
-				result.put("state", PIPELINE_RESULT_STATE_ERROR);
-				result.put("result", msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
-			}
 		}
-
-		return Response.status(Response.Status.CREATED).entity(result).build();
+		return Response.status(200).entity(result).build();
 	}
 
-	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
+	// cannot call callAsyncGateway, backend calls are not synchronous
+	private String processZipFile(InputStream file, RequestMessageBuilder builder) throws IOException {
 		StringBuilder result = new StringBuilder();
-		String lastState = null;
-		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
-			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
-				String name = entry.getName();
-				byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(archive), true);
-				String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
-				if (result.length() > 0) {
-					result.append("\n");
-				}
-				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
-				result.append(name + ":" + lastState);
-				archive.closeEntry();
-			}
-		}
-		returnResult.put("state", lastState);
-		returnResult.put("result", result);
-	}
 
-	@SuppressWarnings("rawtypes")
-	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
-		String messageId = "testmessage" + Misc.createSimpleUUID();
-		try (PipeLineSession pls = new PipeLineSession()) {
-			Map ibisContexts = XmlUtils.getIbisContext(message);
-			String technicalCorrelationId = null;
-			if (ibisContexts != null) {
-				String contextDump = "ibisContext:";
-				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-					String key = (String) it.next();
-					String value = (String) ibisContexts.get(key);
-					if (log.isDebugEnabled()) {
-						contextDump = contextDump + "\n " + key + "=[" + value + "]";
+		ZipInputStream archive = new ZipInputStream(file);
+		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+			String name = entry.getName();
+			int size = (int)entry.getSize();
+			if (size>0) {
+				byte[] b=new byte[size];
+				int rb=0;
+				int chunk=0;
+				while ((size - rb) > 0) {
+					chunk=archive.read(b,rb,size - rb);
+					if (chunk==-1) {
+						break;
 					}
-					if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
-						technicalCorrelationId = value;
-					} else {
-						pls.put(key, value);
-					}
+					rb+=chunk;
 				}
-				if (log.isDebugEnabled()) {
-					log.debug(contextDump);
-				}
+				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
+
+				builder.setPayload(currentMessage);
+				Message response = sendSyncMessage(builder);
+				result.append(name);
+				result.append(": ");
+				result.append(response.getHeaders().get(RESULT_STATE_HEADER));
+				result.append("\n");
 			}
-			Date now = new Date();
-			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
-	
-			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
-	
-			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
-			plr.getResult().unscheduleFromCloseOnExitOf(pls);
-			return plr;
+			archive.closeEntry();
 		}
+		archive.close();
+
+		return result.toString();
 	}
 }

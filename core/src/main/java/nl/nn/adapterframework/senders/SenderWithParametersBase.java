@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,23 +19,29 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provides a base class for senders with parameters.
- * 
+ *
  * @author Gerrit van Brakel
  * @since  4.3
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
-	
+
 	protected ParameterList paramList = null;
+	protected boolean parameterNamesMustBeUnique;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
+			paramList.setNamesMustBeUnique(parameterNamesMustBeUnique);
 			paramList.configure();
 		}
 	}
@@ -61,18 +67,33 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 			throw new ConfigurationException("either attribute "+attributeName+" or parameter "+parameterName+" must be specified");
 		}
 	}
-	
+
 	protected String getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, String attributeValue) {
-		if (pvl!=null && pvl.containsKey(parameterName)) {
-			return pvl.getParameterValue(parameterName).asStringValue(attributeValue);
+		if (pvl!=null && pvl.contains(parameterName)) {
+			return pvl.get(parameterName).asStringValue(attributeValue);
 		}
 		return attributeValue;
 	}
 
 	protected int getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, int attributeValue) {
-		if (pvl!=null && pvl.containsKey(parameterName)) {
-			return pvl.getParameterValue(parameterName).asIntegerValue(attributeValue);
+		if (pvl!=null && pvl.contains(parameterName)) {
+			return pvl.get(parameterName).asIntegerValue(attributeValue);
 		}
 		return attributeValue;
 	}
+
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new SenderException("cannot determine parameter values", e);
+		}
+	}
+
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+	}
+
 }

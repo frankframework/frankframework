@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,20 @@
 */
 package nl.nn.credentialprovider;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.ClassUtils;
+import nl.nn.credentialprovider.util.Misc;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 
@@ -34,7 +43,8 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	private Map<String,String> aliases;
 
-	public MapCredentialFactory() throws IOException {
+	@Override
+	public void initialize() throws IOException {
 		AppConstants appConstants = AppConstants.getInstance();
 
 		aliases = getCredentialMap(appConstants);
@@ -46,9 +56,25 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
 	}
 
-	public abstract String getPropertyBase();
+	protected abstract String getPropertyBase();
 
 	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
+
+	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+		String filename = appConstants.getProperty(key, defaultValue);
+		if (Misc.isEmpty(filename)) {
+			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
+		}
+		try {
+			return new FileInputStream(filename);
+		} catch (Exception e) {
+			URL url = ClassUtils.getResourceURL(filename);
+			if (url == null) {
+				throw new FileNotFoundException("Cannot find resource ["+filename+"]");
+			}
+			return url.openStream();
+		}
+	}
 
 	@Override
 	public boolean hasCredentials(String alias) {
@@ -56,8 +82,23 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		return new MapCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernameSuffix, passwordSuffix, aliases);
+	}
+
+	@Override
+	public Set<String> getConfiguredAliases() throws Exception{
+		Set<String> aliasNames = new LinkedHashSet<>();
+		for (String name:aliases.keySet()) {
+			if (name.endsWith(usernameSuffix)) {
+				name = name.substring(0, name.length()-usernameSuffix.length());
+			}
+			if (name.endsWith(passwordSuffix)) {
+				name = name.substring(0, name.length()-passwordSuffix.length());
+			}
+			aliasNames.add(name);
+		}
+		return aliasNames;
 	}
 
 }

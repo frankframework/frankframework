@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 /**
  * PutInSession Tester.
@@ -29,7 +29,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		String expected = message;
 		doPipe(pipe, message, session);
 
-		assertEquals(expected, session.get("hola")); // must be type String and have this value 
+		assertEquals(expected, session.getMessage("hola").asString());
 	}
 
 	@Test
@@ -38,17 +38,43 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.setValue("val");
 		pipe.configure();
 		doPipe(pipe, "notimportant", session);
-		assertEquals("val", session.get("hola")); // must be type String and have this value 
+		assertEquals("val", session.getMessage("hola").asString());
 	}
 
 	@Test
-	public void testNoSessionKey() throws Exception {
-		exception.expectMessage("attribute sessionKey must be specified");
-		exception.expect(ConfigurationException.class);
-		pipe.setValue("val");
+	public void testSessionKeyWithOneParam() throws Exception {
+		pipe.setValue("value");
+		pipe.setSessionKey("sessionKey");
+		pipe.addParameter(new Parameter("param", "test"));
+
 		pipe.configure();
 		pipe.doPipe(null, session);
-		fail("this is expected to fail");
+
+		assertEquals("value", session.getMessage("sessionKey").asString());
+		assertEquals("test", session.getMessage("param").asString());
+	}
+	
+	@Test
+	public void testParamFromConfiguredSessionKey() throws Exception {
+		pipe.setValue("value");
+		pipe.setSessionKey("sessionKey");
+		pipe.addParameter(ParameterBuilder.create().withName("param").withSessionKey("sessionKey"));
+
+		pipe.configure();
+		pipe.doPipe(null, session);
+
+		assertEquals("value", session.getMessage("sessionKey").asString());
+		assertEquals("value", session.getMessage("param").asString());
+	}
+	
+	@Test
+	public void testWithOneParam() throws Exception {
+		pipe.addParameter(new Parameter("param", "test"));
+
+		pipe.configure();
+		pipe.doPipe(null, session);
+
+		assertEquals("test", session.getMessage("param").asString());
 	}
 
 }

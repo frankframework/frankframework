@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -56,10 +57,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  *
  */
-public class IbisApplicationContext {
+public class IbisApplicationContext implements Closeable {
 	private Exception startupException;
-	public static final String APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Application";
-	public static final String CONFIGURATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Configuration";
 
 	public enum BootState {
 		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
@@ -110,7 +109,7 @@ public class IbisApplicationContext {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if(parentContext != null) {
-				log.debug("found Spring rootContext ["+parentContext+"]");
+				log.debug("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -120,30 +119,32 @@ public class IbisApplicationContext {
 			throw be;
 		}
 
-		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
+		log.info("created {} in {} ms", ()->applicationContext.getClass().getSimpleName(), ()->(System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
 	/**
-	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, SpringApplicationContext and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
-	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+		if(parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
+			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
+		}
+		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
 			String file = locationTokenizer.nextToken();
-			if(log.isDebugEnabled()) log.debug("found spring configuration file to load ["+file+"]");
+			log.debug("found spring configuration file to load [{}]", file);
 
 			URL fileURL = classLoader.getResource(file);
 			if(fileURL == null) {
-				log.error("unable to locate Spring configuration file ["+file+"]");
+				log.error("unable to locate Spring configuration file [{}]", file);
 			} else {
 				if(file.indexOf(":") == -1) {
 					file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
@@ -153,8 +154,17 @@ public class IbisApplicationContext {
 			}
 		}
 
-		log.info("loading Spring configuration files "+springConfigurationFiles+"");
+		addJmxConfigurationIfEnabled(springConfigurationFiles);
+
+		log.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+	}
+
+	private void addJmxConfigurationIfEnabled(List<String> springConfigurationFiles) {
+		boolean jmxEnabled = AppConstants.getInstance().getBoolean("management.endpoints.jmx.enabled", false);
+		if(jmxEnabled) {
+			springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX+"/"+"SpringApplicationContextJMX.xml");
+		}
 	}
 
 	/**
@@ -162,39 +172,46 @@ public class IbisApplicationContext {
 	 * @throws BeansException when the Context fails to initialize
 	 */
 	private ClassPathXmlApplicationContext createClassPathApplicationContext() {
-		ClassPathXmlApplicationContext classPathapplicationContext = new ClassPathXmlApplicationContext();
+		ClassPathXmlApplicationContext classPathApplicationContext = new ClassPathXmlApplicationContext();
 
-		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
+		MutablePropertySources propertySources = classPathApplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource(APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, APP_CONSTANTS));
-		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
-		classPathapplicationContext.setId(instanceName);
-		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
 
-		return classPathapplicationContext;
+		ClassLoader classLoader = classPathApplicationContext.getClassLoader();
+		if(classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
+		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
+
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathApplicationContext.setId(instanceName);
+		classPathApplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
+
+		return classPathApplicationContext;
 	}
 
 	/**
 	 * Destroys the Spring context
 	 */
-	protected void destroyApplicationContext() {
+	@Override
+	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
+			log.debug("destroying Ibis Application Context [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context ["+oldContextName+"]");
+			log.info("destroyed Ibis Application Context [{}]", oldContextName);
 		}
 	}
 
+	@Deprecated
 	public <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
+	@Deprecated
 	public <T> T createBeanAutowireByName(Class<T> beanClass) {
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}
@@ -257,7 +274,7 @@ public class IbisApplicationContext {
 			if(version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module+".version", version);
-				log.info("Loading IAF module ["+module+"] version ["+version+"]");
+				log.info("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}

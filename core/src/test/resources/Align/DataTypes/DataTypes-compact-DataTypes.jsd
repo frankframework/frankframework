@@ -41,6 +41,7 @@
                 },
                 "Strings":{
                     "type":"array",
+                    "minItems":1,
                     "items":{
                         "type":"string"
                     }
@@ -139,6 +140,7 @@
                 },
                 "Booleans":{
                     "type":"array",
+                    "minItems":1,
                     "items":{
                         "type":"boolean"
                     }

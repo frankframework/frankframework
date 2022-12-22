@@ -28,12 +28,7 @@ public class SaxException extends SAXException {
 	}
 
 	public SaxException(Exception e) {
-		super(e);
-		try {
-			initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
-		} catch (Exception e2) { // Jboss throws 'IllegalStateException: Can't overwrite cause'
-			addSuppressed(e2);
-		}
+		this(null, e);
 	}
 
 	public SaxException(String message, Exception e) {
@@ -70,7 +65,7 @@ public class SaxException extends SAXException {
 		if (locator!=null) {
 			// prefer this solution of creating a SaxException with locatin info in the messgage over creating 
 			// a SaxParseException, because that causes the location info to be duplicated in a combined errormessage
-			return new SaxException(getLocatedMessage(locator,message), e); 
+			return new SaxException(getLocatedMessage(locator,message), e);
 		}
 		return new SaxException(message, e);
 	}

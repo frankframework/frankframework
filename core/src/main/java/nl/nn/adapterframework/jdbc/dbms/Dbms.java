@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public enum Dbms {
 	GENERIC("generic", GenericDbmsSupport.class),
 	ORACLE("Oracle", OracleDbmsSupport.class),
 	MSSQL("MS_SQL", "Microsoft SQL Server", MsSqlServerDbmsSupport.class),
-	DB2("DB2", GenericDbmsSupport.class),
+	DB2("DB2", Db2DbmsSupport.class),
 	H2("H2", H2DbmsSupport.class),
 	MYSQL("MySQL", MySqlDbmsSupport.class),
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
@@ -36,10 +36,11 @@ public enum Dbms {
 	private String key;
 	private String productName;
 	private Class<? extends IDbmsSupport> dbmsSupportClass;
-	
+
 	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
+
 	private Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this.key = key;
 		this.productName = productName;
@@ -53,18 +54,22 @@ public enum Dbms {
 	public String getProductName() {
 		return productName;
 	}
-	
+
 	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
 		if (MYSQL.getProductName().equals(product) && productVersion.contains("MariaDB")) {
 			log.debug("Setting databasetype to MARIADB (using MySQL driver)");
 			return new MariaDbDbmsSupport();
+		}
+		if (product.startsWith("DB2/")) {
+			log.debug("Setting databasetype to DB2 for product ["+product+"]");
+			return new Db2DbmsSupport();
 		}
 		for (Dbms dbms: values()) {
 			if (dbms.getProductName().equals(product)) {
 				log.debug("Setting databasetype to ["+dbms+"]");
 				IDbmsSupport result;
 				try {
-					result = (IDbmsSupport)dbms.dbmsSupportClass.newInstance();
+					result = dbms.dbmsSupportClass.newInstance();
 					if (result != null) {
 						log.debug("Returning built-in DBMS ["+dbms+"] found for product ["+product+"]");
 						return result;
@@ -77,13 +82,12 @@ public enum Dbms {
 		}
 		log.debug("Returning GenericDbmsSupport for product ["+product+"]");
 		return new GenericDbmsSupport();
-		
 	}
-	
+
 	public IDbmsSupport getDbmsSupport() throws IllegalAccessException, InstantiationException {
 		if (dbmsSupportClass==null) {
 			return null;
 		}
-		return (IDbmsSupport)dbmsSupportClass.newInstance();
+		return dbmsSupportClass.newInstance();
 	}
 }

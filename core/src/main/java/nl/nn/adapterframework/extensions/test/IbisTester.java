@@ -44,12 +44,13 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class IbisTester {
@@ -80,12 +81,11 @@ public class IbisTester {
 		@Override
 		public String call() throws Exception {
 			MockHttpServletRequest request = new MockHttpServletRequest();
-			request.setServletPath("/larva/index.jsp");
+			request.setServletPath("/iaf/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
-				String ibisContextKey = appConstants.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(ibisContextKey, ibisContext);
+				application.setAttribute(IbisApplicationServlet.CONTEXT_KEY, ibisContext);
 				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");
@@ -99,7 +99,7 @@ public class IbisTester {
 			runScenarios(application, request, writer, silent);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
-				return XmlUtils.toXhtml(htmlString);
+				return XmlUtils.toXhtml(Message.asMessage(htmlString));
 			} else {
 				return writer.toString();
 			}
@@ -162,7 +162,7 @@ public class IbisTester {
 
 	public void closeTest() {
 		if (ibisContext != null) {
-			ibisContext.destroy();
+			ibisContext.close();
 		}
 		debug("***end***");
 	}
@@ -206,18 +206,18 @@ public class IbisTester {
 		int adaptersCount = 0;
 		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
-			RunStateEnum runState = adapter.getRunState();
-			if (!(RunStateEnum.STARTED).equals(runState)) {
+			RunState runState = adapter.getRunState();
+			if (!(RunState.STARTED).equals(runState)) {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "], will retry...");
 				int count = 30;
-				while (count-- > 0 && !(RunStateEnum.STARTED).equals(runState)) {
+				while (count-- > 0 && !(RunState.STARTED).equals(runState)) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					runState = adapter.getRunState();
-					if (!(RunStateEnum.STARTED).equals(runState)) {
+					if (!(RunState.STARTED).equals(runState)) {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "], retries left [" + count + "]");
 					} else {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
@@ -226,7 +226,7 @@ public class IbisTester {
 			} else {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
-			if ((RunStateEnum.STARTED).equals(runState)) {
+			if ((RunState.STARTED).equals(runState)) {
 				adaptersStarted++;
 			} else {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");

@@ -2,27 +2,24 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	"
 	>
 
-	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/pom.properties</value>
-				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
-			</list>
-		</property>
-	</bean>
+	<context:component-scan base-package="nl.nn.testtool"/>
+
+	<bean
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		autowire="byName"
+	/>
 
 	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
-
-	<bean name="configName" class="java.lang.String">
-		<constructor-arg value="Ibis Test Tool"/>
-	</bean>
-
-	<bean name="configVersion" class="java.lang.String">
-		<constructor-arg value="${version}"/>
-	</bean>
 
 	<bean name="maxCheckpoints" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
@@ -41,26 +38,34 @@
 	</bean>
 
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
-		<property name="configName"><ref bean="configName"/></property>
-		<property name="configVersion"><ref bean="configVersion"/></property>
 		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
 		<property name="regexFilter"><ref bean="regexFilter"/></property>
 		<property name="securityLoggerName" value="SEC"/>
-		<!-- Prevent threads that didn't start and aren't cancelled to keep reports in progress. Most of the times (like when using ParallelSenders) the main thread will wait for child threads to return their result anyway -->
+		<!-- Prevent threads that didn't start and aren't cancelled from keeping reports in progress -->
 		<property name="closeThreads" value="true"/>
-		<!-- Prevent streams for which close method isn't invoked to keep reports in progress. Most of the times streams will be processed during the lifetime of the main thread (which is executing the PipeLine) anyway -->
-		<property name="closeMessageCapturers" value="true"/>
+		<property name="closeNewThreadsOnly" value="true"/>
+		<!-- See comment on closeReportsTask -->
+		<property name="closeMessageCapturers" value="false"/>
 	</bean>
 
-	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
-		<property name="extraMetadataFieldExtractors">
-			<list>
-				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
-			</list>
-		</property>
+	<!--
+	Prevent streams for which close method isn't invoked from keeping reports in progress. It would be possible to set
+	closeMessageCapturers to true on the testTool bean but in some cases that would close the report too soon as a
+	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
+	empty string while test a pipeline would show the correct result).
+	-->
+	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask">
+		<property name="messageCapturersTime" value="60000"/>
+		<property name="threadsTime" value="-1"/>
 	</bean>
+
+	<task:scheduler id="closeReportsScheduler"/>
+
+	<task:scheduled-tasks scheduler="closeReportsScheduler">
+		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
+	</task:scheduled-tasks>
 
 	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
 		<property name="name" value="Logging"/>
@@ -90,6 +95,12 @@
 				'testStorageXml' : 'testStorageFile'
 				}"
 		/>
+	</bean>
+	<!-- Ladybug API classes autowired by CXF Spring (see ladybug/cxf-beans.xml) expect a bean with name testStorage -->
+	<bean name="testStorage" class="nl.nn.testtool.storage.proxy.ProxyStorage">
+		<property name="destination">
+			<ref bean="#{testStorageActive}"/>
+		</property>
 	</bean>
 	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
@@ -128,7 +139,7 @@
 	
 	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
 		<property name="name" value="White box"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="debugStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -161,7 +172,7 @@
 		</property>
 	</bean>
 
-	<bean name="views" class="nl.nn.testtool.filter.Views" scope="prototype">
+	<bean name="views" class="nl.nn.testtool.filter.Views">
 		<property name="views">
 			<list>
 				<ref bean="whiteBoxView"/>
@@ -171,144 +182,34 @@
 		</property>
 	</bean>
 
-	<bean name="reportXmlTransformer" class="nl.nn.testtool.transform.ReportXmlTransformer">
-		<property name="xsltResource" value="${ibistesttool.reportTransformation}"/>
+	<bean name="xsltResource" class="java.lang.String" primary="true">
+		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
-
-	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
-
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles">
-			<list>
-				<value>IbisTester</value>
-				<value>IbisAdmin</value>
-				<value>IbisDataAdmin</value>
-			</list>
-		</property>
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="views">
-			<ref bean="views"/>
-		</property>
-		<property name="metadataExtractor">
-			<ref bean="metadataExtractor"/>
-		</property>
-	</bean>
-
-	<bean name="debugPane" class="nl.nn.testtool.echo2.DebugPane" init-method="initBean" scope="prototype">
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
-		</property>
-		<property name="reportsComponent">
-			<ref bean="reportsComponent"/>
-		</property>
-		<property name="treePane">
-			<ref bean="treePane"/>
-		</property>
-		<property name="reportXmlTransformer">
-			<ref bean="reportXmlTransformer"/>
-		</property>
-	</bean>
-
-	<bean name="testPane" class="nl.nn.testtool.echo2.TestPane" init-method="initBean" scope="prototype">
-		<property name="treePane">
-			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
-				<property name="storage">
-					<ref bean="#{testStorageActive}"/>
-				</property>
-			</bean>
-		</property>
-		<property name="infoPane">
-			<bean class="nl.nn.testtool.echo2.test.InfoPane" init-method="initBean">
-				<property name="testComponent">
-					<bean class="nl.nn.testtool.echo2.test.TestComponent" init-method="initBean">
-						<property name="testTool">
-							<ref bean="testTool"/>
-						</property>
-						<property name="debugStorage">
-							<ref bean="debugStorage"/>
-						</property>
-						<property name="testStorage">
-							<ref bean="#{testStorageActive}"/>
-						</property>
-						<property name="reportXmlTransformer">
-							<ref bean="reportXmlTransformer"/>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
-	</bean>
-
-	<bean name="comparePane" class="nl.nn.testtool.echo2.ComparePane" init-method="initBean" scope="prototype">
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="testTool">
-			<ref bean="testTool"/>
-		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
-		</property>
-		<property name="reportsComponent1">
-			<bean parent="reportsComponent">
-				<property name="addCompareButton" value="true"/>
-				<property name="addSeparateOptionsRow" value="true"/>
-				<property name="focusMaxMetadataTableSize" value="false"/>
-			</bean>
-		</property>
-		<property name="reportsComponent2">
-			<bean parent="reportsComponent">
-				<property name="addCompareButton" value="true"/>
-				<property name="addSeparateOptionsRow" value="true"/>
-				<property name="focusMaxMetadataTableSize" value="false"/>
-			</bean>
-		</property>
-		<property name="treePane1">
-			<ref bean="treePane"/>
-		</property>
-		<property name="treePane2">
-			<ref bean="treePane"/>
-		</property>
-		<property name="reportXmlTransformer">
-			<ref bean="reportXmlTransformer"/>
-		</property>
-	</bean>
-
-	<bean name="tabs" class="nl.nn.testtool.echo2.Tabs" scope="prototype">
-		<property name="tabs">
-			<list>
-				<ref bean="debugPane"/>
-				<ref bean="testPane"/>
-				<ref bean="comparePane"/>
-			</list>
-		</property>
-	</bean>
-
-	<bean name="echo2Application" class="nl.nn.testtool.echo2.Echo2Application" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="contentPane">
-			<bean class="nextapp.echo2.app.ContentPane"/>
-		</property>
-		<property name="reportsTreeCellRenderer">
-			<ref bean="reportsTreeCellRenderer"/>
-		</property>
-		<property name="tabs">
-			<ref bean="tabs"/>
-		</property>
-	</bean>
-
-	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
 
 	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
-	<bean name="rerunRoles" class="java.util.ArrayList">
+	<bean name="observerRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisObserver</value>
+				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean name="dataAdminRoles" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<value>IbisDataAdmin</value>
+				<value>IbisAdmin</value>
+				<value>IbisTester</value>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean name="testerRoles" class="java.util.ArrayList">
 		<constructor-arg>
 			<list>
 				<value>IbisTester</value>
@@ -323,7 +224,5 @@
 	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
-
-	<import resource="springIbisDebuggerAdvice.xml"/>
 
 </beans>

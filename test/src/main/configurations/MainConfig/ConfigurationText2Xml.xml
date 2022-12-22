@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Text2Xml">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -9,9 +9,9 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="text2xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="MessageLogCorrelationID" getInputFromSessionKey="messageId">
+				xmlTag="MessageLogCorrelationID" getInputFromSessionKey="cid">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,30 @@
 */
 package nl.nn.adapterframework.http;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
- * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive messages from HTTP requests.
- * </table>
- * @author  Gerrit van Brakel 
+ * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
+ * to receive messages from HTTP requests. If you are writing a new configuration, you are recommended to use
+ * an {@link ApiListener} or a {@link WebServiceListener}
+ * instead.
+ *
+ * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
  */
+@Deprecated
 public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private String serviceName;
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private @Getter String serviceName;
 
 	@Override
 	public void open() throws ListenerException {
@@ -65,11 +71,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		return "serviceName: "+getServiceName();
 	}
 
-	public String getServiceName() {
-		return serviceName;
-	}
-
-	@IbisDoc({"name of the service that is provided by the adapter of this listener", ""})
+	/** name of the service that is provided by the adapter of this listener */
 	public void setServiceName(String string) {
 		serviceName = string;
 	}

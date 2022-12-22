@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
@@ -134,7 +135,7 @@ import org.xml.sax.SAXException;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
+ * <tr><td>{@link #setDirection(Direction) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setInputXPath(String) inputXPath}</td><td>(only used when direction=unwrap) xpath expression to extract the message which is returned. The initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputNamespaceDefs(String) inputNamespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisMessageHeaderInSoapBody(boolean) bisMessageHeaderInSoapBody}</td><td>when <code>true</code>, the bis message header is put in the SOAP body instead of in the SOAP header (first one is the old bis standard)</td><td><code>false</code></td></tr>
@@ -176,17 +177,17 @@ import org.xml.sax.SAXException;
 @Deprecated
 @ConfigurationWarning("Please change to EsbSoapWrapperPipe")
 public class BisWrapperPipe extends SoapWrapperPipe {
-	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
-	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String soapErrorXPath = "soapenv:Fault/faultcode";
-	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String bisMessageHeaderXPath = "bis:MessageHeader";
-	private final static String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
-	private final static String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
-	private final static String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
+	private static final String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private static final String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
+	private static final String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
+	private static final String soapErrorXPath = "soapenv:Fault/faultcode";
+	private static final String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+	private static final String bisMessageHeaderXPath = "bis:MessageHeader";
+	private static final String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
+	private static final String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
+	private static final String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
 
-	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
+	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
 			"ERR6004", "Invalid Backend system response" }, {
 			"ERR6005", "Backend system failure response" }, {
@@ -236,7 +237,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
 				String bodyMessageNd = StringUtils.isNotEmpty(getInputNamespaceDefs()) ? soapNamespaceDefs + "\n" + getInputNamespaceDefs() : soapNamespaceDefs;
 				String bodyMessageXe = StringUtils.isNotEmpty(getInputXPath()) ? soapBodyXPath + "/" + getInputXPath() : soapBodyXPath + "/*";
-				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, "xml"));
+				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, OutputType.XML));
 			}
 			String bisMessageHeaderNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			String bisMessageHeaderXe;
@@ -245,9 +246,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				bisMessageHeaderXe = soapHeaderXPath + "/" + bisMessageHeaderXPath;
 			}
-			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, "xml"));
-			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, "text"));
-			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, "text"));
+			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, OutputType.XML));
+			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, OutputType.TEXT));
+			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, OutputType.TEXT));
 
 			String bisErrorNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			if (isBisResultInPayload()) {
@@ -256,7 +257,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				bisErrorXe = soapBodyXPath + "/" + bisErrorXPath;
 			}
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
-			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
+			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, OutputType.TEXT));
 			if (isRemoveOutputNamespaces()) {
 				removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
@@ -264,7 +265,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
+			throw new ConfigurationException("cannot create transformer", e);
 		}
 	}
 
@@ -272,7 +273,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
 		try {
-			if ("wrap".equalsIgnoreCase(getDirection())) {
+			if (getDirection()== Direction.WRAP) {
 				String originalBisMessageHeader = (String) session.get(getBisMessageHeaderSessionKey());
 				String bisConversationId = null;
 				String bisExternalRefToMessageId = null;
@@ -303,7 +304,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
 					if (isOmitResult()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+						throw new PipeRunException(this, "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
 					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
@@ -328,19 +329,19 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				Message body = unwrapMessage(message, session);
 				if (Message.isEmpty(body)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
+					throw new PipeRunException(this, "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
 					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
-						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", messageHeader, getBisMessageHeaderSessionKey());
 					}
 				}
 				if (bisErrorTp != null) {
 					String bisError = bisErrorTp.transform(message.asSource());
 					if (Boolean.valueOf(bisError).booleanValue()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
+						throw new PipeRunException(this, "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
@@ -353,7 +354,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				}
 			}
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, " Unexpected exception during (un)wrapping ", t);
 
 		}
 		return new PipeRunResult(getSuccessForward(), result);
@@ -505,10 +506,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return outputRoot;
 	}
 
+	@Override
 	public void setOutputNamespace(String outputNamespace) {
 		this.outputNamespace = outputNamespace;
 	}
 
+	@Override
 	public String getOutputNamespace() {
 		return outputNamespace;
 	}
@@ -593,10 +596,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return bisActionName;
 	}
 
+	@Override
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
 
+	@Override
 	public boolean isRemoveOutputNamespaces() {
 		return removeOutputNamespaces;
 	}

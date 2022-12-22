@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language"
+        xmlns:smil20="http://www.w3.org/2001/SMIL20/"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.w3.org/2001/SMIL20/Language"
+        elementFormDefault="qualified">
+   <import namespace="http://www.w3.org/2001/SMIL20/"
+           schemaLocation="smil20_resolved2017.xsd"/>
+</schema>

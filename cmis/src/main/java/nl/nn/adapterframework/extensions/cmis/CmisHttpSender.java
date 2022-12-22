@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -72,11 +72,11 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
-				if (pvl.getParameterValue("writer") != null) {
-					Output writer = (Output) pvl.getParameterValue("writer").getValue();
+				if (pvl.get("writer") != null) {
+					Output writer = (Output) pvl.get("writer").getValue();
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.getParameterValue(SessionParameter.CLIENT_COMPRESSION);
+					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
 					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
 						httpPost.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));
@@ -96,11 +96,11 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
-				if (pvl.getParameterValue("writer") != null) {
-					Output writer = (Output) pvl.getParameterValue("writer").getValue();
+				if (pvl.get("writer") != null) {
+					Output writer = (Output) pvl.get("writer").getValue();
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.getParameterValue(SessionParameter.CLIENT_COMPRESSION);
+					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
 					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
 						httpPut.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));
@@ -132,7 +132,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+				if(log.isTraceEnabled()) log.trace("appending header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}
@@ -150,7 +150,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session);
+			responseMessage.closeOnCloseOf(session, this);
 
 			InputStream responseStream = null;
 			InputStream errorStream = null;
@@ -171,7 +171,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		return new Message("response");
 	}
 
-	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeoutException {
 		//Prepare the message. We will overwrite things later...
 
 		int responseCode = -1;
@@ -184,7 +184,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 
 		try {
 			// Message is unused, we use 'Output writer' instead
-			sendMessage(new Message(""), pls);
+			sendMessageOrThrow(new Message(""), pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -27,7 +28,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
 	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			PoolingDataSource result = new PoolingDataSource();
 			result.setUniqueName(dataSourceName);
@@ -37,12 +38,27 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 			result.init();
 			return result;
 		}
+
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource)dataSource;
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingDataSource).forEach(ds -> ((PoolingDataSource)ds).close());
+	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
+	public synchronized void destroy() throws Exception {
+		for (DataSource dataSource : objects.values()) {
+			DataSource originalDataSource = getOriginalDataSource(dataSource);
+			if(originalDataSource instanceof PoolingDataSource) {
+				((PoolingDataSource) originalDataSource).close();
+			}
+		}
+		super.destroy();
+	}
+
+	private DataSource getOriginalDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getOriginalDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
 	}
 }

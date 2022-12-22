@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,10 +29,9 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -53,10 +52,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private @Getter String name;
 	private @Getter String inputSeparator;
 	private @Getter boolean trim=false;
-	
-	private List<InputField> inputFields=new LinkedList<>(); 
+
+	private List<InputField> inputFields=new LinkedList<>();
 	private List<Integer> recordIdentifyingFields=new LinkedList<>();
-	
+
 	protected @Getter ParameterList paramList = null;
 
 	@Override
@@ -65,10 +64,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			paramList.configure();
 		}
 		if (inputFields.size()>0 && StringUtils.isNotEmpty(getInputSeparator())) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] inputFields and inputSeparator cannot be specified both");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" inputFields and inputSeparator cannot be specified both");
 		}
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		//nothing to do		
@@ -94,7 +93,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	protected int getNumberOfInputFields() {
 		return inputFields.size();
 	}
-	
+
 	@Override
 	public List<String> parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
@@ -109,16 +108,16 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return result;
 		}
 	}
-	
+
 	private List<String> parseUsingInputFields(String record) {
 		List<String> result = new ArrayList<>();
 
-		int recordLength = record.length(); 
+		int recordLength = record.length();
 		int curPos = 0;
 		for (Iterator<InputField> fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
 			InputField field = fieldIt.next();
-			int endPos = curPos + field.length; 
-			
+			int endPos = curPos + field.length;
+
 			String item;
 			if (curPos >= recordLength) {
 				item="";
@@ -134,16 +133,16 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			} else {
 				result.add(item);
 			}
-			
+
 			curPos = endPos;
 		}
-		
+
 		return result;
 	}
 
 	private List<String> parseUsingSeparator(String record) {
 		List<String> result = new ArrayList<>();
-		
+
 		int endNdx = -1;
 		do {
 			int startNdx = endNdx + 1;
@@ -162,14 +161,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			}
 		}
 		while(endNdx != -1);
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public String getRecordType(List<String> record) {
 		String result=null;
-		
+
 		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
 			int i = (it.next()).intValue();
 			String field=record.get(i-1);
@@ -182,7 +181,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 		return result;
 	}
-	
+
 	@Override
 	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
@@ -193,7 +192,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
 			return true;
 		}
-			
+
 		if (prevRecord == null) {
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no previous record, so returning true");
 			return true;
@@ -209,11 +208,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 		return false;
 	}
-	
+
 
 	protected class InputField {
 		private int length;
-		
+
 		InputField(int length) {
 			this.length = length;
 		}
@@ -227,7 +226,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return recordIdentifyingFields;
 	}
 
-	@IbisDoc({"comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different", ""})
+	/** comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different */
 	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
@@ -260,13 +259,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"1", "Name of the recordhandler", ""})
+	/** Name of the recordhandler */
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"2", "Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
+	/** Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed */
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -275,12 +274,15 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-	@IbisDoc({"4", "Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
+	/** Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed */
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
 
-	@IbisDoc({"4", "If set <code>true</code>, trailing spaces are removed from each field", "false"})
+	/**
+	 * If set <code>true</code>, trailing spaces are removed from each field
+	 * @ff.default false
+	 */
 	public void setTrim(boolean b) {
 		trim = b;
 	}

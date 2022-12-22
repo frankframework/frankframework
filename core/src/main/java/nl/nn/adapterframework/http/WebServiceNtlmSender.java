@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,33 +49,35 @@ import jcifs.ntlmssp.Type1Message;
 import jcifs.ntlmssp.Type2Message;
 import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that sends a message via a WebService based on NTLM authentication.
  *
  * @author  Peter Leeuwenburgh
  */
-public class WebServiceNtlmSender extends SenderWithParametersBase implements
-		HasPhysicalDestination {
+public class WebServiceNtlmSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private String contentType = "text/xml; charset="
-			+ Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+	private String contentType = "text/xml; charset="+ StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String url;
 	private int timeout = 10000;
 	private int maxConnections=10;
-	private String authAlias;
-	private String userName;
-	private String password;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
 	private String authDomain;
 	private String proxyHost;
 	private int proxyPort = 80;
@@ -127,7 +129,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		HttpConnectionParams.setSoTimeout(httpParameters, getTimeout());
 		httpClient = new DefaultHttpClient(connectionManager, httpParameters);
 		httpClient.getAuthSchemes().register("NTLM", new NTLMSchemeFactory());
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new NTCredentials(cf.getUsername(), cf.getPassword(), Misc.getHostname(), getAuthDomain()));
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
@@ -150,7 +152,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -187,18 +189,14 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 				result = EntityUtils.toString(httpEntity);
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
+		} catch (SocketTimeoutException | ConnectTimeoutException e) {
+			throw new TimeoutException(e);
 		} catch (Exception e) {
-			if (e instanceof SocketTimeoutException) {
-				throw new TimeOutException(e);
-			} 
-			if (e instanceof ConnectTimeoutException) {
-				throw new TimeOutException(e);
-			} 
 			throw new SenderException(e);
 		} finally {
 			httpPost.releaseConnection();
 		}
-		return new Message(result);
+		return new SenderResult(result);
 	}
 
 	@Override
@@ -206,7 +204,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return getUrl();
 	}
 
-	@IbisDoc({"content-type of the request", "text/html; charset=utf-8"})
+	/**
+	 * content-type of the request
+	 * @ff.default text/html; charset=utf-8
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}
@@ -219,7 +220,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return url;
 	}
 
-	@IbisDoc({"url or base of url to be used ", ""})
+	/** url or base of url to be used  */
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -228,7 +229,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return timeout;
 	}
 
-	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	/**
+	 * timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * @ff.default 10000
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}
@@ -237,34 +241,33 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return maxConnections;
 	}
 
-	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	/**
+	 * the maximum number of concurrent connections
+	 * @ff.default 10
+	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
-	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
+	/** alias used to obtain credentials for authentication to host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	public String getUserName() {
-		return userName;
+	/** username used in authentication to host */
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
-	@IbisDoc({"username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	@IbisDoc({"", " "})
+	/**
+	 * password used to authenticate with the host
+	 * @ff.default  
+	 */
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -281,7 +284,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyHost;
 	}
 
-	@IbisDoc({"", " "})
+	/**
+	 * 
+	 * @ff.default  
+	 */
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -290,7 +296,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return proxyPort;
 	}
 
-	@IbisDoc({"", "80"})
+	/**
+	 * 
+	 * @ff.default 80
+	 */
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -299,7 +308,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return soapAction;
 	}
 
-	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
+	/** the soapactionuri to be set in the requestheader */
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

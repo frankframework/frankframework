@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,118 +16,147 @@
 package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * List of parametervalues.
- * 
+ * List of {@link ParameterValue ParameterValues}.
+ *
  * @author Gerrit van Brakel
  */
-public class ParameterValueList {
-	
+public class ParameterValueList implements Iterable<ParameterValue> {
+
 	List<ParameterValue> list;
 	Map<String, ParameterValue> map;
-	
+
 	public ParameterValueList() {
 		super();
-		list = new ArrayList<ParameterValue>();
-		map  = new HashMap<String, ParameterValue>();
+		list = new ArrayList<>();
+		map  = new LinkedHashMap<>();
 	}
 
-	public ParameterValueList(int i) {
-		super();
-		list = new ArrayList<ParameterValue>(i);
-		map  = new HashMap<String, ParameterValue>();
-	}
-	
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
 		if (params==null) {
 			return null;
 		}
 		return params.getValues(message, session);
 	}
-	
-	public void add(ParameterValue pv) {
+
+	protected void add(ParameterValue pv) {
+		if(pv == null || pv.getDefinition() == null) {
+			throw new IllegalStateException("No parameter defined");
+		}
+		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
+			throw new IllegalStateException("Parameter must have a name");
+		}
 		list.add(pv);
 		map.put(pv.getDefinition().getName(),pv);
 	}
-	
-	public ParameterValue getParameterValue(int i) {
-		return list.get(i);
-	}
 
+	@Deprecated //Fix this in a separate PR
 	public ParameterValue getParameterValue(String name) {
+		return get(name);
+	}
+	/** Get a specific {@link ParameterValue} */
+	public ParameterValue get(String name) {
 		return map.get(name);
 	}
 
-	public Object getValue(int i) {
-		return list.get(i).getValue();
+	/** Find a (case insensitive) {@link ParameterValue} */
+	public ParameterValue findParameterValue(String name) {
+		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
+			if(entry.getKey().equalsIgnoreCase(name)) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 
-	public String getName(int i) {
-		return list.get(i).getName();
-	}
-
-	public Object getValue(String name) {
-		ParameterValue pv = map.get(name);
-		return pv ==null ? null : pv.getValue();
-	}
-
-	public boolean containsKey(String name) {
+	public boolean contains(String name) {
 		return map.containsKey(name);
 	}
 
-
-	public ParameterValue removeParameterValue(String name) {
+	/**
+	 * should not be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	@Deprecated
+	public ParameterValue remove(String name) {
 		ParameterValue pv = map.remove(name);
-		if (pv!=null) {
+		if(pv != null) {
 			list.remove(pv);
 		}
 		return pv;
 	}
-	
-	public boolean parameterExists(String name) {
-		return map.get(name)!=null;
-	}
 
-	public int size() {
-		return list.size();
-	}
-	
-	Map<String, ParameterValue> getParameterValueMap() {
-		return map;
+	private Map<String, ParameterValue> getParameterValueMap() {
+		return Collections.unmodifiableMap(map);
 	}
 
 	/**
-	 * Returns a Map of value objects
+	 * Returns a Map of value objects which may be a subset of the ParameterList when multiple parameters exist with the same name!
 	 */
-	public Map<String,Object> getValueMap() throws ParameterException {
+	public Map<String, Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
-		// convert map with parameterValue to map with value		
-		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
+		// convert map with parameterValue to map with value
+		Map<String,Object> result = new LinkedHashMap<>(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
 
-	/*
-	 * Helper routine for quickly iterating through the resolved parameters
-	 * in the order in which they are defined 
-	 */
-	public void forAllParameters(IParameterHandler handler) throws ParameterException {
-		for (Iterator<ParameterValue> param = list.iterator(); param.hasNext();) {
-			ParameterValue paramValue = param.next();
-			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
+	public static Message getValue(ParameterValueList pvl, String name, Message defaultValue) {
+		if (pvl!=null) {
+			ParameterValue pv = pvl.get(name);
+			Message value = pv!=null ? pv.asMessage() : null;
+			if (!Message.isNull(value)) {
+				return value;
+			}
 		}
+		return defaultValue;
+	}
+
+	public static String getValue(ParameterValueList pvl, String name, String defaultValue) {
+		if (pvl!=null) {
+			ParameterValue pv = pvl.get(name);
+			if (pv!=null) {
+				return pv.asStringValue(defaultValue);
+			}
+		}
+		return defaultValue;
+	}
+
+	/////// List implementations, can differ in size from Map implementation when multiple ParameterValues with the same name exist!
+
+	/**
+	 * @return The list size, should only be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	public int size() {
+		return list.size();
+	}
+
+	/**
+	 * @return The corresponding {@link ParameterValue}, should only be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	public ParameterValue getParameterValue(int i) {
+		return list.get(i);
+	}
+
+	/**
+	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
+	 */
+	@Override
+	public Iterator<ParameterValue> iterator() {
+		return list.iterator();
 	}
 }

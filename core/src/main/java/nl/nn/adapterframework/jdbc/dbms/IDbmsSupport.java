@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,18 +32,18 @@ import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
 /**
  * Interface to define DBMS specific SQL implementations.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since  
+ * @since
  */
 public interface IDbmsSupport {
 
 	/**
 	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
 	 */
-	Dbms getDbms(); 
+	Dbms getDbms();
 	String getDbmsName();
-	
+
 	boolean isParameterTypeMatchRequired();
 	boolean hasSkipLockedFunctionality();
 	/**
@@ -75,7 +75,7 @@ public interface IDbmsSupport {
 	String emptyClobValue();
 	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
 	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
-	
+
 	// CLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
 	String getUpdateClobQuery(String table, String clobField, String keyField);
 	Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
@@ -84,12 +84,12 @@ public interface IDbmsSupport {
 	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
 	void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
-	
-	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+
+	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
 	Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
 	Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
 	void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
-	
+
 
 	String getBlobFieldType();
 	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
@@ -107,7 +107,7 @@ public interface IDbmsSupport {
 	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
 	void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
 
-	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements 
+	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
 	Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
 	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
 	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
@@ -129,7 +129,7 @@ public interface IDbmsSupport {
 	 */
 	String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException;
 	/**
-	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForNonLockingRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)}, 
+	 * Modify the connection in such a way that it when select queries, prepared by {@link #prepareQueryTextForNonLockingRead(String)} or by {@link #prepareQueryTextForWorkQueuePeeking(int,String)},
 	 * are executed, they will not be blocked by locks, and will avoid placing locks itself as much as possible.
 	 * Preferably isolation level is READ_COMMITTED (commited rows of other transactions may be read), but if placing locks can be avoid by an isolation level similar to READ_UNCOMMITTED, that is allowed too.
 	 * After the query is executed, jdbcSession.close() will be called, to return the connection to its normal state (which is expected to be REPEATABLE_READ).
@@ -143,19 +143,20 @@ public interface IDbmsSupport {
 	String provideTrailingFirstRowsHint(int rowCount);
 
 	String getSchema(Connection conn) throws JdbcException;
-	
+
 	void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException;
-	
+
+	ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException;
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException;
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException;
 	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
 	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
 	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException;
 	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);
 	boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName);
-	boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);
-	int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName);
-	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName);
-	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns);
+	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException;
+	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException;
 	String getSchemaOwner(Connection conn) throws SQLException, JdbcException;
 
 	boolean isConstraintViolation(SQLException e);
@@ -169,4 +170,5 @@ public interface IDbmsSupport {
 
 	String getBooleanFieldType();
 	String getBooleanValue(boolean value);
+	String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows);
 }

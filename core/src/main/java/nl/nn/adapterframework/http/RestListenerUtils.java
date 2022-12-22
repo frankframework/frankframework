@@ -27,9 +27,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Some utilities for working with
- * {@link nl.nn.adapterframework.http.RestListener RestListener}.
- * 
+ * Some utilities for working with {@link RestListener}.
+ *
  * @author Peter Leeuwenburgh
  */
 public class RestListenerUtils {
@@ -62,13 +61,5 @@ public class RestListenerUtils {
 		if (response != null) {
 			response.setContentType(contentType);
 		}
-	}
-
-	public static String formatEtag(String restPath, String uriPattern, int hash) {
-		return formatEtag(restPath, uriPattern, ""+hash );
-	}
-
-	public static String formatEtag(String restPath, String uriPattern, String hash) {
-		return Integer.toOctalString(restPath.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
 	}
 }

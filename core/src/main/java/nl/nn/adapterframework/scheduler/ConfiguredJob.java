@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.scheduler.job.IJob;
 
 
 
@@ -35,8 +36,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
  * <li>receiverName: the name of the receiver<li>
  * </ul>
  *<p><b>Design consideration</b></p>
- * <p>Currently, the {@link nl.nn.adapterframework.configuration.Configuration configuration}
- * is stored in the job data map. As the configuration is not serializable, due to the nature of the
+ * <p>Currently, the {@link Configuration} is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
  * </p>
  *
@@ -46,7 +46,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
   */
 public class ConfiguredJob extends BaseJob {
 
-	public static final String MANAGER_KEY = "manager";
 	public static final String JOBDEF_KEY = "jobdef";
 
 	@Override
@@ -54,12 +53,11 @@ public class ConfiguredJob extends BaseJob {
 		String ctName = Thread.currentThread().getName();
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER_KEY);
-			JobDef jobDef = (JobDef)dataMap.get(JOBDEF_KEY);
+			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
-			log.info(getLogPrefix(jobDef) + "executing");
-			jobDef.executeJob(ibisManager);
-			log.debug(getLogPrefix(jobDef) + "completed");
+			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "executing");
+			jobDef.executeJob();
+			if (log.isTraceEnabled()) log.trace(getLogPrefix(jobDef) + "completed");
 		}
 		catch (Exception e) {
 			log.error("JobExecutionException while running "+getLogPrefix(context), e);
@@ -69,5 +67,5 @@ public class ConfiguredJob extends BaseJob {
 			Thread.currentThread().setName(ctName);
 		}
 	}
-	
+
 }

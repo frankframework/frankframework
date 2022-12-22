@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -33,6 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.2
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class ReplacerPipe extends FixedForwardPipe {
 
 	private String find;
@@ -50,13 +52,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		if (StringUtils.isEmpty(getFind())) {
-//			throw new ConfigurationException(getLogPrefix(null) + "cannot have empty find-attribute");
+//			throw new ConfigurationException("cannot have empty find-attribute");
 //		}
 		if (StringUtils.isNotEmpty(getFind())) {
 			if (getReplace() == null) {
 				throw new ConfigurationException("cannot have a null replace-attribute");
-			}		
-			log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
+			}
+			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
 				replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
@@ -99,7 +101,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (StringUtils.isNotEmpty(getFind())) {
 			input = replace(input,getFind(),getReplace());
@@ -113,22 +115,20 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getSuccessForward(),input);
 	}
-	
+
 	/**
 	 * Sets the string that is searched for.
-	 */ 
-	@IbisDoc({"string to search for", ""})
+	 */
 	public void setFind(String find) {
 		this.find = find;
 	}
 	public String getFind() {
 		return find;
 	}
-	
+
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string.
-	 */ 
-	@IbisDoc({"string that will replace each of the strings found", ""})
+	 */
 	public void setReplace(String replace) {
 		this.replace = replace;
 	}
@@ -138,17 +138,19 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the string the representation in find and replace of the line separator.
-	 */ 
+	 */
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;
 	}
 
-	@IbisDoc({"sets the string the representation in find and replace of the line separator", ""})
+	/** sets the string the representation in find and replace of the line separator */
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
 
-	@IbisDoc({"Replace all non XML chars (not in the <a href=\"http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char\">character range as specified by the XML specification</a>) with {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
+	/** Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}
+	 * @ff.default false
+	 */
 	public void setReplaceNonXmlChars(boolean b) {
 		replaceNonXmlChars = b;
 	}
@@ -157,7 +159,10 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChars;
 	}
 
-	@IbisDoc({"character that will replace each non valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)", "empty string"})
+	/**
+	 * character that will replace each non valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
+	 * @ff.default empty string
+	 */
 	public void setReplaceNonXmlChar(String replaceNonXmlChar) {
 		this.replaceNonXmlChar = replaceNonXmlChar;
 	}
@@ -166,7 +171,10 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return replaceNonXmlChar;
 	}
 
-	@IbisDoc({"Whether to allow Unicode supplementary characters (like a smiley) during {@link nl.nn.adapterframework.util.XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}", "false"})
+	/**
+	 * Whether to allow Unicode supplementary characters (like a smiley) during {@link XmlUtils#replaceNonValidXmlCharacters(String, char, boolean, boolean) replaceNonValidXmlCharacters}
+	 * @ff.default false
+	 */
 	public void setAllowUnicodeSupplementaryCharacters(boolean b) {
 		allowUnicodeSupplementaryCharacters = b;
 	}

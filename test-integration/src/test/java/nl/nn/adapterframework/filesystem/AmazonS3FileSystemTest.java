@@ -8,10 +8,6 @@ import org.junit.Test;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
-import nl.nn.adapterframework.filesystem.FileSystemTest;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 	private String accessKey = "";
 	private String secretKey = "";

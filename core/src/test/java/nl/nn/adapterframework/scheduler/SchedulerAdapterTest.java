@@ -70,7 +70,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 
 	@Test
 	public void testGetJobMessages() throws SchedulerException {
-		assertEquals("<jobMessages />", schedulerAdapter.getJobMessages(null).toXML().trim());
+		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
 
 	@Test
@@ -80,7 +80,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 		jobDataMap.put(CORRELATIONID, "correlationId");
 		jobDataMap.put(MESSAGE, "message");
 		
-		assertEquals("<jobMessages />", schedulerAdapter.getJobMessages(null).toXML().trim());
+		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
 
 	@Test

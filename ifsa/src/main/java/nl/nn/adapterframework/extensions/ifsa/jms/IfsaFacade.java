@@ -55,21 +55,7 @@ import lombok.Setter;
 /**
  * Base class for IFSA 2.0/2.2 functions.
  * <br/>
- * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.</p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
- * </table>
+ * <p>Descender classes must set either Requester or Provider behaviour in their constructor.</p>
  * 
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
@@ -83,20 +69,21 @@ import lombok.Setter;
  * @since 4.2
  */
 public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
+	private final @Getter(onMethod = @__(@Override)) String domain = "IFSA";
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
- 	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
- 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
- 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
- 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
- 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
- 	
+	private static final String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+	private static final int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
+	private static final int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
+	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+
 	private static Boolean useSelectorsStore=null; 
 
-    private int ackMode = -1;
-   
+	private int ackMode = -1;
+
 	private String name;
 	private String applicationId;
 	private String serviceId;
@@ -564,11 +551,9 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	}
 
     /**
-     * Method logs a warning when the newMessageProtocol is not FF or RR.
-     * <p>When the messageProtocol equals to FF, transacted is set to true</p>
-     * <p>Creation date: (08-05-2003 9:03:53)</p>
+     * Protocol of the IFSA-Service to be called.
+     * When the protocol equals to <code>FF</code>, transacted is set to true.
      * @see IfsaMessageProtocolEnum
-     * @param newMessageProtocol String
      */
     public void setMessageProtocol(String newMessageProtocol) {
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
@@ -660,7 +645,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		return polishedServiceId;
 	}
 
-
+	/** the ApplicationID, in the form of "IFSA://<i>AppId</i>" */
 	public void setApplicationId(String newApplicationId) {
 		applicationId = newApplicationId;
 	}
@@ -685,11 +670,13 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		return name;
 	}
 
-	public long getTimeOut() {
-		return timeOut;
-	}
+	/** The receive timeout in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1
+	 * @ff.default 20000 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
+	}
+	public long getTimeOut() {
+		return timeOut;
 	}
 
 	public void setAckMode(int ackMode) {
@@ -698,6 +685,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	public int getAckMode() {
 		return ackMode;
 	}
+
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
 		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {

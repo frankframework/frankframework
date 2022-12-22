@@ -1,89 +1,83 @@
 package nl.nn.adapterframework.mailsenders;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URL;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
- * MailSender can be replaced with MailSenderNew to test MailSenderNew vice versa
  * 
  * @author alisihab
  *
  */
 public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTestBase<IMailSender> {
-
+	private String correlationID = "fakeCorrelationID";
 	private String examplesMainFolder = "/MailSender/";
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Override
 	public abstract M createSender();
+	
+	@Override
+		public void setup() throws Exception {
+			super.setup();
+			session = new PipeLineSession();
+			session.put("messageId", correlationID);
+		}
 
 	@Test
-	public void testCompleteXMLFile() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testCompleteXMLFile() throws Exception {
 		sendMessage(examplesMainFolder + "emailSample.xml");
 	}
 
 	@Test
-	public void testEmptySubject() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testEmptySubject() throws Exception {
 		sendMessage(examplesMainFolder + "emailSampleEmptySubject.xml");
 	}
 
 	@Test
-	public void testEmptySubjectUseDefault()
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testEmptySubjectUseDefault() throws Exception {
 		sender.setDefaultSubject("subject ");
 		sendMessage(examplesMainFolder + "emailSampleEmptySubject.xml");
 	}
 
 	@Test
-	public void testEmptyFrom() throws SenderException, TimeOutException, ConfigurationException, IOException {
-		exception.expect(SenderException.class);
-		sendMessage(examplesMainFolder + "emailSampleEmptyFrom.xml");
+	public void testEmptyFrom() throws Exception {
+		assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyFrom.xml"));
 	}
 
 	@Test
-	public void testEmptyMessage() throws SenderException, TimeOutException, ConfigurationException, IOException {
-		exception.expect(SenderException.class);
-		sendMessage(examplesMainFolder + "emailSampleEmptyMessage.xml");
+	public void testEmptyMessage() throws Exception {
+		assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyMessage.xml"));
 	}
 
 	@Test
-	public void testHeader() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testHeader() throws Exception {
 		sendMessage(examplesMainFolder + "emailSampleWithHeaders.xml");
 	}
 
 	@Test
-	public void testEmptyRecipients() throws SenderException, TimeOutException, ConfigurationException, IOException {
-		exception.expectMessage("no recipients for message");
-		sendMessage(examplesMainFolder + "emailSampleEmptyRecipients.xml");
+	public void testEmptyRecipients() throws Exception {
+		SenderException thrown = assertThrows(SenderException.class, () -> sendMessage(examplesMainFolder + "emailSampleEmptyRecipients.xml"));
+		assertTrue(thrown.getMessage().contains("no recipients for message"));
 	}
 
 	@Test
-	public void testWithAttachments() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testWithAttachments() throws Exception {
 		sendMessage(examplesMainFolder + "emailSampleWithAttachment.xml");
 	}
 
 	@Test
-	public void testNullXMLFile() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testNullXMLFile() throws Exception {
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
-		pFrom.setDefaultValue("dummy@dummy.com");
+		pFrom.setValue("dummy@dummy.com");
 		sender.addParameter(pFrom);
 
 		Parameter pSubject = new Parameter();
@@ -123,22 +117,18 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 
 		Parameter pAttachments = new Parameter();
 		pAttachments.setName("attachments");
-		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
+		pAttachments.setValue("<attachment name=\"filename1\" type=\"text/plain\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
 
-		PipeLineSession session = new PipeLineSession();
 		sender.configure();
 		sender.open();
 
-		String correlationId = "FakeCorrelationId";
-		String result = sender.sendMessage(new Message("<dummy><a>s</a></dummy>"), session).asString();
-		assertEquals(correlationId, result);
+		String result = sender.sendMessageOrThrow(new Message("<dummy><a>s</a></dummy>"), session).asString();
+		assertEquals(correlationID, result);
 	}
 
 	@Test
-	public void testParametersEmptyRecipients()
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
-		exception.expect(SenderException.class);
+	public void testParametersEmptyRecipients() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -182,22 +172,17 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 
 		Parameter pAttachments = new Parameter();
 		pAttachments.setName("attachments");
-		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
+		pAttachments.setValue("<attachment name=\"filename1\" type=\"text/plain\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
-
-		PipeLineSession session = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
 
-		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(null, session).asString();
-		assertEquals(correlationID, result);
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(null, session));
 	}
 
 	@Test
-	public void testAttachmentsFromSessionKey()
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testAttachmentsFromSessionKey() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -239,27 +224,22 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pThreadTopic.setValue("subject");
 		sender.addParameter(pThreadTopic);
 
-		PipeLineSession session = new PipeLineSession();
-		session.put("attachment",
-				new URL("file:///" + getClass().getResource(examplesMainFolder + "emailSample.xml").getPath())
-						.openStream());
+		session.put("attachment", TestFileUtils.getTestFileURL(examplesMainFolder + "emailSample.xml").openStream());
 		Parameter pAttachments = new Parameter();
 		pAttachments.setName("attachments");
-		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>"
+		pAttachments.setValue("<attachment name=\"filename1\" type=\"text/plain\">This is the first attachment</attachment>"
 				+ "<attachment name=\"email.xml\" sessionKey=\"attachment\"> </attachment>");
 		sender.addParameter(pAttachments);
 
 		sender.configure();
 		sender.open();
 
-		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(null, session).asString();
+		String result = sender.sendMessageOrThrow(null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
 	@Test
-	public void testAttachmentsContentBase64()
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testAttachmentsContentBase64() throws Exception {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -294,36 +274,21 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		Parameter pAttachments = new Parameter();
 		pAttachments.setName("attachments");
 		//This is the first attachment base64 encoded
-		pAttachments.setValue(
-				"<attachment name=\"filename1\" base64=\"true\" type=\"txt\">VGhpcyBpcyB0aGUgZmlyc3QgYXR0YWNobWVudA==</attachment>");
+		pAttachments.setValue("<attachment name=\"filename1\" base64=\"true\" type=\"text/plain\">VGhpcyBpcyB0aGUgZmlyc3QgYXR0YWNobWVudA==</attachment>");
 		sender.addParameter(pAttachments);
 
-		PipeLineSession session = new PipeLineSession();
 		sender.configure();
 		sender.open();
 
-		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(null, session).asString();
+		String result = sender.sendMessageOrThrow(null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
-	public void sendMessage(String filePath)
-			throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void sendMessage(String filePath) throws Exception {
 		sender.configure();
 		sender.open();
-		Reader fileReader = new FileReader(getClass().getResource(filePath).getFile());
-		BufferedReader bufReader = new BufferedReader(fileReader);
-		StringBuilder sb = new StringBuilder();
-		String line = bufReader.readLine();
-		while (line != null) {
-			sb.append(line).append("\n");
-			line = bufReader.readLine();
-		}
-		bufReader.close();
-		String xml2String = sb.toString();
-		Message sampleMailXML = new Message(xml2String);
-		String correlationID = "fakeCorrelationID";
-		String result = sender.sendMessage(sampleMailXML, session).asString();
+		Message sampleMailXML = TestFileUtils.getTestFileMessage(filePath);
+		String result = sender.sendMessageOrThrow(sampleMailXML, session).asString();
 		assertEquals(correlationID, result);
 	}
 }

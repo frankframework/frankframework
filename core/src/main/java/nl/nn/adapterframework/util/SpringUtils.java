@@ -25,18 +25,19 @@ public class SpringUtils {
 		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
-	public static <T> void autowireByType(ApplicationContext applicationContext, Object existingBean) {
+	public static void autowireByType(ApplicationContext applicationContext, Object existingBean) {
 		autowire(applicationContext, existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 	}
 
-	public static <T> void autowireByName(ApplicationContext applicationContext, Object existingBean) {
+	public static void autowireByName(ApplicationContext applicationContext, Object existingBean) {
 		autowire(applicationContext, existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME);
 	}
 
-	public static <T> void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
+	public static void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
 		if (applicationContext==null) {
 			throw new NullPointerException("ApplicationContext not set");
 		}
+
 		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, false);
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, existingBean.getClass().getCanonicalName());
 	}

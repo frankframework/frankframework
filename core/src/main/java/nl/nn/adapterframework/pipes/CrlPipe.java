@@ -29,50 +29,52 @@ import java.util.Iterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Pipe that reads a CRL from an input stream and transforms it to an XML.
  * The steam is closed after reading.
- * 
+ *
  * Example configuration:
- * <code><pre>
-		<pipe
-			name="Read issuer"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/issuer.cer"
-			preserveInput="true"
-			outputType="stream"
-			storeResultInSessionKey="issuer"
-			>
-			<forward name="success" path="Read CRL" />
-		</pipe>
-		<pipe
-			name="Read CRL"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/CRL.crl"
-			outputType="stream"
-			>
-			<forward name="success" path="Transform CRL" />
-		</pipe>
-		<pipe
-			name="Transform CRL"
-			className="nl.nn.adapterframework.pipes.CrlPipe"
-			issuerSessionKey="issuer"
-			>
-			<forward name="success" path="EXIT" />
-		</pipe>
- * </pre></code>
- * 
- * 
+ * <pre><code>
+	&lt;pipe
+		name="Read issuer"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/issuer.cer"
+		preserveInput="true"
+		outputType="stream"
+		storeResultInSessionKey="issuer"
+		&gt;
+		&lt;forward name="success" path="Read CRL" /&gt;
+	&lt;/pipe&gt;
+	&lt;pipe
+		name="Read CRL"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/CRL.crl"
+		outputType="stream"
+		&gt;
+		&lt;forward name="success" path="Transform CRL" /&gt;
+	&lt;/pipe&gt;
+	&lt;pipe
+		name="Transform CRL"
+		className="nl.nn.adapterframework.pipes.CrlPipe"
+		issuerSessionKey="issuer"
+		&gt;
+		&lt;forward name="success" path="EXIT" /&gt;
+	&lt;/pipe&gt;
+ * </code></pre>
+ *
+ *
  * @author Miel Hoppenbrouwers
  * @author Jaco de Groot
  * @author Tom van der Heijden
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
 
@@ -125,7 +127,7 @@ public class CrlPipe extends FixedForwardPipe {
 		return issuerSessionKey;
 	}
 
-	@IbisDoc({"name of the sessionkey that holds a stream to the certificate of the issuer who signed the crl. the steam is closed after reading", ""})
+	/** name of the sessionkey that holds a stream to the certificate of the issuer who signed the crl. the steam is closed after reading */
 	public void setIssuerSessionKey(String issuerSessionKey) {
 		this.issuerSessionKey = issuerSessionKey;
 	}

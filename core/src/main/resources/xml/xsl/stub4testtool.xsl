@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:stub="http://frankframework.org/stub">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
-		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute), errorStorage and messageLog from disabled receiver when present)
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute=Mandatory, this is replaced with Required), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the ResultSet2FileSender, DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper, XsltSender, CommandSender, FixedResultSender, FileSender, JavascriptSender, MessageStoreSender and ZipWriterSender
 		- disable all elements sapSystems
@@ -23,7 +23,7 @@
 		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
 	-->
 	<xsl:template match="/">
-		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
+		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
 	
 	<xsl:template match="*|@*|comment()|processing-instruction()">
@@ -63,6 +63,7 @@
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
+			<xsl:apply-templates select="$baseReceiver/@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="$baseReceiver/@*[local-name()!='transactionAttribute' and local-name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
@@ -90,6 +91,7 @@
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
+			<xsl:apply-templates select="@transactionAttribute" mode="stub"/>
 			<xsl:apply-templates select="@*[name()!='transactionAttribute' and name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
@@ -128,6 +130,12 @@
 				</xsl:for-each>
 			</xsl:element>
 		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template match="receiver/@transactionAttribute" mode="stub">
+		<xsl:attribute name="transactionAttribute">
+			<xsl:value-of select="if (.='Mandatory') then 'Required' else ."/>
+		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- All senders are stubbed except those in the list below -->
@@ -370,18 +378,47 @@
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" />
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template name="disable">
-		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable" />
-		</xsl:copy>
-		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+		<xsl:comment>
+			<xsl:copy>
+				<xsl:apply-templates select="." mode="escape" />
+			</xsl:copy>
+		</xsl:comment>
 	</xsl:template>
 
-	<xsl:template match="*|@*|processing-instruction()|text()" mode="disable">
-		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
-		</xsl:copy>
+	<!-- Escape xml tag opening(<) and closing(>) signs so that xsl:comment can process the copy of the xml. Processes elements and attributes only -->
+	<xsl:template match="*" mode="escape">
+		<xsl:variable name="apos">'</xsl:variable>
+		<!-- Start element -->
+		<xsl:text>&lt;</xsl:text>
+		<xsl:value-of select="name()" />
+
+		<!-- Attributes -->
+		<xsl:for-each select="@*">
+			<xsl:value-of select="concat(' ', name(), '=', $apos, ., $apos)"/>
+		</xsl:for-each>
+
+		<!-- End opening tag -->
+		<xsl:text>&gt;</xsl:text>
+
+		<!-- Children -->
+		<xsl:apply-templates select="node()" mode="escape" />
+
+		<!-- End element -->
+		<xsl:text>&lt;/</xsl:text>
+		<xsl:value-of select="name()" />
+		<xsl:text>&gt;</xsl:text>
+	</xsl:template>
+
+	<!-- Disable stubbing if set. -->
+	<!-- This uses priority="1" to ensure it has higher priority than matching templates with default priority, which would otherwise result in error XTRE0540 (ambiguous rule match)-->
+	<xsl:template match="*[lower-case(@stub:disableStub)=('true','!false')]" priority="1">
+		<xsl:copy-of select="."/>
+	</xsl:template>
+
+	<!-- disableStub can be defined on the listener, in that case also do not stub the receiver -->
+	<xsl:template match="receiver[lower-case(listener/@stub:disableStub)=('true','!false')]" priority="1">
+		<xsl:copy-of select="."/>
 	</xsl:template>
 </xsl:stylesheet>

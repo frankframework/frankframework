@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,65 +17,71 @@ package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import lombok.Getter;
+import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.pipes.AbstractPipe;
+import nl.nn.adapterframework.pipes.FixedResultPipe;
+
 /**
- * Bean that knows a functional name of a Forward, to be referred by
- * other Pipes and the PipeLine.
- * <br/>
- * The <code>name</code> is the name which a Pipe may lookup to return
- * to the PipeLine, indicating the next pipe to be executed. (this is done
- * in the {@link nl.nn.adapterframework.pipes.AbstractPipe#findForward(String) findForward()}-method. The actual
- * pipeName is defined in the <code>path</code> property.<br/><br/>
- * In this manner it is possible to influence the flow through the pipeline
- * without affecting the Java-code. Simply change the forwarding-XML.<br/>
+ * Appears inside a pipe and defines what pipe or exit to execute next. When the
+ * execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
+ * This pipe or exit is searched based on a key that describes what happened during
+ * pipe execution. For example a {@link FixedResultPipe} searches for key
+ * <code>filenotfound</code> if it tried to read a file that did not exist,
+ * preventing it from producing the desired output message. If there was
+ * no error, the {@link FixedResultPipe} searches for key <code>success</code>.
+ * <br/><br/>
+ * Each <code>&lt;Forward&gt;</code> tag is used to link a search key (<code>name</code> attribute)
+ * to a pipe or exit to execute next (<code>path</code> attribute). The forward's <code>path</code>
+ * attribute references the target pipe or exit by its <code>name</code> attribute, see
+ * {@link AbstractPipe} and {@link PipeLineExit}. For most pipes and most keys, the next
+ * pipe is executed if no forward is found. By default, the pipes in a pipeline are executed consecutively.
  *
  * @author Johan Verrips
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
+ *
  */
+// Looking up the next pipe or exit is done by method AbstractPipe.findForward(String)
 public class PipeForward {
 
-	public final static String SUCCESS_FORWARD_NAME = PipeLineExit.EXIT_STATE_SUCCESS;
-	public final static String EXCEPTION_FORWARD_NAME = "exception";
-    private String name;
-    private String path;
+	public static final String SUCCESS_FORWARD_NAME = "success";
+	public static final String EXCEPTION_FORWARD_NAME = "exception";
 
-    public PipeForward(String name, String path) {
-        this.name = name;
-        this.path = path;
-    }
-    public PipeForward() {
+	private @Getter String name;
+	private @Getter String path;
 
-    }
+	public PipeForward(String name, String path) {
+		this.name = name;
+		this.path = path;
+	}
+
+	public PipeForward() {
+
+	}
 
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
-    public String getName() {
-        return name;
-    }
+	@Mandatory
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * The name of the next Pipe or Exit. When the Pipeline doesn't have an Exits element configured it will be
+	 * initialized with one Exit having name READY and state SUCCESS
 	 */
-	public String getPath() {
-        return path;
-    }
-  	/**
-	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
-	 */
-    public void setName(String name) {
-        this.name = name;
-    }
+	@Mandatory
+	public void setPath(String path) {
+		this.path = path;
+	}
+
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * uses reflection to return the value
 	 */
-    public void setPath(String path) {
-        this.path = path;
-    }
- 	/**
- 	 * uses reflection to return the value
- 	 */
 	@Override
-	public String toString(){
-      return ToStringBuilder.reflectionToString(this);
-    }
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

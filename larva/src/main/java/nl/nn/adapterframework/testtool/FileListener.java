@@ -1,11 +1,32 @@
+/*
+   Copyright 2021-2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.testtool;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -13,7 +34,11 @@ import nl.nn.adapterframework.util.FileUtils;
  * 
  * @author Jaco de Groot
  */
-public class FileListener {
+public class FileListener implements IConfigurable, AutoCloseable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+
 	private String filename;
 	private String filename2;
 	private String directory;
@@ -22,13 +47,48 @@ public class FileListener {
 	private long timeOut = 3000;
 	private long interval = 100;
 
+	@Override
+	public void configure() throws ConfigurationException {
+		if (filename == null && directory == null) {
+			throw new ConfigurationException("Could not find filename or directory property");
+		} else if (directory != null && wildcard == null) {
+			throw new ConfigurationException("Could not find wildcard property");
+		}
+
+		close();
+	}
+
+	@Override
+	public void close() throws ConfigurationException {
+		if (getFilename2() != null) {
+			return;
+		}
+
+		long oldTimeOut = getTimeOut();
+		try {
+			setTimeOut(0);
+			try {
+				String message = getMessage();
+				if (message != null) {
+					throw new ConfigurationException("Found remaining message on fileListener ["+getName()+"]");
+				}
+			} catch(ListenerException e) {
+				throw new ConfigurationException("Could read message from fileListener ["+getName()+"]: " + e.getMessage(), e);
+			} catch (TimeoutException e) {
+				//Simply means no message was found
+			}
+		} finally {
+			setTimeOut(oldTimeOut);
+		}
+	}
+
 	/**
 	 * Read the message from the specified file. If the file doesn't exist,
 	 * this methods waits a specified time before it attempts to read the file.
 	 * 
 	 * @return The message read from the specified file
 	 */
-	public String getMessage() throws TimeOutException, ListenerException {
+	public String getMessage() throws TimeoutException, ListenerException {
 		String result = null;
 		if (waitBeforeRead != -1) {
 			try {
@@ -103,7 +163,7 @@ public class FileListener {
 					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
 				}
 			} else {
-				throw new TimeOutException("Time out waiting for file.");
+				throw new TimeoutException("Time out waiting for file.");
 			}
 		}
 		return result;

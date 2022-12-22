@@ -33,5 +33,4 @@ public abstract class PipeLineProcessorBase implements PipeLineProcessor {
 	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
-	
 }

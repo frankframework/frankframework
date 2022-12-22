@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.logging.log4j.Logger;
@@ -27,14 +28,14 @@ import org.quartz.JobExecutionContext;
  * @since   4.0
  */
 public abstract class BaseJob implements Job {
-    protected Logger log=LogUtil.getLogger(this);
+	protected Logger log=LogUtil.getLogger(this);
 
 	public String getLogPrefix(JobExecutionContext context) {
 		String instName = context.getJobDetail().getKey().getName();
 		return "Job ["+instName+"] ";
 	}
 
-	public String getLogPrefix(JobDef jobDef) {
+	public String getLogPrefix(IJob jobDef) {
 		String instName = jobDef.getName();
 		return "Job ["+instName+"] ";
 	}

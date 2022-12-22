@@ -28,11 +28,10 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Listener that polls a directory via FTP for files according to a wildcard. 
@@ -94,7 +93,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 */
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String correlationId = rawMessage.toString();
+		String correlationId = rawMessage;
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
@@ -111,12 +110,12 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				openClient(remoteDirectory);
 				List<String> names = ls(remoteDirectory, true, true);
 				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
-				if (names.size() > 0) {
+				if (!names.isEmpty()) {
 					remoteFilenames.addAll(names);
 				}
 			}
 			catch(Exception e) {
-				throw new ListenerException("Exception retrieving contents of directory [" +remoteDirectory+ "]", e); 
+				throw new ListenerException("Exception retrieving contents of directory [" +remoteDirectory+ "]", e);
 			}
 			finally {
 				closeClient();
@@ -130,7 +129,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		waitAWhile();
 		return null;
 	}
-	
+
 	private void waitAWhile() throws ListenerException {
 		try {
 			log.debug("FtpListener " + getName() + " starts waiting ["+responseTime+"] ms in chunks of ["+localResponseTime+"] ms");
@@ -142,7 +141,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 				Thread.sleep(responseTime-timeWaited);
 			}
 		}
-		catch(InterruptedException e) {		
+		catch(InterruptedException e) {
 			throw new ListenerException("Interrupted while listening", e);
 		}
 	}
@@ -166,7 +165,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
 
 	@Override
@@ -174,7 +173,10 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-	@IbisDoc({"Time <i>in milliseconds</i> between each poll interval", "3600000"})
+	/**
+	 * Time <i>in milliseconds</i> between each poll interval
+	 * @ff.default 3600000
+	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -182,7 +184,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		return responseTime;
 	}
 
-	@IbisDoc({"remote directory from which files have to be downloaded", ""})
+	/** remote directory from which files have to be downloaded */
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;
 	}

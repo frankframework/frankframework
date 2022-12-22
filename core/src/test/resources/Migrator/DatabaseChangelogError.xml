@@ -5,8 +5,8 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
 	<changeSet id="one" author="Niels Meijer">
-		<comment>Create DummyTable</comment>
-		<createTable tableName="DummyTable">
+		<comment>Create DUMMYTABLE</comment>
+		<createTable tableName="DUMMYTABLE">
 			<column name="TKEY" type="BIGINT" />
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
@@ -14,14 +14,14 @@
 	</changeSet>
 
 	<changeSet id="error" author="Niels Meijer">
-		<createTable tableName="DummyTable">
+		<createTable tableName="DUMMYTABLE">
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
 	</changeSet>
 
 	<!-- should not fail again -->
 	<changeSet id="error2" author="Niels Meijer">
-		<createTable tableName="DummyTable">
+		<createTable tableName="DUMMYTABLE">
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
 	</changeSet>

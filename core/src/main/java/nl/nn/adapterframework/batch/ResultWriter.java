@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
-
 
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
@@ -35,15 +34,15 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @since   4.7
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	
-	private String onOpenDocument="<document name=\"#name#\">";
-	private String onCloseDocument="</document>";
-	private String onOpenBlock="<#name#>";
-	private String onCloseBlock="</#name#>";
-	private String blockNamePattern="#name#";
-	
+
+	private @Getter String onOpenDocument="<document name=\"#name#\">";
+	private @Getter String onCloseDocument="</document>";
+	private @Getter String onOpenBlock="<#name#>";
+	private @Getter String onCloseBlock="</#name#>";
+	private @Getter String blockNamePattern="#name#";
+
 	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
-	
+
 	protected abstract Writer createWriter(PipeLineSession session, String streamId) throws Exception;
 
 	@Override
@@ -69,14 +68,12 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
 		return null;
 	}
-	
 
-	
 	@Override
 	public void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception {
 		write(session, streamId, result);
 	}
-	
+
 	protected void writeNewLine(Writer w) throws IOException {
 		if (w instanceof BufferedWriter) {
 			((BufferedWriter)w).newLine();
@@ -84,7 +81,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 			w.write("\n");
 		}
 	}
-	
+
 	private void write(PipeLineSession session, String streamId, String line) throws Exception {
 		if (line!=null) {
 			Writer w = getWriter(session, streamId, false);
@@ -121,18 +118,18 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 		String result=target.replaceAll(getBlockNamePattern(),blockName);
 		//if (log.isDebugEnabled()) log.debug("target ["+target+"] pattern ["+getBlockNamePattern()+"] value ["+blockName+"] result ["+result+"]");
-		return result;   
+		return result;
 	}
 
 	@Override
-	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception  {
+	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception  {
 		write(session,streamId, replacePattern(getOnOpenBlock(),blockName));
 	}
+
 	@Override
-	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
+	public void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
 		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
 	}
-
 
 	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
 		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
@@ -141,7 +138,6 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (writer != null) {
 			return writer;
 		}
-		
 		if (!create) {
 			return null;
 		}
@@ -153,45 +149,44 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return writer;
 	}
 
-	
-	@IbisDoc({"string that is written before any data of results is written", "&lt;document name=&quot;#name#&quot;&gt;"})
+	/**
+	 * string that is written before any data of results is written
+	 * @ff.default &lt;document name=&quot;#name#&quot;&gt;
+	 */
 	public void setOnOpenDocument(String line) {
 		onOpenDocument = line;
 	}
-	public String getOnOpenDocument() {
-		return onOpenDocument;
-	}
 
-	@IbisDoc({"string that is written after all data of results is written", "&lt;/document&gt;"})
+	/**
+	 * string that is written after all data of results is written
+	 * @ff.default &lt;/document&gt;
+	 */
 	public void setOnCloseDocument(String line) {
 		onCloseDocument = line;
 	}
-	public String getOnCloseDocument() {
-		return onCloseDocument;
-	}
 
-	@IbisDoc({"string that is written before the start of each logical block, as defined in the flow", "&lt;#name#&gt;"})
+	/**
+	 * string that is written before the start of each logical block, as defined in the flow
+	 * @ff.default &lt;#name#&gt;
+	 */
 	public void setOnOpenBlock(String line) {
 		onOpenBlock = line;
 	}
-	public String getOnOpenBlock() {
-		return onOpenBlock;
-	}
 
-	@IbisDoc({"string that is written after the end of each logical block, as defined in the flow", "&lt;/#name#&gt;"})
+	/**
+	 * string that is written after the end of each logical block, as defined in the flow
+	 * @ff.default &lt;/#name#&gt;
+	 */
 	public void setOnCloseBlock(String line) {
 		onCloseBlock = line;
 	}
-	public String getOnCloseBlock() {
-		return onCloseBlock;
-	}
 
-	@IbisDoc({"string that is replaced by name of block or name of stream in above strings", "#name#"})
+	/**
+	 * string that is replaced by name of block or name of stream in above strings
+	 * @ff.default #name#
+	 */
 	public void setBlockNamePattern(String pattern) {
 		blockNamePattern = pattern;
-	}
-	public String getBlockNamePattern() {
-		return blockNamePattern;
 	}
 
 }

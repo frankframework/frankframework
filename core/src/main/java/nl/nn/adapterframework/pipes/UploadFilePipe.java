@@ -24,7 +24,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -33,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory.
  *
- * 
  * @author Peter Leeuwenburgh
  */
 @Deprecated
@@ -67,10 +65,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 		try {
 			inputStream = session.getMessage(getSessionKey()).asInputStream();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve ["+getSessionKey()+"] session key ", e);
+			throw new PipeRunException(this, "unable to resolve ["+getSessionKey()+"] session key ", e);
 		}
 		if (inputStream == null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
+			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
 		}
 
 		File dir;
@@ -81,14 +79,14 @@ public class UploadFilePipe extends FixedForwardPipe {
 				try {
 					dir = new File(session.getMessage(getDirectorySessionKey()).asString());
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+ "unable to resolve directory session key",e);
+					throw new PipeRunException(this, "unable to resolve directory session key",e);
 				}
 			} else {
 				String filename;
 				try {
 					filename = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream", e);
 				}
 				dir = new File(filename);
 			}
@@ -96,28 +94,28 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 		if (!dir.exists()) {
 			if (dir.mkdirs()) {
-				log.debug(getLogPrefix(session) + "created directory [" + dir.getPath() + "]");
+				log.debug("created directory [{}]", dir.getPath());
 			} else {
-				log.warn(getLogPrefix(session) + "directory [" + dir.getPath() + "] could not be created");
+				log.warn("directory [{}] could not be created", dir.getPath());
 			}
 		}
-		
+
 		String fileName;
 		try {
 			fileName = session.getMessage("fileName").asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, dir);
 			} else {
-				throw new PipeRunException(this, getLogPrefix(session) + "file extension [" + FileUtils.getFileNameExtension(fileName) + "] should be 'zip'");
+				throw new PipeRunException(this, "file extension [" + FileUtils.getFileNameExtension(fileName) + "] should be 'zip'");
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on uploading and unzipping/writing file", e);
+			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
 		}
 
 		return new PipeRunResult(getSuccessForward(), dir.getPath());
 	}
 
-	@IbisDoc({"base directory where files are unzipped to", ""})
+	/** base directory where files are unzipped to */
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -126,7 +124,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
-	@IbisDoc({"the session key that contains the base directory where files are unzipped to", "destination"})
+	/**
+	 * the session key that contains the base directory where files are unzipped to
+	 * @ff.default destination
+	 */
 	public void setDirectorySessionKey(String string) {
 		directorySessionKey = string;
 	}
@@ -139,7 +140,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> which contains the inputstream", "file"})
+	/**
+	 * name of the key in the <code>pipelinesession</code> which contains the inputstream
+	 * @ff.default file
+	 */
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

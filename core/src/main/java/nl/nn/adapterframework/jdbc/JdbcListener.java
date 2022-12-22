@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * JdbcListener base class.
- * 
+ *
  * @param <M> MessageWrapper or key. Key is also used as messageId
  *
  * @author  Gerrit van Brakel
@@ -53,19 +53,24 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class JdbcListener<M extends Object> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
 
-	private String selectQuery;
-	private String peekQuery;
+	public static final String CORRELATION_ID_KEY="cid";
+	public static final String STORAGE_KEY_KEY="key";
 
-	private String keyField;
-	private String messageField;
-	private String messageFieldType="String";
+	private @Getter String selectQuery;
+	private @Getter String peekQuery;
 
-	private String blobCharset = null;
-	private boolean blobsCompressed=true;
-	private boolean blobSmartGet=false;
-	
-	private boolean trace=false;
-	private boolean peekUntransacted=true;
+	private @Getter String keyField;
+	private @Getter String messageField;
+	private @Getter String messageIdField;
+	private @Getter String correlationIdField;
+	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
+
+	private @Getter String blobCharset = null;
+	private @Getter boolean blobsCompressed=true;
+	private @Getter boolean blobSmartGet=false;
+
+	private @Getter boolean trace=false;
+	private @Getter boolean peekUntransacted=true;
 
 	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
@@ -74,6 +79,12 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
+
+	public enum MessageFieldType {
+		STRING,
+		CLOB,
+		BLOB
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -124,7 +135,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			super.close();
 		}
 	}
-	
+
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
@@ -161,7 +172,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
 	}
-	
+
 	@Override
 	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
@@ -170,7 +181,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException | SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return getRawMessage(connection,threadContext);
 		}
@@ -201,32 +212,59 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
+	private String getValueOrDefaultIfColumnDoesNotExistInTable(ResultSet rs, String columnName, String defaultValue) {
+		if (StringUtils.isEmpty(columnName)) {
+			return defaultValue;
+		}
+		try {
+			int index = rs.findColumn(columnName);
+			if (index>0) {
+				return rs.getString(index);
+			}
+		} catch (SQLException e) {
+			// ignore exception, assume columnName does not exist
+		}
+		return null; // do not return defaultValue, as the column probably exists, but not in this result set
+	}
+
 	protected M extractRawMessage(ResultSet rs) throws JdbcException {
 		try {
 			M result;
 			String key=rs.getString(getKeyField());
-	
-			if (StringUtils.isNotEmpty(getMessageField())) {
+
+			if (StringUtils.isNotEmpty(getMessageField()) || StringUtils.isNotEmpty(getMessageIdField()) || StringUtils.isNotEmpty(getCorrelationIdField())) {
 				Message message;
-				if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-					message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
-				} else {
-					if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
-							message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
-						} else {
-							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
-								message=new Message(blobStream);
-								message.preserve();
+				if (StringUtils.isNotEmpty(getMessageField())) {
+					switch (getMessageFieldType()) {
+						case CLOB:
+							message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+							break;
+						case BLOB:
+							if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
+								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
+							} else {
+								try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
+									message=new Message(blobStream);
+									message.preserve();
+								}
 							}
-						}
-					} else {
-						message=new Message(rs.getString(getMessageField()));
+							break;
+						case STRING:
+							message=new Message(rs.getString(getMessageField()));
+							break;
+						default:
+							throw new IllegalArgumentException("Illegal messageFieldType ["+getMessageFieldType()+"]");
 					}
+				} else {
+					message = new Message(key);
 				}
 				// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 				MessageWrapper<?> mw = new MessageWrapper<Object>();
-				mw.setId(key);
+				String messageId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getMessageIdField(), key);
+				String correlationId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getCorrelationIdField(), messageId);
+				mw.setId(messageId);
+				mw.getContext().put(CORRELATION_ID_KEY, correlationId);
+				mw.getContext().put(STORAGE_KEY_KEY, key);
 				mw.setMessage(message);
 				result=(M)mw;
 			} else {
@@ -237,24 +275,40 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			throw new JdbcException(e);
 		}
 	}
-	
-	
+
 	@Override
-	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
-		String id;
+	public String getIdFromRawMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		String key;
+		String mid;
+		String cid;
 		if (rawMessage instanceof IMessageWrapper) {
-			id = ((IMessageWrapper)rawMessage).getId();
+			mid = ((IMessageWrapper)rawMessage).getId();
+			Map<String,Object> mwContext = ((IMessageWrapper)rawMessage).getContext();
+			cid = (String)mwContext.get(CORRELATION_ID_KEY);
+			key = (String)mwContext.get(STORAGE_KEY_KEY);
+			if (StringUtils.isEmpty(key)) {
+				key = mid; // backward compatibility
+			}
 		} else {
-			id = (String)rawMessage;
+			key = (String)rawMessage;
+			mid = key;
+			cid = mid;
 		}
-		if (context!=null) {
-			PipeLineSession.setListenerParameters(context, id, id, null, null);
+		if (threadContext!=null) {
+			PipeLineSession.setListenerParameters(threadContext, mid, cid, null, null);
+			threadContext.put(STORAGE_KEY_KEY, key);
 		}
-		return id;
+		return mid;
+	}
+
+	protected String getKeyFromRawMessage(M rawMessage) throws ListenerException {
+		Map<String,Object> context = new HashMap<>();
+		getIdFromRawMessage(rawMessage, context); // populate context with storage key
+		return (String)context.get(STORAGE_KEY_KEY);
 	}
 
 	@Override
-	public Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		Message message;
 		if (rawMessage instanceof IMessageWrapper) {
 			message = ((IMessageWrapper)rawMessage).getMessage();
@@ -264,28 +318,9 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		return message;
 	}
 
-	protected void afterMessageProcessed(Connection conn, PipeLineResult processResult, String key, Map<String,Object> context) throws ListenerException {
-		if (processResult.isSuccessful() || StringUtils.isEmpty(getUpdateStatusQuery(ProcessState.ERROR))) {
-			execute(conn, getUpdateStatusQuery(ProcessState.DONE), key);
-		} else {
-			execute(conn, getUpdateStatusQuery(ProcessState.ERROR), key);
-		}
-	}
-
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
-		String key=getIdFromRawMessage((M)rawMessageOrWrapper,context);
-		if (isConnectionsArePooled()) {
-			try (Connection c = getConnection()) {
-				afterMessageProcessed(c,processResult, key, context);
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
-			}
-		} else {
-			synchronized (connection) {
-				afterMessageProcessed(connection,processResult, key, context);
-			}
-		}
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+		// required action already done via ChangeProcessState()
 	}
 
 	@Override
@@ -309,7 +344,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 			} catch (JdbcException|SQLException e) {
 				throw new ListenerException(e);
 			}
-		} 
+		}
 		synchronized (connection) {
 			return changeProcessState(connection, rawMessage, toState, reason);
 		}
@@ -317,7 +352,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		String key=getIdFromRawMessage(rawMessage, null);
+		String key=getKeyFromRawMessage(rawMessage);
 		return execute(connection, query, key) ? rawMessage : null;
 	}
 
@@ -354,80 +389,80 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
 	}
-	public String getSelectQuery() {
-		return selectQuery;
-	}
 
 	@Override
 	public void setPeekUntransacted(boolean b) {
 		peekUntransacted = b;
 	}
-	@Override
-	public boolean isPeekUntransacted() {
-		return peekUntransacted;
-	}
 
-	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
+	/**
+	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
+	 * @ff.default selectQuery
+	 */
 	public void setPeekQuery(String string) {
 		peekQuery = string;
 	}
-	public String getPeekQuery() {
-		return peekQuery;
-	}
 
 
-	@IbisDoc({"1", "Primary key field of the table, used to identify messages", ""})
+	/** Primary key field of the table, used to identify messages */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
-	public String getKeyField() {
-		return keyField;
-	}
 
-	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
+	/**
+	 * Field containing the message data
+	 * @ff.default <i>same as keyField</i>
+	 */
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
-	public String getMessageField() {
-		return messageField;
+
+	/**
+	 * Type of the field containing the message data
+	 * @ff.default <i>String</i>
+	 */
+	public void setMessageFieldType(MessageFieldType value) {
+		messageFieldType = value;
 	}
 
-	@IbisDoc({"3", "Type of the field containing the message data: either String, clob or blob", "<i>String</i>"})
-	public void setMessageFieldType(String string) {
-		messageFieldType = string;
-	}
-	public String getMessageFieldType() {
-		return messageFieldType;
+	/**
+	 * Field containing the message Id
+	 * @ff.default <i>same as keyField</i>
+	 */
+	public void setMessageIdField(String fieldname) {
+		messageIdField = fieldname;
 	}
 
-	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
+	/**
+	 * Field containing the correlationId
+	 * @ff.default <i>same as messageIdField</i>
+	 */
+	public void setCorrelationIdField(String fieldname) {
+		correlationIdField = fieldname;
+	}
+
+	/**
+	 * Controls whether BLOB is considered stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
-	public boolean isBlobsCompressed() {
-		return blobsCompressed;
-	}
 
-	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
 	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
-	public String getBlobCharset() {
-		return blobCharset;
-	}
 
-	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
+	 * @ff.default false
+	 */
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}
-	public boolean isBlobSmartGet() {
-		return blobSmartGet;
-	}
 
-	public boolean isTrace() {
-		return trace;
-	}
 	public void setTrace(boolean trace) {
 		this.trace = trace;
 	}

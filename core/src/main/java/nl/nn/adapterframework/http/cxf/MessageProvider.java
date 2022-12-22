@@ -43,8 +43,8 @@ public class MessageProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
-		return listener.processRequest(correlationId, message, pipelineSession);
+	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+		return listener.processRequest(message, pipelineSession);
 	}
 
 	@Override

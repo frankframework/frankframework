@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,11 +40,12 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthProtocolState;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
@@ -65,11 +68,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -77,8 +77,17 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
+import nl.nn.adapterframework.http.authentication.HttpAuthenticationException;
+import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
+import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
+import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -88,17 +97,13 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
- * 
- * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
- * 
+ *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -112,7 +117,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>
  * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
+ * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
@@ -131,7 +136,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>
  * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown,
  * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
  * <ul>
  *   <li>open the URL you are trying to reach in InternetExplorer</li>
@@ -150,81 +155,107 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
  *   <li>use jks for the truststoreType-attribute</li>
  *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
+ *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows:
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
  * <p>
  * Note 4:
  * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the corresponding certificate. 
+ * please check password or authAlias configuration of the corresponding certificate.
  * </p>
- * 
+ *
+ * @ff.parameters Any parameters present are appended to the request (when method is <code>GET</code> as request-parameters, when method <code>POST</code> as body part) except the <code>headersParams</code> list, which are added as HTTP headers, and the <code>urlParam</code> header
+ * @ff.forward "&lt;statusCode of the HTTP response&gt;" default
+ *
  * @author	Niels Meijer
  * @since	7.0
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
-	private String url;
-	private String urlParam = "url";
+	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
+	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
+	public static final String MESSAGE_ID_HEADER = "Message-Id";
+	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
+
+	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+
+	private @Getter String url;
+	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
 		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
 	}
-	private HttpMethod method = HttpMethod.GET;
+	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
-	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType fullContentType = null;
-	private String contentType = null;
+	private @Getter String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter ContentType fullContentType = null;
+	private @Getter String contentType = null;
 
-	/** CONNECTION POOL **/
-	private int timeout = 10000;
-	private int maxConnections = 10;
-	private int maxExecuteRetries = 1;
-	private SSLConnectionSocketFactory sslSocketFactory = null;
+	/* CONNECTION POOL */
+	private @Getter int timeout = 10000;
+	private @Getter int maxConnections = 10;
+	private @Getter int maxExecuteRetries = 1;
+	private @Getter boolean staleChecking=true;
+	private @Getter int staleTimeout = 5000; // [ms]
+	private @Getter int connectionTimeToLive = 900; // [s]
+	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	private HttpClientContext httpClientContext = HttpClientContext.create();
-	private CloseableHttpClient httpClient;
+	private @Getter HttpClientContext httpClientContext = HttpClientContext.create();
+	private @Getter CloseableHttpClient httpClient;
 
-	/** SECURITY */
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String authDomain;
+	/* SECURITY */
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String authDomain;
+	private @Getter String tokenEndpoint;
+	private @Getter int tokenExpiry=-1;
+	private @Getter String clientAuthAlias;
+	private @Getter String clientId;
+	private @Getter String clientSecret;
+	private @Getter String scope;
+	private @Getter boolean authenticatedTokenRequest;
 
-	/** PROXY **/
-	private String proxyHost;
-	private int    proxyPort=80;
-	private String proxyAuthAlias;
-	private String proxyUserName;
-	private String proxyPassword;
-	private String proxyRealm=null;
+	/* PROXY */
+	private @Getter String proxyHost;
+	private @Getter int    proxyPort=80;
+	private @Getter String proxyAuthAlias;
+	private @Getter String proxyUsername;
+	private @Getter String proxyPassword;
+	private @Getter String proxyRealm=null;
 
-	/** SSL **/
-	private String certificate;
-	private String certificateAuthAlias;
-	private String certificatePassword;
-	private String keystoreType="pkcs12";
-	private String keyManagerAlgorithm=null;
-	private String truststore=null;
-	private String truststoreAuthAlias;
-	private String truststorePassword=null;
-	private String truststoreType="jks";
-	private String trustManagerAlgorithm=null;
-	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname=true;
-	private boolean ignoreCertificateExpiredException=false;
+	/* SSL */
+	private @Getter String keystore;
+	private @Getter String keystoreAuthAlias;
+	private @Getter String keystorePassword;
+	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
+	private @Getter String keystoreAlias;
+	private @Getter String keystoreAliasAuthAlias;
+	private @Getter String keystoreAliasPassword;
+	private @Getter String keyManagerAlgorithm=null;
 
-	private String headersParams="";
-	private boolean followRedirects=true;
-	private boolean staleChecking=true;
-	private int staleTimeout = 5000;
-	private boolean xhtml=false;
-	private String styleSheetName=null;
-	private String protocol=null;
-	private String resultStatusCodeSessionKey;
+	private @Getter String truststore=null;
+	private @Getter String truststoreAuthAlias;
+	private @Getter String truststorePassword=null;
+	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
+	private @Getter String trustManagerAlgorithm=null;
+	private @Getter boolean allowSelfSignedCertificates = false;
+	private @Getter boolean verifyHostname=true;
+	private @Getter boolean ignoreCertificateExpiredException=false;
+
+	private @Getter String headersParams="";
+	private @Getter boolean followRedirects=true;
+	private @Getter boolean ignoreRedirects=false;
+	private @Getter boolean xhtml=false;
+	private @Getter String styleSheetName=null;
+	private @Getter String protocol=null;
+	private @Getter String resultStatusCodeSessionKey;
+	private @Getter String parametersToSkipWhenEmpty;
+
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
+	private final boolean APPEND_CORRELATIONID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.correlationid", true);
 	private boolean disableCookies = false;
 
 	private TransformerPool transformerPool=null;
@@ -233,23 +264,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected URI staticUri;
 	private CredentialFactory credentials;
+	private CredentialFactory user_cf;
+	private CredentialFactory client_cf;
 
-	private Set<String> parametersToSkip=new HashSet<String>();
-
-	protected void addParameterToSkip(String parameterName) {
-		if (parameterName != null) {
-			parametersToSkip.add(parameterName);
-		}
-	}
-
-	protected boolean skipParameter(String parameterName) {
-		for(String param : parametersToSkip) {
-			if(param.equalsIgnoreCase(parameterName))
-				return true;
-		}
-
-		return false;
-	}
+	protected Set<String> requestOrBodyParamsSet=new HashSet<>();
+	protected Set<String> headerParamsSet=new LinkedHashSet<>();
+	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -281,7 +301,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
 			} catch (Exception e) {
 				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
-				port=80; 
+				port=80;
 			}
 		}
 		return port;
@@ -295,25 +315,45 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
 //		httpClientBuilder.disableAuthCaching();
-		httpClientBuilder.disableAutomaticRetries();
 
-		Builder requestConfig = RequestConfig.custom();
-		requestConfig.setConnectTimeout(getTimeout());
-		requestConfig.setConnectionRequestTimeout(getTimeout());
-		requestConfig.setSocketTimeout(getTimeout());
+		Builder requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setConnectTimeout(getTimeout());
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
+		requestConfigBuilder.setSocketTimeout(getTimeout());
 
 		if (paramList!=null) {
 			paramList.configure();
-			if (StringUtils.isNotEmpty(getUrlParam())) {
-				urlParameter = paramList.findParameter(getUrlParam());
-				if(urlParameter != null)
-					addParameterToSkip(urlParameter.getName());
+			if (StringUtils.isNotEmpty(getHeadersParams())) {
+				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
+				while (st.hasMoreElements()) {
+					String paramName = st.nextToken().trim();
+					headerParamsSet.add(paramName);
+				}
+			}
+			for (Parameter p: paramList) {
+				String paramName = p.getName();
+				if (!headerParamsSet.contains(paramName)) {
+					requestOrBodyParamsSet.add(paramName);
+				}
 			}
 
-			//Add all HeaderParams to paramIgnoreList
-			StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-			while (st.hasMoreElements()) {
-				addParameterToSkip(st.nextToken());
+			if (StringUtils.isNotEmpty(getUrlParam())) {
+				headerParamsSet.remove(getUrlParam());
+				requestOrBodyParamsSet.remove(getUrlParam());
+				urlParameter = paramList.findParameter(getUrlParam());
+			}
+
+			if (StringUtils.isNotEmpty(getParametersToSkipWhenEmpty())) {
+				if (getParametersToSkipWhenEmpty().equals("*")) {
+					parametersToSkipWhenEmptySet.addAll(headerParamsSet);
+					parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
+				} else {
+					StringTokenizer st = new StringTokenizer(getParametersToSkipWhenEmpty(), ",");
+					while (st.hasMoreElements()) {
+						String paramName = st.nextToken().trim();
+						parametersToSkipWhenEmptySet.add(paramName);
+					}
+				}
 			}
 		}
 
@@ -327,6 +367,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
+
 		try {
 			if (urlParameter == null) {
 				if (StringUtils.isEmpty(getUrl())) {
@@ -334,110 +375,36 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				staticUri = getURI(getUrl());
 			}
-
-			URL certificateUrl = null;
-			URL truststoreUrl = null;
-	
-			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
-				if (certificateUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
-			}
-			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
-				if (truststoreUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
-			}
-
-			HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
-			if(!isVerifyHostname())
-				hostnameVerifier = new NoopHostnameVerifier();
-
-			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if non has been set.
-			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
-			// 
-			// The first time this method is called, the security property "ssl.SocketFactory.provider" is examined. 
-			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
-			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
-			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
-			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
-			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
-
-			if (certificateUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
-				try {
-					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
-					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
-
-					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
-
-					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
-
-				} catch (Throwable t) {
-					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
-				}
-			}
-
-			// This method will be overwritten by the connectionManager when connectionPooling is enabled!
-			// Can still be null when no default or an invalid system sslSocketFactory has been defined
-			if(sslSocketFactory != null)
-				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-
-			credentials = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
-			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-			if (!StringUtils.isEmpty(credentials.getUsername())) {
-				String uname;
-				if (StringUtils.isNotEmpty(getAuthDomain())) {
-					uname = getAuthDomain() + "\\" + credentials.getUsername();
-				} else {
-					uname = credentials.getUsername();
-				}
-
-				credentialsProvider.setCredentials(
-					new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
-					new UsernamePasswordCredentials(uname, credentials.getPassword())
-				);
-
-				requestConfig.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-				requestConfig.setAuthenticationEnabled(true);
-			}
-			if (StringUtils.isNotEmpty(getProxyHost())) {
-				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
-				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
-
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
-					credentialsProvider.setCredentials(scope, credentials);
-				}
-				log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
-
-				if(prefillProxyAuthCache()) {
-					requestConfig.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-
-					AuthCache authCache = httpClientContext.getAuthCache();
-					if(authCache == null)
-						authCache = new BasicAuthCache();
-	
-					authCache.put(proxy, new BasicScheme());
-					httpClientContext.setAuthCache(authCache);
-				}
-
-				requestConfig.setProxy(proxy);
-				httpClientBuilder.setProxy(proxy);
-			}
-
-			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 		} catch (URISyntaxException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
+			throw new ConfigurationException(getLogPrefix()+"cannot interpret url ["+getUrl()+"]", e);
+		}
+
+		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
+
+		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+			user_cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			credentials = user_cf;
+		}
+		client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+		if (credentials==null) {
+			credentials = client_cf;
+		}
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+		}
+		HttpHost proxy = null;
+		CredentialFactory pcf = null;
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			proxy = new HttpHost(getProxyHost(), getProxyPort());
+			pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+			requestConfigBuilder.setProxy(proxy);
+			httpClientBuilder.setProxy(proxy);
+		}
+
+		try {
+			setupAuthentication(pcf, proxy, requestConfigBuilder);
+		} catch (HttpAuthenticationException e) {
+			throw new ConfigurationException("exception configuring authentication", e);
 		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
@@ -454,7 +421,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		httpClientBuilder.setDefaultRequestConfig(requestConfig.build());
+		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+
+		httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler(getMaxExecuteRetries()));
 
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
@@ -474,30 +443,34 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
 		PoolingHttpClientConnectionManager connectionManager;
+		int timeToLive = getConnectionTimeToLive();
+		if (timeToLive<=0) {
+			timeToLive = -1;
+		}
+		SSLConnectionSocketFactory sslSocketFactory = getSSLConnectionSocketFactory();
 		if(sslSocketFactory != null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("http", PlainConnectionSocketFactory.getSocketFactory())
 				.register("https", sslSocketFactory)
 				.build();
-			connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
 			log.debug(getLogPrefix()+"created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
 		}
 		else {
-			connectionManager = new PoolingHttpClientConnectionManager();
+			connectionManager = new PoolingHttpClientConnectionManager(timeToLive, TimeUnit.SECONDS);
 			log.debug(getLogPrefix()+"created default PoolingHttpClientConnectionManager");
 		}
 
 		connectionManager.setMaxTotal(getMaxConnections());
 		connectionManager.setDefaultMaxPerRoute(getMaxConnections());
 
-		log.debug(getLogPrefix()+"set up connectionManager, inactivity checking ["+connectionManager.getValidateAfterInactivity()+"]");
-		boolean staleChecking = (connectionManager.getValidateAfterInactivity() >= 0);
-		if (staleChecking != isStaleChecking()) {
+		if (isStaleChecking()) {
 			log.info(getLogPrefix()+"set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
 			connectionManager.setValidateAfterInactivity(getStaleTimeout());
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
+		httpClientBuilder.evictIdleConnections(getConnectionIdleTimeout(), TimeUnit.SECONDS);
 
 		if (transformerPool!=null) {
 			try {
@@ -508,10 +481,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClient = httpClientBuilder.build();
-	}
-
-	public CloseableHttpClient getHttpClient() {
-		return httpClient;
 	}
 
 	@Override
@@ -530,33 +499,115 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return true;
+	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) throws HttpAuthenticationException {
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
+
+			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
+
+			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
+			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(preferredAuthenticationScheme.getSchemeName()));
+			requestConfigBuilder.setAuthenticationEnabled(true);
+
+			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, user_cf==null, isAuthenticatedTokenRequest(), this, getTokenExpiry());
+				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
+				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
+			}
+		}
+		if (proxy!=null) {
+			AuthScope scope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
+
+
+			if (StringUtils.isNotEmpty(proxyCredentials.getUsername())) {
+				Credentials credentials = new UsernamePasswordCredentials(proxyCredentials.getUsername(), proxyCredentials.getPassword());
+				credentialsProvider.setCredentials(scope, credentials);
+			}
+			//log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
+
+			if(prefillProxyAuthCache()) {
+				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+
+				AuthCache authCache = httpClientContext.getAuthCache();
+				if(authCache == null)
+					authCache = new BasicAuthCache();
+
+				authCache.put(proxy, new BasicScheme());
+				httpClientContext.setAuthCache(authCache);
+			}
+
+		}
+
+		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+	}
+
+	private void preAuthenticate() {
+		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
+			AuthState authState = httpClientContext.getTargetAuthState();
+			if (authState==null) {
+				authState = new AuthState();
+				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
+			}
+			authState.setState(AuthProtocolState.CHALLENGED);
+			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
+		}
+	}
+
+	private Credentials getCredentials() {
+		String uname;
+		if (StringUtils.isNotEmpty(getAuthDomain())) {
+			uname = getAuthDomain() + "\\" + credentials.getUsername();
+		} else {
+			uname = credentials.getUsername();
+		}
+
+		return new UsernamePasswordCredentials(uname, credentials.getPassword());
+	}
+
+	private AuthenticationScheme getPreferredAuthenticationScheme() {
+		return StringUtils.isNotEmpty(getTokenEndpoint()) ? AuthenticationScheme.OAUTH : AuthenticationScheme.BASIC;
+	}
+
+	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
+		SSLConnectionSocketFactory sslSocketFactory;
+		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
+
+		try {
+			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
+			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
+		} catch (Exception e) {
+			throw new SenderException("cannot create or initialize SocketFactory", e);
+		}
+		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
+		// Can still be null when no default or an invalid system sslSocketFactory has been defined
+		if(sslSocketFactory != null) {
+			httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+		}
+		return sslSocketFactory;
 	}
 
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
-			for(int i=0; i < parameters.size(); i++) {
-				if (skipParameter(paramList.get(i).getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
-					continue;
-				}
-				ParameterValue pv = parameters.getParameterValue(i);
-				try {
-					if (parametersAppended) {
-						path.append("&");
-					} else {
-						path.append("?");
-						parametersAppended = true;
+			for(ParameterValue pv : parameters) {
+				if (requestOrBodyParamsSet.contains(pv.getName())) {
+					String value = pv.asStringValue("");
+					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
+						try {
+							if (parametersAppended) {
+								path.append("&");
+							} else {
+								path.append("?");
+								parametersAppended = true;
+							}
+
+							String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(value, getCharSet());
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+							path.append(parameterToAppend);
+						} catch (UnsupportedEncodingException e) {
+							throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
+						}
 					}
-	
-					String parameterToAppend = pv.getDefinition().getName() +"="+ URLEncoder.encode(pv.asStringValue(""), getCharSet());
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
-					path.append(parameterToAppend);
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]");
 				}
 			}
 		}
@@ -576,7 +627,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
-	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
+	 * It is important that the {@link HttpResponseHandler#getResponse() response}
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
 	 * @param session {@link PipeLineSession} which may be null
@@ -584,8 +635,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 */
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
+	protected boolean validateResponseCode(int statusCode) {
+		boolean ok = false;
+		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
+			ok = true;
+		} else {
+			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
+				ok = true;
+			} else {
+				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
+					ok = true;
+				}
+			}
+		}
+		return ok;
+	}
+
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -595,56 +662,51 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
-		HttpHost httpTarget;
-		URI uri;
+		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
-				uri = getURI(url);
+				String url = pvl.get(getUrlParam()).asStringValue();
+				targetUri = getURI(url);
 			} else {
-				uri = staticUri;
+				targetUri = staticUri;
 			}
 
-			httpTarget = new HttpHost(uri.getHost(), getPort(uri), uri.getScheme());
-
 			// Resolve HeaderParameters
-			Map<String, String> headersParamsMap = new HashMap<String, String>();
-			if (headersParams != null) {
+			Map<String, String> headersParamsMap = new HashMap<>();
+			if (!headerParamsSet.isEmpty() && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
-				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-				while (st.hasMoreElements()) {
-					String paramName = st.nextToken();
-					ParameterValue paramValue = pvl.getParameterValue(paramName);
-					if(paramValue != null)
-						headersParamsMap.put(paramName, paramValue.asStringValue(null));
+				for (String paramName:headerParamsSet) {
+					ParameterValue paramValue = pvl.get(paramName);
+					if(paramValue != null) {
+						String value = paramValue.asStringValue(null);
+						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
+							headersParamsMap.put(paramName, value);
+						}
+					}
 				}
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, session);
+			httpRequestBase = getMethod(targetUri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodTypeEnum()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
-			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
-				httpRequestBase.setHeader("Message-Id", session.getMessageId());
+			if(session != null) {
+				if (APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
+					httpRequestBase.setHeader(MESSAGE_ID_HEADER, session.getMessageId());
+				}
+				if (APPEND_CORRELATIONID_HEADER && StringUtils.isNotEmpty(session.getCorrelationId())) {
+					httpRequestBase.setHeader(CORRELATION_ID_HEADER, session.getCorrelationId());
+				}
 			}
 			for (String param: headersParamsMap.keySet()) {
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
 
-			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-				AuthCache authCache = httpClientContext.getAuthCache();
-				if(authCache == null)
-					authCache = new BasicAuthCache();
+			preAuthenticate();
 
-				if(authCache.get(httpTarget) == null)
-					authCache.put(httpTarget, new BasicScheme());
-
-				httpClientContext.setAuthCache(authCache);
-			}
-
-			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");
+			log.info(getLogPrefix()+"configured httpclient for host ["+targetUri.getHost()+"]");
 
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -652,114 +714,96 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		Message result = null;
 		int statusCode = -1;
-		int count=getMaxExecuteRetries();
-		String msg = null;
+		boolean success;
+		String reasonPhrase = null;
+		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
-		while (count-- >= 0 && statusCode == -1) {
-			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
+		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
 
-				@Override
-				protected void abort() {
-					httpRequestBase.abort();
-				}
-
-			};
-			try {
-				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
-				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
-				log.debug(getLogPrefix()+"executed method");
-
-				HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
-				StatusLine statusline = httpResponse.getStatusLine();
-				statusCode = statusline.getStatusCode();
-
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
-					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
-				}
-
-				// Only give warnings for 4xx (client errors) and 5xx (server errors)
-				if (statusCode >= 400 && statusCode < 600) {
-					log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
-				} else {
-					log.debug(getLogPrefix()+"status ["+statusCode+"]");
-				}
-
-				result = extractResult(responseHandler, session);
-
-				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-			} catch (ClientProtocolException e) {
-				StringBuilder msgBuilder = new StringBuilder(getLogPrefix()+"httpException with");
-				if(e.getMessage() != null) {
-					msg = e.getMessage();
-					msgBuilder.append(" message [" + msg + "]");
-				}
-				Throwable throwable = e.getCause();
-				if (throwable != null) {
-					msgBuilder.append(" cause [" + throwable.toString() + "]");
-				}
-				msgBuilder.append(" executeRetries left [" + count + "]");
-
-				log.warn(msgBuilder.toString());
-			} catch (IOException e) {
+			@Override
+			protected void abort() {
 				httpRequestBase.abort();
-				if (e instanceof SocketTimeoutException) {
-					throw new TimeOutException(e);
-				}
-				throw new SenderException(e);
-			} finally {
-				
-				// By forcing the use of the HttpResponseHandler the resultStream 
-				// will automatically be closed when it has been read.
-				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
-				// We cannot close the connection as the response might be kept
-				// in a sessionKey for later use in the pipeline.
-				// 
-				// IMPORTANT: It is possible that poorly written implementations
-				// wont read or close the response.
-				// This will cause the connection to become stale..
-				
-				if (tg.cancel()) {
-					throw new TimeOutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
-				}
+			}
+
+		};
+		try {
+			log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
+			HttpResponse httpResponse = getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
+			log.debug(getLogPrefix()+"executed method");
+
+			HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
+			StatusLine statusline = httpResponse.getStatusLine();
+			statusCode = statusline.getStatusCode();
+			success = validateResponseCode(statusCode);
+			reasonPhrase =  statusline.getReasonPhrase();
+
+			if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+				session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+			}
+
+			// Only give warnings for 4xx (client errors) and 5xx (server errors)
+			if (statusCode >= 400 && statusCode < 600) {
+				log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
+			} else {
+				log.debug(getLogPrefix()+"status ["+statusCode+"]");
+			}
+
+			result = extractResult(responseHandler, session);
+
+			log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+		} catch (IOException e) {
+			httpRequestBase.abort();
+			if (e instanceof SocketTimeoutException) {
+				throw new TimeoutException(e);
+			}
+			throw new SenderException(e);
+		} finally {
+			// By forcing the use of the HttpResponseHandler the resultStream
+			// will automatically be closed when it has been read.
+			// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
+			// We cannot close the connection as the response might be kept
+			// in a sessionKey for later use in the pipeline.
+			//
+			// IMPORTANT: It is possible that poorly written implementations
+			// wont read or close the response.
+			// This will cause the connection to become stale..
+
+			if (tg.cancel()) {
+				throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 			}
 		}
 
 		if (statusCode == -1){
-			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
-				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeOutException("Failed to recover from timeout exception");
-			}
 			throw new SenderException("Failed to recover from exception");
 		}
 
-		if (isXhtml() && !result.isEmpty()) {
-			String resultString;
+		if (isXhtml() && !Message.isEmpty(result)) {
+			String xhtml;
 			try {
-				resultString = result.asString();
+				xhtml = XmlUtils.toXhtml(result);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
-
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
+			if (transformerPool != null && xhtml != null) {
+				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+				try {
+					xhtml = transformerPool.transform(Message.asSource(xhtml));
+				} catch (Exception e) {
+					throw new SenderException("Exception on transforming input", e);
 				}
 			}
+
 			result = Message.asMessage(xhtml);
 		}
 
-		return result;
+		if (result==null) {
+			result = Message.nullMessage();
+		}
+		log.debug("Storing [{}]=[{}], [{}]=[{}]", CONTEXT_KEY_STATUS_CODE, statusCode, CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
+		result.getContext().put(CONTEXT_KEY_STATUS_CODE, statusCode);
+		result.getContext().put(CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
+		return new SenderResult(success, result, reasonPhrase, Integer.toString(statusCode));
 	}
 
 	@Override
@@ -770,165 +814,189 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return getUrl();
 	}
 
-
-	@IbisDoc({"1", "URL or base of URL to be used", ""})
+	/** URL or base of URL to be used */
 	public void setUrl(String string) {
 		url = string;
 	}
-	public String getUrl() {
-		return url;
-	}
 
-	@IbisDoc({"2", "parameter that is used to obtain url; overrides url-attribute.", "url"})
+	/**
+	 * Parameter that is used to obtain URL; overrides url-attribute.
+	 * @ff.default url
+	 */
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
-	public String getUrlParam() {
-		return urlParam;
-	}
 
-	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
-	public void setMethodType(String string) {
-		method = EnumUtils.parse(HttpMethod.class, string);
-	}
-	public HttpMethod getMethodTypeEnum() {
-		return method;
+	/**
+	 * The HTTP Method used to execute the request
+	 * @ff.default <code>GET</code>
+	 */
+	public void setMethodType(HttpMethod method) {
+		this.httpMethod = method;
 	}
 
 	/**
-	 * This is a superset of mimetype + charset + optional payload metadata.
+	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods
+	 * @ff.default text/html, when postType=<code>RAW</code>
 	 */
-	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
-	public String getContentType() {
-		return contentType;
-	}
-	public ContentType getFullContentType() {
-		return fullContentType;
-	}
 
-	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	/**
+	 * Charset of the request. Typically only used on <code>PUT</code> and <code>POST</code> requests.
+	 * @ff.default UTF-8
+	 */
 	public void setCharSet(String string) {
 		charSet = string;
 	}
-	public String getCharSet() {
-		return charSet;
-	}
 
-	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	/**
+	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * @ff.default 10000
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-	public int getTimeout() {
-		return timeout;
-	}
 
-	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
+	/**
+	 * The maximum number of concurrent connections
+	 * @ff.default 10
+	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
-	public int getMaxConnections() {
-		return maxConnections;
-	}
 
-	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
+	/**
+	 * The maximum number of times the execution is retried
+	 * @ff.default 1 (for repeatable messages) else 0
+	 */
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
-	}
 
-
-
-	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
+	/** Authentication alias used for authentication to the host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
+
+	/** Username used for authentication to the host */
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
-	@IbisDoc({"21", "username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
-	}
-	public String getUserName() {
-		return userName;
-	}
-
-	@IbisDoc({"22", "password used in authentication to host", " "})
+	/** Password used for authentication to the host */
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
 
-	@IbisDoc({"23", "domain used in authentication to host", " "})
+	/**
+	 * Corporate domain name. Should only be used in combination with sAMAccountName, never with an UPN.<br/>
+	 * <br/>
+	 * Assuming the following user:<br/>
+	 * UPN: john.doe@CorpDomain.biz<br/>
+	 * sAMAccountName: CORPDOMAIN\john.doe<br/>
+	 * <br/>
+	 * The username attribute may be set to <code>john.doe</code><br/>
+	 * The AuthDomain attribute may be set to <code>CORPDOMAIN</code><br/>
+	 */
+	@Deprecated
+	@ConfigurationWarning("Please use the UPN or the full sAM-AccountName instead")
 	public void setAuthDomain(String string) {
 		authDomain = string;
 	}
-	public String getAuthDomain() {
-		return authDomain;
+
+	/**
+	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified,
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant. The obtained accessToken will be added to the regular requests
+	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix.
+	 */
+	public void setTokenEndpoint(String string) {
+		tokenEndpoint = string;
+	}
+	/**
+	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
+	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
+	 * or when the regular server returns a 401 status with a challenge.
+	 * If not specified, and the accessTokens lifetime is not found in the token response, the accessToken will not be refreshed preemptively.
+	 * @ff.default -1
+	 */
+	public void setTokenExpiry(int value) {
+		tokenExpiry = value;
+	}
+	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
+	public void setClientAlias(String clientAuthAlias) {
+		this.clientAuthAlias = clientAuthAlias;
+	}
+	/** Client_id used in authentication to <code>tokenEndpoint</code> */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	/** Client_secret used in authentication to <code>tokenEndpoint</code> */
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+	/** Space or comma separated list of scope items requested for accessToken, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
+	public void setScope(String string) {
+		scope = string;
+	}
+	/** if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters */
+	public void setAuthenticatedTokenRequest(boolean authenticatedTokenRequest) {
+		this.authenticatedTokenRequest = authenticatedTokenRequest;
 	}
 
 
-	@IbisDoc({"30", "proxy host", " "})
+	/** Proxy host */
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
-	@IbisDoc({"31", "proxy port", "80"})
+	/**
+	 * Proxy port
+	 * @ff.default 80
+	 */
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
-	public int getProxyPort() {
-		return proxyPort;
-	}
 
-	@IbisDoc({"32", "alias used to obtain credentials for authentication to proxy", ""})
+	/** Alias used to obtain credentials for authentication to proxy */
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
-	@IbisDoc({"33", "proxy username", " "})
+	/**
+	 * Proxy username
+	 * @ff.default  
+	 */
 	public void setProxyUsername(String string) {
-		proxyUserName = string;
+		proxyUsername = string;
 	}
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	public String getProxyUsername() {
-		return proxyUserName;
-	}
 
-	@IbisDoc({"34", "proxy password", " "})
+	/**
+	 * Proxy password
+	 * @ff.default  
+	 */
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
 
-	@IbisDoc({"35", "proxy realm", " "})
+	/**
+	 * Proxy realm
+	 * @ff.default  
+	 */
 	public void setProxyRealm(String string) {
-		proxyRealm = string;
-	}
-	public String getProxyRealm() {
-		if(StringUtils.isEmpty(proxyRealm))
-			return null;
-		return proxyRealm;
+		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
 
 	/**
@@ -939,7 +1007,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	@IbisDoc({"36", "Disables the use of cookies, making the sender completely stateless", "false"})
+	/**
+	 * Disables the use of cookies, making the sender completely stateless
+	 * @ff.default false
+	 */
 	public void setDisableCookies(boolean disableCookies) {
 		this.disableCookies = disableCookies;
 	}
@@ -948,177 +1019,191 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
-		certificate = string;
+		setKeystore(string);
 	}
-	public String getCertificate() {
-		return certificate;
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
 	}
-
-	@IbisDoc({"41", "alias used to obtain certificate password", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
+		setKeystoreAuthAlias(string);
 	}
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
-	}
-
-	@IbisDoc({"42", "certificate password", " "})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
 	public void setCertificatePassword(String string) {
-		certificatePassword = string;
-	}
-	public String getCertificatePassword() {
-		return certificatePassword;
+		setKeystorePassword(string);
 	}
 
-	@IbisDoc({"43", "", "pkcs12"})
-	public void setKeystoreType(String string) {
-		keystoreType = string;
-	}
-	public String getKeystoreType() {
-		return keystoreType;
+	/** resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
+	@Override
+	public void setKeystore(String string) {
+		keystore = string;
 	}
 
-	@IbisDoc({"44", "", " "})
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
+	}
+
+	@Override
+	public void setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
+	}
+
+	@Override
+	public void setKeystorePassword(String string) {
+		keystorePassword = string;
+	}
+
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
+
+	@Override
+	public void setKeystoreAlias(String string) {
+		keystoreAlias = string;
+	}
+	@Override
+	public void setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+	}
+	@Override
+	public void setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
 	}
 
-
-	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
+	@Override
+	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	public void setTruststore(String string) {
 		truststore = string;
 	}
-	public String getTruststore() {
-		return truststore;
-	}
 
-	@IbisDoc({"51", "alias used to obtain truststore password", ""})
+	@Override
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
 
-	@IbisDoc({"52", "truststore password", " "})
+	@Override
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
-	public String getTruststorePassword() {
-		return truststorePassword;
+
+	@Override
+	public void setTruststoreType(KeystoreType value) {
+		truststoreType = value;
 	}
 
-	@IbisDoc({"53", "type of truststore", "jks"})
-	public void setTruststoreType(String string) {
-		truststoreType = string;
-	}
-	public String getTruststoreType() {
-		return truststoreType;
-	}
-
-	@IbisDoc({"54", "", " "})
+	@Override
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
 
-	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
 
-	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
+	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
 
-	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
-	 */
-	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
+	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
-	}
-	
-	
-	@IbisDoc({"60", "comma separated list of parameter names which should be set as http headers", ""})
+
+
+	/** Comma separated list of parameter names which should be set as HTTP headers */
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
-	public String getHeadersParams() {
-		return headersParams;
+
+	/** Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters */
+	public void setParametersToSkipWhenEmpty(String parametersToSkipWhenEmpty) {
+		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
 	}
-	
-	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+
+
+	/**
+	 * If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS
+	 * @ff.default true
+	 */
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
-	public boolean isFollowRedirects() {
-		return followRedirects;
+
+	/**
+	 * If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
+	 * @ff.default false
+	 */
+	public void setIgnoreRedirects(boolean b) {
+		ignoreRedirects = b;
 	}
-	
-	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+
+
+	/**
+	 * Controls whether connections checked to be stale, i.e. appear open, but are not.
+	 * @ff.default true
+	 */
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
-	
-	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+
+	/**
+	 * Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.
+	 * @ff.default 5000 ms
+	 */
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
-	public int getStaleTimeout() {
-		return staleTimeout;
+
+	/**
+	 * Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.
+	 * @ff.default 900 s
+	 */
+	public void setConnectionTimeToLive(int timeToLive) {
+		connectionTimeToLive = timeToLive;
 	}
 
-	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})
+	/**
+	 * Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool
+	 * @ff.default 10 s
+	 */
+	public void setConnectionIdleTimeout(int idleTimeout) {
+		connectionIdleTimeout = idleTimeout;
+	}
+
+	/**
+	 * If <code>true</code>, the HTML response is transformed to XHTML
+	 * @ff.default false
+	 */
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
-	public boolean isXhtml() {
-		return xhtml;
-	}
 
-	@IbisDoc({"66", ">(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	/** (Only used when xHtml=<code>true</code>) stylesheet to apply to the HTML response */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
-	public String getStyleSheetName() {
-		return styleSheetName;
-	}
 
-	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
+	/**
+	 * Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.
+	 * @ff.default SSL
+	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
-	public String getProtocol() {
-		return protocol;
-	}
 
-	@IbisDoc({"68", "if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
+	/** If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
-	}
-	public String getResultStatusCodeSessionKey() {
-		return resultStatusCodeSessionKey;
 	}
 }

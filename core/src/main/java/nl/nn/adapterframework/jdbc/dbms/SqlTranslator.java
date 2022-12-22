@@ -43,7 +43,7 @@ public class SqlTranslator implements ISqlTranslator {
 	private Map<String,Pattern> sources;
 	private Map<String,String>  targets;
 	private String target;
-	
+
 	private boolean configured=false;
 
 	public SqlTranslator(String source, String target) throws JdbcException {
@@ -68,7 +68,7 @@ public class SqlTranslator implements ISqlTranslator {
 	public boolean canConvert(String from, String to) {
 		return configured && to.equals(target);
 	}
-	
+
 	/**
 	 * Translates the given query to the target language.
 	 * Uses the translation rules set by this and the target translators.
@@ -120,8 +120,8 @@ public class SqlTranslator implements ISqlTranslator {
 		sources = new LinkedHashMap<>();
 		targets = new LinkedHashMap<>();
 
-		String sourceMatch=".source."+sourceDialect.replaceAll(" ", "_");
-		String targetMatch=".target."+targetDialect.replaceAll(" ", "_");
+		String sourceMatch=(".source."+sourceDialect.replaceAll(" ", "_")).toLowerCase();
+		String targetMatch=(".target."+targetDialect.replaceAll(" ", "_")).toLowerCase();
 
 		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
 
@@ -130,7 +130,7 @@ public class SqlTranslator implements ISqlTranslator {
 			while (line!=null) {
 				int equalsPos = line.indexOf("=");
 				if (!line.startsWith("#") && equalsPos>=0) {
-					String key = line.substring(0,equalsPos).trim();
+					String key = line.substring(0,equalsPos).trim().toLowerCase();
 					String value = line.substring(equalsPos+1).trim();
 					if (log.isTraceEnabled()) log.trace("read key ["+key+"] value ["+value+"]");
 					int sourceMatchPos = key.indexOf(sourceMatch);

@@ -40,6 +40,7 @@ import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -128,13 +129,13 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession session = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message(""), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(""), session).asString();
 		assertEquals("<dummy result/>", result);
 	}
 
@@ -144,14 +145,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession session = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setBase64(true);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message(""), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(""), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -171,14 +172,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("inputMessageParam");
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setBase64(true);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message("tralala"), session).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), session).asString();
 		assertEquals("PGR1bW15IHJlc3VsdC8+", result.trim());
 	}
 
@@ -189,14 +190,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
@@ -210,14 +211,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
 		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
@@ -231,14 +232,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
@@ -252,14 +253,14 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
 
 		sender.configure();
 		sender.open();
 
 		//Use InputStream 'content' as result.
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
@@ -272,13 +273,13 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setMultipartResponse(true);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("text default", result);
 
 		int multipartAttachmentCount = 0;
@@ -301,13 +302,13 @@ public class HttpSenderResultTest extends Mockito {
 
 		PipeLineSession pls = new PipeLineSession();
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setMultipartResponse(true);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message("tralala"), pls).asString();
+		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertEquals("<soap:Envelope/>", result.trim());
 
 		int multipartAttachmentCount = 0;

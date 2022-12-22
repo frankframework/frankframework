@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,23 +22,25 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.IParameterHandler;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Sender that just logs its message.
- * 
+ *
  * @author Gerrit van Brakel
  * @since  4.9
  */
-public class LogSender extends SenderWithParametersBase implements IParameterHandler {
+@Category("Advanced")
+public class LogSender extends SenderWithParametersBase {
 	private String logLevel="info";
 	private String logCategory=null;
 
@@ -58,7 +60,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			logger.log(level, message.asString());
 		} catch (IOException io) {
@@ -68,16 +70,17 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				if (pvl != null) {
-					pvl.forAllParameters(this);
+					for (ParameterValue param : pvl) {
+						handleParam(param.getName(), param.getValue());
+					}
 				}
 			} catch (ParameterException e) {
 				throw new SenderException("exception determining value of parameters", e);
 			}
 		}
-		return message;
+		return new SenderResult(message);
 	}
 
-	@Override
 	public void handleParam(String paramName, Object value) {
 		logger.log(level, "parameter [" + paramName + "] value [" + value + "]");
 	}
@@ -92,7 +95,10 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return this.getClass().getName();
 	}
 
-	@IbisDoc({"category under which messages are logged", "name of the sender"})
+	/**
+	 * category under which messages are logged
+	 * @ff.default name of the sender
+	 */
 	public void setLogCategory(String string) {
 		logCategory = string;
 	}
@@ -101,7 +107,10 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return logLevel;
 	}
 
-	@IbisDoc({"level on which messages are logged", "info"})
+	/**
+	 * level on which messages are logged
+	 * @ff.default info
+	 */
 	public void setLogLevel(String string) {
 		logLevel = string;
 	}

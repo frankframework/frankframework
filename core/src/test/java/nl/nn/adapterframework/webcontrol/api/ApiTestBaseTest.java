@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.adapterframework.webcontrol.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,10 +38,10 @@ import javax.ws.rs.core.Response;
 import org.junit.Test;
 
 /**
- * This is a test class to test the {@link ApiTestBase} class.
+ * This is a test class to test the {@link FrankApiBase} class.
  * It tests path parameters, query parameters and json convertions
  */
-public class ApiTestBaseTest extends Base {
+public class ApiTestBaseTest extends FrankApiBase {
 
 	@GET
 	@Path("/test/{path}")
@@ -69,7 +71,22 @@ public class ApiTestBaseTest extends Base {
 		return Response.ok().entity(response).build();
 	}
 
-	public static class TestApi extends ApiTestBase<ApiTestBaseTest> {
+	@Test
+	public void testConversions() throws Exception {
+		InputStream string = new ByteArrayInputStream("string".getBytes());
+		InputStream number = new ByteArrayInputStream("50".getBytes());
+		InputStream boolTrue = new ByteArrayInputStream("true".getBytes());
+		InputStream boolFalse = new ByteArrayInputStream("false".getBytes());
+		InputStream boolNull = new ByteArrayInputStream("".getBytes());
+
+		assertEquals("string", FrankApiBase.convert(String.class, string));
+		assertEquals(true, FrankApiBase.convert(boolean.class, boolTrue));
+		assertEquals(false, FrankApiBase.convert(Boolean.class, boolFalse));
+		assertEquals(false, FrankApiBase.convert(boolean.class, boolNull));
+		assertEquals(50, FrankApiBase.convert(Integer.class, number).intValue());
+	}
+
+	public static class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
 
 		@Override
 		public ApiTestBaseTest createJaxRsResource() {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import javax.transaction.TransactionManager;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -79,7 +79,7 @@ public class IbisTransaction {
 	public static IbisTransaction getTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
 		return txManager!=null ? new IbisTransaction(txManager, txDef, descriptionOfOwner) : null;
 	}
-	
+
 	private String getRealTransactionManager() {
 		if (txManager == null) {
 			return null;
@@ -97,14 +97,19 @@ public class IbisTransaction {
 					return jtaTxMgr.getClass().getName();
 				}
 				return txMgr.getClass().getName();
-			} else {
-				return platformTxMgr.getClass().getName();
 			}
-		} else {
-			return txManager.getClass().getName();
+			return platformTxMgr.getClass().getName();
 		}
+		return txManager.getClass().getName();
 	}
-	
+
+	public static boolean isDistributedTransactionsSupported(PlatformTransactionManager txManager) {
+		if((txManager instanceof SpringTxManagerProxy)) {
+			return isDistributedTransactionsSupported(((SpringTxManagerProxy)txManager).getRealTxManager());
+		}
+		return txManager instanceof JtaTransactionManager;
+	}
+
 	public void setRollbackOnly() {
 		txStatus.setRollbackOnly();
 	}
@@ -112,11 +117,11 @@ public class IbisTransaction {
 	public boolean isRollbackOnly() {
 		return txStatus.isRollbackOnly();
 	}
-	
+
 	public boolean isCompleted() {
 		return txStatus.isCompleted();
 	}
-	
+
 	public void commit() {
 		boolean mustRollback = txStatus.isRollbackOnly();
 		if (txIsNew) {

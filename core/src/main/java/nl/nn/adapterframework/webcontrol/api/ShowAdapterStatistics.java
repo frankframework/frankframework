@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,17 +31,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
 
 /**
- * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
- * 
+ * Retrieves the statistics
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -59,6 +59,9 @@ public final class ShowAdapterStatistics extends Base {
 
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
 
+		statisticsMap.put("labels", StatisticsKeeper.getLabels());
+		statisticsMap.put("types", StatisticsKeeper.getTypes());
+
 		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
@@ -66,7 +69,7 @@ public final class ShowAdapterStatistics extends Base {
 		}
 
 		StatisticsKeeper sk = adapter.getStatsMessageProcessingDuration();
-		statisticsMap.put("totalMessageProccessingTime", statisticsKeeperToMapBuilder(sk));
+		statisticsMap.put("totalMessageProccessingTime", sk.asMap());
 
 		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
 		List<Map<String, Object>> hourslyStatistics = new ArrayList<Map<String, Object>>();
@@ -97,13 +100,13 @@ public final class ShowAdapterStatistics extends Base {
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
 			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
-				procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
+				procStatsMap.add(pstat.asMap());
 			}
 			receiverMap.put("processing", procStatsMap);
 
 			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
 			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
-				idleStatsMap.add(statisticsKeeperToMapBuilder(istat));
+				idleStatsMap.add(istat.asMap());
 			}
 			receiverMap.put("idle", idleStatsMap);
 
@@ -116,9 +119,9 @@ public final class ShowAdapterStatistics extends Base {
 		handler.configure();
 		Object handle = handler.start(null, null, null);
 		try {
-			adapter.getPipeLine().iterateOverStatistics(handler, tmp, HasStatistics.STATISTICS_ACTION_FULL);
-			statisticsMap.put("durationPerPipe", tmp.get("pipeStats"));
-			statisticsMap.put("sizePerPipe", tmp.get("sizeStats"));
+			adapter.getPipeLine().iterateOverStatistics(handler, tmp, Action.FULL);
+			statisticsMap.put("durationPerPipe", tmp.get(PipeLine.PIPELINE_DURATION_STATS));
+			statisticsMap.put("sizePerPipe", tmp.get(PipeLine.PIPELINE_SIZE_STATS));
 		} catch (SenderException e) {
 			log.error("unable to parse pipeline statistics", e);
 		} finally {
@@ -130,9 +133,9 @@ public final class ShowAdapterStatistics extends Base {
 
 	private class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
 
-		private Object parent;
+		private Map<String, Object> parent;
 
-		public StatisticsKeeperToMap(Object parent) {
+		public StatisticsKeeperToMap(Map<String, Object> parent) {
 			super();
 			this.parent=parent;
 		}
@@ -155,7 +158,12 @@ public final class ShowAdapterStatistics extends Base {
 		public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
 			if(sk == null) return;
 
-			((List<Object>) data).add(statisticsKeeperToMapBuilder(sk));
+			((List<Object>) data).add(sk.asMap());
+		}
+
+		@Override
+		public void handleScalar(Object data, String scalarName, ScalarMetricBase meter) throws SenderException {
+			handleScalar(data, scalarName, meter.getValue());
 		}
 
 		@Override
@@ -189,48 +197,7 @@ public final class ShowAdapterStatistics extends Base {
 		@Override
 		public void closeGroup(Object data) {
 		}
+
 	}
 
-	protected Map<String, Object> statisticsKeeperToMapBuilder(StatisticsKeeper sk) {
-		if (sk==null) {
-			return null;
-		}
-
-		Map<String, Object> tmp = new HashMap<String, Object>();
-		tmp.put("name", sk.getName());
-		for (int i=0; i<sk.getItemCount(); i++) {
-			Object item = sk.getItemValue(i);
-			String key = sk.getItemName(i).replace("< ", "");
-			if (item==null) {
-				tmp.put(key, null);
-			} else {
-				switch (sk.getItemType(i)) {
-					case ItemList.ITEM_TYPE_INTEGER:
-						tmp.put(key, item);
-						break;
-					case ItemList.ITEM_TYPE_TIME:
-						if(item instanceof Long) {
-							tmp.put(key, item);
-						} else {
-							Double val = (Double) item;
-							if(val.isNaN() || val.isInfinite()) {
-								tmp.put(key, null);
-							} else {
-								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
-							}
-						}
-						break;
-					case ItemList.ITEM_TYPE_FRACTION:
-						Double val = (Double) item;
-						if(val.isNaN() || val.isInfinite()) {
-							tmp.put(key, null);
-						} else {
-							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
-						}
-						break;
-				}
-			}
-		}
-		return tmp;
-	}
 }

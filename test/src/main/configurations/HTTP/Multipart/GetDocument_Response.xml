@@ -1,0 +1,8 @@
+<GetDocument_Response>
+	<File>
+		<FileContent><Include xmlns="http://www.w3.org/2004/08/xop/include" href="cid:attachment"/></FileContent>
+		<contentType>fakeContentType</contentType>
+		<fileSize>0</fileSize>
+		<fileName>fakeFilename</fileName>
+	</File>
+</GetDocument_Response>

@@ -1,17 +1,17 @@
 /*
-Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.util;
 
@@ -21,13 +21,12 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 public class MessageBrowsingFilter {
@@ -39,18 +38,18 @@ public class MessageBrowsingFilter {
 	private String comment = null;
 	private String message = null;
 	private String label = null;
-	private Date startDate = null;
-	private Date endDate = null;
+	private @Getter Date startDate = null;
+	private @Getter Date endDate = null;
 
-	private int maxMessages = 0;
-	private int skipMessages = 0;
+	private @Getter int maxMessages = 100;
+	private @Getter int skipMessages = 0;
 
-	private SortOrder sortOrder = SortOrder.NONE;
+	private @Getter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;
 	private IListener listener = null;
 
 	public MessageBrowsingFilter() {
-		this(AppConstants.getInstance().getInt("browse.messages.max", 0), 0);
+		this(AppConstants.getInstance().getInt("browse.messages.max", 100), 0);
 	}
 
 	public MessageBrowsingFilter(int maxMessages, int skipMessages) {
@@ -58,12 +57,6 @@ public class MessageBrowsingFilter {
 		this.skipMessages = skipMessages;
 	}
 
-	public void setSortOrder(SortOrder order) {
-		sortOrder = order;
-	}
-	public SortOrder getSortOrder() {
-		return sortOrder;
-	}
 
 	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		int count = 0;
@@ -99,15 +92,15 @@ public class MessageBrowsingFilter {
 		}
 		if(startDate != null && endDate == null) {
 			count++;
-			matches += iterItem.getInsertDate().after(startDate) ? 1 : 0;
+			matches += !iterItem.getInsertDate().before(startDate) ? 1 : 0;
 		}
 		if(startDate == null && endDate != null) {
 			count++;
-			matches += iterItem.getInsertDate().before(endDate) ? 1 : 0;
+			matches += !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 		}
 		if(startDate != null && endDate != null) {
 			count++;
-			matches += (iterItem.getInsertDate().after(startDate) && iterItem.getInsertDate().before(endDate)) ? 1 : 0;
+			matches += !iterItem.getInsertDate().before(startDate) && !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 		}
 		if(message != null) {
 			count++;
@@ -149,7 +142,7 @@ public class MessageBrowsingFilter {
 
 	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
-			String msg = getRawMessage(storage, listener, iterItem.getId());
+			String msg = getMessageText(storage, listener, iterItem.getId());
 			if (!StringUtils.containsIgnoreCase(msg, message)) {
 				return false;
 			}
@@ -157,31 +150,11 @@ public class MessageBrowsingFilter {
 		return true;
 	}
 
-	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws IOException, ListenerException {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException, IOException {
 		Object rawmsg = messageBrowser.browseMessage(messageId);
-
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e, 500);
-				}
-			} else {
-				if (listener!=null) {
-					msg = listener.extractMessage(rawmsg, null).asString();
-				} else if (StringUtils.isEmpty(msg)) {
-					msg = Message.asString(rawmsg);
-				} else {
-					msg = rawmsg.toString();
-				}
-			}
-		}
-
-		return msg;
+		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}
+
 	public void setMessageMask(String messageMask, IMessageBrowser<?> storage) {
 		setMessageMask(messageMask, storage, null);
 	}
@@ -225,12 +198,10 @@ public class MessageBrowsingFilter {
 		}
 	}
 
-	public int skipMessages() {
-		return skipMessages;
-	}
-
-	public int maxMessages() {
-		return maxMessages;
+	public void setSortOrder(SortOrder sortOrder) {
+		if(sortOrder != null) {
+			this.sortOrder = sortOrder;
+		}
 	}
 
 	@Override

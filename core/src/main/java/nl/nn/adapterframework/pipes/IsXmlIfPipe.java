@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,19 +23,20 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Selects an exitState, based on if the input is a XML string.
- * 
- * The input is a XML string if it, after removing leading white-space characters, starts with '<'.
- * 
+ *
+ * The input is a XML string if it, after removing leading white-space characters, starts with '&lt;'.
+ *
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
-
+@ElementType(ElementTypes.ROUTER)
 public class IsXmlIfPipe extends AbstractPipe {
 
 	private String thenForwardName = "then";
@@ -56,7 +57,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 			try {
 				sInput = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 			if (StringUtils.isEmpty(sInput)) {
 				if (isElseForwardOnEmptyInput()) {
@@ -74,21 +75,21 @@ public class IsXmlIfPipe extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward
-				+ "]");
+		log.debug("determined forward [{}]", forward);
 
 		PipeForward pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null)
-					+ "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward
-				+ "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 
-	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
+	/**
+	 * forward returned when <code>'true'</code>
+	 * @ff.default then
+	 */
 	public void setThenForwardName(String thenForwardName) {
 		this.thenForwardName = thenForwardName;
 	}
@@ -97,7 +98,10 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return thenForwardName;
 	}
 
-	@IbisDoc({"forward returned when 'false'", "else"})
+	/**
+	 * forward returned when 'false'
+	 * @ff.default else
+	 */
 	public void setElseForwardName(String elseForwardName) {
 		this.elseForwardName = elseForwardName;
 	}
@@ -110,7 +114,10 @@ public class IsXmlIfPipe extends AbstractPipe {
 		return elseForwardOnEmptyInput;
 	}
 
-	@IbisDoc({"return elseforward when input is empty (or thenforward)", "true"})
+	/**
+	 * return elseforward when input is empty (or thenforward)
+	 * @ff.default true
+	 */
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
 	}

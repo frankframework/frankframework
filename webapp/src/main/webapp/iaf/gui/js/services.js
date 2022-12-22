@@ -23,7 +23,8 @@ angular.module('iaf.beheerconsole')
 						Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 					}
 				}
-			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+			}
+			if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
 				var tag = etags[uri];
 				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}
@@ -52,9 +53,11 @@ angular.module('iaf.beheerconsole')
 			var callback = args.shift();
 			var error = args.shift();
 			var intercept = args.shift();
+			var responseType = args.shift();
 
 			return $http.post(buildURI(uri), object, {
 				headers: headers,
+				responseType: responseType,
 				transformRequest: angular.identity,
 				intercept: intercept,
 			}).then(function(response){
@@ -720,12 +723,34 @@ angular.module('iaf.beheerconsole')
 			}
 			return input;
 		};
+	}).filter('dropLastChar', function() {
+		return function(input) {
+			if(input && input.length > 0) {
+				return input.substring(0, input.length-1);
+			}
+			return input;
+		};
 	}).filter('markDown', function() {
 		return function(input) {
 			if(!input) return;
 			input = input.replace(/(?:\r\n|\r|\n)/g, '<br />');
 			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
 			return input;
+		};
+	}).filter('withJavaListener', function() {
+		return function(adapters) {
+			if(!adapters) return;
+			let schedulerEligibleAdapters={};
+			for(adapter in adapters) {
+				let receivers = adapters[adapter].receivers;
+				for(r in receivers) {
+					let receiver=receivers[r];
+					if(receiver.listener.class.startsWith('JavaListener')){
+						schedulerEligibleAdapters[adapter] = adapters[adapter];
+					}
+				}
+			}
+			return schedulerEligibleAdapters;
 		};
 	}).filter('dash', function() {
 		return function(input) {
@@ -876,6 +901,9 @@ angular.module('iaf.beheerconsole')
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
 		};
+		this.escapeURL = function(uri) {
+			return encodeURIComponent(uri);
+		}
 		this.isMobile = function() {
 			return ( navigator.userAgent.match(/Android/i)
 				|| navigator.userAgent.match(/webOS/i)
@@ -1046,6 +1074,14 @@ angular.module('iaf.beheerconsole')
 
 						switch (rejection.status) {
 							case -1:
+								fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
+									if (res.type === "opaqueredirect") {
+										// if the request ended in a redirect that failed, then login
+										login_url = Misc.getServerPath() + 'iaf/';
+										window.location.href = login_url;
+									}
+								});
+							
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");
@@ -1062,19 +1098,25 @@ angular.module('iaf.beheerconsole')
 											body: "Connection to the server was lost! Click to refresh the page.",
 											timeout: 0,
 											showCloseButton: true,
-											onHideCallback: function() {
-												window.location.reload();
+											clickHandler: function(_, isCloseButton) {
+												if(isCloseButton !== true) {
+													window.location.reload();
+												}
+												return true;
 											}
 										});
 									}
 								}
+								break;
+							case 400:
+								Toastr.error("Request failed", "Bad Request, check the application logs for more information.");
 								break;
 							case 401:
 								sessionStorage.clear();
 								$location.path("login");
 								break;
 							case 403:
-								Toastr.error("Forbidden", "You do not have the permissions to complete this operation");
+								Toastr.error("Forbidden", "You do not have the permissions to complete this operation.");
 								break;
 							case 500:
 								if(rejection.config.intercept != undefined && rejection.config.intercept === false) return $q.reject(rejection); //Don't capture when explicitly disabled

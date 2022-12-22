@@ -10,7 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -83,8 +86,8 @@ public class CmisSenderTest {
 		sender.setName("CmisSender "+i);
 		sender.setUrl(url);
 		sender.setRepository(repo);
-		sender.setAction("get");
-		sender.setBindingType("browser");
+		sender.setAction(CmisAction.GET);
+		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setUsername(titanUser);
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
@@ -99,11 +102,11 @@ public class CmisSenderTest {
 		String fullUrl=url+"/"+repo+"/root?objectId="+id1+"&cmisselector=content";
 		System.out.println("url: "+fullUrl);
 		sender.setUrl(fullUrl);
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 //		sender.setRepository(repo);
 //		sender.setAction("get");
 //		sender.setBindingType("browser");
-		sender.setUserName(titanUser);
+		sender.setUsername(titanUser);
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
 		sender.configure();
@@ -127,11 +130,11 @@ public class CmisSenderTest {
 		if (testViaHttpSender) {
 			Message message=new Message(""); 
 
-			result=httpSenders[index].sendMessage(message, session).asString();
+			result=httpSenders[index].sendMessageOrThrow(message, session).asString();
 			
 		} else {
 			Message message=new Message("<cmis><id>"+id+"</id></cmis>");
-			result=cmisSenders[index].sendMessage(message, session).asString();
+			result=cmisSenders[index].sendMessageOrThrow(message, session).asString();
 		}
 		
 		assertNotNull(result);

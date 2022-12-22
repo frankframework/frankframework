@@ -24,7 +24,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -35,43 +36,41 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @see PipeLineSession
  */
-
- public class RemoveFromSession  extends FixedForwardPipe {
-    private String sessionKey;
+@ElementType(ElementTypes.SESSION)
+public class RemoveFromSession extends FixedForwardPipe {
+	private String sessionKey;
 
 	public RemoveFromSession() {
 		super.setPreserveInput(true);
 	}
-    
-	/**
-     * Checks whether the proper forward is defined.
-     */
-    @Override
-	public void configure() throws ConfigurationException {
-	    super.configure();
 
-	/*
-        if (null== getSessionKey()) {
-            throw new ConfigurationException("Pipe [" + getName() + "]"
-                    + " has a null value for sessionKey");
-        }
-	*/
-    }
-	 
+	/**
+	 * Checks whether the proper forward is defined.
+	 */
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		/*
+		 * if (null== getSessionKey()) { throw new ConfigurationException("Pipe [" +
+		 * getName() + "]" + " has a null value for sessionKey"); }
+		 */
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;
-	
+
 		String sessionKeys = getSessionKey();
 		if (StringUtils.isEmpty(sessionKeys)) {
 			try {
 				sessionKeys = message.asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
 		if (StringUtils.isEmpty(sessionKeys)) {
-			log.warn(getLogPrefix(session)+"no key specified");
+			log.warn("no key specified");
 			result="[null]";
 		} else {
 			StringTokenizer st = new StringTokenizer(sessionKeys, ",");
@@ -79,15 +78,15 @@ import nl.nn.adapterframework.stream.Message;
 				String sk = st.nextToken();
 				Object skResult = session.remove(sk);
 				if (skResult==null) {
-					log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
+					log.warn("key ["+sk+"] not found");
 					skResult="[null]";
 				} else {
 					try {
 						skResult = Message.asString(skResult);
 					} catch (IOException e) {
-						throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+						throw new PipeRunException(this, "cannot open stream", e);
 					}
-					log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
+					log.debug("key [{}] removed", sk);
 				}
 				if (result == null) {
 					result = (String)skResult;
@@ -96,12 +95,11 @@ import nl.nn.adapterframework.stream.Message;
 				}
 			}
 		}
-	
+
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	 
-	@IbisDoc({"name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", ""})
+	/** name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

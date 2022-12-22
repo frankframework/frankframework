@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,302 +15,46 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.spi.StandardLevel;
-import org.springframework.context.ApplicationEventPublisher;
 
-import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Dir2Map;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
 /**
- * Shows all monitors.
+ * Shows directory of logfiles
  * 
  * @since	7.0-B1
  * @author	Niels Meijer
  */
 
 @Path("/")
-public class ShowLogging extends Base {
-	@Context HttpServletRequest servletRequest;
-
-	private final static String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
-	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
-	int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);
+public class ShowLogging extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/logging")
 	@Relation("logging")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogDirectory(
-			@QueryParam("directory") String directory, 
-			@QueryParam("sizeFormat") String sizeFormatParam, 
-			@QueryParam("wildcard") String wildcard
-			) throws ApiException {
-
-		Map<String, Object> returnMap = new HashMap<String, Object>();
-
-		if(directory == null || directory.isEmpty())
-			directory = AppConstants.getInstance().getResolvedProperty("logging.path").replace("\\\\", "\\");
-
-		boolean sizeFormat = (sizeFormatParam == null || sizeFormatParam.isEmpty()) ? true : Boolean.parseBoolean(sizeFormatParam);
-
-		if(wildcard == null || wildcard.isEmpty())
-			wildcard = AppConstants.getInstance().getProperty("logging.wildcard");
-
-		try {
-			if (!FileUtils.readAllowed(FileViewerServlet.permissionRules, servletRequest, directory)) {
-				throw new ApiException("Access to path ("+directory+") not allowed!");
-			}
-			Dir2Map dir = new Dir2Map(directory, sizeFormat, wildcard, showDirectories, maxItems);
-
-			returnMap.put("list", dir.getList());
-			returnMap.put("count", dir.size());
-			returnMap.put("directory", dir.getDirectory());
-			returnMap.put("sizeFormat", sizeFormat);
-			returnMap.put("wildcard", wildcard);
-		} catch (IOException e) {
-			throw new ApiException("Error while trying to retreive directory information", e);
+	public Response getLogDirectory(@QueryParam("directory") String directory, @QueryParam("sizeFormat") String sizeFormat, @QueryParam("wildcard") String wildcard) {
+		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewerServlet.permissionRules, getServletRequest(), directory)) {
+			throw new ApiException("Access to path (" + directory + ") not allowed!");
 		}
 
-		return Response.status(Response.Status.OK).entity(returnMap).build();
-	}
-
-	@GET
-	@PermitAll
-	@Path("/server/logging")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogConfiguration() throws ApiException {
-
-		Map<String, Object> logSettings = new HashMap<String, Object>(3);
-		LoggerContext logContext = LoggerContext.getContext(false);
-		Logger rootLogger = logContext.getRootLogger();
-
-		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
-
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
-		logSettings.put("errorLevels", errorLevels);
-		logSettings.put("loglevel", rootLogger.getLevel().toString());
-
-		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
-
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean("testtool.enabled", true));
-
-		return Response.status(Response.Status.CREATED).entity(logSettings).build();
-	}
-
-	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/server/logging")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateLogConfiguration(LinkedHashMap<String, Object> json) {
-
-		Boolean logIntermediaryResults = null;
-		int maxMessageLength = IbisMaskingLayout.getMaxLength();
-		Boolean enableDebugger = null;
-		StringBuilder msg = new StringBuilder();
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("loglevel")) {
-				Level loglevel = Level.toLevel(""+value, null);
-				LoggerContext logContext = LoggerContext.getContext(false);
-				Logger rootLogger = logContext.getRootLogger();
-				if(loglevel != null) {
-					String changmsg = "LogLevel changed from [" + rootLogger.getLevel() + "] to [" + loglevel +"]";
-					Configurator.setLevel(rootLogger.getName(), loglevel);
-					msg.append(changmsg);
-				}
-			}
-			else if(key.equalsIgnoreCase("logIntermediaryResults")) {
-				logIntermediaryResults = Boolean.parseBoolean(""+value);
-			}
-			else if(key.equalsIgnoreCase("maxMessageLength")) {
-				maxMessageLength = Integer.parseInt(""+value);
-			}
-			else if(key.equalsIgnoreCase("enableDebugger")) {
-				enableDebugger = Boolean.parseBoolean(""+value);
-			}
-		}
-
-		if(logIntermediaryResults != null) {
-			boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
-			if(logIntermediary != logIntermediaryResults) {
-				AppConstants.getInstance().put("log.logIntermediaryResults", "" + logIntermediaryResults);
-	
-				if(msg.length() > 0)
-					msg.append(", logIntermediaryResults from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-				else
-					msg.append("logIntermediaryResults changed from [" + logIntermediary+ "] to [" + logIntermediaryResults + "]");
-			}
-		}
-
-		if (maxMessageLength != IbisMaskingLayout.getMaxLength()) {
-			if(msg.length() > 0)
-				msg.append(", logMaxMessageLength from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			else
-				msg.append("logMaxMessageLength changed from [" + IbisMaskingLayout.getMaxLength() + "] to [" + maxMessageLength + "]");
-			IbisMaskingLayout.setMaxLength(maxMessageLength);
-		}
-
-		if (enableDebugger != null) {
-			boolean testtoolEnabled=AppConstants.getInstance().getBoolean("testtool.enabled", true);
-			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.getInstance().put("testtool.enabled", "" + enableDebugger);
-				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
-				ApplicationEventPublisher applicationEventPublisher = getIbisManager().getApplicationEventPublisher();
-				if (applicationEventPublisher!=null) {
-					log.info("setting debugger enabled ["+enableDebugger+"]");
-					if(msg.length() > 0)
-						msg.append(", enableDebugger from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					else
-						msg.append("enableDebugger changed from [" + testtoolEnabled + "] to [" + enableDebugger + "]");
-					applicationEventPublisher.publishEvent(event);
-				} else {
-					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
-				}
-			}
- 		}
-
-		if(msg.length() > 0) {
-			log.warn(msg.toString());
-			LogUtil.getLogger("SEC").info(msg.toString());
-		}
-
-		return Response.status(Response.Status.NO_CONTENT).build();
-	}
-
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/server/logging/settings")
-	@Relation("logging")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLogSettings(@QueryParam("filter") String filter) {
-
-		LoggerContext logContext = LoggerContext.getContext(false);
-		Map<String, Object> result = new HashMap<>();
-
-		if(StringUtils.isEmpty(filter)) {
-			List<Object> defaultLoggers = new ArrayList<>();
-			Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
-			for(LoggerConfig config : loggerConfigs) {
-				String name = config.getName();
-				if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith("MSG.")) {
-					Map<String, Object> logger = new HashMap<>();
-					logger.put("name", name);
-					logger.put("level", config.getLevel().getStandardLevel());
-					Set<String> appenders = config.getAppenders().keySet();
-					if(!appenders.isEmpty()) {
-						logger.put("appenders", config.getAppenders().keySet());
-					}
-					defaultLoggers.add(logger);
-				}
-			}
-			result.put("definitions", defaultLoggers);
-
-			filter = FF_PACKAGE_PREFIX;
-		}
-
-		Map<String, StandardLevel> registeredLoggers = new TreeMap<>(); // A list with all Loggers that are logging to Log4j2
-		for (Logger log : logContext.getLoggers()) {
-			String logName = log.getName();
-			String packageName = null;
-			if(logName.contains(".")) {
-				packageName = logName.substring(0, logName.lastIndexOf("."));
-			} else {
-				packageName = logName;
-			}
-
-			if(filter == null || packageName.startsWith(filter)) {
-				StandardLevel newLevel = log.getLevel().getStandardLevel();
-				StandardLevel oldLevel = registeredLoggers.get(packageName);
-				if(oldLevel != null && oldLevel.compareTo(newLevel) < 1) {
-					continue;
-				}
-				registeredLoggers.put(packageName, newLevel);
-			}
-		}
-		result.put("loggers", registeredLoggers);
-
-		return Response.status(Response.Status.OK).entity(result).build();
-	}
-
-	@PUT
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/server/logging/settings")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response updateLogger(LinkedHashMap<String, Object> json) {
-		Level level = null;
-		String logPackage = null;
-		boolean reconfigure = false;
-
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if(key.equalsIgnoreCase("level")) {
-				level = Level.toLevel(""+value, null);
-			} else if(key.equalsIgnoreCase("logger")) {
-				logPackage = (String) value;
-			} else if(key.equalsIgnoreCase("reconfigure")) {
-				reconfigure = Boolean.parseBoolean(""+value);
-			}
-		}
-
-		if(reconfigure) {
-			LoggerContext logContext = LoggerContext.getContext(false);
-			logContext.reconfigure();
-			log2SecurityLog("reconfigured logdefinitions");
-
-			return Response.status(Response.Status.CREATED).build();
-		}
-
-		if(StringUtils.isNotEmpty(logPackage) && level != null) {
-			Configurator.setLevel(logPackage, level);
-			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return Response.status(Response.Status.ACCEPTED).build();
-		}
-
-		return Response.status(Response.Status.BAD_REQUEST).build();
-	}
-
-	private void log2SecurityLog(String logMessage) {
-		log.warn(logMessage);
-		LogUtil.getLogger("SEC").info(logMessage);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOGGING, BusAction.GET);
+		builder.addHeader("directory", directory);
+		builder.addHeader("sizeFormat", sizeFormat);
+		builder.addHeader("wildcard", wildcard);
+		return callSyncGateway(builder);
 	}
 }

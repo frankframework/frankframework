@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,17 +39,18 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.Semaphore;
-import nl.nn.credentialprovider.util.Misc;
 
 
 /**
- * Container that provides threads to exectue pulling listeners.
- * 
+ * Container that provides threads to execute pulling listeners.
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
@@ -58,8 +59,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private TransactionDefinition txNew = null;
 
-	private Receiver<M> receiver;
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter Receiver<M> receiver;
+	private @Getter @Setter PlatformTransactionManager txManager;
 	private Counter threadsRunning = new Counter(0);
 	private Counter tasksStarted = new Counter(0);
 	private Semaphore processToken = null; // guard against to many messages being processed at the same time
@@ -71,7 +72,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
-	private TaskExecutor taskExecutor;
+	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private PullingListenerContainer() {
 		super();
@@ -84,8 +85,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		processToken = new Semaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
-		if (receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
-			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		if (receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
+			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionAttribute.REQUIRESNEW.getTransactionAttributeNum());
 			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
 			}
@@ -145,24 +146,24 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ControllerTask() {
-			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			setName(ClassUtils.nameOf(receiver));
 		}
 
 		@Override
 		public void run() {
 			ThreadContext.push(getName());
-			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
-			receiver.setRunState(RunStateEnum.STARTED);
+			log.debug("taskExecutor [{}]", ()->ToStringBuilder.reflectionToString(taskExecutor));
+			receiver.setRunState(RunState.STARTED);
 			log.debug("started ControllerTask");
 			try {
-				while (receiver.isInRunState(RunStateEnum.STARTED) && !Thread.currentThread().isInterrupted()) {
+				while (receiver.isInRunState(RunState.STARTED) && !Thread.currentThread().isInterrupted()) {
 					processToken.acquire();
 					if (pollToken != null) {
 						pollToken.acquire();
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
-						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
+						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for [{}] seconds", receiver.getPollInterval());
+						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
 							Thread.sleep(1000);
 						}
 					}
@@ -173,7 +174,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				Thread.currentThread().interrupt();
 			} finally {
 				log.debug("closing down ControllerTask");
-				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stopRunning();
 				}
 				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
@@ -205,7 +206,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
-				if (receiver.isInRunState(RunStateEnum.STARTED)) {
+				if (receiver.isInRunState(RunState.STARTED)) {
 					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
@@ -231,7 +232,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (messageAvailable) {
 									// Start a transaction if the entire processing is transacted, or
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
-									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
+									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
 									}
 									rawMessage = listener.getRawMessage(threadContext);
@@ -277,7 +278,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 
 							// found a message, process it
-							tasksStarted.increase(); 
+							tasksStarted.increase();
 							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
 							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 						} finally {
@@ -294,9 +295,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
-								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+								try (PipeLineSession session = new PipeLineSession()) {
+									session.putAll(threadContext);
+									receiver.processRawMessage(listener, rawMessage, session, true);
+								}
 							} else {
-								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Date receivedDate = new Date();
 								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
@@ -341,10 +345,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					}
 					if (!messageHandled && inProcessStateManager!=null) {
-						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
+						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						if (log.isDebugEnabled()) log.debug("noMoreRetries ["+noMoreRetries+"] deliveryCount ["+deliveryCount+"] targetState ["+targetState+"]");
+						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
 						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
 						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
@@ -408,7 +412,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
-		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
+		while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e2) {
@@ -417,28 +421,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 	}
-	
-	
-	public void setReceiver(Receiver<M> receiver) {
-		this.receiver = receiver;
-	}
-	public Receiver<M> getReceiver() {
-		return receiver;
-	}
 
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
-	}
 
 	public synchronized void setIdle(boolean b) {
 		idle = b;

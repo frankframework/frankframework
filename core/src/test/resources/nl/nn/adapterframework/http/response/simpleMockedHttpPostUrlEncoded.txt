@@ -1,6 +1,0 @@
-POST http://127.0.0.1/ HTTP/1.1
-Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
-custom-header: value
-Content-Type: application/x-www-form-urlencoded; charset=UTF-8
-
-nameOfTheFirstContentId=%3Cxml%3Einput%3C%2Fxml%3E&key=value&otherKey=otherValue

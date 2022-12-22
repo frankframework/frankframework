@@ -70,12 +70,23 @@
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
 				<forward name="success" path="generateException" />
 			</pipe>
 			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
+			
+			<pipe name="FixedQuerySenderWithTransform1" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" query="SELECT * FROM IBISPROP" />
+				<forward name="success" path="MapResults" />
+			</pipe>
+			<pipe name="FixedQuerySenderWithTransform2" >
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" queryType="select" outputFormat="XML" query="SELECT * FROM IBISPROP" />
+			</pipe>
+			<XsltPipe name="MapResults" xpathExpression="/result/rowset/row[1]" outputType="XML" >
+				<Forward name="success" path="EXIT"/>
+			</XsltPipe>
 		</pipeline>
 	</adapter>
 	<adapter name="XmlQuerySender" description="Test the functioning of the XmlQuerySender">

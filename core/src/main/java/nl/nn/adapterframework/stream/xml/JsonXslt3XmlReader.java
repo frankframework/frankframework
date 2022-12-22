@@ -19,10 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
@@ -34,6 +30,9 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 import nl.nn.adapterframework.util.StreamUtil;
 
 
@@ -41,17 +40,17 @@ public class JsonXslt3XmlReader implements XMLReader {
 
 //	private String atttributePrefix="@";
 	private String TARGETNAMESPACE="http://www.w3.org/2013/XSL/json";
-	
+
 	private String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
 	private String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
-	
+
 	private ErrorHandler errorHandler;
 	private ContentHandler contentHandler;
 	private EntityResolver entityResolver;
 	private DTDHandler dtdHandler;
-	
-	private boolean elementEnded=false;
-	
+
+	private boolean elementEnded = false;
+
 	public JsonXslt3XmlReader() {
 		super();
 	}
@@ -63,7 +62,7 @@ public class JsonXslt3XmlReader implements XMLReader {
 			setErrorHandler((ErrorHandler)handler);
 		}
 	}
-	
+
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
 		Event event = parser.next();
 		if (event.equals(Event.START_OBJECT)) {
@@ -104,7 +103,7 @@ public class JsonXslt3XmlReader implements XMLReader {
 		}
 		return true;
 	}
-	
+
 	private void newLine() throws SAXException {
 		ContentHandler ch=getContentHandler();
 		ch.characters("\n".toCharArray(), 0, 1);
@@ -170,8 +169,6 @@ public class JsonXslt3XmlReader implements XMLReader {
 		parse(new InputSource(systemId));
 	}
 
-	
-	
 	@Override
 	public boolean getFeature(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
 		throw new SAXNotRecognizedException("Feature not recognized ["+name+"]");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,38 +18,40 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Skip a number of bytes or characters from the input. 
- * 
- * 
+ * Skip a number of bytes or characters from the input.
+ *
+ *
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class SkipPipe extends FixedForwardPipe {
 
 	private int skip = 0;
 	private int length = -1;
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			Object result = "SkipPipe doesn't work for this type of object";
-			if (message.asObject() instanceof String) {
-				String stringInput = (String)message.asObject();
+			Message result;
+			if (!message.isBinary()) {
+				String stringInput = message.asString();
 				if (skip > stringInput.length()) {
-					result = "";
+					result = new Message("");
 				} else {
 					if (length >= 0 && length < stringInput.length() - skip) {
-						result = stringInput.substring(skip, skip + length);
+						result = new Message(stringInput.substring(skip, skip + length));
 					} else {
-						result = stringInput.substring(skip);
+						result = new Message(stringInput.substring(skip));
 					}
 				}
-			} else if (message.asObject() instanceof byte[]) {
-				byte[] bytesInput = (byte[])message.asObject();
+			} else {
+				byte[] bytesInput = message.asByteArray();
 				byte[] bytesResult;
 				if (skip > bytesInput.length) {
 					bytesResult = new byte[0];
@@ -66,23 +68,26 @@ public class SkipPipe extends FixedForwardPipe {
 						}
 					}
 				}
-				result = bytesResult;
+				result = new Message(bytesResult);
 			}
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch(Exception e) {
-			throw new PipeRunException(this, "Error while transforming input", e); 
+			throw new PipeRunException(this, "Error while transforming input", e);
 		}
 	}
 
 	/**
-	 * Sets the number of bytes to skip
+	 * Number of bytes (for binary input) or characters (for character input) to skip. An empty byte array or string is returned when skip is larger then the length of the input
+	 * @ff.default 0
 	 */
-	@IbisDoc({"number of bytes (for byte array input) or characters (for string input) to skip. an empty byte array or string is returned when skip is larger then the length of the input", "0"})
 	public void setSkip(int skip) {
 		this.skip = skip;
 	}
 
-	@IbisDoc({"if length>=0 only these number of bytes (for byte array input) or characters (for string input) is returned.", "-1"})
+	/**
+	 * If length>=0 only these number of bytes (for binary input) or characters (for character input) is returned.
+	 * @ff.default -1
+	 */
 	public void setLength(int length) {
 		this.length = length;
 	}

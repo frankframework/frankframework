@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
 
 import com.aspose.email.Attachment;
 import com.aspose.email.AttachmentCollection;
@@ -34,6 +35,7 @@ import com.aspose.email.MailAddress;
 import com.aspose.email.MailMessage;
 import com.aspose.email.MhtFormatOptions;
 import com.aspose.email.MhtSaveOptions;
+import com.aspose.email.SaveOptions;
 import com.aspose.email.TnefLoadOptions;
 import com.aspose.words.Document;
 import com.aspose.words.HtmlLoadOptions;
@@ -44,28 +46,27 @@ import com.aspose.words.SaveFormat;
 import com.aspose.words.Shape;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 class MailConvertor extends AbstractConvertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(MailConvertor.class);
 
-	private static final float MaxImageWidthInPoints = PageConvertUtil
-			.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
-	private static final float MaxImageHeightInPoints = PageConvertUtil
-			.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
-	private final String eMailHeaderDateFormat = "dd-MM-yyyy HH:mm:ss";
+	private static final float MAX_IMAGE_WIDTH_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
+	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
+	private static final String MAIL_HEADER_DATEFORMAT = "dd-MM-yyyy HH:mm:ss";
 	private CisConversionService cisConversionService;
 
-	// contains mapping from MediaType to the LoadOption for the aspose word
-	// conversion.
+	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
 	private static final Map<MediaType, com.aspose.email.LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
-		Map<MediaType, com.aspose.email.LoadOptions> map = new HashMap<>();
+		final Map<MediaType, com.aspose.email.LoadOptions> map = new HashMap<>();
 		map.put(new MediaType("message", "rfc822"), null);
 		map.put(new MediaType("message", "rfc822.concept"), null);
 		map.put(new MediaType("message", "rfc822.ddcim"), null);
@@ -75,93 +76,85 @@ class MailConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	MailConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
-		super(pdfOutputLocation,
-				MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
-
+	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
 	}
 
 	@Override
-	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
-			throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		MailMessage eml = null;
 
-		try (FileInputStream inputStream = new FileInputStream(file)) {
+		try (InputStream inputStream = message.asInputStream(charset)) {
 			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-
-			AttachmentCollection attachments = eml.getAttachments();
-
-			LOGGER.debug("cc : " + toString(eml.getCC()));
-			LOGGER.debug("bcc : " + toString(eml.getBcc()));
-			LOGGER.debug("sender : " + toString(eml.getSender()));
-			LOGGER.debug("from : " + toString(eml.getFrom()));
-			LOGGER.debug("to : " + toString(eml.getTo()));
-			LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
-			LOGGER.debug("subject : " + eml.getSubject());
-
-			MhtSaveOptions options = MhtSaveOptions.getDefaultMhtml();
-			options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader | 
-					MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress | 
-					MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress | 
-					MhtFormatOptions.WriteCompleteToEmailAddress);
-			options.setPreserveOriginalDate(true);
-			// Overrules the default documentname.
-			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
-
-			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), null);
-			eml.getHeaders().set_Item("Date", new SimpleDateFormat(eMailHeaderDateFormat).format(eml.getDate()));
-			eml.save(tempMHtmlFile.getAbsolutePath(), options);
-
-			// Load the stream in Word document
-			HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-			loadOptions.setLoadFormat(LoadFormat.MHTML);
-			loadOptions.setWebRequestTimeout(0);
-
-			Long startTime = new Date().getTime();
-			try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
-				Document doc = new Document(fis, loadOptions);
-				new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
-				resizeInlineImages(doc);
-
-				doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-				
-				result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-				Long endTime = new Date().getTime();
-				LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
-			}finally {
-				Files.delete(tempMHtmlFile.toPath());
-			}
-			
-
-			// Convert and (optional add) any attachment of the mail.
-			for (int index = 0; index < attachments.size(); index++) {
-				// Initialize Attachment object and Get the indexed Attachment reference
-				Attachment attachment = attachments.get_Item(index);
-
-				// Convert the attachment.
-				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment,
-						conversionOption);
-				// If it is an singlepdf add the file to the the current pdf.
-				if ((ConversionOption.SINGLEPDF.equals(conversionOption)) 
-					&& (cisConversionResultAttachment.isConversionSuccessfull())) {
-					try {
-						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
-						pdfAttachmentUtil.addAttachmentInSinglePdf();
-					} finally {
-						
-						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						
-						// Clear the file because it is now incorporated in the file it self. 
-						cisConversionResultAttachment.setPdfResultFile(null);
-						cisConversionResultAttachment.setResultFilePath(null);
-					}
-					
-				}
-				result.addAttachment(cisConversionResultAttachment);
-			}
 		}
-			
+
+		AttachmentCollection attachments = eml.getAttachments();
+
+		LOGGER.debug("cc : " + toString(eml.getCC()));
+		LOGGER.debug("bcc : " + toString(eml.getBcc()));
+		LOGGER.debug("sender : " + toString(eml.getSender()));
+		LOGGER.debug("from : " + toString(eml.getFrom()));
+		LOGGER.debug("to : " + toString(eml.getTo()));
+		LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
+		LOGGER.debug("subject : " + eml.getSubject());
+
+		MhtSaveOptions options = SaveOptions.getDefaultMhtml();
+		options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
+				MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
+				MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress |
+				MhtFormatOptions.WriteCompleteToEmailAddress);
+		options.setPreserveOriginalDate(true);
+		// Overrules the default documentname.
+		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
+
+		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
+		String date = new SimpleDateFormat(MAIL_HEADER_DATEFORMAT).format(eml.getDate());
+		eml.getHeaders().set_Item("Date", date);
+		eml.save(tempMHtmlFile.getAbsolutePath(), options);
+
+		// Load the stream in Word document
+		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+		loadOptions.setLoadFormat(LoadFormat.MHTML);
+		loadOptions.setWebRequestTimeout(0);
+
+		Long startTime = new Date().getTime();
+		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
+			Document doc = new Document(fis, loadOptions);
+			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
+			resizeInlineImages(doc);
+
+			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
+
+			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			Long endTime = new Date().getTime();
+			LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
+		} finally {
+			Files.delete(tempMHtmlFile.toPath());
+		}
+
+		// Convert and (optional add) any attachment of the mail.
+		for (int index = 0; index < attachments.size(); index++) {
+			// Initialize Attachment object and Get the indexed Attachment reference
+			Attachment attachment = attachments.get_Item(index);
+
+			// Convert the attachment.
+			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
+			// If it is an singlepdf add the file to the the current pdf.
+			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessfull()) {
+				try {
+					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+					pdfAttachmentUtil.addAttachmentInSinglePdf();
+				} finally {
+					deleteFile(cisConversionResultAttachment.getPdfResultFile());
+					// Clear the file because it is now incorporated in the file it self.
+					cisConversionResultAttachment.setPdfResultFile(null);
+					cisConversionResultAttachment.setResultFilePath(null);
+				}
+
+			}
+			result.addAttachment(cisConversionResultAttachment);
+		}
 	}
 
 	private void resizeInlineImages(Document doc) throws Exception {
@@ -170,33 +163,39 @@ class MailConvertor extends AbstractConvertor {
 			Shape shape = (Shape) shapes[i];
 
 			// If images needs to be shrunk then scale to fit
-			if (shape.getImageData().getImageSize().getWidthPoints() > MaxImageWidthInPoints) {
-				double scaleWidth = MaxImageWidthInPoints / shape.getImageData().getImageSize().getWidthPoints();
+			if(shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS || shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS){
 
-				double scaleHeight = MaxImageHeightInPoints / shape.getImageData().getImageSize().getHeightPoints();
+				// make sure that aspect ratio is locked
+				if(!shape.getAspectRatioLocked()){
+					shape.setAspectRatioLocked(true);
+				}
 
-				// Get the smallest scale factor so it will fit on the paper.
-				double scaleFactor = Math.min(scaleWidth, scaleHeight);
-
-				shape.setWidth(shape.getImageData().getImageSize().getWidthPoints() * scaleFactor);
-				shape.setHeight(shape.getImageData().getImageSize().getHeightPoints() * scaleFactor);
-
+				if (shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS) {
+					shape.setWidth(scaleDimension(shape.getWidth(), MAX_IMAGE_WIDTH_IN_POINTS));
+				}
+				if (shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS) {
+					shape.setHeight(scaleDimension(shape.getHeight(), MAX_IMAGE_HEIGHT_IN_POINTS));
+				}
 			}
 		}
+	}
+
+	private double scaleDimension(Double currentValue, float maxValue){
+		double scaleFactor = maxValue / currentValue;
+		return scaleFactor * currentValue;
 	}
 
 	/**
 	 * Converts an email attachment to a pdf via the cisConversionService.
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
-
 		LOGGER.debug("Convert attachment... (" + attachment.getName() + ")");
 
 		// Get the name of the file (segment) (this is the last part.
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 
-		return cisConversionService.convertToPdf(attachment.getContentStream(), segmentFilename, conversionOption);
+		return cisConversionService.convertToPdf(new Message(attachment.getContentStream()), segmentFilename, conversionOption);
 	}
 
 	private String toString(Iterable<MailAddress> iterable) {

@@ -10,14 +10,18 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class WsdlGeneratorTest {
+
+	private TestConfiguration configuration = new TestConfiguration();
 
 	private PipeLine createPipeline() throws Exception {
 		EchoPipe pipe = new EchoPipe();
@@ -28,7 +32,7 @@ public class WsdlGeneratorTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 
 		Adapter adapter = new Adapter();
@@ -62,7 +66,7 @@ public class WsdlGeneratorTest {
 	public void testWsdlXmlValidatorWithWsdl() throws Exception {
 		PipeLine pipeline = createPipeline();
 
-		WsdlXmlValidator inputValidator = new WsdlXmlValidator();
+		WsdlXmlValidator inputValidator = configuration.createBean(WsdlXmlValidator.class);
 		inputValidator.setWsdl(validateResource("/WsdlGenerator/HelloWorld.wsdl"));
 		inputValidator.setSoapBody("HelloWorld_Request");
 		inputValidator.setOutputSoapBody("HelloWorld_Response");

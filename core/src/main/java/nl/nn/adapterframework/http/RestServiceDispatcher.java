@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -55,16 +56,16 @@ import nl.nn.adapterframework.util.LogUtil;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */
-public class RestServiceDispatcher  {
+public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
-	
+
 	private final String WILDCARD="*";
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
+	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
@@ -90,8 +91,8 @@ public class RestServiceDispatcher  {
 		}
 
 		String matchingPattern=null;
-		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=(String)it.next();
+		for (Iterator<String> it=patternClients.keySet().iterator();it.hasNext();) {
+			String uriPattern=it.next();
 			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
 			if (lookupUriPattern.equals(uriPattern)) {
 				matchingPattern=uriPattern;
@@ -100,24 +101,24 @@ public class RestServiceDispatcher  {
 		}
 		return matchingPattern;
 	}
-	
-	public Map getMethodConfig(String matchingPattern, String method) {
-		Map methodConfig;
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
-		
-		methodConfig = (Map)patternEntry.get(method);
+
+	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
+		Map<String,Object> methodConfig;
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
+
+		methodConfig = patternEntry.get(method);
 		if (methodConfig==null) {
-			methodConfig = (Map)patternEntry.get(WILDCARD);
+			methodConfig = patternEntry.get(WILDCARD);
 		}
 		return methodConfig;
 	}
-	
-	public List getAvailableMethods(String matchingPattern) {
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
-		Iterator it = patternEntry.entrySet().iterator();
-		List methods = new ArrayList<String>();
+
+	public List<String> getAvailableMethods(String matchingPattern) {
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
+		Iterator<Entry<String,Map<String,Object>>> it = patternEntry.entrySet().iterator();
+		List<String> methods = new ArrayList<>();
 		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry)it.next();
+			Entry<String,Map<String,Object>> pair = it.next();
 			methods.add(pair.getKey());
 		}
 		return methods;
@@ -132,14 +133,14 @@ public class RestServiceDispatcher  {
 	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
-		
+
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
-		
-		Map methodConfig = getMethodConfig(matchingPattern, method);
-		
+
+		Map<String,Object> methodConfig = getMethodConfig(matchingPattern, method);
+
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
 		}
@@ -172,7 +173,7 @@ public class RestServiceDispatcher  {
 				context.put("principal", principal.getName());
 			}
 		}
-		
+
 		String ctName = Thread.currentThread().getName();
 		try {
 			boolean writeToSecLog = false;
@@ -184,30 +185,31 @@ public class RestServiceDispatcher  {
 							DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 							ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 							List<FileItem> items = servletFileUpload.parseRequest(httpServletRequest);
-					        for (FileItem item : items) {
-					        	if (item.isFormField()) {
-					                // Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-					                String fieldName = item.getFieldName();
-					                String fieldValue = item.getString();
-					    			log.trace("setting parameter ["+fieldName+"] to ["+fieldValue+"]");
-					    			context.put(fieldName, fieldValue);
-					            } else {
-					                // Process form file field (input type="file").
-					                String fieldName = item.getFieldName();
-					                String fieldNameName = fieldName + "Name";
-					                String fileName = FilenameUtils.getName(item.getName());
-					    			if (log.isTraceEnabled()) log.trace("setting parameter ["+fieldNameName+"] to ["+fileName+"]");
-					    			context.put(fieldNameName, fileName);
-					                InputStream inputStream = item.getInputStream();
-					                if (inputStream.available() > 0) {
-					                	log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-						    			context.put(fieldName, inputStream);
-					                } else {
-						    			log.trace("setting parameter ["+fieldName+"] to ["+null+"]");
-						    			context.put(fieldName, null);
-					                }
-					            }
-					        }
+							for(FileItem item : items) {
+								if(item.isFormField()) {
+									// Process regular form field (input type="text|radio|checkbox|etc", select,
+									// etc).
+									String fieldName = item.getFieldName();
+									String fieldValue = item.getString();
+									log.trace("setting parameter [" + fieldName + "] to [" + fieldValue + "]");
+									context.put(fieldName, fieldValue);
+								} else {
+									// Process form file field (input type="file").
+									String fieldName = item.getFieldName();
+									String fieldNameName = fieldName + "Name";
+									String fileName = FilenameUtils.getName(item.getName());
+									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
+									context.put(fieldNameName, fileName);
+									InputStream inputStream = item.getInputStream();
+									if(inputStream.available() > 0) {
+										log.trace("setting parameter [" + fieldName + "] to input stream of file [" + fileName + "]");
+										context.put(fieldName, inputStream);
+									} else {
+										log.trace("setting parameter [" + fieldName + "] to [" + null + "]");
+										context.put(fieldName, null);
+									}
+								}
+							}
 						} catch (FileUploadException e) {
 							throw new ListenerException(e);
 						} catch (IOException e) {
@@ -218,7 +220,7 @@ public class RestServiceDispatcher  {
 				writeToSecLog = restListener.isWriteToSecLog();
 				if (writeToSecLog) {
 					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
- 				}
+				}
 				boolean authorized = false;
 				if (principal == null) {
 					authorized = true;
@@ -239,7 +241,7 @@ public class RestServiceDispatcher  {
 				}
 				Thread.currentThread().setName(restListener.getName() + "["+ctName+"]");
 			}
-	
+
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
@@ -263,13 +265,13 @@ public class RestServiceDispatcher  {
 
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
 					//Exit with 304
-					context.put("exitcode", 304);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 304);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match ["+ifNoneMatch+"]");
 					return null;
 				}
 				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !method.equalsIgnoreCase("GET")) {
 					//Exit with 412
-					context.put("exitcode", 412);
+					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 412);
 					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match ["+ifMatch+"] method ["+method+"]");
 					return null;
 				}
@@ -277,7 +279,7 @@ public class RestServiceDispatcher  {
 
 			String result;
 			try {
-				result=listener.processRequest(null, new Message(request), context).asString();
+				result=listener.processRequest(new Message(request), context).asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			}
@@ -286,7 +288,7 @@ public class RestServiceDispatcher  {
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey("exitcode")) {
+			if (result == null && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
 				log.warn("result is null!");
 			}
 			return result;
@@ -296,36 +298,41 @@ public class RestServiceDispatcher  {
 			}
 		}
 	}
-	
+
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
 			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
 		uriPattern = unifyUriPattern(uriPattern);
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
-		if (patternEntry==null) {
-			patternEntry=new HashMap();
-			patternClients.put(uriPattern, patternEntry);
-		}
-		Map listenerConfig = (Map)patternEntry.get(method);
-		if (listenerConfig!=null) { 
+		patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry.computeIfAbsent(method, m -> {
+			Map<String,Object> listenerConfig = new HashMap<>();
+			listenerConfig.put(KEY_LISTENER, listener);
+			listenerConfig.put("validateEtag", validateEtag);
+			if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
+			if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
+			return listenerConfig;
+		})==null) {
 			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
 		}
-		listenerConfig = new HashMap();
-		patternEntry.put(method,listenerConfig);
-		listenerConfig.put(KEY_LISTENER, listener);
-		listenerConfig.put("validateEtag", validateEtag);
-		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
-		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
 
-	public void unregisterServiceClient(String uriPattern) {
+	public void unregisterServiceClient(String uriPattern, String method) {
 		uriPattern = unifyUriPattern(uriPattern);
-		patternClients.remove(uriPattern);
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry == null) {
+			return;
+		}
+		if (StringUtils.isEmpty(method)) {
+			method=WILDCARD;
+		}
+		patternEntry.remove(method);
+		// removing patternEntry from patternClients is not thread safe
 	}
 
-	public Set getUriPatterns() {
+	public Set<String> getUriPatterns() {
 		return patternClients.keySet();
 	}
 

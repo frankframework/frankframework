@@ -25,33 +25,32 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
- * 
- * 
+ *
+ *
  * @author  John Dekker / Gerrit van Brakel
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";
 	private @Getter String xpathExpression=null;
-	private @Getter String namespaceDefs = null; 
+	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName;
-	private @Getter String outputType="text";
+	private @Getter OutputType outputType=OutputType.TEXT;
 	private @Getter boolean omitXmlDeclaration=true;
 	private @Getter String endOfRecord;
 
-	private TransformerPool transformerPool; 
+	private TransformerPool transformerPool;
 
-	private List<String> outputFields; 
+	private List<String> outputFields;
 
 	public RecordXmlTransformer() {
 		outputFields = new LinkedList<String>();
@@ -69,7 +68,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
-			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			transformerPool = TransformerPool.configureTransformer(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 
@@ -85,10 +84,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			Message message = new Message(xml);
 			ParameterValueList pvl = paramList==null?null:paramList.getValues(message, session);
 			return transformerPool.transform(message.asSource(), pvl);
-		} 
+		}
 		return xml;
 	}
-	
+
 	protected String getXml(List<String> parsedRecord) {
 		XmlBuilder record=new XmlBuilder(getRootTag());
 		int ndx = 0;
@@ -116,7 +115,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return record.toXML();
 	}
 
-	@IbisDoc({"comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized", ""})
+	/** comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized */
 	public void setOutputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -126,37 +125,46 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 
-	@IbisDoc({"1", "Root tag for the generated xml document that will be send to the Sender", "record"})
+	/**
+	 * Root tag for the generated xml document that will be send to the Sender
+	 * @ff.default record
+	 */
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
 
-	@IbisDoc({"2", "Name of stylesheet to transform an individual record", ""})
+	/** Name of stylesheet to transform an individual record */
 	public void setStyleSheetName(String string) {
 		styleSheetName = string;
 	}
 
-	@IbisDoc({"3", "Alternatively: xpath-expression to create stylesheet from", ""})
+	/** Alternatively: xpath-expression to create stylesheet from */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"4", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	/** Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"5", "Either 'text' or 'xml'. Only valid for xpathexpression", "text"})
-	public void setOutputType(String string) {
-		outputType = string;
+	/**
+	 * Only valid for <code>xpathExpression</code>
+	 * @ff.default text
+	 */
+	public void setOutputType(OutputType outputType) {
+		this.outputType = outputType;
 	}
 
-	@IbisDoc({"6", "Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	/**
+	 * Force the transformer generated from the xpath-expression to omit the xml declaration
+	 * @ff.default true
+	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"7", "String which ends the record and must be ignored", ""})
+	/** String which ends the record and must be ignored */
 	public void setEndOfRecord(String string) {
 		endOfRecord = string;
 	}

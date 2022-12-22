@@ -16,6 +16,8 @@
 package nl.nn.credentialprovider;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.util.Misc;
 
@@ -27,12 +29,12 @@ public class MapCredentials extends Credentials {
 	private Map<String,String> aliases;
 
 
-	public MapCredentials(String alias, String defaultUsername, String defaultPassword, Map<String,String> aliases) {
-		this(alias, defaultUsername, defaultPassword, null, null, aliases);
+	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Map<String,String> aliases) {
+		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, aliases);
 	}
 
-	public MapCredentials(String alias, String defaultUsername, String defaultPassword, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
-		super(alias, defaultUsername, defaultPassword);
+	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
+		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.aliases = aliases;
 		this.usernameSuffix = Misc.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
 		this.passwordSuffix = Misc.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
@@ -40,7 +42,7 @@ public class MapCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (Misc.isNotEmpty(getAlias()) && aliases!=null) {
+		if (aliases!=null) {
 			String usernameKey = getAlias()+usernameSuffix;
 			String passwordKey = getAlias()+passwordSuffix;
 			boolean foundOne = false;
@@ -54,8 +56,14 @@ public class MapCredentials extends Credentials {
 			}
 			if (!foundOne && aliases.containsKey(getAlias())) {
 				setPassword(aliases.get(getAlias()));
+				return;
 			}
+			if (foundOne) {
+				return;
+			}
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 		}
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: no aliases");
 	}
 
 }

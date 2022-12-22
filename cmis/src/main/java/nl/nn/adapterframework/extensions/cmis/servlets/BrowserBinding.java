@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package nl.nn.adapterframework.extensions.cmis.servlets;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServlet;
 
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,23 +44,8 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	}
 
 	@Override
-	public String getName() {
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public int loadOnStartUp() {
-		return -1;
-	}
-
-	@Override
-	public HttpServlet getServlet() {
-		return this;
-	}
-
-	@Override
-	public String[] getRoles() {
-		return "IbisWebService,IbisTester".split(",");
+	public String[] getAccessGrantingRoles() {
+		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
 	@Autowired

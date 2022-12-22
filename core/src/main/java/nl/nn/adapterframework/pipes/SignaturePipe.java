@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,94 +17,85 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509KeyManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.EncryptionException;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.PkiUtil;
 
-public class SignaturePipe extends FixedForwardPipe {
+/**
+ * 
+ * @ff.parameter signature the signature to verify
+ * @ff.forward failure used when verification fails
+ */
+@ElementType(ElementTypes.TRANSLATOR)
+public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public final String ACTION_SIGN="sign";
-	public final String ACTION_VERIFY="verify";
-	public final String PARAMETER_SIGNATURE="signature";
-	
-	public final String ALGORITHM_DEFAULT = "SHA256withRSA";
+	public static final String PARAMETER_SIGNATURE="signature";
+	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
-	public final String[] ACTIONS= {ACTION_SIGN, ACTION_VERIFY};
-	private Set<String> actions = new LinkedHashSet<String>(Arrays.asList(ACTIONS));
 
-	private @Getter String action = ACTION_SIGN;
+	private @Getter Action action = Action.SIGN;
 	private @Getter String algorithm;
 	private @Getter String provider;
 	private @Getter boolean signatureBase64 = true;
 
 	private @Getter String keystore;
-	private @Getter String keystoreType="pkcs12";
-	private @Getter String keystoreAlias;
+	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
+	private @Getter String keystoreAlias;
+	private @Getter String keystoreAliasAuthAlias;
+	private @Getter String keystoreAliasPassword;
 	private @Getter String keyManagerAlgorithm=null;
 
-	private URL keystoreUrl = null;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
-	
+
+
+	public enum Action {
+		/** signs the input */
+		SIGN,
+		/** verifies a signature */
+		VERIFY;
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (!actions.contains(getAction())) {
-			throw new ConfigurationException("unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
-		}
 		if (StringUtils.isEmpty(getAlgorithm())) {
 			setAlgorithm(ALGORITHM_DEFAULT);
 		}
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		keystoreUrl = ClassUtils.getResourceURL(this, getKeystore());
-		if (keystoreUrl == null) {
-			throw new ConfigurationException("cannot find URL for keystore resource ["+getKeystore()+"]");
-		}
-		log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
-		if (getAction().equals(ACTION_VERIFY)) {
+
+		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
+		if (getAction() == Action.VERIFY) {
 			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
 			}
@@ -118,48 +109,23 @@ public class SignaturePipe extends FixedForwardPipe {
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		CredentialFactory credentialFactory = new CredentialFactory(getKeystoreAuthAlias(), null, getKeystorePassword());
-		if (getAction().equals(ACTION_SIGN)) {
+		switch (getAction()) {
+		case SIGN:
 			try {
-				if ("pem".equals(getKeystoreType())) {
-					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
-				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, credentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, credentialFactory.getPassword(), keyManagerAlgorithm);
-					if (keymanagers==null || keymanagers.length==0) {
-						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
-					}
-					X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
-					privateKey = keyManager.getPrivateKey(getKeystoreAlias());
-				}
-				if (privateKey==null) {
-					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]");
-				}
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException | InvalidKeySpecException e) {
-				throw new PipeStartException("cannot get Private Key for signing in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]", e);
+				privateKey = PkiUtil.getPrivateKey(this, "Keys for action ["+getAction()+"]");
+			} catch (EncryptionException e) {
+				throw new PipeStartException(e);
 			}
-		} else {
+			break;
+		case VERIFY:
 			try {
-				Certificate certificate;
-				if ("pem".equals(getKeystoreType())) {
-					certificate = PkiUtil.getCertificateFromPem(keystoreUrl);
-				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, credentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-					TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, keyManagerAlgorithm);
-					if (trustmanagers==null || trustmanagers.length==0) {
-						throw new PipeStartException("No trustmanager for keystore ["+keystoreUrl+"]");
-					}
-					X509TrustManager trustManager = (X509TrustManager)trustmanagers[0];
-					X509Certificate[] certificates = trustManager.getAcceptedIssuers();
-					if (certificates==null || certificates.length==0) {
-						throw new PipeStartException("No Verfication Key found in keystore ["+keystoreUrl+"]");
-					}
-					certificate = certificates[0];
-				}
-				publicKey = certificate.getPublicKey();
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				throw new PipeStartException("cannot get Public Key for verification in keystore ["+keystoreUrl+"]", e);
+				publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action ["+getAction()+"]");
+			} catch (EncryptionException e) {
+				throw new PipeStartException(e);
 			}
+			break;
+		default:
+			throw new IllegalStateException("Unknown action ["+getAction()+"]");
 		}
 	}
 
@@ -168,11 +134,16 @@ public class SignaturePipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			Signature dsa = StringUtils.isNotEmpty(getProvider()) ? Signature.getInstance(getAlgorithm(), getProvider()) : Signature.getInstance(getAlgorithm());
-			if (getAction().equals(ACTION_SIGN)) {
-				dsa.initSign(privateKey);
-			} else {
-				dsa.initVerify(publicKey);
-				message.preserve();
+			switch (getAction()) {
+				case SIGN:
+					dsa.initSign(privateKey);
+					break;
+				case VERIFY:
+					dsa.initVerify(publicKey);
+					message.preserve();
+					break;
+				default:
+					throw new IllegalStateException("Unknown action ["+getAction()+"]");
 			}
 			try (BufferedInputStream bufin = new BufferedInputStream(message.asInputStream())) {
 				byte[] buffer = new byte[1024];
@@ -181,70 +152,106 @@ public class SignaturePipe extends FixedForwardPipe {
 					dsa.update(buffer, 0, len);
 				}
 			}
-			if (getAction().equals(ACTION_SIGN)) {
-				return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
-			} else {
-				ParameterValueList pvl = getParameterList().getValues(message, session);
-				Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
-				byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
-				
-				boolean verified = dsa.verify(signature);
-				PipeForward forward = verified ? getSuccessForward() : failureForward;
-				
-				return new PipeRunResult(forward, message);
+			switch (getAction()) {
+				case SIGN:
+					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
+				case VERIFY:
+					ParameterValueList pvl = getParameterList().getValues(message, session);
+					Message signatureMsg = Message.asMessage(pvl.getValueMap().get(PARAMETER_SIGNATURE));
+					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
+
+					boolean verified = dsa.verify(signature);
+					PipeForward forward = verified ? getSuccessForward() : failureForward;
+
+					return new PipeRunResult(forward, message);
+				default:
+					throw new IllegalStateException("Unknown action ["+getAction()+"]");
 			}
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException | IOException | ParameterException e) {
 			throw new PipeRunException(this, "Could not execute action ["+getAction()+"]", e);
 		}
 	}
 
-	@IbisDoc({"1", "Action to be taken when pipe is executed. It can be one of the followed: sign (Signs the input), verify (verifies a signature)", "sign"})
-	public void setAction(String action) {
+	/** 
+	 * Action to be taken when pipe is executed.
+	 * @ff.default SIGN 
+	 */
+	public void setAction(Action action) {
 		this.action = action;
 	}
 
-	@IbisDoc({"2", "The signing algorithm", ALGORITHM_DEFAULT})
+	/** 
+	 * The signing algorithm
+	 * @ff.default ALGORITHM_DEFAULT
+	 */
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 	}
 
-	@IbisDoc({"3", ""})
+	/** Cryptography provider */
 	public void setProvider(String provider) {
 		this.provider = provider;
 	}
-	
-	@IbisDoc({"4", "if true, the signature is (expected to be) base64 encoded", "true"})
+
+	/** if true, the signature is (expected to be) base64 encoded
+	 * @ff.default true
+	 */
 	public void setSignatureBase64(boolean signatureBase64) {
 		this.signatureBase64 = signatureBase64;
 	}
 
 
-	@IbisDoc({"10", "Keystore to obtain signing key", ""})
+	/** Keystore to obtain signing key 
+	 * @ff.mandatory
+	 */
+	@Override
 	public void setKeystore(String string) {
 		keystore = string;
 	}
 
-	@IbisDoc({"11", "Type of keystore, can be pkcs12 or pem", "pkcs12"})
-	public void setKeystoreType(String string) {
-		keystoreType = string;
+	/** Type of keystore, can be pkcs12 or pem
+	 * @ff.default pkcs12
+	 */
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 	}
 
-	@IbisDoc({"12", "Alias used to obtain keystore password"})
+	/** Alias used to obtain keystore password */
+	@Override
 	public void setKeystoreAuthAlias(String string) {
 		keystoreAuthAlias = string;
 	}
 
-	@IbisDoc({"13", "Keystore password"})
+	/** Keystore password */
+	@Override
 	public void setKeystorePassword(String string) {
 		keystorePassword = string;
 	}
 
-	@IbisDoc({"14", "Alias in keystore", ""})
+	/** Alias in keystore */
+	@Override
 	public void setKeystoreAlias(String string) {
 		keystoreAlias = string;
 	}
 
-	@IbisDoc({"15", "", " "})
+	/** Alias used to obtain keystoreAlias password 
+	 * @ff default same as <code>keystoreAuthAlias</code>
+	 */
+	@Override
+	public void setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+	}
+
+	/** KeystoreAlias password 
+	 * @ff default same as <code>keystorePassword</code>
+	 */
+	@Override
+	public void setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
+	}
+
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -31,20 +32,15 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
- * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>Sender to which each block of results is sent</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
- * 
+ *
+ * @ff.parameters any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ *
  * @author  Gerrit van Brakel
- * @since   4.7  
+ * @since   4.7
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
-	private ISender sender = null; 
+	private @Getter ISender sender = null;
 	private Map<String,Integer> counters = new HashMap<>();
 	private Map<String,Integer> levels = new HashMap<>();
 
@@ -59,18 +55,20 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		super.configure();
 
 		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
 		}
 		sender.configure();
 	}
+
 	@Override
 	public void open() throws SenderException {
 		super.open();
 		sender.open();
 	}
+
 	@Override
 	public void close() throws SenderException {
 		super.close();
@@ -85,13 +83,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.put(streamId,new Integer(0));
 		super.openDocument(session, streamId);
 	}
+
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
 		super.closeDocument(session,streamId);
 		counters.remove(streamId);
 		levels.remove(streamId);
 	}
-
 
 	protected int getCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
@@ -100,6 +98,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		return counter.intValue();
 	}
+
 	protected int incCounter(String streamId) throws SenderException {
 		Integer counter = counters.get(streamId);
 		if (counter==null) {
@@ -117,6 +116,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		}
 		return level.intValue();
 	}
+
 	protected int incLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
 		if (level==null) {
@@ -126,6 +126,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.put(streamId,new Integer(result));
 		return result;
 	}
+
 	protected int decLevel(String streamId) throws SenderException {
 		Integer level = levels.get(streamId);
 		if (level==null) {
@@ -136,16 +137,15 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		return result;
 	}
 
-
-
 	@Override
-	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.openBlock(session,streamId,blockName);
+	public void openBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
+		super.openBlock(session,streamId,blockName,blocks);
 		incLevel(streamId);
 	}
+
 	@Override
-	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.closeBlock(session,streamId,blockName);
+	public void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception {
+		super.closeBlock(session,streamId,blockName,blocks);
 		int level=decLevel(streamId);
 		if (level==0) {
 			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
@@ -155,19 +155,16 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				writer.getBuffer().setLength(0);
 				/*
 				 * This used to be:
-				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session); 
+				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session);
 				 * Be aware that 'correlationId' no longer reflects streamId and counter
 				 */
-				getSender().sendMessage(message,session); 
+				getSender().sendMessageOrThrow(message,session);
 			}
 		}
 	}
 
-
+	/** Sender to which each block of results is sent */
 	public void setSender(ISender sender) {
 		this.sender = sender;
-	}
-	public ISender getSender() {
-		return sender;
 	}
 }

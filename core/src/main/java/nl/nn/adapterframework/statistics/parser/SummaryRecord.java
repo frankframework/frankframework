@@ -32,7 +32,7 @@ public class SummaryRecord extends Basics {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
-	
+
 	public void registerItem(Item item) {
 		String name=item.getName();
 		String value=item.getValue();
@@ -51,7 +51,7 @@ public class SummaryRecord extends Basics {
 			} else
 			if (ITEM_NAME_SUMSQ.equals(name)) {
 				sumOfSquares=Long.parseLong(value);
-			} 
+			}
 		}
 	}
 

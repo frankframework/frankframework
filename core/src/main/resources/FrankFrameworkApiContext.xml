@@ -20,10 +20,7 @@
 
 	<jaxrs:server id="IAF-API" bus="ff-api-bus" address="/" basePackages="nl.nn.adapterframework.webcontrol.api">
 		<jaxrs:providers>
-			<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+			<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
 		</jaxrs:providers>
-		<jaxrs:features>
-			<cxf:logging />
-		</jaxrs:features>
 	</jaxrs:server>
 </beans>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@ package nl.nn.adapterframework.core;
 
 /**
  * The <code>INamedObject</code> is implemented by all objects that have a name
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public interface INamedObject {
+
 	/**
-	 * The functional name of the object implementing this interface
+	 * The functional name of the object.
 	 */
-	public String getName();
 	public void setName(String name);
+	public String getName();
 }

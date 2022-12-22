@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -76,10 +75,16 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 	 * @return className + name of the ISender
 	 */
 	protected String getLogPrefix() {
-		return ClassUtils.nameOf(this) +" ["+getName()+"] ";
+		return ClassUtils.nameOf(this) + " ";
 	}
 
-	@IbisDoc({"name of the sender", ""})
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return false;
+	}
+
+
+	/** name of the sender */
 	@Override
 	public void setName(String name) {
 		this.name=name;

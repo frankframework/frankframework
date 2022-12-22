@@ -26,7 +26,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
  */
 public interface IWithParameters {
 
-	public void addParameter(Parameter p); 
+	public void addParameter(Parameter p);
 	public ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
 
 }

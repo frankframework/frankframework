@@ -1,0 +1,3 @@
+<parts>
+	<part name="file" type="file" filename="testFile1.txt" size="64" sessionKey="file" mimeType="text/plain" />
+</parts>

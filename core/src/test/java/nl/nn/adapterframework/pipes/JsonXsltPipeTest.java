@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
-
 import org.junit.Test;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -18,6 +17,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 
@@ -56,7 +56,7 @@ public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 	@Test
 	public void testXPath() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
-		pipe.setOutputType("text");
+		pipe.setOutputType(OutputType.TEXT);
 		pipe.setJsonResult(false);
 		pipe.configure();
 		pipe.start();

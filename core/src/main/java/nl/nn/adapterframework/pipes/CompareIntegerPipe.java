@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -32,28 +32,29 @@ import nl.nn.adapterframework.stream.Message;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Pipe that compares the two integer values read from {@link Parameter the parameters} <code>operand1</code> and <code>operand2</code>.
+ * Pipe that compares the two integer values.
  * If one of the parameters is missing then the input message will be used as the missing operand.
  * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
- * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v2</td></tr>
- * </table>
- * </p>
+ * @ff.parameter operand1 The first operand, holds v1.
+ * @ff.parameter operand2 The second operand, holds v2.
+ *
+ * @ff.forward lessthan operand1 &lt; operand2
+ * @ff.forward greaterthan operand1 &gt; operand2
+ * @ff.forward equals operand1 = operand2
+ *
  * @author     Richard Punt / Gerrit van Brakel
  */
+@Category("Basic")
+@ElementType(ElementTypes.ROUTER)
 public class CompareIntegerPipe extends AbstractPipe {
 
-	private final static String LESSTHANFORWARD = "lessthan";
-	private final static String GREATERTHANFORWARD = "greaterthan";
-	private final static String EQUALSFORWARD = "equals";
+	private static final String LESSTHANFORWARD = "lessthan";
+	private static final String GREATERTHANFORWARD = "greaterthan";
+	private static final String EQUALSFORWARD = "equals";
 
-	private final static String OPERAND1 = "operand1";
-	private final static String OPERAND2 = "operand2";
+	private static final String OPERAND1 = "operand1";
+	private static final String OPERAND2 = "operand2";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
@@ -86,7 +87,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		Integer operand1 = getOperandValue(pvl, OPERAND1, getSessionKey1(), message, session);
@@ -103,7 +104,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValue pv = pvl.getParameterValue(operandName);
+		ParameterValue pv = pvl.get(operandName);
 		Integer operand = null;
 		if(pv != null && pv.getValue() != null) {
 			operand = pv.asIntegerValue(0);
@@ -114,22 +115,28 @@ public class CompareIntegerPipe extends AbstractPipe {
 				try {
 					operand = Integer.parseInt(session.getMessage(sessionkey).asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
 				}
 			}
 			if (operand == null) {
 				try {
 					operand = new Integer(message.asString());
 				} catch (Exception e) {
-					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from input message", e);
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from input message", e);
 				}
 			}
 		}
 		return operand;
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey1()) || sessionKey.equals(getSessionKey2());
+	}
+
+
 	@Deprecated
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	/** reference to one of the session variables to be compared */
 	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
 		sessionKey1 = string;
@@ -139,7 +146,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	@Deprecated
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	/** reference to the other session variables to be compared */
 	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;

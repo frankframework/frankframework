@@ -2,25 +2,257 @@ Ibis AdapterFramework release notes
 ===================================
 
 [Tags](https://github.com/ibissource/iaf/releases)
-[JavaDocs](https://javadoc.ibissource.org/latest/)
+[JavaDocs](https://javadoc.frankframework.org/)
 
-
-
-Upcoming
---------
-
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
-
-- 'fileName' in attributes is replaced with 'filename'
+Upcoming (7.9)
+--------------
+[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...HEAD)
 
 ### Non backwards compatible changes
 
-- SoapErrorMessage is renamed to SoapErrorMessageFormatter.
-- FixedErrorMessage is renamed to FixedErrorMessageFormatter.
+- IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
+- For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports
+- Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
+- Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
+  This is in cases where a received (JMS) correlationId is used to send a response.
+- The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
+- The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
+- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by setting
+  defaultValueMethod="input".
+- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
+- Larva default timeout has been decreased to 10s, and to 2s for local tests
+
+
+7.8-RC1
+---
+[Commits](https://github.com/ibissource/iaf/compare/v7.7...v7.8-RC1)
+
+LCM dependencies (where possible)
+Generic bugfixes
+Performance enhancements
+
+- Add Message Context (#2746)
+- MicroMeter based statistics collection (#2841)
+- Add default Exit to PipeLine (#2851)
+- Add MediaTypes and Diacritic detection to Messages (#2790)
+- Fix framework util queries to be PostgreSQL compliant (#2888 + #2920)
+- Add JSON compare to Larva (#2914)
+- Display all entries of CredentialFactory at SecurityItems (#2883)
+- Introduce connection overview page (#2929)
+- Enable Narayana XA transaction management for PostgreSQL (#2949)
+- Introduce inline store overview page (#2958)
+- Refactor FlowGenerator and prepare for Mermaid flows (#3025 + #3084 + #3271)
+- Implement simple MSAL for Exchange (#3055 + #3368)
+- Catch all unhandled FF!API exceptions (#3090 + #3365)
+- Convert servlets to startup without web.xml definitions (#3096)
+- Use scenario specific correlationId in Larva (#3215)
+- Avoid problematic sysids for XPath expressions (#3234)
+- Refactor FixedResultPipe (#3181)
+- Add attribute connectionTimeToLive to HttpSenders (#3253)
+- Use build-in HTTP retry mechanism (#3281)
+- Improve PipeForward handling (#3289)
+- Support Base64 encoded attachments in WebServiceListener (#3313)
+- Add WebContent folder option to serve web content through configurations (#3317)
+- Bump Xerces-J from 2.12.1-xml-schema-1.1 to 2.12.2-xml-schema-1.1 (#3311)
+- Include hashcode for message in logging (#3332 + #3342)
+- Implement index checks for all DBMSes (#3326)
+- Allow receiver to start from status EXCEPTION_STARTING/EXCEPTION_STOPPING (#3349 + #3367)
+- Avoid ALL FILES execute permission exception when loading J2V8 (#3354)
+- Support multiple SapListeners (#3369)
+- Add WildFly docker images (#3315)
+- Fix ShadowSender (#3379)
+- Add xslt3 support as supported in Saxon HE version (#3130)
+- Enable to view log files even when application did not start properly (#3384)
+- Jakarta dependencies are used where possible, please check your dependency tree for duplicates after updating (#3405)
+- Fix editing database CRON triggers (#3522)
+- Fix default JDBC datasource as first selected entry (#3510)
+- Show JDBC connections when not configured as JmsRealm (#3505)
+- Only retry http entities when Message.isRepeatable (#3518)
+- Add option to disable JMX (#3501)
+- Allow XML to be parsed directly in Text2XmlPipe (#3532)
+- Correct waiting for no messages in process (#3552)
+- Fix MessageOutputStream transaction resume in child thread (#3561)
+- Fix Xalan racecondition (NPEs) when using lexical handlers (#3563)
+- Make MultipartXml message capable of being repeated (#3564)
+- Allow senders to provide pipe-forward hints (#3556)
+- Introduce Spring Security (#3580)
+- Add JsonValidator (#3555)
+- Disable Configuration name and version attributes (#3614)
+- Disable presumedTimeOutInterval by default (#3644)
+
+
+### Non backwards compatible changes
+
+- HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
+- WebServiceListener does no longer (simultaneously) bind to the listener-name AND address attribute.
+- Larva httpRequest parameter is no longer supported
+- Json2XmlValidator input format session key prefix changed from "Json2XmlValidator.inputformat " to "Json2XmlValidator.inputFormat " (capital F)
+- property xml.namespaceAware.default=true by default. When set to false, parsing is done via a DOM source, or namespaces are removed before XSLT transformations.
+- Parameter handling for types Node and DomDoc is namespace aware, starting from version 7.6. To remove namespaces, use set attribute removeNamespaces="true"
+- Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
+- To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
+- JsonPipe version 1 has been removed. Json to Xml conversion has slightly changed:
+  - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
+  - default array element containers are '<item>' instead of '<array>'
+  - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+- MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
+
+
+7.7
+---
+
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+
+- New FrankDoc XSD and website
+- LCM Dependencies
+  - Apache Commons Lang
+  - Apache Commons Digester
+  - Apache Commons Beanutils
+  - Apache Commons Fileupload
+  - Apache Commons IO
+  - Apache Commons Codec
+  - Apache Http Components
+  - Apache Ant
+  - Apache CXF
+  - EhCache
+  - Quartz
+  - Log4J2
+  - Spring 5
+  - Jackson JSON Provider
+- Add Narayana Transaction Manager
+- Create new Spring context per configuration
+- SoapErrorMessage has been renamed to SoapErrorMessageFormatter
+- FixedErrorMessage has been renamed to FixedErrorMessageFormatter
+- Enable validators and wrappers to forward to Exits
+- Attribute 'fileName' has been renamed to 'filename'
+- Support reading JMS bytes messages (#1733)
+- Attribute 'wildCard' has been renamed to 'wildcard'
+- Refactor Configuration and Application Warnings
+- Add log settings page
+- Add validator and wrapper statistics
+- Auto detect namedParameters in the query
+- Add plugable CredentialProviders, including FileSystemCredentialProvider/AnsibleVaultCredentialFactory
+- Fix default datasource support for JdbcTableListener
+- Refactor Monitoring
+- Support programmatic retry
+- Fix and refactor ftpSession/ftpFileSystem
+- Fix log statements with throwables
+- Enable use of Tibco JNDI
+- Deduplicate stacktraces in the log files
+- Fix Tibet2 storage when retrieving blob values
+- Add index for duplicates checks
+- Rename databaseAutoLoad property to configurations.database.autoLoad
+- Introduce special stop condition forwards to IteratingPipe
+- Add status file to Bitronix TransactionManager
+- Refactor Job Definitions
+- Add ability to find absolute resources in local ClassLoader
+- Add Json2XmlValidator ability to determine outputFormat from sessionkey
+- Refactor configuraition parsing
+- Avoid log4j2 getSource() method call
+- Remove autoreload check when autoDatabaseClassLoader is enabled
+- Add line numbers on GUI Configurations page
+- Introduce jms.lookupDestination property
+- Change adapter status to warning in case Listener connection fails
+- Deprecate PutParametersInSession pipe
+- Don't pass HttpInputStream when no content is available
+- Add JDK 11 support
+- Add link with configuration and line to configuration warnings
+
+
+### Non backwards compatible changes
+
+- IbisTester is the only role that can execute test-a-pipeline
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
-- JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
+- JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1" (deprecated)
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
+- Remove Struts management console (including the IAF-WebControl Configuration)
+- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+  It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
+- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that 
+  are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
+
+
+
+7.6.2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+
+- Fix gui log error message when more then x files (#2426)
+- Ladybug report keeps in progress while adapter is finished (#2496)
+- Remove Rownum max value upper limit when using Browse Tables (#2515)
+- Update log4j2 (CVE-2021-44228) (#2527)
+
+7.6.1
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
+
+- Do not close zip archive during processing (#2109)
+- Fix log statements with throwables (#2135)
+- Fix ByteStream readers in JsonXMLReader (#2155)
+- Add ability to filter messages by message text (#2138)
+- Fix errorstore download message action (#2200)
+- Support classpath protocol in ClassLoaderURIResolver (#2193)
+- Add index for duplicates checks (#2208)
+- Fix Tibet2 storage when retrieving blob values (#2209)
+- Fix TransformerPool initialization with different xslt versions in XmlSwitch pipe (#2221)
+- Use configured success forward in DirectWrapperPipe (#2229)
+- Skip forward path validation if there is no pipeline (#2239)
+- JmsFacade send Message properties as String (#2241)
+- Add ability to find absolute resources in local ClassLoader (#2253)
+- Avoid log4j2 getSource() method call (#2339)
+- Fix migrator resources being found in other classloaders (#2342)
+- Remove autoreload check when autoDatabaseClassLoader is enabled (#2362)
+- Escape URL in GUI logging page (#2370)
+- Fix tiff file conversion (Aspose) (#2371)
+- Fix incompatible types for the inputstream parameters (#2368)
+
+
+7.6
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...v7.6)
+
+- Add writeLineSeparator attribute to FileSystemPipe (#1916)
+- Fix exception pipe should to not follow exception forward (#1913)
+- Fix Single item combined blocks handling (#1928)
+- Fix ForEachChildElementPipe exception handling (#1956)
+- Only append FF! version to API endpoints when it's a HTML file (#1961)
+- Fix FTP filesystem (#1971)
+- Add charset attribute for the filesystems (#1945)
+- Browse messages from external jdbc errorStorage (#2000)
+- Add option to use ServerFileName as the filename to FxfWrapperPipe (#2019)
+- Throw exception when unable to load Promise.JS (#2037)
+- Skip ACL when no user or empty username is found (#2062)
+
+
+7.6-RC2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...v7.6-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC2)](https://travis-ci.org/ibissource/iaf)
+
+- Reduce debug logging and fix JBoss project names (#1592)
+- Fix 'Move to InProcess' in transaction (#1603)
+- Avoid recursion explosion in IbisException.getMessage() (#1623)
+- Do not canonicalize SenderPipe to GenericMesageSendingPipe (#1631)
+- Fix bytearray support for SOAPProviderBase (#1682)
+- Skip proprietary projects when building external PRs (#1642 + #1646)
+- Fix Out of memory using maxConcurrentThreads in ParallelSenders (#1688)
+- Fix IOException in UnzipPip when collectFileContents=true (#1678)
+- Fix NPE on Exit with empty=true (#1679)
+- Make filenames mandatory in onCompletedTransferNotify (#1665)
+- Enable validators and wrappers to forward to Exits (#1695)
+- Fix 'resend message' for JdbcListeners browsed wrong message (#1732)
+- Fix Http Streams not always closed (#1741)
+- JdbcTableListener must specify statusValueError (#1754)
+- Backport Docker changes to 7.6 (#1781)
+- Fix calculating root validations from message root attributes (#1799)
+- Backport closeOnExit mechanism + message.toString() (#1806)
+- Add validator and wrapper statistics 7.6 (#1858)
+- Throw Exception when JmsRealm cannot be found (#1857)
+- Show error warning only when server in state error (#1860)
+- Trim columnsReturned in FixedQuerySender (#1870)
+
+
+
 
 7.6-RC1
 --------
@@ -70,6 +302,7 @@ Upcoming
 
 ### Breaking changes
 
+- If a DSRA9110E (ObjectClosedException) is encountered see issue #2015 (DSRA9110E: ResultSet is closed)
 - It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it was required to override a file, do not forget to update the changes when upgrading the framework version! It is a good practice to keep the `.orig` suffixed original file also in the project to understand what change have been made. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult the Frank!Framework Team.
 
 7.5

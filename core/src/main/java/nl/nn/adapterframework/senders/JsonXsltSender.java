@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.IOException;
+import java.util.function.BiConsumer;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,13 +30,15 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlHandler;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlReader;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlJsonWriter;
 import nl.nn.adapterframework.xml.IXmlDebugger;
 
@@ -41,13 +46,9 @@ import nl.nn.adapterframework.xml.IXmlDebugger;
  * Perform an XSLT transformation with a specified stylesheet on a JSON input, yielding JSON, yielding JSON, XML or text.
  * JSON input is transformed into XML map, array, string, integer and boolean elements, in the namespace http://www.w3.org/2013/XSL/json.
  * The XSLT stylesheet or XPathExpression operates on these element.
- * 
+ *
  * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 
@@ -66,36 +67,49 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("sender [{}] cannot provide outputstream", () -> getName());
+			return null;
+		}
+		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ContentHandler handler = createHandler(null, session, target);
-		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session);
+		try {
+			TransformerPool poolToUse = getTransformerPoolToUse(session);
+			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
+			JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
+			return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
+		} catch (SenderException | ConfigurationException | IOException e) {
+			throw new StreamingException(e);
+		}
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, session, target);
+			return super.createHandler(input, threadConnector, session, poolToUse, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session);
-		ContentHandler handler = super.createHandler(input, session, prev);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
+		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);
+			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
 		}
 		return handler;
 	}
 
 
 	@Override
-	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "JSON converted to XML", handler);
+			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler, closeOnCloseRegister);
 		}
 		return new JsonXslt3XmlReader(handler);
 	}
 
-	@IbisDoc({"1", "When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	/**
+	 * When <code>true</code>, the xml result of the transformation is converted back to json
+	 * @ff.default true
+	 */
 	public void setJsonResult(boolean jsonResult) {
 		this.jsonResult = jsonResult;
 	}
@@ -104,7 +118,10 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	@IbisDoc({"2", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	/**
+	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 * @ff.default j=http://www.w3.org/2013/XSL/json
+	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

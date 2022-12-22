@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,13 +24,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.util.Misc;
 
@@ -42,18 +45,6 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Override
 	public Base64Pipe createPipe() {
 		return new Base64Pipe();
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void noDirection() throws ConfigurationException {
-		pipe.setDirection("");
-		pipe.configure();
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void wrongDirection() throws ConfigurationException {
-		pipe.setDirection("not encode");
-		pipe.configure();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -74,7 +65,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test(expected = Exception.class)
 	public void wrongOutputEncoding() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
 		pipe.setCharset("test123");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -88,18 +79,40 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 		pipe.start();
 		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
 		Message in = new Message(inputString); //Saving it with a different charset
-		System.out.println();
+
 		PipeRunResult encodeResult = doPipe(pipe, in, session); //Base64Pipe still works and does as told (convert a string with an incompatible charset)
 
 		assertEquals("Test120/iYych1R6ZERFeU10MTIwPQ==", encodeResult.getResult().asString().trim()); //Unreadable base64 string
 	}
-	
+
 	@Test
-	public void wrongCharsetDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setDirection("decode");
+	public void wrongCharsetShouldNotBeUsed() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setCharset("ISO-8859-1"); //Should be ignored
 		pipe.configure();
 		pipe.start();
-		
+
+		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		byte[] inputBytes = utf8Input.getBytes("UTF-8"); //String containing utf-8 characters
+		Message in = new Message(inputBytes, "auto"); //Saving it with a different charset
+
+		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
+		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
+
+		Message result = doPipe(pipe, in, session).getResult();
+
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
+
+		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
+		assertEquals(utf8Input, Misc.streamToString(decodedResult));
+
+	}
+
+	@Test
+	public void wrongCharsetDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setDirection(Direction.DECODE);
+		pipe.configure();
+		pipe.start();
+
 		String encodedString = "Test120/iYych1R6ZERFeU10MTIwPQ==";
 		byte[] expected = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
 
@@ -117,16 +130,15 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", encodeResult.getResult().asString().trim());
 	}
-	
+
 	@Test
 	public void correctDecoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
-		
+
 		String encodedString = "TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9";
 		String decodedString = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		byte[] decodedBytes = decodedString.getBytes("UTF-8");
 
 		PipeRunResult decodeResult = doPipe(encodedString);
 		Message result = decodeResult.getResult();
@@ -161,7 +173,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void decodeConvert2StringTrue() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setConvert2String(true);
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -174,7 +186,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void decodeConvert2StringFalse() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setConvert2String(false);
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -302,7 +314,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStringOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -315,7 +327,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStringOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -328,7 +340,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStringOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -341,7 +353,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputBytesOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -354,7 +366,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputBytesOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -367,7 +379,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputBytesOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -380,7 +392,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStreamOutputStringDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("string");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -393,7 +405,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStreamOutputBytesDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("bytes");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 
@@ -407,7 +419,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 	@Test
 	public void inputStreamOutputStreamDecode() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setOutputType("stream");
-		pipe.setDirection("decode");
+		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();
 

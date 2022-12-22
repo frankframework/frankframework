@@ -1,7 +1,0 @@
-POST / HTTP/1.1
-SOAPAction: http://127.0.0.1/
-Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
-custom-header: value
-Content-Type: text/xml; charset=UTF-8
-
-<hallo/>

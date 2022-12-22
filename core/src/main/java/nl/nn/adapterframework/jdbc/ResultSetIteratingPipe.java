@@ -16,32 +16,49 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * Pipe that iterates over rows in in ResultSet.
  *
  * Each row is send passed to the sender in the same format a row is usually returned from a query.
  *
- * <p><b>Configuration </b><i>(where deviating from IteratingPipe)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.JdbcIteratingPipeBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
- * <tr><td>{@link #setLockWait(int) lockWait}</td><td>when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'</td><td>-1</td></tr>
- * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * @author  Gerrit van Brakel
  * @since   4.7
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
+
+	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		try(Connection connection=querySender.getConnection()){
+			DatabaseMetaData md = connection.getMetaData();
+			if (!suppressResultSetHoldabilityWarning && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+				// For (some?) combinations of WebSphere and (XA) Databases this seems to be the default and result in the following exception:
+				// com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
+				// When a ResultSetIteratingPipe is calling next() on the ResultSet after processing the first message it will throw the exception when:
+				// - the ResultSetIteratingPipe is non-transacted and the sender calls a sub-adapter that is transacted (transactionAttribute="Required")
+				// - the ResultSetIteratingPipe is transacted and sender contains a non transacted sender (transactionAttribute="NotSupported")
+				// Either none, or both need to be transacted.
+				// See issue #2015 ((ObjectClosedException) DSRA9110E: ResultSet is closed) on www.github.com
+				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT). This may cause 'DSRA9110E: ResultSet is closed' error on WebSphere if the subadapter has a different transactionality than the main adapter.");
+			}
+		} catch (JdbcException | SQLException e) {
+			log.warn("Exception determining databaseinfo",e);
+		}
+	}
 
 	@Override
 	protected IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException {

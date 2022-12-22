@@ -17,21 +17,21 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 /**
- * Methods for Receivers to supply statistics to a maintenance clients. Receivers indicate 
- * by implementing this interface that process- and idle statistics may be available for 
+ * Methods for Receivers to supply statistics to a maintenance clients. Receivers indicate
+ * by implementing this interface that process- and idle statistics may be available for
  * displaying.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public interface IReceiverStatistics  {
 	/**
-	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
+	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting between messages.
 	 */
 	Iterable<StatisticsKeeper> getIdleStatistics();
-	
+
 	/**
-	 * @return an iterator of {@link nl.nn.adapterframework.statistics.StatisticsKeeper}s describing the durations of time that
+	 * @return an iterator of {@link StatisticsKeeper}s describing the durations of time that
 	 * the receiver has been waiting for the adapter to process messages.
 	 */
 	Iterable<StatisticsKeeper> getProcessStatistics();

@@ -47,12 +47,12 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 	private String hostname;
 	private String sourceId;
 	private String dtapStage;
-	
+
 	private SimpleDateFormat dateTimeFormatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	public GalmMonitorAdapter() throws ConfigurationException {
 		super();
-		configure(); 
+		configure();
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 				char c=sourceId.charAt(i);
 				if (Character.isLetterOrDigit(c)||c=='_') {
 					replacement.append(c);
-				} else { 
+				} else {
 					replacement.append('_');
 					replacementsMade=true;
 				}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -42,10 +42,8 @@ public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
 
 	private BindingTypes bindingType = null;
-	/**
-	 * 'atompub', 'webservices' or 'browser'
-	 */
-	private enum BindingTypes {
+
+	public enum BindingTypes {
 		ATOMPUB, WEBSERVICES, BROWSER;
 	}
 
@@ -61,15 +59,18 @@ public class CmisSessionBuilder {
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname = true;
 	private boolean ignoreCertificateExpiredException = false;
-	private String certificate = null;
-	private String certificateAuthAlias = null;
-	private String certificatePassword = null;
+	private String keystore = null;
+	private String keystoreAuthAlias = null;
+	private String keystorePassword = null;
+	private String keystoreAlias = null;
+	private String keystoreAliasAuthAlias = null;
+	private String keystoreAliasPassword = null;
 	private String truststore = null;
 	private String truststoreAuthAlias = null;
 	private String truststorePassword = null;
-	private String keystoreType = "pkcs12";
+	private KeystoreType keystoreType = KeystoreType.PKCS12;
 	private String keyManagerAlgorithm = "PKIX";
-	private String truststoreType = "jks";
+	private KeystoreType truststoreType = KeystoreType.JKS;
 	private String trustManagerAlgorithm = "PKIX";
 
 	/** PROXY **/
@@ -79,8 +80,8 @@ public class CmisSessionBuilder {
 	private String proxyUserName;
 	private String proxyPassword;
 
-	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
-	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
+	public static final String OVERRIDE_WSDL_URL = "http://fake.url";
+	public static final String OVERRIDE_WSDL_KEY = "override_wsdl_key";
 	private String overrideEntryPointWSDL;
 
 	private IScopeProvider scopeProvider = null;
@@ -112,7 +113,7 @@ public class CmisSessionBuilder {
 
 	/**
 	 * @param userName to connect or empty when no username
-	 * @param password 
+	 * @param password
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
@@ -186,17 +187,22 @@ public class CmisSessionBuilder {
 		parameterMap.setRepositoryId(repository);
 
 		//SSL
-		if (certificate!=null || truststore!=null || allowSelfSignedCertificates) {
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			CredentialFactory truststoreCf  = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
+			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
+							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
+							: keystoreCf;
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
-			parameterMap.put("certificateUrl", certificate);
-			parameterMap.put("certificatePassword", certificateCf.getPassword());
-			parameterMap.put("keystoreType", keystoreType);
+			parameterMap.put("keystoreUrl", keystore);
+			parameterMap.put("keystorePassword", keystoreCf.getPassword());
+			parameterMap.put("keystoreType", keystoreType.name());
+			parameterMap.put("keystoreAlias", keystoreAlias);
+			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
 			parameterMap.put("keyManagerAlgorithm", keyManagerAlgorithm);
 			parameterMap.put("truststoreUrl", truststore);
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
-			parameterMap.put("truststoreType", truststoreType);
+			parameterMap.put("truststoreType", truststoreType.name());
 			parameterMap.put("trustManagerAlgorithm", trustManagerAlgorithm);
 		}
 
@@ -248,54 +254,23 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+	public CmisSessionBuilder setKeystore(String string) {
+		keystore = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setVerifyHostname(boolean verifyHostname) {
-		this.verifyHostname = verifyHostname;
+	public CmisSessionBuilder setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 		return this;
 	}
 
-	public CmisSessionBuilder setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		this.ignoreCertificateExpiredException = ignoreCertificateExpiredException;
+	public CmisSessionBuilder setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setCertificateUrl(String certificate) {
-		this.certificate = certificate;
-		return this;
-	}
-
-	public CmisSessionBuilder setCertificateAuthAlias(String certificateAuthAlias) {
-		this.certificateAuthAlias = certificateAuthAlias;
-		return this;
-	}
-
-
-	public CmisSessionBuilder setCertificatePassword(String certificatePassword) {
-		this.certificatePassword = certificatePassword;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststore(String truststore) {
-		this.truststore = truststore;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststoreAuthAlias(String truststoreAuthAlias) {
-		this.truststoreAuthAlias = truststoreAuthAlias;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststorePassword(String truststorePassword) {
-		this.truststorePassword = truststorePassword;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystoreType(String keystoreType) {
-		this.keystoreType = keystoreType;
+	public CmisSessionBuilder setKeystorePassword(String string) {
+		keystorePassword = string;
 		return this;
 	}
 
@@ -304,13 +279,56 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setTruststoreType(String truststoreType) {
-		this.truststoreType = truststoreType;
+	public CmisSessionBuilder setKeystoreAlias(String string) {
+		keystoreAlias = string;
+		return this;
+	}
+	public CmisSessionBuilder setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+		return this;
+	}
+	public CmisSessionBuilder setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
-		this.trustManagerAlgorithm = getTrustManagerAlgorithm;
+	public CmisSessionBuilder setTruststore(String string) {
+		truststore = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststoreAuthAlias(String string) {
+		truststoreAuthAlias = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststorePassword(String string) {
+		truststorePassword = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststoreType(KeystoreType value) {
+		truststoreType = value;
+		return this;
+	}
+
+	public CmisSessionBuilder setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		this.trustManagerAlgorithm = trustManagerAlgorithm;
+		return this;
+	}
+
+	public CmisSessionBuilder setVerifyHostname(boolean b) {
+		verifyHostname = b;
+		return this;
+	}
+
+	public CmisSessionBuilder setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+		return this;
+	}
+
+	public CmisSessionBuilder setIgnoreCertificateExpiredException(boolean b) {
+		ignoreCertificateExpiredException = b;
 		return this;
 	}
 
@@ -373,9 +391,8 @@ public class CmisSessionBuilder {
 	/**
 	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
-	public CmisSessionBuilder setBindingType(String bindingType) {
-		this.bindingType = EnumUtils.parse(BindingTypes.class, bindingType);
-
+	public CmisSessionBuilder setBindingType(BindingTypes bindingType) {
+		this.bindingType = bindingType;
 		return this;
 	}
 
@@ -413,5 +430,54 @@ public class CmisSessionBuilder {
 				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
+	}
+
+	public String getKeystore() {
+		return keystore;
+	}
+	public KeystoreType getKeystoreType() {
+		return keystoreType;
+	}
+	public String getKeystoreAuthAlias() {
+		return keystoreAuthAlias;
+	}
+	public String getKeystorePassword() {
+		return keystorePassword;
+	}
+	public String getKeystoreAlias() {
+		return keystoreAlias;
+	}
+	public String getKeystoreAliasAuthAlias() {
+		return keystoreAliasAuthAlias;
+	}
+	public String getKeystoreAliasPassword() {
+		return keystoreAliasPassword;
+	}
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+	public String getTruststore() {
+		return truststore;
+	}
+	public KeystoreType getTruststoreType() {
+		return truststoreType;
+	}
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+	public String getTruststorePassword() {
+		return truststorePassword;
+	}
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+	public boolean isIgnoreCertificateExpiredException() {
+		return ignoreCertificateExpiredException;
 	}
 }

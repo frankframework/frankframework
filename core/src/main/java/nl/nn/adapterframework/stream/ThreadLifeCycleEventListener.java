@@ -19,8 +19,8 @@ public interface ThreadLifeCycleEventListener<T> {
 
 	public T announceChildThread(Object owner, String correlationId);
 	public void cancelChildThread(T ref);
-	public Object threadCreated(T ref, Object request);
-	public Object threadEnded(T ref, Object result);
+	public <O> O threadCreated(T ref, O request);
+	public <O> O threadEnded(T ref, O result);
 	public Throwable threadAborted(T ref, Throwable t);
-	
+
 }

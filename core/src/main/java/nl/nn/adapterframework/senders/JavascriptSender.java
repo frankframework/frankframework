@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
@@ -36,32 +38,33 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Sender used to run javascript code using J2V8 or Rhino
- * 
+ *
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
- * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method, 
+ * The sender doesn't accept nor uses the given input, instead for each argument for the {@link #jsFunctionName} method,
  * you will need to create a parameter on the sender.
- * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be 
+ * It is recommended to have the result of the javascript function be of type String, as the output of the sender will be
  * of type String.
- * 
+ *
  * @author Jarno Huibers
  * @since 7.4
  */
 
+@Category("Advanced")
 public class JavascriptSender extends SenderSeries {
 
-	private String fileInput;
-	private String jsFileName;
-	private String jsFunctionName = "main";
+	private @Getter String jsFileName;
+	private @Getter String jsFunctionName = "main";
+	private @Getter JavaScriptEngines engine = JavaScriptEngines.J2V8;
 
 	/** ES6's let/const declaration Pattern. */
 	private Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
-	private JavaScriptEngines engine = JavaScriptEngines.J2V8;
+
+	private String fileInput;
 
 	public enum JavaScriptEngines {
 		J2V8(J2V8.class), NASHORN(Nashorn.class), RHINO(Rhino.class);
@@ -101,18 +104,18 @@ public class JavascriptSender extends SenderSeries {
 				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
 			}
 		}
-		if (StringUtils.isEmpty(fileInput)) { 
+		if (StringUtils.isEmpty(fileInput)) {
 			// No input from file or input string. Only from session-keys?
 			throw new SenderException(getLogPrefix() + "has neither fileName nor inputString specified");
 		}
-		if (StringUtils.isEmpty(jsFunctionName)) { 
+		if (StringUtils.isEmpty(jsFunctionName)) {
 			// Cannot run the code in factory without any function start point
 			throw new SenderException(getLogPrefix() + "JavaScript FunctionName not specified!");
 		}
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 
 		Object jsResult = "";
 		int numberOfParameters = 0;
@@ -166,14 +169,13 @@ public class JavascriptSender extends SenderSeries {
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
 		String result = String.valueOf(jsResult);
 		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
-			return Message.nullMessage();
-		} else {
-			return new Message(result);
+			return new SenderResult(Message.nullMessage());
 		}
+		return new SenderResult(result);
 	}
 
 	/**
-	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given 
+	 * Since neither engine supports the ES6's "const" or "let" literals. This method adapts the given
 	 * helper source written in ES6 to work (by converting let/const to var).
 	 *
 	 * @param source the helper source.
@@ -190,27 +192,24 @@ public class JavascriptSender extends SenderSeries {
 		return m.appendTail(sb).toString();
 	}
 
-	@IbisDoc({"the name of the javascript file containing the functions to run", ""})
+	/** the name of the javascript file containing the functions to run */
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-	public String getJsFileName() {
-		return jsFileName;
-	}
 
-	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
+	/**
+	 * the name of the javascript function that will be called (first)
+	 * @ff.default main
+	 */
 	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
-	public String getJsFunctionName() {
-		return jsFunctionName;
-	}
 
-	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
-	public void setEngineName(String engineName) {
-		this.engine = EnumUtils.parse(JavaScriptEngines.class, engineName);
-	}
-	public JavaScriptEngines getEngineEnum() {
-		return engine;
+	/**
+	 * the name of the javascript engine to be used
+	 * @ff.default J2V8
+	 */
+	public void setEngineName(JavaScriptEngines engineName) {
+		this.engine = engineName;
 	}
 }

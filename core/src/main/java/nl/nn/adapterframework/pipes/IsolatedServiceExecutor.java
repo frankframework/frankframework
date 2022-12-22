@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.util.HashMap;
-
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
@@ -28,17 +29,17 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
-	String serviceName; 
-	HashMap context;
+	String serviceName;
+	PipeLineSession session;
 	boolean targetIsJavaListener;
 	Guard guard;
-	
-	public IsolatedServiceExecutor(String serviceName, String correlationID, Message message, HashMap context, boolean targetIsJavaListener, Guard guard) {
+
+	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
 		super();
 		this.serviceName=serviceName;
-		this.correlationID=correlationID;
+		this.correlationID=session.getCorrelationId();
 		request=message;
-		this.context=context;
+		this.session=session;
 		this.targetIsJavaListener=targetIsJavaListener;
 		this.guard=guard;
 	}
@@ -47,14 +48,15 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	public void run() {
 		try {
 			if (targetIsJavaListener) {
-				reply = new Message(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), context));
+				reply = new SenderResult(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session));
 			} else {
-				reply = new Message(ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request.asString(), context));
+				reply = new SenderResult(ServiceDispatcher.getInstance().dispatchRequest(serviceName, request.asString(), session));
 			}
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable=t;
 		} finally {
+			ThreadContext.clearAll();
 			if (guard != null) {
 				guard.releaseResource();
 			}

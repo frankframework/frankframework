@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,33 +21,34 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import nl.nn.adapterframework.core.ISecurityHandler;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
- * 
+ *
  * @author  Gerrit van Brakel
  */
-public class RestListenerServlet extends HttpServlet {
+@IbisInitializer
+public class RestListenerServlet extends HttpServletBase {
 	protected Logger log=LogUtil.getLogger(this);
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-	
+
 	private RestServiceDispatcher sd=null;
-	
+
 	@Override
 	public void init() throws ServletException {
 		super.init();
@@ -55,14 +56,14 @@ public class RestListenerServlet extends HttpServlet {
 			sd= RestServiceDispatcher.getInstance();
 		}
 	}
-	
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+
 		String path=request.getPathInfo();
 		String restPath=request.getServletPath();
 		String body = "";
-		
+
 		if(restPath.contains("rest-public")) {
 			response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 			String headers = request.getHeader("Access-Control-Request-Headers");
@@ -72,9 +73,9 @@ public class RestListenerServlet extends HttpServlet {
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
-				Map methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
+				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
 				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
-					Iterator iter = sd.getAvailableMethods(pattern).iterator();
+					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
 					StringBuilder sb = new StringBuilder();
 					sb.append("OPTIONS"); //Append preflight OPTIONS request
 					while (iter.hasNext()) {
@@ -96,14 +97,14 @@ public class RestListenerServlet extends HttpServlet {
 		String contentType=request.getHeader("accept");
 
 		if (log.isTraceEnabled()) log.trace("path ["+path+"] If-Match ["+ifMatch+"] If-None-Match ["+ifNoneMatch+"] contentType ["+contentType+"]");
-		
+
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
-			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
-	
-			Enumeration paramnames=request.getParameterNames();
+			messageContext.setSecurityHandler(securityHandler);
+
+			Enumeration<String> paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
-				String paramname = (String)paramnames.nextElement();
+				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
@@ -114,29 +115,28 @@ public class RestListenerServlet extends HttpServlet {
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");
 				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
-	
-				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
-					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
+
+				if(result == null && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
+					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 					response.setStatus(status);
-					//TODO: overbodig?
-					if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
+					log.trace("aborted request with status [{}]", status);
 					return;
 				}
-	
+
 				String etag=(String)messageContext.get("etag");
 				if (StringUtils.isNotEmpty(etag))
 					response.setHeader("etag", etag);
-	
+
 				int statusCode = 0;
-				if(messageContext.containsKey("exitcode"))
-					statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
+					statusCode = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 				if(statusCode > 0)
 					response.setStatus(statusCode);
-	
+
 				if (StringUtils.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=(String)messageContext.get("contentType");
+					contentType=messageContext.getMessage("contentType").asString();
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}
@@ -161,5 +161,15 @@ public class RestListenerServlet extends HttpServlet {
 				}
 			}
 		}
+	}
+
+	@Override
+	public String getUrlMapping() {
+		return "/rest/*";
+	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return ALL_IBIS_USER_ROLES;
 	}
 }

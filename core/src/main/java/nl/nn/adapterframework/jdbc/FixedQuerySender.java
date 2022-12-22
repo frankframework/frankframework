@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,35 +19,32 @@ import java.sql.Connection;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DB2XMLWriter;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * </p>
- * 
- * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
- * 
+ *
+ * <p><b>NOTE:</b> See {@link DB2XMLWriter} for Resultset!</p>
+ *
+ * @ff.parameters All parameters present are applied to the query to be executed.
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
-	private String query=null;
-	private int batchSize;
+	private @Getter String query=null;
+	private @Getter int batchSize;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -56,8 +53,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			throw new ConfigurationException(getLogPrefix()+"query must be specified");
 		}
 	}
-		
-	
+
 	@Override
 	protected String getQuery(Message message) {
 		return getQuery();
@@ -65,13 +61,14 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	protected boolean canProvideOutputStream() {
-		return getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
-				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey());
+		return (getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
+				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey()))
+				&& (getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution());
 	}
 
 
 	@Override
-	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeOutException {
+	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
 			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
@@ -100,7 +97,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			} finally {
 				try {
 					closeConnectionForSendMessage(blockHandle.getConnection(), session);
-				} catch (JdbcException | TimeOutException e) {
+				} catch (JdbcException | TimeoutException e) {
 					throw new SenderException("cannot close connection", e);
 				}
 			}
@@ -120,13 +117,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeOutException {
-		return executeStatementSet(blockHandle, message, session, null).getResult();
+	public SenderResult sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return new SenderResult(executeStatementSet(blockHandle, message, session, null).getResult());
 	}
 
 	@Override
 	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		QueryExecutionContext blockHandle = openBlock(session);
 		try {
 			return executeStatementSet(blockHandle, message, session, next);
@@ -136,26 +133,23 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
 	}
 
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called", ""})
+	/** The SQL query text to be excecuted each time sendMessage() is called
+	 * @ff.mandatory
+	 */
 	public void setQuery(String query) {
 		this.query = query;
 	}
-	public String getQuery() {
-		return query;
-	}
 
-	@IbisDoc({"2", "When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.", "0"})
+	/** When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.
+	  * @ff.default 0
+	  */
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
-	}
-	@Override
-	public int getBatchSize() {
-		return batchSize;
 	}
 
 }

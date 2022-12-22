@@ -1,130 +1,67 @@
-<!DOCTYPE configuration [
-	<!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
-	<!ENTITY Batch SYSTEM "./ConfigurationBatch.xml">
-	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
-	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
-	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
-	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
-	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
-	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
-	<!ENTITY Exits SYSTEM "./ConfigurationExits.xml">
-	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
-	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
-	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
-	<!ENTITY CompareXmlStringPipe SYSTEM "./ConfigurationCompareXmlStringPipe.xml">
-	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
-	<!ENTITY ClobAndBlob SYSTEM "./ConfigurationClobAndBlob.xml">
-	<!ENTITY BigClobAndBlob SYSTEM "./ConfigurationBigClobAndBlob.xml">
-	<!ENTITY MongoDbSender SYSTEM "./ConfigurationMongoDbSender.xml">
-	<!ENTITY BatchFileTransformerPipe SYSTEM "./ConfigurationBatchFileTransformerPipe.xml">
-	<!ENTITY IfsaRequesterSender SYSTEM "./ConfigurationIfsaRequesterSender.xml">
-	<!ENTITY LinkMethodMessageId SYSTEM "./ConfigurationLinkMethodMessageId.xml">
-	<!ENTITY ReturnedSessionKeys SYSTEM "./ConfigurationReturnedSessionKeys.xml">
-	<!ENTITY XsltPipe SYSTEM "./ConfigurationXsltPipe.xml">
-	<!ENTITY RemoveFromSession SYSTEM "./ConfigurationRemoveFromSession.xml">
-	<!ENTITY Senders SYSTEM "./ConfigurationSenders.xml">
-	<!ENTITY Base64Pipe SYSTEM "./ConfigurationBase64Pipe.xml">
-	<!ENTITY IfsaProviderListener SYSTEM "./ConfigurationIfsaProviderListener.xml">
-	<!ENTITY FilePipe SYSTEM "./ConfigurationFilePipe.xml">
-	<!ENTITY MoveFilePipe SYSTEM "./ConfigurationMoveFilePipe.xml">
-	<!ENTITY StringResolver SYSTEM "./ConfigurationStringResolver.xml">
-	<!ENTITY CorrelationMessageId SYSTEM "./ConfigurationCorrelationMessageId.xml">
-	<!ENTITY XmlBuilderThreadSafety SYSTEM "./ConfigurationXmlBuilderThreadSafety.xml">
-	<!ENTITY DelayPipe SYSTEM "./ConfigurationDelayPipe.xml">
-	<!ENTITY SenderPipe SYSTEM "./ConfigurationSenderPipe.xml">
-	<!ENTITY XmlValidator SYSTEM "./ConfigurationXmlValidator.xml">
-	<!ENTITY SoapWrapperPipe SYSTEM "./ConfigurationSoapWrapperPipe.xml">
-	<!ENTITY EsbSoapWrapperPipe SYSTEM "./ConfigurationEsbSoapWrapperPipe.xml">
-	<!ENTITY ForEachChildElementPipe SYSTEM "./ConfigurationForEachChildElementPipe.xml">
-	<!ENTITY ResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
-	<!ENTITY InputOutputWrapper SYSTEM "./ConfigurationInputOutputWrapper.xml">
-	<!ENTITY OutputStreaming SYSTEM "./ConfigurationOutputStreaming.xml">
-	<!ENTITY EsbSoapValidator SYSTEM "./ConfigurationEsbSoapValidator.xml">
-	<!ENTITY WsdlGeneratorPipe SYSTEM "./ConfigurationWsdlGeneratorPipe.xml">
-	<!ENTITY FxF3 SYSTEM "./ConfigurationFxF3.xml">
-	<!ENTITY Locker SYSTEM "./ConfigurationLocker.xml">
-	<!ENTITY XmlFileElementIteratorPipe SYSTEM "./ConfigurationXmlFileElementIteratorPipe.xml">
-	<!ENTITY CompactMessage SYSTEM "./ConfigurationCompactMessage.xml">
-	<!ENTITY ResultSet2FileSender SYSTEM "./ConfigurationResultSet2FileSender.xml">
-	<!ENTITY WsdlXmlValidator SYSTEM "./ConfigurationWsdlXmlValidator.xml">
-	<!ENTITY Text2Xml SYSTEM "./ConfigurationText2Xml.xml">
-	<!ENTITY JsonPipe SYSTEM "./ConfigurationJsonPipe.xml">
-	<!ENTITY MultipleSessionKeys SYSTEM "./ConfigurationMultipleSessionKeys.xml">
-	<!ENTITY CreateLargeFile SYSTEM "./ConfigurationCreateLargeFile.xml">
-	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
-	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
-	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
-	<!ENTITY Receivers SYSTEM "./ConfigurationReceivers.xml">
-	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
-	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
-	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
-	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
-	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
-	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
-	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
-]>
-<configuration name="MainConfig">
-	&Authentication;
-	&Batch;
-	&Cache;
-	&Checksum;
-	&Zip;
-	&ErrorMessageFormatter;
-	&ExceptionPipe;
-	&ExchangeMail;
-	&Exits;
-	&ReplacerPipe;
-	&ReplaceInputAndPreserve;
-	&CompareStringPipe;
-	&CompareXmlStringPipe;
-	&QuerySender;
-	&ClobAndBlob;
-	&BigClobAndBlob;
-	&BatchFileTransformerPipe;
-	&MongoDbSender;
-	&IfsaRequesterSender;
-	&LinkMethodMessageId;
-	&ReturnedSessionKeys;
-	&XsltPipe;
-	&RemoveFromSession;
-	&Senders;
-	&Base64Pipe;
-	&IfsaProviderListener;
-	&FilePipe;
-	&MoveFilePipe;
-	&StringResolver;
-	&CorrelationMessageId;
-	&XmlBuilderThreadSafety;
-	&DelayPipe;
-	&SenderPipe;
-	&XmlValidator;
-	&SoapWrapperPipe;
-	&EsbSoapWrapperPipe;
-	&ForEachChildElementPipe;
-	&ResultSetIteratingPipe;
-	&InputOutputWrapper;
-	&OutputStreaming;
-	&EsbSoapValidator;
-	&WsdlGeneratorPipe;
-	&FxF3;
-	&Locker;
-	&XmlFileElementIteratorPipe;
-	&CompactMessage;
-	&ResultSet2FileSender;
-	&WsdlXmlValidator;
-	&Text2Xml;
-	&JsonPipe;
-	&MultipleSessionKeys;
-	&CreateLargeFile;
-	&MemoryLeak; 
-	&Javascript;
-	&Parameters;
-	&Receivers;
-	&MessageStore;
-	&MessageStorePeek;
-	&BlockEnabledSenders;
-	&Validators;
-	&Streaming;
-	&ApiWsdlGenerator;
-	&Unzip;
-</configuration>
+<Configuration>
+	<Include ref="ConfigurationAuthentication.xml"/>
+	<Include ref="ConfigurationBatch.xml"/>
+	<Include ref="ConfigurationCache.xml"/>
+	<Include ref="ConfigurationChecksum.xml"/>
+	<Include ref="ConfigurationZip.xml"/>
+	<Include ref="ConfigurationEcho.xml"/>
+	<Include ref="ConfigurationErrorMessageFormatter.xml"/>
+	<Include ref="ConfigurationExceptionPipe.xml"/>
+	<Include ref="ConfigurationExchangeMail.xml"/>
+	<Include ref="ConfigurationExits.xml"/>
+	<Include ref="ConfigurationReplacerPipe.xml"/>
+	<Include ref="ConfigurationReplaceInputAndPreserve.xml"/>
+	<Include ref="ConfigurationForwardNameProvidingSenders.xml"/>
+	<Include ref="ConfigurationCompareStringPipe.xml"/>
+	<Include ref="ConfigurationCompareXmlStringPipe.xml"/>
+	<Include ref="ConfigurationQuerySender.xml"/>
+	<Include ref="ConfigurationClobAndBlob.xml"/>
+	<Include ref="ConfigurationBigClobAndBlob.xml"/>
+	<Include ref="ConfigurationMongoDbSender.xml"/>
+	<Include ref="ConfigurationBatchFileTransformerPipe.xml"/>
+	<Include ref="ConfigurationIfsaRequesterSender.xml"/>
+	<Include ref="ConfigurationLinkMethodMessageId.xml"/>
+	<Include ref="ConfigurationReturnedSessionKeys.xml"/>
+	<Include ref="ConfigurationXsltPipe.xml"/>
+	<Include ref="ConfigurationRemoveFromSession.xml"/>
+	<Include ref="ConfigurationSenders.xml"/>
+	<Include ref="ConfigurationBase64Pipe.xml"/>
+	<Include ref="ConfigurationIfsaProviderListener.xml"/>
+	<Include ref="ConfigurationFilePipe.xml"/>
+	<Include ref="ConfigurationMoveFilePipe.xml"/>
+	<Include ref="ConfigurationStringResolver.xml"/>
+	<Include ref="ConfigurationCorrelationMessageId.xml"/>
+	<Include ref="ConfigurationXmlBuilderThreadSafety.xml"/>
+	<Include ref="ConfigurationDelayPipe.xml"/>
+	<Include ref="ConfigurationSenderPipe.xml"/>
+	<Include ref="ConfigurationXmlValidator.xml"/>
+	<Include ref="ConfigurationSoapWrapperPipe.xml"/>
+	<Include ref="ConfigurationEsbSoapWrapperPipe.xml"/>
+	<Include ref="ConfigurationForEachChildElementPipe.xml"/>
+	<Include ref="ConfigurationResultSetIteratingPipe.xml"/>
+	<Include ref="ConfigurationInputOutputWrapper.xml"/>
+	<Include ref="ConfigurationOutputStreaming.xml"/>
+	<Include ref="ConfigurationEsbSoapValidator.xml"/>
+	<Include ref="ConfigurationWsdlGeneratorPipe.xml"/>
+	<Include ref="ConfigurationFxF3.xml"/>
+	<Include ref="ConfigurationLocker.xml"/>
+	<Include ref="ConfigurationXmlFileElementIteratorPipe.xml"/>
+	<Include ref="ConfigurationCompactMessage.xml"/>
+	<Include ref="ConfigurationResultSet2FileSender.xml"/>
+	<Include ref="ConfigurationWsdlXmlValidator.xml"/>
+	<Include ref="ConfigurationText2Xml.xml"/>
+	<Include ref="ConfigurationJsonPipe.xml"/>
+	<Include ref="ConfigurationMultipleSessionKeys.xml"/>
+	<Include ref="ConfigurationCreateLargeFile.xml"/>
+	<Include ref="ConfigurationMemoryLeak.xml"/>
+	<Include ref="ConfigurationJavascript.xml"/>
+	<Include ref="ConfigurationParameters.xml"/>
+	<Include ref="ConfigurationReceivers.xml"/>
+	<Include ref="ConfigurationMessageStoreSenderAndListener.xml"/>
+	<Include ref="ConfigurationMessageStoreSenderAndListenerPeek.xml"/>
+	<Include ref="ConfigurationBlockEnabledSenders.xml"/>
+	<Include ref="ConfigurationValidators.xml"/>
+	<Include ref="ConfigurationStreaming.xml"/>
+	<Include ref="ConfigurationApiWsdlGenerator.xml"/>
+	<Include ref="ConfigurationUnzip.xml"/>
+</Configuration>

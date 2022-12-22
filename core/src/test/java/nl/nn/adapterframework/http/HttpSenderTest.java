@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -27,9 +28,14 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.HttpSender.PostType;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -44,9 +50,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		exception.expect(ConfigurationException.class);
 		exception.expectMessage("must use an absolute url starting with http(s)://");
 
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl("relative/path");
 
 		sender.configure();
@@ -57,38 +63,36 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		exception.expect(SenderException.class);
 		exception.expectMessage("must use an absolute url starting with http(s)://");
 
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl(null);
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("relative/path");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "relative/path"));
 
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(null, null);
+		sender.sendMessageOrThrow(null, null);
 	}
 
 	@Test
 	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, session).asString();
+		String result = sender.sendMessageOrThrow(input, session).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithoutPRC.txt"), result.trim());
 	}
 
 	@Test
 	public void testContentType() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getFullContentType().toString());
@@ -96,16 +100,16 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test()
 	public void testCharset() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType("post");
+		sender.setMethodType(HttpMethod.POST);
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
 	public void testContentTypeAndCharset1() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setCharSet("IsO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
@@ -116,7 +120,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testContentTypeAndCharset2() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("application/xml");
 		sender.setCharSet("uTf-8");
 		sender.configure();
@@ -127,7 +131,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void parseContentTypeWithCharset() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
@@ -135,14 +139,14 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void notContentTypeUnlessExplicitlySet() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.configure();
 		assertNull(sender.getFullContentType());
 	}
 
 	@Test()
 	public void notCharsetUnlessContentTypeExplicitlySet() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
 		sender.configure();
 		assertNull(sender.getFullContentType());
@@ -150,62 +154,63 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGet() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGet.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpGetEncodeMessage() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("this is my dynamic url");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setEncodeMessages(true);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetEncodeMessage.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpGetWithContentType() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET"); //Make sure its a GET request
+		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
 		sender.setContentType("application/json");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET"); //Make sure its a GET request
+		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
 		sender.setContentType("application/json");
 		sender.setCharSet("ISO-8859-1");
 
@@ -213,387 +218,366 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentTypeAndCharset.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPost() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPost.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPostEncodeMessage() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo dit is mijn bericht");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("Post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 		sender.setEncodeMessages(true);
+		sender.setTreatInputMessageAsParameters(true);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostEncodeMessage.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPostAppendParamsToBody() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBody.txt"), result.trim());
 	}
 
 	@Test
+	public void simpleMockedHttpPostParamsOnly() throws Throwable {
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender.setUrl("http://127.0.0.1/something&dummy=true");
+		Message input = new Message("hallo");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+
+		sender.addParameter(new Parameter("key", "value"));
+
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
+
+		sender.setTreatInputMessageAsParameters(false);
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
+	}
+
+	@Test
 	public void simpleMockedHttpPostAppendParamsToBodyAndEmptyBody() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostAppendParamsToBodyAndEmptyBody.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPut() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType(HttpMethod.PUT); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPut.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPatch() throws Throwable {
-		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo patch request");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("patCH"); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType(HttpMethod.PATCH); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPatch.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpGetWithParams() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpGetWithUrlParamAndPath() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		sender.setUrl(null); //unset URL
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("http://127.0.0.1/value%20value?path=tralala");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?path=tralala"));
 
-		Parameter param1 = new Parameter();
-		param1.setName("illegalCharacters");
-		param1.setValue("o@t&h=e+r$V,a/lue");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("illegalCharacters", "o@t&h=e+r$V,a/lue"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("normalCharacters");
-		param2.setValue("helloWorld");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("normalCharacters", "helloWorld"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithUrlParamAndPath.txt"), result.trim());
 	}
 
 	@Test
-	public void simpleMockedHttpCharset() throws Throwable {
-		HttpSender sender = getSender();
+	public void simpleMockedHttpPostCharset() throws Throwable {
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
-		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpCharset.txt"), result.trim());
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostCharset.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setHeadersParams("custom-header, doesn-t-exist");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithParams.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpPostUrlEncoded() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 	}
 
 	@Test
 	public void postTypeUrlEncoded() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("POST");
-		sender.setPostType("urlencoded");
+		sender.setMethodType(HttpMethod.POST);
+		sender.setPostType(PostType.URLENCODED);
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostUrlEncoded.txt"), result);
 	}
 
 	@Test
 	public void simpleMockedHttpPostJSON() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostJSON.txt"), result);
 	}
 
 	@Test
 	public void binaryHttpPostJSON() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPostJSON.txt"), result);
 	}
 
 	@Test
 	public void binaryHttpPostPDF() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
 		Message input = new UrlMessage(url);
 		assertTrue("input message has to be a binary file", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/pdf");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPostPDF.txt"), result);
 	}
 
 	@Test
 	public void simpleMockedHttpPutJSON() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("PUT");
+		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPutJSON.txt"), result);
 	}
 
 	@Test
 	public void binaryHttpPutJSON() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("PUT");
+		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("binaryHttpPutJSON.txt"), result);
 	}
 
 	@Test
 	public void simpleMockedHttpMultipart() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -608,19 +592,19 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 	}
 
 	@Test
 	public void postTypeMultipart() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
-		sender.setPostType("FORMDATA");
+		sender.setMethodType(HttpMethod.POST);
+		sender.setPostType(PostType.FORMDATA);
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -634,18 +618,18 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMultipart.txt"), result.trim());
 	}
 
 	@Test
 	public void simpleMockedHttpMtom() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -661,19 +645,203 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMtom.txt"), result.trim());
 	}
+
+	@Test
+	public void multipartithoutFirstBodyPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("multipartWithoutFirstBodyPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void mtomWithoutFirstBodyPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMtomEnabled(true);
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("mtomWithoutFirstBodyPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMultipartFromParameters() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setMtomContentTransferEncoding("binary");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part name=\"string.txt\" "
+				+ "sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMultipartFromParametersAndMultipartXml.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMtomFromParameters() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setPostType(PostType.MTOM);
+		sender.setMtomContentTransferEncoding("base64");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part name=\"string.txt\" "
+				+ "sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMtomFromParametersAndMultipartXml.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMultipartFromParametersNoPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setMtomContentTransferEncoding("binary");
+
+		String xmlMultipart = "<parts><part type=\"file\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMultipartFromParametersAndMultipartXmlNoPartName.txt"), result.trim());
+	}
+
+	@Test
+	public void simpleMtomFromParametersNoPartName() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setPostType(PostType.MTOM);
+		sender.setMtomContentTransferEncoding("base64");
+
+		String xmlMultipart = "<parts><part type=\"file\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/>"
+				+ "<part sessionKey=\"stringPart\" "
+				+ "mimeType=\"text/plain\"/></parts>";
+		session.put("multipartXml", xmlMultipart);
+		session.put("part_file", new Message(new ByteArrayInputStream("<dummy xml file/>".getBytes()), new MessageContext().withName("PartFile.xml")));
+
+		sender.setMultipartXmlSessionKey("multipartXml");
+		sender.addParameter(new Parameter("string-part", "<string content/>"));
+
+		session.put("stringPart", new Message("mock pdf content"));
+		session.put("binaryPart", Message.asMessage(new Message("mock pdf content").asInputStream()));
+		sender.addParameter(ParameterBuilder.create().withName("binary-part").withSessionKey("binaryPart"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMtomFromParametersAndMultipartXmlNoPartName.txt"), result.trim());
+	}
+
 
 	@Test
 	public void postTypeMtom() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
-		sender.setPostType("mtom");
+		sender.setMethodType(HttpMethod.POST);
+		sender.setPostType(PostType.MTOM);
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -688,18 +856,18 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpMtom.txt"), result.trim());
 	}
 
 	@Test
-	public void parametersToSkip() throws Throwable {
-		HttpSender sender = getSender();
+	public void skipUrlParameter() throws Throwable {
+		sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -712,94 +880,134 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMtomEnabled(true);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("http://ignore.me");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
 
-		Parameter partParam = new Parameter();
-		partParam.setName("my-beautiful-part");
-		partParam.setValue("<partContent/>");
-		sender.addParameter(partParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
 	}
 
+	@Test
+	public void skipEmptyParameter() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setParametersToSkipWhenEmpty("empty-param");
+
+		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
+				+ "sessionKey=\"part_file\" size=\"72833\" "
+				+ "mimeType=\"application/pdf\"/></parts>";
+		pls.put("multipartXml", xmlMultipart);
+		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
+
+		sender.setMtomEnabled(true);
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
+
+		Parameter emptyParam = new Parameter("empty-param", "");
+		emptyParam.setSessionKey("empty-does-not-exist");
+		sender.addParameter(emptyParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("parametersToSkip.txt"), result.trim());
+	}
+
+	@Test
+	public void skipEmptyMultipartXmlSessionKey() throws Throwable {
+		sender = getSender();
+		Message input = new Message("<xml>input</xml>");
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setParamsInUrl(false);
+		sender.setInputMessageParam("request");
+		sender.setParametersToSkipWhenEmpty("empty-param");
+
+		session.put("multipartXml", ""); //empty!
+		sender.setMultipartXmlSessionKey("multipartXml");
+
+		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
+
+		Parameter emptyParam = new Parameter("empty-param", "");
+		emptyParam.setSessionKey("empty-does-not-exist");
+		sender.addParameter(emptyParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage(input).asString();
+		assertEqualsIgnoreCRLF(getFile("skipEmptyMultipartXmlSessionKey.txt"), result.trim());
+	}
 
 	@Test
 	public void specialCharactersInURLParam() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("specialCharactersInURLParam.txt"), result.trim());
 	}
 
 	@Test
 	public void specialCharactersDoubleEscaped() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
+		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("specialCharactersDoubleEscaped.txt"), result.trim());
 	}
 
 	@Test(expected = SenderException.class)
 	public void unsupportedScheme() throws Throwable {
-		HttpSender sender = getSender();
+		sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
 
-		sender.sendMessage(input, pls).asString();
+		sender.sendMessageOrThrow(input, pls).asString();
 
 		// We expect sendMessage to throw expection
 		assertTrue(false);
@@ -807,27 +1015,153 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void paramsWithoutValue() throws Throwable {
-		HttpSender sender = getSender();
-		Message input = new Message("paramterValue");
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkipped() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("myParam");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
+	}
+
+	@Test
+	public void paramsWithoutValueSkippedAll() throws Throwable {
+		sender = getSender();
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("myParam", ""));
+		sender.setMethodType(HttpMethod.GET);
+		sender.setParametersToSkipWhenEmpty("*");
+		sender.configure();
+		sender.open();
+
+		Message input = new Message("");
+		PipeLineSession pls = new PipeLineSession(session);
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue-skipped.txt"), result.trim());
+	}
+
+	@Test
+	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Throwable { // keystore and the key pair have different password
+		String keystore = "/Signature/ks_multipassword.jks";
+
+		sender = getSender();
+		sender.setKeystore(keystore);
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
+		sender.setKeystoreAliasPassword("test");
+
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+		sender.open();
+	}
+
+	@Test
+	public void testUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception { // keystore and the key pair have different password
+		String keystore = "/Signature/ks_multipassword.jks";
+
+		sender = getSender();
+		sender.setKeystore(keystore);
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
+
+		sender.setMethodType(HttpMethod.GET);
+		exception.expect(SenderException.class);
+		exception.expectMessage("cannot create or initialize SocketFactory");
+		sender.configure();
+		sender.open();
+
+	}
+
+	@Test
+	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception { // keystore and the key pairs have the same password
+		String keystore = "/Signature/ks_multientry_samepassword.jks";
+
+		sender = getSender();
+		sender.setKeystore(keystore);
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
+		sender.setKeystoreAliasPassword("test");
+
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+		sender.open();
+	}
+
+	@Test
+	public void testWithKeystoreHavingMultipleEntriesAndEachWithDifferentPasswords() throws Throwable {
+		// It would be difficult to provide password for each entry in a keystore 
+		//which has multiple entries each with a different password
+
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
+
+		sender = getSender();
+		sender.setKeystore(keystore);
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
+		sender.setKeystoreAliasPassword("test");
+
+		sender.setMethodType(HttpMethod.GET);
+		exception.expect(SenderException.class);
+		exception.expectMessage("cannot create or initialize SocketFactory");
+		sender.configure();
+		sender.open();
+	}
+
+	@Test
+	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Throwable {
+
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
+
+		sender = getSender();
+		sender.setKeystore(keystore);
+		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
+		sender.setKeystoreAlias("2nd");
+		sender.setKeystoreAliasPassword("test2");
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.configure();
+		sender.open();
+	}
+
+	@Test
+	public void simpleMockedHttpHead() throws Throwable {
+		sender = getSender(false);
+		Message input = new Message("ignored");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("http://127.0.0.1/value%2Fvalue?emptyParam");
-		sender.addParameter(param1);
-
-		Parameter param2 = new Parameter();
-		param2.setName("myParam");
-		param2.setValue("");
-		sender.addParameter(param2);
-
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.HEAD);
 
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(input, pls).asString();
-		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpHead.txt"), result.trim());
 	}
 }

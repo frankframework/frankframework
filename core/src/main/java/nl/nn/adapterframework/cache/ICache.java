@@ -29,7 +29,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface ICache<K,V> {
 
-	void configure(String ownerName) throws ConfigurationException; 
+	void configure(String ownerName) throws ConfigurationException;
 	void open();
 	void close();
 
@@ -38,13 +38,13 @@ public interface ICache<K,V> {
 	 * Allows for instance XPath translations.
 	 */
 	K transformKey(String input, PipeLineSession session);
-	
+
 	/**
 	 * Transform the the current response message to a value in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
 	V transformValue(Message input, PipeLineSession session);
-	
+
 
 	/**
 	 * Obtain a potentially cached value, set by put().
@@ -54,5 +54,5 @@ public interface ICache<K,V> {
 	 * store a value in the cache, that can be retrieved later using get().
 	 */
 	void put(K key, V value);
-	
+
 }

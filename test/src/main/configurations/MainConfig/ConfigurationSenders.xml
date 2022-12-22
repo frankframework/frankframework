@@ -181,15 +181,6 @@
 								className="nl.nn.adapterframework.senders.FixedResultSender"
 								returnString="&lt;email&gt;&lt;recipients&gt;&lt;recipient type='to'&gt;rfax@natned&lt;/recipient&gt;&lt;/recipients&gt;&lt;/email&gt;"
 							/>
-							<!-- sender
-								className="nl.nn.adapterframework.senders.MailSender"
-								smtpHost="test"
-								recipients="test@nn.nl"
-							/ -->
-							<!-- sender
-								className="nl.nn.adapterframework.senders.XmlValidatorSender"
-								schemaLocation="test test.xsd"
-							/-->
 							<sender
 								className="nl.nn.adapterframework.senders.EchoSender"
 							/>
@@ -247,6 +238,49 @@
 				<forward name="success" path="READY"/>
 			</pipe>
 
+		</pipeline>
+	</adapter>
+
+	<adapter name="SendToLarva" >
+
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="SenderToLarva"
+				serviceName="ibis4test-SenderToLarva"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="InternalError" state="error"/>
+			</exits>
+
+			<pipe
+				name="Call Larva"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-SendToLarva"
+				/>
+				<forward name="success" path="Called successfully"/>
+				<forward name="exception" path="Called unsuccessfully"/>
+			</pipe>
+			
+			<pipe 
+				name="Fallthroug" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="fall through" >
+				<forward name="success" path="InternalError"/>
+			</pipe>
+			<pipe 
+				name="Called successfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="successful">
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe 
+				name="Called unsuccessfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="unsuccessful">
+				<forward name="success" path="InternalError"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 

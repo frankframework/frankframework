@@ -18,6 +18,8 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -26,6 +28,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class SizePipe extends FixedForwardPipe {
 
 	/**
@@ -34,16 +37,9 @@ public class SizePipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			int size = -1;
-			Object input = message.asObject();
-			if (input instanceof String) {
-				size = ((String)input).length();
-			} else if (input instanceof byte[]) {
-				size = ((byte[])input).length;
-			}
-			return new PipeRunResult(getSuccessForward(), "" + size);
+			return new PipeRunResult(getSuccessForward(), "" + message.size());
 		} catch(Exception e) {
-			throw new PipeRunException(this, "Error while transforming input", e);
+			throw new PipeRunException(this, "unable to determine size", e);
 		}
 	}
 
