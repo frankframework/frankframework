@@ -133,12 +133,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		}
 
 		MediaType mediaType = getMediaType(storageItem);
-		String contentDispositionHeader = getContentDispositionHeader(mediaType, messageId);
+		String filename = getFilename(mediaType, messageId);
 
-		return ResponseMessage.Builder.create()
-				.withPayload(storageItem).withMimeType(mediaType)
-				.setHeader(ResponseMessage.CONTENT_DISPOSITION_KEY, contentDispositionHeader)
-				.raw();
+		return ResponseMessage.Builder.create().withPayload(storageItem).withMimeType(mediaType).withFilename(filename).raw();
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -344,7 +341,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		return type;
 	}
 
-	private String getContentDispositionHeader(MediaType type, String filename) {
+	private String getFilename(MediaType type, String filename) {
 		String extension="txt";
 		if(type == MediaType.APPLICATION_XML) {
 			extension = "xml";
@@ -352,7 +349,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			extension = "json";
 		}
 
-		return "attachment; filename=\"msg-"+filename+"."+extension+"\"";
+		return "msg-"+filename+"."+extension;
 
 	}
 

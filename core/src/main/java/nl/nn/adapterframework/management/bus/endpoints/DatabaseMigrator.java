@@ -15,12 +15,20 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.Nullable;
 
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -43,15 +51,46 @@ public class DatabaseMigrator extends BusEndpointBase {
 	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<Object> downloadMigrationScript(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		Configuration configuration = getConfigurationByName(configurationName);
-
-		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(!databaseMigrator.hasMigrationScript()) {
-			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
+		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			try (ZipOutputStream zos = new ZipOutputStream(out)) {
+				for(Configuration configuration : getIbisManager().getConfigurations()) {
+					Resource resource = getMigrationResource(configuration);
+					if(resource != null) {
+						try(InputStream file = resource.openStream()) {
+							ZipEntry entry = new ZipEntry(resource.getName()); //Name is not unique over multiple configurations
+							zos.putNextEntry(entry);
+							zos.write(StreamUtil.streamToByteArray(file, false));
+							zos.closeEntry();
+						}
+					}
+				}
+			} catch (IOException e) {
+				throw new BusException("unable to create ZIP archive", e);
+			}
+			return ResponseMessage.Builder.create().withPayload(out.toByteArray()).withMimeType(MediaType.APPLICATION_OCTET_STREAM).withFilename("DatabaseChangelog.zip").raw();
 		}
 
-		Resource changelog = databaseMigrator.getChangeLog();
+		Configuration configuration = getConfigurationByName(configurationName);
+		Resource changelog = getMigrationResource(configuration);
+		if(changelog == null) {
+			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
+		}
 		return ResponseMessage.Builder.create().withPayload(changelog).withMimeType(getMediaTypeFromName(changelog.getName())).raw();
+	}
+
+	@Nullable
+	private Resource getMigrationResource(Configuration configuration) {
+		if(!configuration.isActive()) {
+			return null;
+		}
+
+		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		if(databaseMigrator.hasMigrationScript()) {
+			return databaseMigrator.getChangeLog();
+		}
+
+		return null;
 	}
 
 	@ActionSelector(BusAction.UPLOAD)

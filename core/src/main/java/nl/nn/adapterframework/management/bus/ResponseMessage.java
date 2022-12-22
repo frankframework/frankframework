@@ -56,6 +56,11 @@ public class ResponseMessage {
 			return this;
 		}
 
+		public Builder withFilename(String filename) {
+			headers.put(CONTENT_DISPOSITION_KEY, "attachment; filename=\""+filename+"\"");
+			return this;
+		}
+
 		public Builder withMimeType(MimeType mimeType) {
 			if(mimeType != null) {
 				headers.put(MIMETYPE_KEY, mimeType.toString());

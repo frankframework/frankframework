@@ -1,45 +1,37 @@
 /*
-Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -48,7 +40,6 @@ import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @Path("/")
@@ -58,45 +49,10 @@ public final class ShowLiquibaseScript extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadScript() throws ApiException {
-
-		List<Configuration> configurations = new ArrayList<>();
-
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(databaseMigrator.hasMigrationScript()) {
-				configurations.add(config);
-			}
-		}
-
+	public Response downloadScript() {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-
-		StreamingOutput stream = new StreamingOutput() {
-			@Override
-			public void write(OutputStream out) throws IOException, WebApplicationException {
-				try (ZipOutputStream zos = new ZipOutputStream(out)) {
-					for (Configuration configuration : configurations) {
-						builder.addHeader("configuration", configuration.getName());
-						Message<?> response = sendSyncMessage(builder);
-						String res = (String) response.getPayload();
-						System.err.println(res);
-
-//						try(InputStream file = ){
-//							if(file != null) {
-//								ZipEntry entry = new ZipEntry(changeLogFile);
-//								zos.putNextEntry(entry);
-//								zos.write(StreamUtil.streamToByteArray(file, false));
-//								zos.closeEntry();
-//							}
-//						}
-					}
-				} catch (IOException e) {
-					throw new ApiException("Failed to create zip file with scripts.", e);
-				}
-			}
-		};
-
-		return Response.ok(stream).type(MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=\"DatabaseChangelog.zip\"").build();
+		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
+		return callSyncGateway(builder);
 	}
 
 	@POST
