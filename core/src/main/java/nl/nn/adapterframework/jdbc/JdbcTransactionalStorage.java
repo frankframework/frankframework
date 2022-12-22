@@ -197,21 +197,30 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 		checkIndexOnColumnPresent(connection, getKeyField());
 
-		ArrayList<String> columnList= new ArrayList<String>();
+		List<String> columnListIndex01= new ArrayList<String>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
-			columnList.add(getTypeField());
+			columnListIndex01.add(getTypeField());
 		}
 		if (StringUtils.isNotEmpty(getSlotIdField())) {
-			columnList.add(getSlotIdField());
+			columnListIndex01.add(getSlotIdField());
 		}
 		if (StringUtils.isNotEmpty(getDateField())) {
-			columnList.add(getDateField());
+			columnListIndex01.add(getDateField());
 		}
-		checkIndexOnColumnsPresent(connection, columnList);
+		checkIndexOnColumnsPresent(connection, columnListIndex01);
 
 		if (StringUtils.isNotEmpty(getExpiryDateField())) {
 			checkIndexOnColumnPresent(connection, getExpiryDateField());
 		}
+
+		List<String> columnListIndex03= new ArrayList<String>();
+		if (StringUtils.isNotEmpty(getSlotIdField())) {
+			columnListIndex03.add(getSlotIdField());
+		}
+		if (StringUtils.isNotEmpty(getIdField())) {
+			columnListIndex03.add(getIdField());
+		}
+		checkIndexOnColumnsPresent(connection, columnListIndex03);
 	}
 
 	private void checkIndexOnColumnPresent(Connection connection, String column) throws JdbcException {
