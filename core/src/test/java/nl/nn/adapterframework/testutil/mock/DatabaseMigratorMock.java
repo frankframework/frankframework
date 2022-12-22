@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.testutil.mock;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
+import nl.nn.credentialprovider.util.Misc;
 
 public class DatabaseMigratorMock extends DatabaseMigratorBase {
 
@@ -25,7 +28,11 @@ public class DatabaseMigratorMock extends DatabaseMigratorBase {
 
 	@Override
 	public void update(Writer writer, Resource resource) throws JdbcException {
-		// Nothing to update
+		try (InputStreamReader reader = new InputStreamReader(resource.openStream())) {
+			Misc.readerToWriter(reader, writer);
+		} catch (IOException e) {
+			throw new JdbcException("unable to write resource contents to write", e);
+		}
 	}
 
 	@Override

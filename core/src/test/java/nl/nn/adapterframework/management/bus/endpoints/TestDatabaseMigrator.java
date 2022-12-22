@@ -23,6 +23,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
@@ -63,5 +64,17 @@ public class TestDatabaseMigrator extends BusTestBase {
 		assertEquals(1, changelogs.size());
 		Resource first = changelogs.remove(0);
 		assertEquals("DatabaseChangelog.xml", first.getName());
+	}
+
+	@Test
+	public void uploadMigrationScript() throws Exception {
+		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
+		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		Message<?> response = callSyncGateway(request);
+		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		String payload = (String) response.getPayload();
+
+		assertEquals(script, payload);
 	}
 }

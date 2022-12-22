@@ -111,7 +111,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 		StringWriter writer = new StringWriter();
 		try {
-			Resource resource = new BytesResource(payload.getBytes(StreamUtil.DEFAULT_CHARSET), "sql-migrationscript-for-"+configurationName, configuration);
+			Resource resource = new BytesResource(payload.getBytes(StreamUtil.DEFAULT_CHARSET), "sql-migrationscript-for-"+configurationName+".xml", configuration);
 			databaseMigrator.update(writer, resource);
 		} catch (JdbcException e) {
 			throw new BusException("unable to generate database changes", e);
