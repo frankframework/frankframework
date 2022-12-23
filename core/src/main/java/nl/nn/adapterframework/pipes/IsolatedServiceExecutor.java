@@ -20,7 +20,6 @@ import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
-import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
