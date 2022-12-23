@@ -25,6 +25,8 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -56,7 +58,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
 
 	private TestTool testTool;
-	protected IbisManager ibisManager;
+	protected @Setter @Getter IbisManager ibisManager;
 	private PipeDescriptionProvider pipeDescriptionProvider;
 	private List<String> testerRoles;
 
@@ -64,11 +66,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
-	}
-
-	@Override
-	public void setIbisManager(IbisManager ibisManager) {
-		this.ibisManager = ibisManager;
 	}
 
 	public void setPipeDescriptionProvider(PipeDescriptionProvider pipeDescriptionProvider) {
