@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -43,6 +42,7 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.ibistesttool.IbisDebugger;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -67,7 +67,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
 	private IDbmsSupport dbmsSupport = new GenericDbmsSupport(); // N.B. should use DbmsSupportFactory.getDbmsSupport(), but cannot get connection from JdbcTemplate. Blobs will not work for PostgreSQL...
-	private IbisManager ibisManager;
+	private IbisDebugger ibisDebugger;
 	private SecurityContext securityContext;
 
 	@Override
@@ -132,8 +132,8 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		this.testTool = testTool;
 	}
 
-	public void setIbisManager(IbisManager ibisManager) {
-		this.ibisManager = ibisManager;
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 	/**
@@ -547,7 +547,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			List checkpoints = report.getCheckpoints();
 			Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
 			Message message = Message.asMessage(checkpoint.getMessage());
-			IAdapter adapter = ibisManager.getRegisteredAdapter(DELETE_ADAPTER);
+			IAdapter adapter = ibisDebugger.getIbisManager().getRegisteredAdapter(DELETE_ADAPTER);
 			if (adapter != null) {
 				PipeLineSession pipeLineSession = new PipeLineSession();
 				if(securityContext.getUserPrincipal() != null)
