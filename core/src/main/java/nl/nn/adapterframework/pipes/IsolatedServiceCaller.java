@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
@@ -49,15 +50,15 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, null);
+	public void callServiceAsynchronous(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, ThreadLifeCycleEventListener threadLifeCycleEventListener) {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, null, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 	}
 
-	public SenderResult callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener) throws ListenerException {
+	public SenderResult callServiceIsolated(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, guard);
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, message, session, targetIsJavaListener, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();
