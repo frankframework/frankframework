@@ -41,17 +41,17 @@ import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
- * 
- * Returns exit.code as forward name to SenderPipe. 
+ *
+ * Returns exit.code as forward name to SenderPipe.
  *
  * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
- * Any parameters are copied to the PipeLineSession of the service called.
  *
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -85,6 +85,9 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
  *
+ * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
+ * @ff.forward "&lt;Exit.code&gt;" default
+ *
  * @author Gerrit van Brakel
  * @since  4.2
  */
@@ -104,6 +107,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	private @Getter String returnedSessionKeys=""; // do not intialize with null, returned session keys must be set explicitly
 	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
+
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -192,10 +197,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 					if (isIsolated()) {
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, threadLifeCycleEventListener);
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
+							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false, threadLifeCycleEventListener);
 							result = message;
 						}
 					} else {
@@ -240,10 +245,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 					if (isIsolated()) {
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-							result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
+							result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true, threadLifeCycleEventListener);
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-							isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
+							isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true, threadLifeCycleEventListener);
 							result = message;
 						}
 					} else {
