@@ -22,13 +22,16 @@ import java.io.StringWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -58,7 +61,8 @@ public class DatabaseMigrator extends BusEndpointBase {
 					Resource resource = getMigrationResource(configuration);
 					if(resource != null) {
 						try(InputStream file = resource.openStream()) {
-							ZipEntry entry = new ZipEntry(resource.getName()); //Name is not unique over multiple configurations
+							String filename = configuration.getName() +"-"+ normalizeName(resource.getName()); //Names have to be unique in a zip archive!
+							ZipEntry entry = new ZipEntry(filename);
 							zos.putNextEntry(entry);
 							zos.write(StreamUtil.streamToByteArray(file, false));
 							zos.closeEntry();
@@ -77,6 +81,14 @@ public class DatabaseMigrator extends BusEndpointBase {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
 		return ResponseMessage.Builder.create().withPayload(changelog).withMimeType(getMediaTypeFromName(changelog.getName())).raw();
+	}
+
+	@Nonnull
+	private String normalizeName(@Nonnull String name) {
+		if (name.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
+			return name.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+		}
+		return name;
 	}
 
 	@Nullable
@@ -106,12 +118,24 @@ public class DatabaseMigrator extends BusEndpointBase {
 		if(!databaseMigrator.hasMigrationScript()) {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
+		String filename = BusMessageUtils.getHeader(message, "filename");
+		if(StringUtils.isEmpty(filename)) {
+			throw new BusException("no filename provided");
+		}
+
+		if(filename.startsWith(configurationName)) { //Remove ConfigurationName if present
+			filename = filename.substring(configurationName.length()+1);
+		}
+		String migrationFilename = normalizeName(databaseMigrator.getChangeLog().getName());
+		if(!filename.equals(migrationFilename)) { //Compare if the name matches, else liquibase will see this as a new different changelog!
+			throw new BusException("provided changelog filename mismatch");
+		}
 
 		String payload = (String) message.getPayload();
 
 		StringWriter writer = new StringWriter();
 		try {
-			Resource resource = new BytesResource(payload.getBytes(StreamUtil.DEFAULT_CHARSET), "sql-migrationscript-for-"+configurationName+".xml", configuration);
+			Resource resource = new BytesResource(payload.getBytes(StreamUtil.DEFAULT_CHARSET), filename, configuration);
 			databaseMigrator.update(writer, resource);
 		} catch (JdbcException e) {
 			throw new BusException("unable to generate database changes", e);

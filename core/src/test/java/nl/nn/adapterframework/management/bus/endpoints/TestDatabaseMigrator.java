@@ -2,7 +2,11 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -15,11 +19,13 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -58,12 +64,14 @@ public class TestDatabaseMigrator extends BusTestBase {
 		try (ZipInputStream is = new ZipInputStream(bais)) {
 			ZipEntry entry;
 			while((entry = is.getNextEntry()) != null) {
-				changelogs.add(new BytesResource(StreamUtil.dontClose(is), entry.getName(), new TestScopeProvider()));
+				String name = entry.getName();
+				assertFalse(name.contains(":"));
+				changelogs.add(new BytesResource(StreamUtil.dontClose(is), name, new TestScopeProvider()));
 			}
 		}
 		assertEquals(1, changelogs.size());
 		Resource first = changelogs.remove(0);
-		assertEquals("DatabaseChangelog.xml", first.getName());
+		assertEquals("TestConfiguration-DatabaseChangelog.xml", first.getName());
 	}
 
 	@Test
@@ -71,10 +79,43 @@ public class TestDatabaseMigrator extends BusTestBase {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader("filename", "DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
 		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
 		String payload = (String) response.getPayload();
 
 		assertEquals(script, payload);
+	}
+
+	@Test
+	public void uploadMigrationScriptWithConfigNamePrefix() throws Exception {
+		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
+		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader("filename", getConfiguration().getName()+"-DatabaseChangelog.xml");
+		Message<?> response = callSyncGateway(request);
+		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		String payload = (String) response.getPayload();
+
+		assertEquals(script, payload);
+	}
+
+	@Test
+	public void uploadMigrationScriptNoName() throws Exception {
+		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
+		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		MessageHandlingException mhe = assertThrows("expected: filename not provided exception", MessageHandlingException.class, () -> { callSyncGateway(request); } );
+		assertTrue(mhe.getCause() instanceof BusException);
+	}
+
+	@Test
+	public void uploadMigrationScriptDifferentName() throws Exception {
+		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
+		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader("filename", "wrong-name.xml");
+		MessageHandlingException mhe = assertThrows("expected: filename not provided exception", MessageHandlingException.class, () -> { callSyncGateway(request); } );
+		assertTrue(mhe.getCause() instanceof BusException);
 	}
 }

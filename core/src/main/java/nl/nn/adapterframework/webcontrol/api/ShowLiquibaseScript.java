@@ -15,11 +15,9 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.util.HashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -29,21 +27,19 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.springframework.messaging.Message;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.BytesResource;
-import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.credentialprovider.util.Misc;
 
 @Path("/")
-public final class ShowLiquibaseScript extends Base {
+public final class ShowLiquibaseScript extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -51,7 +47,7 @@ public final class ShowLiquibaseScript extends Base {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadScript() {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		builder.addHeader("configuration", IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		return callSyncGateway(builder);
 	}
 
@@ -61,41 +57,32 @@ public final class ShowLiquibaseScript extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response generateSQL(MultipartBody inputDataMap) throws ApiException {
 
-		Response.ResponseBuilder response = Response.noContent();
-		InputStream file=null;
-		if(inputDataMap.getAttachment("file") != null) {
-			file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
-		}
 		String configuration = resolveStringFromMap(inputDataMap, "configuration", null);
 
-		if(configuration == null && file == null) {
-			return response.status(Response.Status.BAD_REQUEST).build();
+		Attachment filePart = inputDataMap.getAttachment("file");
+		if(configuration == null || filePart == null) {
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 
-		Writer writer = new StringBuilderWriter();
-		Configuration config = getIbisManager().getConfiguration(configuration);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
+
+		String filename = filePart.getContentDisposition().getParameter("filename");
+		InputStream file = filePart.getObject(InputStream.class);
 		try {
-			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(file != null) {
-				String filename = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
-
-				if (filename.endsWith(".xml")) {
-					databaseMigrator.update(writer, new BytesResource(file, filename, config));
-				} else {
-					try(ZipInputStream stream = new ZipInputStream(file)){
-						ZipEntry entry;
-						while((entry = stream.getNextEntry()) != null) {
-							databaseMigrator.update(writer, new BytesResource(StreamUtil.dontClose(stream), entry.getName(), config));
-						}
-					}
-				}
-			} else {
-				databaseMigrator.update(writer);
-			}
-		} catch (Exception e) {
-			throw new ApiException("Error generating SQL script", e);
+			String payload = Misc.streamToString(file);
+			builder.setPayload(payload);
+		} catch (IOException e) {
+			throw new ApiException("unable to read paypload", e);
 		}
-		String result = writer.toString();
+
+		if (StringUtils.endsWithIgnoreCase(filename, ".zip")) {
+			throw new ApiException("uploading zip files is not supported!");
+		}
+		builder.addHeader("filename", filename);
+		Message<?> response = sendSyncMessage(builder);
+		String result = (String) response.getPayload();
+
 		if(StringUtils.isEmpty(result)) {
 			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
 		}
