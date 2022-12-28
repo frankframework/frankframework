@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.JavascriptSender;
@@ -192,7 +191,10 @@ public class RhinoPipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"when set <code>true</code> or set to something else then \"true\", (even set to the empty string), the debugging is not active", "true"})
+	/**
+	 * when set <code>true</code> or set to something else then \"true\", (even set to the empty string), the debugging is not active
+	 * @ff.default true
+	 */
 	public void setDebug(boolean b) {
 		debug = b;
 	}
@@ -201,7 +203,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return debug;
 	}
 
-	@IbisDoc({"name of the file containing the Java-script Functions as base input", ""})
+	/** name of the file containing the Java-script Functions as base input */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
@@ -210,7 +212,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return fileName;
 	}
 
-	@IbisDoc({"The name of the function in the java-script library to run", ""})
+	/** The name of the function in the java-script library to run */
 	public void setjsfunctionName(String jsfunctionName) {
 		this.jsfunctionName = jsfunctionName;
 	}
@@ -219,7 +221,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		return jsfunctionName;
 	}
 
-	@IbisDoc({"The arguments to run the function in the java-script library to run", ""})
+	/** The arguments to run the function in the java-script library to run */
 	public void setjsfunctionArguments(String jsfunctionArguments) {
 		this.jsfunctionArguments = jsfunctionArguments;
 	}
@@ -228,7 +230,10 @@ public class RhinoPipe extends FixedForwardPipe {
 		return jsfunctionArguments;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time", "false"})
+	/**
+	 * when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time
+	 * @ff.default false
+	 */
 	public void setLookupAtRuntime(boolean b) {
 		lookupAtRuntime = b;
 	}

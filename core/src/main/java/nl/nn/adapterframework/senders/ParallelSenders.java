@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
@@ -165,7 +164,10 @@ public class ParallelSenders extends SenderSeries {
 		super.registerSender(sender);
 	}
 
-	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
+	/**
+	 * Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.
+	 * @ff.default 0
+	 */
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;

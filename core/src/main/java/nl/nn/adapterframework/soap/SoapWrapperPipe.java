@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -285,97 +285,130 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest());
 	}
 
-	@IbisDoc({"", "wrap"})
+	@Default ("wrap")
 	public void setDirection(Direction value) {
 		direction = value;
 	}
 
-	@IbisDoc({"Soap version to use", "auto"})
+	/**
+	 * Soap version to use
+	 * @ff.default auto
+	 */
 	public void setSoapVersion(SoapVersion value) {
 		soapVersion = value;
 	}
 
-	@IbisDoc({"(only used when direction=<code>wrap</code>) Namespace of the soap envelope", "auto determined from soapVersion"})
+	/**
+	 * (only used when direction=<code>wrap</code>) Namespace of the soap envelope
+	 * @ff.default auto determined from soapVersion
+	 */
 	public void setSoapNamespace(String string) {
 		soapNamespace = string;
 	}
 
-	@IbisDoc({"Key of session variable to store auto detected soapNamespace", "If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: "+ DEFAULT_SOAP_NAMESPACE_SESSION_KEY})
+	/**
+	 * Key of session variable to store auto detected soapNamespace
+	 * @ff.default If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: {@value #DEFAULT_SOAP_NAMESPACE_SESSION_KEY}
+	 */
 	public void setSoapNamespaceSessionKey(String string) {
 		soapNamespaceSessionKey = string;
 	}
 
-	@IbisDoc({"Key of session variable to store soap header", "If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: "+ DEFAULT_SOAP_HEADER_SESSION_KEY})
+	/**
+	 * Key of session variable to store soap header
+	 * @ff.default If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: {@value #DEFAULT_SOAP_HEADER_SESSION_KEY}
+	 */
 	public void setSoapHeaderSessionKey(String string) {
 		soapHeaderSessionKey = string;
 	}
 
-	@IbisDoc({"The encodingStyle to be set in the soap header", ""})
+	/** The encodingStyle to be set in the soap header */
 	public void setEncodingStyle(String string) {
 		encodingStyle = string;
 	}
 
-	@IbisDoc({"The default for the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent", ""})
+	/** The default for the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent */
 	public void setServiceNamespace(String string) {
 		serviceNamespace = string;
 	}
 
-	@IbisDoc({"(only used when direction=<code>wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xsltVersion=", ""})
+	/** (only used when direction=<code>wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xsltVersion= */
 	public void setSoapHeaderStyleSheet(String string){
 		this.soapHeaderStyleSheet = string;
 	}
 
-	@IbisDoc({"(only used when direction=<code>wrap</code>) Stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xsltVersion=2", ""})
+	/** (only used when direction=<code>wrap</code>) Stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xsltVersion=2 */
 	public void setSoapBodyStyleSheet(String string){
 		this.soapBodyStyleSheet = string;
 	}
 
-	@IbisDoc({"(only used when direction=<code>unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed", "false"})
+	/**
+	 * (only used when direction=<code>unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed
+	 * @ff.default false
+	 */
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
 
-	@IbisDoc({"(only used when direction=<code>unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed", "true"})
+	/**
+	 * (only used when direction=<code>unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed
+	 * @ff.default true
+	 */
 	public void setRemoveUnusedOutputNamespaces(boolean b) {
 		removeUnusedOutputNamespaces = b;
 	}
 
-	@IbisDoc({"(only used when direction=<code>wrap</code>) If not empty, this namespace is added to the root element in the soap body", ""})
+	/** (only used when direction=<code>wrap</code>) If not empty, this namespace is added to the root element in the soap body */
 	public void setOutputNamespace(String string) {
 		outputNamespace = string;
 	}
 
-	@IbisDoc({"If not empty, the root element in the soap body is changed to this value", ""})
+	/** If not empty, the root element in the soap body is changed to this value */
 	public void setRoot(String string) {
 		root = string;
 	}
 
-	@IbisDoc({"(only used when direction=<code>unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown", "false"})
+	/**
+	 * (only used when direction=<code>unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown
+	 * @ff.default false
+	 */
 	public void setIgnoreSoapFault(boolean b) {
 		ignoreSoapFault = b;
 	}
 
-	@IbisDoc({"For direction=<code>unwrap</code> only: if true, allow unwrapped xml too", "false"})
+	/**
+	 * For direction=<code>unwrap</code> only: if true, allow unwrapped xml too
+	 * @ff.default false
+	 */
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to WebServiceSecurity", ""})
+	/** alias used to obtain credentials for authentication to WebServiceSecurity */
 	public void setWssAuthAlias(String string) {
 		wssAuthAlias = string;
 	}
 
-	@IbisDoc({"Default username for WebServiceSecurity", " "})
+	/**
+	 * Default username for WebServiceSecurity
+	 * @ff.default  
+	 */
 	public void setWssUserName(String string) {
 		wssUserName = string;
 	}
 
-	@IbisDoc({"Default password for WebServiceSecurity", " "})
+	/**
+	 * Default password for WebServiceSecurity
+	 * @ff.default  
+	 */
 	public void setWssPassword(String string) {
 		wssPassword = string;
 	}
 
-	@IbisDoc({"If true, the password is sent digested; Otherwise it is sent in clear text", "true"})
+	/**
+	 * If true, the password is sent digested; Otherwise it is sent in clear text
+	 * @ff.default true
+	 */
 	public void setWssPasswordDigest(boolean b) {
 		wssPasswordDigest = b;
 	}

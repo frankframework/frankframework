@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -263,7 +262,10 @@ public class CleanupDatabaseJob extends JobDef {
 		return messageLogs;
 	}
 
-	@IbisDoc({"The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout", "0"})
+	/**
+	 * The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout
+	 * @ff.default 0
+	 */
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;
 	}

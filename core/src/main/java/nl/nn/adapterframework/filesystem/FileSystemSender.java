@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
@@ -144,9 +143,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.addActions(specificActions);
 	}
 
-
-
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
@@ -154,47 +151,47 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return actor.getAction();
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
@@ -205,7 +202,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -215,32 +212,32 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		actor.setOutputFormat(outputFormat);
 	}

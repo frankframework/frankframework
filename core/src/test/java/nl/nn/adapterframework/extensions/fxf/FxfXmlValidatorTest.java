@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.extensions.fxf.FxfXmlValidator.Direction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -18,7 +19,7 @@ public class FxfXmlValidatorTest extends PipeTestBase<FxfXmlValidator> {
 
 	@Test
 	public void testReceiveOk() throws Exception {
-		pipe.setDirection("receive");
+		pipe.setDirection(Direction.RECEIVE);
 		pipe.setSoapBody("OnCompletedTransferNotify_Action");
 		pipe.setThrowException(true);
 		configureAndStartPipe();
@@ -31,9 +32,9 @@ public class FxfXmlValidatorTest extends PipeTestBase<FxfXmlValidator> {
 
 	@Test
 	public void testReceiveNoFilename() throws Exception {
-		pipe.setDirection("receive");
+		pipe.setDirection(Direction.RECEIVE);
 		pipe.setSoapBody("OnCompletedTransferNotify_Action");
-		
+
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Fxf/OnCompletedTransferNotify-nofiles-soap.xml");

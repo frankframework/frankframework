@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -122,12 +121,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
-	@IbisDoc({"expression that generates the cron trigger", ""})
+	/** expression that generates the cron trigger */
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
-	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
+	/** job group in which the new trigger is to be created (optional) */
 	public void setJobGroup(String string) {
 		if(StringUtils.isNotEmpty(string))
 			jobGroup = string;
@@ -135,12 +134,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 			jobGroup = null;
 	}
 
-	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
+	/** pattern that leads to the name of the registered trigger(optional) */
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
-	@IbisDoc({"java listener to be called when scheduler trigger fires", ""})
+	/** java listener to be called when scheduler trigger fires */
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

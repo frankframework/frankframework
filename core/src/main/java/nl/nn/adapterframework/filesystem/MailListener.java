@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
@@ -100,7 +99,10 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		return new Message(writer.toString());
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", "false"})
+	/**
+	 * when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("Please use <code>messageType</code> to control the message produced by the listener")
 	public void setSimple(boolean b) {

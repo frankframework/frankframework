@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -152,7 +151,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		ldapSender.storeLdapException(t, session);
 	}
 
-	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})
+	/** url to the ldap server. <br/>example: ldap://su05b9.itc.intranet */
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -160,7 +159,10 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		return ldapProviderURL;
 	}
 
-	@IbisDoc({"class to use as initial context factory", "com.sun.jndi.ldap.ldapctxfactory"})
+	/**
+	 * class to use as initial context factory
+	 * @ff.default com.sun.jndi.ldap.ldapctxfactory
+	 */
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
@@ -168,10 +170,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		return initialContextFactoryName;
 	}
 
-	/**
-	 * @since 4.7
-	 */
-	@IbisDoc({"key of session variable used to store cause of errors", ""})
+	/** key of session variable used to store cause of errors */
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}

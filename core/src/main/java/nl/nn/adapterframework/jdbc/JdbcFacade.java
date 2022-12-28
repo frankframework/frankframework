@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
@@ -244,7 +243,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return "unknown";
 	}
 
-	@IbisDoc({"JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	/**
+	 * JNDI name of datasource to be used, can be configured via jmsRealm, too
+	 * @ff.default {@value JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
@@ -252,7 +254,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return datasourceName;
 	}
 
-	@IbisDoc({"Authentication alias used to authenticate when connecting to database", "" })
+	/** Authentication alias used to authenticate when connecting to database */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
@@ -260,7 +262,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return authAlias;
 	}
 
-	@IbisDoc({"User name for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+	/** User name for authentication when connecting to database, when none found from <code>authAlias</code> */
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -268,7 +270,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return username;
 	}
 
-	@IbisDoc({"Password for authentication when connecting to database, when none found from <code>authAlias</code>", ""})
+	/** Password for authentication when connecting to database, when none found from <code>authAlias</code> */
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -287,7 +289,10 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return transacted;
 	}
 
-	@IbisDoc({"informs the sender that the obtained connection is from a pool", "true"})
+	/**
+	 * informs the sender that the obtained connection is from a pool
+	 * @ff.default true
+	 */
 	public boolean isConnectionsArePooled() {
 		return connectionsArePooled || isTransacted();
 	}

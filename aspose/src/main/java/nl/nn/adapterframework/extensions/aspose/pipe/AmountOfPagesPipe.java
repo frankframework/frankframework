@@ -24,7 +24,6 @@ import com.aspose.pdf.exceptions.InvalidPasswordException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -56,7 +55,10 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
 	}
 
-	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })
+	/**
+	 * Charset to be used to encode the given input string 
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String charset){
 		this.charset = charset;
 	}

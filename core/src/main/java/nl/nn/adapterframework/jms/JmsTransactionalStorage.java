@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
@@ -119,7 +118,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 
 	@Override
-	@IbisDocRef({"1", ITRANSACTIONALSTORAGE})
+	/** @ff.ref nl.nn.adapterframework.core.ITransactionalStorage */
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -129,7 +128,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	@IbisDocRef({"2", ITRANSACTIONALSTORAGE})
+	/** @ff.ref nl.nn.adapterframework.core.ITransactionalStorage */
 	public void setType(String string) {
 		type = string;
 	}

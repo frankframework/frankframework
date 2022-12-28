@@ -58,7 +58,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -89,13 +88,13 @@ import nl.nn.adapterframework.util.StringResolver;
 public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Mongo";
-	public final String PARAM_DATABASE="database";
-	public final String PARAM_COLLECTION="collection";
-	public final String PARAM_FILTER="filter";
-	public final String PARAM_LIMIT="limit";
+	public static final String PARAM_DATABASE="database";
+	public static final String PARAM_COLLECTION="collection";
+	public static final String PARAM_FILTER="filter";
+	public static final String PARAM_LIMIT="limit";
 
-	public final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
-	public final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
+	public static final String NAMED_PARAM_START=JdbcQuerySenderBase.UNP_START;
+	public static final String NAMED_PARAM_END=JdbcQuerySenderBase.UNP_END;
 
 
 	private @Getter String datasourceName;
@@ -379,47 +378,59 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 
-	@IbisDoc({"The MongoDB datasource", "${"+JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	/**
+	 * The MongoDB datasource
+	 * @ff.default {@value JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}
 
-	@IbisDoc({"Database to connect to. Can be overridden by parameter '"+PARAM_DATABASE+"'"})
+	/** Database to connect to. Can be overridden by parameter {@value #PARAM_DATABASE} */
 	public void setDatabase(String database) {
 		this.database = database;
 	}
 
-	@IbisDoc({"Collection to act upon. Can be overridden by parameter '"+PARAM_COLLECTION+"'"})
+	/** Collection to act upon. Can be overridden by parameter {@value #PARAM_COLLECTION} */
 	public void setCollection(String collection) {
 		this.collection = collection;
 	}
 
-	@IbisDoc({"Action"})
+	/** Action */
 	public void setAction(MongoAction action) {
 		this.action = action;
 	}
 
-	@IbisDoc({"Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'"})
+	/** Filter. Can contain references to parameters between {@value #NAMED_PARAM_START} and {@value #NAMED_PARAM_END}. Can be overridden by parameter {@value #PARAM_FILTER} */
 	public void setFilter(String filter) {
 		this.filter = filter;
 	}
 
-	@IbisDoc({"Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter '"+PARAM_LIMIT+"'", "0"})
+	/**
+	 * Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter {@value #PARAM_LIMIT}.
+	 * @ff.default 0
+	 */
 	public void setLimit(int limit) {
 		this.limit = limit;
 	}
 
-	@IbisDoc({"Only for find operation: return only the count and not the full document(s)", "false"})
+	/**
+	 * Only for find operation: return only the count and not the full document(s)
+	 * @ff.default false
+	 */
 	public void setCountOnly(boolean countOnly) {
 		this.countOnly = countOnly;
 	}
 
-	@IbisDoc({"OutputFormat", "JSON"})
+	/**
+	 * OutputFormat
+	 * @ff.default JSON
+	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
 
-	@IbisDoc({"Format the output in easy legible way (currently only for XML)"})
+	/** Format the output in easy legible way (currently only for XML) */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}

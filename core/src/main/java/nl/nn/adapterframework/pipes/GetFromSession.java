@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
@@ -88,16 +87,15 @@ public class GetFromSession  extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	/**
-	 * Sets the name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see PipeLineSession
-	 */
-	@IbisDoc({"Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable", ""})
+	/** Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable */
 	public void setSessionKey(String sessionKey) {
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
+	/**
+	 * <ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>
+	 * @ff.default string
+	 */
 	public void setType(ParameterType type) {
 		this.type = type;
 	}

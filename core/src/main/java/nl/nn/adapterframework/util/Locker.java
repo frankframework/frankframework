@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
@@ -300,48 +299,66 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 
 
-	@IbisDoc({"Identifier for this lock"})
+	/** Identifier for this lock */
 	@Mandatory
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
 	}
 
-	@IbisDoc({"Type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed", "T"})
+	/**
+	 * Type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed
+	 * @ff.default T
+	 */
 	public void setType(LockType type) {
 		this.type = type;
 	}
 
-	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)"})
+	/** Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day) */
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
 
-	@IbisDoc({"The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process", "30 days (type=P), 4 hours (type=T)"})
+	/**
+	 * The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process
+	 * @ff.default 30 days (type=P), 4 hours (type=T)
+	 */
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
 
-	@IbisDoc({"The number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited", "0"})
+	/**
+	 * The number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited
+	 * @ff.default 0
+	 */
 	public void setNumRetries(int numRetries) {
 		this.numRetries = numRetries;
 	}
 
-	@IbisDoc({"The time in ms to wait before the first attempt to acquire a lock is made", "0"})
+	/**
+	 * The time in ms to wait before the first attempt to acquire a lock is made
+	 * @ff.default 0
+	 */
 	public void setFirstDelay(int firstDelay) {
 		this.firstDelay = firstDelay;
 	}
 
-	@IbisDoc({"The time in ms to wait before another attempt to acquire a lock is made", "10000"})
+	/**
+	 * The time in ms to wait before another attempt to acquire a lock is made
+	 * @ff.default 10000
+	 */
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
 	}
 
-	@IbisDoc({"If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. N.B. On Oracle hitting this lockWaitTimeout may cause the error: (SQLRecoverableException) SQLState [08003], errorCode [17008] connection closed", "0"})
+	/**
+	 * If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. N.B. On Oracle hitting this lockWaitTimeout may cause the error: (SQLRecoverableException) SQLState [08003], errorCode [17008] connection closed
+	 * @ff.default 0
+	 */
 	public void setLockWaitTimeout(int i) {
 		lockWaitTimeout = i;
 	}
 
-	@IbisDoc({"If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained"})
+	/** If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained */
 	public void setIgnoreTableNotExist(boolean b) {
 		ignoreTableNotExist = b;
 	}

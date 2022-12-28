@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.api;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 
 /**
@@ -50,7 +49,10 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 		super.configure();
 	}
 
-	@IbisDoc({"indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)","false"})
+	/**
+	 * indicates whether the message is multipart/form-data. If so, the wsdl only represents the first part, other parts are attachments. This attribute is only used for generating the 'real' wsdl which is available in the ibis console (../rest/webservices)
+	 * @ff.default false
+	 */
 	public void setMultipart(boolean b) {
 		multipart = b;
 	}

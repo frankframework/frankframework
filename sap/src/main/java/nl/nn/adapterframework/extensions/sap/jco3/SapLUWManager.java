@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -159,18 +158,18 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
-	@IbisDoc({"Name of the SapSystem used by this object", ""})
+	/** Name of the SapSystem used by this object */
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 
 
-	@IbisDoc({"One of: begin, commit, rollback, release", ""})
+	/** One of: begin, commit, rollback, release */
 	public void setAction(String string) {
 		action = string;
 	}
 
-	@IbisDoc({"Session key under which information is stored", ""})
+	/** Session key under which information is stored */
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}

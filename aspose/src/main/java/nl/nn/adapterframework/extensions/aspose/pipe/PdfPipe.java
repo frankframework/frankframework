@@ -31,7 +31,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
 import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
@@ -168,7 +167,10 @@ public class PdfPipe extends FixedForwardPipe {
 		this.action = action;
 	}
 
-	@IbisDoc({ "session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'", "defaultMainDocumentSessionKey" })
+	/**
+	 * session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'
+	 * @ff.default defaultMainDocumentSessionKey
+	 */
 	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
 		this.mainDocumentSessionKey = mainDocumentSessionKey;
 	}
@@ -179,12 +181,18 @@ public class PdfPipe extends FixedForwardPipe {
 		this.filenameToAttachSessionKey = fileNameToAttachSessionKey;
 	}
 
-	@IbisDoc({ "session key that contains the filename to be attached. Only used when the action is set to 'combine' ", "defaultFileNameToAttachSessionKey" })
+	/**
+	 * session key that contains the filename to be attached. Only used when the action is set to 'combine' 
+	 * @ff.default defaultFileNameToAttachSessionKey
+	 */
 	public void setFilenameToAttachSessionKey(String filenameToAttachSessionKey) {
 		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
-	@IbisDoc({ "fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time", "null" })
+	/**
+	 * fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time
+	 * @ff.default null
+	 */
 	public void setFontsDirectory(String fontsDirectory) {
 		this.fontsDirectory = fontsDirectory;
 	}
@@ -193,27 +201,39 @@ public class PdfPipe extends FixedForwardPipe {
 		this.unpackDefaultFonts = unpackDefaultFonts;
 	}
 
-	@IbisDoc({ "charset to be used to decode the given input message in case the input is not binary but character stream", "UTF-8" })
+	/**
+	 * charset to be used to decode the given input message in case the input is not binary but character stream
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
-	@IbisDoc({ "aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol", "" })
+	/** aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol */
 	public void setLicense(String license) {
 		this.license = license;
 	}
 
-	@IbisDoc({ "when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately", "false" })
+	/**
+	 * when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately
+	 * @ff.default false
+	 */
 	public void setSaveSeparate(boolean saveSeparate) {
 		this.saveSeparate = saveSeparate;
 	}
 
-	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
+	/**
+	 * directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.
+	 * @ff.default null
+	 */
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
 	}
 
-	@IbisDoc({ "when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet", "false" })
+	/**
+	 * when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet
+	 * @ff.default false
+	 */
 	public void setLoadExternalResources(boolean loadExternalResources) {
 		this.loadExternalResources = loadExternalResources;
 	}

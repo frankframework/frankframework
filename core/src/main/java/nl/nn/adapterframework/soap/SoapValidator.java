@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -129,39 +128,48 @@ public class SoapValidator extends Json2XmlValidator {
 		return SOAP_ENVELOPE;
 	}
 
-	@IbisDoc({ "always envelope (not allowed to change)", "envelope" })
+	/**
+	 * always envelope (not allowed to change)
+	 * @ff.default envelope
+	 */
 	@Override
 	@Deprecated
 	public void setRoot(String r) {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
 
-	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
+	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,) */
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
 
-	@IbisDoc({"Identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a>", "" })
+	/** Identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a> */
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
 	}
 
-	@IbisDoc({"Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
+	/** Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,) */
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
 
-	@IbisDoc({"Can be used when the SOAP header element exists multiple times", "" })
+	/** Can be used when the SOAP header element exists multiple times */
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
 
-	@IbisDoc({"SOAP envelope XSD version to use", "1.1" })
+	/**
+	 * SOAP envelope XSD version to use
+	 * @ff.default 1.1
+	 */
 	public void setSoapVersion(SoapVersion soapVersion) {
 		this.soapVersion = soapVersion;
 	}
 
-	@IbisDoc({"Allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages", "false"})
+	/**
+	 * Allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages
+	 * @ff.default false
+	 */
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
 	}

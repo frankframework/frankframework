@@ -79,7 +79,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -815,45 +814,63 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return getUrl();
 	}
 
-	@IbisDoc({"URL or base of URL to be used", ""})
+	/** URL or base of URL to be used */
 	public void setUrl(String string) {
 		url = string;
 	}
 
-	@IbisDoc({"Parameter that is used to obtain URL; overrides url-attribute.", "url"})
+	/**
+	 * Parameter that is used to obtain URL; overrides url-attribute.
+	 * @ff.default url
+	 */
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
 
-	@IbisDoc({"The HTTP Method used to execute the request", "<code>GET</code>"})
+	/**
+	 * The HTTP Method used to execute the request
+	 * @ff.default <code>GET</code>
+	 */
 	public void setMethodType(HttpMethod method) {
 		this.httpMethod = method;
 	}
 
 	/**
-	 * This is a superset of mimetype + charset + optional payload metadata.
+	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods
+	 * @ff.default text/html, when postType=<code>RAW</code>
 	 */
-	@IbisDoc({"Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods", "text/html, when postType=<code>RAW</code>"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"Charset of the request. Typically only used on <code>PUT</code> and <code>POST</code> requests.", "UTF-8"})
+	/**
+	 * Charset of the request. Typically only used on <code>PUT</code> and <code>POST</code> requests.
+	 * @ff.default UTF-8
+	 */
 	public void setCharSet(String string) {
 		charSet = string;
 	}
 
-	@IbisDoc({"Timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	/**
+	 * Timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * @ff.default 10000
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}
 
-	@IbisDoc({"The maximum number of concurrent connections", "10"})
+	/**
+	 * The maximum number of concurrent connections
+	 * @ff.default 10
+	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"The maximum number of times the execution is retried", "1 (for repeatable messages) else 0"})
+	/**
+	 * The maximum number of times the execution is retried
+	 * @ff.default 1 (for repeatable messages) else 0
+	 */
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
@@ -935,22 +952,28 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"Proxy host"})
+	/** Proxy host */
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"Proxy port", "80"})
+	/**
+	 * Proxy port
+	 * @ff.default 80
+	 */
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"Alias used to obtain credentials for authentication to proxy", ""})
+	/** Alias used to obtain credentials for authentication to proxy */
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"Proxy username", " "})
+	/**
+	 * Proxy username
+	 * @ff.default  
+	 */
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -960,12 +983,18 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setProxyUsername(string);
 	}
 
-	@IbisDoc({"Proxy password", " "})
+	/**
+	 * Proxy password
+	 * @ff.default  
+	 */
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"Proxy realm", " "})
+	/**
+	 * Proxy realm
+	 * @ff.default  
+	 */
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
@@ -978,7 +1007,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	@IbisDoc({"Disables the use of cookies, making the sender completely stateless", "false"})
+	/**
+	 * Disables the use of cookies, making the sender completely stateless
+	 * @ff.default false
+	 */
 	public void setDisableCookies(boolean disableCookies) {
 		this.disableCookies = disableCookies;
 	}
@@ -1089,64 +1121,88 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"Comma separated list of parameter names which should be set as HTTP headers", ""})
+	/** Comma separated list of parameter names which should be set as HTTP headers */
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
 
-	@IbisDoc({"Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters", ""})
+	/** Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters */
 	public void setParametersToSkipWhenEmpty(String parametersToSkipWhenEmpty) {
 		this.parametersToSkipWhenEmpty = parametersToSkipWhenEmpty;
 	}
 
 
-	@IbisDoc({"If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS", "true"})
+	/**
+	 * If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS
+	 * @ff.default true
+	 */
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
 
-	@IbisDoc({"If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
+	/**
+	 * If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful
+	 * @ff.default false
+	 */
 	public void setIgnoreRedirects(boolean b) {
 		ignoreRedirects = b;
 	}
 
 
-	@IbisDoc({"Controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	/**
+	 * Controls whether connections checked to be stale, i.e. appear open, but are not.
+	 * @ff.default true
+	 */
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
 
-	@IbisDoc({"Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.", "5000 ms"})
+	/**
+	 * Used when StaleChecking=<code>true</code>. Timeout after which an idle connection will be validated before being used.
+	 * @ff.default 5000 ms
+	 */
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
 
-	@IbisDoc({"Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.", "900 s"})
+	/**
+	 * Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value.
+	 * @ff.default 900 s
+	 */
 	public void setConnectionTimeToLive(int timeToLive) {
 		connectionTimeToLive = timeToLive;
 	}
 
-	@IbisDoc({"Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool", "10 s"})
+	/**
+	 * Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool
+	 * @ff.default 10 s
+	 */
 	public void setConnectionIdleTimeout(int idleTimeout) {
 		connectionIdleTimeout = idleTimeout;
 	}
 
-	@IbisDoc({"If <code>true</code>, the HTML response is transformed to XHTML", "false"})
+	/**
+	 * If <code>true</code>, the HTML response is transformed to XHTML
+	 * @ff.default false
+	 */
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
 
-	@IbisDoc({"(Only used when xHtml=<code>true</code>) stylesheet to apply to the HTML response", ""})
+	/** (Only used when xHtml=<code>true</code>) stylesheet to apply to the HTML response */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	@IbisDoc({"Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.", "SSL"})
+	/**
+	 * Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.
+	 * @ff.default SSL
+	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
 
-	@IbisDoc({"If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned", ""})
+	/** If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}

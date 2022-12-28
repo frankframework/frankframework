@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -213,7 +212,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file", ""})
+	/** name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -221,7 +220,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return filename;
 	}
 
-	@IbisDoc({"base directory where files are moved from", ""})
+	/** base directory where files are moved from */
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -229,7 +228,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
-	@IbisDoc({"session key that contains the name of the filter to use (only used if wildcard is not set)", ""})
+	/** session key that contains the name of the filter to use (only used if wildcard is not set) */
 	public void setWildcardSessionKey(String string) {
 		wildcardSessionKey = string;
 	}
@@ -237,7 +236,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return wildcardSessionKey;
 	}
 
-	@IbisDoc({"filter of files to replace", ""})
+	/** filter of files to replace */
 	public void setWildcard(String string) {
 		wildcard = string;
 	}
@@ -245,7 +244,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return wildcard;
 	}
 
-	@IbisDoc({"destination directory", ""})
+	/** destination directory */
 	public void setMove2dir(String string) {
 		move2dir = string;
 	}
@@ -253,7 +252,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2dir;
 	}
 
-	@IbisDoc({"name of the destination file (if not specified, the name of the file to move is taken)", ""})
+	/** name of the destination file (if not specified, the name of the file to move is taken) */
 	public void setMove2file(String string) {
 		move2file = string;
 	}
@@ -261,7 +260,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2file;
 	}
 
-	@IbisDoc({"session key that contains the name of the file to use (only used if move2file is not set)", ""})
+	/** session key that contains the name of the file to use (only used if move2file is not set) */
 	public void setMove2fileSessionKey(String move2fileSessionKey) {
 		this.move2fileSessionKey = move2fileSessionKey;
 	}
@@ -269,7 +268,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2fileSessionKey;
 	}
 
-	@IbisDoc({"maximum number of attempts before throwing an exception", "10"})
+	/**
+	 * maximum number of attempts before throwing an exception
+	 * @ff.default 10
+	 */
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
@@ -277,7 +279,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-	@IbisDoc({"Time <i>in milliseconds</i> between attempts", "1000"})
+	/**
+	 * Time <i>in milliseconds</i> between attempts
+	 * @ff.default 1000
+	 */
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
@@ -285,7 +290,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return waitBeforeRetry;
 	}
 
-	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
+	/**
+	 * number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.
+	 * @ff.default 5
+	 */
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
@@ -293,7 +301,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfBackups;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists. when set <code>false</code> and <code>numberofbackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')", "false"})
+	/**
+	 * when set <code>true</code>, the destination file will be deleted if it already exists. when set <code>false</code> and <code>numberofbackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')
+	 * @ff.default false
+	 */
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
@@ -301,7 +312,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return overwrite;
 	}
 
-	@IbisDoc({" when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. this implies <code>overwrite=false</code>", "false"})
+	/**
+	 *  when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. this implies <code>overwrite=false</code>
+	 * @ff.default false
+	 */
 	public void setAppend(boolean b) {
 		append = b;
 	}
@@ -309,7 +323,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return append;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files", "false"})
+	/**
+	 * when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files
+	 * @ff.default false
+	 */
 	public void setDeleteEmptyDirectory(boolean b) {
 		deleteEmptyDirectory = b;
 	}
@@ -317,7 +334,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return deleteEmptyDirectory;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the directory to move to is created if it does not exist", "false"})
+	/**
+	 * when set to <code>true</code>, the directory to move to is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateDirectory(boolean b) {
 		createDirectory = b;
 	}
@@ -325,7 +345,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return createDirectory;
 	}
 
-	@IbisDoc({"string which is inserted at the start of the destination file", ""})
+	/** string which is inserted at the start of the destination file */
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -333,7 +353,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return prefix;
 	}
 
-	@IbisDoc({"string which is inserted at the end of the destination file (and replaces the extension if present)", ""})
+	/** string which is inserted at the end of the destination file (and replaces the extension if present) */
 	public void setSuffix(String string) {
 		suffix = string;
 	}
@@ -341,7 +361,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return suffix;
 	}
 
-	@IbisDoc({"when <code>true</code>, <code>numberofbackups</code> is set to 0 and the destination file already exists a piperunexception is thrown (instead of adding a counter to the destination filename)", "false"})
+	/**
+	 * when <code>true</code>, <code>numberofbackups</code> is set to 0 and the destination file already exists a piperunexception is thrown (instead of adding a counter to the destination filename)
+	 * @ff.default false
+	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
