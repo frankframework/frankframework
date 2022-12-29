@@ -20,10 +20,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -39,15 +42,15 @@ import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
 import nl.nn.credentialprovider.util.Misc;
 
 @Path("/")
-public final class ShowLiquibaseScript extends FrankApiBase {
+public class ShowLiquibaseScript extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/jdbc/liquibase/download")
+	@Path("/jdbc/liquibase")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadScript() {
+	public Response downloadScript(@QueryParam("configuration") @DefaultValue(IbisManager.ALL_CONFIGS_KEY) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return callSyncGateway(builder);
 	}
 
@@ -55,6 +58,7 @@ public final class ShowLiquibaseScript extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response generateSQL(MultipartBody inputDataMap) throws ApiException {
 
 		String configuration = resolveStringFromMap(inputDataMap, "configuration", null);
@@ -73,7 +77,7 @@ public final class ShowLiquibaseScript extends FrankApiBase {
 			String payload = Misc.streamToString(file);
 			builder.setPayload(payload);
 		} catch (IOException e) {
-			throw new ApiException("unable to read paypload", e);
+			throw new ApiException("unable to read payload", e);
 		}
 
 		if (StringUtils.endsWithIgnoreCase(filename, ".zip")) {

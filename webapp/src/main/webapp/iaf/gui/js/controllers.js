@@ -2231,7 +2231,7 @@ angular.module('iaf.beheerconsole')
 	$scope.$on('configurations', findFirstAvailabeConfiguration);
 
 	$scope.download = function() {
-		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");
+		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/");
 	};
 
 	$scope.generateSql = false;
