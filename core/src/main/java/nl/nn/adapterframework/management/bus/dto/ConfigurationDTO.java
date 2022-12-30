@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.management.bus.dao;
+package nl.nn.adapterframework.management.bus.dto;
 
 import java.util.Date;
 
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
 
 @JsonInclude(Include.NON_NULL)
-public class ConfigurationDAO {
+public class ConfigurationDTO {
 	private static final String DEFAULT_FF_CONFIGURATION_PREFIX = "IAF_";
 
 	private final @Getter String name;
@@ -50,12 +50,12 @@ public class ConfigurationDAO {
 
 	private @Getter String parent;
 
-	public ConfigurationDAO(String name, String version) {
+	public ConfigurationDTO(String name, String version) {
 		this.name = name;
 		this.version = version;
 	}
 
-	public ConfigurationDAO(Configuration configuration) {
+	public ConfigurationDTO(Configuration configuration) {
 		name = configuration.getName();
 		version = configuration.getVersion();
 		stubbed = configuration.isStubbed();
@@ -89,21 +89,21 @@ public class ConfigurationDAO {
 		this.user = classLoader.getUser();
 	}
 
-	public void setDatabaseAttributes(String filename, Date creationDate, String user, Boolean active, Boolean autoReload) {
+	public void setDatabaseAttributes(String filename, Date creationDate, String user, Boolean active, Boolean autoreload) {
 		this.filename = filename;
 		this.created = DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME);
 		this.user = user;
 		this.active = active;
-		this.autoreload = autoReload;
+		this.autoreload = autoreload;
 	}
 
 	public void setLoaded(boolean loaded) {
 		this.loaded = loaded;
 	}
 
-	public static class VersionComparator extends NameComparatorBase<ConfigurationDAO> {
+	public static class VersionComparator extends NameComparatorBase<ConfigurationDTO> {
 		@Override
-		public int compare(ConfigurationDAO lhs, ConfigurationDAO rhs) {
+		public int compare(ConfigurationDTO lhs, ConfigurationDTO rhs) {
 			String version1 = lhs.getVersion();
 			String version2 = rhs.getVersion();
 
@@ -111,9 +111,9 @@ public class ConfigurationDAO {
 		}
 	}
 
-	public static class NameComparator extends NameComparatorBase<ConfigurationDAO> {
+	public static class NameComparator extends NameComparatorBase<ConfigurationDTO> {
 		@Override
-		public int compare(ConfigurationDAO lhs, ConfigurationDAO rhs) {
+		public int compare(ConfigurationDTO lhs, ConfigurationDTO rhs) {
 			String name1 = lhs.getName();
 			String name2 = rhs.getName();
 			if(name1 == null || name2 == null) return 0;

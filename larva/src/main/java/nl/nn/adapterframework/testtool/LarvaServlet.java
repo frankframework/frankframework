@@ -50,11 +50,12 @@ public class LarvaServlet extends HttpServletBase {
 		private final String resource;
 
 		private Assets(String resource, String contentType) {
-			this.url = getResource(resource);
-			if(url == null) {
+			URL resourceURL = getResource(resource);
+			if(resourceURL == null) {
 				throw new IllegalStateException("unable to find asset");
 			}
 
+			this.url = resourceURL;
 			this.resource = resource;
 			this.contentType = contentType;
 		}

@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
  */
 public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 
-	private ThreadLocal<SoftReference<GraphvizEngine>> graphvisEngines = new ThreadLocal<>();
+	private static ThreadLocal<SoftReference<GraphvizEngine>> GRAPHVIZ_ENGINES = new ThreadLocal<>();
 
 	/**
 	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 
@@ -38,7 +38,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
 	 */
 	public GraphvizEngine getGraphvizEngine() {
-		SoftReference<GraphvizEngine> reference = graphvisEngines.get();
+		SoftReference<GraphvizEngine> reference = GRAPHVIZ_ENGINES.get();
 		if(reference == null || reference.get() == null) {
 			GraphvizEngine generator = createGraphvizEngine();
 			if(generator == null) {
@@ -46,7 +46,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 			}
 
 			reference = new SoftReference<>(generator);
-			graphvisEngines.set(reference);
+			GRAPHVIZ_ENGINES.set(reference);
 		}
 
 		return reference.get();
@@ -91,6 +91,6 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	public void destroy() {
 		super.destroy();
 
-		graphvisEngines.remove();
+		GRAPHVIZ_ENGINES.remove();
 	}
 }

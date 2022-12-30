@@ -2659,8 +2659,6 @@ public class TestTool {
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 *
-	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
 		ArrayList<String> attributes = null;

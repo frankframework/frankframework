@@ -130,7 +130,7 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
+			if(properties.containsValue("mail.smtp.from")){
 				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
 			}
 			properties.put("mail.smtp.from", getBounceAddress());
