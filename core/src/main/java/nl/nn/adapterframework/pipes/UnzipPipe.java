@@ -146,6 +146,8 @@ public class UnzipPipe extends FixedForwardPipe {
 				} catch (FileNotFoundException e) {
 					throw new PipeRunException(this, "could not find file ["+filename+"]",e);
 				}
+			} else if (!message.isBinary()) {
+				log.warn("expected binary message, encountered character data. Do you need to set processFile=\"true\"?");
 			}
 			return message.asInputStream();
 		} catch (IOException e) {
