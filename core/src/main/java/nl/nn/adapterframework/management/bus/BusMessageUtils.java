@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -135,9 +134,8 @@ public class BusMessageUtils {
 	@Nullable
 	public static String getUserPrincipalName() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication instanceof AbstractAuthenticationToken) {
-			AbstractAuthenticationToken token = (AbstractAuthenticationToken) authentication;
-			return token.getName();
+		if(authentication != null) {
+			return authentication.getName();
 		}
 		return null;
 	}
