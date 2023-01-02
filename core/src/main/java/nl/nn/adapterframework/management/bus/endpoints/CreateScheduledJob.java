@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -175,7 +174,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 						stmt.setString(8, description);
 						stmt.setBoolean(9, hasLocker);
 						stmt.setString(10, lockKey);
-						stmt.setString(11, getUserPrincipalName());
+						stmt.setString(11, BusMessageUtils.getUserPrincipalName());
 
 						success = stmt.executeUpdate() > 0;
 					}
@@ -215,14 +214,6 @@ public class CreateScheduledJob extends BusEndpointBase {
 					return adapter;
 				}
 			}
-		}
-		return null;
-	}
-
-	private String getUserPrincipalName() {
-		UserDetails user = BusMessageUtils.getUserDetails();
-		if(user != null) {
-			return user.getUsername();
 		}
 		return null;
 	}
