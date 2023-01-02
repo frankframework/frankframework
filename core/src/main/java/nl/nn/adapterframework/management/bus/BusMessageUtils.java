@@ -143,11 +143,10 @@ public class BusMessageUtils {
 	}
 
 	@Nonnull
-	private static Collection<GrantedAuthority> getAuthorities() {
+	private static Collection<? extends GrantedAuthority> getAuthorities() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication instanceof AbstractAuthenticationToken) {
-			AbstractAuthenticationToken token = (AbstractAuthenticationToken) authentication;
-			return token.getAuthorities();
+		if(authentication != null) {
+			return authentication.getAuthorities();
 		}
 		return Collections.emptyList();
 	}
