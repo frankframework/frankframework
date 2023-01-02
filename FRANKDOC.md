@@ -10,7 +10,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.forward` | | Class | Describes a forward (e.g. `success`, `failure`). First argument is name of forward. Second argument is description. |
 | `@ff.tag` | | Class | Tag that classifies the Java class. First argument is tag name, second argument is tag value. |
 | `@ff.default` | `@Default` | Attribute setter | Describes default value. |
-| `@ff.ref` | | Attribute setter | References another Java method from which the description and the default value should be obtained. The reference can give only the class name that has the method, or the class name and the method name separated by a dot. Always use the full class name. |
+| `@ff.ref` | `@ReferTo` | Attribute setter | References another Java method from which the description and the default value should be obtained. The reference can give only the class name that has the method, or in case of the JavaDoc tag the class name and the method name separated by a dot. Always use the full class name. |
 | `@ff.protected` | `@Protected` | Attribute setter, child setter or class | Suppresses declaration and inheritance of attribute, child or element. Annotation is inherited. |
 | `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config. |
 | `@ff.optional` | `@Optional` | Attribute or child setter | Undoes inherited `@ff.mandatory`, making the attribute or child optional even if it overrides a mandatory attribute or child.
