@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -71,7 +73,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	}
 
 	protected MockDispatcher dispatcher = new MockDispatcher();
-	private M jaxRsResource;
+	protected M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
 	private static ApplicationContext applicationContext;
 
@@ -313,6 +315,9 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				response.addMetadata(meta); //Headers
 				return response;
 			} catch (Exception e) {
+				if(e instanceof InvocationTargetException && e.getCause() instanceof ApiException) {
+					throw (ApiException) e.getCause();
+				}
 				e.printStackTrace();
 				fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
 				return null;
@@ -374,7 +379,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			QueryParam queryParameter = parameter.getAnnotation(QueryParam.class);
 			int questionMark = url.indexOf("?");
 			if(questionMark == -1) {
-				fail("found query parameter ["+parameter+"] but not in URL ["+url+"]");
+				log.info("found query parameter [{}] on method but it was not present in the URL [{}]", queryParameter.value(), url);
 			}
 
 			String urlQueryParameters = url.substring(questionMark +1);
@@ -387,18 +392,33 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				}
 			}
 			if(queryValue == null) {
+				DefaultValue defaultValue = parameter.getAnnotation(DefaultValue.class);
+				if(defaultValue != null) {
+					queryValue = defaultValue.value();
+				}
+			}
+			if(queryValue == null) {
 				fail("unable to populate query param ["+queryParameter.value()+"]");
 			}
 
 			Object value = null;
-			switch (parameter.getType().toGenericString()) {
+			switch (parameter.getType().getTypeName()) {
 				case "boolean":
+				case "java.lang.Boolean":
 					value = Boolean.parseBoolean(queryValue);
+					break;
+				case "int":
+				case "java.lang.Integer":
+					value = Integer.parseInt(queryValue);
+					break;
+				case "java.lang.String":
+					value = queryValue;
 					break;
 
 				default:
-					fail("parameter type ["+parameter.getType()+"] not implemented");
+					fail("parameter type ["+parameter.getType().getTypeName()+"] not implemented");
 			}
+			log.info("resolved value [{}] to type [{}]", queryValue, value.getClass());
 			return value;
 		}
 

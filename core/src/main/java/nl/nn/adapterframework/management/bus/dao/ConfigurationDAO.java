@@ -70,9 +70,11 @@ public class ConfigurationDAO {
 			setDatabaseAttributes((DatabaseClassLoader) classLoader);
 		}
 
-		DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.hasMigrationScript()) {
-			jdbcMigrator = true;
+		if(configuration.isActive()) {
+			DatabaseMigratorBase databaseMigrator = configuration.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+			if(databaseMigrator.hasMigrationScript()) {
+				jdbcMigrator = true;
+			}
 		}
 
 		String parentConfig = AppConstants.getInstance().getString("configurations." + configuration.getName() + ".parentConfig", null);
