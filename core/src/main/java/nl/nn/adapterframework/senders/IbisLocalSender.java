@@ -38,7 +38,9 @@ import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -90,7 +92,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since  4.2
  */
 @Category("Basic")
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
@@ -105,6 +107,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter String returnedSessionKeys=""; // do not intialize with null, returned session keys must be set explicitly
 	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
+
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -213,10 +217,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					if (isIsolated()) {
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), message, context, false);
+							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), message, context, false, threadLifeCycleEventListener);
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), message, context, false);
+							isolatedServiceCaller.callServiceAsynchronous(getServiceName(), message, context, false, threadLifeCycleEventListener);
 							result = new SenderResult(message);
 						}
 					} else {
@@ -259,10 +263,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					if (isIsolated()) {
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-							result = isolatedServiceCaller.callServiceIsolated(javaListener, message, context, true);
+							result = isolatedServiceCaller.callServiceIsolated(javaListener, message, context, true, threadLifeCycleEventListener);
 						} else {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-							isolatedServiceCaller.callServiceAsynchronous(javaListener, message, context, true);
+							isolatedServiceCaller.callServiceAsynchronous(javaListener, message, context, true, threadLifeCycleEventListener);
 							result = new SenderResult(message);
 						}
 					} else {
