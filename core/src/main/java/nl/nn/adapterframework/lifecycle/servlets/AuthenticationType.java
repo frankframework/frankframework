@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.lang.reflect.InvocationTargetException;
+
 import lombok.Getter;
 
 //LdapAuthenticationProvider
@@ -28,8 +30,8 @@ public enum AuthenticationType {
 
 	private AuthenticationType(Class<? extends IAuthenticator> clazz) {
 		try {
-			authenticator = clazz.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			authenticator = clazz.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			throw new IllegalStateException(e);
 		}
 	}

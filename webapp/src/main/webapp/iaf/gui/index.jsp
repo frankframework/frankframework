@@ -86,7 +86,7 @@ if(version.isEmpty()) {
 <script src="js/plugins/toastr/toastr.min.js"></script>
 <script src="js/plugins/prismjs/prism.1.25.0.min.js"></script>
 
-<script type="text/javascript">var ff_version="<%=version%>"</script>
+<script type="text/javascript" nonce="ffVersion">var ff_version="<%=version%>"</script>
 
 <script src="js/app.js?v=<%=version%>"></script>
 <script src="js/config.js?v=<%=version%>"></script>
