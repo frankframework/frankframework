@@ -215,7 +215,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.default ANY
 	 */
 	public void setConsumes(MediaTypes value) {
-		this.consumes = value;
+		this.consumes = value != null ? value : MediaTypes.ANY;
 	}
 
 	/**
@@ -223,7 +223,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @ff.default ANY
 	 */
 	public void setProduces(MediaTypes value) {
-		this.produces = value;
+		this.produces = value != null ? value : MediaTypes.ANY;
 	}
 
 	/**
