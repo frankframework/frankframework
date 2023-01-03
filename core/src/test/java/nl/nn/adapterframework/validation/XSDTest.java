@@ -3,6 +3,7 @@ package nl.nn.adapterframework.validation;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import javax.xml.stream.XMLStreamWriter;
 
@@ -50,6 +51,26 @@ public class XSDTest {
 		MatchUtils.assertXmlEquals("expected xml (XSDTest/test_expected.xsd) not similar to result xml:\n" + new String(out.toByteArray()), expected, result);
 	}
 
+	public void testAddNamespacesToSchema(String schemaLocation, String expectedSchemaLocation) throws ConfigurationException, IOException {
+
+		String expectedSchema = TestFileUtils.getTestFile(expectedSchemaLocation.trim().split("\\s+")[1]);
+
+		XSD xsd = getXSD(schemaLocation);
+		xsd.setAddNamespaceToSchema(true);
+
+		String actual = xsd.addTargetNamespace();
+		MatchUtils.assertXmlEquals(expectedSchema, actual);
+	}
+
+	@Test
+	public void testAddNamespacesToSchemaNoop() throws ConfigurationException, IOException {
+		testAddNamespacesToSchema(ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_OK, ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_OK+"-after-adding-namespace.xsd");
+	}
+
+	@Test
+	public void testAddNamespacesToSchema() throws ConfigurationException, IOException {
+		testAddNamespacesToSchema(ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE+"-after-adding-namespace.xsd");
+	}
 
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
 		String[] split =  schemaLocation.trim().split("\\s+");

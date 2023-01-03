@@ -22,11 +22,19 @@ import java.net.URL;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.validation.XSD;
 
+/**
+ * XSD based on a reference to a resource on the classPath.
+ * 
+ * TODO: replace internal String-and-URL implementation with {@link Resource}.
+ * 
+ * @author Gerrit van Brakel
+ */
 public class ResourceXsd extends XSD {
 
 	private String resource;

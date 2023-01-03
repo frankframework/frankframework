@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -55,9 +54,8 @@ import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.validation.xsd.ByteArrayXsd;
+import nl.nn.adapterframework.validation.xsd.StringXsd;
 
 /**
  * @author Michiel Meeuwissen
@@ -142,21 +140,18 @@ public class SchemaUtils {
 			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
 			for (IXSD xsd: xsds) {
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				StringWriter dummySchemaContentsWriter = new StringWriter();
+				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
 				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
 			}
 			// Write XSD's with merged root element
-			ByteArrayXsd resultXsd = null;
+			StringXsd resultXsd = null;
 			XMLStreamWriter w;
 			if (xmlStreamWriter == null) {
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				resultXsd = new ByteArrayXsd();
-				//resultXsd.setClassLoader(classLoader);
-				//resultXsd.setNamespace(namespace);
-				resultXsd.setByteArrayOutputStream(byteArrayOutputStream);
-				//resultXsd.setSourceXsds(xsds);
-				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				StringWriter schemaContentsWriter = new StringWriter();
+				resultXsd = new StringXsd();
+				resultXsd.setSchemaContentsWriter(schemaContentsWriter);
+				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(schemaContentsWriter);
 			} else {
 				w = xmlStreamWriter;
 			}

@@ -15,22 +15,26 @@
 */
 package nl.nn.adapterframework.validation.xsd;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import lombok.Setter;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.validation.XSD;
 
-public class ByteArrayXsd extends XSD{
+/**
+ * XSD implementation of an internally created schema, used as result of SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes().
+ * 
+ * @author Gerrit van Brakel
+ */
+public class StringXsd extends XSD {
 
-	private @Setter ByteArrayOutputStream byteArrayOutputStream;
+	private @Setter StringWriter schemaContentsWriter;
 
 	@Override
 	public Reader getReader() throws IOException {
-		return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+		return new StringReader(schemaContentsWriter.toString());
 	}
-
+	
 }

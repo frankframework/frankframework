@@ -17,6 +17,7 @@ package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import java.util.Set;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
@@ -364,6 +366,24 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public String getSystemId() {
 		return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
+	}
+
+	/**
+	 * convenience method to test adding namespaces to schemas, in the same way that SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes() does this.
+	 */
+	public String addTargetNamespace() throws ConfigurationException {
+		try {
+			List<Attribute> rootAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
+			List<XMLEvent> imports = new ArrayList<XMLEvent>();
+			StringWriter writer = new StringWriter();
+			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
+			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, false);
+			return writer.toString();
+		} catch (XMLStreamException | IOException e) {
+			throw new ConfigurationException(toString(), e);
+		}
 	}
 
 }

@@ -23,6 +23,11 @@ import javax.wsdl.WSDLException;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 
+/**
+ * Extension of ResourceXsd, where the schema is retrieved from a WSDL.
+ * 
+ * @author Gerrit van Brakel
+ */
 public class WsdlXsd extends ResourceXsd {
 
 	private javax.wsdl.Definition wsdlDefinition;
