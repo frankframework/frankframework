@@ -67,6 +67,17 @@ public class MediaTypeTest {
 	}
 
 	@Test
+	public void isConsumableEmptyHeader() {
+		// Act / Assert
+		assertTrue("can parse anything", MediaTypes.ANY.isConsumable(null));
+		assertTrue("can parse anything", MediaTypes.ANY.isConsumable(""));
+		assertFalse("can parse [XML]", MediaTypes.XML.isConsumable(null));
+		assertFalse("can parse [XML]", MediaTypes.XML.isConsumable(""));
+		assertFalse("can parse [JSON]", MediaTypes.JSON.isConsumable(null));
+		assertFalse("can parse [JSON]", MediaTypes.JSON.isConsumable(""));
+	}
+
+	@Test
 	public void isConsumableMULTIPARTS() {
 		//There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
 		//Test at least the 3 most commonly used multiparts

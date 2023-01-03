@@ -364,7 +364,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
+				if(!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;

@@ -70,6 +70,12 @@ public enum MediaTypes {
 	 * Matches the provided 'Content-Type' to this enum, should always be valid, is not weighted
 	 */
 	public boolean isConsumable(String contentType) {
+		if (this == ANY) {
+			return true;
+		}
+		if (StringUtils.isBlank(contentType)) {
+			return false;
+		}
 		try {
 			MimeType otherType = MimeTypeUtils.parseMimeType(contentType);
 			return mimeType.includes(otherType);
