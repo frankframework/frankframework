@@ -39,6 +39,8 @@ import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
+import javax.annotation.Nonnull;
+
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
@@ -214,24 +216,25 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * The required contentType on requests, if it doesn't match the request will fail
 	 * @ff.default ANY
 	 */
-	public void setConsumes(MediaTypes value) {
-		this.consumes = value != null ? value : MediaTypes.ANY;
+	public void setConsumes(@Nonnull MediaTypes value) {
+		this.consumes = value;
 	}
 
 	/**
 	 * The specified contentType on response. When <code>ANY</code> the response will determine the content type based on the return data.
 	 * @ff.default ANY
 	 */
-	public void setProduces(MediaTypes value) {
-		this.produces = value != null ? value : MediaTypes.ANY;
+	public void setProduces(@Nonnull MediaTypes value) {
+		this.produces = value;
 	}
 
 	/**
-	 * The specified character encoding on the response contentType header
+	 * The specified character encoding on the response contentType header. NULL or empty
+	 * values will be ignored.
 	 * @ff.default UTF-8
 	 */
 	public void setCharacterEncoding(String charset) {
-		if(StringUtils.isNotEmpty(charset)) {
+		if(StringUtils.isNotBlank(charset)) {
 			this.charset = charset;
 		}
 	}
