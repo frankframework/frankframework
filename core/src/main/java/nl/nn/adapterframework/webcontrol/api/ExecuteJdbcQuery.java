@@ -91,8 +91,6 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("queryType", queryType);
 		builder.addHeader("query", query);
-		builder.addHeader("trimSpaces", trimSpaces);
-		builder.addHeader("avoidLocking", avoidLocking);
 		builder.addHeader("resultType", resultType);
 		return callSyncGateway(builder);
 	}
