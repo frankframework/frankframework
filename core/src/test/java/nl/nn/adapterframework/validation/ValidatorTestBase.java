@@ -21,6 +21,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
 /**
  * @author Gerrit van Brakel
@@ -176,12 +177,12 @@ public abstract class ValidatorTestBase {
 	public SchemasProvider getSchemasProvider(final String schemaLocation, final boolean addNamespaceToSchema) {
 		return new SchemasProvider() {
 
-			public Set<XSD> getXsds() throws ConfigurationException {
-				Set<XSD> xsds = new LinkedHashSet<XSD>();
+			public Set<IXSD> getXsds() throws ConfigurationException {
+				Set<IXSD> xsds = new LinkedHashSet<IXSD>();
 				String[] split =  schemaLocation.trim().split("\\s+");
 				if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 				for (int i = 0; i < split.length; i += 2) {
-					XSD xsd = new XSD();
+					XSD xsd = new ResourceXsd();
 					xsd.setAddNamespaceToSchema(addNamespaceToSchema);
 					xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
 					xsds.add(xsd);
@@ -191,11 +192,11 @@ public abstract class ValidatorTestBase {
 
 			@Override
 			public List<Schema> getSchemas() throws ConfigurationException {
-				Set<XSD> xsds = getXsds();
+				Set<IXSD> xsds = getXsds();
 				xsds = SchemaUtils.getXsdsRecursive(xsds);
 				//checkRootValidations(xsds);
 				try {
-					Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+					Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(testScopeProvider, xsdsGroupedByNamespace, null);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);

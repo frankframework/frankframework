@@ -18,7 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.validation.XSD;
+import nl.nn.adapterframework.validation.IXSD;
 
 public interface IXmlValidator extends IValidator {
 
@@ -31,7 +31,7 @@ public interface IXmlValidator extends IValidator {
 	 */
 	public String getSchema();
 	public String getSchemaLocation();
-	public Set<XSD> getXsds() throws ConfigurationException;
+	public Set<IXSD> getXsds() throws ConfigurationException;
 
 	/**
 	 * Provide additional generic documentation on the validation of the

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,13 +58,14 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
+import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.Schema;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.adapterframework.validation.ValidationContext;
-import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
@@ -352,17 +353,17 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	@Override
-	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new LinkedHashSet<XSD>();
+	public Set<IXSD> getXsds() throws ConfigurationException {
+		Set<IXSD> xsds = new LinkedHashSet<IXSD>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
 			xsds.add(xsd);
 		} else {
 			String[] split =  getSchemaLocation().trim().split("\\s+");
 			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + getSchemaLocation());
 			for (int i = 0; i < split.length; i += 2) {
-				XSD xsd = new XSD();
+				ResourceXsd xsd = new ResourceXsd();
 				xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
 				xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 				xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
@@ -380,7 +381,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	public List<Schema> getSchemas(boolean checkRootValidations) throws ConfigurationException {
-		Set<XSD> xsds = getXsds();
+		Set<IXSD> xsds = getXsds();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			// Support redefine for noNamespaceSchemaLocation for backwards
 			// compatibility. It's deprecated in the latest specification:
@@ -397,7 +398,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<XSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, true);
+			Set<IXSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
@@ -409,7 +410,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				checkOutputRootValidations(xsds);
 			}
 			try {
-				Map<String, Set<XSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
+				Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 				xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(this, xsdsGroupedByNamespace, null); // also handles addNamespaceToSchema
 			} catch(Exception e) {
 				throw new ConfigurationException("could not merge schema's", e);
@@ -499,7 +500,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 
 		@Override
-		public Set<XSD> getXsds() throws ConfigurationException {
+		public Set<IXSD> getXsds() throws ConfigurationException {
 			return owner.getXsds();
 		}
 
@@ -537,13 +538,13 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return responseMode ? responseRootValidations : requestRootValidations;
 	}
 
-	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
+	private void checkInputRootValidations(Set<IXSD> xsds) throws ConfigurationException {
 		if (getRequestRootValidations() != null) {
 			getRequestRootValidations().check(this, xsds);
 		}
 	}
 
-	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
+	private void checkOutputRootValidations(Set<IXSD> xsds) throws ConfigurationException {
 		if (getResponseRootValidations() != null) {
 			getResponseRootValidations().check(this, xsds);
 		}
@@ -574,7 +575,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			if (url == null) {
 				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");
 			}
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			try {
 				xsd.initNoNamespace(this, schemaLocation);
 			} catch (ConfigurationException e) {
