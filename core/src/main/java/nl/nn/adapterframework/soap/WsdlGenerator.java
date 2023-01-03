@@ -101,8 +101,6 @@ public class WsdlGenerator {
 	private final IXmlValidator inputValidator;
 	private final IXmlValidator outputValidator;
 	private String webServiceListenerNamespace;
-	private Set<IXSD> inputXsds;
-	private Set<IXSD> outputXsds;
 	private Set<IXSD> xsds;
 	private Set<IXSD> rootXsds;
 	private Map<String, Set<IXSD>> xsdsGroupedByNamespace;
@@ -360,8 +358,8 @@ public class WsdlGenerator {
 	}
 
 	public void init() throws ConfigurationException {
-		inputXsds = new HashSet<IXSD>();
-		outputXsds = new HashSet<IXSD>();
+		Set<IXSD> inputXsds = new HashSet<IXSD>();
+		Set<IXSD> outputXsds = new HashSet<IXSD>();
 		xsds = new HashSet<IXSD>();
 		rootXsds = new HashSet<IXSD>();
 		Set<IXSD> inputRootXsds = new HashSet<IXSD>();

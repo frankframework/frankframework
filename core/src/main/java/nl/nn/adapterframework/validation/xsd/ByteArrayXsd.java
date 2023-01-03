@@ -28,14 +28,9 @@ public class ByteArrayXsd extends XSD{
 
 	private @Setter ByteArrayOutputStream byteArrayOutputStream;
 
-	public ByteArrayXsd() {
-		// TODO Auto-generated constructor stub
-	}
-
 	@Override
 	public Reader getReader() throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
 	}
-
 
 }

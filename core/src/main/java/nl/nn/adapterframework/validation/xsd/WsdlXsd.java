@@ -28,10 +28,6 @@ public class WsdlXsd extends ResourceXsd {
 	private javax.wsdl.Definition wsdlDefinition;
 	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 
-	public WsdlXsd() {
-		super();
-	}
-
 	public void setWsdlSchema(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) {
 		this.wsdlDefinition = wsdlDefinition;
 		this.wsdlSchema = wsdlSchema;

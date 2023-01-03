@@ -22,9 +22,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * The representation of a XSD.
- *
- * @author Michiel Meeuwissen
- * @author  Jaco de Groot
  */
 public interface IXSD extends Schema {
 

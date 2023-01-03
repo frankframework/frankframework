@@ -54,7 +54,7 @@ import nl.nn.adapterframework.validation.xsd.ResourceXsd;
  * @author Michiel Meeuwissen
  * @author  Jaco de Groot
  */
-public abstract class XSD implements IXSD, Schema, Comparable<XSD> {
+public abstract class XSD implements IXSD, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(IXSD.class);
 
 	private IScopeProvider scopeProvider;
@@ -126,7 +126,7 @@ public abstract class XSD implements IXSD, Schema, Comparable<XSD> {
 
 	/*
 	 * Determine:
-	 * 	- schema target namespace
+	 *  - schema target namespace
 	 *  - schema default namespace
 	 *  - imported namespaces
 	 *  - list of potential root elements
@@ -235,11 +235,11 @@ public abstract class XSD implements IXSD, Schema, Comparable<XSD> {
 		}
 		return compareToByReferenceOrContents(x);
 	}
-	
+
 	public int compareToByReferenceOrContents(XSD x) {
 		return compareToByContents(x);
 	}
-	
+
 	public int compareToByContents(XSD x) {
 		try {
 			InputSource control = new InputSource(getReader());
@@ -365,21 +365,5 @@ public abstract class XSD implements IXSD, Schema, Comparable<XSD> {
 	public String getSystemId() {
 		return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
 	}
-
-
-//	public void addTargetNamespace() throws ConfigurationException {
-//		try {
-//			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-//			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
-//			List<XMLEvent> imports = new ArrayList<XMLEvent>();
-//			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-//			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
-//			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, false);
-//			setByteArrayOutputStream(byteArrayOutputStream);
-//		} catch (XMLStreamException | IOException e) {
-//			throw new ConfigurationException(toString(), e);
-//		}
-//	}
 
 }
