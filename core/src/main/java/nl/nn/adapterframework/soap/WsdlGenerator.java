@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,8 +51,9 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.XSD;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
 /**
  *  Utility class to generate the WSDL. Straight-forwardly implemented using stax only.
@@ -100,12 +101,10 @@ public class WsdlGenerator {
 	private final IXmlValidator inputValidator;
 	private final IXmlValidator outputValidator;
 	private String webServiceListenerNamespace;
-	private Set<XSD> inputXsds;
-	private Set<XSD> outputXsds;
-	private Set<XSD> xsds;
-	private Set<XSD> rootXsds;
-	private Map<String, Set<XSD>> xsdsGroupedByNamespace;
-	private LinkedHashMap<XSD, String> prefixByXsd;
+	private Set<IXSD> xsds;
+	private Set<IXSD> rootXsds;
+	private Map<String, Set<IXSD>> xsdsGroupedByNamespace;
+	private LinkedHashMap<IXSD, String> prefixByXsd;
 	private LinkedHashMap<String, String> namespaceByPrefix;
 	private String inputRoot;
 	private String outputRoot;
@@ -359,23 +358,23 @@ public class WsdlGenerator {
 	}
 
 	public void init() throws ConfigurationException {
-		inputXsds = new HashSet<XSD>();
-		outputXsds = new HashSet<XSD>();
-		xsds = new HashSet<XSD>();
-		rootXsds = new HashSet<XSD>();
-		Set<XSD> inputRootXsds = new HashSet<XSD>();
+		Set<IXSD> inputXsds = new HashSet<IXSD>();
+		Set<IXSD> outputXsds = new HashSet<IXSD>();
+		xsds = new HashSet<IXSD>();
+		rootXsds = new HashSet<IXSD>();
+		Set<IXSD> inputRootXsds = new HashSet<IXSD>();
 		inputRootXsds.addAll(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
 		inputXsds.addAll(SchemaUtils.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
-			Set<XSD> outputRootXsds = new HashSet<XSD>();
+			Set<IXSD> outputRootXsds = new HashSet<IXSD>();
 			outputRootXsds.addAll(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
 			outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
-		prefixByXsd = new LinkedHashMap<XSD, String>();
+		prefixByXsd = new LinkedHashMap<IXSD, String>();
 		namespaceByPrefix = new LinkedHashMap<String, String>();
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
@@ -388,14 +387,14 @@ public class WsdlGenerator {
 			// definition bound to the namespace name http://www.w3.org/XML/1998/namespace
 			// (see http://www.w3.org/TR/xml-names/#ns-decl).
 			if (!"http://www.w3.org/XML/1998/namespace".equals(namespace)) {
-				for (XSD xsd: xsdsGroupedByNamespace.get(namespace)) {
+				for (IXSD xsd: xsdsGroupedByNamespace.get(namespace)) {
 					prefixByXsd.put(xsd, "ns" + prefixCount);
 				}
 				namespaceByPrefix.put("ns" + prefixCount, namespace);
 				prefixCount++;
 			}
 		}
-		for (XSD xsd : xsds) {
+		for (IXSD xsd : xsds) {
 			if (StringUtils.isEmpty(xsd.getTargetNamespace()) && !xsd.isAddNamespaceToSchema()) {
 				warn("XSD '" + xsd + "' doesn't have a targetNamespace and addNamespaceToSchema is false");
 			}
@@ -438,8 +437,8 @@ public class WsdlGenerator {
 		return false;
 	}
 
-	public Set<XSD> getXsds(IXmlValidator xmlValidator) throws ConfigurationException {
-		Set<XSD> xsds = new HashSet<XSD>();
+	public Set<IXSD> getXsds(IXmlValidator xmlValidator) throws ConfigurationException {
+		Set<IXSD> xsds = new HashSet<IXSD>();
 		String inputSchema = xmlValidator.getSchema();
 		if (inputSchema != null) {
 			// In case of a WebServiceListener using soap=true it might be
@@ -448,15 +447,15 @@ public class WsdlGenerator {
 			// remove the soap envelop and body element before it is
 			// validated. In this case we use the serviceNamespaceURI from
 			// the WebServiceListener as the namespace for the schema.
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			//xsd.setNamespace(webServiceListenerNamespace);
 			xsd.setAddNamespaceToSchema(true);
 			xsd.initNamespace(webServiceListenerNamespace, pipeLine, inputSchema);
 			xsds.add(xsd);
 		} else {
 			xsds = xmlValidator.getXsds();
-			Set<XSD> remove = new HashSet<XSD>();
-			for (XSD xsd : xsds) {
+			Set<IXSD> remove = new HashSet<IXSD>();
+			for (IXSD xsd : xsds) {
 				if (excludeXsds.contains(xsd.getNamespace())) {
 					remove.add(xsd);
 				}
@@ -483,7 +482,7 @@ public class WsdlGenerator {
 
 			// And then all XSD's
 			Set<String> entries = new HashSet<String>();
-			for (XSD xsd : xsds) {
+			for (IXSD xsd : xsds) {
 				String zipName = xsd.getResourceTarget();
 				if (entries.add(zipName)) {
 					ZipEntry xsdEntry = new ZipEntry(zipName);
@@ -921,16 +920,16 @@ public class WsdlGenerator {
 		return rootSpecification;
 	}
 
-	protected QName getRootElement(Set<XSD> xsds, String root) {
+	protected QName getRootElement(Set<IXSD> xsds, String root) {
 		return getRootElement(xsds, root, null);
 	}
 
-	protected QName getRootElement(Set<XSD> xsds, String root, String namespace) {
+	protected QName getRootElement(Set<IXSD> xsds, String root, String namespace) {
 		String firstRoot = null;
 		if (root.trim().length() > 0) {
 			String[] roots = root.trim().split(",", -1);
 			firstRoot = roots[0].trim();
-			for (XSD xsd : xsds) {
+			for (IXSD xsd : xsds) {
 				for (String rootTag : xsd.getRootTags()) {
 					if (firstRoot.equals(rootTag)) {
 						if (StringUtils.isEmpty(namespace) || namespace.equals(xsd.getNamespace())) {
@@ -949,7 +948,7 @@ public class WsdlGenerator {
 		return null;
 	}
 
-	protected QName getHeaderElement(IXmlValidator xmlValidator, Set<XSD> xsds) {
+	protected QName getHeaderElement(IXmlValidator xmlValidator, Set<IXSD> xsds) {
 		if (xmlValidator instanceof SoapValidator) {
 			String root = ((SoapValidator)xmlValidator).getSoapHeader();
 			String namespace = ((SoapValidator)xmlValidator).getSoapHeaderNamespace();
@@ -960,11 +959,11 @@ public class WsdlGenerator {
 		return null;
 	}
 
-	protected QName getBodyElement(IXmlValidator xmlValidator, Set<XSD> xsds, String type) {
+	protected QName getBodyElement(IXmlValidator xmlValidator, Set<IXSD> xsds, String type) {
 		return getBodyElement(xmlValidator, xsds, type, false);
 	}
 
-	protected QName getBodyElement(IXmlValidator xmlValidator, Set<XSD> xsds, String type, boolean outputMode) {
+	protected QName getBodyElement(IXmlValidator xmlValidator, Set<IXSD> xsds, String type, boolean outputMode) {
 		String root;
 //		if (xmlValidator instanceof SoapValidator) {
 //			if (outputMode) {

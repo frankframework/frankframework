@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,9 +66,11 @@ import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
+import nl.nn.adapterframework.validation.xsd.WsdlXsd;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
@@ -290,23 +292,23 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	@Override
-	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new LinkedHashSet<>();
+	public Set<IXSD> getXsds() throws ConfigurationException {
+		Set<IXSD> xsds = new LinkedHashSet<>();
 		SoapVersion soapVersion = getSoapVersion();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);
 			xsds.add(xsd);
 		}
 		if (soapVersion==SoapVersion.SOAP12 || soapVersion==SoapVersion.AUTO) {
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNamespace(SoapVersion.SOAP12.namespace, this, SoapVersion.SOAP12.location);
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
-				XSD xsd = new XSD();
+				ResourceXsd xsd = new ResourceXsd();
 				xsd.initNamespace(st.nextToken(), this, st.hasMoreTokens() ? st.nextToken():null);
 				xsds.add(xsd);
 			}
@@ -348,7 +350,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			}
 		}
 		for (Schema schema : filteredSchemas) {
-			XSD xsd = new XSD();
+			WsdlXsd xsd = new WsdlXsd();
 			xsd.setWsdlSchema(definition, schema);
 			if (StringUtils.isNotEmpty(getSchemaLocation())) {
 				xsd.setResourceInternalReference(filteredReferences.get(schema));

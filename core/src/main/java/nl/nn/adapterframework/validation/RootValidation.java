@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@ public class RootValidation {
 		rootValidation = Arrays.asList(rootElement);
 	}
 
-	public void check(IConfigurationAware source, Set<XSD> xsds) throws ConfigurationException {
+	public void check(IConfigurationAware source, Set<IXSD> xsds) throws ConfigurationException {
 		boolean found = false;
 		String validElements = rootValidation.get(rootValidation.size() - 1);
 		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
 		for (String validElement : validElementsAsList) {
 			if (StringUtils.isNotEmpty(validElement)) {
 				List<String> allRootTags = new ArrayList<String>();
-				for (XSD xsd : xsds) {
+				for (IXSD xsd : xsds) {
 					for (String rootTag : xsd.getRootTags()) {
 						allRootTags.add(rootTag);
 						if (validElement.equals(rootTag)) {

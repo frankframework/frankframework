@@ -15,7 +15,7 @@ import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
-import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
 public class XSDTest {
 
@@ -23,14 +23,14 @@ public class XSDTest {
 
 	@Test
 	public void xsdName() throws Exception {
-		XSD xsd = new XSD();
+		XSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("XSDTest/v1 test.xsd", xsd.getResourceTarget());
 	}
 
 	@Test
 	public void xsdNamespace() throws Exception {
-		XSD xsd = new XSD();
+		XSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1 test.xsd");
 		assertEquals("http://test", xsd.getNamespace());
 		assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
@@ -38,7 +38,7 @@ public class XSDTest {
 
 	@Test
 	public void writeXSD() throws Exception {
-		XSD xsd = new XSD();
+		XSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/test.xsd");
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -58,8 +58,7 @@ public class XSDTest {
 		XSD xsd = getXSD(schemaLocation);
 		xsd.setAddNamespaceToSchema(true);
 
-		xsd.addTargetNamespace();
-		String actual = StreamUtil.readerToString(xsd.getReader(), null);
+		String actual = xsd.addTargetNamespace();
 		MatchUtils.assertXmlEquals(expectedSchema, actual);
 	}
 
@@ -73,10 +72,9 @@ public class XSDTest {
 		testAddNamespacesToSchema(ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE, ValidatorTestBase.SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE+"-after-adding-namespace.xsd");
 	}
 
-
 	public XSD getXSD(String schemaLocation) throws ConfigurationException {
 		String[] split =  schemaLocation.trim().split("\\s+");
-		XSD xsd = new XSD();
+		XSD xsd = new ResourceXsd();
 		xsd.initNamespace(split[0], scopeProvider, split[1]);
 		return xsd;
 	}
