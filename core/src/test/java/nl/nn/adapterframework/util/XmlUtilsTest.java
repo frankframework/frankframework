@@ -17,8 +17,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -136,7 +136,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	}
 
 	@Test
-	@Ignore("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
+	@Disabled //("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
 	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("stringParamKey", "stringParamValue");

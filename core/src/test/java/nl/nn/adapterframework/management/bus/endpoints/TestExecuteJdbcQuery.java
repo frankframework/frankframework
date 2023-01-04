@@ -47,6 +47,6 @@ public class TestExecuteJdbcQuery extends BusTestBase {
 		//Test with CSV resultType
 		request.setHeader("resultType", "csv");
 		String expectedCsv = TestFileUtils.getTestFile("/Management/ExecuteJdbcQueryMessage.csv");
-		TestAssertions.assertEqualsIgnoreCRLF("CSV Mismatch", expectedCsv, (String) callSyncGateway(request).getPayload());
+		TestAssertions.assertEqualsIgnoreCRLF(expectedCsv, (String) callSyncGateway(request).getPayload(), "CSV Mismatch");
 	}
 }
