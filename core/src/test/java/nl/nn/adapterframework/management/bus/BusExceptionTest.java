@@ -1,12 +1,14 @@
 package nl.nn.adapterframework.management.bus;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -14,18 +16,12 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.TestAppender;
 
-@RunWith(Parameterized.class)
 public class BusExceptionTest {
 
 	private static final String BUS_EXCEPTION_MESSAGE = "outer exception";
 
-	@Parameterized.Parameter(0)
 	public String expectedLogMessage;
-
-	@Parameterized.Parameter(1)
 	public Level expectedLogLevel;
-
-	@Parameterized.Parameter(2)
 	public Exception innerException;
 
 	@Parameters(name= "{0}")
@@ -37,8 +33,9 @@ public class BusExceptionTest {
 		});
 	}
 
-	@Test
-	public void testExceptionMessage() {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build(); //only log the first line of the exception
 		TestAppender.addToRootLogger(appender);
 		try {
@@ -46,7 +43,7 @@ public class BusExceptionTest {
 			assertEquals(BUS_EXCEPTION_MESSAGE + expectedLogMessage, ex.getMessage());
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("expected only 1 line to be logged, got: "+logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "expected only 1 line to be logged, got: "+logEvents);
 			String logMessage = logEvents.get(0);
 			String[] event = logMessage.split(" - ");
 			String level = event[0];
@@ -54,7 +51,7 @@ public class BusExceptionTest {
 			String exception = (event.length == 3) ? event[2] : null;
 
 			//Check log level
-			assertEquals("["+level+"] did not match the expected log level ["+expectedLogLevel+"]", expectedLogLevel.name(), level);
+			assertEquals(expectedLogLevel.name(), level, "["+level+"] did not match the expected log level ["+expectedLogLevel+"]");
 
 			//Check log message
 			assertEquals("outer exception", message);
