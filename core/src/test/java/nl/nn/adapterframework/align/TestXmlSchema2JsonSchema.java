@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.net.URL;
@@ -117,6 +117,6 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 
 		LOG.debug("jsonString: {}", jsonString);
 		LOG.debug("problems: {}", problems);
-		assertEquals(problems.toString(), 0, problems.size());
+		assertEquals(0, problems.size(), problems.toString());
 	}
 }

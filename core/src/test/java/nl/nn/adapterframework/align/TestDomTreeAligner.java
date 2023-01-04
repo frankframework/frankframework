@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.util.LinkedList;
@@ -14,8 +14,8 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.XSModel;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 /**
@@ -39,7 +39,7 @@ public class TestDomTreeAligner extends AlignTestBase {
     	
     	boolean expectValid=expectedFailureReason==null;
     	
-    	assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
+    	assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
  	
 
     	ValidatorHandler validator = schema.newValidatorHandler();
@@ -60,8 +60,8 @@ public class TestDomTreeAligner extends AlignTestBase {
 		
     	String xmlAct = Utils.source2String(source);
     	System.out.println("xml aligned via source="+xmlAct);
-    	assertNotNull("xmlAct is null",xmlAct);
-    	assertTrue("XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
+    	assertNotNull(xmlAct, "xmlAct is null");
+    	assertTrue(Utils.validate(schemaUrl, xmlAct), "XML is not aligned");
 
 //    	InputSource is = new InputSource(new StringReader(xmlString));
 //    	try {
@@ -119,14 +119,14 @@ public class TestDomTreeAligner extends AlignTestBase {
     	
     }
     @Test
-    @Ignore("only json to xml")
+    @Disabled //("only json to xml")
     public void testNullError1() throws Exception {
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal1", "nillable");
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal2", "nillable");
     }
     @Override
 	@Test
-    @Ignore("only json to xml")
+	@Disabled //("only json to xml")
     public void testMixedContentUnknown() throws Exception {
     	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown","Cannot find the declaration of element");
     }

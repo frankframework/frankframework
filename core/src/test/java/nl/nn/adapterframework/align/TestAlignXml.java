@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.align;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.util.XmlUtils;
@@ -23,7 +23,7 @@ public class TestAlignXml {
 		Document dom = XmlUtils.buildDomDocument(xml, true);
  
 		// check the validity of the input XML
-		if (inputValid) assertTrue("valid input XML", Utils.validate(schemaUrl, xml));
+		if (inputValid) assertTrue(Utils.validate(schemaUrl, xml), "valid input XML");
  
 		try {
 			String xmlAct = DomTreeAligner.translate(dom, schemaUrl, ignoreExtraElements);
@@ -34,7 +34,7 @@ public class TestAlignXml {
 	    	if (xmlAct==null) {
 	    		fail("could not convert to xml: "+description);
 	    	}
-	       	assertTrue("converted XML is not aligned: "+description,  Utils.validate(schemaUrl, xmlAct));
+	       	assertTrue(Utils.validate(schemaUrl, xmlAct), "converted XML is not aligned: "+description);
 //	       	assertEquals("round tripp",xml,xmlAct);
 		} catch (Exception e) {
 			if (expectedFailureReason==null) {
@@ -55,7 +55,7 @@ public class TestAlignXml {
 	
 	public void testStrings(String xmlIn,URL schemaUrl, String targetNamespace, String rootElement, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
-		if (xmlIn!=null) assertTrue("input not valid",Utils.validate(schemaUrl, xmlIn));
+		if (xmlIn!=null) assertTrue(Utils.validate(schemaUrl, xmlIn), "input not valid");
 
 		testXml(xmlIn, schemaUrl, expectedFailureReason,"");
 	}
