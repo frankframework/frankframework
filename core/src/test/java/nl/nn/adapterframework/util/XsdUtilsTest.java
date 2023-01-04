@@ -2,7 +2,8 @@ package nl.nn.adapterframework.util;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
@@ -18,7 +19,7 @@ import java.io.InputStream;
 public class XsdUtilsTest {
 
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreAttributeOrder(true);
