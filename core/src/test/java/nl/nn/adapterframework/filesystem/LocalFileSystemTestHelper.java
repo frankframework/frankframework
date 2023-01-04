@@ -11,11 +11,11 @@ import org.junit.rules.TemporaryFolder;
 
 public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
-	public TemporaryFolder folder;
+	public Path folder;
 
 
-	public LocalFileSystemTestHelper(TemporaryFolder folder) {
-		this.folder=folder;
+	public LocalFileSystemTestHelper(Path folder2) {
+		this.folder=folder2;
 	}
 
 	@Override
@@ -29,13 +29,13 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 	
 	protected Path getFileHandle(String filename) {
-		return Paths.get(folder.getRoot().getAbsolutePath(), filename);
+		return Paths.get(folder.toAbsolutePath().toString(), filename);
 	}
 	protected Path getFileHandle(String subfolder, String filename) {
 		if (subfolder==null) {
 			return getFileHandle(filename);
 		}
-		return Paths.get(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
+		return Paths.get(folder.toAbsolutePath()+"/"+subfolder, filename);
 	}
 
 	@Override
