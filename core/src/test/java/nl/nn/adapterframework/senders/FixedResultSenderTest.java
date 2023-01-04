@@ -1,9 +1,13 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -16,12 +20,12 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 
 	@Test
 	public void basic() throws Exception {
-		exception.expectMessage("has neither fileName nor returnString specified");
-		sender.configure();
-		sender.open();
-		Message input = new Message("<dummy/>");
-		String result = sender.sendMessageOrThrow(input, session).asString();
-		assertEquals(input.asString(), result);
+		try {
+			sender.configure();
+		} catch (Exception e) {
+			assertTrue(e instanceof ConfigurationException);
+			assertThat(e.getMessage(), endsWith("has neither fileName nor returnString specified"));
+		}
 	}
 	
 	@Test

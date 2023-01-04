@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.senders;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import jakarta.mail.Provider;
 import jakarta.mail.Provider.Type;

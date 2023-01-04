@@ -2,13 +2,13 @@ package nl.nn.adapterframework.senders;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -59,7 +59,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = DELAY + 1000;
-		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
+		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
 		long duration = System.currentTimeMillis() - startTime;
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
-		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
+		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
 	@Test
