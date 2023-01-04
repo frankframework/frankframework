@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.encryption;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -9,7 +9,7 @@ import java.security.UnrecoverableKeyException;
 
 import javax.net.ssl.SSLContext;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -63,7 +63,7 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("wrong");
 		keystoreOwner.setKeystoreAlias("alias2");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW2");
-		assertThrows("password was incorrect", IOException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null));
+		assertThrows(IOException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "password was incorrect");
 	}
 
 	@Test
@@ -73,6 +73,6 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias2");
 		keystoreOwner.setKeystoreAliasPassword("wrong");
-		assertThrows("Cannot recover key", UnrecoverableKeyException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null));
+		assertThrows(UnrecoverableKeyException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "Cannot recover key");
 	}
 }

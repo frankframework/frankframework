@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.encryption;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PkiUtilTest {
 	private final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
