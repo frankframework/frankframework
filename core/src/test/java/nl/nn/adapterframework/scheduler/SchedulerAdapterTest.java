@@ -15,16 +15,16 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.text.ParseException;
 import java.util.LinkedList;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.quartz.impl.calendar.HolidayCalendar;
@@ -41,7 +41,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	private SchedulerAdapter schedulerAdapter;
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();
 		schedulerAdapter = new SchedulerAdapter();
