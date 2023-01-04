@@ -398,9 +398,10 @@ public class AdapterStatus extends BusEndpointBase {
 			if (receiver.isThreadCountReadable()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
-			}
-			if (receiver.isThreadCountControllable()) {
-				receiverInfo.put("threadCountControllable", true);
+
+				if (receiver.isThreadCountControllable()) {
+					receiverInfo.put("threadCountControllable", true);
+				}
 			}
 			receivers.add(receiverInfo);
 		}
