@@ -2,7 +2,7 @@
 
 To ensure that your contribution doesn't break any logic, we would like you to run the test scenario's within the iaf-test module before committing your changes. To do this, a number of extra dependencies are required. These are placed as runtime-dependencies in the `test/pom.xml` but the overview is placed below for verification, and in case something goes wrong with the dependency management.
 
-This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
+This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page. For users of IntelliJ, see chapter 3.
 
 ## 1. Proprietary modules and JAR dependencies
 
