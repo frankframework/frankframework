@@ -63,11 +63,13 @@ public class FileSystemCredentials extends Credentials {
 				Path aliasPath = Paths.get(root.toString(), getAlias());
 				if (Files.exists(aliasPath)) {
 					if (Files.isDirectory(aliasPath)) {
-						populateFieldFromFile(getAlias(), usernamefile, u -> setUsername(u));
-						populateFieldFromFile(getAlias(), passwordfile, p -> setPassword(p));
+						populateFieldFromFile(getAlias(), usernamefile, this::setUsername);
+						populateFieldFromFile(getAlias(), passwordfile, this::setPassword);
 					} else {
-						populateFieldFromFile(aliasPath, p -> setPassword(p));
+						populateFieldFromFile(aliasPath, this::setPassword);
 					}
+				} else {
+					throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 				}
 			} catch (IOException e) {
 				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
