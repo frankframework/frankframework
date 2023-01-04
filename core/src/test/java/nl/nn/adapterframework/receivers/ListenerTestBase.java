@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -45,7 +45,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 
 	public abstract S createListener() throws Exception;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
 		if(listener instanceof IPullingListener) {
@@ -68,7 +68,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 		return null;
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws ListenerException {
 		if (listener != null) {
 			listener.close();

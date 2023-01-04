@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.receivers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -9,7 +9,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
@@ -57,7 +57,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		String input = "test-message";
 		Object rawMessage = getRawMessage(input);
 		assertTrue(rawMessage instanceof MessageWrapper);
-		assertEquals("MessageStoreListener should not manipulate the rawMessage", input, ((MessageWrapper<Object>)rawMessage).getMessage().asString());
+		assertEquals(input, ((MessageWrapper<Object>)rawMessage).getMessage().asString(), "MessageStoreListener should not manipulate the rawMessage");
 	}
 
 	@Test
