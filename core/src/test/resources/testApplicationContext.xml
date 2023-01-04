@@ -18,4 +18,9 @@
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
 
 	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
+
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
+	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
+
 </beans>

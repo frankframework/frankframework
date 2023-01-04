@@ -12,6 +12,7 @@ import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -53,6 +54,11 @@ public class IbisContextTest {
 			IbisManager ibisManager = new MockIbisManager();
 			ibisManager.setIbisContext(this);
 			getApplicationContext().getBeanFactory().registerSingleton("ibisManager", ibisManager);
+		}
+
+		@Override
+		public AbstractApplicationContext getApplicationContext() {
+			return super.getApplicationContext();
 		}
 	}
 
@@ -107,7 +113,7 @@ public class IbisContextTest {
 			assertEquals("TestConfiguration", context.getApplicationName());
 
 			assertEquals(0, context.getIbisManager().getConfigurations().size());
-			MessageEventListener events = context.getBean("MessageEventListener", MessageEventListener.class);
+			MessageEventListener events = context.getApplicationContext().getBean("MessageEventListener", MessageEventListener.class);
 			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
 			assertNotNull("unable to find MessageKeeperMessage", message);
 			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
