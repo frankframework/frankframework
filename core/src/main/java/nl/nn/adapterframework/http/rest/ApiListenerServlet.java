@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +55,10 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
@@ -593,6 +597,30 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
+
+				/**
+				 * If a Last Modified value is present, set the 'Last-Modified' header.
+				 */
+				long lastModDate = Instant.now().toEpochMilli();
+				if(!Message.isEmpty(result)) {
+					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
+					if(StringUtils.isNotEmpty(lastModified)) {
+						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						if(date != null) {
+							lastModDate = date.getTime();
+						}
+					}
+				}
+				response.setDateHeader("Last-Modified", lastModDate);
+
+				StringBuilder cacheControl = new StringBuilder();
+				if(!response.containsHeader("etag")) {
+					cacheControl.append("no-store, no-cache, ");
+					response.setHeader("Pragma", "no-cache");
+					log.trace("disabling cache for uri [{}]", request::getRequestURI);
+				}
+				cacheControl.append("must-revalidate, max-age=0, post-check=0, pre-check=0");
+				response.setHeader("Cache-Control", cacheControl.toString());
 
 				/**
 				 * Add headers
