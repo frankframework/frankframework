@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * This is a test class to test the {@link FrankApiBase} class.
@@ -55,7 +55,7 @@ public class ApiTestBaseTest extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response simplePut(LinkedHashMap<String, Object> json) throws ApiException {
-		assertTrue("key [two] must be present!", json.containsKey("two"));
+		assertTrue(json.containsKey("two"), "key [two] must be present!");
 		assertEquals("dos", json.get("two"));
 		return Response.ok().entity(json).build();
 	}

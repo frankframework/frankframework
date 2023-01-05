@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.webcontrol.api;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -13,7 +13,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -21,15 +23,11 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.webcontrol.api.ApiException.FormattedJsonEntity;
 
-@RunWith(Parameterized.class)
 public class ApiExceptionTest {
 
 	private static final String API_EXCEPTION_MESSAGE = "api endpoint exception message";
 
-	@Parameterized.Parameter(0)
 	public String expectedMessage;
-
-	@Parameterized.Parameter(1)
 	public Exception causedByException;
 
 	@Parameters(name= "{0}")
@@ -49,7 +47,8 @@ public class ApiExceptionTest {
 		return json.split("error\": \"")[1].replace("\"\n}", "");
 	}
 
-	@Test
+	@ParameterizedTest
+	@MethodSource("data")
 	public void message() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -59,8 +58,9 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
 	}
 
-	@Test
-	public void nestedNoMessage() {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void nestedNoMessage(String expectedMessage, Exception causedByException) {
 		ApiException exception = new ApiException(causedByException);
 		assertThat(exception.getMessage(), Matchers.startsWith(expectedMessage));
 		Response response = exception.getResponse();
@@ -90,8 +90,9 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
 	}
 
-	@Test
-	public void nestedException() {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void nestedException(String expectedMessage, Exception causedByException) {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, causedByException);
 		assertThat(exception.getMessage(), Matchers.startsWith(API_EXCEPTION_MESSAGE +": "+ expectedMessage));
 		Response response = exception.getResponse();
