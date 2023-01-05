@@ -87,7 +87,7 @@ public class QueueCreator {
 							Properties queueProperties = QueueUtils.getSubProperties(properties, queueName);
 
 							//Deprecation warning
-							if(queueProperties.contains("requestTimeOut") || queueProperties.contains("responseTimeOut")) {
+							if(queueProperties.containsValue("requestTimeOut") || queueProperties.containsValue("responseTimeOut")) {
 								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
 							}
 

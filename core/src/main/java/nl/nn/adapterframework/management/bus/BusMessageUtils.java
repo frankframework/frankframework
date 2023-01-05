@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
 package nl.nn.adapterframework.management.bus;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -29,7 +33,6 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.DigestUtils;
 
 import nl.nn.adapterframework.util.EnumUtils;
@@ -127,12 +130,23 @@ public class BusMessageUtils {
 		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
 
-	public static UserDetails getUserDetails() {
+	/** May be anonymousUser, or a string representation of the currently logged in user. */
+	@Nullable
+	public static String getUserPrincipalName() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-			return (UserDetails) authentication.getPrincipal();
+		if(authentication != null) {
+			return authentication.getName();
 		}
 		return null;
+	}
+
+	@Nonnull
+	private static Collection<? extends GrantedAuthority> getAuthorities() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if(authentication != null) {
+			return authentication.getAuthorities();
+		}
+		return Collections.emptyList();
 	}
 
 	public static boolean hasAnyRole(String... roles) {
@@ -149,14 +163,11 @@ public class BusMessageUtils {
 	 */
 	public static boolean hasRole(String role) {
 		boolean granted = false;
-		UserDetails userDetails = getUserDetails();
-		if(userDetails != null) {
-			for(GrantedAuthority grantedAuthority : userDetails.getAuthorities()) {
-				String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-				granted = authorityName.equals(role);
-				if(granted) {
-					return true;
-				}
+		for(GrantedAuthority grantedAuthority : getAuthorities()) {
+			String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+			granted = authorityName.equals(role);
+			if(granted) {
+				return true;
 			}
 		}
 		return granted;

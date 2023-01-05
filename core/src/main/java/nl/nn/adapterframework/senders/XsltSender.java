@@ -97,7 +97,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	protected @Setter IThreadConnectableTransactionManager txManager;
 	private @Getter Boolean streamingXslt = null;
 
@@ -482,11 +482,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

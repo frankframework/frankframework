@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.adapterframework.core;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.validation.XSD;
+import nl.nn.adapterframework.validation.IXSD;
 
 public interface IXmlValidator extends IValidator {
 
@@ -31,7 +31,7 @@ public interface IXmlValidator extends IValidator {
 	 */
 	public String getSchema();
 	public String getSchemaLocation();
-	public Set<XSD> getXsds() throws ConfigurationException;
+	public Set<IXSD> getXsds() throws ConfigurationException;
 
 	/**
 	 * Provide additional generic documentation on the validation of the

@@ -62,8 +62,14 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		String query = getValue(json, "query");
 		String resultType = getValue(json, "resultType");
 
+		if(resultType == null || query == null) {
+			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
+		}
+		builder.addHeader("query", query);
+		builder.addHeader("resultType", resultType);
+
 		String avoidLocking = getValue(json, "avoidLocking");
-		if(StringUtils.isNotEmpty(resultType)) {
+		if(StringUtils.isNotEmpty(avoidLocking)) {
 			builder.addHeader("avoidLocking", Boolean.parseBoolean(avoidLocking));
 		}
 		String trimSpaces = getValue(json, "trimSpaces");
@@ -84,16 +90,8 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 			}
 		}
 
-		if(resultType == null || query == null) {
-			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
-		}
-
 		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("queryType", queryType);
-		builder.addHeader("query", query);
-		builder.addHeader("trimSpaces", trimSpaces);
-		builder.addHeader("avoidLocking", avoidLocking);
-		builder.addHeader("resultType", resultType);
 		return callSyncGateway(builder);
 	}
 }

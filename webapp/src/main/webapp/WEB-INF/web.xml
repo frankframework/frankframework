@@ -14,17 +14,6 @@
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
 
-	<!-- Spring Security -->
-	<filter>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
 		<url-pattern>/rest/*</url-pattern>
@@ -38,6 +27,28 @@
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
 		<url-pattern>/iaf/api/*</url-pattern>
+	</filter-mapping>
+
+	<!-- SCP Header for IAF GUI -->
+	<filter>
+		<filter-name>CspFilter</filter-name>
+		<filter-class>nl.nn.adapterframework.webcontrol.CspFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>CspFilter</filter-name>
+		<url-pattern>/iaf/gui/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Spring Security -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
 	<!--

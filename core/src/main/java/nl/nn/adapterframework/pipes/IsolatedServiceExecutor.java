@@ -24,17 +24,20 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.ThreadConnector;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
-	String serviceName;
-	PipeLineSession session;
-	boolean targetIsJavaListener;
-	Guard guard;
+	private String serviceName;
+	private PipeLineSession session;
+	private boolean targetIsJavaListener;
+	private Guard guard;
+	private ThreadConnector<?> threadConnector;
 
-	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard) {
+	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) {
 		super();
 		this.serviceName=serviceName;
 		this.correlationID=session.getCorrelationId();
@@ -42,19 +45,23 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 		this.session=session;
 		this.targetIsJavaListener=targetIsJavaListener;
 		this.guard=guard;
+		this.threadConnector = new ThreadConnector(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, session.getCorrelationId());
 	}
 
 	@Override
 	public void run() {
 		try {
+			threadConnector.startThread(request.asString());
+			String result;
 			if (targetIsJavaListener) {
-				reply = new SenderResult(JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session));
+				result = JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session);
 			} else {
-				reply = new SenderResult(ServiceDispatcher.getInstance().dispatchRequest(serviceName, request.asString(), session));
+				result = ServiceDispatcher.getInstance().dispatchRequest(serviceName, request.asString(), session);
 			}
+			reply = new SenderResult(threadConnector.endThread(result));
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
-			throwable=t;
+			throwable = threadConnector.abortThread(t);
 		} finally {
 			ThreadContext.clearAll();
 			if (guard != null) {

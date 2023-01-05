@@ -72,16 +72,16 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 		if(StringUtils.isEmpty(configurationFile)) {
 			throw new ClassLoaderException("unable to determine configurationFile");
-		} else {
-			if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName)) {
-				int i = configurationFile.lastIndexOf('/');
-				if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
-					setBasePath(configurationFile.substring(0, i + 1));
-					setConfigurationFile(configurationFile.substring(i + 1));
-					log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
-				} else {
-					setBasePath(getConfigurationName());
-				}
+		}
+
+		if(basePath == null) {
+			int i = configurationFile.lastIndexOf('/');
+			if (i != -1) { //Configuration file contains a path, derive the BasePath from the path
+				setBasePath(configurationFile.substring(0, i + 1));
+				setConfigurationFile(configurationFile.substring(i + 1));
+				log.info("derived basepath ["+getBasePath()+"] from configurationFile ["+configurationFile+"]");
+			} else if(!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
+				setBasePath(getConfigurationName());
 			}
 		}
 

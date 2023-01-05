@@ -64,7 +64,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.management.bus.dao.ProcessStateDTO;
+import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -398,9 +398,10 @@ public class AdapterStatus extends BusEndpointBase {
 			if (receiver.isThreadCountReadable()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
-			}
-			if (receiver.isThreadCountControllable()) {
-				receiverInfo.put("threadCountControllable", "true");
+
+				if (receiver.isThreadCountControllable()) {
+					receiverInfo.put("threadCountControllable", true);
+				}
 			}
 			receivers.add(receiverInfo);
 		}

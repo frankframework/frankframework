@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +29,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.support.GenericMessage;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -45,7 +43,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.management.bus.dao.ConfigurationDAO;
+import nl.nn.adapterframework.management.bus.dto.ConfigurationDTO;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
@@ -90,23 +88,23 @@ public class ConfigManagement extends BusEndpointBase {
 
 			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
 				String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
-				List<ConfigurationDAO> configs = getConfigsFromDatabase(configurationName, datasourceName);
+				List<ConfigurationDTO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
-				for(ConfigurationDAO config: configs) {
+				for(ConfigurationDTO config: configs) {
 					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
 				}
 
 				return ResponseMessage.ok(configs);
 			}
 
-			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDAO(configuration)));
+			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDTO(configuration)));
 		}
 
-		List<ConfigurationDAO> configs = new LinkedList<>();
+		List<ConfigurationDTO> configs = new LinkedList<>();
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			configs.add(new ConfigurationDAO(configuration));
+			configs.add(new ConfigurationDTO(configuration));
 		}
-		configs.sort(new ConfigurationDAO.NameComparator());
+		configs.sort(new ConfigurationDTO.NameComparator());
 		return ResponseMessage.ok(configs);
 	}
 
@@ -177,7 +175,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
-	public Message<byte[]> downloadConfiguration(Message<?> message) {
+	public Message<?> downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
@@ -191,11 +189,7 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 		byte[] config = (byte[]) configuration.get("CONFIG");
 
-		Map<String, Object> headers = new HashMap<>();
-		headers.put(ResponseMessage.STATUS_KEY, 200);
-		headers.put(ResponseMessage.MIMETYPE_KEY, MediaType.APPLICATION_OCTET_STREAM.toString());
-		headers.put(ResponseMessage.CONTENT_DISPOSITION_KEY, "attachment; filename=\"" + configuration.get("FILENAME") + "\"");
-		return new GenericMessage<>(config, headers);
+		return ResponseMessage.Builder.create().withPayload(config).withMimeType(MediaType.APPLICATION_OCTET_STREAM).withFilename(""+configuration.get("FILENAME")).raw();
 	}
 
 	/**
@@ -217,8 +211,8 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 	}
 
-	private List<ConfigurationDAO> getConfigsFromDatabase(String configurationName, String dataSourceName) {
-		List<ConfigurationDAO> configurations = new LinkedList<>();
+	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, String dataSourceName) {
+		List<ConfigurationDTO> configurations = new LinkedList<>();
 
 		if (StringUtils.isEmpty(dataSourceName)) {
 			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
@@ -241,7 +235,7 @@ public class ConfigManagement extends BusEndpointBase {
 						while (rs.next()) {
 							String name = rs.getString(1);
 							String version = rs.getString(2);
-							ConfigurationDAO configDoa = new ConfigurationDAO(name, version);
+							ConfigurationDTO configDoa = new ConfigurationDTO(name, version);
 
 							String filename = rs.getString(3);
 							String user = rs.getString(4);
@@ -261,7 +255,7 @@ public class ConfigManagement extends BusEndpointBase {
 			qs.close();
 		}
 
-		configurations.sort(new ConfigurationDAO.VersionComparator());
+		configurations.sort(new ConfigurationDTO.VersionComparator());
 		return configurations;
 	}
 }
