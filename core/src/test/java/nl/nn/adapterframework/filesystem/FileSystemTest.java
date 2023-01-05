@@ -366,19 +366,14 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
 		String foldername = "nonExistingFolder";
-
 		fileSystem.configure();
 		fileSystem.open();
-
 		if(_folderExists(foldername)) {
 			_deleteFolder(foldername);
 		}
-		try {
-			fileSystem.removeFolder(foldername, false);
-		} catch (Exception e) {
-			assertTrue(e instanceof FileSystemException);
-			assertThat(e.getMessage(), containsString("Directory does not exist."));
-		}
+		
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystem.removeFolder(foldername, false));
+		assertThat(e.getMessage(), containsString("Directory does not exist."));
 	}
 
 	@Test

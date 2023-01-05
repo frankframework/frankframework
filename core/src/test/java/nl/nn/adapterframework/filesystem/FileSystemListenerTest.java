@@ -72,17 +72,15 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInputFolder(folder);
 		fileSystemListener.configure();
-		try {
-			fileSystemListener.open();
-		} catch (Exception e) {
-			assertTrue(e instanceof ListenerException);
-			if (testFullErrorMessages) {
-				assertThat(e.getMessage(), startsWith("The value for inputFolder ["+folder+"], canonical name ["));
-				assertThat(e.getMessage(), endsWith("It is not a folder."));
-			} else {
-				assertThat(e.getMessage(), endsWith("It is not a folder."));
-			}
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for inputFolder ["+folder+"], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
 		}
+		
 	}
 
 	@Test

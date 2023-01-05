@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -492,12 +493,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setInputFolder("NonExistentFolder");
 		fileSystemSender.configure();
-		try {
-			fileSystemSender.open();
-		} catch (Exception e) {
-			assertTrue(e instanceof SenderException);
-			assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
-		}
+		
+		SenderException e = assertThrows(SenderException.class, fileSystemSender::open);
+		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
+		
 	}
 
 	@Test

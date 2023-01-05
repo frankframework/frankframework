@@ -3,6 +3,7 @@ package nl.nn.adapterframework.senders.mail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -50,11 +51,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 		sender.configure();
 		sender.open();
-		try {
-			sender.sendMessageOrThrow(new Message(mailInput), session);
-		} catch (Exception e) {
-			assertTrue(e instanceof SenderException);
-		}
+
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
+		assertThat(e.getMessage(), containsString("at least 1 recipient must be specified"));
 	}
 
 	private void validateAuthentication(Session session) {

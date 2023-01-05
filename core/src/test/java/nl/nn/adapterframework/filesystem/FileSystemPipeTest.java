@@ -3,6 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -482,12 +483,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("NonExistentFolder");
 		fileSystemPipe.configure();
-		try {
-			fileSystemPipe.start();
-		} catch (Exception e) {
-			assertTrue(e instanceof PipeStartException);
-			assertThat(e.getMessage(), endsWith("Cannot open fileSystem"));
-		}
+
+		PipeStartException e= assertThrows(PipeStartException.class, fileSystemPipe::start);
+		assertThat(e.getMessage(), endsWith("Cannot open fileSystem"));
 	}
 
 	@Test

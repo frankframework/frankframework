@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
@@ -20,12 +21,8 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 
 	@Test
 	public void basic() throws Exception {
-		try {
-			sender.configure();
-		} catch (Exception e) {
-			assertTrue(e instanceof ConfigurationException);
-			assertThat(e.getMessage(), endsWith("has neither fileName nor returnString specified"));
-		}
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertThat(e.getMessage(), endsWith("has neither fileName nor returnString specified"));
 	}
 	
 	@Test

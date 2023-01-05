@@ -199,12 +199,8 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 	@Test
 	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
-		try {
-			sender.configure();
-		} catch (Exception e) {
-			assertTrue(e instanceof ConfigurationException);
-			assertThat(e.getMessage(), endsWith("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified"));
-		}
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertThat(e.getMessage(), endsWith("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified"));
 	}
 
 	@Test
@@ -252,12 +248,8 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
 		log.debug("inputfile ["+input+"]");
 
-		try {
-			sender.sendMessageOrThrow(input, session);
-		} catch (Exception e) {
-			assertTrue(e instanceof SenderException);
-			assertThat(e.getMessage(), containsString("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]"));
-		}
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(input, session));
+		assertThat(e.getMessage(), containsString("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]"));
 	}
 
 	@Disabled("First have to fix this")
@@ -332,5 +324,4 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, actual);
 	}
-
 }

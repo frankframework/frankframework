@@ -31,13 +31,6 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 
 	@Override
-	@BeforeEach
-	public void setUp() throws Exception {
-		System.out.println(folder);
-		super.setUp();
-	}
-
-	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(folder);
 	}

@@ -79,12 +79,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		try {
-			actor.configure(fileSystem,null,owner);	
-		} catch (Exception e) {
-			assertTrue(e instanceof ConfigurationException);
-			assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
-		}
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
 	}
 
 	@Test
@@ -168,12 +164,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
-		try {
-			actor.open();	
-		} catch (Exception e) {
-			assertTrue(e instanceof FileNotFoundException);
-			assertThat(e.getMessage(), containsString("does not exist"));
-		}
+
+		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 
 	@Test
@@ -1245,7 +1238,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
 		try {
-			fileSystemActorMoveActionTest(null,"folder",false,false);	
+			fileSystemActorMoveActionTest(null,"folder",false,false);
 		} catch (Exception e) {
 			assertTrue(e.getCause() instanceof FileSystemException);
 			assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
