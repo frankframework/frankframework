@@ -415,10 +415,10 @@ public class ApiListenerServletTest extends Mockito {
 	public void listenerAcceptsRequestWithoutContentTypeHeaderWhenConsumesAttributeNotSet() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// Arrange
 		String uri="/listenerAcceptsContentTypeJSON";
-		new ApiListenerBuilder(uri, Methods.POST, null, null).build();
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("Accept", "*/*");
+		headers.put("Accept", "application/json");
 		HttpServletRequest request = createRequest(uri, Methods.POST, "{}", headers);
 
 		// Act
