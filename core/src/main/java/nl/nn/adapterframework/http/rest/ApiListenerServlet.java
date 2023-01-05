@@ -612,7 +612,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				response.setDateHeader("Last-Modified", lastModDate);
-
+				// If no eTag header is present, disable caching.
 				StringBuilder cacheControl = new StringBuilder();
 				if(!response.containsHeader("etag")) {
 					cacheControl.append("no-store, no-cache, ");
