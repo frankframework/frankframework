@@ -257,7 +257,7 @@ public class TestXml2Json extends AlignTestBase {
 
 	@Override
 	@Test
-	@Disabled //("test on erronous json input")
+	@Disabled("test on erronous json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}

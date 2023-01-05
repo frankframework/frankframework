@@ -88,14 +88,14 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support mixed content")
+	@Disabled("Map2XML does not support mixed content")
 	public void testMixedContent() throws Exception {
 		super.testMixedContent();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support null values")
+	@Disabled("Map2XML does not support null values")
 	public void testNull() throws Exception {
 		super.testNull();
 	}
@@ -103,48 +103,48 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testArrays() throws Exception {
 		super.testArrays();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testEmptyArrays() throws Exception {
 		super.testEmptyArrays();
 	}
 
 	@Override
 	@Test
-	@Disabled //("input file is empty")
+	@Disabled("input file is empty")
 	public void testOK_abc() throws Exception {
 		super.testOK_abc();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void test_hcda() throws Exception {
 		super.test_hcda();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testSingleComplexArray() throws Exception {
 		super.testSingleComplexArray();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Map2XML does not support reporting 'unknown' elements")
+	@Disabled("Map2XML does not support reporting 'unknown' elements")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Test
-	@Disabled //("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
+	@Disabled("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
 	public void testDoubleId() throws Exception {
 		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
 	}
@@ -152,21 +152,21 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Disabled //("No content")
+	@Disabled("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Override
 	@Test
-	@Disabled //("Generates stackoverflow, known issue")
+	@Disabled("Generates stackoverflow, known issue")
 	public void testFamilyTree() throws Exception {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
 
 	@Override
 	@Test
-	@Disabled //("cannot decide what elements should be inserted at wildcard position")
+	@Disabled("cannot decide what elements should be inserted at wildcard position")
 	public void testAnyElement() throws Exception {
 		super.testAnyElement();
 	}

@@ -318,7 +318,7 @@ public class MessageOutputStreamTest {
 	}
 
 	@Test
-	@Disabled //("No contract to call endDocument() in case of an Exception")
+	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX32ContentHandlerAsWriterError() throws Exception {
 		
 		CloseObservableWriter cow = new CloseObservableWriter() {
@@ -350,7 +350,7 @@ public class MessageOutputStreamTest {
 	}
 
 	@Test
-	@Disabled //("No contract to call endDocument() in case of an Exception")
+	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX31ContentHandlerAsStreamError() throws Exception {
 		
 		CloseObservableOutputStream cos = new CloseObservableOutputStream() {

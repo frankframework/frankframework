@@ -119,14 +119,14 @@ public class TestDomTreeAligner extends AlignTestBase {
     	
     }
     @Test
-    @Disabled //("only json to xml")
+    @Disabled("only json to xml")
     public void testNullError1() throws Exception {
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal1", "nillable");
     	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal2", "nillable");
     }
     @Override
 	@Test
-	@Disabled //("only json to xml")
+	@Disabled("only json to xml")
     public void testMixedContentUnknown() throws Exception {
     	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown","Cannot find the declaration of element");
     }

@@ -55,14 +55,14 @@ public class TestXml2Map extends AlignTestBase {
 
 	@Override
 	@Test
-	@Disabled //("only json input")
+	@Disabled("only json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Override
 	@Test
-	@Disabled //("No content")
+	@Disabled("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}

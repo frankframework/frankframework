@@ -262,7 +262,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		}
 	}
 
-	@Disabled //"First have to fix this"
+	@Disabled("First have to fix this")
 	@Test
 	public void testNamespaceUnaware() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceUnAware.xsl");
@@ -278,7 +278,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		assertEquals(expected, actual);
 	}
 
-	@Disabled //"First have to fix this"
+	@Disabled("First have to fix this")
 	@Test
 	public void testNamespaceAware() throws Exception {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceAware.xsl");
