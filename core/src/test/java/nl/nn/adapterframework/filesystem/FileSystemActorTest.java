@@ -104,7 +104,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(new Message(""), session);
-		
+
 		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 		assertEquals("unable to process [null] action for File [emptyParameterActionfile1.txt]: unable to resolve the value of parameter [action]", e.getMessage());
 	}

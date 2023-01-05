@@ -49,7 +49,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	private boolean skip = false;
 	private String configurationName;
 	private AppConstants appConstants;
-	
+
 	public static List<Arguments> data() {
 		return Arrays.asList(new Arguments[] {
 				Arguments.of("", CONFIG_0_NAME),

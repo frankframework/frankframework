@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path,LocalFileSystem>{
-	
+
 	@TempDir
 	Path temp;
 	

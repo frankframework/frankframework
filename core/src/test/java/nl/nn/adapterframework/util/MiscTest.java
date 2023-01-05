@@ -69,7 +69,7 @@ public class MiscTest {
 		File f = new File("lebron.txt");
 		f.delete();
 	}
-	
+
 	private void writeToTestFile() throws IOException {
 		Writer w = new FileWriter(file.toString());
 		w.write("inside the lebron file");

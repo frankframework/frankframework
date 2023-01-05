@@ -58,7 +58,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingEnumWithFieldName() {
 		EnumUtils.parse(ProcessState.class, "fieldname", "Available"); //Exists
-		
+
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(ProcessState.class, "fieldname", "tralala2")); //Does not exist
 		assertEquals("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}

@@ -64,7 +64,7 @@ public class BuildInfoValidatorTest {
 		assertNotNull(zip, "BuildInfoZip not found");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		
+
 		assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(zip.openStream()));
 	}
 }

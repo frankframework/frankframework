@@ -43,7 +43,6 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		File src = new File(folder1+"/aa.txt");
 		File dest = new File(folder1+"/bb.txt");
 		assertFalse(dest.exists());
-		
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
 		sender.setAction(FileSystemAction.RENAME);
@@ -63,7 +62,6 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		assertEquals("bb.txt", result.asString());
 		assertTrue(dest.exists());
-
 	}
 
 	@Test

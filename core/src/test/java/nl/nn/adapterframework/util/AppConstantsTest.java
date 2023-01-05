@@ -112,7 +112,6 @@ public class AppConstantsTest {
 	@Test
 	public void callRemoveInstanceWithoutClassLoader() {
 		assertThrows(IllegalStateException.class, () -> AppConstants.removeInstance(null));
-		;
 	}
 
 	@Test
