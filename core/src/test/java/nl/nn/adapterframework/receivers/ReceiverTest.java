@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.receivers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import nl.nn.adapterframework.configuration.AdapterManager;
@@ -26,7 +26,7 @@ public class ReceiverTest {
 	protected Logger log = LogUtil.getLogger(this);
 	private TestConfiguration configuration = new TestConfiguration();
 
-	@BeforeEach
+	@Before
 	public void setUp() throws Exception {
 		configuration.stop();
 		configuration.getBean("adapterManager", AdapterManager.class).close();
@@ -166,9 +166,9 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
 
 		log.info("Receiver RunState "+receiver.getRunState());
-		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
+		assertEquals("Receiver should be in state [EXCEPTION_STARTING]", RunState.EXCEPTION_STARTING, receiver.getRunState());
 		Thread.sleep(500); //Extra timeout to give the receiver some time to close all resources
-		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); //isSynchronous ==> isClosed
+		assertTrue("Close has not been called on the Receiver's sender!", receiver.getSender().isSynchronous()); //isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		while(receiver.getRunState()!=RunState.STOPPED) {
