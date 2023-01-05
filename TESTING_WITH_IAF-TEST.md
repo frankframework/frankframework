@@ -38,6 +38,13 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 4. In the Project Explorer, right-click the iaf-test module and select Properties. Go to Deployment Assembly, press [ Add... ]. Select Folder, press [ Next ]. Select the src/main/configurations folder, and press Finish. In the text field right of your new src/main/configurations item, enter `WEB-INF/classes/configurations`. _(might not be necessary anymore)_
 5. Do the same for the src/test/testtool folder. For that, enter `testtool` as deploy path. _(might not be necessary anymore)_
 
+### Note about the log dir:
+The log dir is also used as test data directory for the Larva test tool as it is a directory which is known to be writable.
+Saving test results as expected output for future tests, also saves the log dir in file name paths. Therefore it is important
+for now not to change this directory.
+If however you do not use Windows but a Unix based system (such as Linux or macOS), then set the `log.dir` property to whatever works
+on your system, for instance `$HOME/ibis4test-logs` but be aware that you cannot save test-results and share that with others.
+
 ## 3. Create a Run Configuration - IntelliJ
 
 Create a Tomcat Run Configuration and set the following:
@@ -45,13 +52,16 @@ Create a Tomcat Run Configuration and set the following:
 2. Add the following parameters to the VM Options:
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`
-   - `-Dlog.dir=$HOME/ibis4test-logs` (or whatever works for your system, drive letters on Windows must be lowercase).
+   - `-Dlog.dir=c:/temp` (lower case 'c' is mandatory) (or whatever works for your system, drive letters on Windows must be lowercase).
    - `-DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
    - `-DcredentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
 3. Set the Tomcat HTTP port to `80`
 NB: If you want to run on a different port, you also need to add to your VM options the option `-Dweb.port=8080` (or whatever port you chose).
 4. In the tab "Deployments", select the module `ibis-adapterframework-test: war exploded` and the application context-path `/iaf-test`.
 5. Other settings as you find appropriate
+
+### Note about the log dir:
+See the Eclipse instructions for an important note about the `log.dir` setting.
 
 ## 4. Select database
 
