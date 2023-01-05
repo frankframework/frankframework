@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.rules.TemporaryFolder;
-
 public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	public Path folder;
