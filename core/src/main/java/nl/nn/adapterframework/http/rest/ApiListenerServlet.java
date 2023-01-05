@@ -143,7 +143,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/**
+		/*
 		 * Generate OpenApi specification
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
@@ -165,7 +165,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			return;
 		}
 
-		/**
+		/*
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 * @Deprecated This is here to support old url's
 		 */
