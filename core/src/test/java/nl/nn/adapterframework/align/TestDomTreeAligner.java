@@ -23,45 +23,43 @@ import org.w3c.dom.Document;
  */
 public class TestDomTreeAligner extends AlignTestBase {
 
-    
 	@Override
-	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
-		URL schemaUrl=getSchemaURL(schemaFile);
-    	String xsdUri=schemaUrl.toExternalForm();
-    	Schema schema = Utils.getSchemaFromResource(schemaUrl);
+	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile,
+			boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
+		URL schemaUrl = getSchemaURL(schemaFile);
+		String xsdUri = schemaUrl.toExternalForm();
+		Schema schema = Utils.getSchemaFromResource(schemaUrl);
 
-    	XMLSchemaLoader xsLoader = new XMLSchemaLoader();
+		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(xsdUri);
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
+		List<XSModel> schemaInformation = new LinkedList<XSModel>();
 		schemaInformation.add(xsModel);
-   	
-    	String xmlString=getTestFile(inputFile+".xml");
-    	
-    	boolean expectValid=expectedFailureReason==null;
-    	
-    	assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
- 	
 
-    	ValidatorHandler validator = schema.newValidatorHandler();
-    	DomTreeAligner aligner = new DomTreeAligner(validator, schemaInformation);
- //   	Xml2Json xml2json = new Xml2Json(aligner, false);
-    	
-    	validator.setContentHandler(aligner);
+		String xmlString = getTestFile(inputFile + ".xml");
+
+		boolean expectValid = expectedFailureReason == null;
+
+		assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
+
+		ValidatorHandler validator = schema.newValidatorHandler();
+		DomTreeAligner aligner = new DomTreeAligner(validator, schemaInformation);
+		// Xml2Json xml2json = new Xml2Json(aligner, false);
+
+		validator.setContentHandler(aligner);
 //    	aligner.setContentHandler(xml2json);
- 
-    	Document domIn = Utils.string2Dom(xmlString);
-    	System.out.println("input DOM ["+Utils.dom2String1(domIn)+"]");
+
+		Document domIn = Utils.string2Dom(xmlString);
+		System.out.println("input DOM [" + Utils.dom2String1(domIn) + "]");
 //    	System.out.println("xmlString "+xmlString);
 //    	System.out.println("dom in "+ToStringBuilder.reflectionToString(domIn.getDocumentElement()));
-    	Source source=aligner.asSource(domIn);
-    	System.out.println();
-    	System.out.println("start aligning "+inputFile);
-   	
-		
-    	String xmlAct = Utils.source2String(source);
-    	System.out.println("xml aligned via source="+xmlAct);
-    	assertNotNull(xmlAct, "xmlAct is null");
-    	assertTrue(Utils.validate(schemaUrl, xmlAct), "XML is not aligned");
+		Source source = aligner.asSource(domIn);
+		System.out.println();
+		System.out.println("start aligning " + inputFile);
+
+		String xmlAct = Utils.source2String(source);
+		System.out.println("xml aligned via source=" + xmlAct);
+		assertNotNull(xmlAct, "xmlAct is null");
+		assertTrue(Utils.validate(schemaUrl, xmlAct), "XML is not aligned");
 
 //    	InputSource is = new InputSource(new StringReader(xmlString));
 //    	try {
@@ -116,19 +114,22 @@ public class TestDomTreeAligner extends AlignTestBase {
 //    	System.out.println("start aligning xml from json "+xmlFromJson);
 //    	Document domFromJson = Utils.string2Dom(xmlFromJson);
 //    	instance.startParse(domFromJson.getDocumentElement());
-    	
-    }
-    @Test
-    @Disabled("only json to xml")
-    public void testNullError1() throws Exception {
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal1", "nillable");
-    	testFiles("DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Null-illegal2", "nillable");
-    }
-    @Override
+
+	}
+
 	@Test
 	@Disabled("only json to xml")
-    public void testMixedContentUnknown() throws Exception {
-    	testFiles("Mixed/mixed.xsd","urn:mixed","root","Mixed/mixed-unknown","Cannot find the declaration of element");
-    }
+	public void testNullError1() throws Exception {
+		testFiles("DataTypes/DataTypes.xsd", "urn:datatypes", "DataTypes", "/DataTypes/Null-illegal1", "nillable");
+		testFiles("DataTypes/DataTypes.xsd", "urn:datatypes", "DataTypes", "/DataTypes/Null-illegal2", "nillable");
+	}
+
+	@Override
+	@Test
+	@Disabled("only json to xml")
+	public void testMixedContentUnknown() throws Exception {
+		testFiles("Mixed/mixed.xsd", "urn:mixed", "root", "Mixed/mixed-unknown",
+				"Cannot find the declaration of element");
+	}
 
 }
