@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -485,7 +485,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 
 		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
-		assertThat(e.getMessage(), endsWith("Cannot open fileSystem"));
+		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
 	}
 
 	@Test
