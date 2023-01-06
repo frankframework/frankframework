@@ -9,7 +9,7 @@ public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path,LocalFile
 
 	@TempDir
 	Path temp;
-	
+
 	@Override
 	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result=new LocalFileSystem();

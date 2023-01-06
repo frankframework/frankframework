@@ -371,7 +371,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if(_folderExists(foldername)) {
 			_deleteFolder(foldername);
 		}
-		
+
 		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystem.removeFolder(foldername, false));
 		assertThat(e.getMessage(), containsString("Directory does not exist."));
 	}
@@ -379,18 +379,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 	@Test
 	public void writableFileSystemTestCreateExistingFolder() throws Exception {
 		String folderName = "existingFolder";
-
 		fileSystem.configure();
 		fileSystem.open();
-
 		_createFolder(folderName);
 		waitForActionToFinish();
-		try {
-			fileSystem.createFolder(folderName);
-		} catch (Exception e) {
-			assertTrue(e instanceof FileSystemException);
-			assertTrue(e.getMessage().endsWith("Directory already exists."));
-		}
+
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystem.createFolder(folderName));
+		assertTrue(e.getMessage().endsWith("Directory already exists."));
 	}
 
 	@Test

@@ -124,12 +124,12 @@ public class FileUtilsTest {
 		FileUtils.makeBackups(f1, 2);
 		File rolloverOne = new File(testFolder.toString(), "testfile2.txt.1");
 		assertTrue(rolloverOne.exists());
-		
+
 		File f2 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f2, 2);
 		File rolloverTwo = new File(testFolder.toString(), "testfile2.txt.2");
 		assertTrue(rolloverTwo.exists());
-		
+
 		File f3 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f3, 2);
 		File rolloverThree = new File(testFolder.toString(), "testfile2.txt.3");

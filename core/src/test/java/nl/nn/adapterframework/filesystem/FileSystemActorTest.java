@@ -202,13 +202,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
 		actor.configure(fileSystem,params,owner);
-		try {
-			actor.open();
-		} catch (Exception e) {
-			assertTrue(e instanceof FileNotFoundException);
-//			assertEquals("inputFolder [folder1], canonical name [" + fileSystem.getCanonicalName(fileSystem.toFile(getInputFolder())) + "], does not exist", e.getMessage());
-			assertThat(e.getMessage(), containsString("does not exist"));
-		}
+		
+		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 
 	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles, int expectedNumberOfFiles) throws Exception {
@@ -1178,12 +1174,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
-		try {
-			actor.configure(fileSystem,null,owner);	
-		} catch (Exception e) {
-			assertTrue(e instanceof ConfigurationException);
-			assertThat(e.getMessage(), endsWith("the [MOVE] action requires the parameter [destination] or the attribute [destination] to be present"));
-		}
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		assertThat(e.getMessage(), endsWith("the [MOVE] action requires the parameter [destination] or the attribute [destination] to be present"));
 	}
 
 	public void fileSystemActorMoveActionTest(String srcFolder, String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {

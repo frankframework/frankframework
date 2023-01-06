@@ -493,10 +493,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setInputFolder("NonExistentFolder");
 		fileSystemSender.configure();
-		
+
 		SenderException e = assertThrows(SenderException.class, fileSystemSender::open);
 		assertThat(e.getMessage(), startsWith("Cannot open fileSystem"));
-		
 	}
 
 	@Test

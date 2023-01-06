@@ -1,10 +1,9 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,9 +51,9 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.setFileName(filename);
 		sender.configure();
 		sender.open();
-		
+
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
-		
+
 		String expected = TestFileUtils.getTestFile(filename);
 		assertEquals(expected,result);
 	}
@@ -66,9 +65,9 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.setStyleSheetName("/FixedResult/sub.xslt");
 		sender.configure();
 		sender.open();
-		
+
 		String result = sender.sendMessageOrThrow(new Message("dummy message"), session).asString();
-		
+
 		String expected = TestFileUtils.getTestFile("/FixedResult/result.xml");
 		assertEquals(expected,result);
 	}
