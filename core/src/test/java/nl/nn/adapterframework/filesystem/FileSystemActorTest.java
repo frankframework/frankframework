@@ -202,7 +202,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
 		actor.configure(fileSystem,params,owner);
-		
+
 		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}

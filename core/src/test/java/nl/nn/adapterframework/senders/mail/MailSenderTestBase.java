@@ -257,11 +257,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		try {
-			sender.sendMessageOrThrow(new Message(mailInput), session);
-		} catch (Exception e) {
-			assertTrue(e instanceof SenderException);
-		}
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 	}
 
 	@Test
