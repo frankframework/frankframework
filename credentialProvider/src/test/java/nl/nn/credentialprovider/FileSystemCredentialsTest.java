@@ -36,6 +36,19 @@ public class FileSystemCredentialsTest {
 	}
 
 	@Test
+	public void testAliasNoDefault() {
+
+		String alias = "dummy";
+		String username = null;
+		String password = null;
+
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
+
+		assertEquals(username, fsc.getUsername());
+		assertEquals(password, fsc.getPassword());
+	}
+
+	@Test
 	public void testNoFileSystem() {
 
 		String alias = "fakeAlias";
