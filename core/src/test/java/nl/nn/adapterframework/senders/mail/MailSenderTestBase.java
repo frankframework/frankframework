@@ -247,7 +247,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
-				+ "<message>not base64 should return in an error</message>"
+				+ "<message>*not base64 should return in an error*</message>"
 				+ "<messageType>text/plain</messageType>"
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
