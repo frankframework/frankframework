@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -84,6 +85,7 @@ import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -95,6 +97,7 @@ public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
 	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<ApiListener>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
+	private static final String RESPONSE_CONTENT_KEY = "response-content";
 
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
@@ -666,7 +669,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerShouldReturnEtag() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerWithRepeatableMessageShouldReturnEtag() throws Exception {
 		String uri="/etag1";
 		new ApiListenerBuilder(uri, Methods.GET).build();
 
@@ -674,18 +677,48 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		session = new HashMap<String, Object>();
-		session.put("response-content", "{\"tralalalallala\":true}");
+
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
+		session.put(RESPONSE_CONTENT_KEY, repeatableMessage);
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsHeader("etag"));
+		assertEquals("must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertFalse(result.containsHeader("pragma"));
+		assertEquals("Fri, 13 Jan 2023 13:02:00 GMT", result.getHeader("Last-Modified"));
+	}
+
+	@Test
+	public void apiListenerWithNonRepeatableMessageShouldNotReturnEtag() throws Exception {
+		String uri="/etag2";
+		new ApiListenerBuilder(uri, Methods.GET).build();
+
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Accept", "application/json");
+		headers.put("content-type", "application/json");
+		session = new HashMap<String, Object>();
+
+		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message nonRepeatableMessage = new Message(new FilterInputStream(repeatableMessage.asInputStream()) {}, new MessageContext().withModificationTime("2023-01-13 14:02:00"));
+		session.put(RESPONSE_CONTENT_KEY, nonRepeatableMessage);
+
+		Response result = service(createRequest(uri, Methods.GET, null, headers));
+
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+		assertFalse(result.containsHeader("etag"));
+		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
+		assertTrue(result.containsHeader("pragma"));
+		assertEquals("Fri, 13 Jan 2023 13:02:00 GMT", result.getHeader("Last-Modified"));
 	}
 
 	@Test
 	public void eTagGetEtagMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri = "/etag32";
+		String uri = "/etag31";
 		new ApiListenerBuilder(uri, Methods.GET).build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
@@ -693,7 +726,7 @@ public class ApiListenerServletTest extends Mockito {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("if-none-match", "my-etag-value");
 		session = new HashMap<String, Object>();
-		session.put("response-content", "{\"tralalalallala\":true}");
+		session.put(RESPONSE_CONTENT_KEY, "{\"tralalalallala\":true}");
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(304, result.getStatus());
@@ -711,7 +744,7 @@ public class ApiListenerServletTest extends Mockito {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("if-none-match", "my-etag-value7");
 		session = new HashMap<String, Object>();
-		session.put("response-content", "{\"tralalalallala\":true}");
+		session.put(RESPONSE_CONTENT_KEY, "{\"tralalalallala\":true}");
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(200, result.getStatus());
@@ -1204,8 +1237,8 @@ public class ApiListenerServletTest extends Mockito {
 				context.putAll(session);
 			}
 			session = context;
-			if(session.containsKey("response-content")) {
-				return Message.asMessage(session.get("response-content"));
+			if(session.containsKey(RESPONSE_CONTENT_KEY)) {
+				return Message.asMessage(session.get(RESPONSE_CONTENT_KEY));
 			}
 			return message;
 		}
