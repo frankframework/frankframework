@@ -16,7 +16,9 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +55,10 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
@@ -522,7 +526,9 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						messageContext.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
-						throw new IOException("Could not read mime multipart response", e);
+						response.sendError(400, "Could not read mime multipart response");
+						log.warn(createAbortMessage(remoteUser, 400) + "Could not read mime multipart response");
+						return;
 					}
 				} else {
 					body = MessageUtils.parseContentAsMessage(request);
@@ -593,6 +599,30 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
+
+				/*
+				 * If a Last Modified value is present, set the 'Last-Modified' header.
+				 */
+				long lastModDate = Instant.now().toEpochMilli();
+				if(!Message.isEmpty(result)) {
+					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
+					if(StringUtils.isNotEmpty(lastModified)) {
+						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						if(date != null) {
+							lastModDate = date.getTime();
+						}
+					}
+				}
+				response.setDateHeader("Last-Modified", lastModDate);
+				// If no eTag header is present, disable browser caching. Else force browser to revalidate the request.
+				StringBuilder cacheControl = new StringBuilder();
+				if(!response.containsHeader("etag")) {
+					cacheControl.append("no-store, no-cache, ");
+					response.setHeader("Pragma", "no-cache");
+					log.trace("disabling cache for uri [{}]", request::getRequestURI);
+				}
+				cacheControl.append("must-revalidate, max-age=0, post-check=0, pre-check=0");
+				response.setHeader("Cache-Control", cacheControl.toString());
 
 				/*
 				 * Add headers

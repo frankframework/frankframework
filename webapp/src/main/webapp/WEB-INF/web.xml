@@ -21,11 +21,6 @@
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
 		<url-pattern>/iaf/api/*</url-pattern>
 	</filter-mapping>
 
