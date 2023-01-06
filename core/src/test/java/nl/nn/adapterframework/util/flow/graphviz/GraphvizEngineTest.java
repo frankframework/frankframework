@@ -105,14 +105,12 @@ public class GraphvizEngineTest {
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 		engine.close();
 	}
+
 	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test
 	public void zgetUnknownVizJsVersion() throws Exception {
-		assertThrows(IOException.class, () -> new GraphvizEngine("1.2.3"));
-//		GraphvizEngine engine = new GraphvizEngine("1.2.3");
-//		assertNotNull(engine);
-//		engine.execute(dot);
-//		engine.close();
+		IOException e = assertThrows(IOException.class, () -> new GraphvizEngine("1.2.3"));
+		assertEquals("failed to open vizjs file for version [1.2.3]", e.getMessage());
 	}
 
 	@Test

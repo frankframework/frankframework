@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -86,12 +87,10 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
-		try {
-			fileSystemActorMoveActionTestNoRoot("folder",false,false);
-		} catch (Exception e) {
-			assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.toAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.toAbsolutePath()+"/folder] does not exist"));
-		}
+		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.toAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.toAbsolutePath()+"/folder] does not exist"));
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreateNoRoot() throws Exception {
 		fileSystemActorMoveActionTestNoRoot("folder",true,true);

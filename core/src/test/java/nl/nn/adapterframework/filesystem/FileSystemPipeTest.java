@@ -39,6 +39,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
+
 		fileSystemPipe = createFileSystemPipe();
 		autowireByName(fileSystemPipe);
 		fileSystemPipe.registerForward(new PipeForward("success",null));
@@ -49,7 +50,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	public void tearDown() throws Exception {
 		if (fileSystemPipe!=null) {
 			fileSystemPipe.stop();
-		};
+		}
+
 		super.tearDown();
 	}
 
@@ -267,11 +269,8 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 	@Test
 	public void fileSystemPipeMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		try {
-			fileSystemPipeMoveActionTest(null,"folder",false,false);
-		} catch (Exception e) {
-			assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
-		}
+		Exception e = assertThrows(Exception.class, () -> fileSystemPipeMoveActionTest(null,"folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
 //	@Test
 //	public void fileSystemPipeMoveActionTestFolderToRoot() throws Exception {
@@ -484,7 +483,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setInputFolder("NonExistentFolder");
 		fileSystemPipe.configure();
 
-		PipeStartException e= assertThrows(PipeStartException.class, fileSystemPipe::start);
+		PipeStartException e = assertThrows(PipeStartException.class, fileSystemPipe::start);
 		assertThat(e.getMessage(), endsWith("Cannot open fileSystem"));
 	}
 
@@ -494,12 +493,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("folder");
 		fileSystemPipe.configure();
-		try {
-			fileSystemPipe.start();
-		} catch (PipeStartException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		fileSystemPipe.start();
 	}
 
 	@Test()

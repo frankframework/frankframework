@@ -39,6 +39,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
+
 		fileSystemSender = createFileSystemSender();
 		autowireByName(fileSystemSender);
 	}
@@ -48,7 +49,8 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	public void tearDown() throws Exception {
 		if (fileSystemSender!=null) {
 			fileSystemSender.close();
-		};
+		}
+
 		super.tearDown();
 	}
 
@@ -277,11 +279,8 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		try {
-			fileSystemSenderMoveActionTest(null,"folder",false,false);
-		} catch (Exception e) {
-			assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
-		}
+		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null,"folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
 //	@Test
 //	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {

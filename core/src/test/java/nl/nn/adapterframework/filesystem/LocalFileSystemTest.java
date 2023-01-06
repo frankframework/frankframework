@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assume.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -29,12 +28,6 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		LocalFileSystem result=new LocalFileSystem();
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
-	}
-
-	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
 	}
 
 	@Override
@@ -65,7 +58,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(contents.trim(), actual.trim());
+		assertEquals(contents.trim(), actual.trim());
 
 	}
 

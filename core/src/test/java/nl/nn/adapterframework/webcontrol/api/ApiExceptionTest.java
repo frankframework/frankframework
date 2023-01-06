@@ -16,7 +16,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.webcontrol.api.ApiException.FormattedJsonEntity;
@@ -28,7 +27,6 @@ public class ApiExceptionTest {
 	public String expectedMessage;
 	public Exception causedByException;
 
-	@Parameters(name= "{0}")
 	public static List<?> data() {
 		return Arrays.asList(new Object[][] {
 			{"cannot configure", new ConfigurationException("cannot configure")},
