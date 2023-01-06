@@ -1519,13 +1519,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
-		try {
-			actor.doAction(message, pvl, session);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof FileSystemException);
-			assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
-		}
-
+		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
 	}
 
 	@Test
