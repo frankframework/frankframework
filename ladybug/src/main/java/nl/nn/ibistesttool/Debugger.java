@@ -71,6 +71,11 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		this.ibisManager = ibisManager;
 	}
 
+	@Override
+	public IbisManager getIbisManager() {
+		return ibisManager;
+	}
+
 	public void setPipeDescriptionProvider(PipeDescriptionProvider pipeDescriptionProvider) {
 		this.pipeDescriptionProvider = pipeDescriptionProvider;
 	}
