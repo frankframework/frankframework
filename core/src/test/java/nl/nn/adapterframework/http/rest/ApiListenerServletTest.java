@@ -567,6 +567,24 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void listenerInvalidMultipartContent() throws ServletException, IOException, ListenerException, ConfigurationException {
+
+		// Arrange
+		String uri="/listenerMultipartContentNoContent";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		HttpServletRequest request = createRequest(uri, Methods.POST, builder.build());
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(400, result.getStatus());
+		assertEquals("Could not read mime multipart response", result.getErrorMessage());
+	}
+
+	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, Methods.GET).build();
