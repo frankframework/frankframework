@@ -13,7 +13,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -66,7 +65,8 @@ public class ApiExceptionTest {
 		exception.printStackTrace();
 	}
 
-	@Test
+	@ParameterizedTest
+	@MethodSource("data")
 	public void messageWithStatusCode() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, 404);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -76,7 +76,8 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
 	}
 
-	@Test
+	@ParameterizedTest
+	@MethodSource("data")
 	public void messagetWithStatus() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, Status.BAD_REQUEST);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -100,7 +101,8 @@ public class ApiExceptionTest {
 		exception.printStackTrace();
 	}
 
-	@Test
+	@ParameterizedTest
+	@MethodSource("data")
 	public void noNestedException() {
 		ApiException exception = new ApiException((Throwable) null);
 		assertNull(exception.getMessage());

@@ -478,6 +478,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipeListActionTest("folder",2);
 	}
 
+	@Test
 	public void fileSystemPipeTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("NonExistentFolder");

@@ -8,8 +8,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSModel;
-import org.junit.Ignore;
-import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -46,13 +44,6 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 		MatchUtils.assertXmlEquals("", xmlString, writer.toString(), true);
 	}
 
-	@Override
-	@Test
-	@Ignore("only json input")
-	public void testMixedContentUnknown() throws Exception {
-		super.testMixedContentUnknown();
-	}
-
 	private String removeNamespacesExceptAttributes(String xmlString) throws ConfigurationException, TransformerException, IOException, SAXException {
 
 		String template = "<xsl:template match=\"*\">"
@@ -74,7 +65,7 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 		+ template
 		+ "</xsl:stylesheet>";
 
-		TransformerPool tp = TransformerPool.getInstance(stylesheet, 2);
+		TransformerPool tp = TransformerPool.getUtilityInstance(stylesheet, 2);
 		tp.open();
 		String result = tp.transform(xmlString, null);
 		tp.close();

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -217,15 +217,17 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2050))));
 		}
 	}
-	
+
+	@Test
 	@Override
-	@Ignore("Test not suited for ShadowSender")
+	@Disabled("Test not suited for ShadowSender")
 	public void testSingleExceptionHandling() throws Exception {
 		//Test not suited for ShadowSender
 	}
-	
+
+	@Test
 	@Override
-	@Ignore("Test not suited for ShadowSender")
+	@Disabled("Test not suited for ShadowSender")
 	public void testExceptionHandling() throws Exception {
 		//Test not suited for ShadowSender
 	}
