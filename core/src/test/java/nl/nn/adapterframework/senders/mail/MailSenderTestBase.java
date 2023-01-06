@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.senders.mail;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,13 +19,12 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
-
 import org.junit.jupiter.api.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -400,12 +398,8 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		try {
-			sender.sendMessageOrThrow(new Message(mailInput), session);
-		} catch (Exception e) {
-			assertTrue(e instanceof SenderException);
-			assertThat(e.getMessage(), containsString("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')"));
-		}
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
+		assertThat(e.getMessage(), containsString("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')"));
 	}
 
 	@Test

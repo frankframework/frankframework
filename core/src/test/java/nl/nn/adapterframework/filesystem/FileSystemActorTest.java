@@ -1230,12 +1230,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		try {
-			fileSystemActorMoveActionTest(null,"folder",false,false);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof FileSystemException);
-			assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
-		}
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystemActorMoveActionTest(null,"folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreate() throws Exception {
