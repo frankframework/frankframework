@@ -66,7 +66,7 @@ public class ApiListenerTest {
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type);
-			listener.configure(); //Check if the mediatype passes the configure checks
+			listener.configure(); //Check if the media-type passes the 'configure' checks
 
 			assertTrue(listener.getContentType().includes(type.getMimeType()));
 		}
@@ -111,6 +111,30 @@ public class ApiListenerTest {
 
 		listener.setConsumes(MediaTypes.ANY);
 		assertTrue("can parse anything", listener.isConsumable(acceptHeader));
+	}
+
+	@Test
+	public void isConsumableEmptyContentTypeHeader() {
+		// Arrange
+		listener.setConsumes(MediaTypes.ANY);
+
+		// Act / Assert
+		assertTrue("can parse anything", listener.isConsumable(null));
+		assertTrue("can parse anything", listener.isConsumable(""));
+
+		// Arrange
+		listener.setConsumes(MediaTypes.XML);
+
+		// Act / Assert
+		assertFalse("can parse [XML]", listener.isConsumable(null));
+		assertFalse("can parse [XML]", listener.isConsumable(""));
+
+		// Arrange
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Act / Assert
+		assertFalse("can parse [JSON]", listener.isConsumable(null));
+		assertFalse("can parse [JSON]", listener.isConsumable(""));
 	}
 
 	@Test

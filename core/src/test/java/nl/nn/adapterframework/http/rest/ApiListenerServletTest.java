@@ -95,7 +95,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
-	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<ApiListener>());
+	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
 	private static final String RESPONSE_CONTENT_KEY = "response-content";
 
@@ -397,6 +397,46 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void listenerRejectsRequestWithoutContentTypeHeaderWhenConsumesAttributeSet() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/listenerDoesNotAcceptRequestWithoutContentTypeHeader";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.XML, null).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}", headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(415, result.getStatus());
+
+	}
+
+	@Test
+	public void listenerAcceptsRequestWithoutContentTypeHeaderWhenConsumesAttributeNotSet() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/listenerAcceptsContentTypeJSON";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "application/json");
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}", headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("{}", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertNull(result.getErrorMessage());
+
+	}
+
+	@Test
 	public void listenerDetectContentTypeAndCharsetISO8859() throws Exception {
 		String uri="/listenerDetectMimeType";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
@@ -595,7 +635,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		assertEquals(200, result.getStatus());
 		assertEquals("60", session.get("maxSpeed"));
-		List<String> transportList = Arrays.asList(new String[] {"car","bike","moped"});
+		List<String> transportList = Arrays.asList("car","bike","moped");
 		assertEquals(transportList, session.get("transport"));
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -1106,14 +1146,13 @@ public class ApiListenerServletTest extends Mockito {
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Authorization", "Bearer "+ (token != null ? token : createJWT()) );
-		MockHttpServletRequest request = createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 
-		return request;
+		return createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 	}
 
 	private class ApiListenerBuilder {
 
-		private ApiListener listener;
+		private final ApiListener listener;
 
 		public ApiListenerBuilder(String uri, Methods method) throws ListenerException, ConfigurationException {
 			this(uri, method, null, null);
@@ -1233,7 +1272,7 @@ public class ApiListenerServletTest extends Mockito {
 		}
 	}
 
-	private class Response {
+	private static class Response {
 		private MockHttpServletResponse response;
 
 		Response(MockHttpServletResponse response) {

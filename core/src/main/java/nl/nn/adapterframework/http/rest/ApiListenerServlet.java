@@ -146,7 +146,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/**
+		/*
 		 * Generate OpenApi specification
 		 */
 		if(uri.equalsIgnoreCase("/openapi.json")) {
@@ -168,7 +168,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			return;
 		}
 
-		/**
+		/*
 		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 		 * @Deprecated This is here to support old url's
 		 */
@@ -190,7 +190,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
 		String remoteUser = request.getRemoteUser();
 
-		/**
+		/*
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
@@ -207,7 +207,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					return;
 				}
 
-				/**
+				/*
 				 * Handle Cross-Origin Resource Sharing
 				 * TODO make this work behind loadbalancers/reverse proxies
 				 * TODO check if request ip/origin header matches allowOrigin property
@@ -234,7 +234,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Get serviceClient
 				 */
 				ApiListener listener = config.getApiListener(method);
@@ -246,7 +246,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 
-				/**
+				/*
 				 * Check authentication
 				 */
 				ApiPrincipal userPrincipal = null;
@@ -348,17 +348,17 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageContext.put("authorizationToken", authorizationToken);
 					}
 				}
-				//Remove this? it's now available as header value
+				// Remove this? it's now available as header value
 				messageContext.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
 					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				messageContext.put("uri", uri);
 
-				/**
+				/*
 				 * Evaluate preconditions
 				 */
 				String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotEmpty(acceptHeader)) { //If an Accept header is present, make sure we comply to it!
+				if(StringUtils.isNotEmpty(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
 					if(!listener.accepts(acceptHeader)) {
 						response.setStatus(406);
 						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
@@ -367,7 +367,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
+				if(!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;
@@ -398,12 +398,12 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
 
-				/**
+				/*
 				 * Check authorization
 				 */
 				//TODO: authentication implementation
 
-				/**
+				/*
 				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
@@ -427,7 +427,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Map queryParameters into messageContext
 				 */
 				Enumeration<String> paramnames = request.getParameterNames();
@@ -446,7 +446,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
@@ -470,7 +470,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					messageContext.put("headers", headersXml.toXML());
 				}
 
-				/**
+				/*
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
@@ -531,13 +531,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					body = MessageUtils.parseContentAsMessage(request);
 				}
 
-				/**
+				/*
 				 * Compile Allow header
 				 */
 				StringBuilder methods = new StringBuilder();
 				methods.append("OPTIONS, ");
 				for (HttpMethod mtd : config.getMethods()) {
-					methods.append(mtd + ", ");
+					methods.append(mtd).append(", ");
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
 
@@ -551,7 +551,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
 				Message result = listener.processRequest(null, body, messageContext);
 
-				/**
+				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
 				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
@@ -587,7 +587,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * If a Last Modified value is present, set the 'Last-Modified' header.
 				 */
 				long lastModDate = Instant.now().toEpochMilli();
@@ -611,7 +611,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				cacheControl.append("must-revalidate, max-age=0, post-check=0, pre-check=0");
 				response.setHeader("Cache-Control", cacheControl.toString());
 
-				/**
+				/*
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
@@ -643,7 +643,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get("exitcode", 0);
@@ -651,7 +651,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setStatus(statusCode);
 				}
 
-				/**
+				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
 				if(!Message.isEmpty(result)) {
