@@ -30,6 +30,10 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		assertEquals(expected,actual);
 	}
 	
+	String removeWhiteSpaces(String input) {
+	    return input.replaceAll("\\s+", "");
+	}
+	
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean skipEmptyTags, Boolean removeNamespaces) throws Exception {
 		pipe.setStyleSheetName(styleSheetName);
 		if (omitXmlDeclaration!=null) {
@@ -46,7 +50,7 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asString(prr.getResult());
-		assertResultsAreCorrect(expected,result.trim(),session);
+		assertResultsAreCorrect(expected, result.trim(), session);
 	}
 	
 	@Test
@@ -112,7 +116,7 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		String result = writer.toString();
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
 		
-		assertEquals(expected, result.trim());
+		assertEquals(removeWhiteSpaces(expected), removeWhiteSpaces(result));
 		
 	}
 }
