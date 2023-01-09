@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.Logger;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -79,7 +79,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 	public abstract M createJaxRsResource();
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		M resource = createJaxRsResource();
 		checkContextFields(resource);

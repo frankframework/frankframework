@@ -8,8 +8,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSModel;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -44,13 +42,6 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 		XmlUtils.parseXml(xmlNoNamespace, namespaceAligningFilter);
 
 		MatchUtils.assertXmlEquals("", xmlString, writer.toString(), true);
-	}
-
-	@Override
-	@Test
-	@Ignore("only json input")
-	public void testMixedContentUnknown() throws Exception {
-		super.testMixedContentUnknown();
 	}
 
 	private String removeNamespacesExceptAttributes(String xmlString) throws ConfigurationException, TransformerException, IOException, SAXException {

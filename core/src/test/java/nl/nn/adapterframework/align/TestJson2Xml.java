@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.align;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.net.URL;
@@ -13,7 +13,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -37,10 +37,10 @@ public class TestJson2Xml extends AlignTestBase {
 			if (xmlAct==null) {
 				fail("could not convert to xml: "+description);
 			}
-			assertTrue("converted XML is not aligned: "+description,  Utils.validate(schemaUrl, xmlAct));
+			assertTrue(Utils.validate(schemaUrl, xmlAct), "converted XML is not aligned: "+description);
 			if (resultJsonExpected!=null) {
 				String roundTrippedJson=Xml2Json.translate(xmlAct, schemaUrl, compactConversion, rootElement!=null).toString(true);
-				assertEquals("roundTrippedJson",resultJsonExpected,roundTrippedJson);
+				assertEquals(resultJsonExpected, roundTrippedJson, "roundTrippedJson");
 			}
 		} catch (Exception e) {
 			if (expectedFailureReason==null) {
@@ -61,7 +61,7 @@ public class TestJson2Xml extends AlignTestBase {
 
 	public void testStrings(String xmlIn, String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactInput, boolean potentialCompactionProblems, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		LOG.debug("schemaUrl [{}]", schemaUrl);
-		if (StringUtils.isNotEmpty(xmlIn)) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
+		if (StringUtils.isNotEmpty(xmlIn)) assertTrue(Utils.validate(schemaUrl, xmlIn), "Expected XML is not valid to XSD");
 
 		JsonStructure json = Utils.string2Json(jsonIn);
 		LOG.debug("jsonIn [{}]", json);

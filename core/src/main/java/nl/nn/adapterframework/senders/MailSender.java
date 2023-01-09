@@ -288,6 +288,9 @@ public class MailSender extends MailSenderBase {
 		String messageTypeWithCharset = setCharSet(charSet, messageType);
 
 		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
+			if(!Base64.isBase64(mailSession.getMessage())) {
+				throw new SenderException("Input message contains invalid Base64 characters");
+			}
 			byte[] message = Base64.decodeBase64(mailSession.getMessage());
 			mailSession.setMessage(new String(message));
 		}

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 
@@ -103,7 +103,7 @@ public class TestConfiguration extends Configuration {
 			getBeanFactory().registerSingleton("ibisManager", ibisManager);
 			setIbisManager(ibisManager);
 
-			assertTrue("bean IbisManager not found", containsBean("ibisManager"));
+			assertTrue(containsBean("ibisManager"), "bean IbisManager not found");
 		}
 		return super.getIbisManager();
 	}

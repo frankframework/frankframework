@@ -3,9 +3,9 @@ package nl.nn.adapterframework.parameters;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -20,7 +20,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -176,8 +176,8 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 
-		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
-		p.getValue(alreadyResolvedParameters, null, session, false);
+		ParameterException e = assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, null, session, false));
+		assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
 	}
 
 	@Test
@@ -529,7 +529,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionkey", 8);
@@ -540,31 +540,31 @@ public class ParameterTest {
 		p.configure();
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8");
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage(8));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8".getBytes());
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage("8".getBytes()));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 	}
 
@@ -581,7 +581,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue("Expecting to be String but was:"+result.getClass(), result instanceof String);
+		assertTrue(result instanceof String, "Expecting to be String but was:"+result.getClass());
 		assertEquals("0000000008", (String) result);
 	}
 
@@ -722,7 +722,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 	}
 
 	@Test

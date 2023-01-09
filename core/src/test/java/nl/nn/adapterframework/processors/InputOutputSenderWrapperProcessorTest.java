@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.processors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -21,7 +21,7 @@ public class InputOutputSenderWrapperProcessorTest {
 	private PipeLineSession session; 
 	private String secondSenderOutput;
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		session = new PipeLineSession();
 		secondSenderOutput = null;
@@ -42,10 +42,10 @@ public class InputOutputSenderWrapperProcessorTest {
 
 		SenderResult actual = processor.sendMessage(sender, new Message(input), session);
 		
-		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.getResult().asString());
-		assertEquals("unexpected wrapper output", true, actual.isSuccess());
-		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
+		assertEquals(expectedSecondSenderOutput, secondSenderOutput, "unexpected output of last sender");
+		assertEquals(expectedWrapperOutput, actual.getResult().asString(), "unexpected wrapper output");
+		assertEquals(true, actual.isSuccess(), "unexpected wrapper output");
+		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")), "unexpected session variable value");
 	}
 	
 	public SenderWrapperBase getSenderWrapper() {

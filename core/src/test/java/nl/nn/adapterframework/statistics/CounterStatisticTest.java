@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.statistics;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;

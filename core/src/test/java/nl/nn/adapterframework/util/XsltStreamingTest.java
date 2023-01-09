@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -13,7 +13,7 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -210,7 +210,7 @@ public class XsltStreamingTest {
 		Source source = new StreamSource(new LoggingInputStream(bais,sc));
 		
 		tp.transform(source, result);
-		assertTrue("switch count ["+sc.count+"] should be larger than 2",sc.count>2);
+		assertTrue(sc.count>2, "switch count ["+sc.count+"] should be larger than 2");
 	}
 	
 

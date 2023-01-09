@@ -3,7 +3,7 @@ package nl.nn.adapterframework.stream.document;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;

@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 
 import nl.nn.adapterframework.configuration.AdapterManager;
@@ -37,7 +37,7 @@ public class TestInlineStorage extends BusTestBase {
 		return getConfiguration().getAdapterManager();
 	}
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -66,7 +66,7 @@ public class TestInlineStorage extends BusTestBase {
 		return adapter;
 	}
 
-	@After
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if(adapter != null) {

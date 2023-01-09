@@ -221,24 +221,6 @@ public class Misc {
 	}
 
 	/**
-	 * Copies the content of the specified file to a writer.
-	 *
-	 * <p>
-	 *     Example:
-	 *     <pre>
-	 *         Writer writer = new StringWriter();
-	 *         Misc.fileToWriter(someFileName, writer);
-	 *         System.out.println(writer.toString) // prints the content of the writer
-	 *         				       // that's copied from the file.
-	 *     </pre>
-	 * </p>
-	 * @throws IOException exception to be thrown exception to be thrown if an I/O exception occurs
-	 */
-	public static void fileToWriter(String filename, Writer writer) throws IOException {
-		readerToWriter(new FileReader(filename), writer);
-	}
-
-	/**
 	 * Copies the content of the specified file to an output stream.
 	 * <p>
 	 *     Example:

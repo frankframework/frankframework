@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
 	private MockFileSystem<F> fileSystem;
@@ -19,11 +22,13 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		this(new MockFileSystem<F>());
 	}
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		// not necessary
 	}
 
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		// not necessary

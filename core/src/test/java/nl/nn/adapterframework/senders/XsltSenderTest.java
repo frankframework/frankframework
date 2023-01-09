@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.senders;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -198,17 +199,8 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 	@Test
 	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
-		exception.expectMessage("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
-		sender.configure();
-		sender.open();
-
-		session = new PipeLineSession();
-
-		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
-		log.debug("inputfile ["+input+"]");
-		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
-
-		assertEquals(expected, sender.sendMessageOrThrow(input, session).asString());
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertThat(e.getMessage(), endsWith("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified"));
 	}
 
 	@Test
@@ -245,7 +237,6 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 	@Test
 	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
-		exception.expectMessage("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]");
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -256,12 +247,12 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		Message input = TestFileUtils.getTestFileMessage("/Xslt/dynamicStylesheet/in.xml");
 		log.debug("inputfile ["+input+"]");
-		String expected = TestFileUtils.getTestFile("/Xslt/dynamicStylesheet/out.txt");
 
-		assertEquals(expected, sender.sendMessageOrThrow(input, session).asString());
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(input, session));
+		assertThat(e.getMessage(), containsString("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]"));
 	}
 
-	@Ignore("First have to fix this")
+	@Disabled("First have to fix this")
 	@Test
 	public void testNamespaceUnaware() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceUnAware.xsl");
@@ -277,7 +268,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		assertEquals(expected, actual);
 	}
 
-	@Ignore("First have to fix this")
+	@Disabled("First have to fix this")
 	@Test
 	public void testNamespaceAware() throws Exception {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceAware.xsl");
@@ -333,5 +324,4 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 		assertEquals(expected, actual);
 	}
-
 }

@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,8 +34,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.hamcrest.core.StringContains;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -317,7 +317,7 @@ public class MessageOutputStreamTest {
 	}
 
 	@Test
-	@Ignore("No contract to call endDocument() in case of an Exception")
+	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX32ContentHandlerAsWriterError() throws Exception {
 		
 		CloseObservableWriter cow = new CloseObservableWriter() {
@@ -349,7 +349,7 @@ public class MessageOutputStreamTest {
 	}
 
 	@Test
-	@Ignore("No contract to call endDocument() in case of an Exception")
+	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX31ContentHandlerAsStreamError() throws Exception {
 		
 		CloseObservableOutputStream cos = new CloseObservableOutputStream() {
