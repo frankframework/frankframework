@@ -99,7 +99,8 @@ public abstract class MessageUtils {
 		if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
-			return Message.nullMessage();
+			// We want the context because of the request headers
+			return Message.nullMessage(getContext(request));
 		}
 	}
 
