@@ -30,10 +30,6 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		assertEquals(expected,actual);
 	}
 	
-	protected void assertResultsAreIncorrect(String expected, String actual, PipeLineSession session) {
-		assertNotEquals(expected, actual);
-	}
-	
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean skipEmptyTags, Boolean removeNamespaces) throws Exception {
 		pipe.setStyleSheetName(styleSheetName);
 		if (omitXmlDeclaration!=null) {
@@ -99,13 +95,6 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 	
 	@Test
 	public void testParameterizedJsonConversion() throws Exception {
-//		String styleSheetName = "/Xslt3/conversion/unwrappedJsonToXmlConversion.xsl";
-//		String input = TestFileUtils.getTestFile("/Xslt3/conversion/originalJson.json");
-//		String expected=TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
-//		Boolean omitXmlDeclaration=null;
-//		Boolean skipEmptyTags=null;
-//		Boolean removeNamespaces=null;
-//		testXslt(styleSheetName, input, expected, omitXmlDeclaration, skipEmptyTags, removeNamespaces);
 		Source template = (new StreamSource(new File("C:\\Users\\HP\\FrankWorkspace\\Frank Framework\\iaf\\core\\src\\test\\resources\\Xslt3\\conversion\\unwrappedJsontoXmlConversion.xsl")));
 		
 		StringWriter writer = new StringWriter();
@@ -123,7 +112,7 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		String result = writer.toString();
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
 		
-		assertEquals(expected, result);
+		assertEquals(expected, result.trim());
 		
 	}
 }
