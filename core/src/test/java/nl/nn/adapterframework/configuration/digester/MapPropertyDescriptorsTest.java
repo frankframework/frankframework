@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -10,7 +10,7 @@ import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -69,7 +69,7 @@ public class MapPropertyDescriptorsTest {
 							.filter(name -> name.getWriteMethod() != null && methodName.equals(name.getWriteMethod().getName()))
 							.findAny()
 							.orElse(null);
-							assertNotNull("Make sure that the attribute ["+propertyName+"] has proper getter and setters in class ["+beanName+"].", pd);
+							assertNotNull(pd, "Make sure that the attribute ["+propertyName+"] has proper getter and setters in class ["+beanName+"].");
 					}
 				}
 			}

@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.processors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
@@ -24,7 +24,7 @@ public class InputOutputPipeProcessorTest {
 	private PipeLine pipeLine;
 	private PipeLineSession session; 
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		processor = new InputOutputPipeProcessor();
 		PipeProcessor chain = new PipeProcessor() {

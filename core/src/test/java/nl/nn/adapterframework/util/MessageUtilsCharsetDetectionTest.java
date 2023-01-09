@@ -1,34 +1,23 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-@RunWith(Parameterized.class)
 public class MessageUtilsCharsetDetectionTest {
-
-	@Parameterized.Parameter(0)
-	public String testFile;
-
-	@Parameterized.Parameter(1)
-	public String fileContent;
-
-	@Parameterized.Parameter(2)
-	public Charset expectedCharset;
 
 	@Parameters(name= "file [{0}] encoding [{2}]")
 	public static List<Object[]> data() {
@@ -41,37 +30,39 @@ public class MessageUtilsCharsetDetectionTest {
 		});
 	}
 
-	@Test
-	public void testCharset() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testCharset(String testFile, String fileContent, Charset expectedCharset) throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);
-		assertNotNull("cannot find test file ["+testFile+"]", url);
+		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
 		Message message = new UrlMessage(url);
 		Charset computedCharset = MessageUtils.computeDecodingCharset(message, 40);
 
-		assertEquals("charset mismatch", expectedCharset, computedCharset);
+		assertEquals(expectedCharset, computedCharset, "charset mismatch");
 
 		if(fileContent != null) {
 			String asString = message.asString(computedCharset == null ? null : computedCharset.name());
 
-			assertEquals("fileContent mismatch", fileContent, asString);
+			assertEquals(fileContent, asString, "fileContent mismatch");
 		}
 	}
 
-	@Test
-	public void testDetection() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testDetection(String testFile, String fileContent, Charset expectedCharset) throws Exception {
 		assumeTrue(expectedCharset != Charset.forName("windows-1252"));
 
 		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);
-		assertNotNull("cannot find test file ["+testFile+"]", url);
+		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
 		Message message = new UrlMessage(url);
 		String result = message.asString("auto"); //calls asReader();
 
-		assertEquals("charset mismatch", expectedCharset.name(), message.getCharset());
+		assertEquals(expectedCharset.name(), message.getCharset(), "charset mismatch");
 
 		if(fileContent != null) {
-			assertEquals("fileContent mismatch", fileContent, result);
+			assertEquals(fileContent, result, "fileContent mismatch");
 		}
 	}
 }

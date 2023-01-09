@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -132,11 +132,11 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		});
 
 		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [URLResource ";
-		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
+		assertTrue(thrown.getMessage().startsWith(errorMessage), "SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]");
 	}
 
 	@Test
-	@Ignore("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
+	@Disabled("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
 	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("stringParamKey", "stringParamValue");

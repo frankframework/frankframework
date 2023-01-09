@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
@@ -53,9 +53,9 @@ public class UrlMessageTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(UrlMessage.class, out.getClass());
-			assertTrue(label, out.isBinary());
-			assertEquals(label, "UTF-8", out.getCharset());
-			assertEquals(label, testString,out.asString());
+			assertTrue(out.isBinary(), label);
+			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(testString, out.asString(), label);
 		}
 	}
 

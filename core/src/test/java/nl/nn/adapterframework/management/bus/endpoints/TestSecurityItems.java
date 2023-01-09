@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -15,7 +15,7 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilde
 
 public class TestSecurityItems extends BusTestBase {
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();

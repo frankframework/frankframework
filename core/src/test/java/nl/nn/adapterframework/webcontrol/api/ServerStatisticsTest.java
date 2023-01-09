@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class ServerStatisticsTest extends FrankApiTestBase<ServerStatistics> {
 
@@ -32,7 +32,7 @@ public class ServerStatisticsTest extends FrankApiTestBase<ServerStatistics> {
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void testServerWarnings() {
 		Response response = dispatcher.dispatchRequest(HttpMethod.GET, "/server/warnings");
 		assertEquals(200, response.getStatus());

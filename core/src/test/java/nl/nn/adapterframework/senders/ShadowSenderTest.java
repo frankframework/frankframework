@@ -5,16 +5,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Collection;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -159,7 +159,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		int duration = Integer.parseInt(origResult.getAttribute("duration"));
-		assertTrue("test took more then [15s] duration ["+duration+"]", duration < 15);
+		assertTrue(duration < 15, "test took more then [15s] duration ["+duration+"]");
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
@@ -217,15 +217,17 @@ public class ShadowSenderTest extends ParallelSendersTest {
 			assertThat("test duration was ["+duration+"]", duration, is(both(greaterThanOrEqualTo(2000)).and(lessThan(2050))));
 		}
 	}
-	
+
+	@Test
 	@Override
-	@Ignore("Test not suited for ShadowSender")
+	@Disabled("Test not suited for ShadowSender")
 	public void testSingleExceptionHandling() throws Exception {
 		//Test not suited for ShadowSender
 	}
-	
+
+	@Test
 	@Override
-	@Ignore("Test not suited for ShadowSender")
+	@Disabled("Test not suited for ShadowSender")
 	public void testExceptionHandling() throws Exception {
 		//Test not suited for ShadowSender
 	}
