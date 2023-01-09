@@ -1008,6 +1008,25 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void testGetRequestWithAccept() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri = "/messageWithJson2XmlValidator";
+		new ApiListenerBuilder(uri, Methods.GET).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("accept", "application/xml");
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertTrue(result.containsHeader("Accept"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
