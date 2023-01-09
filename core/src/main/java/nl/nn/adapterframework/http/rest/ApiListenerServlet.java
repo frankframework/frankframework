@@ -544,24 +544,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
 
-				String messageId = null;
-				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
-					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
-					if(StringUtils.isNotEmpty(messageIdHeader)) {
-						messageId = messageIdHeader;
-					}
-				}
-				String correlationId = null;
-				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
-					String correlationIdHeaderValue = request.getHeader(listener.getCorrelationIdHeader());
-					if(StringUtils.isNotEmpty(correlationIdHeaderValue)) {
-						messageId = correlationIdHeaderValue;
-					}
-				}
-				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
-					correlationId = messageId;
-				}
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
+				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
 				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+
 				Message result = listener.processRequest(body, messageContext);
 
 				/*
@@ -689,6 +675,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {
+		if (StringUtils.isBlank(headerName)) {
+			return defaultValue;
+		}
+		final String headerValue = request.getHeader(headerName);
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
 	@Override

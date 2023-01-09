@@ -957,6 +957,57 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void testRequestWithMessageId() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri = "/messageIdTest1";
+		new ApiListenerBuilder(uri, Methods.POST)
+			.setMessageIdHeader("X-Message-ID")
+			.setCorrelationIdHeader("X-Correlation-ID")
+			.build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("X-Message-ID", "msg1");
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
+		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
+		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
+		assertEquals("msg1", session.get(PipeLineSession.correlationIdKey));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testRequestWithMessageIdAndCorrelationId() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri = "/messageIdTest2";
+		new ApiListenerBuilder(uri, Methods.POST)
+			.setMessageIdHeader("X-Message-ID")
+			.setCorrelationIdHeader("X-Correlation-ID")
+			.build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("X-Message-ID", "msg1");
+		headers.put("X-Correlation-ID", "msg2");
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
+		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
+		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
+		assertEquals("msg2", session.get(PipeLineSession.correlationIdKey));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
@@ -1238,6 +1289,16 @@ public class ApiListenerServletTest extends Mockito {
 
 		public ApiListenerBuilder setExactMatchClaims(String exactMatchClaims) {
 			listener.setExactMatchClaims(exactMatchClaims);
+			return this;
+		}
+
+		public ApiListenerBuilder setMessageIdHeader(String headerName) {
+			listener.setMessageIdHeader(headerName);
+			return this;
+		}
+
+		public ApiListenerBuilder setCorrelationIdHeader(String headerName) {
+			listener.setCorrelationIdHeader(headerName);
 			return this;
 		}
 
