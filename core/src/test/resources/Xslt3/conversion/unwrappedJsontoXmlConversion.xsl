@@ -4,8 +4,10 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xsl:output indent="yes" omit-xml-declaration="yes" method="xml" />
 
-	<xsl:template match="/">
-	    <xsl:copy-of select="json-to-xml(.)"/>
+	<xsl:template match="/" name="xsl:initial-template">
+		<xsl:copy-of select="json-to-xml($json)/*"/>
 	</xsl:template>
+	
+	<xsl:param name="json" select="unparsed-text('originalJson.json')"/>
 
 </xsl:stylesheet>

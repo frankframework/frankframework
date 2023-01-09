@@ -3,6 +3,13 @@ package nl.nn.adapterframework.xslt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import javax.xml.transform.*;
+import javax.xml.transform.stream.*;
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -91,13 +98,32 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 	}
 	
 	@Test
-	public void testUnwrappedJsonConversion() throws Exception {
-		String styleSheetName=  "/Xslt3/conversion/jsonToXmlConversion.xsl";
-		String input   =TestFileUtils.getTestFile("/Xslt3/conversion/originalJson.json");
-		String expected=TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
-		Boolean omitXmlDeclaration=null;
-		Boolean skipEmptyTags=null;
-		Boolean removeNamespaces=null;
-		testXslt(styleSheetName, input, expected, omitXmlDeclaration, skipEmptyTags, removeNamespaces);
+	public void testParameterizedJsonConversion() throws Exception {
+//		String styleSheetName = "/Xslt3/conversion/unwrappedJsonToXmlConversion.xsl";
+//		String input = TestFileUtils.getTestFile("/Xslt3/conversion/originalJson.json");
+//		String expected=TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
+//		Boolean omitXmlDeclaration=null;
+//		Boolean skipEmptyTags=null;
+//		Boolean removeNamespaces=null;
+//		testXslt(styleSheetName, input, expected, omitXmlDeclaration, skipEmptyTags, removeNamespaces);
+		Source template = (new StreamSource(new File("C:\\Users\\HP\\FrankWorkspace\\Frank Framework\\iaf\\core\\src\\test\\resources\\Xslt3\\conversion\\unwrappedJsontoXmlConversion.xsl")));
+		
+		StringWriter writer = new StringWriter();
+		Result output = new StreamResult(writer);
+		
+		try {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer(template);
+			transformer.transform(new StreamSource(new StringReader("<empty/>")), output);
+			
+		} catch(TransformerException e){
+			e.printStackTrace();
+		}
+		
+		
+		String result = writer.toString();
+		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
+		
+		assertEquals(expected, result);
+		
 	}
 }
