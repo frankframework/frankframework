@@ -25,7 +25,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	public void tearDown() throws Exception {
 		// not necessary
 	}
-	
+
 	protected Path getFileHandle(String filename) {
 		return Paths.get(folder.toAbsolutePath().toString(), filename);
 	}

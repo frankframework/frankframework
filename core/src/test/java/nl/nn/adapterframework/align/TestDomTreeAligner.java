@@ -24,8 +24,7 @@ import org.w3c.dom.Document;
 public class TestDomTreeAligner extends AlignTestBase {
 
 	@Override
-	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile,
-			boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
+	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
 		URL schemaUrl = getSchemaURL(schemaFile);
 		String xsdUri = schemaUrl.toExternalForm();
 		Schema schema = Utils.getSchemaFromResource(schemaUrl);
@@ -128,8 +127,7 @@ public class TestDomTreeAligner extends AlignTestBase {
 	@Test
 	@Disabled("only json to xml")
 	public void testMixedContentUnknown() throws Exception {
-		testFiles("Mixed/mixed.xsd", "urn:mixed", "root", "Mixed/mixed-unknown",
-				"Cannot find the declaration of element");
+		testFiles("Mixed/mixed.xsd", "urn:mixed", "root", "Mixed/mixed-unknown", "Cannot find the declaration of element");
 	}
 
 }

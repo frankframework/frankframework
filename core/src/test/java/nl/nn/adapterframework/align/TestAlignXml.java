@@ -21,13 +21,11 @@ public class TestAlignXml {
 		testXml(xml, schemaUrl, expectedFailureReason, description, true, false);
 	}
 
-	public void testXml(String xml, URL schemaUrl, String expectedFailureReason, String description, boolean inputValid,
-			boolean ignoreExtraElements) throws Exception {
+	public void testXml(String xml, URL schemaUrl, String expectedFailureReason, String description, boolean inputValid, boolean ignoreExtraElements) throws Exception {
 		Document dom = XmlUtils.buildDomDocument(xml, true);
 
 		// check the validity of the input XML
-		if (inputValid)
-			assertTrue(Utils.validate(schemaUrl, xml), "valid input XML");
+		if (inputValid) assertTrue(Utils.validate(schemaUrl, xml), "valid input XML");
 
 		try {
 			String xmlAct = DomTreeAligner.translate(dom, schemaUrl, ignoreExtraElements);
@@ -57,11 +55,9 @@ public class TestAlignXml {
 		}
 	}
 
-	public void testStrings(String xmlIn, URL schemaUrl, String targetNamespace, String rootElement,
-			String expectedFailureReason) throws Exception {
+	public void testStrings(String xmlIn, URL schemaUrl, String targetNamespace, String rootElement, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl [" + schemaUrl + "]");
-		if (xmlIn != null)
-			assertTrue(Utils.validate(schemaUrl, xmlIn), "input not valid");
+		if (xmlIn != null) assertTrue(Utils.validate(schemaUrl, xmlIn), "input not valid");
 
 		testXml(xmlIn, schemaUrl, expectedFailureReason, "");
 	}
@@ -88,8 +84,7 @@ public class TestAlignXml {
 		testFiles(schemaFile, namespace, rootElement, inputFile, null);
 	}
 
-	public void testFiles(String schemaFile, String namespace, String rootElement, String file,
-			String expectedFailureReason) throws Exception {
+	public void testFiles(String schemaFile, String namespace, String rootElement, String file, String expectedFailureReason) throws Exception {
 		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
 		String xmlString = getTestFile(file + ".xml");
 		testStrings(xmlString, schemaUrl, namespace, rootElement, expectedFailureReason);
@@ -125,8 +120,7 @@ public class TestAlignXml {
 
 	@Test
 	public void testOK_hcda() throws Exception {
-		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd", "", "HandleCollectionDisbursementAccount",
-				"HCDA/HandleCollectionDisbursementAccount");
+		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd", "", "HandleCollectionDisbursementAccount", "HCDA/HandleCollectionDisbursementAccount");
 	}
 
 	@Test

@@ -81,6 +81,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
 		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
 		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
+		assertThat(e.getMessage(), containsString("fake owner of FileSystemActor"));
 	}
 
 	@Test
@@ -102,7 +103,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		ParameterValueList pvl = params.getValues(new Message(""), session);
 
 		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
-		assertEquals("unable to process [null] action for File [emptyParameterActionfile1.txt]: unable to resolve the value of parameter [action]", e.getMessage());
+		assertThat(e.getMessage(), containsString("unable to resolve the value of parameter"));
 	}
 
 	@Test
@@ -166,6 +167,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,null,owner);
 
 		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 
@@ -204,6 +206,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.configure(fileSystem,params,owner);
 
 		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
 		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 

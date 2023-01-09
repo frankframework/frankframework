@@ -65,7 +65,7 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 		+ template
 		+ "</xsl:stylesheet>";
 
-		TransformerPool tp = TransformerPool.getUtilityInstance(stylesheet, 2);
+		TransformerPool tp = TransformerPool.getInstance(stylesheet, 2);
 		tp.open();
 		String result = tp.transform(xmlString, null);
 		tp.close();
