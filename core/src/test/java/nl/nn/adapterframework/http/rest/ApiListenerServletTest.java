@@ -1031,7 +1031,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Assert
 		assertEquals(200, result.getStatus());
 		Message input = (Message) session.get(REQUEST_CONTENT_KEY);
-		assertEquals("application/xml", input.getContext().get("accept"));
+		assertEquals("application/xml", input.getContext().get("Header.accept"));
 		assertNull(result.getErrorMessage());
 	}
 
