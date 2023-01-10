@@ -204,7 +204,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.start();
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
-		Message inputMessage = new Message(input, new MessageContext().with("Accept", "application/json"));
+		Message inputMessage = new Message(input, new MessageContext().with("Header.Accept", "application/json"));
 
 		doPipe(inputMessage);
 

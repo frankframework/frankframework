@@ -45,6 +45,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -128,7 +129,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			String sessionKey = getInputFormatSessionKey();
 
 			if (!session.containsKey(sessionKey)) {
-				String acceptHeader = (String) input.getContext().get(sessionKey);
+				String acceptHeader = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
 				if(isAutoFormat() && StringUtils.isNotEmpty(acceptHeader)) {
 					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", acceptHeader, sessionKey);
 					session.put(sessionKey, acceptHeader);

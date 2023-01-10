@@ -358,14 +358,12 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Evaluate preconditions
 				 */
-				String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotEmpty(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					if(!listener.accepts(acceptHeader)) {
-						response.setStatus(406);
-						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
-						return;
-					}
+				final String acceptHeader = request.getHeader("Accept");
+				if(StringUtils.isNotBlank(acceptHeader) && !listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					response.setStatus(406);
+					response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
+					log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
+					return;
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {

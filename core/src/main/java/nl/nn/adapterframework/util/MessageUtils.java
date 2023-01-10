@@ -62,7 +62,7 @@ public abstract class MessageUtils {
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(name, request.getHeader(name));
+			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
 		}
 
 		return result;
@@ -83,7 +83,7 @@ public abstract class MessageUtils {
 			} else if("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
-				result.put(name, header.getValue());
+				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
 			}
 		}
 		return result;
