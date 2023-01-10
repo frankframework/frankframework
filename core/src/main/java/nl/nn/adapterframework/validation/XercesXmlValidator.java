@@ -293,7 +293,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
-			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
+			throw new ConfigurationException(logPrefix + " Cannot create schema", e);
 		}
 		try {
 			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -335,9 +335,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			mgr.setEntityExpansionLimit(entityExpansionLimit);
 			parser.setProperty(SECURITY_MANAGER_PROPERTY_ID, mgr);
 		} catch (SAXNotRecognizedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not support necessary feature", e);
 		}
 		return parser;
 	}

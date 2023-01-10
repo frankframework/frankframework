@@ -105,13 +105,13 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * </ul>
 	 */
 	public void configure(IConfigurationAware owner) throws ConfigurationException {
-		this.logPrefix = ClassUtils.nameOf(owner)+ " ";
+		this.logPrefix = ClassUtils.nameOf(owner);
 		this.owner = owner;
 	}
 
 	@Override
 	public String getName() {
-		return logPrefix.trim();
+		return logPrefix;
 	}
 
 	public void start() throws ConfigurationException {
@@ -131,12 +131,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getReasonSessionKey() + "]");
 			session.remove(getReasonSessionKey());
 		}
 
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
 			session.remove(getXmlReasonSessionKey());
 		}
 		return null;
