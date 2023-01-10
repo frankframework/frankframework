@@ -105,13 +105,13 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * </ul>
 	 */
 	public void configure(IConfigurationAware owner) throws ConfigurationException {
-		this.logPrefix = ClassUtils.nameOf(owner);
+		this.logPrefix = ClassUtils.nameOf(owner)+ " ";
 		this.owner = owner;
 	}
 
 	@Override
 	public String getName() {
-		return logPrefix;
+		return logPrefix.trim();
 	}
 
 	public void start() throws ConfigurationException {

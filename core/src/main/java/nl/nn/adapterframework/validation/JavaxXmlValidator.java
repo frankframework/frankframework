@@ -113,6 +113,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 			xsModels=new LinkedList<XSModel>();
 			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'
 			for(int i=0;i<grammars.length;i++) {
 				XSModel model=((XSGrammar)grammars[i]).toXSModel();
 				xsModels.add(model);

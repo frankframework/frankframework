@@ -36,5 +36,5 @@ public class StringXsd extends XSD {
 	public Reader getReader() throws IOException {
 		return new StringReader(schemaContentsWriter.toString());
 	}
-	
+
 }
