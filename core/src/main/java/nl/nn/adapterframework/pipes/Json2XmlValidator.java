@@ -110,10 +110,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				String inputFormat = session.getMessage(getInputFormatSessionKey()).asString().toLowerCase();
 				if (inputFormat.contains("json")) {
 					format = DocumentFormat.JSON;
-				} else {
-					if (inputFormat.contains("xml")) {
-						format = DocumentFormat.XML;
-					}
+				} else if (inputFormat.contains("xml")) {
+					format = DocumentFormat.XML;
 				}
 			}
 			if (format==null) {
@@ -125,12 +123,19 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return format;
 	}
 
-	protected void storeInputFormat(DocumentFormat format, PipeLineSession session, boolean responseMode) {
+	protected void storeInputFormat(DocumentFormat format, Message input, PipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
+
 			if (!session.containsKey(sessionKey)) {
-				log.debug("storing inputFormat [{}] under session key [{}]", format, sessionKey);
-				session.put(sessionKey, format);
+				String acceptHeader = (String) input.getContext().get(sessionKey);
+				if(isAutoFormat() && StringUtils.isNotEmpty(acceptHeader)) {
+					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", acceptHeader, sessionKey);
+					session.put(sessionKey, acceptHeader);
+				} else {
+					log.debug("storing default inputFormat [{}] under session key [{}]", format, sessionKey);
+					session.put(sessionKey, format);
+				}
 			}
 		}
 	}
@@ -144,7 +149,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		String messageToValidate;
 		try {
-			messageToValidate = Message.isNull(input) ?"{}":input.asString();
+			messageToValidate = Message.isNull(input) ? "{}" : input.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
@@ -152,7 +157,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
 			messageToValidate="{}";
-			storeInputFormat(DocumentFormat.JSON, session, responseMode);
+			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		} else {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
@@ -161,7 +166,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
 					//log.debug("added namespace to message [{}]", messageToValidate);
 				}
-				storeInputFormat(DocumentFormat.XML, session, responseMode);
+				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
 					if (isProduceNamespacelessXml()) {
@@ -185,8 +190,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			if (firstChar!='{' && firstChar!='[') {
 				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
 			}
-			storeInputFormat(DocumentFormat.JSON, session, responseMode);
+			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
+
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
@@ -299,9 +305,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		} catch (Exception e) {
 			validationResult= validator.finalizeValidation(context, session, e);
 		}
+
 		PipeForward forward=determineForward(validationResult, session, responseMode);
-		PipeRunResult result=new PipeRunResult(forward,out);
-		return result;
+		return new PipeRunResult(forward,out);
 	}
 
 	public String addNamespace(String xml) {

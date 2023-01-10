@@ -295,7 +295,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
 		assertTrue(result.containsHeader("Access-Control-Allow-Headers"));
-		assertEquals(result.getHeader("Access-Control-Allow-Headers"), "Message-Id,CustomHeader");
+		assertEquals("Message-Id,CustomHeader", result.getHeader("Access-Control-Allow-Headers"));
 		assertTrue(result.containsHeader("Access-Control-Expose-Headers"));
 		assertTrue(result.containsHeader("Access-Control-Allow-Methods"));
 	}
@@ -314,7 +314,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
 		assertTrue(result.containsHeader("Access-Control-Allow-Headers"));
-		assertEquals(result.getHeader("Access-Control-Allow-Headers"), "Message-Id,CustomHeader");
+		assertEquals("Message-Id,CustomHeader", result.getHeader("Access-Control-Allow-Headers"));
 		assertTrue(result.containsHeader("Access-Control-Expose-Headers"));
 		assertTrue(result.containsHeader("Access-Control-Allow-Methods"));
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
