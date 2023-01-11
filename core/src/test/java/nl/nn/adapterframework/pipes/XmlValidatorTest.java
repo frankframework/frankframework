@@ -423,7 +423,9 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Test
 	public void testElementFormDefaultUnqualified() throws Exception {
-		XmlValidator validator = getValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE +" "+ ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA);
+		XmlValidator validator = getUnconfiguredValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE +" "+ ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA, false, implementation);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.configure();
 		validator.start();
 
 		String testXml = getTestXml(ELEMENT_FORM_DEFAULT_UNQUALIFIED_INPUT);

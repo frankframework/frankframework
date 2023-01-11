@@ -206,7 +206,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
-		namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'
+		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
