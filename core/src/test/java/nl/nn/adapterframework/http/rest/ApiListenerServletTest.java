@@ -59,6 +59,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -1032,6 +1033,35 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		Message input = (Message) session.get(REQUEST_CONTENT_KEY);
 		assertEquals("application/xml", input.getContext().get("Header.accept"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@ParameterizedTest
+	@CsvSource(delimiter='-', value = {"application/xhtml+xml, application/xml;q=0.9", "*/*;q=0.8"})
+	public void testParseAcceptHeaderAndValidateProducesXML(String acceptHeaderValues) throws Exception {
+		setupParseAcceptHeaderAndValidateProduces(acceptHeaderValues, MediaTypes.XML);
+	}
+
+	@ParameterizedTest
+	@CsvSource(delimiter='-', value = {"application/json, application/*+xml;q=0.9", "*/*;q=0.8", "text/xml, application/json;q=0.8, */*;q=0.4"})
+	public void testParseAcceptHeaderAndValidateProducesJSON(String acceptHeaderValues) throws Exception {
+		setupParseAcceptHeaderAndValidateProduces(acceptHeaderValues, MediaTypes.XML);
+	}
+
+	public void setupParseAcceptHeaderAndValidateProduces(String acceptHeaderValue, MediaTypes produces) throws Exception {
+		// Arrange
+		String uri = "/messageWithAcceptHeaderAndProduces"+produces;
+		new ApiListenerBuilder(uri, Methods.GET, null, produces).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("accept", acceptHeaderValue);
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
 		assertNull(result.getErrorMessage());
 	}
 
