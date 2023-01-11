@@ -84,7 +84,6 @@ public enum MediaTypes {
 
 	/**
 	 * Checks if this enum matches a value in the provided 'Accept' header.
-	 * @return The preferred MimeType, or NULL of nothing matches
 	 */
 	public boolean accepts(@Nullable String acceptHeader) {
 		if (this == ANY || StringUtils.isBlank(acceptHeader)) {
