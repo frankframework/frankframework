@@ -184,7 +184,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 
-		doPipe(pipe, input,session); // first run the request validation ...
+		doPipe(pipe, input, session); // first run the request validation ...
 
 		IValidator validator = pipe.getResponseValidator();
 		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
@@ -195,7 +195,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Test
 	public void testAcceptHeaderFromMessage() throws Exception {
 		pipe.setName("Response_To_Json_from_acceptHeader");
-		pipe.setInputFormatSessionKey("Accept");
 		pipe.setOutputFormat(DocumentFormat.XML);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 		pipe.setResponseRoot("BusinessPartner");
@@ -213,7 +212,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testAcceptHeaderAndIgnoreMessage() throws Exception {
-		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setName("Response_To_Json_from_acceptSession");
 		pipe.setInputFormatSessionKey("Accept");
 		pipe.setOutputFormat(DocumentFormat.XML);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
@@ -225,7 +224,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		session.put("Accept", "json");
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
-		Message inputMessage = new Message(input, new MessageContext().with("Accept", "application/pdf"));
+		Message inputMessage = new Message(input, new MessageContext().with("Header.Accept", "application/pdf"));
 
 		doPipe(inputMessage);
 
