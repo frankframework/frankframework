@@ -1065,6 +1065,25 @@ public class ApiListenerServletTest extends Mockito {
 		assertNull(result.getErrorMessage());
 	}
 
+	@ParameterizedTest
+	@CsvSource(delimiter='-', value = {"application/xhtml+xml, application/xml;q=0.9", "text/xml;q=0.8"})
+	public void testEndpointDoesNotAcceptHeader(String acceptHeaderValue) throws Exception {
+		// Arrange
+		String uri = "/messageThatDoesNotAcceptAcceptHeader";
+		new ApiListenerBuilder(uri, Methods.GET, null, MediaTypes.JSON).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("accept", acceptHeaderValue);
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(406, result.getStatus());
+		assertEquals("endpoint cannot provide the supplied MimeType", result.getErrorMessage());
+	}
+
 	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
