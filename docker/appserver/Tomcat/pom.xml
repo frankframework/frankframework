@@ -125,7 +125,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-as-tomcat"/>
+									<arg value="nexus.frankframework.org/private/ff-test/as/tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>
