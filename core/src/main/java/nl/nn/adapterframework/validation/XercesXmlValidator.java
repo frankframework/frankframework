@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -204,6 +206,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
+		namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
@@ -290,7 +293,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
-			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
+			throw new ConfigurationException(logPrefix + " Cannot create schema", e);
 		}
 		try {
 			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -332,9 +335,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			mgr.setEntityExpansionLimit(entityExpansionLimit);
 			parser.setProperty(SECURITY_MANAGER_PROPERTY_ID, mgr);
 		} catch (SAXNotRecognizedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not support necessary feature", e);
 		}
 		return parser;
 	}
@@ -394,42 +397,11 @@ class XercesValidationContext extends ValidationContext {
 }
 
 class PreparseResult {
-	private String schemasId;
-	private SymbolTable symbolTable;
-	private XMLGrammarPool grammarPool;
-	private Set<String> namespaceSet;
-	private List<XSModel> xsModels=null;
-
-	public String getSchemasId() {
-		return schemasId;
-	}
-	public void setSchemasId(String schemasId) {
-		this.schemasId = schemasId;
-	}
-
-	public SymbolTable getSymbolTable() {
-		return symbolTable;
-	}
-
-	public void setSymbolTable(SymbolTable symbolTable) {
-		this.symbolTable = symbolTable;
-	}
-
-	public XMLGrammarPool getGrammarPool() {
-		return grammarPool;
-	}
-
-	public void setGrammarPool(XMLGrammarPool grammarPool) {
-		this.grammarPool = grammarPool;
-	}
-
-	public Set<String> getNamespaceSet() {
-		return namespaceSet;
-	}
-
-	public void setNamespaceSet(Set<String> namespaceSet) {
-		this.namespaceSet = namespaceSet;
-	}
+	private @Getter @Setter String schemasId;
+	private @Getter @Setter SymbolTable symbolTable;
+	private @Getter @Setter XMLGrammarPool grammarPool;
+	private @Getter @Setter Set<String> namespaceSet;
+	private @Setter List<XSModel> xsModels=null;
 
 	public List<XSModel> getXsModels() {
 		if (xsModels==null) {
@@ -440,10 +412,6 @@ class PreparseResult {
 			}
 		}
 		return xsModels;
-	}
-
-	public void setXsModels(List<XSModel> xsModels) {
-		this.xsModels = xsModels;
 	}
 
 }

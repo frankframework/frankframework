@@ -133,6 +133,7 @@ public class SchemaUtils {
 	 */
 	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<IXSD> resultXsds = new LinkedHashSet<IXSD>();
+		// iterate over the namespaces
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<IXSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
@@ -156,6 +157,7 @@ public class SchemaUtils {
 				w = xmlStreamWriter;
 			}
 			int i = 0;
+			// perform the merge
 			for (IXSD xsd: xsds) {
 				i++;
 				boolean skipFirstElement = true;
