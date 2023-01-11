@@ -142,7 +142,11 @@ public class Message implements Serializable {
 	}
 
 	public static Message nullMessage() {
-		return new Message(null, (Object)null);
+		return nullMessage(null);
+	}
+
+	public static Message nullMessage(MessageContext context) {
+		return new Message(context, null, null);
 	}
 
 	public MessageContext copyContext() {
