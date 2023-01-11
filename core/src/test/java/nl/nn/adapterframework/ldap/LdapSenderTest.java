@@ -3,9 +3,9 @@ package nl.nn.adapterframework.ldap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeNotNull;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 
 import org.custommonkey.xmlunit.Diff;
@@ -21,8 +21,8 @@ import org.xml.sax.SAXException;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
-import com.unboundid.ldap.sdk.LDAPException;
 
 import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -38,16 +38,8 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Override
 	public LdapSender createSender() throws Exception {
-		LDAPConnection connection = null;
-		try {
-			connection = inMemoryDirectoryServer.getConnection();
-		} catch (LDAPException e) {
-			if(!TestAssertions.isTestRunningOnGitHub()) {
-				fail(e.getMessage());
-			}
-		}
+		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 
-		assumeNotNull(connection);
 		LdapSender ldapSender = new LdapSender();
 		ldapSender.setLdapProviderURL("ldap://localhost:" + connection.getConnectedPort());
 		return ldapSender;
@@ -60,6 +52,9 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
 		config.setSchema(null);
+		// Custom InMemoryListenerConfig because InetAddress.getLocalhost() does not always resolve to correct ip address
+		InMemoryListenerConfig listenerConfig = new InMemoryListenerConfig("localhost", InetAddress.getByName("127.0.0.1"), 0, null, null, null);
+		config.setListenerConfigs(listenerConfig);
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "Ldap/data.ldif";
