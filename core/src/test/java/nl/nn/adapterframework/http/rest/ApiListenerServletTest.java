@@ -98,6 +98,7 @@ public class ApiListenerServletTest extends Mockito {
 	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
 	private static final String RESPONSE_CONTENT_KEY = "response-content";
+	private static final String REQUEST_CONTENT_KEY = "request-content";
 
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
@@ -957,6 +958,32 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void testGetRequestWithAccept() throws Exception {
+		setupTestGetRequestWithAccept(Methods.GET);
+		setupTestGetRequestWithAccept(Methods.POST);
+		setupTestGetRequestWithAccept(Methods.PUT);
+	}
+
+	public void setupTestGetRequestWithAccept(Methods method) throws Exception {
+		// Arrange
+		String uri = "/messageWithJson2XmlValidator";
+		new ApiListenerBuilder(uri, method).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("accept", "application/xml");
+		HttpServletRequest request = createRequest(uri, method, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		Message input = (Message) session.get(REQUEST_CONTENT_KEY);
+		assertEquals("application/xml", input.getContext().get("Header.accept"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
@@ -1276,6 +1303,7 @@ public class ApiListenerServletTest extends Mockito {
 				context.putAll(session);
 			}
 			session = context;
+			session.put(REQUEST_CONTENT_KEY, message);
 			if(session.containsKey(RESPONSE_CONTENT_KEY)) {
 				return Message.asMessage(session.get(RESPONSE_CONTENT_KEY));
 			}
