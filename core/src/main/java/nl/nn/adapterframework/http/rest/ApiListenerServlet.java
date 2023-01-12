@@ -170,7 +170,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-	
+
 			/*
 			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
 			 * @Deprecated This is here to support old url's
@@ -186,7 +186,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-	
+
 			handleRequest(request, response, method, uri);
 		} finally {
 			ThreadContext.clearAll();

@@ -256,16 +256,16 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
-	
+
 	@Test
 	public void testAfterServiceMethodThreadContextMustBeCleared() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// arrange
 		ThreadContext.put("fakeMdcKey", "fakeContextValue");
 		ThreadContext.push("fakeNdcKey", "fakeStackItem");
-		
+
 		// act
 		simpleGet();
-		
+
 		// assert
 		assertEquals(0, ThreadContext.getDepth());
 		assertTrue(ThreadContext.isEmpty());
