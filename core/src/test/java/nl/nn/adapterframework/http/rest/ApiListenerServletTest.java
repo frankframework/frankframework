@@ -53,6 +53,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -254,6 +255,20 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
+	}
+	
+	@Test
+	public void testAfterServiceMethodThreadContextMustBeCleared() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// arrange
+		ThreadContext.put("fakeMdcKey", "fakeContextValue");
+		ThreadContext.push("fakeNdcKey", "fakeStackItem");
+		
+		// act
+		simpleGet();
+		
+		// assert
+		assertEquals(0, ThreadContext.getDepth());
+		assertTrue(ThreadContext.isEmpty());
 	}
 
 	@Test
