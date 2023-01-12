@@ -31,7 +31,8 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
    - `log.dir=c:/temp` (lower case 'c' is mandatory)
    - `dtap.stage=LOC`.
-   - `credentialFactory.class=nl.nn.credentialprovider.PropertyFileCredentialFactory`
+   - `credentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `credentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
    - `authAliases.expansion.allowed=testalias`
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80. If you wish to use another port, please set the property `web.port` accordingly in catalina.properties.
 3. In the same window, go to the Modules tab at the bottom and add "/iaf-test" as a web module.
@@ -66,7 +67,7 @@ See the Eclipse instructions for an important note about the `log.dir` setting.
 ## 4. Select database
 
 The ibis-adapterframeworkt-test project supports multiple databases. By default, an H2 local database is used.
-Docker projects for a number of other DMBSes are provided in iaf/docker/dbms. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the ibis-adapterframeworkt-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
+Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/ibissource/iaf-ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the ibis-adapterframeworkt-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`. If you have no preference about the database you are working with, please do not choose Oracle. Working with Oracle databases is complicated because downloading the required drivers / docker images is complicated.
 
 ## 5. Running the test scenarios
 
