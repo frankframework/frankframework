@@ -258,10 +258,10 @@ public class ApiListenerServletTest extends Mockito {
 		// arrange
 		ThreadContext.put("fakeMdcKey", "fakeContextValue");
 		ThreadContext.push("fakeNdcKey", "fakeStackItem");
-		
+
 		// act
 		simpleGet();
-		
+
 		// assert
 		assertEquals(0, ThreadContext.getDepth());
 		assertTrue(ThreadContext.isEmpty());
