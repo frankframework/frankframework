@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -146,45 +147,49 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/*
-		 * Generate OpenApi specification
-		 */
-		if(uri.equalsIgnoreCase("/openapi.json")) {
-			String specUri = request.getParameter("uri");
-			JsonObject jsonSchema = null;
-			if(specUri != null) {
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-				if(apiConfig != null) {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+		try {
+			/*
+			 * Generate OpenApi specification
+			 */
+			if(uri.equalsIgnoreCase("/openapi.json")) {
+				String specUri = request.getParameter("uri");
+				JsonObject jsonSchema = null;
+				if(specUri != null) {
+					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+					if(apiConfig != null) {
+						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+					}
+				} else {
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
 				}
-			} else {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
-			}
-			if(jsonSchema != null) {
-				returnJson(response, 200, jsonSchema);
+				if(jsonSchema != null) {
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		/*
-		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-		 * @Deprecated This is here to support old url's
-		 */
-		if(uri.endsWith("openapi.json")) {
-			uri = uri.substring(0, uri.lastIndexOf("/"));
-			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
-				returnJson(response, 200, jsonSchema);
+			/*
+			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+			 * @Deprecated This is here to support old url's
+			 */
+			if(uri.endsWith("openapi.json")) {
+				uri = uri.substring(0, uri.lastIndexOf("/"));
+				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+				if(apiConfig != null) {
+					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		handleRequest(request, response, method, uri);
+			handleRequest(request, response, method, uri);
+		} finally {
+			ThreadContext.clearAll();
+		}
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
