@@ -79,7 +79,7 @@ public enum MediaTypes {
 		if (StringUtils.isBlank(contentTypeHeader)) {
 			return false;
 		}
-		return parseAndCompare(contentTypeHeader, e->mimeType.includes(e) && e.getParameter("q") == null);
+		return parseAndEvaluate(contentTypeHeader, parsedType->mimeType.includes(parsedType) && parsedType.getParameter("q") == null);
 	}
 
 	/**
@@ -92,14 +92,14 @@ public enum MediaTypes {
 		//The Accept header may consist out of multiple parts.
 		String[] headerParts = acceptHeader.split(",");
 		for(String headerPart : headerParts) {
-			if(parseAndCompare(headerPart, mimeType::isCompatibleWith)) {
+			if(parseAndEvaluate(headerPart, mimeType::isCompatibleWith)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean parseAndCompare(String mimeType, Predicate<MimeType> predicate) {
+	private boolean parseAndEvaluate(String mimeType, Predicate<MimeType> predicate) {
 		try {
 			MimeType type = MimeTypeUtils.parseMimeType(mimeType);
 			return predicate.test(type);
