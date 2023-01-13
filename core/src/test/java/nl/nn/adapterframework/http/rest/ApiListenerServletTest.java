@@ -60,7 +60,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -1048,6 +1050,58 @@ public class ApiListenerServletTest extends Mockito {
 		Message input = (Message) session.get(REQUEST_CONTENT_KEY);
 		assertEquals("application/xml", input.getContext().get("Header.accept"));
 		assertNull(result.getErrorMessage());
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@CsvSource(delimiter='-', value = {"application/xhtml+xml, application/xml;q=0.9", "*/*;q=0.8"})
+	public void testParseAcceptHeaderAndValidateProducesXML(String acceptHeaderValues) throws Exception {
+		setupParseAcceptHeaderAndValidateProduces(acceptHeaderValues, MediaTypes.XML);
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@CsvSource(delimiter='-', value = {"application/json, application/*+xml;q=0.9", "*/*;q=0.8", "text/xml, application/json;q=0.8, */*;q=0.4"})
+	public void testParseAcceptHeaderAndValidateProducesJSON(String acceptHeaderValues) throws Exception {
+		setupParseAcceptHeaderAndValidateProduces(acceptHeaderValues, MediaTypes.JSON);
+	}
+
+	public void setupParseAcceptHeaderAndValidateProduces(String acceptHeaderValue, MediaTypes produces) throws Exception {
+		// Arrange
+		String uri = "/messageWithAcceptHeaderAndProduces"+produces;
+		new ApiListenerBuilder(uri, Methods.GET, null, produces).build();
+
+		Map<String, String> headers = new HashMap<>();
+		if(acceptHeaderValue != null) {
+			headers.put("accept", acceptHeaderValue);
+		}
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNull(result.getErrorMessage());
+	}
+
+	@ParameterizedTest
+	@CsvSource(delimiter='-', value = {"application/xhtml+xml, application/xml;q=0.9", "text/xml;q=0.8"})
+	public void testEndpointDoesNotAcceptHeader(String acceptHeaderValue) throws Exception {
+		// Arrange
+		String uri = "/messageThatDoesNotAcceptAcceptHeader";
+		new ApiListenerBuilder(uri, Methods.GET, null, MediaTypes.JSON).build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("accept", acceptHeaderValue);
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(406, result.getStatus());
+		assertEquals("endpoint cannot provide the supplied MimeType", result.getErrorMessage());
 	}
 
 	@Test

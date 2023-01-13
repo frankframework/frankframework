@@ -24,9 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +41,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -364,11 +364,9 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * Evaluate preconditions
 				 */
 				final String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotBlank(acceptHeader) && !listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					response.setStatus(406);
-					response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-					log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
-					return;
+				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
+					response.sendError(406, "endpoint cannot provide the supplied MimeType");
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {

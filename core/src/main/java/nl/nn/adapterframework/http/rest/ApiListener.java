@@ -40,6 +40,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -176,14 +177,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * Match request 'Content-Type' (eg. on POST) to consumes enum to see if the listener accepts the message
 	 */
-	public boolean isConsumable(String contentType) {
-		return consumes.isConsumable(contentType);
+	public boolean isConsumable(@Nullable String contentType) {
+		return consumes.includes(contentType);
 	}
 
 	/**
 	 * Match request 'Accept' header to produces enum to see if the client accepts the message
 	 */
-	public boolean accepts(String acceptHeader) {
+	public boolean accepts(@Nullable String acceptHeader) {
 		return produces.accepts(acceptHeader);
 	}
 
