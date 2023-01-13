@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -145,10 +145,10 @@ public class Json2XmlHandler implements JsonEventHandler {
 				top.setValue((String)value);
 			} else if (value instanceof Boolean) {
 				top.setValue((Boolean)value);
-			} else if (value instanceof Long) {
-				top.setValue((Long)value);
+			} else if (value instanceof Number) {
+				top.setValue((Number)value);
 			} else if (value==null) {
-				top.setValue(null);
+				top.setValue((String)null);
 			} else {
 				top.setValue(value.toString());
 			}

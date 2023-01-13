@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class JsonNodeBuilder implements INodeBuilder {
 	}
 
 	@Override
-	public void setValue(long value) throws SAXException {
+	public void setValue(Number value) throws SAXException {
 		handler.primitive(value);
 	}
 
