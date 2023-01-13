@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,7 +108,7 @@ public class MatchUtils {
 		} catch (RuntimeException e) {
 			xmlActPretty = e.getMessage();
 		}
-		assertEquals(description,xmlExpPretty,xmlActPretty);
+		assertEquals(xmlExpPretty,xmlActPretty,description);
 	}
 
 	public static void assertXmlSimilar(String expected, String actual) {
@@ -137,11 +137,11 @@ public class MatchUtils {
 	}
 
 	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
-		assertEquals(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
+		assertEquals(Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct), description);
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {
-		assertNotNull("url to compare to ["+file1+"] should not be null",url);
+		assertNotNull(url, "url to compare to ["+file1+"] should not be null");
 		assertTestFileEquals(file1,url.openStream());
 	}
 

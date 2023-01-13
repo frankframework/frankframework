@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.configuration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URL;
@@ -15,9 +15,9 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -44,7 +44,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	private ApplicationContext applicationContext = mock(ApplicationContext.class);
 	private PreparedStatementMock stmt;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUp() throws Exception {
 		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
@@ -57,7 +57,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		AppConstants.getInstance().setProperty("configurations.directory", directory.getCanonicalPath());
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void tearDown() {
 		AppConstants.removeInstance();
 	}
@@ -111,17 +111,17 @@ public class ConfigurationUtilsTest extends Mockito {
 		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
+		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
 		boolean result = ConfigurationUtils.addConfigToDatabase(applicationContext, "fakeDataSource", false, false, "ConfigurationName", "001_20191002-1300", filename, zip.openStream(), "dummy-user");
-		assertTrue("file uploaded to mock database", result);
+		assertTrue(result, "file uploaded to mock database");
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
-		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
-		assertEquals("buildInfo version does not match", "001_20191002-1300", parameters.get("VERSION"));
-		assertEquals("FILENAME does not match", filename, parameters.get("FILENAME"));
+		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
+		assertEquals("001_20191002-1300", parameters.get("VERSION"), "buildInfo version does not match");
+		assertEquals(filename, parameters.get("FILENAME"), "FILENAME does not match");
 	}
 
 	@Test
@@ -130,7 +130,7 @@ public class ConfigurationUtilsTest extends Mockito {
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
+		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
@@ -138,9 +138,9 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
-		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
-		assertEquals("buildInfo version does not match", "001_20191002-1300", parameters.get("VERSION"));
-		assertEquals("FILENAME does not match", filename, parameters.get("FILENAME"));
+		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
+		assertEquals("001_20191002-1300", parameters.get("VERSION"), "buildInfo version does not match");
+		assertEquals(filename, parameters.get("FILENAME"), "FILENAME does not match");
 	}
 
 	@Test
@@ -148,7 +148,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
+		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
@@ -157,9 +157,9 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
-		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
-		assertEquals("buildInfo version does not match", "123_20181002-1300", parameters.get("VERSION"));
-		assertEquals("FILENAME does not match", filename, parameters.get("FILENAME"));
+		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
+		assertEquals("123_20181002-1300", parameters.get("VERSION"), "buildInfo version does not match");
+		assertEquals(filename, parameters.get("FILENAME"), "FILENAME does not match");
 	}
 
 	@Test
@@ -167,7 +167,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
-		assertNotNull("BuildInfoZip not found", zip);
+		assertNotNull(zip, "BuildInfoZip not found");
 		String filename = FilenameUtils.getName(zip.getFile());
 		assertNotNull("filename cannot be determined", filename);
 
@@ -176,9 +176,9 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("file uploaded to mock database", result);
 		Map<String, Object> parameters = stmt.getNamedParameters();
 
-		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
-		assertEquals("buildInfo version does not match", "789_20171002-1300", parameters.get("VERSION"));
-		assertEquals("FILENAME does not match", filename, parameters.get("FILENAME"));
+		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
+		assertEquals("789_20171002-1300", parameters.get("VERSION"), "buildInfo version does not match");
+		assertEquals(filename, parameters.get("FILENAME"), "FILENAME does not match");
 	}
 
 	@Test
@@ -186,25 +186,25 @@ public class ConfigurationUtilsTest extends Mockito {
 		mockDatabase();
 
 		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/multiConfig.zip");
-		assertNotNull("multiConfig.zip not found", zip);
+		assertNotNull(zip, "multiConfig.zip not found");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(applicationContext, "fakeDataSource", false, false, zip.openStream(), "user");
-		assertNotEquals("file uploaded to mock database", 0, result.size());
+		assertNotEquals(0, result.size(), "file uploaded to mock database");
 		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
 
 		Map<String, Object> parameters = stmt.getNamedParameters(); //Test the 2nd file, because the 3rd result fails
-		assertEquals("buildInfo name does not match", "ConfigurationName", parameters.get("NAME"));
-		assertEquals("buildInfo version does not match", "002_20191002-1400", parameters.get("VERSION"));
-		assertEquals("FILENAME does not match", "buildInfoZip2.jar", parameters.get("FILENAME"));
+		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
+		assertEquals("002_20191002-1400", parameters.get("VERSION"), "buildInfo version does not match");
+		assertEquals("buildInfoZip2.jar", parameters.get("FILENAME"), "FILENAME does not match");
 
 		//Make sure ACTIVECONFIG, AUTORELOAD and RUSER are passed through properly
-		assertEquals("ACTIVECONFIG does not match", "FALSE", parameters.get("ACTIVECONFIG"));
-		assertEquals("AUTORELOAD does not match", "FALSE", parameters.get("AUTORELOAD"));
-		assertEquals("RUSER does not match", "user", parameters.get("RUSER"));
+		assertEquals("FALSE", parameters.get("ACTIVECONFIG"), "ACTIVECONFIG does not match");
+		assertEquals("FALSE", parameters.get("AUTORELOAD"), "AUTORELOAD does not match");
+		assertEquals("user", parameters.get("RUSER"), "RUSER does not match");
 
 		//This field is pretty obsolete, check if it's been set
-		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
+		assertNotNull(parameters.get("FILENAME"), "FILENAME not set");
 	}
 
 	@Test

@@ -24,9 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -43,6 +41,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -147,45 +148,49 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/*
-		 * Generate OpenApi specification
-		 */
-		if(uri.equalsIgnoreCase("/openapi.json")) {
-			String specUri = request.getParameter("uri");
-			JsonObject jsonSchema = null;
-			if(specUri != null) {
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-				if(apiConfig != null) {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+		try {
+			/*
+			 * Generate OpenApi specification
+			 */
+			if(uri.equalsIgnoreCase("/openapi.json")) {
+				String specUri = request.getParameter("uri");
+				JsonObject jsonSchema = null;
+				if(specUri != null) {
+					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+					if(apiConfig != null) {
+						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+					}
+				} else {
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
 				}
-			} else {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
-			}
-			if(jsonSchema != null) {
-				returnJson(response, 200, jsonSchema);
+				if(jsonSchema != null) {
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		/*
-		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-		 * @Deprecated This is here to support old url's
-		 */
-		if(uri.endsWith("openapi.json")) {
-			uri = uri.substring(0, uri.lastIndexOf("/"));
-			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
-				returnJson(response, 200, jsonSchema);
+			/*
+			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+			 * @Deprecated This is here to support old url's
+			 */
+			if(uri.endsWith("openapi.json")) {
+				uri = uri.substring(0, uri.lastIndexOf("/"));
+				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+				if(apiConfig != null) {
+					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		handleRequest(request, response, method, uri);
+			handleRequest(request, response, method, uri);
+		} finally {
+			ThreadContext.clearAll();
+		}
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
@@ -358,14 +363,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Evaluate preconditions
 				 */
-				String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotEmpty(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					if(!listener.accepts(acceptHeader)) {
-						response.setStatus(406);
-						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
-						return;
-					}
+				final String acceptHeader = request.getHeader("Accept");
+				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
+					response.sendError(406, "endpoint cannot provide the supplied MimeType");
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {
@@ -544,24 +545,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
 
-				String messageId = null;
-				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
-					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
-					if(StringUtils.isNotEmpty(messageIdHeader)) {
-						messageId = messageIdHeader;
-					}
-				}
-				String correlationId = null;
-				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
-					String correlationIdHeaderValue = request.getHeader(listener.getCorrelationIdHeader());
-					if(StringUtils.isNotEmpty(correlationIdHeaderValue)) {
-						messageId = correlationIdHeaderValue;
-					}
-				}
-				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
-					correlationId = messageId;
-				}
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
+				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
 				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+
 				Message result = listener.processRequest(body, messageContext);
 
 				/*
@@ -689,6 +676,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {
+		if (StringUtils.isBlank(headerName)) {
+			return defaultValue;
+		}
+		final String headerValue = request.getHeader(headerName);
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
 	@Override

@@ -12,17 +12,17 @@ public interface IFileSystemTestHelper {
 	 * Checks if a file with the specified name exists.
 	 */
 	public boolean _fileExists(String folder, String filename) throws Exception;
-	
+
 	/**
 	 * Checks if a folder with the specified name exists.
 	 */
 	public boolean _folderExists(String folderName) throws Exception;
-	
+
 	/**
 	 * Deletes the file with the specified name in the folder
 	 */
 	public void _deleteFile(String folder, String filename) throws Exception;
-	
+
 	/**
 	 * Creates a file with the specified name and returns output stream 
 	 * to be able to write that file.
@@ -33,7 +33,7 @@ public interface IFileSystemTestHelper {
 	 * Returns an input stream of the file 
 	 */
 	public InputStream _readFile(String folder, String filename) throws Exception;
-	
+
 	/**
 	 * Creates a folder 
 	 */

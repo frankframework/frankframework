@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -31,7 +31,7 @@ public class JdbcUtilTest {
 	private Connection connection;
 	private IDbmsSupport dbmsSupport;
 
-	@Before
+	@BeforeEach
 	public void startDatabase() throws SQLException, JdbcException {
 		connection = DriverManager.getConnection(H2_CONNECTION_STRING);
 		dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
@@ -41,7 +41,7 @@ public class JdbcUtilTest {
 		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME)");
 	}
 
-	@After
+	@AfterEach
 	public void closeDatabase() throws SQLException {
 		if (connection != null) {
 			connection.createStatement().execute("DROP TABLE TEMP");

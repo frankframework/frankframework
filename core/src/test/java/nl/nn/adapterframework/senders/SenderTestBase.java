@@ -15,8 +15,11 @@
 */
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.net.URL;
 
@@ -38,6 +41,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 
 	public abstract S createSender() throws Exception;
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -48,6 +52,7 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		getConfiguration().autowireByType(sender);
 	}
 
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if (sender != null) {
@@ -78,11 +83,11 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 				base = superClass.getSimpleName();
 			}
 		}
-		assertTrue("unable to determine ["+sender+"] name", StringUtils.isNotEmpty(base));
+		assertTrue(StringUtils.isNotEmpty(base), "unable to determine ["+sender+"] name");
 		String relativeUrl = FilenameUtils.normalize("/Senders/" + base + "/" + resource, true);
 
 		URL url = PipeTestBase.class.getResource(relativeUrl);
-		assertNotNull("unable to find resource ["+resource+"] in path ["+relativeUrl+"]", url);
+		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
 		return new UrlMessage(url);
 	}
 }

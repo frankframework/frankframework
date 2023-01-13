@@ -17,7 +17,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<DirectoryClassLoader> {
 

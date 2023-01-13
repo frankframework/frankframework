@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
@@ -55,6 +55,6 @@ public class FrankDigesterRulesTest extends Mockito {
 			throw new IllegalStateException("unable to parse digesterRules file", e);
 		}
 
-		assertTrue("must at least have 33 patterns", handler.size() >= 33);
+		assertTrue(handler.size() >= 33, "must at least have 33 patterns");
 	}
 }

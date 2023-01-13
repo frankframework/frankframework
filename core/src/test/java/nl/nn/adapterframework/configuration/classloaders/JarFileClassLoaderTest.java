@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
 
@@ -40,9 +40,9 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	private JarFileClassLoader createClassLoader(ClassLoader parent, String jarFile) throws Exception {
 		URL file = this.getClass().getResource(jarFile);
-		assertNotNull("jar url ["+jarFile+"] not found", file);
+		assertNotNull(file, "jar url ["+jarFile+"] not found");
 
-		assertNotNull("jar file not found", new JarFile(file.getFile())); // verify the jar file
+		assertNotNull(new JarFile(file.getFile()), "jar file not found"); // verify the jar file
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
 		cl.setJar(file.getFile());
@@ -68,7 +68,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		createAndConfigure("ClassLoader"); //Create a ClassLoader with BasePath
 
 		URL url = getResource(filename);
-		assertEquals("Path of resource invalid", filename, url.getPath());
+		assertEquals(filename, url.getPath(), "Path of resource invalid");
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		String fileNameWithBasePath = "ClassLoader/fileOnlyOnZipClassPath.xml";
 
 		URL url = getResource(fileNameWithBasePath); //This ClassLoader doesn't have a BasePath so we need to append it
-		assertEquals("Path of resource invalid", fileNameWithBasePath, url.getPath());
+		assertEquals(fileNameWithBasePath, url.getPath(), "Path of resource invalid");
 	}
 
 	@Test
@@ -93,11 +93,11 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			List<String> logEvents = appender.getLogLines();
 			System.out.println(logEvents);
 			URL configurationURL = classLoader.getResource("Configuration.xml");
-			assertNotNull("unable to locate test file [Configuration.xml]", configurationURL);
+			assertNotNull(configurationURL, "unable to locate test file [Configuration.xml]");
 
-			assertEquals("Should find 8 log messages", 8, logEvents.size());
+			assertEquals(8, logEvents.size(), "Should find 8 log messages");
 			long warnMsgs = logEvents.stream().filter(k -> k.startsWith("WARN")).count();
-			assertEquals("Should find one warning message", 1, warnMsgs);
+			assertEquals(1, warnMsgs, "Should find one warning message");
 		} finally {
 			TestAppender.removeAppender(appender);
 		}

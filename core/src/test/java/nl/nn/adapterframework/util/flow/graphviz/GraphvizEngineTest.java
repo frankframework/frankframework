@@ -1,22 +1,24 @@
 package nl.nn.adapterframework.util.flow.graphviz;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+
+@TestMethodOrder(MethodName.class)
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
@@ -103,20 +105,19 @@ public class GraphvizEngineTest {
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
 		engine.close();
 	}
+
 	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
-	@Test(expected = IOException.class)
+	@Test
 	public void zgetUnknownVizJsVersion() throws Exception {
-		GraphvizEngine engine = new GraphvizEngine("1.2.3");
-		assertNotNull(engine);
-		engine.execute(dot);
-		engine.close();
+		IOException e = assertThrows(IOException.class, () -> new GraphvizEngine("1.2.3"));
+		assertEquals("failed to open vizjs file for version [1.2.3]", e.getMessage());
 	}
 
-	@Test(expected = FlowGenerationException.class)
+	@Test
 	public void getFaultyDot() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
-		engine.execute("i'm not a dot!");
+		assertThrows(FlowGenerationException.class, () -> engine.execute("i'm not a dot!"));
 		engine.close();
 	}
 

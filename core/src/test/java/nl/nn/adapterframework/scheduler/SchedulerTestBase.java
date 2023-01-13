@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.quartz.JobBuilder.newJob;
 
 import java.text.ParseException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -37,7 +37,7 @@ public abstract class SchedulerTestBase {
 	protected SchedulerHelper schedulerHelper;
 	protected TestConfiguration configuration = new TestConfiguration();
 
-	@Before
+	@BeforeEach
 	public void setUp() throws SchedulerException, ParseException {
 		schedulerHelper = configuration.createBean(SchedulerHelper.class);
 		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());

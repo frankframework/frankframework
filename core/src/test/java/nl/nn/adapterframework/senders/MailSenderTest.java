@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.senders;
 
-import org.junit.Test;
-
 import jakarta.mail.Provider;
 import jakarta.mail.Provider.Type;
 import jakarta.mail.Session;
@@ -28,7 +26,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 
 					return mailSession;
 				} catch(Exception e) {
-					e.printStackTrace();
+					log.error("unable to create mail Session", e);
 					throw new SenderException(e);
 				}
 			}
@@ -41,15 +39,10 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 				return new SenderResult(messageID);
 			}
 		};
-		mailSender.setSmtpHost("localhost");
-		mailSender.setSmtpUserid("user123");
-		mailSender.setSmtpPassword("secret321");
-		return mailSender;
-	}
 
-	@Override
-	@Test
-	public void mailWithoutBase64Message() throws Exception {
-		super.mailWithoutBase64Message();
+		mailSender.setSmtpHost("localhost");
+		mailSender.setUserId("user123");
+		mailSender.setPassword("secret321");
+		return mailSender;
 	}
 }

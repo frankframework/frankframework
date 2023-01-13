@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.configuration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
@@ -15,13 +15,13 @@ public class TestApplicationWarnings {
 
 	private TestConfiguration configuration = null;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		ApplicationWarnings.removeInstance(); //Remove old instance if present
 		configuration = new TestConfiguration();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		if(configuration != null) {
 			configuration.close();
@@ -56,7 +56,7 @@ public class TestApplicationWarnings {
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 
 		assertEquals(configuration, applWarnings.getApplicationContext());
-		assertEquals("After a Context refresh it should not copy warnings over to the new instance", 1, applWarnings.getWarnings().size());
+		assertEquals(1, applWarnings.getWarnings().size(), "After a Context refresh it should not copy warnings over to the new instance");
 		assertEquals("test message 2", applWarnings.getWarnings().get(0));
 	}
 }

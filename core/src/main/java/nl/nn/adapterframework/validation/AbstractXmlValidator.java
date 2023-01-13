@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -131,12 +131,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getReasonSessionKey() + "]");
 			session.remove(getReasonSessionKey());
 		}
 
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
 			session.remove(getXmlReasonSessionKey());
 		}
 		return null;

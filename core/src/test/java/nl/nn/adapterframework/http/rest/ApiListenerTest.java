@@ -148,7 +148,7 @@ public class ApiListenerTest {
 
 		listener.setConsumes(MediaTypes.MULTIPART);
 		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
+			String acceptHeader = header + "; type=text; "+header+"; level=2; boundary=--my-top-notch-boundary-";
 
 			assertTrue("can parse ["+header+"]", listener.isConsumable(acceptHeader));
 		}
@@ -165,8 +165,7 @@ public class ApiListenerTest {
 
 	@Test
 	public void clientAcceptsAll() {
-		String contentType = "application/xhtml+xml, application/xml";
-		String acceptHeader = contentType + "; type=text; q=0.7, */*; level=2; q=0.4";
+		String acceptHeader = "application/xhtml+xml, application/xml; type=text; q=0.7, */*; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
 		assertTrue("accepts anything", listener.accepts(acceptHeader));
@@ -175,10 +174,10 @@ public class ApiListenerTest {
 	@Test
 	public void clientInvalidAcceptHeader() {
 		String contentType = "application/xhtml+xml, application/xml";
-		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
-		assertTrue("accepts anything", listener.accepts(acceptHeader));
+		assertFalse("does not accept invalid Accept header", listener.accepts(acceptHeader));
 	}
 
 	@Test

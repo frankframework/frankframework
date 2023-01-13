@@ -1,4 +1,4 @@
-FROM iaf-as-tomcat AS iaf-test-tomcat
+FROM nexus.frankframework.org/private/ff-test/as/tomcat AS iaf-test-tomcat
 
 
 # copy additional environment configuration for iaf-test

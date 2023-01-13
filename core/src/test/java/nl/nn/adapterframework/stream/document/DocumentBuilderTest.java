@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.stream.document;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
