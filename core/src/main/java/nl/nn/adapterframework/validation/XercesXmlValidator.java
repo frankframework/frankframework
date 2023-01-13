@@ -54,6 +54,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -204,6 +206,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
+		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
@@ -394,42 +397,11 @@ class XercesValidationContext extends ValidationContext {
 }
 
 class PreparseResult {
-	private String schemasId;
-	private SymbolTable symbolTable;
-	private XMLGrammarPool grammarPool;
-	private Set<String> namespaceSet;
-	private List<XSModel> xsModels=null;
-
-	public String getSchemasId() {
-		return schemasId;
-	}
-	public void setSchemasId(String schemasId) {
-		this.schemasId = schemasId;
-	}
-
-	public SymbolTable getSymbolTable() {
-		return symbolTable;
-	}
-
-	public void setSymbolTable(SymbolTable symbolTable) {
-		this.symbolTable = symbolTable;
-	}
-
-	public XMLGrammarPool getGrammarPool() {
-		return grammarPool;
-	}
-
-	public void setGrammarPool(XMLGrammarPool grammarPool) {
-		this.grammarPool = grammarPool;
-	}
-
-	public Set<String> getNamespaceSet() {
-		return namespaceSet;
-	}
-
-	public void setNamespaceSet(Set<String> namespaceSet) {
-		this.namespaceSet = namespaceSet;
-	}
+	private @Getter @Setter String schemasId;
+	private @Getter @Setter SymbolTable symbolTable;
+	private @Getter @Setter XMLGrammarPool grammarPool;
+	private @Getter @Setter Set<String> namespaceSet;
+	private @Setter List<XSModel> xsModels=null;
 
 	public List<XSModel> getXsModels() {
 		if (xsModels==null) {
@@ -440,10 +412,6 @@ class PreparseResult {
 			}
 		}
 		return xsModels;
-	}
-
-	public void setXsModels(List<XSModel> xsModels) {
-		this.xsModels = xsModels;
 	}
 
 }

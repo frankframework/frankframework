@@ -67,6 +67,11 @@ public abstract class ValidatorTestBase {
 	public String NO_NAMESPACE_SOAP_FILE     = BASE_DIR_VALIDATION+"/GetVehicleTypeDetails/in";
 	public String NO_NAMESPACE_SOAP_MSGROOT  = "GetVehicleTypeDetailsREQ";
 
+	public String ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE="urn:ElementFormDefaultUnqualified";
+	public String ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA=BASE_DIR_VALIDATION+"/ElementFormDefaultUnqualified/ElementFormDefaultUnqualified.xsd";
+	public String ELEMENT_FORM_DEFAULT_UNQUALIFIED_INPUT=BASE_DIR_VALIDATION+"/ElementFormDefaultUnqualified/input.xml";
+	public String ELEMENT_FORM_DEFAULT_UNQUALIFIED_MSGROOT="root";
+
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
