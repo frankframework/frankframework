@@ -1,21 +1,39 @@
 package nl.nn.adapterframework.configuration.digester;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.compression.ZipWriterPipe;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.pipes.FilePipe;
+import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.ObjectCreationFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
 import lombok.Getter;
@@ -25,6 +43,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import org.xml.sax.SAXException;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;
@@ -265,6 +284,72 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
 	}
 
+	@Test
+	public void testSuppressDeprecationWarnings() throws IOException, SAXException {
+		// Arrange
+		Digester digester = new Digester();
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
+
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		when(applicationContext.getBean(AppConstants.class)).thenReturn(appConstants);
+		when(applicationContext.getClassLoader()).thenReturn(getClass().getClassLoader());
+		ConfigurationWarnings configurationWarnings = new ConfigurationWarnings();
+		configurationWarnings.setApplicationContext(applicationContext);
+		configurationWarnings.afterPropertiesSet();
+		ApplicationWarnings applicationWarnings = new ApplicationWarnings();
+		applicationWarnings.setApplicationContext(applicationContext);
+		applicationWarnings.afterPropertiesSet();
+
+		ValidateAttributeRule rule = new ValidateAttributeRule();
+		rule.setApplicationContext(applicationContext);
+		rule.setConfigurationWarnings(configurationWarnings);
+		rule.setApplicationWarnings(applicationWarnings);
+		rule.setDigester(digester);
+
+		addAdapterRules(digester, "*/adapter", rule);
+		addAdapterRules(digester, "*/Adapter", rule);
+
+		digester.addFactoryCreate("*/pipe", new SimpleTestObjectCreationFactory());
+		digester.addRule("*/pipe", rule);
+
+		addPipeRules(digester, rule, FilePipe.class);
+		addPipeRules(digester, rule, ZipWriterPipe.class);
+
+		// Act
+		digester.push(new ArrayList<>());
+		Object result = digester.parse(getClass().getClassLoader().getResource("Digester/TestSuppressDeprecationWarnings.xml"));
+
+		// Assert
+		assertTrue(result instanceof List);
+		List<Object> resultList = (List<Object>)result;
+		assertEquals(4, resultList.size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("DeprecatedPipe1InAdapter1")),
+			hasItem(containsString("DeprecatedPipe2InAdapter1")),
+			hasItem(containsString("DeprecatedPipe1InAdapter3")),
+			hasItem(containsString("DeprecatedPipe2InAdapter3"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("DeprecatedPipe1InAdapter2"),
+			containsString("DeprecatedPipe2InAdapter2"),
+			containsString("DeprecatedPipe1InAdapter4"),
+			containsString("DeprecatedPipe2InAdapter4")
+		));
+	}
+
+	private static void addPipeRules(Digester digester, ValidateAttributeRule rule, Class<? extends IPipe> pipeClass) {
+		String pattern = "*/" + pipeClass.getSimpleName();
+		digester.addObjectCreate(pattern, pipeClass);
+		digester.addRule(pattern, rule);
+	}
+
+	private static void addAdapterRules(Digester digester, String pattern, ValidateAttributeRule rule) {
+		digester.addObjectCreate(pattern, Adapter.class);
+		digester.addSetNext(pattern, "add");
+		digester.addRule(pattern, rule);
+	}
+
 	public enum TestEnum {
 		ONE, TWO;
 	}
@@ -309,5 +394,25 @@ public class ValidateAttributeRuleTest extends Mockito {
 	@ConfigurationWarning("warning above deprecated test class")
 	public static class DeprecatedTestClass {
 		private @Getter @Setter String name;
+	}
+
+	private static class SimpleTestObjectCreationFactory implements ObjectCreationFactory<Object> {
+		private Digester digester;
+
+		@Override
+		public Object createObject(Attributes attributes) throws Exception {
+			Object result = Class.forName(attributes.getValue("className")).newInstance();
+			return result;
+		}
+
+		@Override
+		public Digester getDigester() {
+			return digester;
+		}
+
+		@Override
+		public void setDigester(Digester digester) {
+			this.digester = digester;
+		}
 	}
 }

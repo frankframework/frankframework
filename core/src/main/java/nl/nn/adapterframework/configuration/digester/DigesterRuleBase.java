@@ -182,7 +182,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 	@Override
 	public void end(String namespace, String name) throws Exception {
-		if ("adapter".equals(name)) {
+		if ("adapter".equalsIgnoreCase(name)) {
 			currentAdapter = null;
 		}
 	}
