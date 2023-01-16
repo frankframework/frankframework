@@ -106,7 +106,7 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer(template);
-			transformer.transform(new StreamSource(new StringReader("<empty/>")), output);
+			transformer.transform(new StreamSource(new StringReader("<empty/>")), output); // Empty xml necessary for transformer
 			
 		} catch(TransformerException e){
 			e.printStackTrace();
@@ -114,9 +114,9 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		
 		
 		String result = writer.toString();
-		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/outputXml.xml");
 		
-		assertEquals(removeWhiteSpaces(expected), removeWhiteSpaces(result));
+		assertEquals(expected, result.trim());
 		
 	}
 }
