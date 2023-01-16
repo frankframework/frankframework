@@ -30,10 +30,6 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 		assertEquals(expected,actual);
 	}
 	
-	String removeWhiteSpaces(String input) {
-	    return input.replaceAll("\\s+", "");
-	}
-	
 	protected void testXslt(String styleSheetName, String input, String expected, Boolean omitXmlDeclaration, Boolean skipEmptyTags, Boolean removeNamespaces) throws Exception {
 		pipe.setStyleSheetName(styleSheetName);
 		if (omitXmlDeclaration!=null) {
