@@ -95,7 +95,7 @@ public class XsltXml2JsonConversionTest extends PipeTestBase<XsltPipe>{
 	
 	@Test
 	public void testParameterizedJsonConversion() throws Exception {
-		Source template = (new StreamSource(new File("C:\\Users\\HP\\FrankWorkspace\\Frank Framework\\iaf\\core\\src\\test\\resources\\Xslt3\\conversion\\unwrappedJsontoXmlConversion.xsl")));
+		Source template = (new StreamSource(new File("/Xslt3/conversion/unwrappedJsontoXmlConversion.xsl")));
 		
 		StringWriter writer = new StringWriter();
 		Result output = new StreamResult(writer);
