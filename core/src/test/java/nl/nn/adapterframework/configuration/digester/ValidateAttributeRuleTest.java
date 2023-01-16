@@ -284,16 +284,49 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSuppressDeprecationWarningsFullContext() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		loadAppConstants(configuration);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("DeprecatedPipe1InAdapter1")),
+			hasItem(containsString("DeprecatedPipe2InAdapter1")),
+			hasItem(containsString("DeprecatedPipe1InAdapter3")),
+			hasItem(containsString("DeprecatedPipe2InAdapter3"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("DeprecatedPipe1InAdapter2"),
+			containsString("DeprecatedPipe2InAdapter2"),
+			containsString("DeprecatedPipe1InAdapter4"),
+			containsString("DeprecatedPipe2InAdapter4")
+		));
+	}
+
+	private void loadAppConstants(ApplicationContext applicationContext) throws IOException {
+		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
+		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
+	}
+
+	@SuppressWarnings({"deprecation", "unchecked"})
 	@Test
 	public void testSuppressDeprecationWarnings() throws IOException, SAXException {
 		// Arrange
 		Digester digester = new Digester();
-		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
 
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
-		when(applicationContext.getBean(AppConstants.class)).thenReturn(appConstants);
 		when(applicationContext.getClassLoader()).thenReturn(getClass().getClassLoader());
+		loadAppConstants(applicationContext);
 		ConfigurationWarnings configurationWarnings = new ConfigurationWarnings();
 		configurationWarnings.setApplicationContext(applicationContext);
 		configurationWarnings.afterPropertiesSet();
@@ -318,7 +351,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		// Act
 		digester.push(new ArrayList<>());
-		Object result = digester.parse(getClass().getClassLoader().getResource("Digester/TestSuppressDeprecationWarnings.xml"));
+		Object result = digester.parse(getClass().getClassLoader().getResource("TestSuppressDeprecationWarningsConfiguration.xml"));
 
 		// Assert
 		assertTrue(result instanceof List);

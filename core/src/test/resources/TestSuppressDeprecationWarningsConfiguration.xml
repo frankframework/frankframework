@@ -6,7 +6,7 @@
 			</receiver>
 			<pipeline>
 				<exits>
-					<exit path="EXIT" state="success"/>
+					<exit name="EXIT" state="success"/>
 				</exits>
 				<!-- Test needs a deprecated (pipe) element -->
 				<pipe name="DeprecatedPipe1InAdapter1"
@@ -17,7 +17,9 @@
 				<pipe name="DeprecatedPipe2InAdapter1"
 					  className="nl.nn.adapterframework.compression.ZipWriterPipe"
 					  zipWriterHandle="x"
-				/>
+				>
+					<param name="filename" value="x"/>
+				</pipe>
 			</pipeline>
 		</adapter>
 		<adapter name="Adapter2">
@@ -26,7 +28,7 @@
 			</receiver>
 			<pipeline>
 				<exits>
-					<exit path="EXIT" state="success"/>
+					<exit name="EXIT" state="success"/>
 				</exits>
 				<!-- Test needs a deprecated (pipe) element -->
 				<pipe name="DeprecatedPipe1InAdapter2"
@@ -37,7 +39,9 @@
 				<pipe name="DeprecatedPipe2InAdapter2"
 					  className="nl.nn.adapterframework.compression.ZipWriterPipe"
 					  zipWriterHandle="x"
-				/>
+				>
+					<param name="filename" value="x"/>
+				</pipe>
 			</pipeline>
 		</adapter>
 	</module>
@@ -57,7 +61,9 @@
 				</FilePipe>
 				<ZipWriterPipe name="DeprecatedPipe2InAdapter3"
 							   zipWriterHandle="x"
-				/>
+				>
+					<param name="filename" value="x"/>
+				</ZipWriterPipe>
 			</Pipeline>
 		</Adapter>
 		<Adapter name="Adapter4">
@@ -75,7 +81,9 @@
 				</FilePipe>
 				<ZipWriterPipe name="DeprecatedPipe2InAdapter4"
 							   zipWriterHandle="x"
-				/>
+				>
+					<param name="filename" value="x"/>
+				</ZipWriterPipe>
 			</Pipeline>
 		</Adapter>
 	</root>
