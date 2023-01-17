@@ -302,7 +302,7 @@ public final class ShowSecurityItems extends Base {
 
 		String dsInfo = null;
 		try {
-			qs.configure();
+			qs.configure(true);
 			dsInfo = qs.getDatasourceInfo();
 		} catch (JdbcException | ConfigurationException e) {
 			log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
