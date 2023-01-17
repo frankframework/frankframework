@@ -35,6 +35,10 @@ import nl.nn.adapterframework.util.StringResolver;
  * @author Niels Meijer
  */
 public class ValidateAttributeRule extends DigesterRuleBase {
+
+	/**
+	 * @see DigesterRuleBase#handleBean()
+	 */
 	@Override
 	protected void handleBean() {
 			Class<?> clazz = getBeanClass();
@@ -57,6 +61,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 	}
 
+	/**
+	 * @see DigesterRuleBase#handleAttribute(String, String, Map)
+	 *
+	 * @param name Name of attribute
+	 * @param value Attribute Value
+	 * @param attributes Map of all attributes
+	 * @throws Exception Can throw any exception in bean property manipulation.
+	 */
 	@Override
 	protected void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(getBean(), name);
