@@ -411,24 +411,4 @@ public class ValidateAttributeRuleTest extends Mockito {
 	public static class DeprecatedTestClass {
 		private @Getter @Setter String name;
 	}
-
-	private static class SimpleTestObjectCreationFactory implements ObjectCreationFactory<Object> {
-		private Digester digester;
-
-		@Override
-		public Object createObject(Attributes attributes) throws Exception {
-			Object result = Class.forName(attributes.getValue("className")).newInstance();
-			return result;
-		}
-
-		@Override
-		public Digester getDigester() {
-			return digester;
-		}
-
-		@Override
-		public void setDigester(Digester digester) {
-			this.digester = digester;
-		}
-	}
 }
