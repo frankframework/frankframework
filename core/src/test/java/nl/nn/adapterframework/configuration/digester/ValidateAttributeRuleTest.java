@@ -22,8 +22,6 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreationFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
