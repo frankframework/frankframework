@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -218,7 +218,7 @@ public class DB2DocumentWriter {
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							row.add(columnName, null);
+							row.add(columnName, (String)null);
 						} else {
 							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
 								row.addNumber(columnName, value);
