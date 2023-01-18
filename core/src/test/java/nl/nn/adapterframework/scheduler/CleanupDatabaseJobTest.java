@@ -1,21 +1,19 @@
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.util.Locker;
 import org.junit.Before;
@@ -28,14 +26,11 @@ import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 	private CleanupDatabaseJob jobDef;
-	private JdbcTransactionalStorage<?> storage;
+	private JdbcTransactionalStorage<Serializable> storage;
 	private final String cleanupJobName="CleanupDB";
 	private final String tableName="IBISLOCK";
 
@@ -46,6 +41,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		System.setProperty("tableName", tableName);
 		runMigrator(TEST_CHANGESET_PATH);
 
+		//noinspection unchecked
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
@@ -69,15 +65,19 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 			when(mockAdapter.getName()).thenReturn("MockAdapter");
 
 			PipeLine pipeLine = new PipeLine();
-			IExtendedPipe mockPipe = mock(IExtendedPipe.class);
+			MessageSendingPipe mockPipe = mock(MessageSendingPipe.class);
 			Locker mockLocker = mock(Locker.class);
 			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> getDataSourceName());
 			when(mockPipe.getLocker()).thenReturn(mockLocker);
 			when(mockPipe.getName()).thenReturn("MockPipe");
+			when(mockPipe.getMessageLog()).thenReturn(storage);
 			pipeLine.addPipe(mockPipe);
-
 			when(mockAdapter.getPipeLine()).thenReturn(pipeLine);
 
+			Receiver<?> mockReceiver = mock(Receiver.class);
+			when(mockReceiver.getMessageLog()).thenReturn(storage);
+			when(mockReceiver.getName()).thenReturn("MockReceiver");
+			when(mockAdapter.getReceivers()).thenReturn(Collections.singletonList(mockReceiver));
 			getConfiguration().registerAdapter(mockAdapter);
 		}
 
@@ -85,21 +85,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		//noinspection ResultOfMethodCallIgnored
 		getConfiguration().getIbisManager();
 
-		jobDef = new CleanupDatabaseJob() {
-
-			@Override
-			protected List<MessageLogObject> getAllMessageLogs() {
-				List<MessageLogObject> mlo = new ArrayList<>();
-				String datasourceName = storage.getDatasourceName();
-				String expiryDateField = storage.getExpiryDateField();
-				String tableName = storage.getTableName();
-				String keyField = storage.getKeyField();
-				String typeField = storage.getTypeField();
-				mlo.add(new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField));
-				return mlo;
-			}
-
-		};
+		jobDef = new CleanupDatabaseJob();
 
 		getConfiguration().autowireByName(jobDef);
 	}
