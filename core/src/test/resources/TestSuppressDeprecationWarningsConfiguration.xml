@@ -1,0 +1,90 @@
+<configuration name="DeprecationWarningConfiguration">
+	<module>
+		<adapter name="Adapter1">
+			<receiver name="HelloWorld">
+				<listener name="HelloWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			</receiver>
+			<pipeline>
+				<exits>
+					<exit name="EXIT" state="success"/>
+				</exits>
+				<!-- Test needs a deprecated (pipe) element -->
+				<pipe name="DeprecatedPipe1InAdapter1"
+					  className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
+					<forward name="success" path="EXIT"/>
+				</pipe>
+				<!-- Test needs a pipe with deprecated property -->
+				<pipe name="DeprecatedPipe2InAdapter1"
+					  className="nl.nn.adapterframework.compression.ZipWriterPipe"
+					  zipWriterHandle="x"
+				>
+					<param name="filename" value="x"/>
+				</pipe>
+			</pipeline>
+		</adapter>
+		<adapter name="Adapter2">
+			<receiver name="HelloUniverse">
+				<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			</receiver>
+			<pipeline>
+				<exits>
+					<exit name="EXIT" state="success"/>
+				</exits>
+				<!-- Test needs a deprecated (pipe) element -->
+				<pipe name="DeprecatedPipe1InAdapter2"
+					  className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello Universe">
+					<forward name="success" path="EXIT"/>
+				</pipe>
+				<!-- Test needs a pipe with deprecated property -->
+				<pipe name="DeprecatedPipe2InAdapter2"
+					  className="nl.nn.adapterframework.compression.ZipWriterPipe"
+					  zipWriterHandle="x"
+				>
+					<param name="filename" value="x"/>
+				</pipe>
+			</pipeline>
+		</adapter>
+	</module>
+	<root xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<Adapter name="Adapter3">
+			<Receiver name="HelloBeautifulWorld">
+				<JavaListener name="HelloBeautifulWorld"/>
+			</Receiver>
+			<Pipeline>
+				<Exits>
+					<Exit name="EXIT" state="SUCCESS" />
+				</Exits>
+				<!-- Test needs a deprecated (pipe) element -->
+				<FilePipe name="DeprecatedPipe1InAdapter3"
+						  actions="read">
+					<Forward name="success" path="EXIT" />
+				</FilePipe>
+				<ZipWriterPipe name="DeprecatedPipe2InAdapter3"
+							   zipWriterHandle="x"
+				>
+					<param name="filename" value="x"/>
+				</ZipWriterPipe>
+			</Pipeline>
+		</Adapter>
+		<Adapter name="Adapter4">
+			<Receiver name="HelloBeautifulUniverse">
+				<JavaListener name="HelloBeautifulUniverse"/>
+			</Receiver>
+			<Pipeline>
+				<Exits>
+					<Exit name="EXIT" state="SUCCESS" />
+				</Exits>
+				<!-- Test needs a deprecated (pipe) element -->
+				<FilePipe name="DeprecatedPipe1InAdapter4"
+						  actions="read">
+					<Forward name="success" path="EXIT" />
+				</FilePipe>
+				<ZipWriterPipe name="DeprecatedPipe2InAdapter4"
+							   zipWriterHandle="x"
+				>
+					<param name="filename" value="x"/>
+				</ZipWriterPipe>
+			</Pipeline>
+		</Adapter>
+	</root>
+</configuration>

@@ -19,6 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IAdapter;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +57,11 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
+	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
+	 */
+	private IAdapter currentAdapter = null;
+
+	/**
 	 * Returns the name of the object. In case a Spring proxy is being used,
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
@@ -65,7 +72,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		if (o instanceof INamedObject) { //This assumes that setName has already been called
 			String named = ((INamedObject) o).getName();
 			if (StringUtils.isNotEmpty(named)) {
-				return result+=" ["+named+"]";
+				return result + " [" + named + "]";
 			}
 		}
 		return result;
@@ -76,12 +83,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Display location information conform {@link IbisException} when the cause is a {@link SAXParseException}.
 	 */
 	protected final void addLocalWarning(String msg) {
-		String message = msg;
-		if(includeLineInformation) {
-			Locator loc = getDigester().getDocumentLocator();
-			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
-		}
-		configurationWarnings.add(getBean(), log, message);
+		configurationWarnings.add(getBean(), log, getLocationString() + msg);
 	}
 
 	/**
@@ -89,6 +91,25 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 */
 	protected final void addGlobalWarning(String message) {
 		applicationWarnings.add(getBean(), log, message);
+	}
+
+	/**
+	 * Add a warning message to the current configuration about deprecated features being used in the configuration,
+	 * unless deprecation-warnings are being suppressed for the current adapter.
+	 *
+	 * @param msg Deprecation warning message to log.
+	 */
+	protected final void addDeprecationWarning(String msg) {
+		configurationWarnings.add(getBean(), log, getLocationString() + msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, currentAdapter);
+	}
+
+	private String getLocationString() {
+		if (!includeLineInformation) {
+			return "";
+		}
+		Locator loc = getDigester().getDocumentLocator();
+		return "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] ";
+
 	}
 
 	/**
@@ -138,6 +159,10 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
+		if (top instanceof IAdapter) {
+			currentAdapter = (IAdapter) top;
+		}
+
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
@@ -152,6 +177,13 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
 			handleAttribute(attribute, entry.getValue(), map);
+		}
+	}
+
+	@Override
+	public void end(String namespace, String name) throws Exception {
+		if ("adapter".equalsIgnoreCase(name)) {
+			currentAdapter = null;
 		}
 	}
 
