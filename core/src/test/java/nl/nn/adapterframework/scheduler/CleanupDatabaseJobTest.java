@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,6 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.util.Locker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,6 +28,9 @@ import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class CleanupDatabaseJobTest extends JdbcTestBase {
 
@@ -43,12 +54,38 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		storage.setSequenceName("SEQ_"+tableName);
 		storage.setDatasourceName(getDataSourceName());
 
-		jobDef = new CleanupDatabaseJob() {
+		if (getConfiguration().getScheduledJob("MockJob") == null) {
+			IJob mockJob = mock(IJob.class);
+			Locker mockLocker = mock(Locker.class);
+			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> getDataSourceName());
+			when(mockJob.getLocker()).thenReturn(mockLocker);
+			when(mockJob.getName()).thenReturn("MockJob");
 
-			@Override
-			protected Set<String> getAllLockerDatasourceNames() {
-				return Collections.singleton(getDataSourceName());
-			}
+			getConfiguration().getScheduleManager().registerScheduledJob(mockJob);
+		}
+
+		if (getConfiguration().getRegisteredAdapter("MockAdapter") == null) {
+			Adapter mockAdapter = mock(Adapter.class);
+			when(mockAdapter.getName()).thenReturn("MockAdapter");
+
+			PipeLine pipeLine = new PipeLine();
+			IExtendedPipe mockPipe = mock(IExtendedPipe.class);
+			Locker mockLocker = mock(Locker.class);
+			when(mockLocker.getDatasourceName()).thenAnswer(invocation -> getDataSourceName());
+			when(mockPipe.getLocker()).thenReturn(mockLocker);
+			when(mockPipe.getName()).thenReturn("MockPipe");
+			pipeLine.addPipe(mockPipe);
+
+			when(mockAdapter.getPipeLine()).thenReturn(pipeLine);
+
+			getConfiguration().registerAdapter(mockAdapter);
+		}
+
+		// Ensure we have an IbisManager via side effects of method
+		//noinspection ResultOfMethodCallIgnored
+		getConfiguration().getIbisManager();
+
+		jobDef = new CleanupDatabaseJob() {
 
 			@Override
 			protected List<MessageLogObject> getAllMessageLogs() {
@@ -73,7 +110,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		jobDef.configure();
 		prepareInsertQuery(1);
 
-		// set max rows to 0 
+		// set max rows to 0
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 
 		jobDef.beforeExecuteJob();
