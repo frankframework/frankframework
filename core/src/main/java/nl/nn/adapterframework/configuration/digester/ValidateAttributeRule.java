@@ -107,7 +107,11 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
 		//Try to parse the value as an Enum
 		if(setterArgumentClass.isEnum()) {
-			return parseAsEnum(setterArgumentClass, value);
+			char[] c = m.getName().substring(3).toCharArray();
+			c[0] = Character.toLowerCase(c[0]);
+			String fieldName = new String(c);
+
+			return parseAsEnum(setterArgumentClass, fieldName, value);
 		}
 
 		return value;
@@ -116,13 +120,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	/**
 	 * Attempt to parse the attributes value as an Enum.
 	 * @param enumClass The Enum class used to parse the value
+	 * @param fieldName The setter name (fieldName) to set
 	 * @param value The value to be parsed
 	 * @return The Enum constant or <code>NULL</code> (and a local configuration warning) if it cannot parse the value.
 	 */
 	@SuppressWarnings("unchecked")
-	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
+	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String fieldName, String value) {
 		try {
-			return EnumUtils.parse((Class<E>) enumClass, value);
+			return EnumUtils.parse((Class<E>) enumClass, fieldName, value);
 		} catch(IllegalArgumentException e) {
 			addLocalWarning(e.getMessage());
 			return null;
@@ -191,7 +196,18 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				(defaultValue instanceof Boolean && Boolean.valueOf(value).equals(defaultValue)) ||
 				(defaultValue instanceof Integer && Integer.valueOf(value).equals(defaultValue)) ||
 				(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue)) ||
-				(defaultValue instanceof Enum && parseAsEnum(defaultValue.getClass(), value) == defaultValue);
+				(defaultValue instanceof Enum && enumEquals(defaultValue, value));
+	}
+
+	/** Attempt to parse the attribute value as an Enum and compare it to the defaultValue. */
+	@SuppressWarnings("unchecked")
+	private <E extends Enum<E>> boolean enumEquals(Object defaultValue, String value) {
+		Class<?> enumClass = defaultValue.getClass();
+		try {
+			return EnumUtils.parse((Class<E>) enumClass, value) == defaultValue;
+		} catch(IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
