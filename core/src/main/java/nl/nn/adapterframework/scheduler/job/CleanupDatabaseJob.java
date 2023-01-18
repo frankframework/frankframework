@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	protected static class MessageLogObject {
+	private static class MessageLogObject {
 		private final String datasourceName;
 		private final String tableName;
 		private final String expiryDateField;
