@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
@@ -152,7 +154,13 @@ public class MessagingSource  {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
+			if (qcf instanceof PoolingConnectionFactory) { //BTM
+				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
+			}
 			try {
+				if (qcf instanceof ConnectionFactoryProxy) { // Narayana
+					return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
+				}
 				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 			} catch (Exception e) {
 				log.debug("Could not get managedConnectionFactory: ("+e.getClass().getTypeName()+") "+e.getMessage());
@@ -181,7 +189,7 @@ public class MessagingSource  {
 		try {
 			Object managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory!=null) {
-				result +=managedConnectionFactory.toString();
+				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
 				if (result.contains("activemq")) {
 					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
 				}
