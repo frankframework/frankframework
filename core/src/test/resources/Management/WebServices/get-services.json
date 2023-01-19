@@ -9,12 +9,18 @@
         }
     ],
     "wsdls": [
+        {
+            "name": "wsl-adapter",
+            "configuration": "TestConfiguration",
+            "adapter": "wsl-adapter"
+        }
     ],
     "apiListeners": [
         {
             "method": "POST",
             "uriPattern": "/api-uri-pattern",
-            "receiver": "ReceiverName2"
+            "receiver": "ReceiverName2",
+            "adapter": "ApiTestAdapter"
         }
     ]
 }

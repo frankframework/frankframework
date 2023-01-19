@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,6 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
@@ -104,9 +102,10 @@ public class WebServices extends BusEndpointBase {
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		if(uri != null) {
 			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			if(apiConfig != null) {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
+			if(apiConfig == null) {
+				throw new BusException("unable to find Dispatch configuration for uri");
 			}
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
 		} else {
 			jsonSchema = dispatcher.generateOpenApiJsonSchema(null);
 		}
@@ -132,13 +131,14 @@ public class WebServices extends BusEndpointBase {
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		String generationInfo = "by FrankConsole";
-		WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
+		WsdlGenerator wsdl = null;
 		try {
+			wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
 			wsdl.setIndent(indent);
 			wsdl.setUseIncludes(useIncludes||zip);
 			wsdl.init();
 		} catch (Exception e) {
-			throw new ApiException("exception on retrieving wsdl", e);
+			throw new BusException("unable to create WSDL generator", e);
 		}
 
 		Builder response = ResponseMessage.Builder.create();
@@ -156,7 +156,7 @@ public class WebServices extends BusEndpointBase {
 			}
 			response.withPayload(boas.toByteArray());
 		} catch (IOException | ConfigurationException | XMLStreamException e) {
-			throw new BusException("unable to create WSDL", e);
+			throw new BusException("unable to generate WSDL", e);
 		}
 
 		return response.raw();
@@ -164,9 +164,8 @@ public class WebServices extends BusEndpointBase {
 
 	private String getServiceEndpoint(IAdapter adapter) {
 		String endpoint = "external address of ibis";
-		Iterator it = adapter.getReceivers().iterator();
-		while(it.hasNext()) {
-			IListener listener = ((Receiver) it.next()).getListener();
+		for(Receiver<?> receiver : adapter.getReceivers()) {
+			IListener<?> listener = receiver.getListener();
 			if(listener instanceof WebServiceListener) {
 				String address = ((WebServiceListener) listener).getAddress();
 				if(StringUtils.isNotEmpty(address)) {
@@ -174,9 +173,7 @@ public class WebServices extends BusEndpointBase {
 				} else {
 					endpoint = "rpcrouter";
 				}
-				String restBaseUrl = "/services/";
-				endpoint = restBaseUrl + endpoint;
-				break;	//what if there are more than 1 WebServiceListener
+				return "/services/" + endpoint;
 			}
 		}
 		return endpoint;
