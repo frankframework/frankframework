@@ -484,7 +484,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
 					runState.setRunState(RunState.EXCEPTION_STOPPING);
 				}
-				log.warn(getLogPrefix()+"timeout stopping");
+				// I want extra logging for the call-stack from where the timed-out request to stop came from.
+				// Force an exception and catch it, so we have a stacktrace.
+				Throwable t = new Throwable("Timeout Stopping Receiver [" + getName() + "] in thread [" + Thread.currentThread().getName() + "]");
+				t.fillInStackTrace();
+				log.warn(getLogPrefix() + "timeout stopping", t);
 			} else {
 				log.debug(getLogPrefix()+"closed");
 				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {

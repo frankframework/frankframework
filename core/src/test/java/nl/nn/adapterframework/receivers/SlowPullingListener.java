@@ -8,7 +8,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
 
-public class SlowStartingPullingListener extends SlowStartingListenerBase implements IPullingListener<String> {
+public class SlowPullingListener extends SlowListenerBase implements IPullingListener<String> {
 
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> context) throws ListenerException {
@@ -31,7 +31,7 @@ public class SlowStartingPullingListener extends SlowStartingListenerBase implem
 
 	@Override
 	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
-		
+		log.debug("closeThread called in slow pulling listener");
 	}
 
 	@Override

@@ -9,7 +9,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
 
-public class SlowStartingPushingListener extends SlowStartingListenerBase implements IPushingListener<String> {
+public class SlowPushingListener extends SlowListenerBase implements IPushingListener<String> {
 
 
 	@Override
@@ -29,13 +29,13 @@ public class SlowStartingPushingListener extends SlowStartingListenerBase implem
 	@Override
 	public void setHandler(IMessageHandler<String> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

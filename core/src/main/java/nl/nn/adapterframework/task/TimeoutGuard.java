@@ -24,9 +24,9 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * TimeoutGuard interrupts running thread when timeout is exceeded.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.9.10  
+ * @since   4.9.10
  */
 public class TimeoutGuard {
 	protected Logger log = LogUtil.getLogger(this);
@@ -48,7 +48,7 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"] s, interuppting");
+			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"s], interrupting");
 			threadKilled=true;
 			thread.interrupt();
 			abort();
@@ -83,21 +83,21 @@ public class TimeoutGuard {
 			this.timeout=timeout;
 			if (log.isDebugEnabled()) log.debug("setting timeout of ["+timeout+"] s for task ["+description+"]");
 			timer = new Timer("GuardTask["+description+"]");
-			timer.schedule(new Killer(),timeout*1000);
+			timer.schedule(new Killer(),timeout*1000L);
 		}
 	}
 
 	/**
 	 * Cancels timer, and returns true if thread has been killed by this guard or interrupted by another.
 	 * <br/><br/>
-	 * Implement this in a finally block to verify correct execution of the guarded process or if it has been interrupted by the guard.
+	 * Call this in a finally-block to verify correct execution of the guarded process or if it has been interrupted by the guard.
 	 */
 	public boolean cancel() {
 		if (timer!=null) {
 			if (log.isDebugEnabled()) log.debug("deactivating TimeoutGuard for task ["+description+"]");
 			timer.cancel();
 		}
-		return Thread.interrupted() || threadKilled; 
+		return Thread.interrupted() || threadKilled;
 	}
 
 	/**
