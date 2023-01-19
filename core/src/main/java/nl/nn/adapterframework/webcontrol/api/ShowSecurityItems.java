@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -35,6 +34,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -50,16 +56,9 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
 /**
  * Shows the used certificate.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -111,7 +110,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get deployment descriptor", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get deployment descriptor");
 			return null;
@@ -169,7 +168,7 @@ public final class ShowSecurityItems extends Base {
 			log.debug("cannot get security role bindings", e);
 			return null;
 		}
-		
+
 		if (xmlDoc==null) {
 			log.debug("could get security role bindings");
 			return null;
@@ -186,7 +185,7 @@ public final class ShowSecurityItems extends Base {
 				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
 					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
 						Element field = (Element) fieldsInRowset.item(j);
-						
+
 						if("role".equals(field.getNodeName())) {
 							role = field.getAttribute("href");
 							if(role.indexOf("#") > -1)
@@ -240,7 +239,7 @@ public final class ShowSecurityItems extends Base {
 				DirectQuerySender qs = getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 				qs.setJmsRealm(realmName);
 				try {
-					qs.configure();
+					qs.configure(true);
 					dsInfo = qs.getDatasourceInfo();
 				} catch (JdbcException | ConfigurationException e) {
 					log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
@@ -306,7 +305,7 @@ public final class ShowSecurityItems extends Base {
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: " + t.getMessage());
 		}
-		
+
 		if (sapSystems!=null) {
 			Iterator<String> iter = sapSystems.iterator();
 			while (iter.hasNext()) {
