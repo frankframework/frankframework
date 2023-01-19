@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
@@ -79,7 +80,7 @@ public class TestWebServices extends BusTestBase {
 
 	@Test
 	public void getWebServices() throws Exception {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES);
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
