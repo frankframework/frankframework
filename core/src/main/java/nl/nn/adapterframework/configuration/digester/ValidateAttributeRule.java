@@ -27,9 +27,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
-import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.Protected;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
@@ -37,27 +35,40 @@ import nl.nn.adapterframework.util.StringResolver;
  * @author Niels Meijer
  */
 public class ValidateAttributeRule extends DigesterRuleBase {
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
+	/**
+	 * @see DigesterRuleBase#handleBean()
+	 */
 	@Override
 	protected void handleBean() {
-		if(!suppressDeprecationWarnings) {
 			Class<?> clazz = getBeanClass();
 			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
 			if(warning != null) {
 				String msg = "";
-				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
+				boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
+				if(isDeprecated) {
 					msg += "is deprecated";
 				}
 				if(StringUtils.isNotEmpty(warning.value())) {
 					msg += ": "+warning.value();
 				}
 
-				addLocalWarning(msg);
+				if (isDeprecated) {
+					addDeprecationWarning(msg);
+				} else {
+					addLocalWarning(msg);
+				}
 			}
-		}
 	}
 
+	/**
+	 * @see DigesterRuleBase#handleAttribute(String, String, Map)
+	 *
+	 * @param name Name of attribute
+	 * @param value Attribute Value
+	 * @param attributes Map of all attributes
+	 * @throws Exception Can throw any exception in bean property manipulation.
+	 */
 	@Override
 	protected void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(getBean(), name);
@@ -125,7 +136,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 
 	/**
 	 * Check if the value:,
-	 * - Can be parsed to match the Getters return type, 
+	 * - Can be parsed to match the Getters return type,
 	 * - Does not equal the default value (parsed by invoking the getter, if present).
 	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
@@ -213,7 +224,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				msg += ": " + warning.value();
 			}
 
-			if(!(suppressDeprecationWarnings && isDeprecated)) { //Don't log if deprecation warnings are suppressed and it is deprecated
+			if (isDeprecated) {
+				addDeprecationWarning(msg);
+			} else {
 				addLocalWarning(msg);
 			}
 		}

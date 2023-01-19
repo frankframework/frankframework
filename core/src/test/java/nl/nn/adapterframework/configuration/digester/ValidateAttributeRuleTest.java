@@ -1,9 +1,17 @@
 package nl.nn.adapterframework.configuration.digester;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,11 +19,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
 import lombok.Getter;
@@ -279,6 +290,94 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSuppressDeprecationWarningsForSomeAdapters() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		loadAppConstants(configuration);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("DeprecatedPipe1InAdapter1")),
+			hasItem(containsString("DeprecatedPipe2InAdapter1")),
+			hasItem(containsString("DeprecatedPipe1InAdapter3")),
+			hasItem(containsString("DeprecatedPipe2InAdapter3"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("DeprecatedPipe1InAdapter2"),
+			containsString("DeprecatedPipe2InAdapter2"),
+			containsString("DeprecatedPipe1InAdapter4"),
+			containsString("DeprecatedPipe2InAdapter4")
+		));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSuppressDeprecationWarningsWithLocationInfo() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty("configuration.warnings.linenumbers", true);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Cleanup so we don't crash other tests
+		appConstants.setProperty("configuration.warnings.linenumbers", false);
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
+			hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
+			hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
+			hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("[DeprecatedPipe1InAdapter2] on line [37] column [91]"),
+			containsString("[DeprecatedPipe2InAdapter2] on line [46] column [6]"),
+			containsString("[DeprecatedPipe1InAdapter4] on line [85] column [24]"),
+			containsString("[DeprecatedPipe2InAdapter4] on line [92] column [6]")
+		));
+	}
+
+	@Test
+	public void testSuppressDeprecationWarningsForAllAdapters() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), true);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Cleanup so we don't crash other tests
+		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertTrue(configurationWarnings.getWarnings().isEmpty());
+	}
+
+	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
+		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
+		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
+		return appConstants;
 	}
 
 	public enum TestEnum {
