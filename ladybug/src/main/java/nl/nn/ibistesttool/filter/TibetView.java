@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 package nl.nn.ibistesttool.filter;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.ibistesttool.IbisDebugger;
 import nl.nn.ibistesttool.tibet2.Storage;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -30,13 +30,13 @@ import nl.nn.testtool.filter.View;
 
 public class TibetView extends View {
 	private static final String AUTHORISATION_CHECK_ADAPTER = "AuthorisationCheck";
-	protected IbisManager ibisManager;
+	protected IbisDebugger ibisDebugger;
 
 	/**
 	 * Loaded via bean, see springIbisTestToolTibet2.xml
 	 */
-	public void setIbisManager(IbisManager ibisManager) {
-		this.ibisManager = ibisManager;
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class TibetView extends View {
 
 	public String isOpenReportAllowedViaAdapter(Object StorageId) {
 		Echo2Application app = getEcho2Application();
-		IAdapter adapter = ibisManager.getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER);
+		IAdapter adapter = ibisDebugger.getIbisManager().getRegisteredAdapter(AUTHORISATION_CHECK_ADAPTER);
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
 		} else {
