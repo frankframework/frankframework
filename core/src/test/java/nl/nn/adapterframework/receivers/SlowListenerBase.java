@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.receivers;
 
+import javax.jms.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -9,7 +10,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 
-public abstract class SlowListenerBase implements IListener<String> {
+public abstract class SlowListenerBase implements IListener<Message> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

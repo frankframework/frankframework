@@ -55,9 +55,9 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public Receiver<String> setupReceiver(SlowListenerBase listener) throws Exception {
+	public Receiver<javax.jms.Message> setupReceiver(SlowListenerBase listener) throws Exception {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<javax.jms.Message> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
@@ -68,7 +68,7 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public Adapter setupAdapter(Receiver<String> receiver) throws Exception {
+	public Adapter setupAdapter(Receiver<javax.jms.Message> receiver) throws Exception {
 
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
@@ -121,7 +121,7 @@ public class ReceiverTest {
 	}
 
 	public void testStartNoTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -157,7 +157,7 @@ public class ReceiverTest {
 	}
 
 	public void testStartTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -206,7 +206,7 @@ public class ReceiverTest {
 	}
 
 	public void testStopTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -220,11 +220,8 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STARTING);
 
 		log.info("Adapter RunState "+adapter.getRunState());
-		assertEquals(RunState.STARTED, adapter.getRunState());
-
-		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
-
 		log.info("Receiver RunState "+receiver.getRunState());
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
@@ -232,12 +229,90 @@ public class ReceiverTest {
 		log.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+	}
 
+	@Test
+	public void testPollGuardStartTimeout() throws Exception {
+		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
+		listener.setPollGuardInterval(5);
+
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Receiver RunState "+receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		// From here the pollguard should be triggering startup-delay timeout-guard
+		listener.setStartupDelay(100_000);
+
+		Thread.sleep(10_000);
+
+		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STOPPING);
+		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+	}
+
+	@Test
+	public void testPollGuardStopTimeout() throws Exception {
+		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
+		listener.setPollGuardInterval(5_000);
+		listener.setMockLastPollDelayMs(5_500); // Last Poll slightly above the PollGuard timeout for test
+
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Receiver RunState "+receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		// From here the PollGuard should be triggering startup-delay timeout-guard
+		listener.setShutdownDelay(100_000);
+
+		log.error("Test sleeping to let poll guard timer run and do its work for a while");
+		Thread.sleep(120_000);
+		log.error("Test resuming");
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STOPPING);
+		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 	}
 
 	@Test
 	public void startReceiver() throws Exception {
-		Receiver<String> receiver = setupReceiver(setupSlowStartPullingListener(10000));
+		Receiver<javax.jms.Message> receiver = setupReceiver(setupSlowStartPullingListener(10000));
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());

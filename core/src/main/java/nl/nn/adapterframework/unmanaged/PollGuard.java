@@ -38,7 +38,7 @@ public class PollGuard extends TimerTask {
 
 	private static AtomicInteger pollTimeouts = new AtomicInteger();
 
-	PollGuard() {
+	public PollGuard() {
 		lastCheck = System.currentTimeMillis();
 	}
 
@@ -51,9 +51,10 @@ public class PollGuard extends TimerTask {
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago
 			if (lastPollFinishedTime != previousLastPollFinishedTime						//   and we did not earlier check for this same value
-				&& springJmsConnector.threadsProcessing.getValue() == 0						//   and we are not still processing a message
+				&& springJmsConnector.getThreadsProcessing().getValue() == 0						//   and we are not still processing a message
 				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED		//   and we are ready to pro
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {					//   and we are not already in the process of recovering
+
 				previousLastPollFinishedTime = lastPollFinishedTime;						// then we consider this too long, and suspect a problem.
 				timeoutDetected = true;
 				int pollTimeoutNr=pollTimeouts.incrementAndGet();
@@ -67,8 +68,14 @@ public class PollGuard extends TimerTask {
 				} finally {
 					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarting receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
 					springJmsConnector.getListener().getReceiver().startRunning();
-					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarted receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
+					if (springJmsConnector.getReceiver().isInRunState(RunState.STARTED)) {
+						log.warn("JMS poll timeout [" + pollTimeoutNr + "] handling restarted receiver [" + springJmsConnector.getListener().getReceiver().getName() + "]");
+					} else {
+						log.error("Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "]");
+					}
 				}
+			} else {
+				log.debug("PollGuard - skip, no timeout");
 			}
 		} else {
 			if (timeoutDetected) {
