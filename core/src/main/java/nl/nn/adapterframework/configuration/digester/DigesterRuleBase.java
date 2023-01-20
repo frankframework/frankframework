@@ -94,8 +94,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * Add a warning message to the current configuration, unless the suppression key is
-	 * supporessed in the configuration.
+	 * Add a warning message to the current configuration, unless this type of warnings is
+	 * suppressed in the configuration.
 	 *
 	 * @param msg Message to add
 	 * @param suppressionKey {@link SuppressKeys} to check.
