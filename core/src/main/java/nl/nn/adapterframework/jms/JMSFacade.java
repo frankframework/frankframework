@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -455,7 +455,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				throw new JmsException(e);
 			}
 			// Do not write stacktrace to avoid cluttering the log, see https://github.com/ibissource/iaf/issues/4381
-			log.debug("[{}] got exception in getPhysicalDestinationShortName: {}", this::getName, e::getMessage); 
+			log.debug("[{}] got exception in getPhysicalDestinationShortName: {}", this::getName, e::getMessage);
 		}
 		return result;
 	}
@@ -920,7 +920,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.transacted = transacted;
 	}
 
-	/** 
+	/**
 	 * Transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part).
 	 * Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number
 	 * @ff.default false
@@ -940,7 +940,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 
 	/**
-	 * The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout 
+	 * The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout
 	 * @ff.default 0
 	 */
 	public void setMessageTimeToLive(long ttl){
