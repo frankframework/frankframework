@@ -214,7 +214,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
-					log.debug("Creating poll-guard timer with interval [" + pollGuardInterval+ "ms] while starting SpringJmsConnector");
+					log.debug("Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", pollGuardInterval);
 					PollGuard pollGuard = new PollGuard();
 					pollGuard.setSpringJmsConnector(this);
 					pollGuardTimer = new Timer(true);
