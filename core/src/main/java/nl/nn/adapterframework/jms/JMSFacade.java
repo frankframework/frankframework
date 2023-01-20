@@ -454,7 +454,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (throwException) {
 				throw new JmsException(e);
 			}
-			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
+			// Do not write stacktrace to avoid cluttering the log, see https://github.com/ibissource/iaf/issues/4381
+			log.debug("[{}] got exception in getPhysicalDestinationShortName: {}", this::getName, e::getMessage); 
 		}
 		return result;
 	}
