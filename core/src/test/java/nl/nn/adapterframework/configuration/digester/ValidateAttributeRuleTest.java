@@ -195,7 +195,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
-	public void testAttributeValueEqualToDefaultValueWarningsSupporessed() throws Exception {
+	public void testAttributeValueEqualToDefaultValueWarningsSuppressed() throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
 		AppConstants appConstants = loadAppConstants(configuration);
