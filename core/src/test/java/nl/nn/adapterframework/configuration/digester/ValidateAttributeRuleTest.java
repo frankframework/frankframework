@@ -19,8 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -33,9 +31,11 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;
@@ -175,20 +175,48 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 	@Test
 	public void testAttributeValueEqualToDefaultValue() throws Exception {
+		// Arrange
 		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
 		attr.put("testInteger", "0");
 		attr.put("testBoolean", "false");
 		attr.put("testEnum", "one");
 
+		// Act
 		runRule(ClassWithEnum.class, attr);
 
+		// Assert
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(4, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
 		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [0]", configWarnings.get(1));
 		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(2));
 		assertEquals("ClassWithEnum attribute [testEnum] already has a default value [one]", configWarnings.get(3));
+	}
+
+	@Test
+	public void testAttributeValueEqualToDefaultValueWarningsSuppressed() throws Exception {
+		// Arrange
+		configuration = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), true);
+
+		Map<String, String> attr = new LinkedHashMap<>();
+		attr.put("testString", "test");
+		attr.put("testInteger", "0");
+		attr.put("testBoolean", "false");
+		attr.put("testEnum", "one");
+
+		// Act
+		runRule(ClassWithEnum.class, attr);
+
+		// After
+		appConstants.remove(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey());
+
+
+		// Assert
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertTrue(configWarnings.isEmpty());
 	}
 
 	@Test

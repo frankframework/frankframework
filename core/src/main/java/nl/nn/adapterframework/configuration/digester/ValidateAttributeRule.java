@@ -27,6 +27,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
@@ -54,7 +55,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				}
 
 				if (isDeprecated) {
-					addDeprecationWarning(msg);
+					addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 				} else {
 					addLocalWarning(msg);
 				}
@@ -145,12 +146,12 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		if (rm != null) {
 			try {
 				Object bean = getBean();
-				Object defaultValue = rm.invoke(bean, new Object[0]);
+				Object defaultValue = rm.invoke(bean);
 				if (bean instanceof HasSpecialDefaultValues) {
 					defaultValue = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, defaultValue, attrs);
 				}
-				if (defaultValue!=null && equals(defaultValue, value)) {
-					addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
+				if (equals(defaultValue, value)) {
+					addSuppressableWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 				}
 				// if the default value is null, then it can mean that the real default value is determined in configure(),
 				// so we cannot assume setting it to "" has no effect
@@ -225,7 +226,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 
 			if (isDeprecated) {
-				addDeprecationWarning(msg);
+				addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 			} else {
 				addLocalWarning(msg);
 			}

@@ -19,8 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.IAdapter;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +33,9 @@ import org.xml.sax.SAXParseException;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -94,13 +94,14 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * Add a warning message to the current configuration about deprecated features being used in the configuration,
-	 * unless deprecation-warnings are being suppressed for the current adapter.
+	 * Add a warning message to the current configuration, unless the suppression key is
+	 * supporessed in the configuration.
 	 *
-	 * @param msg Deprecation warning message to log.
+	 * @param msg Message to add
+	 * @param suppressionKey {@link SuppressKeys} to check.
 	 */
-	protected final void addDeprecationWarning(String msg) {
-		configurationWarnings.add(getBean(), log, getLocationString() + msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, currentAdapter);
+	protected final void addSuppressableWarning(String msg, SuppressKeys suppressionKey) {
+		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, currentAdapter);
 	}
 
 	private String getLocationString() {
