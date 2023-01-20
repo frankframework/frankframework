@@ -442,6 +442,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
+		if (StringUtils.isEmpty(getDestinationName())) {
+			if (!throwException) {
+				return null;
+			}
+			throw new JmsException("no (default) destinationName specified");
+		}
 		String result = null;
 		try {
 			Destination d = getDestination();
@@ -455,8 +461,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (throwException) {
 				throw new JmsException(e);
 			}
-			// Do not write stacktrace to avoid cluttering the log, see https://github.com/ibissource/iaf/issues/4381
-			log.debug("[{}] got exception in getPhysicalDestinationShortName: {}", this::getName, e::getMessage);
+			log.warn("["+getName()+"] got exception in getPhysicalDestinationShortName", e);
 		}
 		return result;
 	}
