@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import javax.annotation.Nonnull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimerTask;
@@ -25,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 import lombok.Setter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.RunState;
 
 public class PollGuard extends TimerTask {
 	private Logger log = LogUtil.getLogger(this);
@@ -67,11 +68,15 @@ public class PollGuard extends TimerTask {
 					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling caught Exception when stopping receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]", e);
 				} finally {
 					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarting receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
-					springJmsConnector.getListener().getReceiver().startRunning();
-					if (springJmsConnector.getReceiver().isInRunState(RunState.STARTED)) {
-						log.warn("JMS poll timeout [" + pollTimeoutNr + "] handling restarted receiver [" + springJmsConnector.getListener().getReceiver().getName() + "]");
-					} else {
-						log.error("Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "]");
+					try {
+						springJmsConnector.getListener().getReceiver().startRunning();
+						if (springJmsConnector.getReceiver().isInRunState(RunState.EXCEPTION_STARTING)) {
+							error("PollGuard: Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "], no exception");
+						} else {
+							log.warn("JMS poll timeout [" + pollTimeoutNr + "] handling restarted receiver [" + springJmsConnector.getListener().getReceiver().getName() + "]");
+						}
+					} catch (Exception e) {
+						error("PollGuard: Error restarting receiver [" + springJmsConnector.getReceiver().getName() + "]", e);
 					}
 				}
 			} else {
@@ -89,6 +94,14 @@ public class PollGuard extends TimerTask {
 	private void warn(String message) {
 		log.warn(springJmsConnector.getLogPrefix() + message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.WARN);
+	}
+	private void error(String message) {
+		log.error(springJmsConnector.getLogPrefix() + message);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.ERROR);
+	}
+	private void error(String message, @Nonnull Throwable t) {
+		log.error(springJmsConnector.getLogPrefix() + message, t);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message + "; " + t.getMessage(), MessageKeeperLevel.ERROR);
 	}
 
 }

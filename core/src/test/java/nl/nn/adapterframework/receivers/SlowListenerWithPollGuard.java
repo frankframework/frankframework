@@ -1,7 +1,13 @@
 package nl.nn.adapterframework.receivers;
 
-import java.util.Timer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import javax.jms.Message;
+import java.util.Timer;
+
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IListenerConnector;
@@ -11,12 +17,6 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.unmanaged.PollGuard;
 import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.RunState;
-import org.mockito.Mockito;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.jms.listener.MessageListenerContainer;
-
-import static org.mockito.Mockito.*;
 
 public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
 
@@ -24,7 +24,7 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     private PollGuard pollGuard = null;
     private Timer pollGuardTimer = null;
     private @Getter @Setter int mockLastPollDelayMs = 10;
-    private @Setter Receiver<javax.jms.Message> receiver;
+    private @Setter Receiver<Message> receiver;
     @Override
     public void open() {
         super.open();
@@ -48,12 +48,12 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
 
     @Override
     public void close() {
-        super.close();
         if (pollGuardTimer != null) {
             log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
             pollGuardTimer.cancel();
             pollGuardTimer = null;
         }
+        super.close();
     }
 
     @Override

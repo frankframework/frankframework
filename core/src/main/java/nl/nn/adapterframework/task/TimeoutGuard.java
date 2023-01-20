@@ -15,12 +15,13 @@
 */
 package nl.nn.adapterframework.task;
 
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * TimeoutGuard interrupts running thread when timeout is exceeded.
@@ -48,7 +49,10 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"s], interrupting");
+			String stackTrace = Arrays.stream(thread.getStackTrace())
+					.map(StackTraceElement::toString)
+					.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
+			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"s], interrupting. Execution stacktrace:" + stackTrace);
 			threadKilled=true;
 			thread.interrupt();
 			abort();

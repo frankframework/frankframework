@@ -1,9 +1,16 @@
 package nl.nn.adapterframework.receivers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -20,6 +27,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
 
 public class ReceiverTest {
@@ -233,6 +241,7 @@ public class ReceiverTest {
 
 	@Test
 	public void testPollGuardStartTimeout() throws Exception {
+		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
 		listener.setPollGuardInterval(5);
 
@@ -255,12 +264,20 @@ public class ReceiverTest {
 
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
-		// From here the pollguard should be triggering startup-delay timeout-guard
+		// From here the PollGuard should be triggering startup-delay timeout-guard
 		listener.setStartupDelay(100_000);
 
-		Thread.sleep(10_000);
+		Thread.sleep(5_000);
 
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
+
+		List<String> errors = (List<String>) adapter.getMessageKeeper()
+				.stream()
+				.filter((msg) -> msg instanceof MessageKeeperMessage && "ERROR".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.map(Object::toString)
+				.collect(Collectors.toList());
+
+		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
@@ -272,9 +289,10 @@ public class ReceiverTest {
 
 	@Test
 	public void testPollGuardStopTimeout() throws Exception {
+		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
-		listener.setPollGuardInterval(5_000);
-		listener.setMockLastPollDelayMs(5_500); // Last Poll slightly above the PollGuard timeout for test
+		listener.setPollGuardInterval(1_000);
+		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
@@ -295,12 +313,15 @@ public class ReceiverTest {
 
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
-		// From here the PollGuard should be triggering startup-delay timeout-guard
+		// From here the PollGuard should be triggering stop-delay timeout-guard
 		listener.setShutdownDelay(100_000);
 
-		log.error("Test sleeping to let poll guard timer run and do its work for a while");
-		Thread.sleep(120_000);
-		log.error("Test resuming");
+		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
+		Thread.sleep(5_000);
+		log.warn("Test resuming");
+
+		// Receiver may be in state "stopping" (by PollGuard) or in state "starting" while we come out of sleep, so wait until it's started
+		waitForState(receiver, RunState.STARTED);
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
@@ -308,6 +329,13 @@ public class ReceiverTest {
 		log.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+
+		List<String> warnings = (List<String>) adapter.getMessageKeeper()
+				.stream()
+				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.map(Object::toString)
+				.collect(Collectors.toList());
+		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
 	}
 
 	@Test
