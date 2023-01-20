@@ -49,10 +49,13 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			String stackTrace = Arrays.stream(thread.getStackTrace())
-					.map(StackTraceElement::toString)
-					.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
-			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"s], interrupting. Execution stacktrace:" + stackTrace);
+			if (log.isWarnEnabled()) {
+				String stackTrace = Arrays.stream(thread.getStackTrace())
+						.map(StackTraceElement::toString)
+						.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
+				log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}s], interrupting. Execution stacktrace:{}",
+						thread.getName(), description, timeout, stackTrace);
+			}
 			threadKilled=true;
 			thread.interrupt();
 			abort();
@@ -85,7 +88,7 @@ public class TimeoutGuard {
 	public void activateGuard(int timeout) {
 		if (timeout > 0) {
 			this.timeout=timeout;
-			if (log.isDebugEnabled()) log.debug("setting timeout of ["+timeout+"] s for task ["+description+"]");
+			if (log.isDebugEnabled()) log.debug("setting timeout of [{}s] for task [{}]", timeout, description);
 			timer = new Timer("GuardTask["+description+"]");
 			timer.schedule(new Killer(),timeout*1000L);
 		}
