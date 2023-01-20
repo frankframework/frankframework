@@ -32,7 +32,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +41,6 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -480,9 +478,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean exists(EmailMessage f) throws FileSystemException {
+		log.debug("Check if message exists: message [{}]", f);
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
+			log.debug("See if we can extra message ID before loading: [{}]", f.getId());
 			setMailboxOnService(exchangeService, getReceivedBy(f));
 			// TODO: check if this bind can be left out
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
@@ -952,6 +952,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	protected String getReceivedBy(EmailMessage emailMessage) throws ServiceResponseException, FileSystemException {
+		log.debug("getReceivedBy - extract 'receivedBy' property from message");
 		try {
 			emailMessage.load(PropertySet.FirstClassProperties);
 			EmailAddress receivedBy = emailMessage.getReceivedBy();

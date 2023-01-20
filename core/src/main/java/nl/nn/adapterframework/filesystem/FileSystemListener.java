@@ -216,6 +216,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		FS fileSystem=getFileSystem();
+		log.debug("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
 			if (ds==null) {
 				return null;
@@ -371,6 +372,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
 	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
+		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
 			if (!getFileSystem().exists(message) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
