@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.configuration.digester;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -24,18 +24,22 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
 	private  Logger log = LogUtil.getLogger(this);
 
-	@Test
-	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
+	private Iterable<String> getClassesThatImplementIConfigurable() {
+		return getClassesThatImplement(IConfigurable.class);
+	}
+
+	private Iterable<String> getClassesThatImplement(Class<?> type) {
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
-		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
+		scanner.addIncludeFilter(new AssignableTypeFilter(type));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@Override
@@ -50,8 +54,15 @@ public class MapPropertyDescriptorsTest {
 		int numberOfBeans = scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
 		log.debug("Found "+numberOfBeans+" beans registered!");
 
-		String[] names = scanner.getRegistry().getBeanDefinitionNames();
-		for (String beanName : names) {
+		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
+		assertEquals(numberOfBeans, bdn.length); // ensure we got all beans
+
+		return Arrays.asList(bdn);
+	}
+
+	@Test
+	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
+		for (String beanName : getClassesThatImplementIConfigurable()) {
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
 			// get methods
 			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
@@ -82,26 +93,7 @@ public class MapPropertyDescriptorsTest {
 
 	@Test
 	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException, IntrospectionException {
-		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
-		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
-		scanner.setIncludeAnnotationConfig(false);
-		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
-
-		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
-			@Override
-			protected String buildDefaultBeanName(BeanDefinition definition) {
-				String beanClassName = definition.getBeanClassName();
-				Assert.state(beanClassName != null, "No bean class name set");
-				return beanClassName;
-			}
-		};
-		scanner.setBeanNameGenerator(beanNameGenerator);
-
-		int numberOfBeans = scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
-		log.debug("Found "+numberOfBeans+" beans registered!");
-
-		String[] names = scanner.getRegistry().getBeanDefinitionNames();
-		for (String beanName : names) {
+		for (String beanName : getClassesThatImplementIConfigurable()) {
 			Class<?> beanClass = Class.forName(beanName);
 
 			if (beanClass.isAnnotationPresent(ConfigurationWarning.class)) {

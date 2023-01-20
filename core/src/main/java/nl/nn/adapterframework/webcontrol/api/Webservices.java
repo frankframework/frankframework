@@ -15,10 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Iterator;
-
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -26,23 +22,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.RequestMessageBuilder;
-import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.soap.WsdlGenerator;
 
 /**
  * Shows all monitors.
@@ -52,7 +39,7 @@ import nl.nn.adapterframework.soap.WsdlGenerator;
  */
 
 @Path("/")
-public final class Webservices extends Base {
+public final class Webservices extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -60,93 +47,54 @@ public final class Webservices extends Base {
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getWebServices() {
-		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES));
+		return callSyncGateway(RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.GET));
 	}
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/webservices/{resourceName}")
+	@Path("/webservices/openapi.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getOpenApiSpec(@QueryParam("uri") String uri) {
+		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
+		request.addHeader("type", "openapi");
+		if(StringUtils.isNotBlank(uri)) {
+			request.addHeader("uri", uri);
+		}
+		return callSyncGateway(request);
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/webservices/{configuration}/{resourceName}")
 	@Relation("webservices")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response getWsdl(
-		@PathParam("resourceName") String resourceName,
-		@DefaultValue("true") @QueryParam("indent") boolean indent,
-		@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) {
+			@PathParam("configuration") String configuration,
+			@PathParam("resourceName") String resourceName,
+			@DefaultValue("true") @QueryParam("indent") boolean indent,
+			@DefaultValue("false") @QueryParam("useIncludes") boolean useIncludes) {
+
+		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
+		request.addHeader("indent", indent);
+		request.addHeader("useIncludes", useIncludes);
+		request.addHeader("type", "wsdl");
 
 		String adapterName;
-		boolean zip;
 		int dotPos=resourceName.lastIndexOf('.');
 		if (dotPos>=0) {
-			adapterName=resourceName.substring(0,dotPos);
-			zip=resourceName.substring(dotPos).equals(".zip");
+			adapterName = resourceName.substring(0,dotPos);
+			boolean zip = resourceName.substring(dotPos).equals(".zip");
+			request.addHeader("zip", zip);
 		} else {
-			adapterName=resourceName;
-			zip=false;
+			adapterName = resourceName;
 		}
 
 		if (StringUtils.isEmpty(adapterName)) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("<error>no adapter specified</error>").build();
+			throw new ApiException("no adapter specified");
 		}
-		IAdapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-		if (adapter == null) {
-			return Response.status(Response.Status.BAD_REQUEST).entity("<error>adapter not found</error>").build();
-		}
-		try {
-			String servletName = getServiceEndpoint(adapter);
-			String generationInfo = "by FrankConsole";
-			WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
-			wsdl.setIndent(indent);
-			wsdl.setUseIncludes(useIncludes||zip);
-			wsdl.init();
-			StreamingOutput stream = new StreamingOutput() {
-				@Override
-				public void write(OutputStream out) throws IOException, WebApplicationException {
-					try {
-						if (zip) {
-							wsdl.zip(out, servletName);
-						} else {
-							wsdl.wsdl(out, servletName);
-						}
-					} catch (ConfigurationException | XMLStreamException e) {
-						throw new WebApplicationException(e);
-					}
-				}
-			};
-			ResponseBuilder responseBuilder = Response.ok(stream);
-			if (zip) {
-				responseBuilder.type(MediaType.APPLICATION_OCTET_STREAM);
-				responseBuilder.header("Content-Disposition", "attachment; filename=\""+adapterName+".zip\"");
-			}
-			return responseBuilder.build();
 
-		} catch (Exception e) {
-			throw new ApiException("exception on retrieving wsdl", e);
-		}
-	}
-
-	private String getServiceEndpoint(IAdapter adapter) {
-		String endpoint = "external address of ibis";
-		Iterator it = adapter.getReceivers().iterator();
-		while(it.hasNext()) {
-			IListener listener = ((Receiver) it.next()).getListener();
-			if(listener instanceof WebServiceListener) {
-				String address = ((WebServiceListener) listener).getAddress();
-				if(StringUtils.isNotEmpty(address)) {
-					endpoint = address;
-				} else {
-					endpoint = "rpcrouter";
-				}
-				String protocol = servletRequest.isSecure() ? "https://" : "http://";
-				int port = servletRequest.getServerPort();
-				String restBaseUrl = protocol + servletRequest.getServerName() + (port != 0 ? ":" + port : "") + servletRequest.getContextPath() + "/services/";
-				endpoint = restBaseUrl + endpoint;
-				break;	//what if there are more than 1 WebServiceListener
-			}
-		}
-		return endpoint;
-	}
-
-	private String getWsdlExtension() {
-		return ".wsdl";
+		request.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		request.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
+		return callSyncGateway(request);
 	}
 }

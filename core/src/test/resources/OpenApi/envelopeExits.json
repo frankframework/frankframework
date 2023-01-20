@@ -1,55 +1,62 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/envelope":{
-            "get":{
-                "summary":"each exit have specific element name",
-                "parameters":[
+    "paths": {
+        "/envelope": {
+            "get": {
+                "summary": "each exit have specific element name",
+                "parameters": [
                     {
-                        "name":"parameter",
-                        "in":"query",
-                        "schema":{
-                            "type":"string"
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "parameter",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/EnvelopeResponse"
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EnvelopeResponse"
                                 }
                             }
                         }
                     },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/EnvelopeError500"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EnvelopeError500"
                                 }
                             }
                         }
                     },
-                    "403":{
-                        "description":"Forbidden",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/EnvelopeError403"
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EnvelopeError403"
                                 }
                             }
                         }
@@ -58,46 +65,46 @@
             }
         }
     },
-    "components":{
-        "schemas":{
-            "EnvelopeError403":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "message403":{
-                        "type":"string"
+    "components": {
+        "schemas": {
+            "EnvelopeError403": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "message403": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "message403"
                 ]
             },
-            "EnvelopeResponse":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "envelopeID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+            "EnvelopeResponse": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "envelopeID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     },
-                    "setID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+                    "setID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     },
-                    "type":{
-                        "type":"string"
+                    "type": {
+                        "type": "string"
                     },
-                    "envelopeCreationDate":{
-                        "type":"string",
-                        "format":"date-time"
+                    "envelopeCreationDate": {
+                        "type": "string",
+                        "format": "date-time"
                     },
-                    "retried":{
-                        "type":"boolean"
+                    "retried": {
+                        "type": "boolean"
                     }
                 },
-                "required":[
+                "required": [
                     "envelopeID",
                     "setID",
                     "type",
@@ -105,29 +112,29 @@
                     "retried"
                 ]
             },
-            "EnvelopeRequest":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "envelopeID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+            "EnvelopeRequest": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "envelopeID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     }
                 },
-                "required":[
+                "required": [
                     "envelopeID"
                 ]
             },
-            "EnvelopeError500":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "message500":{
-                        "type":"string"
+            "EnvelopeError500": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "message500": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "message500"
                 ]
             }

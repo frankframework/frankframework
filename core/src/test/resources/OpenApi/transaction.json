@@ -1,89 +1,98 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/transaction":{
-            "post":{
-                "summary":"description4simple-get",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/transaction"
+    "paths": {
+        "/transaction": {
+            "post": {
+                "summary": "description4simple-get",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/transaction"
                             }
                         }
                     }
                 },
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
                         }
                     }
                 }
             }
         }
     },
-    "components":{
-        "schemas":{
-            "order":{
-                "type":"string"
+    "components": {
+        "schemas": {
+            "order": {
+                "type": "string"
             },
-            "vendor":{
-                "type":"string"
+            "vendor": {
+                "type": "string"
             },
-            "invoice":{
-                "type":"string"
+            "invoice": {
+                "type": "string"
             },
-            "customer":{
-                "type":"string"
+            "customer": {
+                "type": "string"
             },
-            "transaction":{
-                "oneOf":[
+            "transaction": {
+                "oneOf": [
                     {
-                        "type":"object",
-                        "additionalProperties":false,
-                        "properties":{
-                            "order":{
-                                "$ref":"#/components/schemas/order"
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "order": {
+                                "$ref": "#/components/schemas/order"
                             },
-                            "customer":{
-                                "$ref":"#/components/schemas/customer"
+                            "customer": {
+                                "$ref": "#/components/schemas/customer"
                             },
-                            "vendor":{
-                                "$ref":"#/components/schemas/vendor"
+                            "vendor": {
+                                "$ref": "#/components/schemas/vendor"
                             }
                         },
-                        "required":[
+                        "required": [
                             "order",
                             "customer",
                             "vendor"
                         ]
                     },
                     {
-                        "type":"object",
-                        "additionalProperties":false,
-                        "properties":{
-                            "invoice":{
-                                "$ref":"#/components/schemas/invoice"
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "invoice": {
+                                "$ref": "#/components/schemas/invoice"
                             },
-                            "vendor":{
-                                "$ref":"#/components/schemas/vendor"
+                            "vendor": {
+                                "$ref": "#/components/schemas/vendor"
                             },
-                            "customer":{
-                                "$ref":"#/components/schemas/customer"
+                            "customer": {
+                                "$ref": "#/components/schemas/customer"
                             }
                         },
-                        "required":[
+                        "required": [
                             "invoice",
                             "vendor",
                             "customer"

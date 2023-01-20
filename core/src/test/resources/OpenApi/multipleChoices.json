@@ -1,88 +1,97 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/multipleChoices":{
-            "post":{
-                "summary":"description4simple-get",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/EmbeddedChoice"
+    "paths": {
+        "/multipleChoices": {
+            "post": {
+                "summary": "description4simple-get",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmbeddedChoice"
                             }
                         }
                     }
                 },
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
                         }
                     }
                 }
             }
         }
     },
-    "components":{
-        "schemas":{
-            "EmbeddedChoice":{
-                "$ref":"#/components/schemas/EmbeddedChoiceType"
+    "components": {
+        "schemas": {
+            "EmbeddedChoice": {
+                "$ref": "#/components/schemas/EmbeddedChoiceType"
             },
-            "EmbeddedChoiceType":{
-                "type":"object",
-                "allOf":[
+            "EmbeddedChoiceType": {
+                "type": "object",
+                "allOf": [
                     {
-                        "oneOf":[
+                        "oneOf": [
                             {
-                                "required":[
+                                "required": [
                                     "BusinessPartnerId"
                                 ]
                             },
                             {
-                                "required":[
+                                "required": [
                                     "Qualifier"
                                 ]
                             }
                         ]
                     },
                     {
-                        "oneOf":[
+                        "oneOf": [
                             {
-                                "required":[
+                                "required": [
                                     "EnableFuzzySearch"
                                 ]
                             },
                             {
-                                "required":[
+                                "required": [
                                     "IgnoreFilter"
                                 ]
                             }
                         ]
                     }
                 ],
-                "additionalProperties":false,
-                "properties":{
-                    "BusinessPartnerId":{
-                        "type":"string"
+                "additionalProperties": false,
+                "properties": {
+                    "BusinessPartnerId": {
+                        "type": "string"
                     },
-                    "Qualifier":{
-                        "type":"string"
+                    "Qualifier": {
+                        "type": "string"
                     },
-                    "EnableFuzzySearch":{
-                        "type":"string"
+                    "EnableFuzzySearch": {
+                        "type": "string"
                     },
-                    "IgnoreFilter":{
-                        "type":"string"
+                    "IgnoreFilter": {
+                        "type": "string"
                     }
                 }
             }

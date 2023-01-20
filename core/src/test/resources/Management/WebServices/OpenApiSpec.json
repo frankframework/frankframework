@@ -6,14 +6,10 @@
         "version": "unknown"
     },
     "servers": [
-        {
-            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
-        }
     ],
     "paths": {
-        "/noValidator": {
-            "get": {
-                "summary": "description4simple-get",
+        "/api-uri-pattern": {
+            "post": {
                 "parameters": [
                     {
                         "name": "Message-Id",
@@ -24,16 +20,6 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                        }
-                    }
                 }
             }
         }

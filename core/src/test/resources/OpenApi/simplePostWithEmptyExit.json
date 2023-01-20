@@ -1,54 +1,63 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/simpleEndpointPostWithEmptyExitTest":{
-            "post":{
-                "summary":"description4simple-get",
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/user"
+    "paths": {
+        "/simpleEndpointPostWithEmptyExitTest": {
+            "post": {
+                "summary": "description4simple-get",
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
                                 }
                             }
                         }
                     },
-                    "500":{
-                        "description":"Internal Server Error"
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
         }
     },
-    "components":{
-        "schemas":{
-            "user":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "email":{
-                        "type":"string"
+    "components": {
+        "schemas": {
+            "user": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "email": {
+                        "type": "string"
                     },
-                    "username":{
-                        "type":"string"
+                    "username": {
+                        "type": "string"
                     },
-                    "password":{
-                        "type":"string"
+                    "password": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "email",
                     "username",
                     "password"

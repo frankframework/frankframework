@@ -28,6 +28,13 @@
                         "schema":{
                             "type":"string"
                         }
+                    },
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses":{

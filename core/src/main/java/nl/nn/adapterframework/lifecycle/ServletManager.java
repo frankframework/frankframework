@@ -18,14 +18,14 @@ package nl.nn.adapterframework.lifecycle;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
@@ -84,7 +84,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
-	private Set<String> servlets = new TreeSet<>();
+	private Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private Map<String, IAuthenticator> authenticators = new HashMap<>();
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
@@ -240,7 +240,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private void registerServlet(Servlet servlet, ServletConfiguration config, Map<String, String> initParameters) {
 		String servletName = config.getName();
-		if(servlets.contains(servletName)) {
+		if(servlets.containsKey(servletName)) {
 			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
 		}
 
@@ -268,7 +268,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 			}
 		}
 
-		servlets.add(servletName);
+		servlets.put(servletName, config);
 		logServletInfo(serv, config);
 	}
 
@@ -300,6 +300,14 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 			getServletContext().log(msg);
 
 		log.log(level, msg);
+	}
+
+	public ServletConfiguration getServlet(String name) {
+		return servlets.get(name);
+	}
+
+	public Collection<ServletConfiguration> getServlets() {
+		return Collections.unmodifiableCollection(servlets.values());
 	}
 
 	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {

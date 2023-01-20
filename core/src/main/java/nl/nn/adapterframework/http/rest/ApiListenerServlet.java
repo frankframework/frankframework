@@ -63,6 +63,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -119,6 +120,13 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
+	private static String createEndpointUrlFromRequest(HttpServletRequest request) {
+		String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
+		requestUrl = Misc.urlDecode(requestUrl);
+		String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
+		return requestUrl.substring(0, requestUrl.indexOf(requestPath));
+	}
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -153,15 +161,16 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * Generate OpenApi specification
 			 */
 			if(uri.equalsIgnoreCase("/openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
 				String specUri = request.getParameter("uri");
 				JsonObject jsonSchema = null;
 				if(specUri != null) {
 					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
 					if(apiConfig != null) {
-						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
 					}
 				} else {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
 				}
 				if(jsonSchema != null) {
 					returnJson(response, 200, jsonSchema);
@@ -176,10 +185,11 @@ public class ApiListenerServlet extends HttpServletBase {
 			 * @Deprecated This is here to support old url's
 			 */
 			if(uri.endsWith("openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
 				uri = uri.substring(0, uri.lastIndexOf("/"));
 				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
 				if(apiConfig != null) {
-					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
 					returnJson(response, 200, jsonSchema);
 					return;
 				}

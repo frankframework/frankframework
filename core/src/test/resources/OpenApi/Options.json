@@ -1,96 +1,105 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/options":{
-            "post":{
-                "summary":"description4simple-get",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/Options"
+    "paths": {
+        "/options": {
+            "post": {
+                "summary": "description4simple-get",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Options"
                             }
                         }
                     }
                 },
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
                         }
                     }
                 }
             }
         }
     },
-    "components":{
-        "schemas":{
-            "Options":{
-                "type":"object",
-                "oneOf":[
+    "components": {
+        "schemas": {
+            "Options": {
+                "type": "object",
+                "oneOf": [
                     {
-                        "required":[
+                        "required": [
                             "Organisation"
                         ]
                     },
                     {
-                        "required":[
+                        "required": [
                             "Person"
                         ]
                     }
                 ],
-                "additionalProperties":false,
-                "properties":{
-                    "Organisation":{
-                        "type":"string"
+                "additionalProperties": false,
+                "properties": {
+                    "Organisation": {
+                        "type": "string"
                     },
-                    "Person":{
-                        "$ref":"#/components/schemas/PersonType"
+                    "Person": {
+                        "$ref": "#/components/schemas/PersonType"
                     }
                 }
             },
-            "PersonDemographicsType":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "BirthDate":{
-                        "type":"string",
-                        "format":"date"
+            "PersonDemographicsType": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "BirthDate": {
+                        "type": "string",
+                        "format": "date"
                     },
-                    "DeathDate":{
-                        "type":"string",
-                        "format":"date"
+                    "DeathDate": {
+                        "type": "string",
+                        "format": "date"
                     }
                 }
             },
-            "PersonType":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "PersonName":{
-                        "$ref":"#/components/schemas/PersonNameType"
+            "PersonType": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "PersonName": {
+                        "$ref": "#/components/schemas/PersonNameType"
                     },
-                    "Demographics":{
-                        "$ref":"#/components/schemas/PersonDemographicsType"
+                    "Demographics": {
+                        "$ref": "#/components/schemas/PersonDemographicsType"
                     }
                 }
             },
-            "PersonNameType":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "BasicLastName":{
-                        "type":"string"
+            "PersonNameType": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "BasicLastName": {
+                        "type": "string"
                     }
                 }
             }

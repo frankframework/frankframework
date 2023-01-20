@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,14 +78,17 @@ public class RequestMessageBuilder {
 		}
 
 		UriInfo uriInfo = base.getUriInfo();
-		builder.setHeader("uri", uriInfo.getRequestUri());
-		builder.setHeader("method", base.getServletRequest().getMethod());
+		URI uri = uriInfo.getRequestUri();
+		if(uri != null) {
+			builder.setHeader("request-uri", uri.toString());
+		}
+		builder.setHeader("request-method", base.getServletRequest().getMethod());
 
 		if(uriInfo.getQueryParameters() != null && !uriInfo.getQueryParameters().isEmpty()) {
-			builder.setHeader("query", uriInfo.getQueryParameters());
+			builder.setHeader("request-query", uriInfo.getQueryParameters());
 		}
 		if(uriInfo.getPathParameters() != null && !uriInfo.getPathParameters().isEmpty()) {
-			builder.setHeader("path", uriInfo.getPathParameters());
+			builder.setHeader("request-path", uriInfo.getPathParameters());
 		}
 
 		builder.setHeader("issuedBy", HttpUtils.getExtendedCommandIssuedBy(base.getServletRequest()));
