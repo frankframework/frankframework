@@ -164,11 +164,11 @@ public class ApiServiceDispatcher {
 		return Collections.unmodifiableSortedMap(patternClients);
 	}
 
-	protected JsonObject generateOpenApiJsonSchema(HttpServletRequest request) {
+	public JsonObject generateOpenApiJsonSchema(HttpServletRequest request) {
 		return generateOpenApiJsonSchema(getPatternClients().values(), request);
 	}
 
-	protected JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, HttpServletRequest request) {
+	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, HttpServletRequest request) {
 		List<ApiDispatchConfig> clientList = Arrays.asList(client);
 		return generateOpenApiJsonSchema(clientList, request);
 	}

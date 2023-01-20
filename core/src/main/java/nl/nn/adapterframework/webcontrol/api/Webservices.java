@@ -43,6 +43,11 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
@@ -56,6 +61,7 @@ import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Shows all monitors.
@@ -142,6 +148,42 @@ public final class Webservices extends Base {
 		returnMap.put("apiListeners", apiListeners);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
+	}
+
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/webservices/openapi.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getOpenApiSpec(@QueryParam("uri") String specUri) {
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		JsonObject jsonSchema = null;
+		if(StringUtils.isNotBlank(specUri)) {
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+			if(apiConfig != null) {
+				jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+			}
+		} else {
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
+		}
+		if(jsonSchema == null) {
+			throw new ApiException("unable to find Dispatch configuration for uri");
+		}
+
+		return Response.ok(createStreamingOutput(jsonSchema)).build();
+	}
+
+	private StreamingOutput createStreamingOutput(final JsonObject jsonSchema) {
+		return new StreamingOutput() {
+			@Override
+			public void write(OutputStream out) throws IOException, WebApplicationException {
+				Map<String, Boolean> config = new HashMap<>();
+				config.put(JsonGenerator.PRETTY_PRINTING, true);
+				JsonWriterFactory factory = Json.createWriterFactory(config);
+				try (JsonWriter jsonWriter = factory.createWriter(out, StreamUtil.DEFAULT_CHARSET)) {
+					jsonWriter.write(jsonSchema);
+				}
+			}
+		};
 	}
 
 	@GET

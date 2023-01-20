@@ -20,15 +20,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class ApiListenerTest {
 
@@ -203,5 +203,19 @@ public class ApiListenerTest {
 	public void testAuthRoleMethod() {
 		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE);
 		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
+	}
+
+	@Test
+	public void testGetPhysicalDestinationName() throws Exception {
+		listener.configure();
+		assertEquals("uriPattern: api/dummy; method: PUT", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	public void testGetPhysicalDestinationNameConsumesProduces() throws Exception {
+		listener.setConsumes(MediaTypes.JSON);
+		listener.setProduces(MediaTypes.XML);
+		listener.configure();
+		assertEquals("uriPattern: api/dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
 	}
 }

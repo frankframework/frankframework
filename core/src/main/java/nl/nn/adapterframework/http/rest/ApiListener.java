@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,9 +84,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
+	private @Getter(onMethod = @__(@Override)) String physicalDestinationName = null;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
-	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "api");
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.ApiListenerServlet.urlMapping", "api/*");
 
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE, JWT;
@@ -112,6 +113,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 
 		contentType = produces.getMimeType(charset);
+
+		buildPhysicalDestinationName();
 	}
 
 	@Override
@@ -119,7 +122,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
 		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
 			try {
-				jwtValidator = new JwtValidator<SecurityContext>();
+				jwtValidator = new JwtValidator<>();
 				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
 			} catch (Exception e) {
 				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
@@ -146,15 +149,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return result;
 	}
 
-	@Override
-	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: /"+servletUrlMapping+getUriPattern()+"; method: "+getMethod();
-		if(!MediaTypes.ANY.equals(consumes))
-			destinationName += "; consumes: "+getConsumes();
-		if(!MediaTypes.ANY.equals(produces))
-			destinationName += "; produces: "+getProduces();
+	private void buildPhysicalDestinationName() {
+		StringBuilder builder = new StringBuilder("uriPattern: ");
+		String base = servletUrlMapping;
+		if(servletUrlMapping.endsWith("*")) {
+			int trim = (servletUrlMapping.endsWith("/*")) ? 2 : 1;
+			base = servletUrlMapping.substring(0, servletUrlMapping.length()-trim);
+		}
+		builder.append(base);
 
-		return destinationName;
+		builder.append(getUriPattern());
+		builder.append("; method: ").append(getMethod());
+
+		if(!MediaTypes.ANY.equals(consumes)) {
+			builder.append("; consumes: ").append(getConsumes());
+		}
+		if(!MediaTypes.ANY.equals(produces)) {
+			builder.append("; produces: ").append(getProduces());
+		}
+
+		this.physicalDestinationName = builder.toString();
 	}
 
 	/**
@@ -257,7 +271,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
 	 */
 	public void setAuthenticationRoles(String authRoles) {
-		List<String> roles = new ArrayList<String>();
+		List<String> roles = new ArrayList<>();
 		if (StringUtils.isNotEmpty(authRoles)) {
 			StringTokenizer st = new StringTokenizer(authRoles, ",;");
 			while (st.hasMoreTokens()) {
@@ -288,8 +302,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Name of the header which contains the message-id
-	 * @ff.default message-id
+	 * Name of the header which contains the Message-Id.
 	 */
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
