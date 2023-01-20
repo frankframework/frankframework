@@ -442,11 +442,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
-		if (StringUtils.isEmpty(getDestinationName())) {
-			if (!throwException) {
-				return null;
-			}
-			throw new JmsException("no (default) destinationName specified");
+		if (StringUtils.isEmpty(getDestinationName()) && !throwException) {
+			return null;
 		}
 		String result = null;
 		try {
