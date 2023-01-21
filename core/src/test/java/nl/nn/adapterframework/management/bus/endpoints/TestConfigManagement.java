@@ -50,17 +50,20 @@ public class TestConfigManagement extends BusTestBase {
 	@Test
 	public void findConfigurations() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
-		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
 		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":true}]", response.getPayload());
 	}
 
 	@Test
 	public void findTestConfiguration() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
-		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
-		request.setHeader("loaded", true);
-		Message<?> response = callSyncGateway(request);
-		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":true}]", response.getPayload());
+		getConfiguration().setVersion("dummy123");
+		try {
+			MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+			request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+			Message<?> response = callSyncGateway(request);
+			assertEquals("[{\"name\":\"TestConfiguration\",\"version\":\"dummy123\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":true}]", response.getPayload());
+		} finally {
+			getConfiguration().setVersion(null);
+		}
 	}
 }
