@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -254,6 +255,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * <li>All forwards defined in xml under the pipe element of this pipe</li>
 	 * <li>All global forwards defined in xml under the PipeLine element</li>
 	 * <li>All pipe names with their (identical) path</li>
+	 * <li>All Pipeline Exits</li>
 	 * </ul>
 	 */
 	public PipeForward findForward(String forward){
@@ -266,6 +268,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 				if (result == null) {
 					IPipe pipe = pipeLine.getPipe(forward);
 					if (pipe!=null) {
+						result = new PipeForward(forward, forward);
+					}
+				}
+				if (result == null) {
+					PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+					if (exit!=null) {
 						result = new PipeForward(forward, forward);
 					}
 				}
