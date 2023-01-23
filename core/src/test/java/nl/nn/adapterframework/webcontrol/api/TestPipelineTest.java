@@ -2,6 +2,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -31,7 +32,7 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		return new TestPipeline();
 	}
 
-	private class CustomAttachment extends Attachment{
+	private class CustomAttachment extends Attachment {
 
 		private Object data;
 
@@ -73,7 +74,7 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		CustomAttachment attachmentFile = new CustomAttachment("file", zip.openStream(), new ContentDisposition("attachment;filename=temp.zip"));
 		attachmentFile.setObject(zip.openStream());
 
-		Attachment attachmentAdapter = new Attachment("adapter", "application/text", "HelloWorld") {
+		Attachment attachmentAdapter = new Attachment("adapter", "application/text", new ByteArrayInputStream("HelloWorld".getBytes())) {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <T> T getObject(Class<T> cls) {
