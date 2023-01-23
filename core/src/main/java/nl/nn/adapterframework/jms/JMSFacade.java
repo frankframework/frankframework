@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -442,6 +442,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
+		if (StringUtils.isEmpty(getDestinationName()) && !throwException) {
+			return null;
+		}
 		String result = null;
 		try {
 			Destination d = getDestination();
@@ -455,7 +458,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (throwException) {
 				throw new JmsException(e);
 			}
-			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
+			log.warn("["+getName()+"] got exception in getPhysicalDestinationShortName", e);
 		}
 		return result;
 	}
