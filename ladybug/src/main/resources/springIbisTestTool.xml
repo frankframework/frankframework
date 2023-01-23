@@ -71,19 +71,6 @@
 		<property name="name" value="Logging"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>endTime</value>
-				<value>duration</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>status</value>
-				<value>numberOfCheckpoints</value>
-				<value>estimatedMemoryUsage</value>
-			</list>
-		</property>
 	</bean>
 
 	<bean name="testStorageActive" class="java.lang.String">
@@ -111,43 +98,13 @@
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>path</value>
-				<value>name</value>
-			</list>
-		</property>
 	</bean>
 
-	<bean name="whiteBoxViewMetadataNames" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>storageId</value>
-				<value>endTime</value>
-				<value>duration</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>status</value>
-				<value>numberOfCheckpoints</value>
-				<value>estimatedMemoryUsage</value>
-				<value>storageSize</value>
-			</list>
-		</constructor-arg>
-	</bean>
-	
-	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
+	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" autowire="byName">
 		<property name="name" value="White box"/>
-		<property name="debugStorage">
-			<ref bean="debugStorage"/>
-		</property>
-		<property name="metadataNames">
-			<ref bean="whiteBoxViewMetadataNames"/>
-		</property>
 	</bean>
 
-	<bean name="grayBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Gray box"/>
 		<property name="checkpointMatchers">
 			<list>
@@ -162,7 +119,7 @@
 		</property>
 	</bean>
 
-	<bean name="blackBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
 			<list>
