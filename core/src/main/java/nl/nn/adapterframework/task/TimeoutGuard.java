@@ -49,12 +49,14 @@ public class TimeoutGuard {
 
 		@Override
 		public void run() {
-			if (log.isWarnEnabled()) {
+			log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}] s, interrupting",
+				thread.getName(), description, timeout);
+			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(thread.getStackTrace())
 						.map(StackTraceElement::toString)
 						.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
-				log.warn("Thread [{}] executing task [{}] exceeds timeout of [{}s], interrupting. Execution stacktrace:{}",
-						thread.getName(), description, timeout, stackTrace);
+				log.debug("Execution stack for thread [{}] executing task [{}]:{}",
+						thread.getName(), description, stackTrace);
 			}
 			threadKilled=true;
 			thread.interrupt();
