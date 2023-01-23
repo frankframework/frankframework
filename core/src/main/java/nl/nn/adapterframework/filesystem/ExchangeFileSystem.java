@@ -492,7 +492,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			log.debug("See if we can extra message ID before loading: [{}]", f.getId());
+			log.debug("Attempt to extract message ID before loading: [{}]", f.getId());
 			setMailboxOnService(exchangeService, getReceivedBy(f));
 			// TODO: check if this bind can be left out
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
