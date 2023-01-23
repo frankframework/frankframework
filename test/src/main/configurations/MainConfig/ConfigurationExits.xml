@@ -36,6 +36,10 @@
 				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
+			
+			<XmlIfPipe name="XmlIfPipe" thenForwardName="EXIT" elseForwardName="EXIT" /> <!-- do not specify forwards, to test implicit  -->
+			
+			<FixedResultPipe name="FallThrougGuard" returnString="Unexpected Fall Through" />
 		</pipeline>
 	</adapter>
 	<adapter name="exits local, java, api, soap">
