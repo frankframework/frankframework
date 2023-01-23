@@ -9,16 +9,16 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
 
-public class SlowStartingPushingListener extends SlowStartingListenerBase implements IPushingListener<String> {
+public class SlowPushingListener extends SlowListenerBase implements IPushingListener<javax.jms.Message> {
 
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String, Object> context) throws ListenerException {
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(String rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage);
 	}
 
@@ -27,15 +27,14 @@ public class SlowStartingPushingListener extends SlowStartingListenerBase implem
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<String> handler) {
+	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// TODO Auto-generated method stub
-		
-	}
 
+	}
 }
