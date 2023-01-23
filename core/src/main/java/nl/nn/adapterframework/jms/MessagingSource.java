@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
@@ -46,8 +48,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Generic Source for JMS connection, to be shared for JMS Objects that can use the same. 
- * 
+ * Generic Source for JMS connection, to be shared for JMS Objects that can use the same.
+ *
  * @author  Gerrit van Brakel
  */
 public class MessagingSource  {
@@ -65,18 +67,18 @@ public class MessagingSource  {
 
 	private Counter openConnectionCount = new Counter(0);
 	private Counter openSessionCount = new Counter(0);
-	
+
 	private @Getter String id;
-	
+
 	private Context context = null;
 	private ConnectionFactory connectionFactory = null;
 	private Connection globalConnection=null; // only used when connections are not pooled
-	
+
 	private Map<String,MessagingSource> siblingMap;
 	private Hashtable<Session,Connection> connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;
-	
+
 	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map<String,MessagingSource> siblingMap, String authAlias, boolean createDestination, boolean useJms102) {
 		super();
 		referenceCount=0;
@@ -93,15 +95,14 @@ public class MessagingSource  {
 		}
 		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
 	}
-		
-	public synchronized boolean close() throws IbisException
-	{
+
+	public synchronized boolean close() throws IbisException {
 		if (--referenceCount<=0 && cleanUpOnClose()) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], cleaning up global objects");
 			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
-				if (globalConnection != null) { 
+				if (globalConnection != null) {
 					log.debug(getLogPrefix()+"closing global Connection");
 					globalConnection.close();
 					openConnectionCount.decrease();
@@ -113,7 +114,7 @@ public class MessagingSource  {
 					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.getValue()+"]");
 				}
 				if (context != null) {
-					context.close(); 
+					context.close();
 				}
 			} catch (Exception e) {
 				throw new IbisException("exception closing connection", e);
@@ -132,7 +133,7 @@ public class MessagingSource  {
 	public synchronized void increaseReferences() {
 		referenceCount++;
 	}
-	
+
 	public synchronized void decreaseReferences() {
 		referenceCount--;
 	}
@@ -153,7 +154,13 @@ public class MessagingSource  {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
+			if (qcf instanceof PoolingConnectionFactory) { //BTM
+				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
+			}
 			try {
+				if (qcf instanceof ConnectionFactoryProxy) { // Narayana
+					return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
+				}
 				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 			} catch (Exception e) {
 				log.debug("Could not get managedConnectionFactory: ("+e.getClass().getTypeName()+") "+e.getMessage());
@@ -169,21 +176,20 @@ public class MessagingSource  {
 		}
 	}
 
-	public String getPhysicalName() { 
+	public String getPhysicalName() {
 		String result="";
-		
+
 		try {
 			ConnectionFactory qcf = getConnectionFactoryDelegate();
 			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
-		
-		
+
 		try {
 			Object managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory!=null) {
-				result +=managedConnectionFactory.toString();
+				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
 				if (result.contains("activemq")) {
 					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
 				}
@@ -193,7 +199,7 @@ public class MessagingSource  {
 		}
 		return result;
 	}
-	
+
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias,null,null);
@@ -209,12 +215,12 @@ public class MessagingSource  {
 		if (useJms102()) {
 			if (connectionFactory instanceof QueueConnectionFactory) {
 				return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
-			} 
+			}
 			return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
-		} 
+		}
 		return connectionFactory.createConnection();
 	}
-	
+
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
 		// do not log, as this may happen very often
@@ -251,7 +257,7 @@ public class MessagingSource  {
 	}
 
 	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
-		Connection connection=null;;
+		Connection connection=null;
 		Session session;
 		try {
 			connection = getConnection();
@@ -280,8 +286,8 @@ public class MessagingSource  {
 			throw new JmsException("could not create Session", e);
 		}
 	}
-	
-	public void releaseSession(Session session) { 
+
+	public void releaseSession(Session session) {
 		if (session != null) {
 			if (connectionsArePooled()) {
 				Connection connection = connectionTable.remove(session);
@@ -362,7 +368,7 @@ public class MessagingSource  {
 		}
 		return result;
 	}
-	
+
 	public void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
 		if (!useSingleDynamicReplyQueue()) {
 			deleteDynamicQueue(replyQueue);
@@ -371,7 +377,6 @@ public class MessagingSource  {
 
 
 	protected String getLogPrefix() {
-		return "["+getId()+"] "; 
+		return "["+getId()+"] ";
 	}
-
 }
