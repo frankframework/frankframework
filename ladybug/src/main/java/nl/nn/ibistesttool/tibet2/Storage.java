@@ -47,6 +47,8 @@ import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
@@ -55,7 +57,7 @@ import nl.nn.testtool.util.SearchUtil;
  */
 // LogStorage needs to be implemented because View.setDebugStorage() requires a LogStorage
 // Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
-public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogStorage, nl.nn.testtool.storage.CrudStorage {
+public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
 	private static final String DELETE_ADAPTER_CONFIG = "main";
@@ -228,10 +230,9 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 			query.append(rowNumber);
 		}
 		query.append(" from " + table);
-		// According to SimpleDateFormat javadoc it needs to be synchronized
-		// when accessed by multiple threads, hence instantiate it here instead
-		// of instantiating it at class level and synchronizing it.
-		final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
+		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
+		// instantiate it here instead of instantiating it at class level and synchronizing it.
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
@@ -243,8 +244,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
 						if (integerColumns.contains(column)) {
-							addNumberExpression(query, args, argTypes, column, ">=",
-									searchValueLeft);
+							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, ">=",
 									searchValueLeft, simpleDateFormat);
@@ -252,8 +252,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
 						if (integerColumns.contains(column)) {
-							addNumberExpression(query, args, argTypes, column, "<=",
-									searchValueRight);
+							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, "<=",
 									searchValueRight, simpleDateFormat);
@@ -271,8 +270,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 				if (integerColumns.contains(column)) {
 					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
 				} else if (timestampColumns.contains(column)) {
-					addTimestampExpression(query, args, argTypes, column, "<=",
-							searchValue, simpleDateFormat);
+					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, simpleDateFormat);
 				} else if (fixedStringColumns != null && fixedStringColumns.contains(column)) {
 					addFixedStringExpression(query, args, argTypes, column, searchValue);
 				} else {
