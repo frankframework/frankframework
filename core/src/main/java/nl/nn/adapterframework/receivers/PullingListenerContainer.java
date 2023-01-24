@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -234,6 +235,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
 									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
+										log.debug("Transaction Started, Get Message from Listener");
 									}
 									rawMessage = listener.getRawMessage(threadContext);
 								}
@@ -241,6 +243,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								setIdle(rawMessage==null);
 							} catch (Exception e) {
 								if (txStatus!=null) {
+									log.debug("Rollback; exception", e);
 									txManager.rollback(txStatus);
 								}
 								if (receiver.isOnErrorContinue()) {
@@ -252,14 +255,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 							if (rawMessage == null) {
 								if (txStatus!=null) {
+									log.debug("Rollback; raw message == null");
 									txManager.rollback(txStatus);
 								}
 								return;
 							}
 
 							if (inProcessStateManager!=null) {
+								log.debug("Set message-state to IN_PROCESSING");
 								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
 									if (txStatus!=null) {
+										log.debug("Rollback; raw message from inProcessStateManager == null");
 										txManager.rollback(txStatus);
 									}
 									return;
@@ -315,6 +321,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
+									log.debug("Message processed successfully, committing transaction");
 									txManager.commit(txStatus);
 								}
 								txStatus = null;
@@ -324,6 +331,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
 									messageHandled = false;
+									log.debug("Rollback because exception occurred and message handling transaction was not completed yet.");
 									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 									txStatus = null;
 								}
@@ -339,6 +347,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
+							log.debug("Rollback because in finally-clause, message handling transaction was not completed.");
 							messageHandled = false;
 							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 							txStatus = null;
@@ -377,13 +386,24 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
+			if (log.isDebugEnabled()) {
+				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
+					.map(StackTraceElement::toString)
+					.reduce("\n", (acc, element) -> acc + "    at " + element + "\n");
+				log.debug("Rolling back TX, reason: {}, stack:{}", reason, stackTrace);
+			}
 			try {
 				txManager.rollback(txStatus);
 			} finally {
 				if (inProcessStateManager!=null) {
 					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
-					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
-					txManager.commit(txStatusRevert);
+					try {
+						log.debug("Changing message state back to AVAILABLE in rollback, reason: {}", reason);
+						inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
+						txManager.commit(txStatusRevert);
+					} catch (Exception e) {
+						log.error("Error in post-rollback actions", e);
+					}
 				}
 			}
 		}

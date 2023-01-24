@@ -49,6 +49,7 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
+		log.debug("Creating new ExchangeFileSystem");
 		return new ExchangeFileSystem();
 	}
 
