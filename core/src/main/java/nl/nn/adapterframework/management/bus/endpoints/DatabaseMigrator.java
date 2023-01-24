@@ -45,7 +45,6 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC_MIGRATION)
@@ -53,7 +52,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<Object> downloadMigrationScript(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try (ZipOutputStream zos = new ZipOutputStream(out)) {
@@ -107,7 +106,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	public Message<Object> getMigrationChanges(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
 
 		if(!(message.getPayload() instanceof String)) {

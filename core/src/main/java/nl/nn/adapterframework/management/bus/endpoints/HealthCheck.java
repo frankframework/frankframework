@@ -39,18 +39,17 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class HealthCheck extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.HEALTH)
 	public Message<String> getHealth(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
-			String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+			String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 			if(StringUtils.isNotEmpty(adapterName)) {
 				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 

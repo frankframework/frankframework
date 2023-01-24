@@ -65,7 +65,6 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.WEBSERVICES)
@@ -126,8 +125,8 @@ public class WebServices extends BusEndpointBase {
 		boolean useIncludes = BusMessageUtils.getBooleanHeader(message, "useIncludes", false);
 		boolean zip = BusMessageUtils.getBooleanHeader(message, "zip", false);
 
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		String generationInfo = "by FrankConsole";

@@ -44,14 +44,13 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dto.ConfigurationDTO;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.CONFIGURATION)
 public class ConfigManagement extends BusEndpointBase {
 
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
-	private static final String HEADER_DATASOURCE_NAME_KEY = FrankApiBase.HEADER_DATASOURCE_NAME_KEY;
+	private static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
 
 	/**
 	 * @return Configuration XML
@@ -59,7 +58,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.GET)
 	public Message<Object> getXMLConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
 
@@ -82,7 +81,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.FIND)
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
@@ -118,7 +117,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.MANAGE)
 	public Message<String> manageConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
@@ -176,7 +175,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<?> downloadConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
@@ -199,7 +198,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 */
 	@ActionSelector(BusAction.DELETE)
 	public void deleteConfiguration(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
