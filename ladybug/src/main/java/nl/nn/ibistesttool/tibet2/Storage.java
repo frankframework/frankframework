@@ -173,11 +173,12 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 	public List<List<Object>> getMetadata(int maxNumberOfRecords,
 			final List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
-		// According to SimpleDateFormat javadoc it needs to be synchronized
-		// when accessed by multiple threads, hence instantiate it here instead
-		// of instantiating it at class level and synchronizing it.
-		final SimpleDateFormat simpleDateFormat =
-				new SimpleDateFormat(TIMESTAMP_PATTERN);
+		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
+		for (String metadataName : metadataNames) {
+			if (!reportColumnNames.contains(metadataName)) {
+				throw new StorageException("Invalid metadata name: " + metadataName);
+			}
+		}
 		List<String> rangeSearchValues = new ArrayList<String>();
 		List<String> regexSearchValues = new ArrayList<String>();
 		for (int i = 0; i < searchValues.size(); i++) {
@@ -227,6 +228,10 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 			query.append(rowNumber);
 		}
 		query.append(" from " + table);
+		// According to SimpleDateFormat javadoc it needs to be synchronized
+		// when accessed by multiple threads, hence instantiate it here instead
+		// of instantiating it at class level and synchronizing it.
+		final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
