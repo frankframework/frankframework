@@ -497,6 +497,10 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.LogSto
 
 	@Override
 	public List<Object> getFilterValues(String column) throws StorageException {
+		// Prevent SQL injection
+		if (!reportColumnNames.contains(column)) {
+			throw new StorageException("Invalid metadata name: " + column);
+		}
 		String query;
 		if (fixedStringTables.containsKey(column)) {
 			query = "select " + column + " from " + fixedStringTables.get(column) + " order by " + column + " asc";
