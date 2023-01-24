@@ -32,7 +32,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +41,6 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
-
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -170,6 +168,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter @Setter boolean allowSelfSignedCertificates = false;
 	private @Getter @Setter boolean verifyHostname=true;
 	private @Getter @Setter boolean ignoreCertificateExpiredException=false;
+	private @Getter @Setter boolean enableConnectionTracing=false;
 
 	private @Getter CredentialFactory credentials=null;
 	private @Getter CredentialFactory proxyCredentials=null;
@@ -183,6 +182,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void configure() throws ConfigurationException {
+		log.debug("Configuring the ExchangeFileSystem spring bean");
 		if (StringUtils.isNotEmpty(getFilter())) {
 			if (!getFilter().equalsIgnoreCase("NDR")) {
 				throw new ConfigurationException("illegal value for filter [" + getFilter()	+ "], must be 'NDR' or empty");
@@ -239,6 +239,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void open() throws FileSystemException {
+		log.debug("Opening the ExchangeFileSystem");
 		super.open();
 		if( msalClientAdapter != null ){
 			executor = Executors.newSingleThreadExecutor(); //Create a new Executor in the same thread(context) to avoid SecurityExceptions when setting a ClassLoader on the Runnable.
@@ -264,6 +265,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void close() throws FileSystemException {
+		log.debug("Closing the ExchangeFileSystem");
 		try {
 			super.close();
 			if(msalClientAdapter != null){
@@ -315,7 +317,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	protected ExchangeService createConnection() throws FileSystemException {
+		log.debug("Creating connection to the ExchangeFileSystem");
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
+		if (enableConnectionTracing) {
+			log.debug("Enabling tracing on the Exchange connection");
+			exchangeService.setTraceEnabled(true);
+		}
 
 		if (client != null) {
 			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
@@ -449,6 +456,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
+		log.debug("Get EmailMessage for reference [{}]", filename);
 		ExchangeObjectReference reference = asObjectReference(filename);
 		ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
@@ -480,9 +488,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean exists(EmailMessage f) throws FileSystemException {
+		log.debug("Check if message exists: message [{}]", f);
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
+			log.debug("Attempt to extract message ID before loading: [{}]", f.getId());
 			setMailboxOnService(exchangeService, getReceivedBy(f));
 			// TODO: check if this bind can be left out
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
@@ -952,6 +962,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	protected String getReceivedBy(EmailMessage emailMessage) throws ServiceResponseException, FileSystemException {
+		log.debug("getReceivedBy - extract 'receivedBy' property from message");
 		try {
 			emailMessage.load(PropertySet.FirstClassProperties);
 			EmailAddress receivedBy = emailMessage.getReceivedBy();
@@ -1122,7 +1133,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	@Override
-	protected void releaseConnection(ExchangeService service, boolean invalidateConnectionOnRelease){
+	protected void releaseConnection(ExchangeService service, boolean invalidateConnectionOnRelease) {
+		log.debug("Releasing connection to exchange service; invalidating: {}", invalidateConnectionOnRelease);
 		service.getHttpHeaders().remove(ANCHOR_HEADER);
 		super.releaseConnection(service, invalidateConnectionOnRelease);
 	}

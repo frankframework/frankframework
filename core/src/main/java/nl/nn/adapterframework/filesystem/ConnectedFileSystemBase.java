@@ -94,6 +94,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * Get a Connection from the pool, or the global shared connection.
 	 */
 	protected C getConnection() throws FileSystemException {
+		log.debug("Get Connection from FS, pooled: {}", this::isPooledConnection);
 		try {
 			return isPooledConnection()
 					? connectionPool!=null ? connectionPool.borrowObject() : null // connectionPool can be null if getConnection() is called before open() or after close() is called. This happens in the adapter status page when the adapter is stopped.
@@ -122,6 +123,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * cannot be in a finally-clause after an exception-clause.
 	 */
 	private void releaseConnection(C connection) {
+		log.debug("Releasing connection, pooled: {}", this::isPooledConnection);
 		if (isPooledConnection()) {
 			try {
 				connectionPool.returnObject(connection);
@@ -136,6 +138,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * If a shared (non-pooled) connection is invalidated, the shared connection is recreated.
 	 */
 	private void invalidateConnection(C connection) {
+		log.debug("Invalidating connection, is pooled: {}", this::isPooledConnection);
 		try {
 			if (isPooledConnection()) {
 				connectionPool.invalidateObject(connection);
