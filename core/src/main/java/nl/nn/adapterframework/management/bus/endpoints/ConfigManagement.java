@@ -53,8 +53,8 @@ public class ConfigManagement extends BusEndpointBase {
 	private static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
 
 	/**
+	 * The header 'loaded' is used to differentiate between the loaded and original (raw) XML.
 	 * @return Configuration XML
-	 * header loaded to differentiate between the loaded and original (raw) XML.
 	 */
 	@ActionSelector(BusAction.GET)
 	public Message<Object> getXMLConfiguration(Message<?> message) {
@@ -75,9 +75,9 @@ public class ConfigManagement extends BusEndpointBase {
 	}
 
 	/**
-	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
 	 * header configuration The name of the Configuration to find
 	 * header datasourceName The name of the datasource where the configurations are located.
+	 * @return If the configuration is of type DatabaseClassLoader, the metadata of the configurations found in the database.
 	 */
 	@ActionSelector(BusAction.FIND)
 	public Message<String> getConfigurationDetailsByName(Message<?> message) {
@@ -108,12 +108,12 @@ public class ConfigManagement extends BusEndpointBase {
 	}
 
 	/**
-	 * @return Manages a configuration, either activates the config directly or sets the autoreload flag in the database
 	 * header configuration The name of the Configuration to manage
 	 * header version The version of the Configuration to find
 	 * header activate Whether the configuration should be activated
 	 * header autoreload Whether the configuration should be reloaded (on the next ReloadJob interval)
 	 * header datasourceName The name of the datasource where the configurations are located.
+	 * @return Manages a configuration, either activates the config directly or sets the autoreload flag in the database
 	 */
 	@ActionSelector(BusAction.MANAGE)
 	public Message<String> manageConfiguration(Message<?> message) {
