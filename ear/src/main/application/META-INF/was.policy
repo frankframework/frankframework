@@ -102,6 +102,9 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp";
 
+// required for Spring Core
+permission java.lang.RuntimePermission "accessClassInPackage.sun.reflect.annotation";
+
 // required for SUN SAAJ library
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.xml.*";
