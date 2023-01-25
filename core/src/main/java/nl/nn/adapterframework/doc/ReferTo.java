@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target({TYPE, METHOD})
 @Documented
 public @interface ReferTo {
-	public Class<?> value();
+	Class<?> value();
 }
