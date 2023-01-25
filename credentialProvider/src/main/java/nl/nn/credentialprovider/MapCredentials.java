@@ -28,7 +28,6 @@ public class MapCredentials extends Credentials {
 
 	private Map<String,String> aliases;
 
-
 	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Map<String,String> aliases) {
 		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, aliases);
 	}

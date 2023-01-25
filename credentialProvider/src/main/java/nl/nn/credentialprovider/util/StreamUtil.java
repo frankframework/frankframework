@@ -39,11 +39,11 @@ public class StreamUtil {
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = Logger.getLogger(StreamUtil.class.getName());
-	
+
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
-		} 
+		}
 		if (target instanceof String) {
 			String filename=(String)target;
 			if (Misc.isEmpty(filename)) {
@@ -69,7 +69,7 @@ public class StreamUtil {
 //		}
 //		return null;
 //	}
-	
+
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {
 			public NonClosingInputStreamFilter(InputStream in) {
@@ -79,8 +79,8 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingInputStreamFilter(stream);
 	}
 
@@ -93,11 +93,11 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingReaderFilter(reader);
 	}
-	
+
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		try {
 			StringBuffer sb = new StringBuffer();
@@ -127,11 +127,10 @@ public class StreamUtil {
 		}
 	}
 
-	
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in!=null) {
-			byte buffer[]=new byte[chunkSize]; 
-					
+			byte buffer[]=new byte[chunkSize];
+
 			int bytesRead=1;
 			while (bytesRead>0) {
 				bytesRead=in.read(buffer,0,chunkSize);
@@ -147,8 +146,8 @@ public class StreamUtil {
 
 	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve) throws IOException {
 		if (reader!=null) {
-			char buffer[]=new char[chunkSize]; 
-					
+			char buffer[]=new char[chunkSize];
+
 			int charsRead=1;
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
@@ -174,7 +173,4 @@ public class StreamUtil {
 			}
 		}
 	}
-
-
-
 }

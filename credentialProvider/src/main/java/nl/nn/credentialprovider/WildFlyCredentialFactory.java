@@ -38,7 +38,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
 
-	public final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
+	public static final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
 
 	private String credentialStore = "CS";
 

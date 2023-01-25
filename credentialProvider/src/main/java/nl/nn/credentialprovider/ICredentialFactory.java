@@ -26,7 +26,7 @@ public interface ICredentialFactory {
 	 */
 	default void initialize() throws Exception {
 		// implementations can do their initialization, and throw an exception if they cannot.
-	};
+	}
 
 	public boolean hasCredentials(String alias);
 

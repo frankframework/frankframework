@@ -37,5 +37,5 @@ public @interface ElementType {
 		TRANSLATOR;
 	}
 
-	@LabelValue public ElementTypes value();
+	@LabelValue ElementTypes value();
 }
