@@ -25,13 +25,13 @@ import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 import nl.nn.credentialprovider.util.Misc;
 
 public class TestDatabaseMigrator extends BusTestBase {
@@ -39,7 +39,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	@Test
 	public void downloadSingleMigrationScript() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		Message<?> response = callSyncGateway(request);
 		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
 		InputStream resource = (InputStream) response.getPayload();
@@ -51,7 +51,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	@Test
 	public void downloadAllMigrationScripts() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		Message<?> response = callSyncGateway(request);
 		assertEquals("application/octet-stream", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
 		Object cdk = response.getHeaders().get(ResponseMessage.CONTENT_DISPOSITION_KEY);
@@ -77,7 +77,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	public void uploadMigrationScript() throws Exception {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", "DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
 		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
@@ -90,7 +90,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	public void uploadMigrationScriptWithConfigNamePrefix() throws Exception {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", getConfiguration().getName()+"-DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
 		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
@@ -103,7 +103,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	public void uploadMigrationScriptNoName() throws Exception {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> { callSyncGateway(request); }, "expected: filename not provided exception");
 		assertTrue(mhe.getCause() instanceof BusException);
 	}
@@ -112,7 +112,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 	public void uploadMigrationScriptDifferentName() throws Exception {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", "wrong-name.xml");
 		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> { callSyncGateway(request); }, "expected: filename not provided exception");
 		assertTrue(mhe.getCause() instanceof BusException);

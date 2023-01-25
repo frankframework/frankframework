@@ -39,6 +39,12 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusMessageUtils {
+	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
+	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
+	public static final String HEADER_CONFIGURATION_NAME_KEY = "configuration";
+	public static final String HEADER_ADAPTER_NAME_KEY = "adapter";
+	public static final String HEADER_RECEIVER_NAME_KEY = "receiver";
+
 	private static final Logger LOG = LogUtil.getLogger(BusMessageUtils.class);
 
 	public static String getHeader(Message<?> message, String headerName) {

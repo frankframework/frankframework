@@ -56,8 +56,6 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
 import nl.nn.adapterframework.util.MessageBrowsingUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MESSAGE_BROWSER)
@@ -83,8 +81,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
@@ -111,8 +109,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	public Message<Object> downloadMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
@@ -140,8 +138,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.FIND)
 	public Message<String> browseMessages(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
 		String pipeName = BusMessageUtils.getHeader(message, HEADER_PIPE_NAME_KEY);
@@ -201,8 +199,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.STATUS)
 	public void resend(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
@@ -218,8 +216,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DELETE)
 	public void delete(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 
@@ -245,8 +243,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.MANAGE)
 	public void changeProcessState(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
 		ProcessState processState = BusMessageUtils.getEnumHeader(message, HEADER_PROCESSSTATE_KEY, ProcessState.class);
@@ -331,7 +329,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	private MediaType getMediaType(String msg) {
 		MediaType type = MediaType.TEXT_PLAIN;
 		if (StringUtils.isEmpty(msg)) {
-			throw new ApiException("message not found");
+			throw new BusException("message not found");
 		}
 		if(msg.startsWith("<")) {
 			type = MediaType.APPLICATION_XML;

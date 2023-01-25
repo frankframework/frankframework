@@ -50,14 +50,13 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
 	public Message<Object> showIbisStoreSummary(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);

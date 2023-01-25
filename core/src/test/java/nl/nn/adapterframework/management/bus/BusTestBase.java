@@ -57,7 +57,8 @@ public class BusTestBase {
 			try {
 				configuration.configure();
 			} catch (ConfigurationException e) {
-				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
 			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); //AuthAlias is used in BusTopic.SECURITY_ITEMS

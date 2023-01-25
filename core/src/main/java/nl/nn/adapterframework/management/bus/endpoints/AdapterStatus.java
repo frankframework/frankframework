@@ -72,7 +72,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -109,8 +108,8 @@ public class AdapterStatus extends BusEndpointBase {
 	public Message<String> getAdapter(Message<?> message) {
 		Expanded expanded = BusMessageUtils.getEnumHeader(message, "expanded", Expanded.class, Expanded.NONE);
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);

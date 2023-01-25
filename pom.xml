@@ -135,6 +135,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-webapp</artifactId>
 				<version>${project.version}</version>
 				<type>war</type>
@@ -857,6 +862,7 @@
 			</activation>
 			<modules>
 				<module>core</module>
+				<module>console</module>
 				<module>webapp</module>
 				<module>ear</module>
 				<module>larva</module>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 public class MessageBrowsingFilter {
 	private String type = null;
@@ -176,11 +175,9 @@ public class MessageBrowsingFilter {
 		if(!StringUtils.isEmpty(startDateMask)) {
 			try {
 				startDate = DateUtils.parseAnyDate(startDateMask);
-				if(startDate == null)
-					throw new ApiException("could not to parse date from ["+startDateMask+"]");
 			}
 			catch(CalendarParserException ex) {
-				throw new ApiException("could not parse date from ["+startDateMask+"] msg["+ex.getMessage()+"]");
+				throw new IllegalStateException("could not parse date from ["+startDateMask+"]", ex);
 			}
 		}
 	}
@@ -189,11 +186,9 @@ public class MessageBrowsingFilter {
 		if(!StringUtils.isEmpty(endDateMask)) {
 			try {
 				endDate = DateUtils.parseAnyDate(endDateMask);
-				if(endDate == null)
-					throw new ApiException("could not to parse date from ["+endDateMask+"]");
 			}
 			catch(CalendarParserException ex) {
-				throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
+				throw new IllegalStateException("could not parse date from ["+endDateMask+"]", ex);
 			}
 		}
 	}
