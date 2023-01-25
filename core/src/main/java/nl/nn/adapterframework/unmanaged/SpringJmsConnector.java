@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.unmanaged;
 
 import java.util.Timer;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -24,7 +23,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
