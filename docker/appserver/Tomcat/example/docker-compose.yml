@@ -1,0 +1,7 @@
+version: "3"
+services:
+    Tomcat:
+        image: iaf-example-tomcat
+        restart: unless-stopped
+        ports:
+            - "80:8080"
