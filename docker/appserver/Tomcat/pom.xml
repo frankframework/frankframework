@@ -13,6 +13,10 @@
 		<version>${revision}</version>
 	</parent>
 
+	<properties>
+		<config.image.tag>iaf-as-tomcat</config.image.tag>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -125,7 +129,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="nexus.frankframework.org/private/ff-test/as/tomcat"/>
+									<arg value="${config.image.tag}"/>
 									<arg value="."/>
 								</exec>
 							</target>

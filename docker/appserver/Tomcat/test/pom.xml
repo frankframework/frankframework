@@ -13,6 +13,11 @@
 		<version>${revision}</version>
 	</parent>
 
+	<properties>
+		<config.image.tag>iaf-test-tomcat</config.image.tag>
+		<config.image.base>iaf-as-tomcat</config.image.base>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -65,7 +70,9 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-tomcat"/>
+									<arg value="${config.image.tag}"/>
+									<arg value="--build-arg"/>
+									<arg value="BASE_IMAGE=${config.image.base}"/>
 									<arg value="."/>
 								</exec>
 							</target>

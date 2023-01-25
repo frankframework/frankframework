@@ -1,4 +1,5 @@
-FROM iaf-webapp-tomcat AS iaf-example-tomcat
+ARG BASE_IMAGE=nexus.frankframework.org/frank-framework
+FROM ${BASE_IMAGE} AS iaf-example-tomcat
 
 # copy any additional drivers
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/

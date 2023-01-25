@@ -15,6 +15,7 @@
 
 	<properties>
 		<config.image.tag>iaf-webapp-tomcat</config.image.tag>
+		<config.image.base>iaf-as-tomcat</config.image.base>
 	</properties>
 
 	<dependencies>
@@ -90,6 +91,8 @@
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="${config.image.tag}"/>
+									<arg value="--build-arg"/>
+									<arg value="BASE_IMAGE=${config.image.base}"/>
 									<arg value="."/>
 								</exec>
 							</target>

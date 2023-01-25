@@ -1,5 +1,5 @@
-FROM nexus.frankframework.org/private/ff-test/as/tomcat AS iaf-test-tomcat
-
+ARG BASE_IMAGE=nexus.frankframework.org/private/ff-test/as/tomcat
+FROM ${BASE_IMAGE} AS iaf-test-tomcat
 
 # copy additional environment configuration for iaf-test
 COPY --chown=tomcat src/scripts/catalinaAdditionalTest.properties /tmp
