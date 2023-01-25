@@ -15,7 +15,13 @@
 						updateStatusToProcessedQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
 						keyField="tkey"
-						messageField="TCLOB"/>
+						messageField="TCLOB"
+						sqlDialect="Oracle"
+						peekQuery="SELECT TKEY, TCLOB
+										FROM IBISTEMP
+										WHERE TCHAR = '1'
+										AND TNUMBER=${jdbc.querylistener.key} FETCH FIRST 1 ROWS ONLY"/>
+				<!-- use FETCH FIRST 1 ROWS only to test automatic conversion using sqlDialect -->
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
