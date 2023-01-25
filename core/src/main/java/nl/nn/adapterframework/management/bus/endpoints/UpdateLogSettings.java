@@ -33,11 +33,11 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
