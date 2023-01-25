@@ -52,16 +52,17 @@ import nl.nn.adapterframework.util.AppConstants;
 public class Init extends FrankApiBase {
 	@Context HttpServletRequest httpServletRequest;
 
-	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+	private static String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
 
 	@GET
 	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles) {
-		List<Object> JSONresources = new ArrayList<Object>();
-		Map<String, Object> HALresources = new HashMap<String, Object>();
-		Map<String, Object> resources = new HashMap<String, Object>(1);
+		List<Object> JSONresources = new ArrayList<>();
+		Map<String, Object> HALresources = new HashMap<>();
+		Map<String, Object> resources = new HashMap<>(1);
 
 		StringBuffer requestPath = httpServletRequest.getRequestURL();
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
@@ -81,7 +82,7 @@ public class Init extends FrankApiBase {
 					continue;
 				}
 
-				Map<String, Object> resource = new HashMap<String, Object>(4);
+				Map<String, Object> resource = new HashMap<>(4);
 
 				if(method.isAnnotationPresent(GET.class))
 					resource.put("type", "GET");
@@ -137,9 +138,9 @@ public class Init extends FrankApiBase {
 		}
 
 		if((HATEOASImplementation.equalsIgnoreCase("hal")))
-			resources.put(ResourceKey, HALresources);
+			resources.put(resourceKey, HALresources);
 		else
-			resources.put(ResourceKey, JSONresources);
+			resources.put(resourceKey, JSONresources);
 
 		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}

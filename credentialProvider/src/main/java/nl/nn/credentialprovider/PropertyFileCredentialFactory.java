@@ -17,7 +17,6 @@ package nl.nn.credentialprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,11 +32,11 @@ import nl.nn.credentialprovider.util.AppConstants;
  */
 public class PropertyFileCredentialFactory extends MapCredentialFactory {
 
-	public final String PROPERTY_BASE="credentialFactory.map";
+	public static final String PROPERTY_BASE="credentialFactory.map";
 
-	public final String FILE_PROPERTY=PROPERTY_BASE+".properties";
+	public static final String FILE_PROPERTY=PROPERTY_BASE+".properties";
 
-	private final String propertiesFile = "credentials.properties";
+	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
 	@Override
 	public String getPropertyBase() {
@@ -45,8 +44,8 @@ public class PropertyFileCredentialFactory extends MapCredentialFactory {
 	}
 
 	@Override
-	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, propertiesFile, "Credentials")) {
+	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws IOException {
+		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials")) {
 			Properties properties = new Properties();
 			properties.load(propertyStream);
 			Map<String,String> map = new LinkedHashMap<>();

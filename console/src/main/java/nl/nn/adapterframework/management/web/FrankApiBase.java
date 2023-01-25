@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.management.web;
 
@@ -48,15 +48,13 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Baseclass to fetch ibisContext + ibisManager
- * 
- * @since	7.0-B1
+ * Base class for API endpoints.
+ * Contains helper methods to read JAX-RS multiparts and handle message conversions to JAX-RS Responses.
  * @author	Niels Meijer
  */
 
@@ -77,7 +75,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
 	protected Logger log = LogUtil.getLogger(this);
-	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
 
 	protected final Gateway getGateway() {
 		return getApplicationContext().getBean("gateway", Gateway.class);
