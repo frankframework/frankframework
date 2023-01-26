@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -456,8 +457,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			searchValueToParse = searchValue;
 		}
 		try {
-			args.add(simpleDateFormat.parse(searchValueToParse));
-			argTypes.add(Types.DATE);
+			args.add(new Timestamp(simpleDateFormat.parse(searchValueToParse).getTime()));
+			argTypes.add(Types.TIMESTAMP);
 			addExpression(query, column + " " + operator + " ?");
 		} catch (ParseException e) {
 			throwExceptionOnInvalidTimestamp(searchValue);
