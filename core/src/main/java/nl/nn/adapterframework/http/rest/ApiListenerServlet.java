@@ -35,7 +35,6 @@ import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
@@ -626,30 +625,32 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				MimeType contentType = listener.getContentType();
-				if(listener.getProduces() == MediaTypes.ANY) {
-					Message parsedContentType = messageContext.getMessage("contentType");
-					if(!Message.isEmpty(parsedContentType)) {
-						contentType = MimeType.valueOf(parsedContentType.asString());
-					} else {
-						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-						if(providedContentType != null) {
-							contentType = providedContentType;
+				if (!Message.isEmpty(result)) {
+					MimeType contentType = listener.getContentType();
+					if(listener.getProduces() == MediaTypes.ANY) {
+						Message parsedContentType = messageContext.getMessage("contentType");
+						if(!Message.isEmpty(parsedContentType)) {
+							contentType = MimeType.valueOf(parsedContentType.asString());
+						} else {
+							MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+							if(providedContentType != null) {
+								contentType = providedContentType;
+							}
+						}
+					} else if(listener.getProduces() == MediaTypes.DETECT) {
+						MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+						if(computedContentType != null) {
+							contentType = computedContentType;
 						}
 					}
-				} else if(listener.getProduces() == MediaTypes.DETECT) {
-					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-					if(computedContentType != null) {
-						contentType = computedContentType;
-					}
-				}
-				response.setHeader("Content-Type", contentType.toString());
+					response.setHeader("Content-Type", contentType.toString());
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
-					if(StringUtils.isNotEmpty(contentDisposition)) {
-						log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
-						response.setHeader("Content-Disposition", contentDisposition);
+					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+						String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+						if(StringUtils.isNotEmpty(contentDisposition)) {
+							log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
+							response.setHeader("Content-Disposition", contentDisposition);
+						}
 					}
 				}
 

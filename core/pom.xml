@@ -313,7 +313,7 @@
 			<artifactId>spring-security-ldap</artifactId>
 			<version>${spring-security.version}</version>
 		</dependency>
-		<!-- not yet used, note that it depends on Spring 4.3.30 
+		<!-- not yet used, note that it depends on Spring 4.3.30
 		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
@@ -892,7 +892,13 @@
 			<version>${spring-security.version}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
