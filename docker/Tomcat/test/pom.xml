@@ -3,34 +3,36 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-example</artifactId>
-	<name>Frank!Framework Docker image Tomcat/iaf-example</name>
+	<artifactId>ibis-adapterframework-docker-tomcat-test</artifactId>
+	<name>Frank!Framework - Tomcat Docker Test image</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
+		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
+
+	<properties>
+		<config.image.repository>nexus.frankframework.org/private</config.image.repository>
+		<config.image.name>iaf-test</config.image.name>
+		<config.image.tag>${config.image.name}:${revision}-tomcat</config.image.tag>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-docker-as-tomcat-iaf-webapp</artifactId>
+			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
-			<type>pom</type>
+			<classifier>full-configuration</classifier>
+			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
-			<version>${project.version}</version>
-			<classifier>resources</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
+			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>context</classifier>
+			<type>jar</type>
 		</dependency>
 	</dependencies>
 
@@ -48,12 +50,12 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+							<outputDirectory>${project.build.directory}/resources</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>resources,context</excludeClassifiers>
+							<includeClassifiers>full-configuration</includeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -66,23 +68,15 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
-									<version>${project.version}</version>
-									<classifier>resources</classifier>
-									<outputDirectory>${project.build.directory}/dependencies/resources</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<artifactId>ibis-adapterframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>context</classifier>
-									<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
-							<excludeTransitive>true</excludeTransitive>
-							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>
@@ -90,28 +84,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-package</id>
-						<phase>package</phase>
-						<inherited>false</inherited>
-						<configuration>
-							<target>
-								<exec executable="docker" failonerror="true">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="iaf-example-tomcat"/>
-									<arg value="."/>
-								</exec>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

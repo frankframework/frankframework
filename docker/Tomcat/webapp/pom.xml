@@ -3,35 +3,32 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-wildfly</artifactId>
-	<name>Frank!Framework Docker image for WildFly</name>
+	<artifactId>ibis-adapterframework-docker-tomcat-webapp</artifactId>
+	<name>Frank!Framework - Tomcat Docker WebApp image</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as</artifactId>
+		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
+
+	<properties>
+		<config.image.repository>nexus.frankframework.org</config.image.repository>
+		<config.image.name>frank-framework</config.image.name>
+		<config.image.tag>${config.image.name}:${revision}</config.image.tag>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${project.version}</version>
-			<classifier>scenarios</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
+			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
 		</dependency>
-		<!--H2 Appears to be already included in WildFly, though as an older version -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -63,17 +60,44 @@
 			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver-sync</artifactId>
-			<version>${mongodb.driver.version}</version>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
+			<version>${geronimo.j2ee.spec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jms_1.1_spec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jta_1.1_spec</artifactId>
+			<version>${geronimo.jta.spec.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-rar</artifactId>
-			<version>${activemq.driver.version}</version>
-			<type>rar</type>
+			<artifactId>artemis-jms-client-all</artifactId>
+			<version>${artemis.driver.version}</version>
 		</dependency>
-		<!-- Artemis is already part of WildFly, so not added explicitly -->
+		<!-- required for ActiveMQ classic-->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.fusesource.hawtbuf</groupId>
+			<artifactId>hawtbuf</artifactId>
+			<version>1.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<type>war</type>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -95,11 +119,10 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
-						<id>unpack-tests</id>
+						<id>unpack</id>
 						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -108,51 +131,14 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>scenarios</classifier>
+									<artifactId>ibis-adapterframework-webapp</artifactId>
+									<version>${project.version}</version>
+									<type>war</type>
+									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>
 								</artifactItem>
 							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-secrets</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>secrets</classifier>
-									<excludes>META-INF/</excludes>
-								</artifactItem>
-							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-as-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>resources</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<filtering>true</filtering>
-									<directory>src/scripts</directory>
-								</resource>
-							</resources>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
@@ -160,26 +146,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-package</id>
-						<phase>package</phase>
-						<inherited>false</inherited>
-						<configuration>
-							<target>
-								<exec executable="docker" failonerror="true">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="iaf-test-as-wildfly"/>
-									<arg value="."/>
-								</exec>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

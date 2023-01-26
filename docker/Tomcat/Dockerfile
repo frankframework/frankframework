@@ -23,3 +23,5 @@ RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.pr
 # Copy JDBC and JMS drivers
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
 
+# Copy webapp war
+COPY --chown=tomcat target/dependencies/war /usr/local/tomcat/webapps/ROOT
