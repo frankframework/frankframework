@@ -581,7 +581,7 @@ public class Message implements Serializable {
 	}
 
 	public boolean isEmpty() {
-		return size() == 0;// isNull() || request instanceof String && ((String)request).isEmpty();
+		return size() == 0;
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
