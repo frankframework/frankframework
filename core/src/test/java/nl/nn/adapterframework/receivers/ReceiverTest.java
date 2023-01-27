@@ -271,10 +271,10 @@ public class ReceiverTest {
 
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
-		List<String> errors = (List<String>) adapter.getMessageKeeper()
+		List<String> errors = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg instanceof MessageKeeperMessage && "ERROR".equals(((MessageKeeperMessage)msg).getMessageLevel()))
-				.map(Object::toString)
+				.filter((msg) -> msg != null && "ERROR".equals(msg.getMessageLevel()))
+				.map(MessageKeeperMessage::toString)
 				.collect(Collectors.toList());
 
 		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
@@ -330,10 +330,10 @@ public class ReceiverTest {
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
-		List<String> warnings = (List<String>) adapter.getMessageKeeper()
+		List<String> warnings = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
-				.map(Object::toString)
+				.filter((msg) -> msg != null && "WARN".equals(msg.getMessageLevel()))
+				.map(MessageKeeperMessage::toString)
 				.collect(Collectors.toList());
 		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
 	}

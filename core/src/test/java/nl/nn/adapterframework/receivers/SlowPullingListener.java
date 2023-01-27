@@ -22,6 +22,7 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
+		// No-op in this stub
 	}
 
 	@Override
@@ -38,5 +39,4 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 	public javax.jms.Message getRawMessage(Map<String, Object> threadContext) throws ListenerException {
 		return null;
 	}
-
 }

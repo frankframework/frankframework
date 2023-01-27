@@ -3,8 +3,9 @@ package nl.nn.adapterframework.receivers;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.jms.Message;
 import java.util.Timer;
+
+import javax.jms.Message;
 
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
@@ -20,65 +21,68 @@ import nl.nn.adapterframework.util.Counter;
 
 public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
 
-    private @Getter @Setter int pollGuardInterval = 0;
-    private PollGuard pollGuard = null;
-    private Timer pollGuardTimer = null;
-    private @Getter @Setter int mockLastPollDelayMs = 10;
-    private @Setter Receiver<Message> receiver;
-    @Override
-    public void open() {
-        super.open();
+	private @Getter
+	@Setter int pollGuardInterval = 0;
+	private PollGuard pollGuard = null;
+	private Timer pollGuardTimer = null;
+	private @Getter
+	@Setter int mockLastPollDelayMs = 10;
+	private @Setter Receiver<Message> receiver;
 
-        if (pollGuardInterval > 0) {
-            log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
-            DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
-            SpringJmsConnector mockConnector = mock(SpringJmsConnector.class);
-            when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
-            when(mockConnector.getThreadsProcessing()).thenReturn(new Counter(0));
-            when(mockConnector.getReceiver()).thenReturn(receiver);
-            when(mockConnector.getListener()).thenReturn(this);
-            when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
-            when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");
+	@Override
+	public void open() {
+		super.open();
 
-            pollGuard = new PollGuard();
-            pollGuard.setSpringJmsConnector(mockConnector);
-            pollGuardTimer = new Timer(true);
-            pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
-        }
-    }
+		if (pollGuardInterval > 0) {
+			log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
+			DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
+			SpringJmsConnector mockConnector = mock(SpringJmsConnector.class);
+			when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
+			when(mockConnector.getThreadsProcessing()).thenReturn(new Counter(0));
+			when(mockConnector.getReceiver()).thenReturn(receiver);
+			when(mockConnector.getListener()).thenReturn(this);
+			when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
+			when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");
 
-    @Override
-    public void close() {
-        if (pollGuardTimer != null) {
-            log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
-            pollGuardTimer.cancel();
-            pollGuardTimer = null;
-        }
-        super.close();
-    }
+			pollGuard = new PollGuard();
+			pollGuard.setSpringJmsConnector(mockConnector);
+			pollGuardTimer = new Timer(true);
+			pollGuardTimer.schedule(pollGuard, pollGuardInterval, pollGuardInterval);
+		}
+	}
 
-    @Override
-    public IbisExceptionListener getExceptionListener() {
-        return null;
-    }
+	@Override
+	public void close() {
+		if (pollGuardTimer != null) {
+			log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
+			pollGuardTimer.cancel();
+			pollGuardTimer = null;
+		}
+		super.close();
+	}
 
-    @Override
-    public String getListenerPort() {
-        return null;
-    }
+	@Override
+	public IbisExceptionListener getExceptionListener() {
+		return null;
+	}
 
-    @Override
-    public IMessageHandler<Message> getHandler() {
-        return null;
-    }
+	@Override
+	public String getListenerPort() {
+		return null;
+	}
 
-    @Override
-    public Receiver<Message> getReceiver() {
-        return receiver;
-    }
+	@Override
+	public IMessageHandler<Message> getHandler() {
+		return null;
+	}
 
-    @Override
-    public IListenerConnector<Message> getListenerPortConnector() {
-        return null;
-    }
+	@Override
+	public Receiver<Message> getReceiver() {
+		return receiver;
+	}
+
+	@Override
+	public IListenerConnector<Message> getListenerPortConnector() {
+		return null;
+	}
 }

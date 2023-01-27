@@ -11,7 +11,6 @@ import nl.nn.adapterframework.stream.Message;
 
 public class SlowPushingListener extends SlowListenerBase implements IPushingListener<javax.jms.Message> {
 
-
 	@Override
 	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
 		return null;
@@ -24,17 +23,16 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
+		// No-op in this stub
 	}
 
 	@Override
 	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
-		// TODO Auto-generated method stub
-
+		// No-op in this stub
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
-		// TODO Auto-generated method stub
-
+		// No-op in this stub
 	}
 }
