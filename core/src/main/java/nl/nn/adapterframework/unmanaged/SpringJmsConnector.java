@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.unmanaged;
 
 import java.util.Timer;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -90,7 +89,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	private TransactionDefinition TX = null;
 
-	final Counter threadsProcessing = new Counter(0);
+	final @Getter Counter threadsProcessing = new Counter(0);
 
 	private @Getter @Setter long lastPollFinishedTime;
 	private long pollGuardInterval;
@@ -216,6 +215,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
+					log.debug("Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", pollGuardInterval);
 					PollGuard pollGuard = new PollGuard();
 					pollGuard.setSpringJmsConnector(this);
 					pollGuardTimer = new Timer(true);
@@ -235,6 +235,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (jmsContainer!=null) {
 			try {
 				if (pollGuardTimer != null) {
+					log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
 					pollGuardTimer.cancel();
 					pollGuardTimer = null;
 				}
