@@ -26,10 +26,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Send a message with JMS.
@@ -61,17 +61,17 @@ public final class BrowseQueue extends FrankApiBase {
 		Boolean rowNumbersOnly = getBooleanValue(json, "rowNumbersOnly");
 		Boolean showPayload = getBooleanValue(json, "payload");
 		Boolean lookupDestination = getBooleanValue(json, "lookupDestination");
-		DestinationType type = EnumUtils.parse(DestinationType.class, getValue(json, "type"));
+		String type = getValue(json, "type");
 
-		if(destination == null)
+		if(StringUtils.isNotEmpty(destination))
 			throw new ApiException("No destination provided");
-		if(type == null)
+		if(StringUtils.isNotEmpty(type))
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
 		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
-		builder.addHeader("type", type.name());
+		builder.addHeader("type", type);
 		if(rowNumbersOnly != null) {
 			builder.addHeader("rowNumbersOnly", rowNumbersOnly);
 		}

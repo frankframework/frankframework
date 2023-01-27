@@ -18,6 +18,9 @@ package nl.nn.adapterframework.lifecycle;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -26,12 +29,15 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.MessageDispatcher;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Map;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
 /**
  * Logging should work even when the application failed to start which is why it's not wired through the {@link MessageDispatcher}.
@@ -64,10 +70,15 @@ public class ShowLogDirectory {
 	/**
 	 * The actual action that is performed when calling the bus with the LOGGING topic.
 	 */
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getLogDirectory(Message<?> message) {
 		String directory = BusMessageUtils.getHeader(message, "directory", defaultLogDirectory);
 		boolean sizeFormat = BusMessageUtils.getBooleanHeader(message, "sizeFormat", true);
 		String wildcard = BusMessageUtils.getHeader(message, "wildcard", defaultLogWildcard);
+
+		if(StringUtils.isNotEmpty(directory) && !FileUtils.readAllowed(FileViewerServlet.permissionRules, directory, BusMessageUtils::hasAnyRole)) {
+			throw new BusException("Access to path (" + directory + ") not allowed!");
+		}
 
 		Map<String, Object> returnMap = new HashMap<>();
 		Dir2Map dir = new Dir2Map(directory, sizeFormat, wildcard, showDirectories, maxItems);

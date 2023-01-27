@@ -1,17 +1,17 @@
 /*
-Copyright 2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.management.web;
 
@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,7 +28,6 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Catch Spring Channel exceptions. Some Exceptions may be thrown direct, see {@link ManagedException}.
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 @Provider
 public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlingException> {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 
 	public enum ManagedException {
 		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationCredentialsNotFoundException.class),

@@ -36,9 +36,8 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Manages authorization per resource/collection.
@@ -56,7 +55,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
 	private static final Response FORBIDDEN = Response.status(Response.Status.FORBIDDEN).build();
 	private static final Response SERVER_ERROR = Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-	protected Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogManager.getLogger(this);
 
 	@Context private HttpServletRequest request;
 
