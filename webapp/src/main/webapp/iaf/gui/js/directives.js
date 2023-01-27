@@ -260,7 +260,7 @@ angular.module('iaf.beheerconsole')
 		restrict: 'E',
 		transclude: true,
 		replace: true,
-		link: function(scope, element, attributes) {
+		link: function(scope, element) {
 			element.bind("change", function() {
 				scope.handleFile(this.files);
 			});
