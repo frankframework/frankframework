@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class CspFilter implements Filter {
 	private ContentSecurityPolicyHeaderWriter cspWriter;
-	private static final boolean REPORT_ONLY = AppConstants.getInstance().getBoolean("cspheader.reportOnly", true);
+	private static final boolean REPORT_ONLY = AppConstants.getInstance().getBoolean("cspheader.reportOnly", false);
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
