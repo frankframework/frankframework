@@ -903,7 +903,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public Map<String, Object> getAdditionalAttachmentProperties(Attachment a) throws FileSystemException {
-		Map<String, Object> result = new LinkedHashMap<String,Object>();
+		Map<String, Object> result = new LinkedHashMap<>();
 		result.put("id", a.getId());
 		result.put("contentId", a.getContentId());
 		result.put("contentLocation", a.getContentLocation());
@@ -965,6 +965,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			emailMessage.load(PropertySet.FirstClassProperties);
 			EmailAddress receivedBy = emailMessage.getReceivedBy();
+			EmailAddress receivedRepresenting = emailMessage.getReceivedRepresenting();
 			if (receivedBy == null) {
 				SoapFaultDetails soapFaultDetails = new SoapFaultDetails() {
 					@Override
@@ -974,7 +975,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				};
 				throw new ServiceResponseException(new ServiceResponse(soapFaultDetails));
 			}
-			log.debug("Mail message [{}] was received by mail address [{}]", emailMessage.getId(), receivedBy.getAddress());
+			log.debug("Mail message [{}] was received by mail address [{}]; received-representing: {}",
+				emailMessage.getId(), receivedBy.getAddress(), receivedRepresenting.getAddress());
 			return receivedBy.getAddress();
 		} catch (ServiceResponseException e) {
 			ServiceError errorCode = e.getErrorCode();
