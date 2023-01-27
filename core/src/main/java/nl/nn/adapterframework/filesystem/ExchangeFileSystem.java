@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,7 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+
 import lombok.Getter;
 import lombok.Setter;
 import microsoft.exchange.webservices.data.autodiscover.IAutodiscoverRedirectionUrl;
@@ -317,7 +319,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	protected ExchangeService createConnection() throws FileSystemException {
-		log.debug("Creating connection to the ExchangeFileSystem");
+		log.debug("Creating new connection to the ExchangeFileSystem");
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 		if (enableConnectionTracing) {
 			log.debug("Enabling tracing on the Exchange connection");
@@ -431,9 +433,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new FileSystemException("Cannot find folder ["+targetFolder.getObjectName()+"]", e);
 		}
 		if (findFoldersResultsIn.getTotalCount() == 0) {
-			if(log.isDebugEnabled()) log.debug("no folder found with name [" + targetFolder.getObjectName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+			log.debug("no folder found with name [{}] in basefolder [{}]", targetFolder::getObjectName, targetFolder::getBaseFolderId);
 			if(createFolder){
-				if(log.isDebugEnabled()) log.debug("creating folder with name [" + targetFolder.getObjectName() + "] in basefolder ["+targetFolder.getBaseFolderId()+"]");
+				log.debug("creating folder with name [{}] in basefolder [{}]", targetFolder::getObjectName, targetFolder::getBaseFolderId);
 				createFolder(targetFolder.getOriginalReference());
 				return findFolder(exchangeService, targetFolder, false);
 			}
@@ -443,7 +445,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			if (log.isDebugEnabled()) {
 				for (Folder folder:findFoldersResultsIn.getFolders()) {
 					try {
-						log.debug("found folder ["+folder.getDisplayName()+"]");
+						log.debug("found folder [{}]", folder.getDisplayName());
 					} catch (ServiceLocalException e) {
 						log.warn("could not display foldername", e);
 					}
@@ -488,11 +490,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean exists(EmailMessage f) throws FileSystemException {
-		log.debug("Check if message exists: message [{}]", f);
+		log.trace("Check if message exists: message [{}]", f);
 		ExchangeService exchangeService = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			log.debug("Attempt to extract message ID before loading: [{}]", f.getId());
 			setMailboxOnService(exchangeService, getReceivedBy(f));
 			// TODO: check if this bind can be left out
 			EmailMessage emailMessage = EmailMessage.bind(exchangeService, f.getId());
@@ -904,7 +905,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public Map<String, Object> getAdditionalAttachmentProperties(Attachment a) throws FileSystemException {
-		Map<String, Object> result = new LinkedHashMap<String,Object>();
+		Map<String, Object> result = new LinkedHashMap<>();
 		result.put("id", a.getId());
 		result.put("contentId", a.getContentId());
 		result.put("contentLocation", a.getContentLocation());
@@ -962,10 +963,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	protected String getReceivedBy(EmailMessage emailMessage) throws ServiceResponseException, FileSystemException {
-		log.debug("getReceivedBy - extract 'receivedBy' property from message");
+		log.trace("getReceivedBy - extract 'receivedBy' property from message");
 		try {
 			emailMessage.load(PropertySet.FirstClassProperties);
 			EmailAddress receivedBy = emailMessage.getReceivedBy();
+			EmailAddress receivedRepresenting = emailMessage.getReceivedRepresenting();
 			if (receivedBy == null) {
 				SoapFaultDetails soapFaultDetails = new SoapFaultDetails() {
 					@Override
@@ -975,6 +977,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				};
 				throw new ServiceResponseException(new ServiceResponse(soapFaultDetails));
 			}
+			log.debug("Mail message [{}] was received by mail address [{}]; received-representing: {}",
+				emailMessage.getId(), receivedBy.getAddress(), receivedRepresenting.getAddress());
 			return receivedBy.getAddress();
 		} catch (ServiceResponseException e) {
 			ServiceError errorCode = e.getErrorCode();
@@ -1106,11 +1110,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private void setMailboxOnService(ExchangeService service, String mailbox){
+		log.debug("Set mailservice mailbox to [{}]", mailbox);
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 
 		// only set impersonated user in oauth situation
 		if (client != null) {
-			service.setImpersonatedUserId(new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox));
+			ImpersonatedUserId impersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox);
+			log.debug("Set mailservice impersonated user ID to [{}]", impersonatedUserId);
+			service.setImpersonatedUserId(impersonatedUserId);
 		}
 	}
 
@@ -1134,7 +1141,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	protected void releaseConnection(ExchangeService service, boolean invalidateConnectionOnRelease) {
-		log.debug("Releasing connection to exchange service; invalidating: {}", invalidateConnectionOnRelease);
+		log.trace("Releasing connection to exchange service; invalidating: {}", invalidateConnectionOnRelease);
 		service.getHttpHeaders().remove(ANCHOR_HEADER);
 		super.releaseConnection(service, invalidateConnectionOnRelease);
 	}
