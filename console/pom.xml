@@ -12,7 +12,7 @@
 
 	<properties>
 		<spring-security.version>5.8.1</spring-security.version>
-		<jackson.version>2.14.1</jackson.version>
+		<jackson.version>2.14.2</jackson.version>
 	</properties>
 
 	<dependencies>
