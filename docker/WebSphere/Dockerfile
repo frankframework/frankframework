@@ -1,5 +1,5 @@
 ARG WAS_VERSION=9.0.5.11
-FROM ibmcom/websphere-traditional:${WAS_VERSION} AS iaf-test-as-websphere
+FROM ibmcom/websphere-traditional:${WAS_VERSION}
 #COPY --chown=was:root 001-was-config.props /work/config/
 COPY --chown=was:root src/configuration/PASSWORD /tmp/
 COPY --chown=was:root src/configuration/wasap.policy /work

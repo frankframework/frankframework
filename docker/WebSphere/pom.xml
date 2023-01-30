@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-was</artifactId>
-	<name>Frank!Framework Docker image for WebSphere</name>
+	<artifactId>ibis-adapterframework-docker-websphere</artifactId>
+	<name>Frank!Framework - Docker > WebSphere</name>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -12,6 +12,12 @@
 		<artifactId>ibis-adapterframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
+
+	<properties>
+		<config.image.repository>nexus.frankframework.org/private</config.image.repository>
+		<config.image.name>iaf-test</config.image.name>
+		<config.image.tag>${config.image.name}:${revision}-websphere</config.image.tag>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -213,7 +219,9 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-as-websphere"/>
+									<arg value="${config.image.tag}"/>
+									<arg value="-t"/>
+									<arg value="${config.image.repository}/${config.image.tag}"/>
 									<arg value="."/>
 								</exec>
 							</target>

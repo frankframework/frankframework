@@ -14,10 +14,10 @@ COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
 
-FROM jboss-eap-with-python AS iaf-test-as-jboss
+FROM jboss-eap-with-python
 # Copy dependencies
 COPY target/dependencies/*.jar /home/jboss/jboss-eap-7.3/standalone/lib/ext/
-COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/ 
+COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/
 
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml

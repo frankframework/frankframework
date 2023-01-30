@@ -4,7 +4,7 @@
 	<packaging>pom</packaging>
 
 	<artifactId>ibis-adapterframework-docker</artifactId>
-	<name>Frank!Framework - Docker images</name>
+	<name>Frank!Framework - Docker</name>
 	<version>${revision}</version>
 
 	<parent>

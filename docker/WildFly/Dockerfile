@@ -7,10 +7,10 @@ COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
 
-FROM wildfly-iaf-test-base AS iaf-test-as-wildfly
+FROM wildfly-iaf-test-base
 # Copy dependencies
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
-COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/ 
+COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/
 
 # Copy in standalone-configuration.xml
 COPY src/configuration/standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
