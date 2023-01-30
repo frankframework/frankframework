@@ -27,10 +27,10 @@
 				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'favicon.ico')"/></xsl:attribute>
 			</link>
 			<link type="text/css" rel="stylesheet">
-				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'ie4.css')"/></xsl:attribute>
+				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'iaf/ie4.css')"/></xsl:attribute>
 			</link>
 			<link type="text/css" rel="stylesheet">
-				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'body.css')"/></xsl:attribute>
+				<xsl:attribute name="href"><xsl:value-of select="concat($srcPrefix,'iaf/body.css')"/></xsl:attribute>
 			</link>
 			<SCRIPT LANGUAGE="JavaScript">
 				<xsl:attribute name="SRC"><xsl:value-of select="concat($srcPrefix,'./js/functions.js')"/></xsl:attribute>
