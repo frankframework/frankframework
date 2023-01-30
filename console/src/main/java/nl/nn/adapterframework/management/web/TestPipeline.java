@@ -39,7 +39,6 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -74,7 +73,7 @@ public class TestPipeline extends FrankApiBase {
 			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, DEFAULT_CHARSET);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
@@ -144,7 +143,7 @@ public class TestPipeline extends FrankApiBase {
 					}
 					rb+=chunk;
 				}
-				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
+				String currentMessage = XmlUtils.readXml(b,0,rb,DEFAULT_CHARSET,false);
 
 				builder.setPayload(currentMessage);
 				Message<?> response = sendSyncMessage(builder);
