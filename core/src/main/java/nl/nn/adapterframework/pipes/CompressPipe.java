@@ -202,7 +202,7 @@ public class CompressPipe extends StreamingPipe {
 		compress = b;
 	}
 
-	/** required if result is a file, the pattern for the result filename */
+	/** required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name */
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
