@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  	FileViewerServlet.signal.css=IE4.css
  	</pre></code>
  	The last item specifies which stylesheet to use.
- * @author Johan Verrips 
+ * @author Johan Verrips
  */
 @IbisInitializer
 public class FileViewerServlet extends HttpServletBase {
@@ -153,7 +153,7 @@ public class FileViewerServlet extends HttpServletBase {
 			out.println("<html>");
 			out.println("<head>");
 			out.println("<title>"+AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
-			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
+			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
 
@@ -223,7 +223,7 @@ public class FileViewerServlet extends HttpServletBase {
 			lastPart=filename;
 		}
 		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		Misc.streamToStream(inputStream, outputStream);;
+		Misc.streamToStream(inputStream, outputStream);
 		outputStream.close();
 	}
 
