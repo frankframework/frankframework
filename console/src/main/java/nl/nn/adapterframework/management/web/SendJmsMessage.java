@@ -37,7 +37,6 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -63,7 +62,7 @@ public final class SendJmsMessage extends FrankApiBase {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, DEFAULT_CHARSET);
 		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
 		String destinationName = resolveStringFromMap(inputDataMap, "destination");
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
@@ -133,7 +132,7 @@ public final class SendJmsMessage extends FrankApiBase {
 					}
 					rb+=chunk;
 				}
-				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
+				String currentMessage = XmlUtils.readXml(b,0,rb,DEFAULT_CHARSET,false);
 
 				builder.setPayload(currentMessage);
 				callAsyncGateway(builder);

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.transport.servlet.CXFServlet;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Main dispatcher for all API resources.
@@ -51,8 +51,8 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	private static final long serialVersionUID = 3L;
 
-	private Logger secLog = LogUtil.getLogger("SEC");
-	private Logger log = LogUtil.getLogger(this);
+	private Logger secLog = LogManager.getLogger("SEC");
+	private Logger log = LogManager.getLogger(this);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private static final boolean IAF_API_ENABLED = APP_CONSTANTS.getBoolean("iaf-api.enabled", true);

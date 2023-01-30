@@ -38,7 +38,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public class ShowLiquibaseScript extends FrankApiBase {
