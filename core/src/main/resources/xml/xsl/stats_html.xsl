@@ -32,7 +32,7 @@
 	</xsl:template>
 	<xsl:template name="htmlheading">
 		<head>
-			<link rel="stylesheet" type="text/css" href="ie4.css"/>
+			<link rel="stylesheet" type="text/css" href="iaf/ie4.css"/>
 			<title>Show Adapter Statistics</title>
 			<script type="text/javascript">
 				<xsl:text disable-output-escaping="yes">
