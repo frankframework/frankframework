@@ -12,8 +12,8 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<jackson.version>2.14.1</jackson.version>
-		<jackson-databind.version>2.14.1</jackson-databind.version>
+		<jackson.version>2.14.2</jackson.version>
+		<jackson-databind.version>2.14.2</jackson-databind.version>
 		<saxon.version>10.8</saxon.version>
 	</properties>
 
@@ -768,7 +768,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.29</version>
+			<version>9.30</version>
 		</dependency>
 
 		<dependency>
