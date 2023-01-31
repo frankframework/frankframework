@@ -24,6 +24,8 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -37,9 +39,11 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private List<Schema> schemas;
+	private IScopeProvider scopeProvider;
 
-	public IntraGrammarPoolEntityResolver(List<Schema> schemas) {
+	public IntraGrammarPoolEntityResolver(IScopeProvider scopeProvider, List<Schema> schemas) {
 		this.schemas = schemas;
+		this.scopeProvider = scopeProvider;
 	}
 
 	@Override
@@ -59,6 +63,8 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 			return null;
 		}
 
+		System.err.println(Thread.currentThread().getContextClassLoader());
+
 		String targetNamespace = resourceIdentifier.getNamespace();
 		if (targetNamespace!=null) {
 			for(Schema schema:schemas) {
@@ -70,8 +76,21 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
 		}
 		log.warn("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"] falling back to external resource");
-		// return explicit resource reference, do not rely on default mechanism by returning null. This appears to be unreliable. See https://github.com/ibissource/iaf/issues/3973
-		return new XMLInputSource(resourceIdentifier);
+
+		if(true) return null;
+		Resource resource = Resource.getResource(scopeProvider, resourceIdentifier.getExpandedSystemId());
+		if(resource != null) {
+			return resource.asXMLInputSource();
+		}
+
+		StringBuilder errorMessage = new StringBuilder("Cannot find resource [");
+		errorMessage.append(resourceIdentifier.getExpandedSystemId());
+		errorMessage.append("] from systemId [");
+		errorMessage.append(resourceIdentifier.getLiteralSystemId());
+		errorMessage.append("] with base [");
+		errorMessage.append(resourceIdentifier.getBaseSystemId());
+		errorMessage.append("]");
+		throw new XNIException(errorMessage.toString());
 	}
 
 }
