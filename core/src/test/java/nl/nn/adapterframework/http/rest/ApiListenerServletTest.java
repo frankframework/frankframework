@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -361,6 +362,30 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertTrue(result.getContentType().contains("application/json"), "Content-Type header does not contain [application/json]");
 		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutput() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+		session = new HashMap<>();
+		session.put(RESPONSE_CONTENT_KEY, null);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+
+		);
 	}
 
 	@Test
@@ -1404,7 +1429,7 @@ public class ApiListenerServletTest extends Mockito {
 			listener.open();
 
 			listeners.add(listener);
-			log.info("created ApiListener "+listener.toString());
+			log.info("created ApiListener "+ listener);
 			return listener;
 		}
 	}
