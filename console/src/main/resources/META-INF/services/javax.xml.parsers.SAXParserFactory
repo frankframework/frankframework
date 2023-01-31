@@ -1,0 +1,2 @@
+org.apache.xerces.jaxp.SAXParserFactoryImpl
+#com.ctc.wstx.shaded.msv_core.verifier.jaxp.SAXParserFactoryImpl

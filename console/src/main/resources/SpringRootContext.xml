@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	">
+
+<!-- 	<context:component-scan base-package="nl.nn.adapterframework.webcontrol"> -->
+<!-- 		<context:exclude-filter type="annotation" expression="nl.nn.adapterframework.lifecycle.IbisInitializer"/> -->
+
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/> -->
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/> -->
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/> -->
+<!-- 	</context:component-scan> -->
+
+	<bean class="nl.nn.adapterframework.webcontrol.WebAppInitializer"/>
+
+	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
+		<property name="port" value="80"/>
+	</bean>
+</beans>

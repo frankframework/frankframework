@@ -30,6 +30,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -55,7 +58,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 
 	static {
-		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
+		System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
 	}
 
 	/**
@@ -124,6 +127,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	private Properties getProperties() throws IOException {
 		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {
+			log4jProperties = new Properties();
 			System.out.println(LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
 
@@ -138,15 +142,20 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 		return log4jProperties;
 	}
-	private Properties getProperties(String filename) throws IOException {
+
+	private @Nullable Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
+		System.err.println(url);
 		if(url != null) {
 			Properties properties = new Properties();
-			properties.load(url.openStream());
+			try(InputStream is = url.openStream()) {
+				properties.load(is);
+			}
 			return properties;
 		}
 		return null;
 	}
+
 	private static void setInstanceNameLc(Properties log4jProperties) {
 		String instanceNameLowerCase = log4jProperties.getProperty("instance.name");
 		if (instanceNameLowerCase != null) {
