@@ -43,6 +43,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
@@ -280,9 +281,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		try {
 			if (messagingSource != null) {
 				try {
+					log.trace("Closing messaging source - will synchronize (lock) on {}", messagingSource::toString);
 					messagingSource.close();
 				} catch (IbisException e) {
-					log.warn(getLogPrefix() + "caught exception closing messaging source", e);
+					log.warn("{} caught exception closing messaging source", (Supplier<?>) this::getLogPrefix, e);
+				} finally {
+					log.trace("Messaging source closed - lock on {} released", messagingSource::toString);
 				}
 				log.debug("closed connection");
 			}

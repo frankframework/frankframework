@@ -270,7 +270,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter HideMethod hideMethod = HideMethod.ALL;
 	private @Getter String hiddenInputSessionKeys=null;
 
-	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private final Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -280,10 +280,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private boolean configurationSucceeded = false;
 	private BeanFactory beanFactory;
 
-	protected RunStateManager runState = new RunStateManager();
+	protected final RunStateManager runState = new RunStateManager();
 	private PullingListenerContainer<M> listenerContainer;
 
-	private Counter threadsProcessing = new Counter(0);
+	private final Counter threadsProcessing = new Counter(0);
 
 	private long lastMessageDate = 0;
 
@@ -796,6 +796,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}
+			log.trace("{} Receiver StartRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 			synchronized (runState) {
 				RunState currentRunState = getRunState();
 				if (currentRunState!=RunState.STOPPED
@@ -804,14 +805,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						&& currentRunState!=RunState.ERROR
 						&& configurationSucceeded()) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
-						log.info("already in state [" + currentRunState + "]");
+						log.info("already in state [{}]", currentRunState);
 					} else {
-						log.warn("currently in state [" + currentRunState + "], ignoring start() command");
+						log.warn("currently in state [{}], ignoring start() command", currentRunState);
 					}
 					return;
 				}
 				runState.setRunState(RunState.STARTING);
 			}
+			log.trace("{} Receiver StartRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
 
 			openAllResources();
 
@@ -830,13 +832,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public void stopRunning() {
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
+		log.trace("{} Receiver StopRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 		synchronized (runState) {
 			RunState currentRunState = getRunState();
 			if (currentRunState==RunState.STARTING) {
-				log.warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
+				log.warn("receiver currently in state [{}], ignoring stop() command", currentRunState);
 				return;
 			} else if (currentRunState==RunState.STOPPING || currentRunState==RunState.STOPPED) {
-				log.info("receiver already in state [" + currentRunState + "]");
+				log.info("receiver already in state [{}]", currentRunState);
 				return;
 			}
 
@@ -851,6 +854,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				runState.setRunState(RunState.STOPPING); //Don't change the runstate when in ERROR
 			}
 		}
+		log.trace("{} Receiver StopRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
 
 		tellResourcesToStop();
 		ThreadContext.clearAll(); //Clean up receiver ThreadContext
@@ -882,6 +886,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 
 	protected void startProcessingMessage(long waitingDuration) {
+		log.trace("{} startProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
 		synchronized (threadsProcessing) {
 			int threadCount = (int) threadsProcessing.getValue();
 
@@ -890,15 +895,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			threadsProcessing.increase();
 		}
-		log.debug(getLogPrefix()+"starts processing message");
+		log.trace("{} startProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
+		log.debug("{} starts processing message", this::getLogPrefix);
 	}
 
 	protected void finishProcessingMessage(long processingDuration) {
+		log.trace("{} finishProcessingMessage -- synchronize (lock) on Receiver threadsProcessing[{}]", this::getLogPrefix, threadsProcessing::toString);
 		synchronized (threadsProcessing) {
 			int threadCount = (int) threadsProcessing.decrease();
 			getProcessStatistics(threadCount).addValue(processingDuration);
 		}
-		log.debug(getLogPrefix()+"finishes processing message");
+		log.trace("{} finishProcessingMessage -- lock on Receiver threadsProcessing[{}] released", this::getLogPrefix, threadsProcessing::toString);
+		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
 	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, String messageId, String correlationId, M rawMessage, ThrowingSupplier<Message,ListenerException> messageSupplier, Map<String,Object> threadContext, ProcessResultCacheItem prci, String comments) throws ListenerException {
@@ -923,7 +931,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (getSender()!=null) {
 			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
-				log.warn("problem sending result:"+sendMsg);
+				log.warn("problem sending result: {}", sendMsg);
 			}
 		}
 		origin.afterMessageProcessed(plr, rawMessage, threadContext);
@@ -1267,7 +1275,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					if (!isTransacted()) {
 						log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 					}
+					log.trace("{} Receiver process message in adapter - increase numRejected - synchronize (lock) on numRejected", this::getLogPrefix);
 					numRejected.increase();
+					log.trace("{} Receiver process message in adapter - increased numRejected - lock on numRejected released", this::getLogPrefix);
 					setExitState(session, ExitState.REJECTED, 500);
 					return Message.nullMessage();
 				}
@@ -1275,8 +1285,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					setExitState(session, ExitState.SUCCESS, 304);
 					return Message.nullMessage();
 				}
-				if (getCachedProcessResult(messageId)!=null) {
+				log.trace("{} Receiver process message in adapter - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
+				ProcessResultCacheItem cachedProcessResult = getCachedProcessResult(messageId);
+				log.trace("{} Receiver process message in adapter - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
+				if (cachedProcessResult !=null) {
+					log.trace("{} Receiver process message in adapter - increase numRetried - synchronize (lock) on numRetried", this::getLogPrefix);
 					numRetried.increase();
+					log.trace("{} Receiver process message in adapter - increased numRetried - lock on numRetried released", this::getLogPrefix);
 				}
 			} catch (Exception e) {
 				String msg="exception while checking history";
@@ -1379,7 +1394,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			} finally {
 				try {
+					log.trace("{} Receiver process message in adapter - CacheProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 					cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
+					log.trace("{} Receiver process message in adapter - CacheProcessResult - lock on Receiver released", this::getLogPrefix);
 					if (!isTransacted() && messageInError && !manualRetry) {
 						final Message messageFinal = message;
 						moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
@@ -1456,7 +1473,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public String getCachedErrorMessage(String messageId) {
+		log.trace("{} Receiver cached error message - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		log.trace("{} Receiver cached error message - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
 		return prci!=null ? prci.comments : null;
 	}
 
@@ -1466,7 +1485,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (origin instanceof IKnowsDeliveryCount) {
 			return ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage)-1;
 		}
+		log.trace("{} Receiver delivery count - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		log.trace("{} Receiver delivery count - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
 		if (prci==null) {
 			return 1;
 		}
@@ -1482,7 +1503,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} else {
 			IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
+			log.trace("{} Receiver check has problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+			log.trace("{} Receiver check has problematic history - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
 			if (prci==null) {
 				if (getMaxDeliveries()!=-1) {
 					int deliveryCount=-1;
@@ -1531,7 +1554,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	private void resetProblematicHistory(String messageId) {
+		log.trace("{} Receiver reset problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		log.trace("{} Receiver reset problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		if (prci!=null) {
 			prci.receiveCount=0;
 		}
@@ -1600,6 +1625,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public void resetRetryInterval() {
+		log.trace("Reset retry interval - synchronize (lock) on Receiver {}", this::toString);
 		synchronized (this) {
 			if (suspensionMessagePending) {
 				suspensionMessagePending=false;
@@ -1607,10 +1633,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			retryInterval = 1;
 		}
+		log.trace("Reset retry interval - lock on Receiver {} released", this::toString);
 	}
 
 	public void increaseRetryIntervalAndWait(Throwable t, String description) {
 		long currentInterval;
+		log.trace("Increase retry-interval, synchronize (lock) on Receiver {}", this::toString);
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
@@ -1618,10 +1646,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				retryInterval = MAX_RETRY_INTERVAL;
 			}
 		}
+		log.trace("Increase retry-interval, lock on Receiver {} released", this::toString);
 		if (currentInterval>1) {
 			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		} else {
-			log.warn(description +", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+			log.warn("{}, will continue retrieving messages in [{}] seconds", description, currentInterval, t);
 		}
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
 			suspensionMessagePending=true;
@@ -1631,7 +1660,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e2) {
-				error("sleep interupted", e2);
+				error("sleep interrupted", e2);
 				stopRunning();
 			}
 		}
@@ -1756,12 +1785,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Protected
 	public void setRunState(RunState state) {
 		if(RunState.ERROR.equals(state)) {
+			log.debug("{} Set RunState to ERROR -> Stop Running", this::getLogPrefix);
 			stopRunning();
 		}
 
+		log.trace("{} Setting run-state to {}, synchronize (lock) on run state {}", this::getLogPrefix, state::name, runState::toString);
 		synchronized (runState) {
 			runState.setRunState(state);
 		}
+		log.trace("{} Setting run-state, lock on run state {} released", this::getLogPrefix, runState::toString);
 	}
 
 	/**
@@ -1769,11 +1801,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Override
 	public RunState getRunState() {
-		return runState.getRunState();
+		try {
+			log.trace("Receiver get runState - synchronize (lock) on Receiver runState[{}]", runState);
+			return runState.getRunState();
+		} finally {
+			log.trace("Receiver get runState - lock on Receiver runState[{}] released", runState);
+		}
 	}
 
 	public boolean isInRunState(RunState someRunState) {
-		return runState.getRunState()==someRunState;
+		try {
+			log.trace("Receiver check runState={} - synchronize (lock) on Receiver runState {}", someRunState, runState);
+			return runState.getRunState()==someRunState;
+		} finally {
+			log.trace("Receiver check runState={} - lock on Receiver runState {} released", someRunState, runState);
+		}
 	}
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
