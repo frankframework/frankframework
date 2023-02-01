@@ -340,6 +340,64 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			exchangeService.setTraceEnabled(true);
 		}
 
+		setCredentialsOnService(exchangeService);
+
+		if (StringUtils.isNotEmpty(getMailAddress())) {
+			setMailboxOnService(exchangeService, getMailAddress());
+		}
+
+		if (StringUtils.isNotEmpty(getProxyHost())) {
+			setProxyOnService(exchangeService);
+		}
+
+		if (StringUtils.isEmpty(getUrl())) {
+			configureUrlAutodiscovery(exchangeService);
+		} else {
+			exchangeService.setUrl(getUriFromUrl(getUrl()));
+		}
+		log.debug("using url [{}]", exchangeService.getUrl());
+		return exchangeService;
+	}
+
+	private URI getUriFromUrl(String mailUrl) throws FileSystemException {
+		try {
+			return new URI(mailUrl);
+		} catch (URISyntaxException e) {
+			throw new FileSystemException("cannot set URL [" + mailUrl + "]", e);
+		}
+	}
+
+	private void configureUrlAutodiscovery(ExchangeService exchangeService) throws FileSystemException {
+		log.debug("performing autodiscovery for [{}]", this::getMailAddress);
+		RedirectionUrlCallback redirectionUrlCallback = new RedirectionUrlCallback() {
+
+			@Override
+			public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
+				if (isValidateAllRedirectUrls()) {
+					log.debug("validated redirection url [{}]", redirectionUrl);
+					return true;
+				}
+				log.debug("did not validate redirection url [{}]", redirectionUrl);
+				return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
+			}
+
+		};
+		try {
+			exchangeService.autodiscoverUrl(getMailAddress(), redirectionUrlCallback);
+			//TODO call setUrl() here to avoid repeated autodiscovery
+		} catch (Exception e) {
+			throw new FileSystemException("cannot autodiscover for [" + getMailAddress() + "]", e);
+		}
+	}
+
+	private void setProxyOnService(ExchangeService exchangeService) {
+		CredentialFactory proxyCf = getProxyCredentials();
+		WebProxyCredentials webProxyCredentials = proxyCf != null ? new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain()) : null;
+		WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
+		exchangeService.setWebProxy(webProxy);
+	}
+
+	private void setCredentialsOnService(ExchangeService exchangeService) throws FileSystemException {
 		if (client != null) {
 			CompletableFuture<IAuthenticationResult> future = client.acquireToken(clientCredentialParam);
 			try {
@@ -356,49 +414,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			ExchangeCredentials exchangeCredentials = new WebCredentials(cf.getUsername(), cf.getPassword());
 			exchangeService.setCredentials(exchangeCredentials);
 		}
-
-		if (StringUtils.isNotEmpty(getMailAddress())) {
-			setMailboxOnService(exchangeService, getMailAddress());
-		}
-
-		if (StringUtils.isNotEmpty(getProxyHost())) {
-			CredentialFactory proxyCf = getProxyCredentials();
-			WebProxyCredentials webProxyCredentials = proxyCf != null ? new WebProxyCredentials(proxyCf.getUsername(), proxyCf.getPassword(), getProxyDomain()) : null;
-			WebProxy webProxy = new WebProxy(getProxyHost(), getProxyPort(), webProxyCredentials);
-			exchangeService.setWebProxy(webProxy);
-		}
-
-		RedirectionUrlCallback redirectionUrlCallback = new RedirectionUrlCallback() {
-
-			@Override
-			public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
-				if (isValidateAllRedirectUrls()) {
-					log.debug("validated redirection url [" + redirectionUrl + "]");
-					return true;
-				}
-				log.debug("did not validate redirection url [" + redirectionUrl + "]");
-				return super.autodiscoverRedirectionUrlValidationCallback(redirectionUrl);
-			}
-
-		};
-
-		if (StringUtils.isEmpty(getUrl())) {
-			log.debug("performing autodiscovery for [" + getMailAddress() + "]");
-			try {
-				exchangeService.autodiscoverUrl(getMailAddress(), redirectionUrlCallback);
-				//TODO call setUrl() here to avoid repeated autodiscovery
-			} catch (Exception e) {
-				throw new FileSystemException("cannot autodiscover for [" + getMailAddress() + "]", e);
-			}
-		} else {
-			try {
-				exchangeService.setUrl(new URI(getUrl()));
-			} catch (URISyntaxException e) {
-				throw new FileSystemException("cannot set URL [" + getUrl() + "]", e);
-			}
-		}
-		log.debug("using url [" + exchangeService.getUrl() + "]");
-		return exchangeService;
 	}
 
 
