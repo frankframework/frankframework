@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+	<name>Frank!Framework - Docker > Tomcat</name>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-docker</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<configuration>
+						<target>
+							<exec executable="docker" failonerror="true">
+								<arg value="build"/>
+								<arg value="-t"/>
+								<arg value="${config.image.tag}"/>
+								<arg value="-t"/>
+								<arg value="${config.image.repository}/${config.image.tag}"/>
+								<arg value="--build-arg"/>
+								<arg value="VERSION=${revision}"/>
+								<arg value="."/>
+							</exec>
+						</target>
+					</configuration>
+					<executions>
+						<execution>
+							<id>prepare-package</id>
+							<phase>package</phase>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<modules>
+		<module>webapp</module>
+		<module>example</module>
+		<module>test</module>
+	</modules>
+
+</project>
