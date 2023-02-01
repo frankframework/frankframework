@@ -35,6 +35,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
@@ -665,13 +666,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
-				if(!Message.isEmpty(result)) {
-					if(result.isBinary()) {
-						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
-					} else {
-						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
-					}
+				final boolean emptyResponseOutput = writeToResponseStream(response, result);
+				if (emptyResponseOutput) {
+					response.setContentType(null);
 				}
+
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
 			}
 			catch (Exception e) {
@@ -687,6 +686,23 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		final boolean emptyResponseOutput;
+		if(!Message.isEmpty(result)) {
+			// Message.isEmpty() is a liar, sometimes.
+			final long streamSize;
+			if(result.isBinary()) {
+				streamSize = StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
+			} else {
+				streamSize = StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
+			}
+			emptyResponseOutput = (streamSize == 0L);
+		} else {
+			emptyResponseOutput = true;
+		}
+		return emptyResponseOutput;
 	}
 
 	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {

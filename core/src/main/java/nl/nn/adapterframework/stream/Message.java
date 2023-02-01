@@ -581,7 +581,7 @@ public class Message implements Serializable {
 	}
 
 	public boolean isEmpty() {
-		return isNull() || request instanceof String && ((String)request).isEmpty();
+		return size() == 0;// isNull() || request instanceof String && ((String)request).isEmpty();
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
@@ -781,7 +781,7 @@ public class Message implements Serializable {
 	 */
 	public long size() {
 		if(request == null) {
-			return 0;
+			return 0L;
 		}
 
 		if (request instanceof FileInputStream) {
@@ -809,7 +809,7 @@ public class Message implements Serializable {
 			log.debug("unable to determine size of Message [{}]", ClassUtils.nameOf(request));
 		}
 
-		return -1;
+		return -1L;
 	}
 
 	/**

@@ -389,6 +389,30 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void apiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.XML).build();
+		Map<String, String> headers = new HashMap<>();
+
+		HttpServletRequest request = createRequest(uri, Methods.POST, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+
+		);
+	}
+
+	@Test
 	public void clientAcceptHeaderDoesNotLikeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerAllow/";
 		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
@@ -1055,13 +1079,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@ParameterizedTest
 	@EnumSource(Methods.class)
-	public void testGetRequestWithAccept(Methods method) throws Exception {
+	public void testRequestWithAccept(Methods method) throws Exception {
 		//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
 		assumeFalse(method.equals(Methods.OPTIONS));
 
 		// Arrange
 		String uri = "/messageWithJson2XmlValidator";
-		new ApiListenerBuilder(uri, method).build();
+		new ApiListenerBuilder(uri, method, null, MediaTypes.XML).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("accept", "application/xml");
@@ -1475,7 +1499,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private static class Response {
-		private MockHttpServletResponse response;
+		private final MockHttpServletResponse response;
 
 		Response(MockHttpServletResponse response) {
 			this.response = response;
@@ -1515,7 +1539,9 @@ public class ApiListenerServletTest extends Mockito {
 			try {
 				content = getContentAsString();
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				// Ignore
+			}
 
 			return "status["+getStatus()+"] contentType["+getContentType()+"] inError["+(getErrorMessage()!=null)+"] content["+content+"]";
 		}

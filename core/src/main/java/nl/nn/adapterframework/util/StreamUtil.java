@@ -197,7 +197,8 @@ public class StreamUtil {
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
-	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
+	public static long copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
+		long bytesCopied = 0L;
 		if (in!=null) {
 			byte[] buffer=new byte[chunkSize];
 
@@ -207,14 +208,17 @@ public class StreamUtil {
 				if (bytesRead>0) {
 //					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					out.write(buffer,0,bytesRead);
+					bytesCopied += bytesRead;
 				} else {
 					in.close();
 				}
 			}
 		}
+		return bytesCopied;
 	}
 
-	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
+	public static long copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
+		long charsCopied = 0L;
 		if (reader!=null) {
 			char[] buffer=new char[chunkSize];
 
@@ -222,6 +226,7 @@ public class StreamUtil {
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
 				if (charsRead>0) {
+					charsCopied += charsRead;
 //					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					if (resolve) {
 						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
@@ -242,6 +247,7 @@ public class StreamUtil {
 				}
 			}
 		}
+		return charsCopied;
 	}
 
 	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {
