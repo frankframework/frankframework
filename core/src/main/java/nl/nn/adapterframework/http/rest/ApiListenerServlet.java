@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.PushbackInputStream;
+import java.io.PushbackReader;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -666,8 +668,8 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
-				final boolean emptyResponseOutput = writeToResponseStream(response, result);
-				if (emptyResponseOutput) {
+				final boolean outputWritten = writeToResponseStream(response, result);
+				if (!outputWritten) {
 					response.setContentType(null);
 				}
 
@@ -688,21 +690,40 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
+	/**
+	 * Write the result to the response, if any data is available. If no data is
+	 * available, then the output-stream or output-writer of the response will not
+	 * be accessed and the method returns false. If data is available, the method
+	 * returns true and the data will be
+	 * written to the output-stream if the message is binary or to the output-writer
+	 * otherwise.
+	 *
+	 * @param response {@link HttpServletResponse} to which data should be written. If
+	 *                                            no data is available, the output-stream or
+	 *                                            output-writer will not be accessed.
+	 * @param result {@link Message} whose data will be written to the response, if any is available.
+	 * @return {@code true} if data was written, {@code false} if not.
+	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
+	 */
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		final boolean emptyResponseOutput;
-		if(!Message.isEmpty(result)) {
-			// Message.isEmpty() is a liar, sometimes.
-			final long streamSize;
-			if(result.isBinary()) {
-				streamSize = StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
-			} else {
-				streamSize = StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
-			}
-			emptyResponseOutput = (streamSize == 0L);
-		} else {
-			emptyResponseOutput = true;
+		if (Message.isEmpty(result)) {
+			return false;
 		}
-		return emptyResponseOutput;
+		// Message.isEmpty() is a liar, sometimes.
+		if (result.isBinary()) {
+			PushbackInputStream in = result.asPushbackInputStream();
+			if (!StreamUtil.hasDataAvailable(in)) {
+				return false;
+			}
+			StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+		} else {
+			PushbackReader reader = result.asPushbackReader();
+			if (!StreamUtil.hasDataAvailable(reader)) {
+				return false;
+			}
+			StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
+		}
+		return true;
 	}
 
 	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {

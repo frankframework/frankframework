@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PushbackInputStream;
+import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.CharBuffer;
@@ -197,8 +199,25 @@ public class StreamUtil {
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
-	public static long copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
-		long bytesCopied = 0L;
+	public static boolean hasDataAvailable(PushbackInputStream in) throws IOException {
+		if (in == null) {
+			return false;
+		}
+		int v = in.read();
+		in.unread(v);
+		return (v >= 0);
+	}
+
+	public static boolean hasDataAvailable(PushbackReader in) throws IOException {
+		if (in == null) {
+			return false;
+		}
+		int v = in.read();
+		in.unread(v);
+		return (v >= 0);
+	}
+
+	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in!=null) {
 			byte[] buffer=new byte[chunkSize];
 
@@ -206,19 +225,15 @@ public class StreamUtil {
 			while (bytesRead>0) {
 				bytesRead=in.read(buffer,0,chunkSize);
 				if (bytesRead>0) {
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					out.write(buffer,0,bytesRead);
-					bytesCopied += bytesRead;
 				} else {
 					in.close();
 				}
 			}
 		}
-		return bytesCopied;
 	}
 
-	public static long copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
-		long charsCopied = 0L;
+	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
 		if (reader!=null) {
 			char[] buffer=new char[chunkSize];
 
@@ -226,8 +241,6 @@ public class StreamUtil {
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
 				if (charsRead>0) {
-					charsCopied += charsRead;
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					if (resolve) {
 						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
 						if (xmlEncode) {
@@ -247,7 +260,6 @@ public class StreamUtil {
 				}
 			}
 		}
-		return charsCopied;
 	}
 
 	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {

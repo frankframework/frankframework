@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,6 +27,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PushbackInputStream;
+import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -326,6 +329,17 @@ public class Message implements Serializable {
 		}
 	}
 
+	public PushbackReader asPushbackReader() throws IOException {
+		return asPushbackReader(null);
+	}
+
+	public PushbackReader asPushbackReader(String defaultDecodingCharset) throws IOException {
+		Reader rawReader = asReader(defaultDecodingCharset);
+		return rawReader == null ? null : new PushbackReader(
+			new BufferedReader(rawReader, 8192)
+		);
+	}
+
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -361,6 +375,17 @@ public class Message implements Serializable {
 		}
 		log.debug("returning String {} as Reader", this::getId);
 		return new StringReader(request.toString());
+	}
+
+	public PushbackInputStream asPushbackInputStream() throws IOException {
+		return asPushbackInputStream(null);
+	}
+
+	public PushbackInputStream asPushbackInputStream(String defaultEncodingCharset) throws IOException {
+		InputStream rawInputStream = asInputStream(defaultEncodingCharset);
+		return rawInputStream == null ? null : new PushbackInputStream(
+			new BufferedInputStream(rawInputStream, 8192)
+		);
 	}
 
 	/**
