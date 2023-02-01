@@ -513,12 +513,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 
 	@Override
-	public DirectoryStream<EmailMessage> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<EmailMessage> listFiles(final String folder) throws FileSystemException {
 		if (!isOpen()) {
 			return null;
 		}
-		ExchangeObjectReference reference = asObjectReference(folder);
-		ExchangeService exchangeService = getConnection(reference);
+		final ExchangeObjectReference reference = asObjectReference(folder);
+		final ExchangeService exchangeService = getConnection(reference);
 		boolean invalidateConnectionOnRelease = false;
 		boolean closeConnectionOnExit = true;
 		try {
@@ -738,7 +738,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (addressCollection==null) {
 			return Collections.emptyList();
 		}
-		return addressCollection.getItems().stream().map(this::cleanAddress).collect(Collectors.toList());
+		return addressCollection
+			.getItems()
+			.stream()
+			.map(this::cleanAddress)
+			.collect(Collectors.toList());
 	}
 
 
