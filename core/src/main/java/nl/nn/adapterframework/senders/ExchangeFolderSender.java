@@ -15,17 +15,17 @@
  */
 package nl.nn.adapterframework.senders;
 
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
+import nl.nn.adapterframework.filesystem.ExchangeMessageReference;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 /**
- * Implementation of a {@link FileSystemSender} that enables to manipulate messages in a Exchange folder.
+ * Implementation of a {@link FileSystemSender} that enables to manipulate messages in an Exchange folder.
  *
  * @author Gerrit van Brakel
  */
-public class ExchangeFolderSender extends FileSystemSender<EmailMessage,ExchangeFileSystem> {
+public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageReference,ExchangeFileSystem> {
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
 
