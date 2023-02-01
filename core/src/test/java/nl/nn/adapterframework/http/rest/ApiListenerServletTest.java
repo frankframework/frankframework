@@ -24,9 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -372,6 +374,54 @@ public class ApiListenerServletTest extends Mockito {
 		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
 		session = new HashMap<>();
 		session.put(RESPONSE_CONTENT_KEY, null);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+
+		);
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyStream() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+		session = new HashMap<>();
+		session.put(RESPONSE_CONTENT_KEY, new ByteArrayInputStream(new byte[0]));
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+
+		);
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyReader() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+		session = new HashMap<>();
+		session.put(RESPONSE_CONTENT_KEY, new StringReader(""));
 
 		// Act
 		Response result = service(request);
