@@ -14,7 +14,7 @@ RUN set -eux && \
 	chown -hR tomcat:tomcat /opt/frank
 
 # All previous actions are performed as root. Run following instructions and start container as tomcat.
-USER tomcat
+USER ${TOMCAT_USERID}
 
 # Copy environment configuration
 COPY --chown=tomcat src/scripts/catalinaAdditional.properties /tmp
