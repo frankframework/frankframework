@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,26 +13,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
-public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSystem> implements HasKeystore, HasTruststore {
+public class FtpFileSystemListener extends FileSystemListener<FTPFileRef, FtpFileSystem> implements HasKeystore, HasTruststore {
 
-	private final String FTPFILESYSTEM = "nl.nn.adapterframework.filesystem.FtpFileSystem";
-
-	public FtpFileSystemSender() {
-		setFileSystem(new FtpFileSystem());
+	@Override
+	protected FtpFileSystem createFileSystem() {
+		return new FtpFileSystem();
 	}
 
 	@ReferTo(FtpFileSystem.class)
@@ -90,12 +88,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSys
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@ReferTo(FtpFileSystem.class)
-	@Deprecated
-	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(FtpType ftpTypeDescription) {
-		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
-	}
 	@ReferTo(FtpFileSystem.class)
 	public void setFtpType(FtpType value) {
 		getFileSystem().setFtpType(value);
@@ -320,12 +312,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSys
 		return getFileSystem().isIgnoreCertificateExpiredException();
 	}
 
-	@ReferTo(FtpFileSystem.class)
-	@Deprecated
-	@ConfigurationWarning("use attribute prot=\"P\" instead")
-	public void setProtP(boolean protP) {
-		getFileSystem().setProtP(protP);
-	}
 
 	@ReferTo(FtpFileSystem.class)
 	public void setProt(Prot prot) {
