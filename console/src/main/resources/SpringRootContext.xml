@@ -15,7 +15,7 @@
 <!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/> -->
 <!-- 	</context:component-scan> -->
 
-	<bean class="nl.nn.adapterframework.webcontrol.WebAppInitializer"/>
+	<bean class="nl.nn.adapterframework.webcontrol.runner.CreateApiEndpointBean"/>
 
 	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
 		<property name="port" value="80"/>

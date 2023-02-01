@@ -13,28 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol;
+package nl.nn.adapterframework.webcontrol.runner;
 
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebListener;
-
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.WebApplicationInitializer;
+import org.springframework.context.annotation.Configuration;
 
 import nl.nn.adapterframework.management.web.ServletDispatcher;
 
-@WebListener
-public class WebAppInitializer implements ServletContextListener {
+@Configuration
+public class CreateApiEndpointBean {
 
 	@Bean
 	public ServletRegistrationBean<ServletDispatcher> createBean() {
-		System.err.println("on ServletRegistrationBean");
 		ServletDispatcher servlet = new ServletDispatcher();
 		ServletRegistrationBean<ServletDispatcher> bean = new ServletRegistrationBean<>(servlet);
 		Map<String, String> initParams = servlet.getParameters();
@@ -44,16 +37,9 @@ public class WebAppInitializer implements ServletContextListener {
 			bean.addInitParameter(key, val);
 		}
 		bean.setName(servlet.getName());
+
+		System.err.println("creating IAF API servlet endpoint " + bean.getUrlMappings());
+
 		return bean;
-	}
-
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-		System.err.println("contextInitialized");
-	}
-
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		System.err.println("contextDestroyed");
 	}
 }

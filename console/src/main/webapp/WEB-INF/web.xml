@@ -7,7 +7,7 @@
 	<description>Backend API + Console</description>
 
 	<listener>
-		<listener-class>nl.nn.adapterframework.webcontrol.Dummy</listener-class>
+		<listener-class>nl.nn.adapterframework.webcontrol.runner.WebAppWacListener</listener-class>
 	</listener>
 
 	<!-- this login-config might trigger application server authentication popups. -->
