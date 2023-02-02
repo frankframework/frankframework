@@ -711,17 +711,19 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 		// Message.isEmpty() is a liar, sometimes.
 		if (result.isBinary()) {
-			PushbackInputStream in = result.asPushbackInputStream();
-			if (!StreamUtil.hasDataAvailable(in)) {
-				return false;
+			try (PushbackInputStream in = result.asPushbackInputStream()) {
+				if (!StreamUtil.hasDataAvailable(in)) {
+					return false;
+				}
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
 			}
-			StreamUtil.copyStream(in, response.getOutputStream(), 4096);
 		} else {
-			PushbackReader reader = result.asPushbackReader();
-			if (!StreamUtil.hasDataAvailable(reader)) {
-				return false;
+			try (PushbackReader reader = result.asPushbackReader()) {
+				if (!StreamUtil.hasDataAvailable(reader)) {
+					return false;
+				}
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
 			}
-			StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
 		}
 		return true;
 	}
