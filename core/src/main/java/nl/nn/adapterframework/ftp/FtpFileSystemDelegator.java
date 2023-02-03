@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -98,12 +97,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 		getFileSystem().setFileType(fileType);
 	}
 
-	@ReferTo(FtpFileSystem.class)
-	@Deprecated
-	@ConfigurationWarning("use attribute ftpType instead")
-	default void setFtpTypeDescription(FtpType ftpTypeDescription) {
-		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
-	}
 	@ReferTo(FtpFileSystem.class)
 	default void setMessageIsContent(boolean messageIsContent) {
 		getFileSystem().setMessageIsContent(messageIsContent);
@@ -315,13 +308,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 		return getFileSystem().isIgnoreCertificateExpiredException();
 	}
 
-
-	@ReferTo(FtpFileSystem.class)
-	@Deprecated
-	@ConfigurationWarning("use attribute prot=\"P\" instead")
-	default void setProtP(boolean protP) {
-		getFileSystem().setProtP(protP);
-	}
 	@ReferTo(FtpFileSystem.class)
 	default void setProt(Prot prot) {
 		getFileSystem().setProt(prot);

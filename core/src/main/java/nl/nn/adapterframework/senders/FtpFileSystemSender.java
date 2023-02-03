@@ -15,14 +15,31 @@
 */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpFileSystemDelegator;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSystem> implements FtpFileSystemDelegator {
 
 	public FtpFileSystemSender() {
 		setFileSystem(new FtpFileSystem());
+	}
+
+	@ReferTo(FtpFileSystem.class)
+	@Deprecated
+	@ConfigurationWarning("use attribute ftpType instead")
+	public void setFtpTypeDescription(FtpType ftpTypeDescription) {
+		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
+	}
+
+	@ReferTo(FtpFileSystem.class)
+	@Deprecated
+	@ConfigurationWarning("use attribute prot=\"P\" instead")
+	public void setProtP(boolean protP) {
+		getFileSystem().setProtP(protP);
 	}
 }
