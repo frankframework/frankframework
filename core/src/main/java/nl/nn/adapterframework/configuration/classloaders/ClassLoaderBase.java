@@ -17,8 +17,10 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +57,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
+
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
+	private List<String> loadedCustomClasses = new ArrayList<>();
 
 	protected ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -153,6 +157,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		allowCustomClasses = allow;
 	}
 
+	protected boolean getAllowCustomClasses() {
+		return allowCustomClasses;
+	}
+
 	/**
 	 * Override this method and make it final so nobody can overwrite it.
 	 * Implementations of this class should use {@link ClassLoaderBase#getLocalResource(String)}
@@ -215,7 +223,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			return getParent().getResources(name);
 		}
 
-		Vector<URL> urls = new Vector<URL>();
+		Vector<URL> urls = new Vector<>();
 
 		//Search for the file in the local classpath only
 		URL localResource = getResource(name, false);
@@ -237,34 +245,59 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
-		Throwable throwable = null;
-		try {
-			return getParent().loadClass(name); // First try to load the class natively
-		} catch (Throwable t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
-			throwable = t;
-		}
-
-		String path = name.replace(".", "/")+".class";
-		URL url = null;
-		if(allowCustomClasses) {
-			if(log.isTraceEnabled()) log.trace(String.format("attempting to load custom class [%s] path [%s]", name, path));
-
-			url = getResource(path);
-			if(url != null && log.isDebugEnabled()) log.debug(String.format("loading custom class url [%s] from classloader [%s]", url, this.toString()));
-		} else {
-			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
-		}
-
-		if(url != null) {
-			try {
-				byte[] bytes = Misc.streamToBytes(url.openStream());
-				return defineClass(name, bytes, 0, bytes.length);
-			} catch (Exception e) {
-				throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this.toString()+"]", e);
+		//This is required because when using an external WebAppClassloader (ClassPath) inner classes may be retrieved from the wrong ClassLoader
+		if(name.contains("$")) {
+			String baseClass = name.substring(0, name.lastIndexOf("$"));
+			if(loadedCustomClasses.contains(baseClass)) {
+				return defineClass(name, resolve);
 			}
 		}
 
-		throw new ClassNotFoundException("class ["+path+"] not found in classloader ["+this.toString()+"]", throwable); // Throw ClassNotFoundException when nothing was found
+		Throwable throwable = null;
+		try {
+			return super.loadClass(name, resolve); // First try to load the class natively
+		} catch (ClassNotFoundException | NoClassDefFoundError t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
+			throwable = t;
+		}
+
+		try {
+			return defineClass(name, resolve);
+		} catch (ClassNotFoundException e) {
+			e.addSuppressed(throwable);
+			throw e;
+		}
+	}
+
+	private Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
+		String path = name.replace(".", "/")+".class";
+
+		//Spring Introspector looks for customizer classes to populate the BeanInfo
+		if(getAllowCustomClasses() && !(name.endsWith("BeanInfo") || name.endsWith("Customizer") || name.startsWith("liquibase"))) {
+			log.trace("attempting to load custom class [{}] path [{}]", name, path);
+
+			URL url = getResource(path);
+
+			if(url != null) {
+				log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
+
+				try {
+					byte[] bytes = Misc.streamToBytes(url.openStream());
+					Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
+
+					if(resolve) {
+						resolveClass(clazz);
+					}
+
+					loadedCustomClasses.add(name);
+
+					return clazz;
+				} catch (Exception e) {
+					throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
+				}
+			}
+		}
+
+		throw new ClassNotFoundException("class ["+name+"] not found in classloader ["+this+"]"); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override
