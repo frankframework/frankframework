@@ -115,7 +115,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	@Override
 	public int getCurrentThreadCount() {
-		return (int)threadsRunning.getValue();
+		log.trace("Get current thread-count, synchronized (lock) on threadsRunning[{}]", threadsRunning);
+		try {
+			return (int)threadsRunning.getValue();
+		} finally {
+			log.trace("Get current thread-count, lock on threadsRunning[{}] released", threadsRunning);
+		}
 	}
 
 	@Override
@@ -126,14 +131,18 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	@Override
 	public void increaseThreadCount() {
 		maxThreadCount++;
+		log.trace("PullingListenerContainer - increaseThreadCount - release processToken - synchronize (lock) on processToken[{}]", pollToken);
 		processToken.release();
+		log.trace("PullingListenerContainer - increaseThreadCount - released processToken - lock on processToken[{}] released", pollToken);
 	}
 
 	@Override
 	public void decreaseThreadCount() {
 		if (maxThreadCount>1) {
 			maxThreadCount--;
+			log.trace("PullingListenerContainer - decreaseThreadCount - tighten processToken - synchronize (lock) on processToken[{}]", pollToken);
 			processToken.tighten();
+			log.trace("PullingListenerContainer - decreaseThreadCount - tightened processToken - lock on processToken[{}] released", pollToken);
 		}
 	}
 
@@ -158,12 +167,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			log.debug("started ControllerTask");
 			try {
 				while (receiver.isInRunState(RunState.STARTED) && !Thread.currentThread().isInterrupted()) {
+					log.trace("PullingListenerContainer - ControllerTask - acquire processToken - synchronize (lock) on processToken[{}]", pollToken);
 					processToken.acquire();
+					log.trace("PullingListenerContainer - ControllerTask - acquired processToken - lock on processToken[{}] released", pollToken);
 					if (pollToken != null) {
+						log.trace("PullingListenerContainer - ControllerTask - acquire pollToken - synchronize (lock) on pollToken[{}]", pollToken);
 						pollToken.acquire();
+						log.trace("PullingListenerContainer - ControllerTask - acquired pollToken - lock on pollToken[{}] released", pollToken);
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
+						if (log.isDebugEnabled() && receiver.getPollInterval()>600) log.debug("is idle, sleeping for [{}] seconds", receiver.getPollInterval());
 						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
 							Thread.sleep(1000);
 						}
@@ -206,7 +219,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			Map<String,Object> threadContext = null;
 			boolean pollTokenReleased=false;
 			try {
+				log.trace("ListenTask-run - increase threadsRunning - synchronize (lock) on threadsRunning[{}]", threadsRunning);
 				threadsRunning.increase();
+				log.trace("ListenTask-run - increased threadsRunning - lock on threadsRunning[{}] released", threadsRunning);
 				if (receiver.isInRunState(RunState.STARTED)) {
 					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
@@ -284,14 +299,20 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 
 							// found a message, process it
-							tasksStarted.increase();
-							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
-							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
+							log.trace("{} PullingListenerContainer - ListenTask - run - increase tasksStarted synchronize (lock) on tasksStarted[{}]", receiver::getLogPrefix, tasksStarted::toString);
+							synchronized (tasksStarted) {
+								tasksStarted.increase();
+								log.debug("{} started ListenTask [{}]", receiver::getLogPrefix, tasksStarted::getValue);
+								Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
+							}
+							log.trace("{} PullingListenerContainer - ListenTask - run - increased tasksStarted lock on tasksStarted[{}] released", receiver::getLogPrefix, tasksStarted::toString);
 						} finally {
 							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
 							if (pollToken != null) {
+								log.trace("PullingListenerContainer - ListenTask - release pollToken - synchronize (lock) on pollToken[{}]", pollToken);
 								pollToken.release();
+								log.trace("PullingListenerContainer - ListenTask - released pollToken - lock on pollToken[{}] released", pollToken);
 							}
 						}
 
@@ -312,7 +333,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
+								log.trace("Run PullingListenerContainer - CacheProcessResult - synchronize (lock) on Receiver[{}]", receiver);
 								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
+								log.trace("Run PullingListenerContainer - CacheProcessResult - lock on Receiver[{}] released", receiver);
 							}
 							messageHandled = true;
 							if (txStatus != null) {
@@ -367,13 +390,19 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					}
 				}
 			} catch (Exception e) {
-				receiver.error("error occured", e);
+				receiver.error("error occurred", e);
 			} finally {
+				log.trace("PullingListenerContainer - ListenTask - release processToken - synchronize (lock) on processToken[{}]", pollToken);
 				processToken.release();
+				log.trace("PullingListenerContainer - ListenTask - released processToken - lock on processToken[{}] released", pollToken);
 				if (!pollTokenReleased && pollToken != null) {
+					log.trace("PullingListenerContainer - ListenTask - release pollToken - synchronize (lock) on pollToken[{}]", pollToken);
 					pollToken.release();
+					log.trace("PullingListenerContainer - ListenTask - released pollToken - lock on pollToken[{}] released", pollToken);
 				}
+				log.trace("ListenTask-run - decrease threadsRunning - synchronize (lock) on threadsRunning[{}]", threadsRunning);
 				threadsRunning.decrease();
+				log.trace("ListenTask-run - decreased threadsRunning - lock on threadsRunning[{}] released", threadsRunning);
 				if (listener != null) {
 					try {
 						listener.closeThread(threadContext);
@@ -411,16 +440,22 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 
 	private void resetRetryInterval() {
-		synchronized (receiver) {
-			if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
+		log.trace("Reset receiver retry interval - synchronize (lock) on receiver {}", receiver::getLogPrefix);
+		try {
+			synchronized (receiver) {
+				if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+					receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
+				}
+				retryInterval = 1;
 			}
-			retryInterval = 1;
+		} finally {
+			log.trace("Reset receiver retry interval - lock on receiver {} released", receiver::getLogPrefix);
 		}
 	}
 
 	private void increaseRetryIntervalAndWait(Throwable t) {
 		long currentInterval;
+		log.trace("Reset increase retry interval - synchronize (lock) on receiver {}", receiver::getLogPrefix);
 		synchronized (receiver) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
@@ -428,6 +463,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				retryInterval = 3600;
 			}
 		}
+		log.trace("Reset retry interval increased - lock on receiver {} released", receiver::getLogPrefix);
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
@@ -444,11 +480,25 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 
 
-	public synchronized void setIdle(boolean b) {
-		idle = b;
+	public void setIdle(boolean b) {
+		log.trace("{} Set PullingListenerContainer idle={} - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, ()->b, this::toString);
+		try {
+			synchronized (this) {
+				idle = b;
+			}
+		} finally {
+			log.trace("{} Set PullingListenerContainer idle={} - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, ()->b, this::toString);
+		}
 	}
-	public synchronized boolean isIdle() {
-		return idle;
+	public boolean isIdle() {
+		log.trace("{} Check if PullingListenerContainer is idle - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, this::toString);
+		try {
+			synchronized (this) {
+				return idle;
+			}
+		} finally {
+			log.trace("{} Check if PullingListenerContainer is idle - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, this::toString);
+		}
 	}
 
 }
