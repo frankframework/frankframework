@@ -229,11 +229,13 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
 		}
+		log.trace("Get/create global connection - synchronize (lock) on {}", this);
 		synchronized (this) {
 			if (globalConnection == null) {
 				globalConnection = createAndStartConnection();
 			}
 		}
+		log.trace("Got global connection, lock released on {}", this);
 		return globalConnection;
 	}
 
@@ -350,12 +352,14 @@ public class MessagingSource  {
 	public Queue getDynamicReplyQueue(Session session) throws JMSException {
 		Queue result;
 		if (useSingleDynamicReplyQueue()) {
+			log.trace("Get/create global dynamic reply queue, synchronize (lock) on {}", this);
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					log.info(getLogPrefix()+"{} created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
 				}
 			}
+			log.trace("Got global dynamic reply queue, lock released on {}", this);
 			result = globalDynamicReplyQueue;
 		} else {
 			result = session.createTemporaryQueue();

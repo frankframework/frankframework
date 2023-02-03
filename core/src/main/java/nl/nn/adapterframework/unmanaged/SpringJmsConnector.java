@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
+import static nl.nn.adapterframework.util.JtaUtil.displayTransactionStatus;
+
 import java.util.Timer;
 
 import javax.jms.ConnectionFactory;
@@ -24,8 +26,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -37,6 +39,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -136,7 +139,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 
 		if (getReceiver().isTransacted()) {
-			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
+			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, ()->txManager);
 			jmsContainer.setTransactionManager(txManager);
 			if (getReceiver().getTransactionTimeout()>0) {
 				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
@@ -148,7 +151,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 						+ "] as the receive time is part of the total transaction time");
 			}
 		} else {
-			log.debug(getLogPrefix()+"setting no transction manager");
+			log.debug("{} setting no transaction manager", this::getLogPrefix);
 		}
 		if (sessionTransacted) {
 			jmsContainer.setSessionTransacted(sessionTransacted);
@@ -202,7 +205,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public void start() throws ListenerException {
-		log.debug(getLogPrefix()+"starting");
+		log.debug("{} starting", this::getLogPrefix);
 		if (jmsContainer == null) {
 			try {
 				configureEndpointConnection();
@@ -214,7 +217,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			try {
 				jmsContainer.start();
 				if (pollGuardInterval != -1 && jmsContainer instanceof IbisMessageListenerContainer) {
-					log.debug("Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", pollGuardInterval);
+					log.trace("{} Creating poll-guard timer with interval [{}ms] while starting SpringJmsConnector", this::getLogPrefix, () -> pollGuardInterval);
 					PollGuard pollGuard = new PollGuard();
 					pollGuard.setSpringJmsConnector(this);
 					pollGuardTimer = new Timer(true);
@@ -230,18 +233,18 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	@Override
 	public void stop() throws ListenerException {
-		log.debug(getLogPrefix()+"stopping");
+		log.debug("{} stopping", this::getLogPrefix);
+		if (pollGuardTimer != null) {
+			log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
+			pollGuardTimer.cancel();
+			pollGuardTimer = null;
+		}
 		if (jmsContainer!=null) {
 			try {
-				if (pollGuardTimer != null) {
-					log.debug("Cancelling previous poll-guard timer while stopping SpringJmsConnector");
-					pollGuardTimer.cancel();
-					pollGuardTimer = null;
-				}
 				jmsContainer.stop();
 				jmsContainer.destroy();
 				jmsContainer = null;
-				log.debug(getLogPrefix()+"jmsContainer is destroyed");
+				log.debug("{} jmsContainer is destroyed", this::getLogPrefix);
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
 			}
@@ -255,60 +258,49 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public void onMessage(Message message, Session session)	throws JMSException {
 		TransactionStatus txStatus=null;
 
-		long onMessageStart= System.currentTimeMillis();
-		long jmsTimestamp= message.getJMSTimestamp();
+		final long onMessageStart= System.currentTimeMillis();
+		final long jmsTimestamp= message.getJMSTimestamp();
 		threadsProcessing.increase();
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
 
+		final String logPrefix = getLogPrefix();
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-			try {
-				if (TX!=null) {
-					txStatus = txManager.getTransaction(TX);
-				}
+			if (TX != null) {
+				txStatus = txManager.getTransaction(TX);
+			}
 
-				try {
-					IPortConnectedListener<Message> listener = getListener();
-						pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY,session);
-	//				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
-						getReceiver().processRawMessage(listener, message, pipeLineSession, false);
-	//				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
-				} catch (ListenerException e) {
-					getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
-					if (txStatus!=null) {
-						txStatus.setRollbackOnly();
-					}
-				} finally {
-					if (txStatus==null && jmsContainer.isSessionTransacted()) {
-						log.debug(getLogPrefix()+"committing JMS session");
-						session.commit();
-					}
+			try {
+				IPortConnectedListener<Message> listener = getListener();
+				pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY, session);
+				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: {}", displayTransactionStatus(txStatus));
+				getReceiver().processRawMessage(listener, message, pipeLineSession, false);
+				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", displayTransactionStatus(txStatus));
+			} catch (ListenerException e) {
+				getReceiver().increaseRetryIntervalAndWait(e, logPrefix);
+				if (txStatus != null) {
+					txStatus.setRollbackOnly();
 				}
 			} finally {
-				if (txStatus!=null) {
-					txManager.commit(txStatus);
+				if (txStatus == null && jmsContainer.isSessionTransacted()) {
+					log.debug("{} committing JMS session", logPrefix);
+					session.commit();
 				}
-				threadsProcessing.decrease();
-				if (log.isInfoEnabled()) {
-					long onMessageEnd= System.currentTimeMillis();
+			}
+		} finally {
+			if (txStatus!=null) {
+				log.debug("{} committing transaction {}", logPrefix, txStatus);
+				txManager.commit(txStatus);
+			}
+			threadsProcessing.decrease();
+			if (log.isInfoEnabled()) {
+				long onMessageEnd= System.currentTimeMillis();
 
-					log.info(getLogPrefix()+"A) JMSMessageTime ["+DateUtils.format(jmsTimestamp)+"]");
-					log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff (~'queing' time) ["+(onMessageStart-jmsTimestamp)+"]");
-					log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff (process time) ["+(onMessageEnd-onMessageStart)+"]");
-				}
-
-//				boolean simulateCrashAfterCommit=true;
-//				if (simulateCrashAfterCommit) {
-//					toggle=!toggle;
-//					if (toggle) {
-//						JtaUtil.setRollbackOnly();
-//						throw new JMSException("simulate crash just before final commit");
-//					}
-//				}
+				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateUtils.format(jmsTimestamp));
+				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
+				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
 			}
 		}
 	}
-
-//	private boolean toggle=true;
 
 	@Override
 	public void onException(JMSException e) {
@@ -316,7 +308,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (ibisExceptionListener!= null) {
 			ibisExceptionListener.exceptionThrown(getListener(), e);
 		} else {
-			log.error(getLogPrefix()+"Cannot report the error to an IBIS Exception Listener", e);
+			log.error("{} Cannot report the error to an IBIS Exception Listener", (Supplier<?>) this::getLogPrefix, e);
 		}
 	}
 
