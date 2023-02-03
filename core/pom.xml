@@ -164,7 +164,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.9.0</version>
+			<version>1.10.0</version>
 		</dependency>
 
 <!-- 	(old) digester is used in the StatisticsParser -->
