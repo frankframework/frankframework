@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -51,6 +52,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -120,7 +122,12 @@ public class Message implements Serializable {
 	public Message(Reader request, Map<String, Object> context) {
 		// Wrap the reader with a pushback-reader here, so that we do not lose any
 		// bytes that may have been read and pushed back.
-		this(context, new PushbackReader(request, 8192));
+		this(context, wrapReader(request));
+	}
+
+	@NotNull
+	private static PushbackReader wrapReader(Reader request) {
+		return new PushbackReader(new BufferedReader(request, 8192));
 	}
 
 	public Message(Reader request) {
@@ -141,7 +148,12 @@ public class Message implements Serializable {
 	public Message(InputStream request, Map<String, Object> context) {
 		// Wrap the input-stream with a pushback input-stream here, so that we do not lose any
 		// bytes that may have been read and pushed back.
-		this(context, new PushbackInputStream(request, 8192));
+		this(context, wrapStream(request));
+	}
+
+	@NotNull
+	private static PushbackInputStream wrapStream(InputStream request) {
+		return new PushbackInputStream(new BufferedInputStream(request, 8192));
 	}
 
 	public Message(InputStream request) {
@@ -352,7 +364,7 @@ public class Message implements Serializable {
 		Reader rawReader = asReader(defaultDecodingCharset);
 		return (rawReader == null || rawReader instanceof PushbackReader) ?
 			(PushbackReader) rawReader :
-			new PushbackReader(rawReader, 8192);
+			wrapReader(rawReader);
 	}
 
 	/**
@@ -401,7 +413,7 @@ public class Message implements Serializable {
 		InputStream rawInputStream = asInputStream(defaultEncodingCharset);
 		return (rawInputStream == null || rawInputStream instanceof PushbackInputStream) ?
 			(PushbackInputStream) rawInputStream :
-			new PushbackInputStream(rawInputStream, 8192);
+			wrapStream(rawInputStream);
 	}
 
 	/**

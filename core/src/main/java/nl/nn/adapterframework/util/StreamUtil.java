@@ -204,8 +204,11 @@ public class StreamUtil {
 			return false;
 		}
 		int v = in.read();
+		if (v == -1) {
+			return false;
+		}
 		in.unread(v);
-		return (v >= 0);
+		return true;
 	}
 
 	public static boolean hasDataAvailable(PushbackReader in) throws IOException {
@@ -213,8 +216,11 @@ public class StreamUtil {
 			return false;
 		}
 		int v = in.read();
+		if (v == -1) {
+			return false;
+		}
 		in.unread(v);
-		return (v >= 0);
+		return true;
 	}
 
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
