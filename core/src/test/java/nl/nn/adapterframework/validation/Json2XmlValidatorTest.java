@@ -189,7 +189,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Test
-	public void issue3973MissingLocalWarning() throws Exception { //waar test je de local warning?
+	public void issue3973MissingLocalWarning() throws Exception {
 		TestConfiguration config = new TestConfiguration();
 
 		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
