@@ -186,7 +186,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(schemas));
+		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(this, schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -221,7 +221,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		return preparseResult;
 	}
 
-	private static Grammar preparse(XMLGrammarPreparser preparser, String schemasId, Schema schema) throws ConfigurationException {
+	private Grammar preparse(XMLGrammarPreparser preparser, String schemasId, Schema schema) throws ConfigurationException {
 		try {
 			return preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, schemaToXMLInputSource(schema));
 		} catch (IOException e) {
@@ -433,8 +433,7 @@ class XercesValidationErrorHandler implements XMLErrorHandler {
 
 	@Override
 	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		// In case the XSD doesn't exist throw an exception to prevent the
-		// the adapter from starting.
+		// In case the XSD doesn't exist re-throw the XNIException to prevent the adapter from starting.
 		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}

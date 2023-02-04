@@ -4,7 +4,7 @@
 	elementFormDefault="qualified" 
 	attributeFormDefault="unqualified"
 >
-	<xsd:include schemaLocation="CommonResponse.xsd"/>
+	<xsd:include namespace="http://waf.nl/XSD/Generic/Response" schemaLocation="CommonResponse.xsd"/>
 	<xsd:element name="GetDocument_Request">
 		<xsd:complexType>
 			<xsd:sequence>
