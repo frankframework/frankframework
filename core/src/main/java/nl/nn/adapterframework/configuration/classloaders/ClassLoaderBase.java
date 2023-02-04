@@ -246,8 +246,9 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		}
 
 		//This is required because when using an external WebAppClassloader (ClassPath) inner classes may be retrieved from the wrong ClassLoader
-		if(name.contains("$")) {
-			String baseClass = name.substring(0, name.lastIndexOf("$"));
+		int dollar = name.lastIndexOf("$");
+		if(dollar > 0) {
+			String baseClass = name.substring(0, dollar);
 			if(loadedCustomClasses.contains(baseClass)) {
 				return defineClass(name, resolve);
 			}
@@ -268,31 +269,37 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		}
 	}
 
+	/**
+	 * This method will only be called for classes that have not been previously loaded yet.
+	 * Custom code will not update if you change the configuration.
+	 * 
+	 * Introspector#findExplicitBeanInfo/BeanInfoFinder#find attempts to lookup classes with the 'BeanInfo' postfix.
+	 * Introspector#findCustomizerClass attempts to lookup classes with the 'Customizer' postfix.
+	 */
 	private Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
-		String path = name.replace(".", "/")+".class";
+		if(getAllowCustomClasses()) {
+			synchronized (getClassLoadingLock(name)) {
+				String path = name.replace(".", "/")+".class";
+				log.trace("attempting to load custom class [{}] path [{}]", name, path);
 
-		//Spring Introspector looks for customizer classes to populate the BeanInfo
-		if(getAllowCustomClasses() && !(name.endsWith("BeanInfo") || name.endsWith("Customizer") || name.startsWith("liquibase"))) {
-			log.trace("attempting to load custom class [{}] path [{}]", name, path);
+				URL url = getResource(path);
+				if(url != null) {
+					log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
 
-			URL url = getResource(path);
+					try {
+						byte[] bytes = Misc.streamToBytes(url.openStream());
+						Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
 
-			if(url != null) {
-				log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
+						if(resolve) {
+							resolveClass(clazz);
+						}
 
-				try {
-					byte[] bytes = Misc.streamToBytes(url.openStream());
-					Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
+						loadedCustomClasses.add(name);
 
-					if(resolve) {
-						resolveClass(clazz);
+						return clazz;
+					} catch (Exception e) {
+						throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
 					}
-
-					loadedCustomClasses.add(name);
-
-					return clazz;
-				} catch (Exception e) {
-					throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
 				}
 			}
 		}
