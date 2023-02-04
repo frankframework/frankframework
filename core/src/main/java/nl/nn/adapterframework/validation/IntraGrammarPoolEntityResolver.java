@@ -53,7 +53,7 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 				&& resourceIdentifier.getLiteralSystemId() == null
 				&& resourceIdentifier.getNamespace() == null
 				&& resourceIdentifier.getPublicId() == null) {
-			// The baseSystemId may be resolved to a namespace.
+			// The baseSystemId may be resolved to a namespace with all other values being NULL. This behavior changed between the 7.7 and 7.8 branch.
 			// This seems to happen sometimes. For example with import of
 			// sub01a.xsd and sub05.xsd without namespace in
 			// /XmlValidator/import_include/root.xsd of Ibis4TestIAF. The
