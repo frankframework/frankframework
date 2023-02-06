@@ -1117,7 +1117,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		// only set impersonated user in oauth situation
 		if (client != null) {
 			ImpersonatedUserId impersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox);
-			log.debug("Set mailservice impersonated user ID to [{}]", impersonatedUserId);
+			log.debug("Set mailservice impersonated user ID to [{}]", impersonatedUserId.getId());
 			service.setImpersonatedUserId(impersonatedUserId);
 		}
 	}
