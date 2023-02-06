@@ -41,6 +41,13 @@
 			<classifier>scenarios</classifier>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${project.version}</version>
+			<classifier>secrets</classifier>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -101,6 +108,27 @@
 									<classifier>scenarios</classifier>
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/scenarios</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<version>${project.version}</version>
+									<classifier>secrets</classifier>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/secrets</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
