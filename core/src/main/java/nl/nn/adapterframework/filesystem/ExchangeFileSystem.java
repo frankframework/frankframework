@@ -125,8 +125,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	public static final byte[] EMPTY_MESSAGE_CONTENT = new byte[0];
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter
-	@Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter String name = "ExchangeFileSystem";
 
 	private @Getter String mailAddress;
@@ -150,41 +149,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	private @Getter String tenantId = null;
 
 	/* SSL */
-	private @Getter
-	@Setter String keystore;
-	private @Getter
-	@Setter String keystoreAuthAlias;
-	private @Getter
-	@Setter String keystorePassword;
-	private @Getter
-	@Setter KeystoreType keystoreType = KeystoreType.PKCS12;
-	private @Getter
-	@Setter String keystoreAlias;
-	private @Getter
-	@Setter String keystoreAliasAuthAlias;
-	private @Getter
-	@Setter String keystoreAliasPassword;
-	private @Getter
-	@Setter String keyManagerAlgorithm = null;
+	private @Getter @Setter String keystore;
+	private @Getter @Setter String keystoreAuthAlias;
+	private @Getter @Setter String keystorePassword;
+	private @Getter @Setter KeystoreType keystoreType = KeystoreType.PKCS12;
+	private @Getter @Setter String keystoreAlias;
+	private @Getter @Setter String keystoreAliasAuthAlias;
+	private @Getter @Setter String keystoreAliasPassword;
+	private @Getter @Setter String keyManagerAlgorithm = null;
 
-	private @Getter
-	@Setter String truststore = null;
-	private @Getter
-	@Setter String truststoreAuthAlias;
-	private @Getter
-	@Setter String truststorePassword = null;
-	private @Getter
-	@Setter KeystoreType truststoreType = KeystoreType.JKS;
-	private @Getter
-	@Setter String trustManagerAlgorithm = null;
-	private @Getter
-	@Setter boolean allowSelfSignedCertificates = false;
-	private @Getter
-	@Setter boolean verifyHostname = true;
-	private @Getter
-	@Setter boolean ignoreCertificateExpiredException = false;
-	private @Getter
-	@Setter boolean enableConnectionTracing = false;
+	private @Getter @Setter String truststore = null;
+	private @Getter @Setter String truststoreAuthAlias;
+	private @Getter @Setter String truststorePassword = null;
+	private @Getter @Setter KeystoreType truststoreType = KeystoreType.JKS;
+	private @Getter @Setter String trustManagerAlgorithm = null;
+	private @Getter @Setter boolean allowSelfSignedCertificates = false;
+	private @Getter @Setter boolean verifyHostname = true;
+	private @Getter @Setter boolean ignoreCertificateExpiredException = false;
+	private @Getter @Setter boolean enableConnectionTracing = false;
 
 	private @Getter CredentialFactory credentials = null;
 	private @Getter CredentialFactory proxyCredentials = null;
@@ -629,11 +611,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 
 		try {
 			if (emailMessage.getId() != null) {
-				PropertySet ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
-					EmailMessageSchema.From, EmailMessageSchema.Subject,
+				PropertySet ps = new PropertySet(
+					EmailMessageSchema.DateTimeReceived,
+					EmailMessageSchema.From,
+					EmailMessageSchema.Subject,
 					EmailMessageSchema.DateTimeSent,
 					EmailMessageSchema.LastModifiedTime,
-					EmailMessageSchema.Size);
+					EmailMessageSchema.Size
+				);
 				if (isReadMimeContents()) {
 					ps.add(ItemSchema.MimeContent);
 				} else {
