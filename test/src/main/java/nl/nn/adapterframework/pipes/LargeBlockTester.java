@@ -20,6 +20,7 @@ import static java.lang.Math.min;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
@@ -79,7 +80,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 				}
 
 				private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
-					byte[] blockStart = ("[" + i + "]").getBytes();
+					byte[] blockStart = ("[" + i + "]").getBytes(Charset.defaultCharset());
 					System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
 					int bytesLeft = servedSize - blockStart.length;
 					int offset = off + blockStart.length;
@@ -144,7 +145,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 			fillerTmp.append(" 123456789");
 		}
 		filler = fillerTmp.toString();
-		return filler.getBytes();
+		return filler.getBytes(Charset.defaultCharset());
 	}
 
 }
