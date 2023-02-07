@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.stream;
 
+import static java.lang.Math.min;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -467,6 +469,7 @@ public class Message implements Serializable {
 	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
 	 * Only works for binary messages
 	 */
+	@Nonnull
 	public byte[] getMagic() throws IOException {
 		return getMagic(10 * 1024);
 	}
@@ -477,6 +480,7 @@ public class Message implements Serializable {
 	 *
 	 * @param readLimit amount of bytes to read.
 	 */
+	@Nonnull
 	public synchronized byte[] getMagic(int readLimit) throws IOException {
 		if (!isBinary()) {
 			return readBytesFromCharacterData(readLimit);
@@ -509,7 +513,7 @@ public class Message implements Serializable {
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
 		String characterData = asString();
 		byte[] data = characterData.getBytes(StreamUtil.DEFAULT_CHARSET);
-		return Arrays.copyOf(data, readLimit);
+		return Arrays.copyOf(data, min(readLimit, data.length));
 	}
 
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {

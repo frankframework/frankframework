@@ -16,8 +16,8 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
-import java.io.PushbackInputStream;
-import java.io.PushbackReader;
+import java.io.InputStream;
+import java.io.Reader;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -629,24 +629,8 @@ public class ApiListenerServlet extends HttpServletBase {
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
 				if (!Message.isEmpty(result)) {
-					MimeType contentType = listener.getContentType();
-					if(listener.getProduces() == MediaTypes.ANY) {
-						Message parsedContentType = messageContext.getMessage("contentType");
-						if(!Message.isEmpty(parsedContentType)) {
-							contentType = MimeType.valueOf(parsedContentType.asString());
-						} else {
-							MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-							if(providedContentType != null) {
-								contentType = providedContentType;
-							}
-						}
-					} else if(listener.getProduces() == MediaTypes.DETECT) {
-						MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-						if(computedContentType != null) {
-							contentType = computedContentType;
-						}
-					}
-					response.setHeader("Content-Type", contentType.toString());
+					MimeType contentType = deriveContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
 
 					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 						String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
@@ -691,6 +675,26 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
+	private static MimeType deriveContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+		if(listener.getProduces() == MediaTypes.ANY) {
+			Message parsedContentType = messageContext.getMessage("contentType");
+			if(!Message.isEmpty(parsedContentType)) {
+				return MimeType.valueOf(parsedContentType.asString());
+			} else {
+				MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+				if(providedContentType != null) {
+					return providedContentType;
+				}
+			}
+		} else if(listener.getProduces() == MediaTypes.DETECT) {
+			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+			if(computedContentType != null) {
+				return computedContentType;
+			}
+		}
+		return listener.getContentType();
+	}
+
 	/**
 	 * Write the result to the response, if any data is available. If no data is
 	 * available, then the output-stream or output-writer of the response will not
@@ -707,22 +711,16 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		if (Message.isEmpty(result) || result.getMagic() == null) {
+		// Message.isEmpty() is a liar, sometimes, but faster than getting the magic. So we do both.
+		if (Message.isEmpty(result) || result.getMagic().length == 0) {
 			return false;
 		}
-		// Message.isEmpty() is a liar, sometimes.
 		if (result.isBinary()) {
-			try (PushbackInputStream in = result.asPushbackInputStream()) {
-				if (!StreamUtil.hasDataAvailable(in)) {
-					return false;
-				}
+			try (InputStream in = result.asInputStream()) {
 				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
 			}
 		} else {
-			try (PushbackReader reader = result.asPushbackReader()) {
-				if (!StreamUtil.hasDataAvailable(reader)) {
-					return false;
-				}
+			try (Reader reader = result.asReader()) {
 				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
 			}
 		}
