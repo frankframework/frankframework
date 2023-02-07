@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarFile;
 
@@ -22,12 +23,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -37,11 +35,10 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class IntraGrammarPoolEntityResolverTest {
 
 	private static final IScopeProvider scopeProvider = new TestScopeProvider();
-	private List<Schema> schemas = new ArrayList<>();
+	private static final List<Schema> EMPTY_SCHEMAS_LIST = Collections.emptyList();
 
 	private String publicId="fakePublicId";
 	public static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private final String RESOURCE_THAT_ONLY_EXISTS_IN_JAR_FILE = "fileOnlyOnZipClassPath.xml";
 
 	private XMLResourceIdentifier getXMLResourceIdentifier(String href, String namespace) {
 		XMLResourceIdentifier resourceIdentifier = new ResourceIdentifier();
@@ -56,13 +53,14 @@ public class IntraGrammarPoolEntityResolverTest {
 		if(href.startsWith("../")) {
 			resourceIdentifier.setExpandedSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
 		}
-		resourceIdentifier.setLiteralSystemId(href); // this file is known to be in the root of the classpath
+		resourceIdentifier.setLiteralSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
 		return resourceIdentifier;
 	}
 
 	@ParameterizedTest
-	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/"})
+	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
 	public void noClassPathSchemaResource(String base) throws Exception {
+		List<Schema> schemas = new ArrayList<>();
 		schemas.add(new ResourceSchema("namespace1", "AppConstants.properties"));
 		schemas.add(new ResourceSchema("namespace2", "dummy.properties"));
 
@@ -78,35 +76,10 @@ public class IntraGrammarPoolEntityResolverTest {
 	}
 
 	@Test
-	public void importFromSchemaWithoutNamespace() throws Exception {
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(new ClassLoader(originalClassLoader) {
-			@Override
-			public URL getResource(String name) {
-				System.out.println(name);
-				return super.getResource(name);
-			}
-		});
-
-		XercesXmlValidator validator = new XercesXmlValidator();
-		validator.setSchemasProvider(new SchemasProviderImpl(schemas));
-
-		try {
-			Thread.currentThread().setContextClassLoader(createBytesClassLoader());
-
-//			schemas.add(new ResourceSchema(scopeProvider, "/Validation/IncludeWithoutNamespace/main.xsd"));
-			schemas.add(new ResourceSchema(scopeProvider, RESOURCE_THAT_ONLY_EXISTS_IN_JAR_FILE));
-			validator.start();
-		} finally {
-			Thread.currentThread().setContextClassLoader(originalClassLoader);
-		}
-	}
-
-	@Test
 	public void localClassPathRelativeLiteralSystemId() throws Exception {
-		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, schemas);
+		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 
-		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("../../ClassLoader/subfolder/fileOnlyOnLocalClassPath.xml", "unused");
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("../../ClassLoader/subfolder/fileOnlyOnLocalClassPath.xml", null);
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
@@ -116,60 +89,56 @@ public class IntraGrammarPoolEntityResolverTest {
 	}
 
 	@Test
-	public void localClassPathAbsoluteRef() throws Exception {
-		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, schemas);
+	public void importFromSchemaWithoutNamespaceWithClassPathPrefixInJarBytesClassLoaderWithParent() throws Exception {
+		List<Schema> schemas = new ArrayList<>();
+		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			ClassLoader bytesClassLoader = createBytesClassLoaderWithNoLocalAccess();
+			Thread.currentThread().setContextClassLoader(bytesClassLoader);
+			IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, schemas);
 
-		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/Xslt/importDocument/lookup.xml", null);
+			XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("../../ClassLoader/subfolder/fileOnlyOnLocalClassPath.xml", "unused");
 
-		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
-		assertNotNull(inputSource);
+			XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
+			assertNotNull(inputSource);
+
+			String expected = TestFileUtils.getTestFile("/ClassLoader/subfolder/fileOnlyOnLocalClassPath.xml");
+			TestAssertions.assertEqualsIgnoreCRLF(expected, xmlInputSource2String(inputSource));
+		} finally {
+			Thread.currentThread().setContextClassLoader(localClassLoader);
+		}
 	}
 
-//	@Test
-//	public void bytesClassPath() throws Exception {
-//		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-//
-//		URL file = this.getClass().getResource(JAR_FILE);
-//		assertNotNull(file, "jar url not found");
-//		JarFile jarFile = new JarFile(file.getFile());
-//		assertNotNull(jarFile, "jar file not found");
-//
-//		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
-//		cl.setJar(file.getFile());
-//		cl.configure(null, "");
-//
-//		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(TestScopeProvider.wrap(cl), schemas);
-//
-//		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ClassLoader/Xslt/names.xsl");
-//
-//		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
-//		assertNotNull(inputSource);
-//	}
-//
-//	@Test
-//	public void bytesClassPathAbsolute() throws Exception  {
-//		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-//
-//		URL file = this.getClass().getResource(JAR_FILE);
-//		assertNotNull(file, "jar url not found");
-//		JarFile jarFile = new JarFile(file.getFile());
-//		assertNotNull(jarFile, "jar file not found");
-//
-//		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
-//		cl.setJar(file.getFile());
-//		cl.configure(null, "");
-//
-//		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(TestScopeProvider.wrap(cl), schemas);
-//
-//		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/ClassLoader/Xslt/names.xsl");
-//
-//		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
-//		assertNotNull(inputSource);
-//	}
+	@Test
+	public void importFromSchemaWithoutNamespaceWithClassPathPrefixInJarBytesClassLoaderWithNoParent() throws Exception {
+		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			ClassLoader bytesClassLoader = createBytesClassLoaderWithNoLocalAccess();
+			Thread.currentThread().setContextClassLoader(bytesClassLoader);
+			IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(TestScopeProvider.wrap(bytesClassLoader), EMPTY_SCHEMAS_LIST);
+
+			XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("../../ClassLoader/subfolder/fileOnlyOnLocalClassPath.xml", "unused");
+
+			XNIException thrown = assertThrows(XNIException.class, () -> resolver.resolveEntity(resourceIdentifier));
+			assertThat(thrown.getMessage(), startsWith("Cannot find resource ["));
+		} finally {
+			Thread.currentThread().setContextClassLoader(localClassLoader);
+		}
+	}
+
+	@Test //See issue #3973. Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
+	public void localClassPathAbsoluteRef() throws Exception {
+		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
+
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/this/schema/does/not/exist.xsd", null);
+
+		XNIException thrown = assertThrows(XNIException.class, () -> resolver.resolveEntity(resourceIdentifier));
+		assertThat(thrown.getMessage(), startsWith("Cannot find resource ["));
+	}
 
 	@Test
 	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
-		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, schemas);
+		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ftp://share.host.org/UDTSchema.xsd", null);
 		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");
@@ -183,19 +152,13 @@ public class IntraGrammarPoolEntityResolverTest {
 		assertThat(thrown.getMessage(), startsWith("Cannot find resource ["));
 	}
 
-	public static ClassLoader createBytesClassLoader() throws Exception {
+	public static ClassLoader createBytesClassLoaderWithNoLocalAccess() throws Exception {
 		URL file = TestFileUtils.class.getResource(JAR_FILE);
 		assertNotNull(file, "jar url not found");
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull(jarFile, "jar file not found");
 
-		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {
-			@Override
-			public URL getResource(String name) {
-				System.err.println(name);
-				return super.getResource(name);
-			}
-		}); //No parent classloader
+		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 		return cl;
@@ -222,41 +185,13 @@ public class IntraGrammarPoolEntityResolverTest {
 		return IOUtils.toString(reader);
 	}
 
-	private static class SchemasProviderImpl implements SchemasProvider {
-		private final @Getter List<Schema> schemas;
-
-		public SchemasProviderImpl(List<Schema> schemas) {
-			this.schemas = schemas;
-		}
-
-		@Override
-		public String getSchemasId() throws ConfigurationException {
-			return "dummySchemaID";
-		}
-
-		@Override
-		public String getSchemasId(PipeLineSession session) throws PipeRunException {
-			return null;
-		}
-
-		@Override
-		public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
-			return null;
-		}
-	}
-
 	private static class ResourceSchema implements Schema {
 		private final String alias;
 		private final Resource resource;
 
 		public ResourceSchema(String alias, String lookup) {
-//			this(scopeProvider, resource);
 			this.resource = Resource.getResource(scopeProvider, lookup);
 			this.alias = alias;
-		}
-		public ResourceSchema(IScopeProvider scopeProvider, String lookup) {
-			this.resource = Resource.getResource(scopeProvider, lookup);
-			this.alias = resource.getSystemId();
 		}
 
 		@Override
@@ -268,6 +203,5 @@ public class IntraGrammarPoolEntityResolverTest {
 		public String getSystemId() {
 			return alias;
 		}
-
 	}
 }

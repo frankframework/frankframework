@@ -167,7 +167,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	 */
 	@Override
 	public final URL getResource(String name) {
-		System.err.println(">>>>>> " + name);
 		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
 			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
 			return null;
