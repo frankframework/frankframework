@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import lombok.Setter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -49,7 +49,7 @@ public class LargeBlockTester extends FixedForwardPipe {
 		Message result;
 		if (direction==Direction.PRODUCE) {
 
-			final String filler = buildDataBuffer();
+			final byte[] filler = buildDataBuffer();
 			final long bytesToServe = blockCount * (long) blockSize;
 			result = new Message(new InputStream() {
 				int i;
@@ -62,19 +62,33 @@ public class LargeBlockTester extends FixedForwardPipe {
 					}
 					final int servedSize = (int) min(len, bytesLeftToServe);
 					log.debug("serve block [{}] of size [{}]", i, servedSize);
-					byte[] block = ("[" + i + "]" + filler).getBytes();
-					bytesLeftToServe += servedSize;
 
+					copyToOutputBuffer(buf, off, servedSize);
+					bytesLeftToServe -= servedSize;
 					totalBlocksServed.incrementAndGet();
-					System.arraycopy(block, 0, buf, off, servedSize);
+
 					if (sleepBetweenServedBlocks > 0) {
 						try {
 							Thread.sleep(sleepBetweenServedBlocks);
 						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
 							throw new IOException(e);
 						}
 					}
-					return len;
+					return servedSize;
+				}
+
+				private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
+					byte[] blockStart = ("[" + i + "]").getBytes();
+					System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
+					int bytesLeft = servedSize - blockStart.length;
+					int offset = off + blockStart.length;
+					while (bytesLeft > 0) {
+						int blockCopySize = min(filler.length, bytesLeft);
+						System.arraycopy(filler, 0, buf, offset, blockCopySize);
+						offset += blockCopySize;
+						bytesLeft -= blockCopySize;
+					}
 				}
 
 				@Override
@@ -122,15 +136,15 @@ public class LargeBlockTester extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@NotNull
-	private String buildDataBuffer() {
+	@Nonnull
+	private byte[] buildDataBuffer() {
 		final String filler;
 		StringBuilder fillerTmp = new StringBuilder();
 		for (int i = 0; i < blockSize / 10; i++) {
 			fillerTmp.append(" 123456789");
 		}
 		filler = fillerTmp.toString();
-		return filler;
+		return filler.getBytes();
 	}
 
 }
