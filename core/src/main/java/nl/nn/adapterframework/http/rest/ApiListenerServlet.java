@@ -670,6 +670,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				final boolean outputWritten = writeToResponseStream(response, result);
 				if (!outputWritten) {
+					log.debug("No output written, set content-type header to null");
 					response.setContentType(null);
 				}
 
@@ -706,7 +707,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		if (Message.isEmpty(result)) {
+		if (Message.isEmpty(result) || result.getMagic() == null) {
 			return false;
 		}
 		// Message.isEmpty() is a liar, sometimes.

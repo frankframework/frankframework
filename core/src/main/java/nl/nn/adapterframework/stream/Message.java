@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
@@ -52,7 +53,6 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -125,7 +125,7 @@ public class Message implements Serializable {
 		this(context, wrapReader(request));
 	}
 
-	@NotNull
+	@Nonnull
 	private static PushbackReader wrapReader(Reader request) {
 		return new PushbackReader(new BufferedReader(request, 8192));
 	}
@@ -151,7 +151,7 @@ public class Message implements Serializable {
 		this(context, wrapStream(request));
 	}
 
-	@NotNull
+	@Nonnull
 	private static PushbackInputStream wrapStream(InputStream request) {
 		return new PushbackInputStream(new BufferedInputStream(request, 8192));
 	}

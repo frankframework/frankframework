@@ -15,10 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import static java.lang.Math.min;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jetbrains.annotations.NotNull;
 
 import lombok.Setter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -44,48 +48,46 @@ public class LargeBlockTester extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
 		if (direction==Direction.PRODUCE) {
-			final String filler;
 
-			{
-				String fillerTmp ="";
-				for (int i=0; i<blockSize/10; i++) {
-					fillerTmp += " 123456789";
-				}
-				filler = fillerTmp;
-			}
+			final String filler = buildDataBuffer();
+			final long bytesToServe = blockCount * (long) blockSize;
 			result = new Message(new InputStream() {
-						int i;
+				int i;
+				long bytesLeftToServe = bytesToServe;
 
-						@Override
-						public int read(byte[] buf, int off, int len) throws IOException {
-							if (i++>blockCount) {
-								return -1;
-							}
-							int servedSize=len<blockSize?len:blockSize;
-							log.debug("serve block ["+i+"] of size ["+servedSize+"]");
-							byte[] block = ("["+i+"]"+filler).getBytes();
-							totalBlocksServed.incrementAndGet();
-							System.arraycopy(block, 0, buf, off, servedSize);
-							if (sleepBetweenServedBlocks>0) {
-								try {
-									Thread.sleep(sleepBetweenServedBlocks);
-								} catch (InterruptedException e) {
-									throw new IOException(e);
-								}
-							}
-							return len;
+				@Override
+				public int read(byte[] buf, int off, int len) throws IOException {
+					if (bytesLeftToServe <= 0L) {
+						return -1;
+					}
+					final int servedSize = (int) min(len, bytesLeftToServe);
+					log.debug("serve block [{}] of size [{}]", i, servedSize);
+					byte[] block = ("[" + i + "]" + filler).getBytes();
+					bytesLeftToServe += servedSize;
+
+					totalBlocksServed.incrementAndGet();
+					System.arraycopy(block, 0, buf, off, servedSize);
+					if (sleepBetweenServedBlocks > 0) {
+						try {
+							Thread.sleep(sleepBetweenServedBlocks);
+						} catch (InterruptedException e) {
+							throw new IOException(e);
 						}
+					}
+					return len;
+				}
 
-						@Override
-						public int read() throws IOException {
-							if (i<blockCount) {
-								return -1;
-							}
-							log.debug("serve byte");
-							return 'x';
-						}
+				@Override
+				public int read() throws IOException {
+					if (bytesLeftToServe <= 0) {
+						return -1;
+					}
+					log.debug("serve byte");
+					--bytesLeftToServe;
+					return 'x';
+				}
 
-					});
+			});
 		} else {
 			try (Reader reader=message.asReader()) {
 				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;
@@ -100,24 +102,35 @@ public class LargeBlockTester extends FixedForwardPipe {
 					if (block==0) {
 						blocksServedAfterFirstBlockRead = totalBlocksServed.get();
 					}
-					if (len<0) {
+					if (len < 0) {
 						break;
 					}
-					bytesRead+=len;
-					log.debug("read block ["+(block++)+"] of size ["+len+"]: "+new String(buf,0,len<displaylen?len:displaylen));
+					bytesRead += len;
+					log.debug("read block [" + (block++) + "] of size [" + len + "]: " + new String(buf, 0, len < displaylen ? len : displaylen));
 				}
 				int blocksServedAtEndOfReading = totalBlocksServed.get();
 
-				int blocksServedWhileReading = blocksServedAtEndOfReading-blocksServedAfterFirstBlockRead;
-				boolean moreThanHalfOfBlocksProducedWhileReading = blocksServedWhileReading*2 > blockCount;
+				int blocksServedWhileReading = blocksServedAtEndOfReading - blocksServedAfterFirstBlockRead;
+				boolean moreThanHalfOfBlocksProducedWhileReading = blocksServedWhileReading * 2 > blockCount;
 
-				result = new Message("bytesRead ["+bytesRead+"], more than half of blocks produced while reading ["+moreThanHalfOfBlocksProducedWhileReading+"]");
+				result = new Message("bytesRead [" + bytesRead + "], more than half of blocks produced while reading [" + moreThanHalfOfBlocksProducedWhileReading + "]");
 			} catch (IOException e) {
 				throw new PipeRunException(this, "Cannot consume blocks", e);
 			}
 
 		}
 		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	@NotNull
+	private String buildDataBuffer() {
+		final String filler;
+		StringBuilder fillerTmp = new StringBuilder();
+		for (int i = 0; i < blockSize / 10; i++) {
+			fillerTmp.append(" 123456789");
+		}
+		filler = fillerTmp.toString();
+		return filler;
 	}
 
 }
