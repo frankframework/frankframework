@@ -233,6 +233,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
@@ -281,6 +282,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
@@ -325,6 +327,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
