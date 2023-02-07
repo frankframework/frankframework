@@ -46,6 +46,7 @@ import org.xml.sax.InputSource;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -390,10 +391,10 @@ public class XSD implements Schema, Comparable<XSD> {
 
 	@Override
 	public String getSystemId() {
-		if (url == null) {
+		if (resource == null) {
 			return getTargetNamespace(); // used by IntraGrammarPoolEntityResolver
 		}
-		return url.toExternalForm();
+		return ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+resource; //Must prefix this with the `classpath:` protocol else Xerces will append the `file:` protocol
 	}
 
 	public boolean hasDependency(Set<XSD> xsds) {
