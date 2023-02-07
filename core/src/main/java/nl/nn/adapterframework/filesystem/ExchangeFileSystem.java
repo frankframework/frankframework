@@ -984,7 +984,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		try {
 			return cleanAddress(emailMessage.getFrom());
 		} catch (ServiceLocalException e) {
-			log.warn("Could not get From Address: {}", e.getMessage());
+			log.warn("Could not get From Address: {}", e::getMessage);
 			return null;
 		}
 	}
