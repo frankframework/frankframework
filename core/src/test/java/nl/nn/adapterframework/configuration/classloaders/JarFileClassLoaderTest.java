@@ -24,6 +24,7 @@ import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.testutil.JunitTestClassLoaderWrapper;
 import nl.nn.adapterframework.testutil.TestAppender;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
@@ -86,12 +87,11 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		try {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
-	
+
 			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
 			classLoader.configure(ibisContext, "myConfig");
 
 			List<String> logEvents = appender.getLogLines();
-			System.out.println(logEvents);
 			URL configurationURL = classLoader.getResource("Configuration.xml");
 			assertNotNull(configurationURL, "unable to locate test file [Configuration.xml]");
 
@@ -101,5 +101,16 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
+	}
+
+	@Test
+	public void loadCustomClass() throws Exception {
+		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		classLoader.setBasePath(".");
+		classLoader.configure(ibisContext, "myConfig");
+
+		classLoader.setAllowCustomClasses(true);
+		Class<?> clazz = classLoader.loadClass("nl.nn.adapterframework.pipes.LargeBlockTester"); //With inner-class
+		clazz.newInstance();
 	}
 }

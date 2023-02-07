@@ -161,7 +161,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.9.0</version>
+			<version>1.10.0</version>
 		</dependency>
 
 <!-- 	(old) digester is used in the StatisticsParser -->
@@ -768,7 +768,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.30</version>
+			<version>9.30.1</version>
 		</dependency>
 
 		<dependency>

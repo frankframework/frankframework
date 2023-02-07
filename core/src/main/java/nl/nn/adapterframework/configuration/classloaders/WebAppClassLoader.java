@@ -52,4 +52,9 @@ public class WebAppClassLoader extends ClassLoaderBase {
 
 		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
+
+	@Override
+	protected boolean getAllowCustomClasses() {
+		return true;
+	}
 }

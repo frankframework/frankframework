@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import javax.annotation.Nonnull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 
@@ -47,7 +48,7 @@ public class PollGuard extends TimerTask {
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {
-			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time " + simpleDateFormat.format(new Date(lastPollFinishedTime)));
+			log.trace("{} check last poll finished time {}", springJmsConnector::getLogPrefix, ()-> simpleDateFormat.format(new Date(lastPollFinishedTime)));
 		}
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago

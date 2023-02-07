@@ -39,7 +39,7 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 
 	protected final Map<String, byte[]> readResources(InputStream stream) throws ClassLoaderException {
 		try (JarInputStream jarInputStream = new JarInputStream(stream)) {
-			Map<String, byte[]> resources = new HashMap<String, byte[]>();
+			Map<String, byte[]> resources = new HashMap<>();
 			JarEntry jarEntry;
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				String fileName = jarEntry.getName();
