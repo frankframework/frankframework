@@ -122,7 +122,6 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  * @author Gerrit van Brakel
  */
 public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeService> implements HasKeystore, HasTruststore {
-	public static final byte[] EMPTY_MESSAGE_CONTENT = new byte[0];
 	private final @Getter(onMethod = @__(@Override)) String domain = "Exchange";
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -176,7 +175,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	private ExecutorService executor;
 	private ClientCredentialParameters clientCredentialParam;
 
-	private FolderId basefolderId;
+	private FolderId baseFolderId;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -258,7 +257,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 				throw new FileSystemException("Failed to initialize MSAL ConfidentialClientApplication.", e);
 			}
 		}
-		basefolderId = getBaseFolderId(getMailAddress(), getBaseFolder());
+		baseFolderId = getBaseFolderId(getMailAddress(), getBaseFolder());
 	}
 
 	@Override
@@ -883,12 +882,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			final byte[] content = ((FileAttachment) a).getContent();
 			if (content == null) {
 				log.warn("content of attachment is null");
-				return new Message(EMPTY_MESSAGE_CONTENT);
+				return Message.nullMessage();
 			}
 			return new Message(content);
 		}
 		log.warn("Attachment of unknown type: {}, returning empty message", a.getClass().getName());
-		return new Message(EMPTY_MESSAGE_CONTENT);
+		return Message.nullMessage();
 	}
 
 	@Override
@@ -1123,7 +1122,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	private ExchangeObjectReference asObjectReference(String objectName) {
-		return asObjectReference(objectName, basefolderId);
+		return asObjectReference(objectName, baseFolderId);
 	}
 
 	private ExchangeObjectReference asObjectReference(String objectName, FolderId baseFolderId) {
@@ -1172,7 +1171,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	/**
-	 * Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery
+	 * Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery
 	 */
 	public void setUrl(String url) {
 		this.url = url;
@@ -1240,9 +1239,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 
-	/**
-	 * proxy host
-	 */
+	/** proxy host */
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
@@ -1256,30 +1253,22 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		this.proxyPort = proxyPort;
 	}
 
-	/**
-	 * proxy username
-	 */
+	/** proxy username */
 	public void setProxyUsername(String proxyUsername) {
 		this.proxyUsername = proxyUsername;
 	}
 
-	/**
-	 * proxy password
-	 */
+	/** proxy password */
 	public void setProxyPassword(String proxyPassword) {
 		this.proxyPassword = proxyPassword;
 	}
 
-	/**
-	 * proxy authAlias
-	 */
+	/** proxy authAlias */
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		this.proxyAuthAlias = proxyAuthAlias;
 	}
 
-	/**
-	 * proxy domain
-	 */
+	/** proxy domain */
 	public void setProxyDomain(String proxyDomain) {
 		this.proxyDomain = proxyDomain;
 	}
