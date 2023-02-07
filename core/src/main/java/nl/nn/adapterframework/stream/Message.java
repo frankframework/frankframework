@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
-import static java.lang.Math.min;
-
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,8 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PushbackInputStream;
-import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -124,12 +119,7 @@ public class Message implements Serializable {
 	public Message(Reader request, Map<String, Object> context) {
 		// Wrap the reader with a pushback-reader here, so that we do not lose any
 		// bytes that may have been read and pushed back.
-		this(context, wrapReader(request));
-	}
-
-	@Nonnull
-	private static PushbackReader wrapReader(Reader request) {
-		return new PushbackReader(new BufferedReader(request, 8192));
+		this(context, request);
 	}
 
 	public Message(Reader request) {
@@ -150,12 +140,7 @@ public class Message implements Serializable {
 	public Message(InputStream request, Map<String, Object> context) {
 		// Wrap the input-stream with a pushback input-stream here, so that we do not lose any
 		// bytes that may have been read and pushed back.
-		this(context, wrapStream(request));
-	}
-
-	@Nonnull
-	private static PushbackInputStream wrapStream(InputStream request) {
-		return new PushbackInputStream(new BufferedInputStream(request, 8192));
+		this(context, request);
 	}
 
 	public Message(InputStream request) {
@@ -358,17 +343,6 @@ public class Message implements Serializable {
 		}
 	}
 
-	public PushbackReader asPushbackReader() throws IOException {
-		return asPushbackReader(null);
-	}
-
-	public PushbackReader asPushbackReader(String defaultDecodingCharset) throws IOException {
-		Reader rawReader = asReader(defaultDecodingCharset);
-		return (rawReader == null || rawReader instanceof PushbackReader) ?
-			(PushbackReader) rawReader :
-			wrapReader(rawReader);
-	}
-
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
@@ -405,17 +379,6 @@ public class Message implements Serializable {
 		}
 		log.debug("returning String {} as Reader", this::getId);
 		return new StringReader(request.toString());
-	}
-
-	public PushbackInputStream asPushbackInputStream() throws IOException {
-		return asPushbackInputStream(null);
-	}
-
-	public PushbackInputStream asPushbackInputStream(String defaultEncodingCharset) throws IOException {
-		InputStream rawInputStream = asInputStream(defaultEncodingCharset);
-		return (rawInputStream == null || rawInputStream instanceof PushbackInputStream) ?
-			(PushbackInputStream) rawInputStream :
-			wrapStream(rawInputStream);
 	}
 
 	/**
@@ -466,8 +429,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
-	 * Only works for binary messages
+	 * Reads the first 10k of a message. If the message does not support markSupported it is wrapped in a buffer.
 	 */
 	@Nonnull
 	public byte[] getMagic() throws IOException {
@@ -475,8 +437,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
-	 * Only works for binary messages
+	 * Reads the first N bytes message, specified by parameter {@code readLimit}. If the message does not support markSupported it is wrapped in a buffer.
 	 *
 	 * @param readLimit amount of bytes to read.
 	 */
@@ -512,14 +473,17 @@ public class Message implements Serializable {
 
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
 		String characterData = asString();
+		if (characterData.isEmpty()) {
+			return new byte[0];
+		}
 		byte[] data = characterData.getBytes(StreamUtil.DEFAULT_CHARSET);
-		return Arrays.copyOf(data, min(readLimit, data.length));
+		return Arrays.copyOf(data, readLimit);
 	}
 
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
 		byte[] bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);
-		if (numRead < 0) {
+		if (numRead <= 0) {
 			return new byte[0];
 		}
 		if (numRead < readLimit) {

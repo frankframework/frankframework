@@ -629,7 +629,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
 				if (!Message.isEmpty(result)) {
-					MimeType contentType = deriveContentType(messageContext, listener, result);
+					MimeType contentType = determineContentType(messageContext, listener, result);
 					response.setContentType(contentType.toString());
 
 					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
@@ -675,7 +675,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
-	private static MimeType deriveContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+	private static MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
 		if(listener.getProduces() == MediaTypes.ANY) {
 			Message parsedContentType = messageContext.getMessage("contentType");
 			if(!Message.isEmpty(parsedContentType)) {
