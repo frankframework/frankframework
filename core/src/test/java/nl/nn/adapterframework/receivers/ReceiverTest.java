@@ -233,6 +233,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
@@ -243,7 +244,8 @@ public class ReceiverTest {
 	public void testPollGuardStartTimeout() throws Exception {
 		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
-		listener.setPollGuardInterval(5);
+		listener.setPollGuardInterval(1_000);
+		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
@@ -267,7 +269,9 @@ public class ReceiverTest {
 		// From here the PollGuard should be triggering startup-delay timeout-guard
 		listener.setStartupDelay(100_000);
 
+		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
 		Thread.sleep(5_000);
+		log.warn("Test resuming");
 
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
@@ -281,6 +285,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
@@ -325,6 +330,7 @@ public class ReceiverTest {
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
+		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
 		log.info("Receiver RunState "+receiver.getRunState());
 
