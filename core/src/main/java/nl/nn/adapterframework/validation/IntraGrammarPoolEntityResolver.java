@@ -85,14 +85,9 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 		// Throw an exception so the XercesValidationErrorHandler picks this up as ERROR.
 		// Do not rely on the fallback resource resolver, this will bypass configuration classloaders.
 		// See https://github.com/ibissource/iaf/issues/3973
-		StringBuilder errorMessage = new StringBuilder("Cannot find resource [");
-		errorMessage.append(resourceIdentifier.getExpandedSystemId());
-		errorMessage.append("] from systemId [");
-		errorMessage.append(resourceIdentifier.getLiteralSystemId());
-		errorMessage.append("] with base [");
-		errorMessage.append(resourceIdentifier.getBaseSystemId());
-		errorMessage.append("]");
-		throw new XNIException(errorMessage.toString());
+		throw new XNIException("Cannot find resource [" + resourceIdentifier.getExpandedSystemId() +
+			"] from systemId [" + resourceIdentifier.getLiteralSystemId() +
+			"] with base [" + resourceIdentifier.getBaseSystemId() + "]");
 	}
 
 }
