@@ -379,6 +379,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
 					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
 					response.sendError(406, "endpoint cannot provide the supplied MimeType");
+					return;
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {
@@ -642,7 +643,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				/*
-				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
+				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
@@ -655,10 +656,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				final boolean outputWritten = writeToResponseStream(response, result);
 				if (!outputWritten) {
 					log.debug("No output written, set content-type header to null");
+					response.resetBuffer();
 					response.setContentType(null);
 				}
 
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
+				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
 				log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
@@ -667,7 +669,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				}
 				catch (IOException | IllegalStateException ex) {
-					log.warn("an error occured while tyring to handle exception ["+e.getMessage()+"]", ex);
+					log.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}

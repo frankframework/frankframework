@@ -904,5 +904,4 @@ public class Message implements Serializable {
 		}
 		closeOnClose(writer);
 	}
-
 }

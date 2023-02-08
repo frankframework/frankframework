@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PushbackInputStream;
-import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.CharBuffer;
@@ -197,30 +195,6 @@ public class StreamUtil {
 		}
 
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
-	}
-
-	public static boolean hasDataAvailable(PushbackInputStream in) throws IOException {
-		if (in == null) {
-			return false;
-		}
-		int v = in.read();
-		if (v == -1) {
-			return false;
-		}
-		in.unread(v);
-		return true;
-	}
-
-	public static boolean hasDataAvailable(PushbackReader in) throws IOException {
-		if (in == null) {
-			return false;
-		}
-		int v = in.read();
-		if (v == -1) {
-			return false;
-		}
-		in.unread(v);
-		return true;
 	}
 
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
