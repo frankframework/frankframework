@@ -40,7 +40,7 @@ The Frank! team and our community take security bugs in the Frank!Framework seri
 responsibly disclose your findings, and will make every effort to acknowledge your contributions.
 
 If you would like to report a vulnerability in one of our products, or have security concerns regarding Frank! software, 
-please email security@ibissource.org and include the word "SECURITY" in the subject line.
+please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
 In order for us to best respond to your report, please include any of the following:
 
