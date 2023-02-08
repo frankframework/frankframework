@@ -270,7 +270,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 		} else {
 			@SuppressWarnings("unchecked")
-			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F
+			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, then it must be an F
 			try {
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(rawMessage);
