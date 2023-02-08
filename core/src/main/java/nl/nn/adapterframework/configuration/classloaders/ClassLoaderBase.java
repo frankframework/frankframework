@@ -219,7 +219,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	@Override
 	public final Enumeration<URL> getResources(String name) throws IOException {
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
-		if(name.startsWith("META-INF/")) {
+		if(name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
 		}
 

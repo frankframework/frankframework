@@ -54,6 +54,37 @@
 				</configuration>
 			</plugin>
 -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>copy-resources-and-configurations</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/full-configuration</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/src/main/configurations</directory>
+									<filtering>false</filtering>
+									<targetPath>configurations</targetPath>
+								</resource>
+								<resource>
+									<directory>${project.build.outputDirectory}</directory>
+									<filtering>false</filtering>
+								</resource>
+								<resource>
+									<directory>${project.build.sourceDirectory}</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- use maven-jar-plugin to make separate artifacts of context, configurations, resources and testscenarios, to inject them into WebSphere Docker deployment -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -116,24 +147,38 @@
 							<classesDirectory>src/main/secrets</classesDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>full-configuration</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>full-configuration</classifier>
+							<packagingExcludes>.gitignore</packagingExcludes>
+							<attachClasses>true</attachClasses>
+							<classesDirectory>${project.build.directory}/full-configuration</classesDirectory>
+							<archive>
+								<manifestEntries>
+									<IAF-Version>${revision}</IAF-Version>
+									<Maven-Version>${maven.version}</Maven-Version>
+									<Creation-Time>${maven.build.timestamp}</Creation-Time>
+									<Build-Version>${project.version}</Build-Version>
+									<Build-Artifact>${project.artifactId}</Build-Artifact>
+								</manifestEntries>
+								<addMavenDescriptor>true</addMavenDescriptor>
+							</archive>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>war</goal>
-						</goals>
-					</execution>
-				</executions>
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<attachClasses>true</attachClasses>
-					<classesClassifier>full-configuration</classesClassifier>
 					<archive>
 						<manifestEntries>
 							<IAF-Version>${revision}</IAF-Version>
