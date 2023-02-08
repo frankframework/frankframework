@@ -16,7 +16,7 @@
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
 			<list>
-				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
 					<property name="name" value="conversationId"/>
 					<property name="label" value="Conversation Id"/>
@@ -71,7 +71,7 @@
 		</property>
 	</bean>
 
-	<bean name="oldSchoolView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="oldSchoolView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Old school"/>
 		<property name="metadataNames">
 			<list>
@@ -183,7 +183,7 @@
 
 	<bean name="auditLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Audit log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="auditLogStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -281,7 +281,7 @@
 
 	<bean name="exceptionLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Exception log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="exceptionLogStorage"/>
 		</property>
 		<property name="metadataNames">
