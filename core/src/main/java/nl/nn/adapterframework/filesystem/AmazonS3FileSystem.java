@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,12 +52,15 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 //	public static final List<String> STORAGE_CLASSES = getStorageClasses();
 //	public static final List<String> TIERS = getTiers();
+
+	private String BUCKET_OBJECT_SEPARATOR="|";
 
 	private String accessKey;
 	private String secretKey;
@@ -120,13 +123,20 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
 		S3Object object = new S3Object();
-		object.setKey(filename);
+		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
+		if (separatorPos<0) {
+			object.setBucketName(bucketName);
+			object.setKey(filename);
+		} else {
+			object.setBucketName(filename.substring(0,separatorPos));
+			object.setKey(filename.substring(+1));
+		}
 		return object;
 	}
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(folder+"/"+filename);
+		return toFile(Misc.concatStrings(folder, "/", filename));
 	}
 
 
@@ -235,7 +245,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		private S3Object file;
 
 		public S3Message(S3Object file, Map<String,Object> context) {
-			super(() -> file.getObjectContent(), context, file.getClass());
+			super(file.getObjectContent(), context);
 			this.file = file;
 		}
 
@@ -291,6 +301,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
+	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
 		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
 		s3Client.deleteObject(bucketName, source.getKey());
@@ -299,21 +310,24 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		String destinationFile = destinationFolder+"/"+f.getKey();
+		if (!createFolder && !folderExists(destinationFolder)) {
+			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
+		}
+		String destinationFile = destinationFolder+"/"+getName(f);
 		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
 		return toFile(destinationFile);
 	}
 
 	@Override
 	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		return renameFile(f,toFile(destinationFolder,f.getKey()));
+		return renameFile(f,toFile(destinationFolder,getName(f)));
 	}
 
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put("name", bucketName);
+		attributes.put("bucketName", bucketName);
 		return attributes;
 	}
 
@@ -324,17 +338,18 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public String getName(S3Object f) {
-		return f.getKey();
-	}
+		int lastSlashPos = f.getKey().lastIndexOf('/');
+		return f.getKey().substring(lastSlashPos+1);	}
 
 	@Override
 	public String getParentFolder(S3Object f) throws FileSystemException {
-		return f.getBucketName();
+		int lastSlashPos = f.getKey().lastIndexOf('/');
+		return lastSlashPos > 1 ? f.getKey().substring(0, lastSlashPos) : null;
 	}
 
 	@Override
 	public String getCanonicalName(S3Object f) throws FileSystemException {
-		return f.getBucketName() + f.getKey();
+		return f.getBucketName() + BUCKET_OBJECT_SEPARATOR + f.getKey();
 	}
 
 	@Override

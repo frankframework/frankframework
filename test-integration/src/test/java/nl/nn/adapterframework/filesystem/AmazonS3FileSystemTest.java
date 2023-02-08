@@ -1,36 +1,38 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.util.UUID;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
+import nl.nn.adapterframework.testutil.PropertyUtil;
+
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
-	private String accessKey = "";
-	private String secretKey = "";
+	protected String PROPERTY_FILE = "AmazonS3.properties";
 
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled = false;
 
-	private String bucketName = UUID.randomUUID().toString();//"iaf.s3sender.ali.test";
 	private Regions clientRegion = Regions.EU_WEST_1;
-	
-	
+
+
+	protected String accessKey    = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
+	protected String secretKey    = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
+	protected String bucketName    = PropertyUtil.getProperty(PROPERTY_FILE, "bucketName");
+
 	private int waitMilis = 1000;
 
 	{
 		setWaitMillis(waitMilis);
 	}
-	
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
-	
+
 	@Override
 	public AmazonS3FileSystem createFileSystem(){
 		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
@@ -44,15 +46,27 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Test
 	@Override
 	public void writableFileSystemTestAppendExistingFile() throws Exception {
-		// TODO Auto-generated method stub
 		super.writableFileSystemTestAppendExistingFile();
 	}
-	
+
 	@Ignore
 	@Test
 	@Override
 	public void writableFileSystemTestAppendNewFile() throws Exception {
-		// TODO Auto-generated method stub
 		super.writableFileSystemTestAppendNewFile();
+	}
+
+	@Ignore
+	@Test
+	@Override
+	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
+		super.writableFileSystemTestDeleteAppendedFile();
+	}
+
+	@Ignore // atomic move is not implemented. It could be possible to arrange this using ObjectLock.LegalHold
+	@Test
+	@Override
+	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
+		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
 	}
 }

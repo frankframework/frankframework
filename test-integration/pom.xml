@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.ibissource</groupId>
-    <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>${revision}</version>
-  </parent>
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
 
 	<artifactId>ibis-adapterframework-test-integration</artifactId>
 	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
@@ -14,6 +14,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -21,23 +22,28 @@
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-cmis</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
