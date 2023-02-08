@@ -76,23 +76,23 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	
 	public void cleanUpBucketAndShutDown(AmazonS3 s3Client) {
 		if(s3Client.doesBucketExistV2(bucketName)) {
-			 ObjectListing objectListing = s3Client.listObjects(bucketName);
-				while (true) {
-					Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-					while (objIter.hasNext()) {
-						s3Client.deleteObject(bucketName, objIter.next().getKey());
-					}
-		
-					// If the bucket contains many objects, the listObjects() call
-					// might not return all of the objects in the first listing. Check to
-					// see whether the listing was truncated. If so, retrieve the next page of objects 
-					// and delete them.
-					if (objectListing.isTruncated()) {
-						objectListing = s3Client.listNextBatchOfObjects(objectListing);
-					} else {
-						break;
-					}
+			ObjectListing objectListing = s3Client.listObjects(bucketName);
+			while (true) {
+				Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+				while (objIter.hasNext()) {
+					s3Client.deleteObject(bucketName, objIter.next().getKey());
 				}
+	
+				// If the bucket contains many objects, the listObjects() call
+				// might not return all of the objects in the first listing. Check to
+				// see whether the listing was truncated. If so, retrieve the next page of objects 
+				// and delete them.
+				if (objectListing.isTruncated()) {
+					objectListing = s3Client.listNextBatchOfObjects(objectListing);
+				} else {
+					break;
+				}
+			}
 			//s3Client.deleteBucket(bucketName);
 		}
 		if(s3Client != null) {

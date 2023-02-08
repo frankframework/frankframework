@@ -170,7 +170,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, and contains all fields that are used with a fixed value in the select condition.
+	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {

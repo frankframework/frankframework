@@ -158,9 +158,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		Message in = fileSystem.readFile(file, null);
-		
+
 		in.preserve();
-		
+
 		String actual1 = StreamUtil.readerToString(in.asReader(), null);
 		equalsCheck(contents, actual1.trim());
 		String actual2 = StreamUtil.readerToString(in.asReader(), null);
@@ -528,7 +528,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME 
+	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME
 	public void getParentOfTheDeletedFile() throws Exception {
 		String folderName = "parentFolder";
 

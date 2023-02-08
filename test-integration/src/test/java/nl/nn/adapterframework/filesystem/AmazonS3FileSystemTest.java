@@ -33,7 +33,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@TempDir
 	private Path tempdir;
-	
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new AmazonS3FileSystemTestHelper(tempdir, accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
@@ -61,16 +61,18 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	public void writableFileSystemTestAppendNewFile() throws Exception {
 		super.writableFileSystemTestAppendNewFile();
 	}
-	
+
 	@Disabled
 	@Test
 	@Override
 	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
+		super.writableFileSystemTestDeleteAppendedFile();
 	}
 
 	@Disabled // atomic move is not implemented. It could be possible to arrange this using ObjectLock.LegalHold
 	@Test
 	@Override
 	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
-	}	
+		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
+	}
 }
