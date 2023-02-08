@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -16,9 +16,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
@@ -37,7 +37,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	protected abstract FS createFileSystem() throws ConfigurationException;
 
 
-	@Before
+	@BeforeEach
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
 		fileSystem = createFileSystem();
@@ -49,7 +49,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		log.debug("setUp finished");
 	}
 	
-	@After 
+	@AfterEach
 	public void tearDown() throws Exception {
 		log.debug("tearDown start");
 		fileSystem.close();
@@ -100,14 +100,14 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				count++;
 			}
 
-			assertEquals("number of files found by listFiles()", numFilesExpected, count);
-			assertEquals("Size of set of files", numFilesExpected, files.size());
-			assertEquals("Size of set of filenames", numFilesExpected, filenames.size());
+			assertEquals(numFilesExpected, count, "number of files found by listFiles()");
+			assertEquals(numFilesExpected, files.size(), "Size of set of files");
+			assertEquals(numFilesExpected, filenames.size(), "Size of set of filenames");
 			
 			for (String filename:filenames) {
 				F f=fileSystem.toFile(folder, filename);
-				assertNotNull("file must be found by filename ["+filename+"]",f);
-				assertTrue("file must exist when referred to by filename ["+filename+"]",fileSystem.exists(f));
+				assertNotNull(f, "file must be found by filename ["+filename+"]");
+				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename ["+filename+"]");
 			}
 			
 			// read each the files
@@ -164,7 +164,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) throws Exception {
 		F f=fileSystem.toFile(randomFileName);
-		assertFalse("RandomFileShouldNotExist",fileSystem.exists(f));
+		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}
 
 }

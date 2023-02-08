@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,11 +15,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -137,6 +140,31 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		testReadFile(file, contents, null);
+	}
+
+	@Test
+	public void basicFileSystemTestReadAndPreserve() throws Exception {
+		String filename = "read" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		Message in = fileSystem.readFile(file, null);
+		
+		in.preserve();
+		
+		String actual1 = StreamUtil.readerToString(in.asReader(), null);
+		equalsCheck(contents, actual1.trim());
+		String actual2 = StreamUtil.readerToString(in.asReader(), null);
+		equalsCheck(contents, actual2.trim());
 	}
 
 	@Test
@@ -500,6 +528,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
+	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME 
 	public void getParentOfTheDeletedFile() throws Exception {
 		String folderName = "parentFolder";
 
@@ -515,7 +544,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		String parentFolder = fileSystem.getParentFolder(f);
 
-		assertTrue(parentFolder.endsWith(folderName));
+		assertThat(parentFolder, StringEndsWith.endsWith(folderName));
 	}
 
 }

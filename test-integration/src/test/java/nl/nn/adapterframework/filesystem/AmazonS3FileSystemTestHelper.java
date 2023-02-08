@@ -10,11 +10,11 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
@@ -29,6 +29,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.Misc;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
@@ -43,9 +44,12 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	private Regions clientRegion;
 	private AmazonS3 s3Client;
 
-	public AmazonS3FileSystemTestHelper(String accessKey, String secretKey, boolean chunkedEncodingDisabled,
+	public Path tempFolder;
+
+	public AmazonS3FileSystemTestHelper(Path tempFolder, String accessKey, String secretKey, boolean chunkedEncodingDisabled,
 			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
 			Regions clientRegion) {
+		this.tempFolder = tempFolder;
 		this.accessKey = accessKey;
 		this.secretKey = secretKey;
 		this.chunkedEncodingDisabled = chunkedEncodingDisabled;
@@ -56,14 +60,16 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	@Before
+	@BeforeAll
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
 		open();
-		s3Client.createBucket(bucketName);
+		if (!s3Client.doesBucketExist(bucketName)) {
+			s3Client.createBucket(bucketName);
+		}
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		cleanUpBucketAndShutDown(s3Client);
 	}
@@ -71,23 +77,23 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	public void cleanUpBucketAndShutDown(AmazonS3 s3Client) {
 		if(s3Client.doesBucketExistV2(bucketName)) {
 			 ObjectListing objectListing = s3Client.listObjects(bucketName);
-	            while (true) {
-	                Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-	                while (objIter.hasNext()) {
-	                    s3Client.deleteObject(bucketName, objIter.next().getKey());
-	                }
-	    
-	                // If the bucket contains many objects, the listObjects() call
-	                // might not return all of the objects in the first listing. Check to
-	                // see whether the listing was truncated. If so, retrieve the next page of objects 
-	                // and delete them.
-	                if (objectListing.isTruncated()) {
-	                    objectListing = s3Client.listNextBatchOfObjects(objectListing);
-	                } else {
-	                    break;
-	                }
-	            }
-			s3Client.deleteBucket(bucketName);
+				while (true) {
+					Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+					while (objIter.hasNext()) {
+						s3Client.deleteObject(bucketName, objIter.next().getKey());
+					}
+		
+					// If the bucket contains many objects, the listObjects() call
+					// might not return all of the objects in the first listing. Check to
+					// see whether the listing was truncated. If so, retrieve the next page of objects 
+					// and delete them.
+					if (objectListing.isTruncated()) {
+						objectListing = s3Client.listNextBatchOfObjects(objectListing);
+					} else {
+						break;
+					}
+				}
+			//s3Client.deleteBucket(bucketName);
 		}
 		if(s3Client != null) {
 			s3Client.shutdown();
@@ -125,10 +131,8 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public OutputStream _createFile(final String foldername, final String filename) throws IOException {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
 
-		String fileName = folder.getRoot().getAbsolutePath()+"tempFile";
+		String fileName = tempFolder.toAbsolutePath()+"tempFile";
 
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
@@ -155,7 +159,8 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
-		final S3Object file = s3Client.getObject(bucketName, filename);
+		String path = Misc.concatStrings(folder, "/", filename);
+		final S3Object file = s3Client.getObject(bucketName, path);
 		InputStream is = file.getObjectContent();
 		FilterInputStream fos = new FilterInputStream(is) {
 			@Override

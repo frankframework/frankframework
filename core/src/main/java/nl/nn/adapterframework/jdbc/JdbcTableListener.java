@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -170,7 +170,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Field containing the status of the message
+	 * Field containing the status of the message. For optimal performance, and index should exist that starts with this field, and contains all fields that are used with a fixed value in the select condition.
 	 * @ff.mandatory
 	 */
 	public void setStatusField(String fieldname) {

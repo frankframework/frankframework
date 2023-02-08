@@ -418,7 +418,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 
-	/** Primary key field of the table, used to identify messages */
+	/** Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}

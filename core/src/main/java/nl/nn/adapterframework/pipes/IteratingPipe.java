@@ -536,7 +536,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		omitXmlDeclaration = b;
 	}
 
-	/** Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. */
+	/** Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1. */
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}
