@@ -21,14 +21,14 @@ import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.logging.log4j.Logger;
-
 /**
- * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same. 
- * 
+ * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same.
+ *
  * @author Gerrit van Brakel
  */
 public abstract class MessagingSourceFactory  {
@@ -51,7 +51,9 @@ public abstract class MessagingSourceFactory  {
 			result = createMessagingSource(id, authAlias, createDestination, useJms102);
 			log.debug("created new MessagingSource-object for ["+id+"]");
 		}
+		log.trace("Increase references to messaging-source, synchronize (lock) on {}", result::toString);
 		result.increaseReferences();
+		log.trace("References to messaging-source increased, lock released on {}", result::toString);
 		return result;
 	}
 	

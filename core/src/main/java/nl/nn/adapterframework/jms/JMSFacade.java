@@ -42,6 +42,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -128,7 +129,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
 		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
 
-		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the
 		  * delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
 		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
 		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
@@ -272,9 +273,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		try {
 			if (messagingSource != null) {
 				try {
+					log.trace("Closing messaging source - will synchronize (lock) on {}", messagingSource::toString);
 					messagingSource.close();
 				} catch (IbisException e) {
-					log.warn(getLogPrefix() + "caught exception closing messaging source", e);
+					log.warn("{} caught exception closing messaging source", (Supplier<?>) this::getLogPrefix, e);
+				} finally {
+					log.trace("Messaging source closed - lock on {} released", messagingSource::toString);
 				}
 				log.debug("closed connection");
 			}
@@ -880,7 +884,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.transacted = transacted;
 	}
 
-	@IbisDoc({"9", "Transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). "+ 
+	@IbisDoc({"9", "Transform the value of the correlationid to a hexadecimal value if it starts with id: (preserving the id: part). "+
 			"Useful when sending messages to MQ which expects this value to be in hexadecimal format when it starts with id:, otherwise generating the error: MQJMS1044: String is not a valid hexadecimal number", "false"})
 	public void setCorrelationIdToHex(boolean correlationIdToHex) {
 		this.correlationIdToHex = correlationIdToHex;

@@ -78,7 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
- * 
+ *
  * @author Johan Verrips
  * @see    Receiver
  * @see    PipeLine
@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @see    DateUtils
  * @see    MessageKeeper
  * @see    PipeLineResult
- * 
+ *
  */
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -243,7 +243,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return configurationSucceeded;
 	}
 
-	/** 
+	/**
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
@@ -251,7 +251,7 @@ public class Adapter implements IAdapter, NamedBean {
 		getMessageKeeper().warn(msg);
 	}
 
-	/** 
+	/**
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
@@ -267,6 +267,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Increase the number of messages in process
 	 */
 	private void incNumOfMessagesInProcess(long startTime) {
+		log.trace("Increase nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess++;
 			lastMessageDate = startTime;
@@ -292,14 +293,18 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
+		log.trace("Messages in processing increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 	/**
 	 * Decrease the number of messages in process
 	 */
 	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
+		log.trace("Decrease nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
+			log.trace("Increase nr messages processed, synchronize (lock) on numOfMessagesInProcess[{}]", numOfMessagesProcessed);
 			numOfMessagesProcessed.increase();
+			log.trace("Nr messages processed increased, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 			statsMessageProcessingDuration.addValue(duration);
 			if (processingSuccess) {
 				lastMessageProcessingState = PROCESS_STATE_OK;
@@ -308,31 +313,41 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			statsMessageProcessingDuration.notifyAll();
 		}
+		log.trace("Messages in processing decreased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
 	private void incNumOfMessagesInError() {
+		log.trace("Increase nr messages in error, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
+			log.trace("(nested) Increase nr messages in error, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 			numOfMessagesInError.increase();
+			log.trace("(nested) Messages in error increased, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
 		}
+		log.trace("Messages in error increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 
 	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
+		log.trace("Set last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
 		synchronized (sendersLastExitState) {
 			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
 		}
+		log.trace("Last exit state set, lock released on sendersLastExitState[{}]", sendersLastExitState);
 	}
 
 	public long getLastExitIsTimeoutDate(String pipeName) {
-		synchronized (sendersLastExitState) {
-			SenderLastExitState sles = sendersLastExitState.get(pipeName);
-			if (sles!=null) {
-				if ("timeout".equals(sles.lastExitState)) {
+		log.trace("Get last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
+		try {
+			synchronized (sendersLastExitState) {
+				SenderLastExitState sles = sendersLastExitState.get(pipeName);
+				if (sles != null && "timeout".equals(sles.lastExitState)) {
 					return sles.lastExitStateDate;
 				}
+				return 0;
 			}
-			return 0;
+		} finally {
+			log.trace("Got Last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
 		}
 	}
 
@@ -392,7 +407,7 @@ public class Adapter implements IAdapter, NamedBean {
 			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
 		return messageKeeper;
 	}
-	
+
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
 		Object root=hski.start(now,mainMark,detailMark);
 		try {
@@ -401,13 +416,19 @@ public class Adapter implements IAdapter, NamedBean {
 			hski.end(root);
 		}
 	}
-	
+
 	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, int action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		log.trace("Get Adapter messagesProcessedThisInterval, synchronize (lock) on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
+		log.trace("Got Adapter messagesProcessedThisInterval, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
+
+		log.trace("Get Adapter messagesInErrorThisInterval, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
+		log.trace("Got Adapter messagesInErrorThisInterval, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
+
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		statsMessageProcessingDuration.performAction(action);
 		numOfMessagesProcessed.performAction(action);
@@ -454,9 +475,11 @@ public class Adapter implements IAdapter, NamedBean {
 
 		if (action!=HasStatistics.STATISTICS_ACTION_FULL &&
 			action!=HasStatistics.STATISTICS_ACTION_SUMMARY) {
+			log.trace("Iterating over statistics with lock - synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 			synchronized (statsMessageProcessingDuration) {
 				doForEachStatisticsKeeperBody(hski,adapterData,action);
 			}
+			log.trace("Iterated over statistics - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		} else {
 			doForEachStatisticsKeeperBody(hski,adapterData,action);
 		}
@@ -469,20 +492,35 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "# Messages in Error")
 	public long getNumOfMessagesInError() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesInError.getValue();
+		log.trace("Get Adapter num messages in error - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesInError.getValue();
+			}
+		} finally {
+			log.trace("Got Adapter num messages in error - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesInProcess;
+		log.trace("Get Adapter num messages in process - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesInProcess;
+			}
+		} finally {
+			log.trace("Got Adapter num messages in process - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 
 	public long[] getNumOfMessagesStartProcessingByHour() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesStartProcessingByHour;
+		log.trace("Get Adapter num messages in start processing by hour - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesStartProcessingByHour;
+			}
+		} finally {
+			log.trace("Got Adapter num messages in start processing by hour - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 	/**
@@ -491,8 +529,13 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "# Messages Processed")
 	public long getNumOfMessagesProcessed() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesProcessed.getValue();
+		log.trace("Get Adapter num messages processed - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesProcessed.getValue();
+			}
+		} finally {
+			log.trace("Got Adapter num messages processed - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 
@@ -525,12 +568,17 @@ public class Adapter implements IAdapter, NamedBean {
 
 	@Override
 	public RunState getRunState() {
-		return runState.getRunState();
+		log.trace("Get Adapter RunState, synchronize (lock) on runState[{}]", runState);
+		try {
+			return runState.getRunState();
+		} finally {
+			log.trace("Got Adapter RunState, lock released on runState[{}]", runState);
+		}
 	}
 
 	@JmxAttribute(description = "RunState")
 	public String getRunStateAsString() {
-		return runState.getRunState().toString();
+		return getRunState().toString();
 	}
 
 	/**
@@ -642,7 +690,7 @@ public class Adapter implements IAdapter, NamedBean {
 				String messageOrSize = (isMsgLogHidden()) ? "SIZE="+getFileSizeAsBytes(message) : message.toString();
 				msgLog.log(MSGLOG_LEVEL_TERSE, String.format(format, getName(), messageOrSize, messageId) + additionalLogging);
 			}
-			if (log.isDebugEnabled()) { 
+			if (log.isDebugEnabled()) {
 				log.debug(String.format(format, getName(), message, messageId) + additionalLogging);
 			} else if(log.isInfoEnabled()) {
 				log.info(String.format("Adapter [%s] received message with messageId [%s]" + additionalLogging, getName(), messageId));
@@ -687,7 +735,7 @@ public class Adapter implements IAdapter, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
-	
+
 			if (log.isDebugEnabled()) { // for performance reasons
 				log.debug("Adapter: [" + getName()
 						+ "] STAT: Finished processing message with messageId [" + messageId
@@ -731,7 +779,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see PipeLine
-	 * 
+	 *
 	 * @ff.mandatory
 	 */
 	@Override
@@ -792,6 +840,7 @@ public class Adapter implements IAdapter, NamedBean {
 						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
 						return;
 					}
+					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
 					synchronized (runState) {
 						RunState currentRunState = getRunState();
 						if (currentRunState!=RunState.STOPPED) {
@@ -801,6 +850,7 @@ public class Adapter implements IAdapter, NamedBean {
 						}
 						runState.setRunState(RunState.STARTING);
 					}
+					log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
 
 					// start the pipeline
 					try {
@@ -959,11 +1009,13 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	public void waitForNoMessagesInProcess() throws InterruptedException {
+		log.trace("Wait until no messages in process - synchronize (lock) on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
 				statsMessageProcessingDuration.wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
+		log.trace("No more messages in process - lock released on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
 	}
 
 
@@ -975,7 +1027,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	/** 
+	/**
 	 * name of the adapter
 	 * @ff.mandatory
 	 */
@@ -1002,7 +1054,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
-	
+
 
 	/**
 	 * If <code>true</code> a null message is replaced by an empty message
