@@ -35,6 +35,7 @@
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>
+		<property name="maxPoolSize" value="${jdbc.connection.maxPoolSize}" />
 	</bean>
 	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>

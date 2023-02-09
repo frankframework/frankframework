@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	private @Getter @Setter int maxPoolSize=20;
 	private @Getter @Setter int maxIdleTime=60;
 	private @Getter @Setter int maxLifeTime=0;
-	
+
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
