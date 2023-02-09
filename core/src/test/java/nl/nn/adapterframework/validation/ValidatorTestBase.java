@@ -36,7 +36,7 @@ public abstract class ValidatorTestBase {
 	public String MSG_CANNOT_RESOLVE="Cannot resolve the name";
 	public String MSG_IS_NOT_COMPLETE="is not complete";
 
-	public static String BASE_DIR_VALIDATION="/Validation";
+	public static final String BASE_DIR_VALIDATION="/Validation";
 
 	public String ROOT_NAMESPACE_GPBDB="http://schemas.xmlsoap.org/soap/envelope/";
 	public String SCHEMA_LOCATION_SOAP_ENVELOPE ="http://schemas.xmlsoap.org/soap/envelope/ "+		BASE_DIR_VALIDATION+"/Tibco/xsd/soap/envelope.xsd";
@@ -52,10 +52,10 @@ public abstract class ValidatorTestBase {
 	public String INPUT_FILE_GPBDB_ERR2=BASE_DIR_VALIDATION+"/Tibco/in/step5error_wrong_tag";
 
 
-	public static String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public static String SCHEMA_LOCATION_BASIC_A_OK                     =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
-	public static String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
-	public static String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public static final String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
+	public static final String SCHEMA_LOCATION_BASIC_A_OK                     =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_correct.xsd"	;
+	public static final String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE            =ROOT_NAMESPACE_BASIC+" "			+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
+	public static final String SCHEMA_LOCATION_BASIC_A_NO_TARGETNAMESPACE_MISMATCH   =ROOT_NAMESPACE_BASIC+"_mismatch "	+BASE_DIR_VALIDATION+"/Basic/xsd/A_without_targetnamespace.xsd";
 
 	public static String INPUT_FILE_BASIC_A_OK			=BASE_DIR_VALIDATION+"/Basic/in/ok";
 	public String INPUT_FILE_BASIC_A_OK_IN_ENVELOPE		=BASE_DIR_VALIDATION+"/Basic/in/ok-in-envelope";
