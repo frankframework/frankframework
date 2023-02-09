@@ -28,7 +28,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  * creates a number of fs_test... folders
  */
-public abstract class MailFileSystemTestBase<M,A,FS> extends SelfContainedBasicFileSystemTest<M, IMailFileSystem<M,A>>{
+public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A>> extends SelfContainedBasicFileSystemTest<M, FS>{
 
 	protected String PROPERTY_FILE = "ExchangeMail.properties";
 
