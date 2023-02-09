@@ -22,16 +22,26 @@ import javax.jms.XAConnectionFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
+
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			PoolingConnectionFactory result = new PoolingConnectionFactory();
 			result.setUniqueName(connectionFactoryName);
-			result.setMaxPoolSize(100);
+			result.setMinPoolSize(getMinPoolSize());
+			result.setMaxPoolSize(getMaxPoolSize());
+			result.setMaxIdleTime(getMaxIdleTime());
+			result.setMaxLifeTime(getMaxLifeTime());
 			result.setAllowLocalTransactions(true);
 			result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
 			result.init();

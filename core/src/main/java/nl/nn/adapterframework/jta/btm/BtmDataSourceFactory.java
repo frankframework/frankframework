@@ -23,16 +23,26 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
+	
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			PoolingDataSource result = new PoolingDataSource();
 			result.setUniqueName(dataSourceName);
-			result.setMaxPoolSize(100);
+			result.setMinPoolSize(getMinPoolSize());
+			result.setMaxPoolSize(getMaxPoolSize());
+			result.setMaxIdleTime(getMaxIdleTime());
+			result.setMaxLifeTime(getMaxLifeTime());
 			result.setAllowLocalTransactions(true);
 			result.setXaDataSource((XADataSource)dataSource);
 			result.init();

@@ -179,9 +179,12 @@ public class MessagingSource  {
 	public String getPhysicalName() {
 		String result="";
 
+		ConnectionFactory qcf = getConnectionFactory();
+		result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.MULTI_LINE_STYLE)+"] ";
+
 		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
+			ConnectionFactory qcfd = getConnectionFactoryDelegate();
+			result += "["+ToStringBuilder.reflectionToString(qcfd, ToStringStyle.MULTI_LINE_STYLE)+"] ";
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
@@ -189,7 +192,7 @@ public class MessagingSource  {
 		try {
 			Object managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory!=null) {
-				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.MULTI_LINE_STYLE);
 				if (result.contains("activemq")) {
 					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
 				}
