@@ -181,11 +181,8 @@ public final class AppConstants extends Properties implements Serializable {
 					return value;
 				}
 				String result=StringResolver.substVars(value, this);
-				if (log.isTraceEnabled()) {
-					if (!value.equals(result)){
-						log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
-					}
-
+				if (log.isTraceEnabled() && !value.equals(result)) {
+					log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
@@ -301,7 +298,7 @@ public final class AppConstants extends Properties implements Serializable {
 				for (URL url : resources) {
 					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 						load(reader);
-						log.info("Application constants loaded from url [" + url.toString() + "]");
+						log.info("Application constants loaded from url [{}]", url::toString);
 					}
 				}
 
