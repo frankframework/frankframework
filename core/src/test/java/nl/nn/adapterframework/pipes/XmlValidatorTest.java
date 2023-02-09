@@ -303,4 +303,40 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 
+	@Test //copied from iaf-test /XmlValidator/scenario07a
+	public void testImportIncludeOK() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd");
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test //copied from iaf-test /XmlValidator/scenario07b
+	public void testImportIncludeError() throws Exception {
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd");
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml("/Validation/ImportInclude/root-err.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("failure", forward.getName());
+	}
 }
