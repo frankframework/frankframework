@@ -70,7 +70,7 @@ public final class AppConstants extends Properties implements Serializable {
 
 		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
-			log.info("created new AppConstants instance for classloader ["+ClassUtils.nameOf(classLoader)+"]");
+			log.info("created new AppConstants instance for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
 		}
 		else {
 			log.info("created new AppConstants instance for root classloader");
@@ -139,12 +139,12 @@ public final class AppConstants extends Properties implements Serializable {
 				return result;
 			}
 		} catch (Throwable e) {
-			log.warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+			log.warn("Was not allowed to read environment variable [{}]: {}", ()->key, e::getMessage);
 		}
 		try {
 			return System.getProperty(key);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+			log.warn("Was not allowed to read system property [{}]: {}", ()->key, e::getMessage);
 			return null;
 		}
 	}
@@ -182,15 +182,15 @@ public final class AppConstants extends Properties implements Serializable {
 				}
 				String result=StringResolver.substVars(value, this);
 				if (log.isTraceEnabled() && !value.equals(result)) {
-					log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
+					log.trace("resolved key [{}], value [{}] to [{}]", key, value, result);
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
-				log.error("Bad option value [" + value + "].", e);
+				log.error("bad option value [{}]", value, e);
 				return value;
 			}
 		} else {
-			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
 			return null;
 		}
 	}
@@ -325,7 +325,7 @@ public final class AppConstants extends Properties implements Serializable {
 					load(classLoader, suffixedFilename, false);
 				}
 			} catch (IOException e) {
-				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
+				log.error("error reading [{}]", APP_CONSTANTS_PROPERTIES_FILE, e);
 			}
 		}
 	}
