@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Provides functions for JDBC connections.
- * 
+ *
  * N.B. Note on using XA transactions:
  * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
@@ -54,9 +54,9 @@ import nl.nn.adapterframework.util.CredentialFactory;
    The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
 	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
    </pre>
- * 
- * 
- * 
+ *
+ *
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
@@ -123,7 +123,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
+			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).toString();
 		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
@@ -133,7 +133,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]; managed by ["+getDatasource().toString()+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo", e);
 		}
@@ -156,7 +156,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	/**
-	 * Obtains a connection to the datasource. 
+	 * Obtains a connection to the datasource.
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
@@ -211,7 +211,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	/**
 	 * Returns the name and location of the database that this objects operates on.
-	 * 
+	 *
 	 * @see nl.nn.adapterframework.core.HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override

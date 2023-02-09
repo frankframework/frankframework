@@ -179,27 +179,25 @@ public class MessagingSource  {
 	public String getPhysicalName() {
 		String result="";
 
-		ConnectionFactory qcf = getConnectionFactory();
-		result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.MULTI_LINE_STYLE)+"] ";
+		Object managedConnectionFactory=null;
+		try {
+			managedConnectionFactory = getManagedConnectionFactory();
+			if (managedConnectionFactory != null) {
+				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+			}
+		} catch (Exception | NoClassDefFoundError e) {
+			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+		}
 
 		try {
 			ConnectionFactory qcfd = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcfd, ToStringStyle.MULTI_LINE_STYLE)+"] ";
+			if (qcfd != managedConnectionFactory) {
+				result += " managed by ["+qcfd+"]";
+			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 
-		try {
-			Object managedConnectionFactory = getManagedConnectionFactory();
-			if (managedConnectionFactory!=null) {
-				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.MULTI_LINE_STYLE);
-				if (result.contains("activemq")) {
-					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
-				}
-			}
-		} catch (Exception | NoClassDefFoundError e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-		}
 		return result;
 	}
 
