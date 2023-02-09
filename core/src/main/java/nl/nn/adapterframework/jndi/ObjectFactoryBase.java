@@ -22,8 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NamingException;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -105,10 +103,6 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 		if (masterException!=null) {
 			throw masterException;
 		}
-	}
-
-	public String getInfo(O object) {
-		return ToStringBuilder.reflectionToString(object, ToStringStyle.SHORT_PREFIX_STYLE);
 	}
 
 }
