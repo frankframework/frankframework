@@ -3,8 +3,12 @@ package nl.nn.adapterframework.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,10 +20,23 @@ public class BuildInfoValidatorTest {
 		assertNotNull(zip, "BuildInfoZip not found");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
+		AtomicBoolean wasClosed = new AtomicBoolean(false);
+		FilterInputStream fis = new FilterInputStream(zip.openStream()) {
+			@Override
+			public void close() throws IOException {
+				wasClosed.set(true);
+				super.close();
+			}
+		};
+
+		BuildInfoValidator details = new BuildInfoValidator(fis);
 
 		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
+
+		assertTrue(wasClosed.get());  //Ensure the original stream is closed properly
+		assertTrue(details.getJar().read() > -1);
+		assertTrue(details.getJar().read() > -1); //Allow multiple reads
 	}
 
 	@Test
