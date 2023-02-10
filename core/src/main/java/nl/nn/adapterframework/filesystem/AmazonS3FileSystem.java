@@ -339,7 +339,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public String getName(S3Object f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
-		return f.getKey().substring(lastSlashPos+1);	}
+		return f.getKey().substring(lastSlashPos+1);
+	}
 
 	@Override
 	public String getParentFolder(S3Object f) throws FileSystemException {
