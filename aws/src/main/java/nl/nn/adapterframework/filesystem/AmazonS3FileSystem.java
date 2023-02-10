@@ -145,7 +145,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
-			int result = summaries.size();
+			int result = summaries.size() - (folder!=null ? 1 :0);
 			while (listing.isTruncated() && (getMaxNumberOfMessagesToList()<0 || getMaxNumberOfMessagesToList() > result)) {
 				listing = s3Client.listNextBatchOfObjects(listing);
 				result += listing.getObjectSummaries().size();

@@ -108,6 +108,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
-		assertEquals(filename, ref.getKey());
+		assertEquals(foldername +"/"+ filename, ref.getKey());
 	}
 }

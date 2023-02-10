@@ -528,8 +528,42 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
+	public void basicFileSytemTestGetNumberOfFilesInFolder() throws Exception {
+		// arrange
+		String contents1 = "maakt niet uit";
+		String contents2 = "maakt ook niet uit";
+		String folderName = "folder_for_counting";
+		
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+		};
+		_createFolder(folderName);
+
+		fileSystem.configure();
+		fileSystem.open();
+
+
+		// act
+		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+		
+		// assert
+		assertEquals(0, fileCount);
+
+
+		// arrange 2
+		createFile(folderName, FILE1, contents1);
+		createFile(folderName, FILE2, contents2);
+
+		// act 2
+		fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+		
+		// assert 2
+		assertEquals(2, fileCount);
+	}
+
+	@Test
 	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME
-	public void getParentOfTheDeletedFile() throws Exception {
+	public void basicFileSystemTestGetParentOfTheDeletedFile() throws Exception {
 		String folderName = "parentFolder";
 
 		fileSystem.configure();
