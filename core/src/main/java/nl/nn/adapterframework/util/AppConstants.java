@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
@@ -298,9 +299,9 @@ public final class AppConstants extends Properties implements Serializable {
 				Collections.reverse(resources);
 
 				for (URL url : resources) {
-					try(InputStream is = url.openStream()) {
-						load(is);
-						log.info("Application constants loaded from url [" + url.toString() + "]");
+					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+						load(reader);
+						log.info("Application constants loaded from url [{}]", url::toString);
 					}
 				}
 
