@@ -15,7 +15,7 @@ public class ImapFileSystemTest  extends MailFileSystemTestBase<Message, MimeBod
 	private String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
 	private String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	private String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
-	
+
 
 	@Override
 	protected ImapFileSystem createFileSystem() throws ConfigurationException {

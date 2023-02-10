@@ -130,5 +130,6 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 		if(roleMappingURL == null) {
 			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
 		}
+		log.info("found rolemapping file [{}]", roleMappingURL);
 	}
 }

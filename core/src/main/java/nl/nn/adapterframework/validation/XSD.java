@@ -57,7 +57,7 @@ import nl.nn.adapterframework.validation.xsd.ResourceXsd;
  * @author  Jaco de Groot
  */
 public abstract class XSD implements IXSD, Comparable<XSD> {
-	private static final Logger LOG = LogUtil.getLogger(IXSD.class);
+	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private IScopeProvider scopeProvider;
 	private @Setter String resourceInternalReference;
@@ -71,8 +71,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private @Getter @Setter String parentLocation;
 	private @Getter @Setter boolean rootXsd = true;
 	private @Getter @Setter String targetNamespace;
-	private @Getter List<String> rootTags = new ArrayList<String>();
-	private @Getter Set<String> importedNamespaces = new HashSet<String>();
+	private @Getter List<String> rootTags = new ArrayList<>();
+	private @Getter Set<String> importedNamespaces = new HashSet<>();
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
 
