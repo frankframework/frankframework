@@ -24,15 +24,16 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
-	private @Getter int minPoolSize=0;
-	private @Getter int maxPoolSize=20;
-	private @Getter int maxIdleTime=60;
-	private @Getter int maxLifeTime=0;
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
 
 	public BtmDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();

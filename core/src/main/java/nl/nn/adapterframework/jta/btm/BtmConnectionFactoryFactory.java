@@ -23,15 +23,16 @@ import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 
-	private @Getter int minPoolSize=0;
-	private @Getter int maxPoolSize=20;
-	private @Getter int maxIdleTime=60;
-	private @Getter int maxLifeTime=0;
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
 
 	public BtmConnectionFactoryFactory() {
 		AppConstants appConstants = AppConstants.getInstance();

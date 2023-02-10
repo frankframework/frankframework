@@ -134,7 +134,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]; managed by ["+getDatasource().toString()+"]";
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"] datasource ["+getDatasource().toString()+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo", e);
 		}
