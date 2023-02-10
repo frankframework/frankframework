@@ -17,7 +17,9 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -110,7 +112,14 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		classLoader.configure(ibisContext, "myConfig");
 
 		classLoader.setAllowCustomClasses(true);
-		Class<?> clazz = classLoader.loadClass("nl.nn.adapterframework.pipes.LargeBlockTester"); //With inner-class
+		//native classloading
+		Class<?> clazz = Class.forName("nl.nn.adapterframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
 		clazz.newInstance();
+
+		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		loadedClassesField.setAccessible(true);
+		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertTrue(loadedCustomClasses.contains("nl.nn.adapterframework.pipes.LargeBlockTester"));
 	}
 }
