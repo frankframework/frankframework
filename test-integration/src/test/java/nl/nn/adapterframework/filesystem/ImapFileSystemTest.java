@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
-import javax.mail.Message;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.internet.MimeBodyPart;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.PropertyUtil;
