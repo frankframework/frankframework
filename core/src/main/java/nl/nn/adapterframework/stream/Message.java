@@ -116,8 +116,6 @@ public class Message implements Serializable {
 	}
 
 	public Message(Reader request, Map<String, Object> context) {
-		// Wrap the reader with a pushback-reader here, so that we do not lose any
-		// bytes that may have been read and pushed back.
 		this(context, request);
 	}
 
@@ -137,8 +135,6 @@ public class Message implements Serializable {
 	}
 
 	public Message(InputStream request, Map<String, Object> context) {
-		// Wrap the input-stream with a pushback input-stream here, so that we do not lose any
-		// bytes that may have been read and pushed back.
 		this(context, request);
 	}
 
