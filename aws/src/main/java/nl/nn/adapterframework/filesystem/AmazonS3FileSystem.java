@@ -127,7 +127,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			object.setKey(filename);
 		} else {
 			object.setBucketName(filename.substring(0,separatorPos));
-			object.setKey(filename.substring(+1));
+			object.setKey(filename.substring(separatorPos+1));
 		}
 		return object;
 	}

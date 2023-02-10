@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Disabled;
@@ -74,5 +76,38 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	@Override
 	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
 		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
+	}
+	
+	@Test
+	public void testToFileWithBucketnameInFilename() throws FileSystemException {
+		// arrange
+		String filename="fakeFile";
+		String bucketname="fakeBucket";
+		
+		String combinedFilename = bucketname +"|" + filename;
+		
+		// act
+		S3Object ref = fileSystem.toFile(combinedFilename);
+		
+		// assert
+		assertEquals(bucketname, ref.getBucketName());
+		assertEquals(filename, ref.getKey());
+	}
+
+	@Test
+	public void testToFileWithBucketnameInFilenameWithFolder() throws FileSystemException {
+		// arrange
+		String foldername="fakeFolder";
+		String filename="fakeFile";
+		String bucketname="fakeBucket";
+		
+		String combinedFilename = bucketname +"|" + foldername +"/"+ filename;
+		
+		// act
+		S3Object ref = fileSystem.toFile(combinedFilename);
+		
+		// assert
+		assertEquals(bucketname, ref.getBucketName());
+		assertEquals(filename, ref.getKey());
 	}
 }
