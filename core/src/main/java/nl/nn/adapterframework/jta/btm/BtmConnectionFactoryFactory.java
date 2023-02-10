@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,15 +23,23 @@ import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
 
-	private @Getter @Setter int minPoolSize=0;
-	private @Getter @Setter int maxPoolSize=20;
-	private @Getter @Setter int maxIdleTime=60;
-	private @Getter @Setter int maxLifeTime=0;
+	private @Getter int minPoolSize=0;
+	private @Getter int maxPoolSize=20;
+	private @Getter int maxIdleTime=60;
+	private @Getter int maxLifeTime=0;
+
+	public BtmConnectionFactoryFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		minPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, minPoolSize);
+		maxPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxPoolSize);
+		maxIdleTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxIdleTime);
+		maxLifeTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxLifeTime);
+	}
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {

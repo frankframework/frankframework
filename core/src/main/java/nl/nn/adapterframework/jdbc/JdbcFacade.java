@@ -123,7 +123,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
 		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).toString();
+			// TODO let TransactionalDbmsSupportAwareDataSourceProxy.getInfo() use the same code as used here
+			return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getInfo();
 		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
