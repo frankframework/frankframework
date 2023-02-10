@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,16 +23,35 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
+
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
+
+	public BtmDataSourceFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		minPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, minPoolSize);
+		maxPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxPoolSize);
+		maxIdleTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxIdleTime);
+		maxLifeTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxLifeTime);
+	}
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			PoolingDataSource result = new PoolingDataSource();
 			result.setUniqueName(dataSourceName);
-			result.setMaxPoolSize(100);
+			result.setMinPoolSize(getMinPoolSize());
+			result.setMaxPoolSize(getMaxPoolSize());
+			result.setMaxIdleTime(getMaxIdleTime());
+			result.setMaxLifeTime(getMaxLifeTime());
 			result.setAllowLocalTransactions(true);
 			result.setXaDataSource((XADataSource)dataSource);
 			result.init();

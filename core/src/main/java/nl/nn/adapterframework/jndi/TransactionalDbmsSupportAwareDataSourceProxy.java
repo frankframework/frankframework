@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public Map<String, String> getMetaData() throws SQLException {
 		if(metadata == null) {
 			try (Connection connection = getConnection()) {
-				populate(connection);
+				populateMetadata(connection);
 			}
 			log.debug("populated metadata from getMetaData");
 		}
@@ -54,17 +54,19 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	/**
 	 * Should only be called once, either on the first {@link #getConnection()} or when explicitly requested {@link #getMetaData()}.
 	 */
-	private void populate(Connection connection) throws SQLException {
-		metadata = new HashMap<>();
+	private void populateMetadata(Connection connection) throws SQLException {
+		Map<String, String> databaseMetadata = new HashMap<>();
 		DatabaseMetaData md = connection.getMetaData();
-		metadata.put("catalog", connection.getCatalog());
+		databaseMetadata.put("catalog", connection.getCatalog());
 
-		metadata.put("user", md.getUserName());
-		metadata.put("url", md.getURL());
-		metadata.put("product", md.getDatabaseProductName());
-		metadata.put("product-version", md.getDatabaseProductVersion());
-		metadata.put("driver", md.getDriverName());
-		metadata.put("driver-version", md.getDriverVersion());
+		databaseMetadata.put("user", md.getUserName());
+		databaseMetadata.put("url", md.getURL());
+		databaseMetadata.put("product", md.getDatabaseProductName());
+		databaseMetadata.put("product-version", md.getDatabaseProductVersion());
+		databaseMetadata.put("driver", md.getDriverName());
+		databaseMetadata.put("driver-version", md.getDriverVersion());
+
+		this.metadata = databaseMetadata;
 	}
 
 	public String getDestinationName() throws SQLException {
@@ -84,7 +86,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
 		if(metadata == null) {
-			populate(conn);
+			populateMetadata(conn);
 			log.debug("populated metadata from getConnection");
 		}
 
@@ -93,17 +95,24 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(getTargetDataSource().toString());
+		if(metadata != null && log.isInfoEnabled()) {
+			return getInfo();
+		}
+		return obtainTargetDataSource().toString();
+	}
 
-		if(metadata != null && log.isWarnEnabled()) {
-			builder.append(";");
-			builder.append(" user ["+metadata.get("user")+"]");
+	public String getInfo() {
+		StringBuilder builder = new StringBuilder();
+
+		if(metadata != null) {
+			builder.append("user ["+metadata.get("user")+"]");
 			builder.append(" url ["+metadata.get("url")+"]");
 			builder.append(" product ["+metadata.get("product")+"]");
 			builder.append(" product version ["+metadata.get("product-version")+"]");
 			builder.append(" driver ["+metadata.get("driver")+"]");
 			builder.append(" driver version ["+metadata.get("driver-version")+"]");
 		}
+		builder.append(" datasource ["+obtainTargetDataSource().toString()+"]");
 
 		return builder.toString();
 	}
