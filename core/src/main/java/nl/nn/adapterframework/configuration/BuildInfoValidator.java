@@ -76,7 +76,7 @@ public class BuildInfoValidator {
 						Properties props = new Properties();
 						try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
 							props.load(reader);
-							LOG.info("Application constants loaded from url []");
+							LOG.info("properties loaded from archive, filename [{}]", name);
 						}
 						version = ConfigurationUtils.getConfigurationVersion(props);
 
