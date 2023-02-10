@@ -178,6 +178,11 @@ public class AppConstantsTest {
 		assertEquals(123.456, constants.getDouble("property.type.double", 0.0), 0);
 	}
 
+	@Test
+	public void testUtf8EncodedPropertyFile() {
+		assertEquals("‘’", constants.getProperty("encoding.utf8"));
+	}
+
 	private class ClassLoaderMock extends ClassLoader {
 		private boolean simulateReload = false;
 
