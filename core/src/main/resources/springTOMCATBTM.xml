@@ -31,17 +31,7 @@
 			<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" >
-		<property name="minPoolSize" value="${jdbc.connection.minPoolSize}" />
-		<property name="maxPoolSize" value="${jdbc.connection.maxPoolSize}" />
-		<property name="maxIdleTime" value="${jdbc.connection.maxIdleTime}" />
-		<property name="maxLifeTime" value="${jdbc.connection.maxLifeTime}" />
-	</bean>
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.btm.BtmConnectionFactoryFactory" >
-		<property name="minPoolSize" value="${jms.connection.minPoolSize}" />
-		<property name="maxPoolSize" value="${jms.connection.maxPoolSize}" />
-		<property name="maxIdleTime" value="${jms.connection.maxIdleTime}" />
-		<property name="maxLifeTime" value="${jms.connection.maxLifeTime}" />
-	</bean>
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.btm.BtmConnectionFactoryFactory" />
 
 </beans>

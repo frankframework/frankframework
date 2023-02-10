@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,11 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
+
+	public static final String MIN_POOL_SIZE_PROPERTY="jdbc.connection.minPoolSize";
+	public static final String MAX_POOL_SIZE_PROPERTY="jdbc.connection.maxPoolSize";
+	public static final String MAX_IDLE_TIME_PROPERTY="jdbc.connection.maxIdleTime";
+	public static final String MAX_LIFE_TIME_PROPERTY="jdbc.connection.maxLifeTime";
 
 	public JndiDataSourceFactory() {
 		super(CommonDataSource.class);

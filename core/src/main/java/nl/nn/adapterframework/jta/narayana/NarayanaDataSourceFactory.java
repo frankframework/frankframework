@@ -32,6 +32,7 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
@@ -40,6 +41,11 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private @Getter @Setter int maxPoolSize=20;
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
+
+	public NarayanaDataSourceFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		maxPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxPoolSize);
+	}
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {

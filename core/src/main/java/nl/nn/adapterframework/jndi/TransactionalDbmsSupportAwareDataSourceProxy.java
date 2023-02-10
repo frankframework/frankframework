@@ -95,14 +95,10 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-
 		if(metadata != null && log.isInfoEnabled()) {
-			builder.append(getInfo());
+			return getInfo();
 		}
-
-		builder.append("; managed by [").append(obtainTargetDataSource().toString()).append("]");
-		return builder.toString();
+		return obtainTargetDataSource().toString();
 	}
 
 	public String getInfo() {
@@ -116,6 +112,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			builder.append(" driver ["+metadata.get("driver")+"]");
 			builder.append(" driver version ["+metadata.get("driver-version")+"]");
 		}
+		builder.append(" datasource ["+obtainTargetDataSource().toString()+"]");
 
 		return builder.toString();
 	}
