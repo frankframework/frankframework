@@ -44,7 +44,6 @@ public class TestAppender extends AbstractAppender {
 	public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B> {
 
 		private Level minLogLevel = null;
-		private Long onlyFromThread = null;
 
 		public B useIbisThreadFilter(String rejectRegex) {
 			IbisThreadFilter threadFilter = IbisThreadFilter.createFilter(rejectRegex, Level.WARN, Result.DENY, Result.NEUTRAL);
