@@ -33,14 +33,18 @@ import nl.nn.adapterframework.logging.IbisXmlLayout;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class TestAppender extends AbstractAppender {
-	private final List<String> logMessages = new ArrayList<String>();
-	private final List<LogEvent> logEvents = new ArrayList<LogEvent>();
+	private final List<String> logMessages = new ArrayList<>();
+	private final List<LogEvent> logEvents = new ArrayList<>();
+	private Level minLogLevel = Level.DEBUG;
 
 	public static <B extends Builder<B>> B newBuilder() {
 		return new Builder<B>().asBuilder().setName("jUnit-Test-Appender");
 	}
 
 	public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B> {
+
+		private Level minLogLevel = null;
+		private Long onlyFromThread = null;
 
 		public B useIbisThreadFilter(String rejectRegex) {
 			IbisThreadFilter threadFilter = IbisThreadFilter.createFilter(rejectRegex, Level.WARN, Result.DENY, Result.NEUTRAL);
@@ -58,8 +62,17 @@ public class TestAppender extends AbstractAppender {
 			return setLayout(layout);
 		}
 
+		public B minLogLevel(Level level) {
+			this.minLogLevel = level;
+			return asBuilder();
+		}
+
 		public TestAppender build() {
-			return new TestAppender(getName(), getFilter(), getOrCreateLayout());
+			TestAppender appender = new TestAppender(getName(), getFilter(), getOrCreateLayout());
+			if (minLogLevel != null) {
+				appender.minLogLevel = this.minLogLevel;
+			}
+			return appender;
 		}
 	}
 
@@ -70,6 +83,9 @@ public class TestAppender extends AbstractAppender {
 
 	@Override
 	public void append(LogEvent logEvent) {
+		if (this.minLogLevel != null && !logEvent.getLevel().isMoreSpecificThan(this.minLogLevel)) {
+			return;
+		}
 		logMessages.add((String) this.toSerializable(logEvent));
 		logEvents.add(logEvent);
 	}
