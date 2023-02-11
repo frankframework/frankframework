@@ -713,7 +713,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		if (Message.hasDataAvailable(result)) {
+		if (!Message.hasDataAvailable(result)) {
 			return false;
 		}
 		if (result.isBinary()) {
