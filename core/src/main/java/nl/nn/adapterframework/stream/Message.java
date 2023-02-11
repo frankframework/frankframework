@@ -66,6 +66,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
+	public static final long MESSAGE_SIZE_UNKNOWN = -1;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -599,6 +600,12 @@ public class Message implements Serializable {
 		return request == null;
 	}
 
+	/**
+	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
+	 * might not be strictly correct.
+	 *
+	 * @return {@code true} if the message is empty, {@false} if message is not empty or if the size cannot be determined up-front.
+	 */
 	public boolean isEmpty() {
 		return size() == 0;
 	}
@@ -754,12 +761,48 @@ public class Message implements Serializable {
 		return Message.asMessage(object).asByteArray(defaultCharset);
 	}
 
+	/**
+	 * Check if the message passed is null or empty.
+	 *
+	 * @param message Message to check. Can be {@code null}.
+	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
+	 */
 	public static boolean isEmpty(Message message) {
 		return (message == null || message.isEmpty());
 	}
 
 	public static boolean isNull(Message message) {
 		return (message == null || message.isNull());
+	}
+
+	/**
+	 * Check if a message has any data available. This will correctly return {@code true} or {@code false} even
+	 * when the message size cannot be determined.
+	 * <p/>
+	 * However, to do so, some I/O may have to be performed on the message thus making this a
+	 * potentially expensive operation which may throw an {@link IOException}.
+	 * <p/>
+	 * All I/O is done in such a way that no message data is lost (see also {@link Message#getMagic(int)}).
+	 *
+	 * @param message Message to check. May be {@code null}.
+	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
+	 * Returns {@code true} if {@link Message#size()} returns a positive value.
+	 * If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
+	 * be read via {@link Message#getMagic(int)}.
+	 *
+	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
+	 *
+	 */
+	public static boolean hasDataAvailable(Message message) throws IOException {
+		if (message == null) {
+			return false;
+		}
+		long size = message.size();
+		if (size == MESSAGE_SIZE_UNKNOWN) {
+			return message.getMagic(10).length != 0;
+		} else {
+			return size != 0;
+		}
 	}
 
 	/*
@@ -840,7 +883,7 @@ public class Message implements Serializable {
 			log.debug("unable to determine size of Message [{}]", ClassUtils.nameOf(request));
 		}
 
-		return -1L;
+		return MESSAGE_SIZE_UNKNOWN;
 	}
 
 	/**

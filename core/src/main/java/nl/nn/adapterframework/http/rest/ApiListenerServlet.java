@@ -713,8 +713,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
 	 */
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
-		// Message.isEmpty() is a liar, sometimes, but faster than getting the magic. So we do both.
-		if (Message.isEmpty(result) || result.getMagic().length == 0) {
+		if (Message.hasDataAvailable(result)) {
 			return false;
 		}
 		if (result.isBinary()) {
