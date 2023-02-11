@@ -66,7 +66,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
-	public static final long MESSAGE_SIZE_UNKNOWN = -1;
+	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -771,10 +771,6 @@ public class Message implements Serializable {
 		return (message == null || message.isEmpty());
 	}
 
-	public static boolean isNull(Message message) {
-		return (message == null || message.isNull());
-	}
-
 	/**
 	 * Check if a message has any data available. This will correctly return {@code true} or {@code false} even
 	 * when the message size cannot be determined.
@@ -794,7 +790,7 @@ public class Message implements Serializable {
 	 *
 	 */
 	public static boolean hasDataAvailable(Message message) throws IOException {
-		if (message == null) {
+		if (Message.isNull(message)) {
 			return false;
 		}
 		long size = message.size();
@@ -803,6 +799,10 @@ public class Message implements Serializable {
 		} else {
 			return size != 0;
 		}
+	}
+
+	public static boolean isNull(Message message) {
+		return (message == null || message.isNull());
 	}
 
 	/*
