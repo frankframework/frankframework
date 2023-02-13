@@ -68,7 +68,7 @@ public class TestAppender extends AbstractAppender {
 
 		public TestAppender build() {
 			TestAppender appender = new TestAppender(getName(), getFilter(), getOrCreateLayout());
-			if (minLogLevel != null) {
+			if (this.minLogLevel != null) {
 				appender.minLogLevel = this.minLogLevel;
 			}
 			return appender;
@@ -94,11 +94,11 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public List<String> getLogLines() {
-		return new ArrayList<String>(logMessages);
+		return new ArrayList<>(logMessages);
 	}
 
 	public List<LogEvent> getLogEvents() {
-		return new ArrayList<LogEvent>(logEvents);
+		return new ArrayList<>(logEvents);
 	}
 
 	private static Logger getRootLogger() {
@@ -107,6 +107,11 @@ public class TestAppender extends AbstractAppender {
 
 	public static void addToRootLogger(TestAppender appender) {
 		Logger logger = getRootLogger();
+		logger.addAppender(appender);
+	}
+
+	public static void addToLogger(String loggerName, TestAppender appender) {
+		Logger logger = (Logger) LogUtil.getLogger(loggerName);
 		logger.addAppender(appender);
 	}
 

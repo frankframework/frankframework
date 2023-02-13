@@ -63,7 +63,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@Before
-	public void init() {
+	public void setup() {
 		// Force reconfigure to clean list appender.
 		testAppender = TestAppender.newBuilder()
 			.useIbisPatternLayout("%level %m")
