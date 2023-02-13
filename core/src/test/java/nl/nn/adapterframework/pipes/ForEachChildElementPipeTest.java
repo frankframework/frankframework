@@ -219,7 +219,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	public void testJsonInputWithXsltV3() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setXsltVersion(3);
-		pipe.setStyleSheetName("/ForEachChildElementPipe/xsl/xslt3.0_test.xsl");
+		pipe.setStyleSheetName("/ForEachChildElementPipe/xslt3.0_test.xsl");
 		configurePipe();
 		pipe.start();
 
