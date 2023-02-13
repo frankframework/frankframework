@@ -207,6 +207,17 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
+	public void basicSelectionWithStylesheetXslt3() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
+		pipe.setXsltVersion(3);
+		pipe.setStyleSheetName("/XmlSwitch/selectionXslt3.0.xsl");
+		pipe.setNamespaceAware(false);
+		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.json");
+		testSwitch(input,"SetRequest");
+	}
+
+	@Test
 	public void testForwardNameFromSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
