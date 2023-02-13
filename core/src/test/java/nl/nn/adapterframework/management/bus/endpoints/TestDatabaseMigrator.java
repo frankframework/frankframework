@@ -32,7 +32,7 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 public class TestDatabaseMigrator extends BusTestBase {
 

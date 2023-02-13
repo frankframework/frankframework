@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,20 +18,19 @@ package nl.nn.adapterframework.senders;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.AmazonS3FileSystemDelegator;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 
 /**
- * Sender to work with Amazon S3. 
- * 
- * <p><b>S3 File System specific Actions:</b></p>
- * <p>The <code>createBucket</code> action requires bucket name as input. Bucket region must be specified.</p>
- * <p>The <code>deleteBucket</code> action requires bucket name as input. </p>
- * <p>The <code>copy</code> action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. </p>
- * <p>The <code>restore</code> action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. </p>
- * 
- * <br/>
+ * Sender to work with Amazon S3.
  */
-public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
+public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> implements AmazonS3FileSystemDelegator {
+
+//	 * <p><b>S3 File System specific Actions:</b></p>
+//	 * <p>The <code>createBucket</code> action requires bucket name as input. Bucket region must be specified.</p>
+//	 * <p>The <code>deleteBucket</code> action requires bucket name as input. </p>
+//	 * <p>The <code>copy</code> action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. </p>
+//	 * <p>The <code>restore</code> action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. </p>
 
 //	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
 
@@ -43,7 +42,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //	@Override
 //	public void configure() throws ConfigurationException {
 //		super.configure();
-//		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
+//		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled()
 //				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
 //						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
 //			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
@@ -63,7 +62,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
 //						+ "] please use following supported storage classes "
 //						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
-//		} 
+//		}
 //		else if (getActionEnum()==FileSystemAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
 //				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
 //			throw new ConfigurationException(
@@ -93,7 +92,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //		}
 
 //		switch(getActionEnum()) {
-//			case CREATEBUCKET: 
+//			case CREATEBUCKET:
 //				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
 //				break;
 //			case DELETEBUCKET:
@@ -121,57 +120,4 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 //		return super.sendMessage(message, session, next);
 //	}
 
-	/** access key to access to the AWS resources owned by the account */
-	public void setAccessKey(String accessKey) {
-		getFileSystem().setAccessKey(accessKey);
-	}
-
-	/** secret key to access to the AWS resources owned by the account */
-	public void setSecretKey(String secretKey) {
-		getFileSystem().setSecretKey(secretKey);
-	}
-
-	/** alias used to obtain AWS credentials  */
-	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);
-	}
-
-	/**
-	 * setting this flag will result in disabling chunked encoding for all requests.
-	 * @ff.default false
-	 */
-	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
-		getFileSystem().setChunkedEncodingDisabled(chunkedEncodingDisabled);
-	}
-
-	/**
-	 * set whether the client should be configured with global bucket access enabled.
-	 * @ff.default false
-	 */
-	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
-		getFileSystem().setForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled);
-	}
-
-	/**
-	 * name of the region that the client will be created from
-	 * @ff.default eu-west-1
-	 */
-	public void setClientRegion(String clientRegion) {
-		getFileSystem().setClientRegion(clientRegion);
-	}
-
-	/** name of the bucket to access */
-	public void setBucketName(String bucketName) {
-		getFileSystem().setBucketName(bucketName);
-	}
-
-	/** setting proxy host */
-	public void setProxyHost(String proxyHost) {
-		getFileSystem().setProxyHost(proxyHost);
-	}
-
-	/** setting proxy port */
-	public void setProxyPort(Integer proxyPort) {
-		getFileSystem().setProxyPort(proxyPort);
-	}
 }

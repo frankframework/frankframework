@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,24 +52,24 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
+
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
-//	public static final List<String> STORAGE_CLASSES = getStorageClasses();
-//	public static final List<String> TIERS = getTiers();
 
-	private String accessKey;
-	private String secretKey;
-	private String authAlias;
+	private static final String BUCKET_OBJECT_SEPARATOR="|";
 
-	private AmazonS3 s3Client;
-	private boolean chunkedEncodingDisabled = false;
-	private boolean forceGlobalBucketAccessEnabled = false;
-	private String clientRegion = Regions.EU_WEST_1.getName();
+	private @Getter String accessKey;
+	private @Getter String secretKey;
+	private @Getter String authAlias;
 
-	private String bucketName;
-//	private String destinationBucketName;
+	private @Getter boolean chunkedEncodingDisabled = false;
+	private @Getter boolean forceGlobalBucketAccessEnabled = false;
+	private @Getter String clientRegion = Regions.EU_WEST_1.getName();
+
+	private @Getter String bucketName;
 //	private String bucketRegion;
 
 //	private String storageClass;
@@ -80,8 +80,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //	private boolean bucketCreationEnabled = false;
 //	private boolean bucketExistsThrowException = true;
 
-	private String proxyHost = null;
-	private Integer proxyPort = null;
+	private @Getter String proxyHost = null;
+	private @Getter Integer proxyPort = null;
+
+	private AmazonS3 s3Client;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -120,13 +122,20 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
 		S3Object object = new S3Object();
-		object.setKey(filename);
+		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
+		if (separatorPos<0) {
+			object.setBucketName(bucketName);
+			object.setKey(filename);
+		} else {
+			object.setBucketName(filename.substring(0,separatorPos));
+			object.setKey(filename.substring(separatorPos+1));
+		}
 		return object;
 	}
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(folder+"/"+filename);
+		return toFile(Misc.concatStrings(folder, "/", filename));
 	}
 
 
@@ -137,7 +146,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
-			int result = summaries.size();
+			int result = summaries.size() - (folder!=null ? 1 :0);
 			while (listing.isTruncated() && (getMaxNumberOfMessagesToList()<0 || getMaxNumberOfMessagesToList() > result)) {
 				listing = s3Client.listNextBatchOfObjects(listing);
 				result += listing.getObjectSummaries().size();
@@ -235,7 +244,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		private S3Object file;
 
 		public S3Message(S3Object file, Map<String,Object> context) {
-			super(file::getObjectContent, context, file.getClass());
+			super(file.getObjectContent(), context);
 			this.file = file;
 		}
 
@@ -291,6 +300,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
+	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
 		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
 		s3Client.deleteObject(bucketName, source.getKey());
@@ -299,21 +309,25 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object copyFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		String destinationFile = destinationFolder+"/"+f.getKey();
+		if (!createFolder && !folderExists(destinationFolder)) {
+			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
+		}
+		String destinationFile = destinationFolder+"/"+getName(f);
 		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
 		return toFile(destinationFile);
 	}
 
 	@Override
+	// move is actually implemented via copy and delete
 	public S3Object moveFile(S3Object f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		return renameFile(f,toFile(destinationFolder,f.getKey()));
+		return renameFile(f,toFile(destinationFolder,getName(f)));
 	}
 
 
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<>();
-		attributes.put("name", bucketName);
+		attributes.put("bucketName", bucketName);
 		return attributes;
 	}
 
@@ -324,17 +338,19 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public String getName(S3Object f) {
-		return f.getKey();
+		int lastSlashPos = f.getKey().lastIndexOf('/');
+		return f.getKey().substring(lastSlashPos+1);
 	}
 
 	@Override
 	public String getParentFolder(S3Object f) throws FileSystemException {
-		return f.getBucketName();
+		int lastSlashPos = f.getKey().lastIndexOf('/');
+		return lastSlashPos > 1 ? f.getKey().substring(0, lastSlashPos) : null;
 	}
 
 	@Override
 	public String getCanonicalName(S3Object f) throws FileSystemException {
-		return f.getBucketName() + f.getKey();
+		return f.getBucketName() + BUCKET_OBJECT_SEPARATOR + f.getKey();
 	}
 
 	@Override
@@ -464,29 +480,18 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 //			throw new SenderException("Failed to create a bucket, to create a bucket bucketCreationEnabled attribute must be assinged to [true]");
 //	}
 
-//	/**
-//	 * This is a help method which throws an exception if a bucket does not exist.
-//	 *
-//	 * @param bucketName
-//	 *            The name of the bucket that is processed.
-//	 */
-//	public void bucketDoesNotExist(String bucketName) throws SenderException {
-//		if (!s3Client.doesBucketExistV2(bucketName))
-//			throw new SenderException(" bucket with bucketName [" + bucketName + "] does not exist, please specify the name of an existing bucket");
-//	}
 
-//	/**
-//	 * This is a help method which throws an exception if a file does not exist.
-//	 *
-//	 * @param bucketName
-//	 *            The name of the bucket where the file is stored in.
-//	 * @param fileName
-//	 * 			  The name of the file that is processed.
-//	 */
-//	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
-//		if (!s3Client.doesObjectExist(bucketName, fileName))
-//			throw new SenderException(" file with fileName [" + fileName + "] does not exist, please specify the name of an existing file");
-//	}
+
+	public ClientConfiguration getProxyConfig() {
+		ClientConfiguration proxyConfig = null;
+		if (this.getProxyHost() != null && this.getProxyPort() != null) {
+			proxyConfig = new ClientConfiguration();
+			proxyConfig.setProtocol(Protocol.HTTPS);
+			proxyConfig.setProxyHost(this.getProxyHost());
+			proxyConfig.setProxyPort(this.getProxyPort());
+		}
+		return proxyConfig;
+	}
 
 	@Override
 	public String getPhysicalDestinationName() {
@@ -501,169 +506,81 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return availableRegions;
 	}
 
-//	public static List<String> getStorageClasses() {
-//		List<String> storageClasses = new ArrayList<String>(StorageClass.values().length);
-//		for (StorageClass storageClass : StorageClass.values())
-//			storageClasses.add(storageClass.toString());
-//
-//		return storageClasses;
-//	}
 
-//	public static List<String> getTiers() {
-//		List<String> tiers = new ArrayList<String>(Tier.values().length);
-//		for (Tier tier : Tier.values())
-//			tiers.add(tier.toString());
-//
-//		return tiers;
-//	}
-
-	public String getAccessKey() {
-		return accessKey;
-	}
-
+	/** Access key to access to the AWS resources owned by the account */
 	public void setAccessKey(String accessKey) {
 		this.accessKey = accessKey;
 	}
 
-	public String getSecretKey() {
-		return secretKey;
-	}
-
+	/** Secret key to access to the AWS resources owned by the account */
 	public void setSecretKey(String secretKey) {
 		this.secretKey = secretKey;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
+	/** Alias used to obtain AWS credentials  */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	public AmazonS3 getS3Client() {
-		return s3Client;
-	}
-
-	public void setS3Client(AmazonS3 s3Client) {
-		this.s3Client = s3Client;
-	}
-
-	public boolean isChunkedEncodingDisabled() {
-		return chunkedEncodingDisabled;
-	}
-
+	/**
+	 * Setting this flag will result in disabling chunked encoding for all requests.
+	 * @ff.default false
+	 */
 	public void setChunkedEncodingDisabled(boolean chunkedEncodingDisabled) {
 		this.chunkedEncodingDisabled = chunkedEncodingDisabled;
 	}
 
-	public boolean isForceGlobalBucketAccessEnabled() {
-		return forceGlobalBucketAccessEnabled;
-	}
-
+	/**
+	 * Set whether the client should be configured with global bucket access enabled.
+	 * @ff.default false
+	 */
 	public void setForceGlobalBucketAccessEnabled(boolean forceGlobalBucketAccessEnabled) {
 		this.forceGlobalBucketAccessEnabled = forceGlobalBucketAccessEnabled;
 	}
 
-	public String getClientRegion() {
-		return clientRegion;
-	}
-
+	/**
+	 * Name of the region that the client will be created from
+	 * @ff.default eu-west-1
+	 */
 	public void setClientRegion(String clientRegion) {
 		this.clientRegion = clientRegion;
 	}
 
-	public String getBucketName() {
-		return bucketName;
-	}
-
+	/** Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by {@value #BUCKET_OBJECT_SEPARATOR} */
 	public void setBucketName(String bucketName) {
 		this.bucketName = bucketName;
 	}
 
-//	public String getDestinationBucketName() {
-//		return destinationBucketName;
-//	}
-//
-//	public void setDestinationBucketName(String destinationBucketName) {
-//		this.destinationBucketName = destinationBucketName;
-//	}
-
-//	public String getBucketRegion() {
-//		return bucketRegion;
-//	}
-//
 //	public void setBucketRegion(String bucketRegion) {
 //		this.bucketRegion = bucketRegion;
 //	}
 
-//	public String getStorageClass() {
-//		return storageClass;
-//	}
-//
 //	public void setStorageClass(String storageClass) {
 //		this.storageClass = storageClass;
 //	}
 
-//	public String getTier() {
-//		return tier;
-//	}
-//
 //	public void setTier(String tier) {
 //		this.tier = tier;
 //	}
 
-//	public int getExpirationInDays() {
-//		return expirationInDays;
-//	}
-//
 //	public void setExpirationInDays(int experationInDays) {
 //		this.expirationInDays = experationInDays;
 //	}
 
-//	public boolean isStorageClassEnabled() {
-//		return storageClassEnabled;
-//	}
-//
 //	public void setStorageClassEnabled(boolean storageClassEnabled) {
 //		this.storageClassEnabled = storageClassEnabled;
-//	}
-
-//	public boolean isBucketCreationEnabled() {
-//		return bucketCreationEnabled;
 //	}
 
 //	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
 //		this.bucketCreationEnabled = bucketCreationEnabled;
 //	}
-//
-//	public boolean isBucketExistsThrowException() {
-//		return bucketExistsThrowException;
-//	}
 
-	public ClientConfiguration getProxyConfig() {
-		ClientConfiguration proxyConfig = null;
-		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(this.getProxyHost());
-			proxyConfig.setProxyPort(this.getProxyPort());
-		}
-		return proxyConfig;
-	}
-
-	public String getProxyHost() {
-		return proxyHost;
-	}
-
+	/** Proxy host */
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
 
-	public Integer getProxyPort() {
-		return proxyPort;
-	}
-
+	/** Proxy port */
 	public void setProxyPort(Integer proxyPort) {
 		this.proxyPort = proxyPort;
 	}

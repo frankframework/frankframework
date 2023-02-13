@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,11 +15,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -137,6 +140,34 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		testReadFile(file, contents, null);
+	}
+
+	@Test
+	public void basicFileSystemTestReadAndPreserve() throws Exception {
+		String filename = "read" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		Message in = fileSystem.readFile(file, null);
+
+		// preserve() converts non repeatable messages to byte array
+		in.preserve();
+
+		// test if message can actually be read multiple times, without turning it explicitly into a String or byte array.
+		// This will fail if a message declared that it was repeatable, but actually was not repeatable.
+		String actual1 = StreamUtil.readerToString(in.asReader(), null);
+		equalsCheck(contents, actual1.trim());
+		String actual2 = StreamUtil.readerToString(in.asReader(), null);
+		equalsCheck(contents, actual2.trim());
 	}
 
 	@Test
@@ -500,7 +531,42 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void getParentOfTheDeletedFile() throws Exception {
+	public void basicFileSytemTestGetNumberOfFilesInFolder() throws Exception {
+		// arrange
+		String contents1 = "maakt niet uit";
+		String contents2 = "maakt ook niet uit";
+		String folderName = "folder_for_counting";
+		
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+		};
+		_createFolder(folderName);
+
+		fileSystem.configure();
+		fileSystem.open();
+
+
+		// act
+		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+		
+		// assert
+		assertEquals(0, fileCount);
+
+
+		// arrange 2
+		createFile(folderName, FILE1, contents1);
+		createFile(folderName, FILE2, contents2);
+
+		// act 2
+		fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+		
+		// assert 2
+		assertEquals(2, fileCount);
+	}
+
+	@Test
+	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME
+	public void basicFileSystemTestGetParentOfTheDeletedFile() throws Exception {
 		String folderName = "parentFolder";
 
 		fileSystem.configure();
@@ -515,7 +581,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		String parentFolder = fileSystem.getParentFolder(f);
 
-		assertTrue(parentFolder.endsWith(folderName));
+		assertThat(parentFolder, StringEndsWith.endsWith(folderName));
 	}
 
 }

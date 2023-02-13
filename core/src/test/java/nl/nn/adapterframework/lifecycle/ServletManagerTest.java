@@ -36,7 +36,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 
 public class ServletManagerTest {

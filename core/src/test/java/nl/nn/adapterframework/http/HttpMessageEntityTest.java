@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 public class HttpMessageEntityTest {
 	private static final String MESSAGE_CONTENT = "dummy content here";

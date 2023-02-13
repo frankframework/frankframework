@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
