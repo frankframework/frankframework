@@ -51,6 +51,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 	private String messageDuplNamespace1="<root xmlns=\"urn:test\"><header xmlns=\"urn:header\">x</header><sub xmlns=\"urn:test\">A &amp; B</sub><sub xmlns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"urn:test\" name=\"r\">R</sub></root>";
 	private String messageDuplNamespace2="<ns:root xmlns:ns=\"urn:test\"><header xmlns=\"urn:header\">x</header><ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"r\">R</ns:sub></ns:root>";
+	private String messageBasicJson="<root><sub><data>{\"children\":{\"child\":\"1\"}}</data></sub><sub><data>{\"children\":{\"child\":\"2\"}}</data></sub><sub><data>{\"children\":{\"child\":\"3\"}}</data></sub></root>";
 
 	private String expectedBasicOnlyR="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -110,6 +111,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<result item=\"3\">\n"+
 			"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n"+
 			"</result>\n</results>";
+
 	private String expectedBasicNS2="<results>\n"+
 			"<result item=\"1\">\n"+
 			"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n"+
@@ -120,6 +122,18 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<result item=\"3\">\n"+
 			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
+
+	private String expectedBasicJsonConversion="<results>\n"
+			+ "<result item=\"1\">\n"
+			+ "<data><children><child>1</child></children></data>\n"
+			+ "</result>\n"
+			+ "<result item=\"2\">\n"
+			+ "<data><children><child>2</child></children></data>\n"
+			+ "</result>\n"
+			+ "<result item=\"3\">\n"
+			+ "<data><children><child>3</child></children></data>\n"
+			+ "</result>\n"
+			+ "</results>";
 
 	private PipeLineSession session = new PipeLineSession();
 
@@ -199,6 +213,20 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
+	}
+
+	@Test
+	public void testJsonInputWithXsltV3() throws Exception {
+		pipe.setSender(getElementRenderer());
+		pipe.setXsltVersion(3);
+		pipe.setStyleSheetName("/ForEachChildElementPipe/xsl/xslt3.0_test.xsl");
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, messageBasicJson, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicJsonConversion, actual);
 	}
 
 	@Test
