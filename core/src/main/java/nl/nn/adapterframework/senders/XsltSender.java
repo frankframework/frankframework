@@ -427,7 +427,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		skipEmptyTags = b;
 	}
 
-	@IbisDoc({"If set to <code>1</code> xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"If set to <code>1</code> xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). <code>0</code> will auto detect. This class supports up to and including XSLT version 3.0", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
