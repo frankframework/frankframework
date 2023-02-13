@@ -13,9 +13,6 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -60,7 +57,6 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	@BeforeAll
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
 		open();
 		if (!s3Client.doesBucketExist(bucketName)) {
@@ -69,39 +65,22 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	@AfterEach
 	public void tearDown() throws Exception {
 		cleanUpBucketAndShutDown(s3Client);
 	}
-	
+
 	public void cleanUpBucketAndShutDown(AmazonS3 s3Client) {
 		if(s3Client.doesBucketExistV2(bucketName)) {
-			ObjectListing objectListing = s3Client.listObjects(bucketName);
-			while (true) {
-				Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-				while (objIter.hasNext()) {
-					s3Client.deleteObject(bucketName, objIter.next().getKey());
-				}
-	
-				// If the bucket contains many objects, the listObjects() call
-				// might not return all of the objects in the first listing. Check to
-				// see whether the listing was truncated. If so, retrieve the next page of objects 
-				// and delete them.
-				if (objectListing.isTruncated()) {
-					objectListing = s3Client.listNextBatchOfObjects(objectListing);
-				} else {
-					break;
-				}
-			}
+			cleanUpFolder(null);
 			//s3Client.deleteBucket(bucketName);
 		}
 		if(s3Client != null) {
 			s3Client.shutdown();
 		}
 	}
-	
+
 	private void open() {
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);		
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(chunkedEncodingDisabled)
 				.withAccelerateModeEnabled(accelerateModeEnabled)
@@ -111,7 +90,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 				.withClientConfiguration(this.getProxyConfig());
 		s3Client = s3ClientBuilder.build();
 	}
-	
+
 	@Override
 	public boolean _fileExists(String folder, String filename) {
 		String objectName;
@@ -125,7 +104,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFile(String folder, String filename) {
-		String filePath = folder == null ? filename : folder +"/" + filename; 
+		String filePath = folder == null ? filename : folder +"/" + filename;
 		s3Client.deleteObject(bucketName, filePath);
 	}
 
@@ -137,7 +116,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
 		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-		
+
 		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
 			@Override
 			public void close() throws IOException {
@@ -149,7 +128,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 				metaData.setContentLength(file.length());
 				String filePath = foldername == null ? filename : foldername + "/" + filename;
 				s3Client.putObject(bucketName, filePath, fis, metaData);
-				
+
 				fis.close();
 				file.delete();
 			}
@@ -175,10 +154,10 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _createFolder(String folderName) throws IOException {
-		String foldername = folderName.endsWith("/") ? folderName : folderName +"/"; 
+		String foldername = folderName.endsWith("/") ? folderName : folderName +"/";
 		s3Client.putObject(bucketName, foldername, "");
 	}
-	
+
 	@Override
 	public boolean _folderExists(String folderName) throws Exception {
 		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
@@ -188,7 +167,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
 		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
-		ObjectListing objectListing = s3Client.listObjects(bucketName, foldername);
+		cleanUpFolder(foldername);
+	}
+
+	private void cleanUpFolder(String foldername) {
+		ObjectListing objectListing = foldername!=null ? s3Client.listObjects(bucketName, foldername) : s3Client.listObjects(bucketName);
 		while (true) {
 			Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
 			while (objIter.hasNext()) {
@@ -197,7 +180,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 			// If the bucket contains many objects, the listObjects() call
 			// might not return all of the objects in the first listing. Check to
-			// see whether the listing was truncated. If so, retrieve the next page of objects 
+			// see whether the listing was truncated. If so, retrieve the next page of objects
 			// and delete them.
 			if (objectListing.isTruncated()) {
 				objectListing = s3Client.listNextBatchOfObjects(objectListing);
@@ -207,10 +190,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 		}
 	}
 
+
 	public AmazonS3 getS3Client() {
 		return s3Client;
 	}
-	
+
 	public String getProxyHost() {
 		return proxyHost;
 	}
@@ -226,7 +210,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 	public void setProxyPort(Integer proxyPort) {
 		this.proxyPort = proxyPort;
 	}
-	
+
 	public ClientConfiguration getProxyConfig() {
 		ClientConfiguration proxyConfig = null;
 		if (this.getProxyHost() != null && this.getProxyPort() != null) {

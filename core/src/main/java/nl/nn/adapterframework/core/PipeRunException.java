@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Exception thrown when the <code>doPipe()</code> method

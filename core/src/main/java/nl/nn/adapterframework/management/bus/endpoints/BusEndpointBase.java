@@ -33,7 +33,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.credentialprovider.util.FilenameUtils;
+import nl.nn.adapterframework.util.FilenameUtils;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 

@@ -69,7 +69,6 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 
 			sourceFile =  it.next();
 			assertTrue(fileSystem.exists(sourceFile), "file retrieved from folder should exist");
-			//assertFalse(fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(sourceFile)), "name of source file should not appear in just created folder");
 			//displayFile(sourceFile);
 
 			destFile1 = fileSystem.copyFile(sourceFile, folderName, false, true);
@@ -78,7 +77,6 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 			//displayFile(destFile1);
 			assertNotNull(destFile1, "destination file should be not null after copy");
 			assertTrue(fileSystem.exists(destFile1), "destination file should exist after copy");
-			//assertTrue("name of destination file should exist in folder after copy", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
 		}
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folderName)) {
 			Iterator<F> it = ds.iterator();
