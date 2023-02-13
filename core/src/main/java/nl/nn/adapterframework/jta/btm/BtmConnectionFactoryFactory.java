@@ -37,9 +37,9 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 	public BtmConnectionFactoryFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		minPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, minPoolSize);
-		maxPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxPoolSize);
-		maxIdleTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxIdleTime);
-		maxLifeTime = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxLifeTime);
+		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
+		maxIdleTime = appConstants.getInt(MAX_IDLE_TIME_PROPERTY, maxIdleTime);
+		maxLifeTime = appConstants.getInt(MAX_LIFE_TIME_PROPERTY, maxLifeTime);
 	}
 
 	@Override

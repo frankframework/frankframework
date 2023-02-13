@@ -44,7 +44,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	public NarayanaDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
-		maxPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, maxPoolSize);
+		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
 	}
 
 	@Override
