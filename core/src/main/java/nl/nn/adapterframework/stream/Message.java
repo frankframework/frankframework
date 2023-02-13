@@ -305,18 +305,16 @@ public class Message implements Serializable {
 		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
-		if (log.isDebugEnabled()) log.debug("registering Message [{}] for close on exit", this);
+		log.debug("registering Message [{}] for close on exit", this);
 		if (request instanceof InputStream) {
 			request = StreamUtil.onClose((InputStream) request, () -> {
-				if (log.isDebugEnabled())
-					log.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
+				log.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
 		if (request instanceof Reader) {
 			request = StreamUtil.onClose((Reader) request, () -> {
-				if (log.isDebugEnabled())
-					log.debug("closed Reader and unregistering Message [{}] from close on exit", this);
+				log.debug("closed Reader and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}

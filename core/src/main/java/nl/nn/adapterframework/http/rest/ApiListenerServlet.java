@@ -660,7 +660,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setContentType(null);
 				}
 
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
+				log.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
 				log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
