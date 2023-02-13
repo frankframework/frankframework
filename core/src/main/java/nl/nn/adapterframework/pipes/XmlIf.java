@@ -178,7 +178,7 @@ public class XmlIf extends AbstractPipe {
 		this.regex = regex;
 	}
 
-	@IbisDoc({"specifies the version of xslt to use", "2"})
+	@IbisDoc({"specifies the version of xslt to use. This pipe supports up to and including XSLT version 3.0", "2"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion = xsltVersion;
 	}
