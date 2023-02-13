@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	protected static final boolean STUBBED = true;
