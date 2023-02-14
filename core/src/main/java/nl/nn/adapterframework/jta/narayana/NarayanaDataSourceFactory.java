@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,21 +29,31 @@ import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
+	private @Getter @Setter int maxPoolSize=20;
+
 	private @Setter NarayanaJtaTransactionManager transactionManager;
+
+	public NarayanaDataSourceFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
+	}
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			DataSource result = new NarayanaDataSource(dataSource, dataSourceName);
+			NarayanaDataSource result = new NarayanaDataSource(dataSource, dataSourceName);
+			result.setMaxConnections(maxPoolSize);
 			checkModifiers(result);
 			return result;
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,11 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 
 public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
+
+	public static final String MIN_POOL_SIZE_PROPERTY="jms.connection.minPoolSize";
+	public static final String MAX_POOL_SIZE_PROPERTY="jms.connection.maxPoolSize";
+	public static final String MAX_IDLE_TIME_PROPERTY="jms.connection.maxIdleTime";
+	public static final String MAX_LIFE_TIME_PROPERTY="jms.connection.maxLifeTime";
 
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);

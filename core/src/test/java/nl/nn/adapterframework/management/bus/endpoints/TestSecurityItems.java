@@ -39,6 +39,8 @@ public class TestSecurityItems extends BusTestBase {
 		request.setHeader("configuration", "testConfiguration");
 		Message<?> response = callSyncGateway(request);
 		String expectedJson = TestFileUtils.getTestFile("/Management/securityItemsResponse.json");
-		MatchUtils.assertJsonEquals(expectedJson, (String) response.getPayload());
+		String payload = (String) response.getPayload();
+		payload = payload.replaceAll("hashCode: \\d+", "HASHCODE");
+		MatchUtils.assertJsonEquals(expectedJson, payload);
 	}
 }
