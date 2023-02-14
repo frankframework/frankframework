@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -21,6 +20,8 @@ import static org.mockito.Mockito.spy;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.jms.Destination;
@@ -30,7 +31,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
@@ -42,11 +47,12 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.mock.TransactionManagerMock;
 import nl.nn.adapterframework.util.LogUtil;
@@ -54,6 +60,7 @@ import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
 
 public class ReceiverTest {
+	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	protected Logger log = LogUtil.getLogger(this);
 	private TestConfiguration configuration = new TestConfiguration();
 
@@ -149,15 +156,10 @@ public class ReceiverTest {
 
 	@Test
 	public void testJmsMessageWithHighDeliveryCount() throws Exception {
+		// Arrange
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
-
-		// Called in moveInProcessToErrorAndDoPostProcessing, Narayana should have 'killed' the thread before this method could be called
-		doAnswer(p -> {
-			fail("thread should have been killed");
-			return null;
-		}).when(listener).afterMessageProcessed(any(PipeLineResult.class), any(), anyMap());
 
 		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
 		messagingSourceField.setAccessible(true);
@@ -170,12 +172,13 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 
 		TransactionManagerMock.reset();
-		receiver.setTxManager(new TransactionManagerMock()); //Hier een echte (NarayanaJtaTransactionManager) gebruiken?
+		receiver.setTxManager(new TransactionManagerMock()); // MockTXManager here to check if no new TX was started for processing?
+		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
 		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
 		Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
 		retryIntervalField.setAccessible(true);
-		retryIntervalField.set(receiver, 30);
+		retryIntervalField.set(receiver, 2);
 
 		Adapter adapter = setupAdapter(receiver);
 
@@ -195,13 +198,47 @@ public class ReceiverTest {
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
 
-		TimeoutGuard tg = new TimeoutGuard(2, "thread-killer"); // kill after 2 seconds
-		try(PipeLineSession session = new PipeLineSession()) {
-			receiver.processRawMessage(listener, jmsMessage, session, false);
-		} finally {
-			assertTrue(tg.threadKilled());
-			assertNull(TransactionManagerMock.peek(), "no new transaction, message was not processed");
-		}
+
+		final int NR_TIMES_MESSAGE_OFFERED = 5;
+		final AtomicInteger rolledBackTXCounter = new AtomicInteger(0);
+		final Semaphore semaphore = new Semaphore(0);
+		final NarayanaJtaTransactionManager narayana = configuration.createBean(NarayanaJtaTransactionManager.class);
+		narayana.setDefaultTimeout(1);
+		Thread mockListenerThread = new Thread("mock-listener-thread") {
+			@SneakyThrows
+			@Override
+			public void run() {
+				try {
+					int nrTries = 0;
+					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
+						final TransactionStatus tx = narayana.getTransaction(TRANSACTION_DEFINITION);
+						try (PipeLineSession session = new PipeLineSession()) {
+							receiver.processRawMessage(listener, jmsMessage, session, false);
+						} catch (Exception e) {
+							log.warn("Caught exception in Receiver:", e);
+						} finally {
+							if (tx.isRollbackOnly()) {
+								rolledBackTXCounter.incrementAndGet();
+							} else {
+								log.warn("I had expected TX to be marked for rollback-only by now?");
+							}
+							narayana.rollback(tx);
+							receiver.resetRetryInterval(); // To avoid test taking too long.
+						}
+					}
+				} finally {
+					semaphore.release();
+				}
+			}
+		};
+
+		// Act
+		mockListenerThread.start();
+		semaphore.acquire(); // Wait until thread is finished.
+
+		// Assert
+		assertNull(TransactionManagerMock.peek(), "no new transaction, message was not processed");
+		assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get());
 	}
 
 	@Test
