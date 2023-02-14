@@ -229,7 +229,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	@Override
-	public int compareTo(XSD x) {
+	public int compareTo(XSD x) { // CompareTo is required for WSDL generation
 		if (x == null) return 1;
 		if (namespace != null && x.namespace != null) {
 			int c = namespace.compareTo(x.namespace);
@@ -250,6 +250,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			if (diff.similar()) {
 				return 0;
 			}
+			// TODO: check necessity of this compare. If Diff says they are different, is it useful to check again for the plain contents?
 			return Misc.readerToString(getReader(), "\n", false).compareTo(Misc.readerToString(x.getReader(), "\n", false));
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
