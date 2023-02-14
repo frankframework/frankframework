@@ -2,22 +2,8 @@ package nl.nn.adapterframework.xslt;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.XsltPipe;
 import nl.nn.adapterframework.stream.Message;
