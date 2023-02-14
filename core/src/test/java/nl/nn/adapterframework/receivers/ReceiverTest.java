@@ -4,28 +4,51 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.jms.Destination;
+import javax.jms.TextMessage;
+
 import org.apache.logging.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.jms.JMSFacade;
+import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.TransactionManagerMock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
@@ -34,7 +57,7 @@ public class ReceiverTest {
 	protected Logger log = LogUtil.getLogger(this);
 	private TestConfiguration configuration = new TestConfiguration();
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		configuration.stop();
 		configuration.getBean("adapterManager", AdapterManager.class).close();
@@ -63,7 +86,7 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public Receiver<javax.jms.Message> setupReceiver(SlowListenerBase listener) throws Exception {
+	public Receiver<javax.jms.Message> setupReceiver(IListener<javax.jms.Message> listener) throws Exception {
 		@SuppressWarnings("unchecked")
 		Receiver<javax.jms.Message> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
@@ -81,7 +104,13 @@ public class ReceiverTest {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
-		PipeLine pl = new PipeLine();
+		PipeLine pl = spy(new PipeLine());
+		doAnswer(p -> {
+			PipeLineResult plr = new PipeLineResult();
+			plr.setState(ExitState.SUCCESS);
+			plr.setResult(p.getArgument(1));
+			return plr;
+		}).when(pl).process(anyString(), any(nl.nn.adapterframework.stream.Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -89,7 +118,7 @@ public class ReceiverTest {
 		pl.addPipe(pipe);
 
 		PipeLineExit ple = new PipeLineExit();
-		ple.setPath("success");
+		ple.setName("success");
 		ple.setState(ExitState.SUCCESS);
 		pl.registerPipeLineExit(ple);
 		adapter.setPipeLine(pl);
@@ -115,6 +144,63 @@ public class ReceiverTest {
 			} catch (InterruptedException e) {
 				fail("test interrupted");
 			}
+		}
+	}
+
+	@Test
+	public void testJmsMessageWithHighDeliveryCount() throws Exception {
+		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		doReturn(mock(Destination.class)).when(listener).getDestination();
+		doNothing().when(listener).open();
+
+		// Called in moveInProcessToErrorAndDoPostProcessing, Narayana should have 'killed' the thread before this method could be called
+		doAnswer(p -> {
+			fail("thread should have been killed");
+			return null;
+		}).when(listener).afterMessageProcessed(any(PipeLineResult.class), any(), anyMap());
+
+		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
+		messagingSourceField.setAccessible(true);
+		MessagingSource messagingSource = mock(MessagingSource.class);
+		messagingSourceField.set(listener, messagingSource);
+
+		@SuppressWarnings("unchecked")
+		IListenerConnector<javax.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
+		listener.setJmsConnector(jmsConnectorMock);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+
+		TransactionManagerMock.reset();
+		receiver.setTxManager(new TransactionManagerMock()); //Hier een echte (NarayanaJtaTransactionManager) gebruiken?
+
+		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
+		Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
+		retryIntervalField.setAccessible(true);
+		retryIntervalField.set(receiver, 30);
+
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		TextMessage jmsMessage = mock(TextMessage.class);
+		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
+		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
+		doReturn("message").when(jmsMessage).getText();
+
+		TimeoutGuard tg = new TimeoutGuard(2, "thread-killer"); // kill after 2 seconds
+		try(PipeLineSession session = new PipeLineSession()) {
+			receiver.processRawMessage(listener, jmsMessage, session, false);
+		} finally {
+			assertTrue(tg.threadKilled());
+			assertNull(TransactionManagerMock.peek(), "no new transaction, message was not processed");
 		}
 	}
 
@@ -185,9 +271,9 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
 
 		log.info("Receiver RunState "+receiver.getRunState());
-		assertEquals("Receiver should be in state [EXCEPTION_STARTING]", RunState.EXCEPTION_STARTING, receiver.getRunState());
+		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		Thread.sleep(500); //Extra timeout to give the receiver some time to close all resources
-		assertTrue("Close has not been called on the Receiver's sender!", receiver.getSender().isSynchronous()); //isSynchronous ==> isClosed
+		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); //isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		while(receiver.getRunState()!=RunState.STOPPED) {

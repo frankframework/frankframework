@@ -59,5 +59,10 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 		public boolean hasBeenRolledBack() {
 			return rollbackOnly && isCompleted();
 		}
+
+		@Override
+		public String toString() {
+			return "txStatus rollbackOnly["+rollbackOnly+"] completed["+completed+"]";
+		}
 	}
 }

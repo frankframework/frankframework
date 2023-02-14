@@ -29,6 +29,7 @@
 				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="CoordinatorEnvironmentBean.defaultTransactionTimeout">120</prop>
 			</props>
 		</property>
 	</bean>

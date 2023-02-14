@@ -29,6 +29,7 @@
 			<property name="disableJmx" value="${management.endpoints.jmx.btm.disableJmx}" />
 			<property name="logPart1Filename" value="${transactionmanager.log.dir}/1.tlog" />
 			<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog" />
+			<property name="defaultTransactionTimeout" value="120" />
 	</bean>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />
