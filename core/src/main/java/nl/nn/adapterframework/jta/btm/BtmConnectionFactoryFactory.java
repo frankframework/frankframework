@@ -43,7 +43,7 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 	}
 
 	@Override
-	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			PoolingConnectionFactory result = new PoolingConnectionFactory();
 			result.setUniqueName(connectionFactoryName);
@@ -62,6 +62,6 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingConnectionFactory).forEach(cf -> ((PoolingConnectionFactory)cf).close());
+		objects.values().stream().filter(PoolingConnectionFactory.class::isInstance).forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }
