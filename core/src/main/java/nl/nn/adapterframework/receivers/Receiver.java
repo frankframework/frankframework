@@ -228,7 +228,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		/** Stop the receiver when an error occurs. */
 		CLOSE
-	};
+	}
 
 	/** Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP. */
 	private @Getter OnError onError = OnError.CONTINUE;

@@ -4,9 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,14 +15,19 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jms.Destination;
 import javax.jms.TextMessage;
@@ -30,9 +35,13 @@ import javax.jms.TextMessage;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.SneakyThrows;
@@ -42,6 +51,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IManagable;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -51,10 +61,10 @@ import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.testutil.mock.TransactionManagerMock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
@@ -154,12 +164,22 @@ public class ReceiverTest {
 		}
 	}
 
-	@Test
-	public void testJmsMessageWithHighDeliveryCount() throws Exception {
+	public static Stream<Arguments> testJmsMessageWithHighDeliveryCount() {
+		return Stream.of(
+			Arguments.of(NarayanaJtaTransactionManager.class),
+			Arguments.of(BtmJtaTransactionManager.class)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	public void testJmsMessageWithHighDeliveryCount(Class<? extends JtaTransactionManager> txManagerClass) throws Exception {
 		// Arrange
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
+
+		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 
 		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
 		messagingSourceField.setAccessible(true);
@@ -170,13 +190,16 @@ public class ReceiverTest {
 		IListenerConnector<javax.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		receiver.setErrorStorage(errorStorage);
 
-		TransactionManagerMock.reset();
-		receiver.setTxManager(new TransactionManagerMock()); // MockTXManager here to check if no new TX was started for processing?
+		final JtaTransactionManager txManager = configuration.createBean(txManagerClass);
+		txManager.setDefaultTimeout(1);
+
+		receiver.setTxManager(txManager); // MockTXManager here to check if no new TX was started for processing?
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
 		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
-		Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
+		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
 		retryIntervalField.setAccessible(true);
 		retryIntervalField.set(receiver, 2);
 
@@ -200,10 +223,14 @@ public class ReceiverTest {
 
 
 		final int NR_TIMES_MESSAGE_OFFERED = 5;
-		final AtomicInteger rolledBackTXCounter = new AtomicInteger(0);
+		final AtomicInteger rolledBackTXCounter = new AtomicInteger();
+		final AtomicInteger txRollbackOnlyInErrorStorage = new AtomicInteger();
+		final AtomicInteger movedToErrorStorage = new AtomicInteger();
+		final AtomicInteger exceptionsFromReceiver = new AtomicInteger();
+		final AtomicInteger processedNoException = new AtomicInteger();
+		final AtomicInteger txNotCompletedAfterReceiverEnds = new AtomicInteger();
+
 		final Semaphore semaphore = new Semaphore(0);
-		final NarayanaJtaTransactionManager narayana = configuration.createBean(NarayanaJtaTransactionManager.class);
-		narayana.setDefaultTimeout(1);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
 			@SneakyThrows
 			@Override
@@ -211,19 +238,36 @@ public class ReceiverTest {
 				try {
 					int nrTries = 0;
 					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
-						final TransactionStatus tx = narayana.getTransaction(TRANSACTION_DEFINITION);
+						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
+						reset(errorStorage, listener);
+						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
+							.thenAnswer(invocation -> {
+								if (tx.isRollbackOnly()) {
+									txRollbackOnlyInErrorStorage.incrementAndGet();
+									throw new SQLException("TX is rollback-only. Getting out!");
+								}
+								int count = movedToErrorStorage.incrementAndGet();
+								return "" + count;
+							});
 						try (PipeLineSession session = new PipeLineSession()) {
 							receiver.processRawMessage(listener, jmsMessage, session, false);
+							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							log.warn("Caught exception in Receiver:", e);
+							exceptionsFromReceiver.incrementAndGet();
 						} finally {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
 								log.warn("I had expected TX to be marked for rollback-only by now?");
 							}
-							narayana.rollback(tx);
-							receiver.resetRetryInterval(); // To avoid test taking too long.
+							if (!tx.isCompleted()) {
+								// We do rollback inside the Receiver already but if the TX is aborted
+								/// it never seems to be marked "Completed" by Narayana.
+								txNotCompletedAfterReceiverEnds.incrementAndGet();
+								txManager.rollback(tx);
+							}
+							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
 						}
 					}
 				} finally {
@@ -237,8 +281,14 @@ public class ReceiverTest {
 		semaphore.acquire(); // Wait until thread is finished.
 
 		// Assert
-		assertNull(TransactionManagerMock.peek(), "no new transaction, message was not processed");
-		assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get());
+		assertAll(
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get(), "Mismatch in nr of messages marked for rollback by TX manager"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "Mismatch in nr of messages processed without exception from receiver"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txRollbackOnlyInErrorStorage.get(), "Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+			() -> assertEquals(0, exceptionsFromReceiver.get(), "Mismatch in nr of exceptions from Receiver method"),
+			() -> assertEquals(0, movedToErrorStorage.get(), "Mismatch in nr of messages moved to error storage"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "Mismatch in nr of transactions not completed after receiver finishes")
+		);
 	}
 
 	@Test
