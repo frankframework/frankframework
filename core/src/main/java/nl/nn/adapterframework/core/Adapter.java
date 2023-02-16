@@ -135,7 +135,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
 
-	private RunStateManager runState = new RunStateManager();
+	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
@@ -726,7 +726,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver + "]");
 	}
 
 	/**
@@ -745,7 +745,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
-		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
+		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline + "]");
 	}
 	@Override
 	public PipeLine getPipeLine() {
