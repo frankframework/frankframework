@@ -47,28 +47,28 @@ createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 authAliasName = 'testiaf_user'
 
 createTemplatedDatasource('ibis4test-oracle', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
-		[['name', 'URL'],['value', 'jdbc:oracle:thin:@host.docker.internal:1521:XE']]
+		[['name', 'URL'],['value', 'jdbc:oracle:thin:@${jdbc.hostname}:1521:XE']]
 	])
 
 createTemplatedDatasource('ibis4test-mssql', 'Microsoft SQL Server JDBC Driver (XA)', 'Microsoft SQL Server JDBC Driver - XA DataSource', authAliasName, [
-		[['name', 'serverName'],  ['value', 'host.docker.internal']],
+		[['name', 'serverName'],  ['value', '${jdbc.hostname}']],
 		[['name', 'portNumber'],  ['value', '1433']],
 		[['name', 'databaseName'],['value', 'testiaf']]
 	])
 
 
 createDatasource('ibis4test-mysql', 'MySQL JDBC Driver', authAliasName, [
-		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3307/testiaf']],
+		[['name', 'URL'],  ['value', 'jdbc:mysql://${jdbc.hostname}:3307/testiaf']],
 		[['name', 'sslMode'], ['value', 'DISABLED']],
 		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
 		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
 		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
 		[['name', 'socketTimeout'], ['value', '5000']]
 	])
-	
+
 # MariaDB uses the same driver as MySQL for proper XA support
 createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
-		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3306/testiaf']],
+		[['name', 'URL'],  ['value', 'jdbc:mysql://${jdbc.hostname}:3306/testiaf']],
 		[['name', 'sslMode'], ['value', 'DISABLED']],
 		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
 		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
@@ -77,13 +77,12 @@ createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
 	])
 
 createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
-		[['name', 'URL'],  ['value', 'jdbc:postgresql://host.docker.internal:5432/testiaf']]
+		[['name', 'URL'],  ['value', 'jdbc:postgresql://${jdbc.hostname}:5432/testiaf']]
 	])
 
 createDatasource('ibis4test-db2-xa', 'DB2 JDBC Driver', authAliasName, [
-		[['name', 'serverName'], ['value', 'host.docker.internal']],
+		[['name', 'serverName'], ['value', '${jdbc.hostname}']],
 		[['name', 'portNumber'], ['value', '50000']],
 		[['name', 'databaseName'], ['value', 'testiaf']],
 		[['name', 'driverType'], ['value', '4']]
 	])
-	
