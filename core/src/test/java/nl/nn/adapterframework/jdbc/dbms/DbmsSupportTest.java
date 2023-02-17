@@ -40,6 +40,7 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
@@ -597,6 +598,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
 
 		ReadNextRecordConcurrentlyTester nextRecordTester = null;
+		Semaphore actionFinished = null;
 		try (Connection workConn1=getConnection()) {
 			workConn1.setAutoCommit(false);
 			try (Statement stmt1= workConn1.createStatement()) {
@@ -642,11 +644,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 						executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
 
-						if (readQueueQuery.endsWith("WAIT 1")) {
-							readQueueQuery+="0"; // allow for some more time testing on the build server
-						}
-
+						actionFinished = new Semaphore();
 						nextRecordTester = new ReadNextRecordConcurrentlyTester(this::getConnection, readQueueQuery);
+						nextRecordTester.setActionDone(actionFinished);
 						nextRecordTester.start();
 
 						Thread.sleep(500);
@@ -660,6 +660,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 			}
 			workConn1.commit();
 			if (nextRecordTester!=null) {
+				actionFinished.acquire();
 				assertTrue("Did not read next record", nextRecordTester.isPassed());
 			}
 		}
