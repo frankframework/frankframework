@@ -72,7 +72,7 @@ public class AwsUtil {
 			}
 		};
 	}
-	
+
 	public static AwsCredentialsProvider getAwsCredentialsProvider(String authAlias, String defaultUsername, String defaultPassword) {
 		return StaticCredentialsProvider.create(getAwsCredentials(authAlias, defaultUsername, defaultPassword));
 	}

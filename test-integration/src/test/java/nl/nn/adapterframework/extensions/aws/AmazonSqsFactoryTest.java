@@ -27,7 +27,7 @@ public class AmazonSqsFactoryTest {
 	private Regions clientRegion = Regions.EU_WEST_1;
 
 	private AmazonSqsFactory sqsFactory;
-	
+
 	@BeforeEach
 	public void setup() {
 		sqsFactory = new AmazonSqsFactory();
@@ -35,7 +35,7 @@ public class AmazonSqsFactoryTest {
 		sqsFactory.setSecretKey(secretKey);
 		sqsFactory.setClientRegion(clientRegion.getName());
 	}
-	
+
 	@Test
 	public void testCreateConnectionFactory() throws JMSException {
 		// arrange / act
@@ -77,12 +77,12 @@ public class AmazonSqsFactoryTest {
 		String queueName = "iaf-test-integration-queue2";
 		SQSConnection connection = (SQSConnection) createConnection();
 		sqsFactory.createQueues(connection, queueName);
-		
+
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue queue = session.createQueue(queueName);
 		MessageProducer producer = session.createProducer(queue);
 		TextMessage message = session.createTextMessage("Hello World!");
 		producer.send(message);
-		System.out.println("JMS Message " + message.getJMSMessageID());
+		assertNotNull(message.getJMSMessageID());
 	}
 }
