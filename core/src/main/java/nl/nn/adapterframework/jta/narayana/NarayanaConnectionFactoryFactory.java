@@ -34,14 +34,10 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
-	private @Getter @Setter int maxPoolSize=20;
-	private @Getter @Setter int maxIdleTime=60;
-
-	public NarayanaConnectionFactoryFactory() {
-		AppConstants appConstants = AppConstants.getInstance();
-		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
-		maxIdleTime = appConstants.getInt(MAX_IDLE_TIME_PROPERTY, maxIdleTime);
-	}
+	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
+	private @Getter @Setter int maxConnectionPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
+	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", -1);
+	private @Getter @Setter int maxSessionPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.session.maxPoolSize", 20);
 
 	@Override
 	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
@@ -49,7 +45,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
-			if(maxPoolSize > 1) {
+			if(maxConnectionPoolSize > 1) {
 				return createConnectionFactoryPool(connectionFactory);
 			}
 
@@ -65,12 +61,12 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 		pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
 		pooledConnectionFactory.setConnectionFactory(xaConnectionFactory);
 
-		pooledConnectionFactory.setMaxConnections(getMaxPoolSize());
+		pooledConnectionFactory.setMaxConnections(maxConnectionPoolSize);
 		pooledConnectionFactory.setConnectionIdleTimeout(getMaxIdleTime() * 1000);
-		pooledConnectionFactory.setConnectionCheckInterval(-1);
+		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval);
 		pooledConnectionFactory.setUseProviderJMSContext(false); // indicates whether the pool should include JMSContext in the pooling, when set to true, it disables connection pooling
 
-		pooledConnectionFactory.setMaxSessionsPerConnection(20); // defaults to 500
+		pooledConnectionFactory.setMaxSessionsPerConnection(maxSessionPoolSize); // defaults to 500
 		pooledConnectionFactory.setBlockIfSessionPoolIsFull(true);
 		pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(-1L);
 

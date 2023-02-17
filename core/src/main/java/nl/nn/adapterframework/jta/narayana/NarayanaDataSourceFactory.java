@@ -23,8 +23,6 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.logging.log4j.Logger;
-
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -33,12 +31,10 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
-	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
-	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
@@ -57,11 +53,12 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			checkModifiers(result);
 			return result;
 		}
+
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource) dataSource;
 	}
 
-	public static void checkModifiers(DataSource dataSource) {
+	private void checkModifiers(DataSource dataSource) {
 		try (Connection connection = dataSource.getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			String driverName = metadata.getDriverName();
