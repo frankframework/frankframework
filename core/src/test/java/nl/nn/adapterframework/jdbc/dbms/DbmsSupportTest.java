@@ -40,7 +40,7 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.StreamUtil;;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
@@ -641,18 +641,20 @@ public class DbmsSupportTest extends JdbcTestBase {
 						// another thread must find the next record when the thread that has the current record moves it out of the way
 
 						executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
-						
-						
-						
+
+						if (readQueueQuery.endsWith("WAIT 1")) {
+							readQueueQuery+="0"; // allow for some more time testing on the build server
+						}
+
 						nextRecordTester = new ReadNextRecordConcurrentlyTester(this::getConnection, readQueueQuery);
 						nextRecordTester.start();
-						
+
 						Thread.sleep(500);
-						
+
 						executeTranslatedQuery(workConn1, "UPDATE "+TEST_TABLE+" SET TINT=101  WHERE TKEY=40", QueryType.OTHER);
 
 						workConn1.commit();
-						
+
 					}
 				}
 			}
