@@ -62,6 +62,6 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingConnectionFactory).forEach(cf -> ((PoolingConnectionFactory)cf).close());
+		objects.values().stream().filter(PoolingConnectionFactory.class::isInstance).forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }

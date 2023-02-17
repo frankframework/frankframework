@@ -47,7 +47,7 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 
 	@Override
 	public List<String> getConnectionFactoryNames() {
-		return new ArrayList<String>(objects.keySet());
+		return new ArrayList<>(objects.keySet());
 	}
 
 }
