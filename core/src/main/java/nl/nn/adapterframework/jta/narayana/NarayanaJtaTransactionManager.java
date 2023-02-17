@@ -21,7 +21,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.narayana.jta.jms.TransactionHelper;
-import org.jboss.narayana.jta.jms.TransactionHelperImpl;
 import org.springframework.transaction.TransactionSystemException;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
@@ -57,7 +56,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 	protected TransactionManager createTransactionManager() throws TransactionSystemException {
 		initialize();
 		TransactionManager result = com.arjuna.ats.jta.TransactionManager.transactionManager();
-		transactionHelper = new TransactionHelperImpl(result);
+		transactionHelper = new NarayanaTransactionHelper(result);
 		return result;
 	}
 
@@ -105,7 +104,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 		}
 	}
 
-	public boolean recoveryStoreEmpty() throws ObjectStoreException, IOException {
+	private boolean recoveryStoreEmpty() throws ObjectStoreException, IOException {
 		RecoveryStore store = StoreManager.getRecoveryStore();
 		InputObjectState buff = new InputObjectState();
 		if (!store.allObjUids("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction", buff)) {
@@ -119,7 +118,7 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 	}
 
 
-	public boolean isNotBlankArray(byte[] arr) {
+	private boolean isNotBlankArray(byte[] arr) {
 		for(int i=0; i<arr.length; i++) {
 			if (arr[i]!=0) {
 				return true;
