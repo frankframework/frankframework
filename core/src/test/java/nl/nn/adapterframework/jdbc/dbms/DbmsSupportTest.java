@@ -32,13 +32,15 @@ import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
 
+import lombok.Getter;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StreamUtil;;
 
 public class DbmsSupportTest extends JdbcTestBase {
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
@@ -594,6 +596,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, readQueueQuery));
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
 
+		ReadNextRecordConcurrentlyTester nextRecordTester = null;
 		try (Connection workConn1=getConnection()) {
 			workConn1.setAutoCommit(false);
 			try (Statement stmt1= workConn1.createStatement()) {
@@ -633,10 +636,64 @@ public class DbmsSupportTest extends JdbcTestBase {
 							}
 							workConn2.rollback();
 						}
+					} else {
+						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
+						// another thread must find the next record when the thread that has the current record moves it out of the way
+
+						executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
+						
+						
+						
+						nextRecordTester = new ReadNextRecordConcurrentlyTester(this::getConnection, readQueueQuery);
+						nextRecordTester.start();
+						
+						Thread.sleep(500);
+						
+						executeTranslatedQuery(workConn1, "UPDATE "+TEST_TABLE+" SET TINT=101  WHERE TKEY=40", QueryType.OTHER);
+
+						workConn1.commit();
+						
 					}
 				}
 			}
-			workConn1.rollback();
+			workConn1.commit();
+			if (nextRecordTester!=null) {
+				assertTrue("Did not read next record", nextRecordTester.isPassed());
+			}
+		}
+	}
+
+	private class ReadNextRecordConcurrentlyTester extends ConcurrentJdbcActionTester {
+
+		private String query;
+		private @Getter int numRowsUpdated=-1;
+		private @Getter boolean passed = false;
+
+		public ReadNextRecordConcurrentlyTester(ThrowingSupplier<Connection,SQLException> connectionSupplier, String query) {
+			super(connectionSupplier);
+			this.query = query;
+		}
+
+		@Override
+		public void initAction(Connection conn) throws Exception {
+			conn.setAutoCommit(false);
+		}
+
+		@Override
+		public void action(Connection conn) throws Exception {
+			try (Statement stmt2= connection.createStatement()) {
+				stmt2.setFetchSize(1);
+				try (ResultSet rs2=stmt2.executeQuery(query)) {
+					assertTrue(rs2.next());
+					assertEquals(41,rs2.getInt(1));	// find the second record
+				}
+			}
+			passed = true;
+		}
+
+		@Override
+		public void finalizeAction(Connection conn) throws Exception {
+			conn.rollback();
 		}
 	}
 

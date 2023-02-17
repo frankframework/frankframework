@@ -1,5 +1,5 @@
 /*
-Copyright 2020, 2021 WeAreFrank!
+Copyright 2020, 2021, 2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,10 +44,9 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 0"; // Mariadb has no 'skip locked'
-		} else {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 1"; // Mariadb has no 'skip locked', WAIT 1 is next best
 		}
+		return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
 	}
 
 	@Override
@@ -57,9 +56,8 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:""); // Mariadb has no 'skip locked'
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	@Override
