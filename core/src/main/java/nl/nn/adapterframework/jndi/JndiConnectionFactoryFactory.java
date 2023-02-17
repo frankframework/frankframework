@@ -35,15 +35,6 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 		super(ConnectionFactory.class);
 	}
 
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
-		return connectionFactory;
-	}
-
-	@Override
-	protected final ConnectionFactory augment(ConnectionFactory object, String objectName) throws NamingException {
-		return augmentConnectionFactory(object, objectName);
-	}
-
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
 		return get(connectionFactoryName);

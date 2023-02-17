@@ -43,7 +43,7 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 	}
 
 	@Override
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			PoolingConnectionFactory result = new PoolingConnectionFactory();
 			result.setUniqueName(connectionFactoryName);

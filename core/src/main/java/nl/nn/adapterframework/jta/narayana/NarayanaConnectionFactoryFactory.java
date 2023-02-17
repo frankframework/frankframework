@@ -31,7 +31,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	@Override
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
