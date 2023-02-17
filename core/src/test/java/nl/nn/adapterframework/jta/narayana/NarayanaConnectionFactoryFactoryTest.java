@@ -21,16 +21,16 @@ public class NarayanaConnectionFactoryFactoryTest {
 		appConstants.setProperty("transactionmanager.narayana.jms.connection.maxPoolSize", "1");
 		appConstants.setProperty("transactionmanager.narayana.jms.connection.maxIdleTime", "2");
 		appConstants.setProperty("transactionmanager.narayana.jms.connection.checkInterval", "3");
-		appConstants.setProperty("transactionmanager.narayana.jms.session.maxPoolSize", "4");
+		appConstants.setProperty("transactionmanager.narayana.jms.connection.maxSessions", "4");
 
 		// Act
 		NarayanaConnectionFactoryFactory factory = new NarayanaConnectionFactoryFactory();
 
 		// Assert
-		assertEquals(1, factory.getMaxConnectionPoolSize());
+		assertEquals(1, factory.getMaxPoolSize());
 		assertEquals(2, factory.getMaxIdleTime());
 		assertEquals(3, factory.getConnectionCheckInterval());
-		assertEquals(4, factory.getMaxSessionPoolSize());
+		assertEquals(4, factory.getMaxSessions());
 
 	}
 }

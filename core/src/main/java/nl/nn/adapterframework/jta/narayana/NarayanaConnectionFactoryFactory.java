@@ -35,9 +35,9 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
-	private @Getter @Setter int maxConnectionPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
 	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", -1);
-	private @Getter @Setter int maxSessionPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.session.maxPoolSize", 20);
+	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
@@ -62,12 +62,12 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 		pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
 		pooledConnectionFactory.setConnectionFactory(xaConnectionFactory);
 
-		pooledConnectionFactory.setMaxConnections(maxConnectionPoolSize);
+		pooledConnectionFactory.setMaxConnections(maxPoolSize);
 		pooledConnectionFactory.setConnectionIdleTimeout(getMaxIdleTime() * 1000);
 		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval);
 		pooledConnectionFactory.setUseProviderJMSContext(false); // indicates whether the pool should include JMSContext in the pooling, when set to true, it disables connection pooling
 
-		pooledConnectionFactory.setMaxSessionsPerConnection(maxSessionPoolSize); // defaults to 500
+		pooledConnectionFactory.setMaxSessionsPerConnection(maxSessions);
 		pooledConnectionFactory.setBlockIfSessionPoolIsFull(true);
 		pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(-1L);
 
