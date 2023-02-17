@@ -123,7 +123,7 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>2.0.5</version>
+			<version>1.2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.transaction</groupId>
