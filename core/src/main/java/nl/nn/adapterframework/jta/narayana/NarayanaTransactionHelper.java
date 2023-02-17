@@ -37,7 +37,7 @@ public class NarayanaTransactionHelper extends TransactionHelperImpl {
 	}
 
 	/**
-	 * Connections are not always closed. {@link ConnectionProxy#close() } and {@link SessionProxy#close() } 
+	 * Connections were not always closed, because the super implementation of this method returns false too often. {@link ConnectionProxy#close() } and {@link SessionProxy#close() } 
 	 * both call this method before attempting to close the connection. When the connection is marked as 
 	 * {@link javax.transaction.Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK} this method will return true, claiming it's available.
 	 * This scenario happened when a JMSMessage was marked for rollback by the {@link ReaperThread} while being detected as 'stuck' 
