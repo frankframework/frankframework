@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.jta.narayana;
 
 import javax.jms.JMSException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.jboss.narayana.jta.jms.ConnectionProxy;
@@ -39,7 +41,7 @@ public class NarayanaTransactionHelper extends TransactionHelperImpl {
 	/**
 	 * Connections were not always closed, because the super implementation of this method returns false too often. {@link ConnectionProxy#close() } and {@link SessionProxy#close() } 
 	 * both call this method before attempting to close the connection. When the connection is marked as 
-	 * {@link javax.transaction.Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK} this method will return true, claiming it's available.
+	 * {@link Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK} this method will return true, claiming it's available.
 	 * This scenario happened when a JMSMessage was marked for rollback by the {@link ReaperThread} while being detected as 'stuck' 
 	 * because of a (too) short timeout. While, even though the timeout was too short, no other unexpected behavior was detected.
 	 * This mechanism however, will prevent the connection from being closed, causing a connection-leak to occur.
@@ -47,14 +49,14 @@ public class NarayanaTransactionHelper extends TransactionHelperImpl {
 	 * NOTE:
 	 * 
 	 * This problem is caused because in the {@link TransactionImple#getStatus()} the {@link ActionStatus internal connection status} is 
-	 * {@link StatusConverter#convert(int) converted} to a {@link javax.transaction.Status}. Because of the conversion the actual state is lost, and 
-	 * {@link ActionStatus#ABORTED} connections are marked as {@link javax.transaction.Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK}.
+	 * {@link StatusConverter#convert(int) converted} to a {@link Status javax.transaction.Status}. Because of the conversion the actual state is lost, and 
+	 * {@link ActionStatus#ABORTED} connections are marked as {@link Status#STATUS_ROLLEDBACK STATUS_ROLLEDBACK}.
 	 */
 	@Override
 	public boolean isTransactionAvailable() throws JMSException {
 		try {
-			return super.isTransactionAvailable() && transactionManager.getStatus() != javax.transaction.Status.STATUS_ROLLEDBACK;
-		} catch (javax.transaction.SystemException e) {
+			return super.isTransactionAvailable() && transactionManager.getStatus() != Status.STATUS_ROLLEDBACK;
+		} catch (SystemException e) {
 			JMSException jmsException = new JMSException("failed to get transaction status");
 			jmsException.setLinkedException(e);
 			throw jmsException;
