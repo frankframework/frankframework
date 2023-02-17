@@ -52,7 +52,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
-		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}", adapter.toString(), this.toString());
+		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}]", adapter.toString(), this.toString());
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
