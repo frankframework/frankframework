@@ -45,7 +45,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
-			if(maxConnectionPoolSize > 1) {
+			if(maxPoolSize > 1) {
 				return createConnectionFactoryPool(connectionFactory);
 			}
 
