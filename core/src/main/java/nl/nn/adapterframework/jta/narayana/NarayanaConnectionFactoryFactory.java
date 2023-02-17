@@ -50,6 +50,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			}
 
 			TransactionHelper transactionHelper = new NarayanaTransactionHelper(transactionManager.getTransactionManager());
+			log.info("add TransactionHelper [{}] to ConnectionFactory", transactionHelper);
 			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
 		}
 		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
@@ -71,6 +72,8 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 		pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(-1L);
 
 		pooledConnectionFactory.setUseAnonymousProducers(true);
+
+		log.info("created pooled XaConnectionFactory [{}]", pooledConnectionFactory);
 		return pooledConnectionFactory;
 	}
 }
