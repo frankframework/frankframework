@@ -23,6 +23,8 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.apache.logging.log4j.Logger;
+
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -31,17 +33,14 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
+	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
 	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
-
-	public NarayanaDataSourceFactory() {
-		AppConstants appConstants = AppConstants.getInstance();
-		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
-	}
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
@@ -58,7 +57,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		return (DataSource) dataSource;
 	}
 
-	private void checkModifiers(DataSource dataSource) {
+	public static void checkModifiers(DataSource dataSource) {
 		try (Connection connection = dataSource.getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			String driverName = metadata.getDriverName();
@@ -66,11 +65,11 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			int minor = metadata.getDriverMinorVersion();
 
 			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
 		} catch (SQLException e) {
-			log.warn("Could not check for existence of Modifier", e);
+			LOG.warn("Could not check for existence of Modifier", e);
 		}
 	}
 

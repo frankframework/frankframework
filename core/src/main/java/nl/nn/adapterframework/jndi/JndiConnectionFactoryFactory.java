@@ -26,11 +26,6 @@ import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 
 public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFactory,ConnectionFactory> implements IConnectionFactoryFactory {
 
-	public static final String MIN_POOL_SIZE_PROPERTY="jms.connection.minPoolSize";
-	public static final String MAX_POOL_SIZE_PROPERTY="jms.connection.maxPoolSize";
-	public static final String MAX_IDLE_TIME_PROPERTY="jms.connection.maxIdleTime";
-	public static final String MAX_LIFE_TIME_PROPERTY="jms.connection.maxLifeTime";
-
 	public JndiConnectionFactoryFactory() {
 		super(ConnectionFactory.class);
 	}
