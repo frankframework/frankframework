@@ -1,0 +1,9 @@
+<manageDatabaseREQ>
+	<delete>
+		<tableName>IBISSTORE</tableName>
+		<where>SLOTID IN ('${applicationId}/AwsSqsJmsFFListener','${applicationId}/AwsSqsJmsFFSender')</where>
+	</delete>
+	<delete>
+		<tableName>IBISPROP</tableName>
+	</delete>
+</manageDatabaseREQ>

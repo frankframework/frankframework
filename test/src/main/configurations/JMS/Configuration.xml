@@ -5,4 +5,5 @@
 	<Include ref="ConfigurationJmsListenerSender.xml"/>
 	<Include ref="ConfigurationWsdlGenerator.xml"/>
 	<Include ref="ConfigurationJmsHeaders.xml"/>
+	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
 </Configuration>

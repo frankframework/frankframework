@@ -1,0 +1,65 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="MESSAGEKEY" type="BIGINT" columnDisplaySize="20" precision="64" scale="0" isCurrency="false" columnTypeName="BIGINT" columnClassName="java.lang.Long"/>
+					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+					<field name="HOST" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+					<field name="MESSAGEID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+					<field name="CORRELATIONID" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+					<field name="MESSAGEDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+					<field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+					<field name="MESSAGE" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BINARY LARGE OBJECT" columnClassName="java.sql.Blob"/>
+					<field name="EXPIRYDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+					<field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="MESSAGEKEY">16</field>
+						<field name="TYPE">L</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFSender</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:878dae23-39d1-45a3-99fe-c3aa4df580fb</field>
+						<field name="CORRELATIONID">Test Tool correlation id(8)</field>
+						<field name="MESSAGEDATE">2023-02-17 10:32:00</field>
+						<field name="COMMENTS">no audit trail</field>
+						<field name="MESSAGE">&lt;msg mid="0a72250c--c924a18_1865eb112b1_-7f6e" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE">2023-03-19 10:32:00</field>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="1">
+						<field name="MESSAGEKEY">17</field>
+						<field name="TYPE">A</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:878dae23-39d1-45a3-99fe-c3aa4df580fb</field>
+						<field name="CORRELATIONID">Test Tool correlation id(8)</field>
+						<field name="MESSAGEDATE">2023-02-17 10:32:00</field>
+						<field name="COMMENTS">log</field>
+						<field name="MESSAGE">&lt;msg mid="0a72250c--c924a18_1865eb112b1_-7f6e" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE">2023-03-19 10:32:00</field>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="2">
+						<field name="MESSAGEKEY">18</field>
+						<field name="TYPE">E</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:878dae23-39d1-45a3-99fe-c3aa4df580fb</field>
+						<field name="CORRELATIONID">Test Tool correlation id(8)</field>
+						<field name="MESSAGEDATE">2023-02-17 10:32:00</field>
+						<field name="COMMENTS">Pipe [listenerException] ERROR</field>
+						<field name="MESSAGE">&lt;msg mid="0a72250c--c924a18_1865eb112b1_-7f6e" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE" null="true"/>
+						<field name="LABEL" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>

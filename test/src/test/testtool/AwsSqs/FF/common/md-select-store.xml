@@ -1,0 +1,7 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<where>SLOTID IN ('${applicationId}/AwsSqsJmsFFListener','${applicationId}/AwsSqsJmsFFSender')</where>
+		<order>MESSAGEKEY</order>
+	</select>
+</manageDatabaseREQ>
