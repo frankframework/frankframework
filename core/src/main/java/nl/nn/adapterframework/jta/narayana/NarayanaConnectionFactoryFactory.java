@@ -40,7 +40,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 	private @Getter @Setter int maxSessionPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.session.maxPoolSize", 20);
 
 	@Override
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
