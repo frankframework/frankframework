@@ -51,7 +51,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		log.debug("registering adapter [{}] with AdapterManager [{}]", adapter, this);
+		if (log.isDebugEnabled()) log.debug("registering adapter [" + adapter + "] with AdapterManager [" + this + "]");
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
@@ -145,7 +145,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
 	 * the {@link LifecycleProcessor} will trigger this method.
-	 * 
+	 *
 	 * Starts all Adapters registered in this manager.
 	 */
 	@Override

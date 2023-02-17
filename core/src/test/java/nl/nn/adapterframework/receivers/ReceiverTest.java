@@ -38,12 +38,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
@@ -192,10 +194,15 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
+		if (txManagerClass.equals(BtmJtaTransactionManager.class)) {
+			if (TransactionManagerServices.isTransactionManagerRunning()) {
+				TransactionManagerServices.getTransactionManager().shutdown();
+			}
+		}
 		final JtaTransactionManager txManager = configuration.createBean(txManagerClass);
 		txManager.setDefaultTimeout(1);
 
-		receiver.setTxManager(txManager); // MockTXManager here to check if no new TX was started for processing?
+		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
 		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
@@ -279,6 +286,8 @@ public class ReceiverTest {
 		// Act
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
+
+		((DisposableBean) txManager).destroy();
 
 		// Assert
 		assertAll(

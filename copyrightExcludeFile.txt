@@ -55,6 +55,7 @@ LICENSE
 .css
 .properties
 .log
+.tlog
 .xml
 .no-validate-xsl
 .bin
