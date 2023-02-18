@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
 import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;

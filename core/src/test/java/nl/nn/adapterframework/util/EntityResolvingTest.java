@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;

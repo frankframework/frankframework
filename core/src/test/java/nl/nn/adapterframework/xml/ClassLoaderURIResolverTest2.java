@@ -10,9 +10,9 @@ import java.util.jar.JarFile;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.xerces.xni.XNIException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
@@ -25,32 +25,14 @@ public class ClassLoaderURIResolverTest2 {
 	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-
-
-	@Test
-	public void localClassPathFileOnRootOfClasspath() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"AppConstants.properties", "/AppConstants.properties", "/Xslt/importDocument/lookup.xml"})
+	public void localClassPathLookup(String filename) throws Exception {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
 
-		Resource resource = resolver.resolveToResource("AppConstants.properties", null);
+		Resource resource = resolver.resolveToResource(filename, null);
 		assertNotNull(resource);
 	}
-
-	@Test
-	public void localClassPathFileOnRootOfClasspathAbsolute() throws Exception {
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
-
-		Resource resource = resolver.resolveToResource("/AppConstants.properties", null);
-		assertNotNull(resource);
-	}
-
-	@Test
-	public void localClassPathAbsolute() throws Exception {
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
-
-		Resource resource = resolver.resolveToResource("/Xslt/importDocument/lookup.xml", null);
-		assertNotNull(resource);
-	}
-
 
 	@Test
 	public void bytesClassPath() throws Exception {
@@ -90,8 +72,7 @@ public class ClassLoaderURIResolverTest2 {
 		assertNotNull(resource);
 	}
 
-	@Ignore
-	@Test(expected = XNIException.class)
+	@Test
 	public void classLoaderURIResolverCanLoadLocalEntities() throws Exception {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
 
@@ -115,6 +96,4 @@ public class ClassLoaderURIResolverTest2 {
 
 		assertThat(thrown.getMessage(), startsWith("Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] not allowed with protocol [ftp]"));
 	}
-
-
 }

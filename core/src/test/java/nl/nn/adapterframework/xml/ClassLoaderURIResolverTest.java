@@ -7,19 +7,17 @@ import static org.junit.Assert.assertThrows;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
@@ -29,13 +27,14 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-@RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
 
 	private Logger log = LogUtil.getLogger(this);
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
-	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
+	private enum RefType  {
+		ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
 		private Class<? extends Exception> exception;
+
 		RefType() {
 			this(null);
 		}
@@ -49,23 +48,14 @@ public class ClassLoaderURIResolverTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	@Parameter(0)
-	public BaseType baseType;
-	@Parameter(1)
-	public RefType refType;
-
-	@Parameters(name = "{index}: BaseType {0} RefType {1}")
-	public static Collection<Object[]> data() {
-		List<Object[]> result = new ArrayList<Object[]>();
+	private static Stream<Arguments> testParameters() {
+		List<Arguments> result = new ArrayList<>();
 		for(BaseType baseType:BaseType.values()) {
 			for (RefType refType: RefType.values()) {
-				Object[] item = new Object[2];
-				item[0]=baseType;
-				item[1]=refType;
-				result.add(item);
+				result.add(Arguments.of(baseType, refType));
 			}
 		}
-		return result;
+		return result.stream();
 	}
 
 	private void testUri(String baseType, String refType, IScopeProvider cl, String base, String ref, String expected) throws TransformerException {
@@ -157,8 +147,9 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
-	@Test
-	public void test() throws Exception {
+	@ParameterizedTest
+	@MethodSource("testParameters")
+	public void runTests(BaseType baseType, RefType refType) throws Exception {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		log.debug("BaseType [{}] classLoader [{}] BaseUrl [{}]", baseType, classLoaderProvider, baseUrl);
