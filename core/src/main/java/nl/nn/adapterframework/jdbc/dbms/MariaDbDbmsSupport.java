@@ -19,14 +19,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 
 /**
 * Support for MariaDB.
-* 
+*
 */
 public class MariaDbDbmsSupport extends MySqlDbmsSupport {
+
+	private Boolean dbmsHasSkipLockedFunctionality;
+	private String productVersion;
+
+	public MariaDbDbmsSupport() {
+		this(false);
+	}
+
+	public MariaDbDbmsSupport(String productVersion) {
+		this.productVersion = productVersion;
+	}
+
+	public MariaDbDbmsSupport(boolean dbmsHasSkipLockedFunctionality) {
+		this.dbmsHasSkipLockedFunctionality = dbmsHasSkipLockedFunctionality;
+	}
+
 
 	@Override
 	public Dbms getDbms() {
@@ -35,7 +52,27 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	@Override
 	public boolean hasSkipLockedFunctionality() {
-		return false;
+		if (dbmsHasSkipLockedFunctionality==null) {
+			if (StringUtils.isNotEmpty(productVersion)) {
+				String strippedProductVersion = productVersion;
+				int colonPos = productVersion.indexOf(":");
+				if (colonPos>=0) {
+					String secondPart=productVersion.substring(colonPos+1);
+					int plusPos=secondPart.indexOf("+");
+					if (plusPos>0) {
+						strippedProductVersion=secondPart.substring(0, plusPos);
+					}
+					log.debug("stripped productversion [{}] down to [{}]", productVersion, strippedProductVersion);
+				}
+				DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
+				DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
+				dbmsHasSkipLockedFunctionality = thisVersion.compareTo(targetVersion) >= 0;
+				log.debug("based on Mariadb productversion [{}] dbms hasSkipLockedFunctionality [{}]", strippedProductVersion, dbmsHasSkipLockedFunctionality);
+			} else {
+				dbmsHasSkipLockedFunctionality = false; // to be safe
+			}
+		}
+		return dbmsHasSkipLockedFunctionality;
 	}
 
 	@Override
@@ -44,7 +81,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 1"; // Mariadb has no 'skip locked', WAIT 1 is next best
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE "+ (hasSkipLockedFunctionality() ? "SKIP LOCKED" : "WAIT 1"); // Mariadb used to have no 'skip locked', WAIT 1 is next best
 		}
 		return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
 	}
