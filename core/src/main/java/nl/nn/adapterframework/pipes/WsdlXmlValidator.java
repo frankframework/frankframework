@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,15 +61,16 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.SharedResources;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.SchemaUtils;
-import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
+import nl.nn.adapterframework.validation.xsd.WsdlXsd;
 
 /**
  * XmlValidator that will read the XSD's to use from a WSDL. As it extends the
@@ -291,23 +292,23 @@ public class WsdlXmlValidator extends SoapValidator {
 	}
 
 	@Override
-	public Set<XSD> getXsds() throws ConfigurationException {
-		Set<XSD> xsds = new LinkedHashSet<>();
+	public Set<IXSD> getXsds() throws ConfigurationException {
+		Set<IXSD> xsds = new LinkedHashSet<>();
 		SoapVersion soapVersion = getSoapVersion();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);
 			xsds.add(xsd);
 		}
 		if (soapVersion==SoapVersion.SOAP12 || soapVersion==SoapVersion.AUTO) {
-			XSD xsd = new XSD();
+			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNamespace(SoapVersion.SOAP12.namespace, this, SoapVersion.SOAP12.location);
 			xsds.add(xsd);
 		}
 		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
 			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
 			while (st.hasMoreTokens()) {
-				XSD xsd = new XSD();
+				ResourceXsd xsd = new ResourceXsd();
 				xsd.initNamespace(st.nextToken(), this, st.hasMoreTokens() ? st.nextToken():null);
 				xsds.add(xsd);
 			}
@@ -349,7 +350,7 @@ public class WsdlXmlValidator extends SoapValidator {
 			}
 		}
 		for (Schema schema : filteredSchemas) {
-			XSD xsd = new XSD();
+			WsdlXsd xsd = new WsdlXsd();
 			xsd.setWsdlSchema(definition, schema);
 			if (StringUtils.isNotEmpty(getSchemaLocation())) {
 				xsd.setResourceInternalReference(filteredReferences.get(schema));
@@ -371,23 +372,23 @@ public class WsdlXmlValidator extends SoapValidator {
 		return "[" + getConfigurationClassLoader() + "][" + FilenameUtils.normalize(getWsdl()) + "][" + getSoapBody() + "][" + getOutputSoapBody() + "][" + getSoapBodyNamespace() + "]";
 	}
 
-	@IbisDoc({"The WSDL to read the XSDs from", " "})
+	/** The WSDL to read the XSDs from */
 	public void setWsdl(String wsdl) {
 		this.wsdl = wsdl;
 	}
 
 	@Override
-	@IbisDoc({"Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body.", "" })
+	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,). In case the request contains SOAPAction header and the WSDL contains an element specific to that SOAPAction, it will use that element as SOAP body. */
 	public void setSoapBody(String soapBody) {
 		super.setSoapBody(soapBody);
 	}
 
-	@IbisDoc({"Pairs of URI references which will be added to the WSDL", " "})
+	/** Pairs of URI references which will be added to the WSDL */
 	public void setSchemaLocationToAdd(String schemaLocationToAdd) {
 		this.schemaLocationToAdd = schemaLocationToAdd;
 	}
 
-	@IbisDoc({"Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element", " " })
+	/** Creates <code>schemaLocation</code> attribute based on the WSDL and replaces the namespace of the soap body element */
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}

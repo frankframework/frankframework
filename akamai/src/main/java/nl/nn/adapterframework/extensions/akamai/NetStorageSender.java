@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
@@ -322,7 +321,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param nonce to use when logging in
 	 */
-	@IbisDoc({"the nonce or api username", ""})
 	public void setNonce(String nonce) {
 		this.nonce = nonce;
 	}
@@ -330,8 +328,8 @@ public class NetStorageSender extends HttpSenderBase {
 	/**
 	 * Version to validate queries made to NetStorage backend.
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
+	 * @ff.default 5
 	 */
-	@IbisDoc({"the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)", "5"})
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
 	}
@@ -348,7 +346,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param accessToken to use when logging in
 	 */
-	@IbisDoc({"the api accesstoken", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}

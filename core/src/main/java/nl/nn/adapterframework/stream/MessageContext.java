@@ -32,6 +32,8 @@ import nl.nn.adapterframework.util.LogUtil;
 public class MessageContext extends LinkedHashMap<String,Object> {
 	protected transient Logger log = LogUtil.getLogger(this);
 
+	public static final String HEADER_PREFIX = "Header.";
+
 	public static final String METADATA_CHARSET = "Metadata.Charset";
 	public static final String METADATA_SIZE = "Metadata.Size";
 	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";

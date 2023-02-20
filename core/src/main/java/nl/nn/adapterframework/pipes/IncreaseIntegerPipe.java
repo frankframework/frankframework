@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -99,7 +98,10 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		sessionKey = string;
 	}
 
-	@IbisDoc({"amount to increment the value. Can be set from the attribute or the parameter 'increment'", "1"})
+	/**
+	 * amount to increment the value. Can be set from the attribute or the parameter 'increment'
+	 * @ff.default 1
+	 */
 	public void setIncrement(int i) {
 		increment = i;
 	}

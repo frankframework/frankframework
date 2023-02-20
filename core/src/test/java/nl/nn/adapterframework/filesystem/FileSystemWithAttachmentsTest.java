@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Iterator;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttachments<F,A>> extends HelperedBasicFileSystemTest<F,FS> {
 
@@ -16,6 +17,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 		return (IFileSystemWithAttachmentsTestHelper<A>)helper;
 	}
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -41,7 +43,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 
 		// test
 		F f = fileSystem.toFile(filename);
-		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(f));
+		assertTrue(fileSystem.exists(f), "Expected file[" + filename + "] to be present");
 
 		Iterator<A> attachmentIterator = fileSystem.listAttachments(f);
 		assertNotNull(attachmentIterator);
@@ -82,7 +84,7 @@ public abstract class FileSystemWithAttachmentsTest<F, A, FS extends IWithAttach
 
 		// test
 		F f = fileSystem.toFile(filename);
-		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(f));
+		assertTrue(fileSystem.exists(f), "Expected file[" + filename + "] to be present");
 
 		Iterator<A> attachmentIterator = fileSystem.listAttachments(f);
 		assertNotNull(attachmentIterator);

@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -18,9 +18,9 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.integration.support.MessageBuilder;
@@ -39,6 +39,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
@@ -50,14 +51,13 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.mock.TransactionManagerMock;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 public class TestBrowseMessageBrowsers extends BusTestBase {
 	private static final String JSON_MESSAGE = "{\"dummy\":1}";
 	private static final String XML_MESSAGE = "<dummy>2</dummy>";
 	private Adapter adapter;
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -89,7 +89,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		return adapter;
 	}
 
-	@After
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if(adapter != null) {
@@ -101,8 +101,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void getMessageById() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 
 		request.setHeader("messageId", "1234");
 		try {
@@ -117,8 +117,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void getMessageByIdFromReceiver() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 		request.setHeader("processState", "Error");
 
@@ -132,8 +132,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void downloadJsonMessageByIdFromReceiver() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 		request.setHeader("processState", "Error");
 		request.setHeader("messageId", "1");
@@ -146,8 +146,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void downloadXmlMessageByIdFromReceiver() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 		request.setHeader("processState", "Error");
 		request.setHeader("messageId", "2");
@@ -160,8 +160,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void getMessageByIdFromPipe() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("pipe", "PipeName");
 
 		request.setHeader("messageId", "1234");
@@ -174,8 +174,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void downloadJsonMessageByIdFromPipe() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("pipe", "PipeName");
 
 		request.setHeader("messageId", "1");
@@ -188,8 +188,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void downloadXmlMessageByIdFromPipe() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("pipe", "PipeName");
 
 		request.setHeader("messageId", "2");
@@ -202,8 +202,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void findAllMessageById() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("pipe", "PipeName");
 
 		// filter should match any item
@@ -214,8 +214,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void findNoneMessageById() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("pipe", "PipeName");
 
 		// filter should not match any item
@@ -227,8 +227,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void findOneMessageById() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 		request.setHeader("processState", "Error");
 
@@ -241,8 +241,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	@Test
 	public void resendMessageById() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 
 		// filter should match only 1 item
@@ -260,8 +260,8 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	public void deleteMessageById() throws Exception {
 		TransactionManagerMock.reset();
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
-		request.setHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		request.setHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter.getName());
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
 		request.setHeader("receiver", "ReceiverName");
 
 		// filter should match only 1 item

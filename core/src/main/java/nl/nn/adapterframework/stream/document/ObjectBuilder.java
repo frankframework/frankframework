@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 		addField(name).setValue(value);
 	}
 
-	public void add(String name, long value) throws SAXException {
+	public void add(String name, Number value) throws SAXException {
 		addField(name).setValue(value);
 	}
 
@@ -42,7 +42,7 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 		add(name, XmlUtils.normalizeAttributeValue(value));
 	}
 
-	public void addAttribute(String name, long value) throws SAXException {
+	public void addAttribute(String name, Number value) throws SAXException {
 		add(name, value);
 	}
 

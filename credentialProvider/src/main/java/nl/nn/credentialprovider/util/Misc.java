@@ -60,7 +60,7 @@ import java.util.zip.Inflater;
  */
 public class Misc {
 	private static Logger log = Logger.getLogger(Misc.class.getName());
-	
+
 	public static final int BUFFERSIZE=20000;
 	@Deprecated
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -151,7 +151,7 @@ public class Misc {
 
 		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
 		StringBuilder s = new StringBuilder();
-		s.append(ia).append(getCurrentTimeMillis()).append(hash);
+		s.append(ia).append(System.currentTimeMillis()).append(hash);
 
 		return s.toString();
 	}
@@ -168,13 +168,6 @@ public class Misc {
 	 */
 	public static int unsignedByteToInt(byte b) {
 		return (int) b & 0xFF;
-	}
-
-	/**
-	 * @return the current time in milliseconds.
-	 */
-	public static synchronized long getCurrentTimeMillis(){
-		return System.currentTimeMillis();
 	}
 
 	/**
@@ -215,7 +208,7 @@ public class Misc {
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
-	
+
 	/**
 	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
 	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
@@ -290,7 +283,7 @@ public class Misc {
 				}
 				out.write(buffer, 0, r);
 			}
-	
+
 			return out.toByteArray();
 		} finally {
 			inputStream.close();
@@ -437,7 +430,7 @@ public class Misc {
 	}
 
 	/**
-	 * Concatenates two strings, if specified, uses the separator in between two strings. 
+	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
 	 *<p>
 	 *     Example:
@@ -843,7 +836,7 @@ public class Misc {
 			count++;
 		return count;
 	}
-	
+
 	public static String urlDecode(String input) {
 		try {
 			return URLDecoder.decode(input,"UTF-8");
@@ -862,7 +855,7 @@ public class Misc {
 
 	public static <T> void addToSortedListNonUnique(List<T> list, T item) {
 		int index = Misc.binarySearchResultToInsertionPoint(Collections.binarySearch(list, item, null));
-		list.add(index, item);		
+		list.add(index, item);
 	}
 
 	private static int binarySearchResultToInsertionPoint(int index) {
@@ -873,12 +866,11 @@ public class Misc {
 		}
 		return index;
 	}
-	
 
 	public static boolean isEmpty(String string) {
 		return string==null || string.isEmpty();
 	}
-	
+
 	public static boolean isNotEmpty(String string) {
 		return string!=null && !string.isEmpty();
 	}

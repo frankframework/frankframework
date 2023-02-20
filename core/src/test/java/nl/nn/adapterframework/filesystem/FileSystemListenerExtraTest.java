@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public abstract class FileSystemListenerExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemListenerTest<F, FS> {
 
@@ -30,12 +30,12 @@ public abstract class FileSystemListenerExtraTest<F,FS extends IWritableFileSyst
 
 		// file just created, assume that stability time has not yet passed
 		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms",rawMessage);
+		assertNull(rawMessage, "raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms");
 
 		// simulate that the file is older
 		setFileDate(null, filename, new Date(new Date().getTime()-3*stabilityTimeUnit));
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms",rawMessage);
+		assertNotNull(rawMessage, "raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms");
 	}
 
 }

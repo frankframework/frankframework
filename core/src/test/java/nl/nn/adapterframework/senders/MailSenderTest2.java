@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.icegreen.greenmail.junit4.GreenMailRule;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
 import jakarta.mail.internet.MimeMessage;
@@ -19,10 +19,10 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 	private final String testPassword="testPassword";
 	private final String domainWhitelist="localhost,frankframework.org";
 
-	@Rule
-	public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
+	@RegisterExtension
+	static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP);
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		greenMail.setUser(testUser, testPassword);
 	}

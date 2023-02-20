@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,31 +32,33 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.ibistesttool.IbisDebugger;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
  * @author Jaco de Groot
  */
-public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudStorage {
+// LogStorage needs to be implemented because View.setDebugStorage() requires a LogStorage
+// Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
+public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
 	private static final String DELETE_ADAPTER_CONFIG = "main";
@@ -68,8 +72,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
-	private IDbmsSupport dbmsSupport = new GenericDbmsSupport(); // N.B. should use DbmsSupportFactory.getDbmsSupport(), but cannot get connection from JdbcTemplate. Blobs will not work for PostgreSQL...
-	private IbisManager ibisManager;
+	private IbisDebugger ibisDebugger;
 	private SecurityContext securityContext;
 
 	@Override
@@ -134,8 +137,8 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		this.testTool = testTool;
 	}
 
-	public void setIbisManager(IbisManager ibisManager) {
-		this.ibisManager = ibisManager;
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 	/**
@@ -152,10 +155,6 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	@Override
 	public int getSize() throws StorageException {
 		try {
-			/* queryForInt() deprecated since version Spring 3.2.x
-			 * https://www.mkyong.com/spring/jdbctemplate-queryforint-is-deprecated/
-			 * return jdbcTemplate.queryForInt("select count(*) from " + table);
-			 */
 			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read size", e);
@@ -163,16 +162,10 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getStorageIds() throws StorageException {
+	public List<Integer> getStorageIds() throws StorageException {
 		try {
-			List storageIds = jdbcTemplate.query(
-					"select LOGID from " + table + " order by LOGID desc",
-					new RowMapper() {
-						public Integer mapRow(ResultSet rs, int rowNum)
-								throws SQLException {
-							return rs.getInt(1);
-						}
-					});
+			List<Integer> storageIds = jdbcTemplate.query("select LOGID from " + table + " order by LOGID desc",
+					(rs, rowNum) -> rs.getInt(1));
 			return storageIds;
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read storage id's", e);
@@ -183,11 +176,12 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	public List<List<Object>> getMetadata(int maxNumberOfRecords,
 			final List<String> metadataNames, List<String> searchValues,
 			int metadataValueType) throws StorageException {
-		// According to SimpleDateFormat javadoc it needs to be synchronised
-		// when accessed by multiple threads, hence instantiate it here instead
-		// of instantiating it at class level and synchronising it.
-		final SimpleDateFormat simpleDateFormat =
-				new SimpleDateFormat(TIMESTAMP_PATTERN);
+		// Prevent SQL injection (searchValues are passed as parameters to the SQL statement)
+		for (String metadataName : metadataNames) {
+			if (!reportColumnNames.contains(metadataName)) {
+				throw new StorageException("Invalid metadata name: " + metadataName);
+			}
+		}
 		List<String> rangeSearchValues = new ArrayList<String>();
 		List<String> regexSearchValues = new ArrayList<String>();
 		for (int i = 0; i < searchValues.size(); i++) {
@@ -209,9 +203,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				regexSearchValues.add(null);
 			}
 		}
-		IDbmsSupport dbmsSupport=getDbmsSupport();
-		StringBuilder query = new StringBuilder("select " + dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords)  + " * from (select ");
+		IDbmsSupport dbmsSupport = getDbmsSupport();
+		StringBuilder query = new StringBuilder("select"
+				+ dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords)  + " * from (select ");
 		List<Object> args = new ArrayList<Object>();
+		List<Integer> argTypes = new ArrayList<Integer>();
 		boolean first = true;
 		for (String metadataName : metadataNames) {
 			if (first) {
@@ -225,7 +221,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				query.append(metadataName);
 			}
 		}
-		String rowNumber= dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
+		String rowNumber = dbmsSupport.getRowNumber(metadataNames.get(0), "desc");
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
 				first = false;
@@ -235,6 +231,9 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			query.append(rowNumber);
 		}
 		query.append(" from " + table);
+		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
+		// instantiate it here instead of instantiating it at class level and synchronizing it.
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
@@ -246,19 +245,17 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 							searchValue.length() - 1);
 					if (StringUtils.isNotEmpty(searchValueLeft)) {
 						if (integerColumns.contains(column)) {
-							addNumberExpression(query, args, column, ">=",
-									searchValueLeft);
+							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (timestampColumns.contains(column)) {
-							addTimestampExpression(query, args, column, ">=",
+							addTimestampExpression(query, args, argTypes, column, ">=",
 									searchValueLeft, simpleDateFormat);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
 						if (integerColumns.contains(column)) {
-							addNumberExpression(query, args, column, "<=",
-									searchValueRight);
+							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (timestampColumns.contains(column)) {
-							addTimestampExpression(query, args, column, "<=",
+							addTimestampExpression(query, args, argTypes, column, "<=",
 									searchValueRight, simpleDateFormat);
 						}
 					}
@@ -272,32 +269,31 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			if (StringUtils.isNotEmpty(searchValue)) {
 				String column = metadataNames.get(i);
 				if (integerColumns.contains(column)) {
-					addNumberExpression(query, args, column, "<=", searchValue);
+					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
 				} else if (timestampColumns.contains(column)) {
-					addTimestampExpression(query, args, column, "<=",
-							searchValue, simpleDateFormat);
+					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, simpleDateFormat);
 				} else if (fixedStringColumns != null && fixedStringColumns.contains(column)) {
-					addFixedStringExpression(query, args, column, searchValue);
+					addFixedStringExpression(query, args, argTypes, column, searchValue);
 				} else {
-					addLikeExpression(query, args, column, searchValue);
+					addLikeExpression(query, args, argTypes, column, searchValue);
 				}
 			}
 		}
 		query.append(")");
 		if (StringUtils.isNotEmpty(rowNumber)) {
-			query.append(" where "+dbmsSupport.getRowNumberShortName()+" < ?");
+			query.append(" where " + dbmsSupport.getRowNumberShortName() + " < ?");
 			args.add(maxNumberOfRecords + 1);
+			argTypes.add(Types.INTEGER);
 		}
 		query.append(" order by ");
 		query.append(metadataNames.get(0) + " desc");
 		log.debug("Metadata query: " + query.toString());
-		List metadata;
+		List<List<Object>> metadata;
 		try {
-			metadata = jdbcTemplate.query(query.toString(), args.toArray(),
-					new RowMapper() {
-						public List mapRow(ResultSet rs, int rowNum)
-								throws SQLException {
-							List row = new ArrayList();
+			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
+					(rs, rowNum) ->
+						{
+							List<Object> row = new ArrayList<Object>();
 							for (int i = 0; i < metadataNames.size(); i++) {
 								if (integerColumns.contains(metadataNames.get(i))) {
 									row.add(rs.getInt(i + 1));
@@ -309,12 +305,12 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 							}
 							return row;
 						}
-					});
+					);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read metadata", e);
 		}
 		for (int i = 0; i < metadata.size(); i++) {
-			if (!SearchUtil.matches((List)metadata.get(i), regexSearchValues)) {
+			if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
 				metadata.remove(i);
 				i--;
 			}
@@ -341,9 +337,9 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		try {
 			jdbcTemplate.query(query.toString(),
 					new Object[]{storageId},
-					new RowMapper() {
-						public Object mapRow(ResultSet rs, int rowNum)
-								throws SQLException {
+					new int[] {Types.INTEGER},
+					(rs, rowNum) ->
+						{
 							for (int i = 0; i < reportColumnNames.size(); i++) {
 								String value = getValue(rs, i + 1);
 								Checkpoint checkpoint = new Checkpoint(report,
@@ -356,7 +352,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 							}
 							return null;
 						}
-					});
+					);
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read report", e);
 		}
@@ -367,7 +363,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	public void close() {
 	}
 
-	private void addLikeExpression(StringBuilder query, List<Object> args,
+	private void addLikeExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String searchValue) throws StorageException {
 		if (searchValue.startsWith("~") && searchValue.contains("*")) {
 			addExpression(query, "lower(" + column + ") like lower(?)");
@@ -384,9 +380,10 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 		searchValue = searchValue.replaceAll("\\*", "%");
 		args.add(searchValue);
+		argTypes.add(Types.VARCHAR);
 	}
 
-	private void addFixedStringExpression(StringBuilder query, List<Object> args,
+	private void addFixedStringExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String searchValue) throws StorageException {
 		String[] svs = searchValue.split(",");
 		String questionMarks= "";
@@ -397,24 +394,26 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 				questionMarks = questionMarks + ",?";
 			}
 			args.add(svs[i]);
+			argTypes.add(Types.VARCHAR);
 		}
 		addExpression(query, column + " in (" + questionMarks + ")");
 	}
 
-	private void addNumberExpression(StringBuilder query, List<Object> args,
+	private void addNumberExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String operator, String searchValue)
 					throws StorageException {
 		try {
 			BigDecimal bigDecimal = new BigDecimal(searchValue);
 			addExpression(query, column + " " + operator + " ?");
 			args.add(bigDecimal);
+			argTypes.add(Types.DECIMAL);
 		} catch(NumberFormatException e) {
 			throw new StorageException("Search value '" + searchValue
 					+ "' isn't a valid number");
 		}
 	}
 
-	private void addTimestampExpression(StringBuilder query, List<Object> args,
+	private void addTimestampExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String operator, String searchValue,
 			SimpleDateFormat simpleDateFormat) throws StorageException {
 		String searchValueToParse;
@@ -458,7 +457,8 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			searchValueToParse = searchValue;
 		}
 		try {
-			args.add(simpleDateFormat.parse(searchValueToParse));
+			args.add(new Timestamp(simpleDateFormat.parse(searchValueToParse).getTime()));
+			argTypes.add(Types.TIMESTAMP);
 			addExpression(query, column + " " + operator + " ?");
 		} catch (ParseException e) {
 			throwExceptionOnInvalidTimestamp(searchValue);
@@ -479,7 +479,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
-			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
+			return JdbcUtil.getValue(getDbmsSupport(), rs, columnIndex, rs.getMetaData(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
 		} catch (IOException e) {
 			throw new SQLException("IOException reading value");
 		}
@@ -495,7 +495,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	}
 
 	@Override
-	public List getFilterValues(String column) throws StorageException {
+	public List<Object> getFilterValues(String column) throws StorageException {
+		// Prevent SQL injection
+		if (!reportColumnNames.contains(column)) {
+			throw new StorageException("Invalid metadata name: " + column);
+		}
 		String query;
 		if (fixedStringTables.containsKey(column)) {
 			query = "select " + column + " from " + fixedStringTables.get(column) + " order by " + column + " asc";
@@ -503,18 +507,14 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 			query = "select distinct " + column + " from " + table + " order by " + column + " asc";
 		}
 		try {
-			List filterValues = jdbcTemplate.query(query, new RowMapper() {
-				public Object mapRow(ResultSet rs, int rowNum)
-						throws SQLException {
-					return rs.getObject(1);
-				}
-			});
+			List<Object> filterValues = jdbcTemplate.query(query, (rs, rowNum) -> rs.getObject(1));
 			return filterValues;
 		} catch (DataAccessException e) {
 			throw new StorageException("Could not read filter values", e);
 		}
 	}
 
+	@Override
 	public String getUserHelp(String column) {
 		if (integerColumns.contains(column)) {
 			return "Search all rows which are less than or equal to the search value";
@@ -547,10 +547,10 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		if (!"Table EXCEPTIONLOG".equals(report.getName())) {
 			throw new StorageException("Delete method is not implemented for '" + report.getName() + "'");
 		}
-		List checkpoints = report.getCheckpoints();
-		Checkpoint checkpoint = (Checkpoint)checkpoints.get(0);
+		List<Checkpoint> checkpoints = report.getCheckpoints();
+		Checkpoint checkpoint = checkpoints.get(0);
 		Message message = Message.asMessage(checkpoint.getMessage());
-		Configuration config = ibisManager.getConfiguration(DELETE_ADAPTER_CONFIG);
+		Configuration config = ibisDebugger.getIbisManager().getConfiguration(DELETE_ADAPTER_CONFIG);
 		if (config == null) {
 			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
 		}
@@ -580,6 +580,15 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 	@Override
 	public void clear() throws StorageException {
 		throw new StorageException("Clear method is not implemented");
+	}
+
+	@Override
+	public void storeWithoutException(Report report) {
+	}
+
+	@Override
+	public String getWarningsAndErrors() {
+		return null;
 	}
 
 }

@@ -55,11 +55,6 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	/**
 	 * Utility function to give commands to Adapters and Receivers
-	 * 
-	 * @param action
-	 * @param adapterName
-	 * @param receiverName
-	 * @param commandIssuedBy
 	 */
 	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 

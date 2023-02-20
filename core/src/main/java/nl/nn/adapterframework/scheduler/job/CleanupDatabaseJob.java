@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,12 +47,12 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	protected class MessageLogObject {
-		private String datasourceName;
-		private String tableName;
-		private String expiryDateField;
-		private String keyField;
-		private String typeField;
+	private static class MessageLogObject {
+		private final String datasourceName;
+		private final String tableName;
+		private final String expiryDateField;
+		private final String keyField;
+		private final String typeField;
 
 		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
 			this.datasourceName = datasourceName;
@@ -68,13 +67,9 @@ public class CleanupDatabaseJob extends JobDef {
 			if(!(o instanceof MessageLogObject)) return false;
 
 			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getDatasourceName().equals(datasourceName) &&
+			return mlo.getDatasourceName().equals(datasourceName) &&
 				mlo.getTableName().equals(tableName) &&
-				mlo.expiryDateField.equals(expiryDateField)) {
-				return true;
-			} else {
-				return false;
-			}
+				mlo.expiryDateField.equals(expiryDateField);
 		}
 
 		public String getDatasourceName() {
@@ -197,6 +192,9 @@ public class CleanupDatabaseJob extends JobDef {
 		Set<String> datasourceNames = new HashSet<>();
 		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if (!configuration.isActive()) {
+				continue;
+			}
 			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
@@ -246,6 +244,9 @@ public class CleanupDatabaseJob extends JobDef {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if (!configuration.isActive()) {
+				continue;
+			}
 			for(IAdapter adapter : configuration.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					collectMessageLogs(messageLogs, receiver.getMessageLog());
@@ -263,7 +264,10 @@ public class CleanupDatabaseJob extends JobDef {
 		return messageLogs;
 	}
 
-	@IbisDoc({"The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout", "0"})
+	/**
+	 * The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout
+	 * @ff.default 0
+	 */
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;
 	}

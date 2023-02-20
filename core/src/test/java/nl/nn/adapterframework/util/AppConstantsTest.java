@@ -1,8 +1,9 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -10,9 +11,9 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AppConstantsTest {
 	private Logger log = LogUtil.getLogger(this);
@@ -21,13 +22,13 @@ public class AppConstantsTest {
 	private AppConstants constants;
 	private ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		classLoader = new ClassLoaderMock(contextClassLoader, false);
 		constants = AppConstants.getInstance(classLoader);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		AppConstants.removeInstance(classLoader);
 	}
@@ -76,8 +77,8 @@ public class AppConstantsTest {
 		AppConstants constants3 = AppConstants.getInstance(classLoader);
 		constants3.put("constants3", "3");
 
-		assertTrue("Singleton instance is not identical", constants == constants1);
-		assertTrue("Singleton instance is not identical", constants2 == constants3);
+		assertTrue(constants == constants1, "Singleton instance is not identical");
+		assertTrue(constants2 == constants3, "Singleton instance is not identical");
 
 		assertEquals("1", constants.get("constants1"));
 		assertEquals("2", constants.get("constants2"));
@@ -90,7 +91,7 @@ public class AppConstantsTest {
 		old.put("dummy-key", "1");
 		AppConstants.removeInstance();
 
-		assertFalse("should not contain key [dummy-key]", AppConstants.getInstance().contains("dummy-key"));
+		assertFalse(AppConstants.getInstance().contains("dummy-key"), "should not contain key [dummy-key]");
 	}
 
 	@Test
@@ -103,14 +104,14 @@ public class AppConstantsTest {
 		assertEquals("changed", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
 	}
 
-	@Test(expected=IllegalStateException.class)
+	@Test
 	public void callGetInstanceWithoutClassLoader() {
-		AppConstants.getInstance(null);
+		assertThrows(IllegalStateException.class, () -> AppConstants.getInstance(null));
 	}
 
-	@Test(expected=IllegalStateException.class)
+	@Test
 	public void callRemoveInstanceWithoutClassLoader() {
-		AppConstants.removeInstance(null);
+		assertThrows(IllegalStateException.class, () -> AppConstants.removeInstance(null));
 	}
 
 	@Test
@@ -176,6 +177,11 @@ public class AppConstantsTest {
 	public void setAndGetDoubleProperty() {
 		constants.setProperty("property.type.double", "123.456");
 		assertEquals(123.456, constants.getDouble("property.type.double", 0.0), 0);
+	}
+
+	@Test
+	public void testUtf8EncodedPropertyFile() {
+		assertEquals("‘’", constants.getProperty("encoding.utf8"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {

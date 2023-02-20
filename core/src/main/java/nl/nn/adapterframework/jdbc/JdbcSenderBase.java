@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.IStreamingSender;
@@ -124,7 +123,10 @@ public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnab
 		return result;
 	}
 
-	@IbisDoc({"The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited", "0"})
+	/**
+	 * The number of seconds the driver will wait for a statement object to execute. If the limit is exceeded, a TimeoutException is thrown. A value of 0 means execution time is not limited
+	 * @ff.default 0
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}

@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -50,7 +49,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class IMSSender extends MQSender {
 	// IMS Header length
 	private static final int IIH_HEADERSIZE = 88;
-	
+
 	// IMS Header fields
 	private static final String	  IIH_HEADER_STRUCT_ID		= "IIH ";		// MQIIH_STRUC_ID (4 pos) 
 	private static final int	  IIH_HEADER_VERSION		= 1;			// MQIIH_VERSION_1 (4 pos)
@@ -68,20 +67,19 @@ public class IMSSender extends MQSender {
 	private static final String   IIH_HEADER_COMMIT_MODE	= "1";			// MQICM-SEND-THEN-COMMIT (1 pos)
 	private static final String   IIH_HEADER_SECURITY_SCOPE	= "C";			// MQISS-CHECK (1 pos)
 	private static final String   IIH_HEADER_RESERVED		= " ";			// Reserved (1 pos)
-	
+
 	// MQ Fields
 	private static final String MQC_MQFMT_IMS	= "MQIMS   ";	// (8 pos)
 	private static final int MQENC_NATIVE = 273;				// copied from com.ibm.mq.MQC in com.ibm.mq.jar
 	private static final int CCSID_ISO_8859_1 = 819;
-	
+
 	private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
-	
+
 	private String transactionCode;
-	
+
 	/**
 	 * The transaction code that should be added in the header, must be 8 characters
 	 */
-	@IbisDoc({"transaction code that should be added to the header, must be 8 characters", ""})
 	public void setTransactionCode(String transactionCode) {
 		this.transactionCode = transactionCode;
 	}
@@ -99,17 +97,16 @@ public class IMSSender extends MQSender {
 		}
 		super.configure();
 	}
-	
+
 	@Override
 	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException {
-		
 		BytesMessage bytesMessage = null;
 		bytesMessage = session.createBytesMessage();
-		
+
 		setMessageCorrelationID(bytesMessage, correlationID);
-		
+
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		
+
 		try {
 			bos.write(IIH_HEADER_STRUCT_ID.getBytes(CHARSET));
 			bos.write(intToBytes(IIH_HEADER_VERSION));
@@ -127,23 +124,23 @@ public class IMSSender extends MQSender {
 			bos.write(IIH_HEADER_COMMIT_MODE.getBytes(CHARSET));
 			bos.write(IIH_HEADER_SECURITY_SCOPE.getBytes(CHARSET));
 			bos.write(IIH_HEADER_RESERVED.getBytes(CHARSET));
-			
+
 			byte[] data = message.asByteArray(CHARSET.name());
 
 			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
-			
+
 			bos.write(data);
-			
+
 			bos.toByteArray();
 		} catch (IOException e) {
 			// Should never happen
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException("unable to compile binary message", e);
 		}
-		
+
 		bytesMessage.writeBytes(bos.toByteArray());
-		
+
 		// Set Properties
 		bytesMessage.setIntProperty("JMS_IBM_Encoding", MQENC_NATIVE);
 		bytesMessage.setIntProperty("JMS_IBM_Character_Set", CCSID_ISO_8859_1);	
@@ -161,12 +158,12 @@ public class IMSSender extends MQSender {
 			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getClass().getName()+"]", e);
 			return null;
 		}
-		
+
 		String charset = message.getStringProperty("JMS_IBM_Character_Set");
-		
+
 		byte[] headerBuffer = new byte[IIH_HEADERSIZE];
 		message.readBytes(headerBuffer);
-		
+
 		// Put header fields in the context
 		ByteBuffer byteBuffer = ByteBuffer.wrap(headerBuffer);
 		context.put("MQIIH_StrucID", byteToString(byteBuffer, charset, 4));
@@ -185,31 +182,31 @@ public class IMSSender extends MQSender {
 		context.put("MQIIH_CommitMode", byteToString(byteBuffer, charset, 1));
 		context.put("MQIIH_SecurityScope", byteToString(byteBuffer, charset, 1));
 		context.put("MQIIH_Reserved", byteToString(byteBuffer, charset, 1));
-		
+
 		int readBufferLength = (int)message.getBodyLength() - IIH_HEADERSIZE; // Get the length of the message to extract
-		
+
 		byte[] readBuffer = new byte[readBufferLength];
 		message.readBytes(readBuffer);
-		
+
 		if (StreamUtil.DEFAULT_INPUT_STREAM_ENCODING.equals(charset)) {
 			return new Message(readBuffer);
 		}
 		return new Message(new String(readBuffer, charset));
 	}
-	
+
 	private String byteToString(ByteBuffer byteBuffer, String charset, int size) throws UnsupportedEncodingException {
 		byte[] bytes = new byte[size];
 		byteBuffer.get(bytes);
-		
+
 		return new String(bytes, charset);
 	}
-	
+
 	private byte[] intToBytes(int i) {
 		ByteBuffer bb = ByteBuffer.allocate(4);
 		bb.putInt(i);
 		return bb.array(); 
 	}
-	
+
 	private byte[] shortToBytes(int i) {
 		ByteBuffer bb = ByteBuffer.allocate(2);
 		bb.putShort((short) i);

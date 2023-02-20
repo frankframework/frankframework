@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class DocumentUtils {
 			documentBuilder.setValue(true);
 			break;
 		case NULL:
-			documentBuilder.setValue(null);
+			documentBuilder.setValue((String)null);
 			break;
 		default:
 			throw new NotImplementedException("not implemented ["+jValue.getValueType()+"]");
@@ -91,7 +91,7 @@ public class DocumentUtils {
 				objectBuilder.add(n, true);
 				break;
 			case NULL:
-				objectBuilder.add(n, null);
+				objectBuilder.add(n, (String)null);
 				break;
 			default:
 				throw new NotImplementedException("not implemented ["+v.getValueType()+"]");
@@ -126,7 +126,7 @@ public class DocumentUtils {
 				arrayBuilder.addElement(true);
 				break;
 			case NULL:
-				arrayBuilder.addElement(null);
+				arrayBuilder.addElement((String)null);
 				break;
 			default:
 				throw new NotImplementedException("not implemented ["+jValue.getValueType()+"]");

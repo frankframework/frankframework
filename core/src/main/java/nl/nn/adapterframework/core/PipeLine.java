@@ -31,9 +31,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -102,8 +102,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String PIPELINE_WAIT_STATS  = "wait";
 	public static final String PIPELINE_SIZE_STATS  = "msgsize";
 
-	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
-	private static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
+	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
@@ -144,6 +143,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		SUCCESS,
 		ERROR,
 		REJECTED;
+
+		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
 	}
 
 	public IPipe getPipe(String pipeName) {
@@ -682,7 +683,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
+	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value nl.nn.adapterframework.core.PipeLine.ExitState#SUCCESS_EXIT_STATE} */
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);
@@ -808,6 +809,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
+	@Deprecated
+	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

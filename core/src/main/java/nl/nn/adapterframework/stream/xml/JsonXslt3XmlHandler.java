@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,13 @@
 package nl.nn.adapterframework.stream.xml;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-
-import jakarta.json.stream.JsonParser;
-import jakarta.json.stream.JsonParser.Event;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.JsonEventHandler;
@@ -175,7 +173,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		if (value == null) {
 			simpleElement("null", parsedKey, value);
 		} else {
-			if (value instanceof Long || value instanceof BigDecimal) {
+			if (value instanceof Number) {
 				simpleElement("number", parsedKey, value);
 			} else {
 				if (value instanceof Boolean) {

@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -125,7 +124,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"name of the file (resource) on the classpath to read the xquery from", ""})
+	/** name of the file (resource) on the classpath to read the xquery from */
 	public void setXqueryName(String xqueryName){
 		this.xqueryName = xqueryName;
 	}
@@ -134,7 +133,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		return xqueryName;
 	}
 
-	@IbisDoc({"name of the file on the file system to read the xquery from", ""})
+	/** name of the file on the file system to read the xquery from */
 	public void setXqueryFile(String xqueryFile){
 		this.xqueryFile = xqueryFile;
 	}

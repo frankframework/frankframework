@@ -2,8 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
+
 	<artifactId>ibis-adapterframework-docker</artifactId>
-	<name>Ibis AdapterFramework Docker images</name>
+	<name>Frank!Framework - Docker</name>
+	<version>${revision}</version>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
@@ -13,8 +15,6 @@
 
 	<properties>
 		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid><!-- explicitly defined because of the legacy profile -->
-		<activemq.driver.version>5.16.5</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
-		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 	</properties>
 
 	<build>
@@ -23,7 +23,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -38,20 +38,76 @@
 		</pluginManagement>
 	</build>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-docker-tomcat-example</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-docker-tomcat-test</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<profiles>
 		<profile>
-			<!-- used to reproduce the problem described in #1187 -->
-			<id>legacy-jdbc</id>
-			<properties>
-				<oracle.driver.groupid>oracle</oracle.driver.groupid>
-				<oracle.driver.version>12.1.0.2</oracle.driver.version>
-				<oracle.driver.jdkversion>7</oracle.driver.jdkversion>
-			</properties>
+			<id>Tomcat</id>
+			<modules>
+				<module>Tomcat</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>WebSphere</id>
+			<modules>
+				<module>WebSphere</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>WildFly</id>
+			<modules>
+				<module>WildFly</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>JBoss</id>
+			<modules>
+				<module>JBoss</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>all-as</id>
+			<modules>
+				<module>Tomcat</module>
+				<module>WebSphere</module>
+				<module>WildFly</module>
+				<module>JBoss</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>no-docker</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
-
-	<modules>
-		<module>appserver</module>
-	</modules>
-
 </project>

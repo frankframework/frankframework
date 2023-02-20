@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -238,7 +237,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return fileXml;
 	}
 
-	@IbisDoc({ "the destination, aka smb://xxx/yyy share", "" })
+	/** the destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		if (!share.endsWith("/"))
 			share += "/";
@@ -249,7 +248,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return share;
 	}
 
-	@IbisDoc({ "possible values: delete, download, list, mkdir, rename, rmdir, upload", "" })
+	/** possible values: delete, download, list, mkdir, rename, rmdir, upload */
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
@@ -258,9 +257,10 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return action;
 	}
 
-	@IbisDoc({
-			"used when creating folders or overwriting existing files (when renaming or moving)",
-			"false" })
+	/**
+	 * used when creating folders or overwriting existing files (when renaming or moving)
+	 * @ff.default false
+	 */
 	public void setForce(boolean force) {
 		this.force = force;
 	}
@@ -269,7 +269,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return force;
 	}
 
-	@IbisDoc({ "in case the user account is bound to a domain", "" })
+	/** in case the user account is bound to a domain */
 	public void setAuthDomain(String domain) {
 		this.domain = domain;
 	}
@@ -278,7 +278,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return domain;
 	}
 
-	@IbisDoc({ "the smb share username", "" })
+	/** the smb share username */
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -287,7 +287,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return username;
 	}
 
-	@IbisDoc({ "the smb share password", "" })
+	/** the smb share password */
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -296,7 +296,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		return password;
 	}
 
-	@IbisDoc({ "alias used to obtain credentials for the smb share", "" })
+	/** alias used to obtain credentials for the smb share */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

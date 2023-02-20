@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -108,12 +107,12 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	// ESCAPE BETWEEN
-	@IbisDoc({"substring to start translation", ""})
+	/** substring to start translation */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
 
-	@IbisDoc({"substring to end translation", ""})
+	/** substring to end translation */
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}
@@ -126,7 +125,10 @@ public class EscapePipe extends FixedForwardPipe {
 		return encodeSubstring;
 	}
 
-	@IbisDoc({"when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents", "false"})
+	/**
+	 * when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents
+	 * @ff.default false
+	 */
 	public void setEncodeSubstring(boolean b) {
 		encodeSubstring = b;
 	}

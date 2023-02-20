@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
@@ -142,7 +141,10 @@ public class FixedResultSender extends SenderWithParametersBase {
 		return true;
 	}
 
-	@IbisDoc({"should values between ${ and } be resolved from the pipelinesession", "false"})
+	/**
+	 * should values between ${ and } be resolved from the pipelinesession
+	 * @ff.default false
+	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
 	}
@@ -153,18 +155,12 @@ public class FixedResultSender extends SenderWithParametersBase {
 		setFilename(fileName);
 	}
 
-	/**
-	 * Sets the name of the filename. The fileName should not be specified
-	 * as an absolute path, but as a resource in the classpath.
-	 *
-	 * @param filename the name of the file to return the contents from
-	 */
-	@IbisDoc({"name of the file containing the resultmessage", ""})
+	/** Name of the file containing the result message */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/** returned message */
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}

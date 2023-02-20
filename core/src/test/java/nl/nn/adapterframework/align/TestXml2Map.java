@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 
@@ -25,7 +25,7 @@ public class TestXml2Map extends AlignTestBase {
 
 		boolean expectValid=expectedFailureReason==null;
 		// check the validity of the input XML
-		assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
+		assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
 
 		LOG.debug("input xml [{}]", xmlString);
 		Map<String,String> result;
@@ -54,14 +54,14 @@ public class TestXml2Map extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("only json input")
+	@Disabled("only json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Override
 	@Test
-	@Ignore("No content")
+	@Disabled("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}

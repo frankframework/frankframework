@@ -32,7 +32,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -193,17 +192,26 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 
 
-	@IbisDoc({"Session key used to store contents of each zip entry", "zipdata"})
+	/**
+	 * Session key used to store contents of each zip entry
+	 * @ff.default zipdata
+	 */
 	public void setContentsSessionKey(String string) {
 		contentsSessionKey = string;
 	}
 
-	@IbisDoc({"If set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents", "true"})
+	/**
+	 * If set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents
+	 * @ff.default true
+	 */
 	public void setStreamingContents(boolean b) {
 		streamingContents = b;
 	}
 
-	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/**
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -213,17 +221,26 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		setCloseInputstreamOnExit(b);
 	}
 
-	@IbisDoc({"Charset used when reading the contents of the entry (only used if streamingContents=false)", "utf-8"})
+	/**
+	 * Charset used when reading the contents of the entry (only used if streamingContents=false)
+	 * @ff.default utf-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)", "false"})
+	/**
+	 * If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)
+	 * @ff.default false
+	 */
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.", "false"})
+	/**
+	 * If set <code>true</code>, the each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {

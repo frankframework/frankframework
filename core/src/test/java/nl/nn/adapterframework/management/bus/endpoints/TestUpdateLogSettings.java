@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -34,7 +34,7 @@ public class TestUpdateLogSettings extends BusTestBase {
 
 	@Test
 	public void updateLogDefinitionsNoHeader() throws Exception {
-		assertEquals("maxLength should default to -1 (off)", -1, IbisMaskingLayout.getMaxLength());
+		assertEquals(-1, IbisMaskingLayout.getMaxLength(), "maxLength should default to -1 (off)");
 		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
 		assertTrue(logIntermediary);
 
@@ -45,7 +45,7 @@ public class TestUpdateLogSettings extends BusTestBase {
 			request.setHeader("maxMessageLength", 10240);
 			callAsyncGateway(request);
 
-			assertEquals("maxLength should be 10240", 10240, IbisMaskingLayout.getMaxLength());
+			assertEquals(10240, IbisMaskingLayout.getMaxLength(), "maxLength should be 10240");
 			assertFalse(Boolean.parseBoolean(AppConstants.getInstance().get("log.logIntermediaryResults")));
 		} finally {
 			IbisMaskingLayout.setMaxLength(-1);

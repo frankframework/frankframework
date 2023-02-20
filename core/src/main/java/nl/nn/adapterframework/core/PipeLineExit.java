@@ -25,8 +25,8 @@ import nl.nn.adapterframework.doc.Category;
  * the optionally specified http status code. Each Exit should have a unique name. See {@link PipeLineExits Exits}
  * for examples.
  * <br/><br/>
- * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
- * state SUCCESS.
+ * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME} and
+ * state {@value PipeLine.ExitState#SUCCESS_EXIT_STATE}.
  * <br/><br/>
  * The name of an Exit can be referenced by the <code>path</code> attribute of a Forward within a Pipe.
  *

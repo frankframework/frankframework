@@ -48,7 +48,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
@@ -64,7 +63,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
 	public Message<String> handleBrowseDatabase(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
 		String where = BusMessageUtils.getHeader(message, "where");
 		String order = BusMessageUtils.getHeader(message, "order"); // the form field named 'order' is only used for 'group by', when number of rows only is true.

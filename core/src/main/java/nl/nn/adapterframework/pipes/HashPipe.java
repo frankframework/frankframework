@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -142,7 +141,10 @@ public class HashPipe extends FixedForwardPipe {
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
 	}
-	@IbisDoc({"Character set to use for converting the secret from String to bytes", "UTF-8"})
+	/**
+	 * Character set to use for converting the secret from String to bytes
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -160,12 +162,12 @@ public class HashPipe extends FixedForwardPipe {
 		setHashEncoding(hashEncoding);
 	}
 
-	@IbisDoc({"The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
+	/** The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter */
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
 
-	@IbisDoc({"5","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
+	/** authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

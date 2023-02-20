@@ -21,7 +21,6 @@ import nl.nn.adapterframework.collection.CollectorSender;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -62,12 +61,18 @@ public class ZipWriterSender extends CollectorSender<IZipWritingElement, ZipWrit
 
 
 
-	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
+	/**
+	 * Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
 
-	@IbisDoc({"Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
+	/**
+	 * Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished
+	 * @ff.default true
+	 */
 	public void setCloseOutputstreamOnExit(boolean b) {
 		closeOutputstreamOnExit = b;
 	}
@@ -77,19 +82,28 @@ public class ZipWriterSender extends CollectorSender<IZipWritingElement, ZipWrit
 		setCloseOutputstreamOnExit(b);
 	}
 
-	@IbisDoc({"Only for action='write': Charset used to write strings to zip entries", "utf-8"})
+	/**
+	 * Only for action='write': Charset used to write strings to zip entries
+	 * @ff.default utf-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
+	/**
+	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
+	 * @ff.default zipwriterhandle
+	 */
 	@Deprecated
 	@ConfigurationWarning("Replaced with attribute collection")
 	public void setZipWriterHandle(String string) {
 		setCollection(string);
 	}
 
-	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
+	/**
+	 * Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)
+	 * @ff.default false
+	 */
 	public void setCompleteFileHeader(boolean b) {
 		completeFileHeader = b;
 	}

@@ -71,7 +71,7 @@
 		</property>
 	</bean>
 
-	<bean name="oldSchoolView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="oldSchoolView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Old school"/>
 		<property name="metadataNames">
 			<list>
@@ -99,6 +99,12 @@
 			</list>
 		</property>
 	</bean>
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory"/>
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory"/>
+
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"/>
 
 	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName" init-method="init">
 		<property name="name" value="Logging"/>
@@ -177,7 +183,7 @@
 
 	<bean name="auditLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Audit log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="auditLogStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -196,8 +202,8 @@
 				<value>FUNCT_ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisManager">
-			<ref bean="ibisManager"/>
+		<property name="ibisDebugger">
+			<ref bean="ibisDebugger"/>
 		</property>
 	</bean>
 
@@ -275,7 +281,7 @@
 
 	<bean name="exceptionLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Exception log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="exceptionLogStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -293,8 +299,8 @@
 				<value>ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisManager">
-			<ref bean="ibisManager"/>
+		<property name="ibisDebugger">
+			<ref bean="ibisDebugger"/>
 		</property>
 	</bean>
 

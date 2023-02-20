@@ -255,6 +255,27 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.directive('inputFileUpload', function() {
+	return {
+		restrict: 'E',
+		transclude: true,
+		replace: true,
+		link: function(scope, element) {
+			element.bind("change", function() {
+				scope.handleFile(this.files);
+			});
+			scope.handleFile = function(files) {
+				if(files.length == 0) {
+					scope.file = null;
+					return;
+				}
+				scope.file = files[0]; //Can only parse 1 file!
+			}
+		},
+		template: '<input class="form-control form-file" name="file" type="file" />'
+	};
+})
+
 .directive('quickSubmitForm', function() {
 	return {
 		restrict: 'A',

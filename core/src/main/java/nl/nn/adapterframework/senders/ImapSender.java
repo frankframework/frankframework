@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import jakarta.mail.Message;
 
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.ImapFileSystem;
 
@@ -30,40 +29,40 @@ public class ImapSender extends FileSystemSender<Message, ImapFileSystem> {
 		setFileSystem(new ImapFileSystem());
 	}
 
-	@IbisDocRef({"1", IMAP_FILE_SYSTEM })
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setHost(String host) {
 		getFileSystem().setHost(host);
 	}
 
-	@IbisDocRef({"2", IMAP_FILE_SYSTEM })
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setPort(int port) {
 		getFileSystem().setPort(port);
 	}
 
 
-	@IbisDocRef({"3", IMAP_FILE_SYSTEM})
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDocRef({"4", IMAP_FILE_SYSTEM})
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	@IbisDocRef({"5", IMAP_FILE_SYSTEM})
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
 
-	@IbisDocRef({"6", IMAP_FILE_SYSTEM})
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
 
-	@IbisDocRef({"7", IMAP_FILE_SYSTEM})
+	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}

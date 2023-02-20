@@ -54,12 +54,15 @@ public abstract class MessageUtils {
 		result.withCharset(request.getCharacterEncoding());
 		int contentLength = request.getContentLength();
 		result.withSize(contentLength);
-		result.withMimeType(request.getContentType());
+		String contentType = request.getContentType();
+		if(StringUtils.isNotEmpty(contentType)) {
+			result.withMimeType(request.getContentType());
+		}
 
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
 			String name = names.nextElement();
-			result.put(name, request.getHeader(name));
+			result.put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
 		}
 
 		return result;
@@ -80,7 +83,7 @@ public abstract class MessageUtils {
 			} else if("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
-				result.put(name, header.getValue());
+				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
 			}
 		}
 		return result;
@@ -96,7 +99,8 @@ public abstract class MessageUtils {
 		if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
-			return Message.nullMessage();
+			// We want the context because of the request headers
+			return Message.nullMessage(getContext(request));
 		}
 	}
 
@@ -227,7 +231,7 @@ public abstract class MessageUtils {
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
 			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
 			byte[] magic = message.getMagic(tikaMimeMagicLength);
-			if(magic == null || magic.length == 0) {
+			if(magic.length == 0) {
 				return null;
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);

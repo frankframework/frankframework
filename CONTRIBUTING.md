@@ -83,7 +83,7 @@ can also set it to resolved to ease the review process.
 
 ## Coding conventions
 
-Start reading our code and you'll get the hang of it. We optimize for readability:
+Start reading our code, and you'll get the hang of it. We optimize for readability:
 
   * We indent using tabs, not spaces.
   * We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`) and around operators (`x += 1`, not `x+=1`).
@@ -103,8 +103,8 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
 
 WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
-  * With Lombok, you do not have to code getters and setters anymore. You can generate them by by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes less lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
-  * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
+* With Lombok, you do not have to code getters and setters anymore. You can generate them by by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+* For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 ## Testing
 
@@ -228,16 +228,21 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
-- Clone this any way you like. E.g. at the commandline: git clone git@github.com:ibissource/iaf.git
-- From File -> Open... Select iaf folder and import it as a Maven project.
-- Make sure to select Java 7 or Java 8 as a default JDK.
-- Download Tomcat 8.5 from https://tomcat.apache.org/download-80.cgi and export it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.)
-- On top right click "Add Configurations..." then click + button. Click "More items" on the bottom of the list and select Tomcat Server -> Local from the new list.
-- Click Configure next to the Application Server and Select your Tomcat Home directory.
-- Add -Ddtap.stage=LOC to the VM Options
-- On deployment tab click + -> artifacts... and then select ibis-adapterframework-example:war
-- Name your configuration and save it
-- Open Maven window by clicking Maven button on your right and open execution window by clicking "m" button. Then run command "mvn clean install -Dmaven.javadoc.skip=true verify"
+- Clone this any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:ibissource/iaf.git`
+- If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
+- When asked to open the Eclipse project or the Maven project, probably best to choose opening the Maven project.
+- Make sure to select Java 8 as a default JDK.
+- You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it.
+- Download Tomcat 9 from https://tomcat.apache.org/download-90.cgi and unzip it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.), 
+  or install it via `brew` (on macOS) or `sdkman`.
+  Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
+- Open Settings | Application Servers, add the Tomcat installation you just did.
+- Create a run configuration for a Tomcat server.
+	- In the tab "Deployments", choose the module "ibis-adapterframework-example:war exploded"
+	  (or ibis-adapterframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
+	- Set the context to "/iaf-example"
+	- Add `-Ddtap.stage=LOC` to VM Options
+    - Name your configuration and save it
 - Run your configuration and you are ready to go.
 
 # Frank!Doc - Documentation for Frank developers

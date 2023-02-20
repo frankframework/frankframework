@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class RootValidations implements Iterable<RootValidation> {
 		this(new RootValidation(rootElement));
 	}
 
-	public void check(IConfigurationAware source, Set<XSD> xsds) throws ConfigurationException {
+	public void check(IConfigurationAware source, Set<IXSD> xsds) throws ConfigurationException {
 		for (RootValidation path: rootValidations) {
 			path.check(source, xsds);
 		}

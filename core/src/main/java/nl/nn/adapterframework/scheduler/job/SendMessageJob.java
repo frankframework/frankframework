@@ -23,7 +23,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
@@ -91,7 +90,7 @@ public class SendMessageJob extends JobDef {
 		setJavaListener(receiverName); //For backwards compatibility
 	}
 
-	@IbisDoc({"message to be send into the pipeline", ""})
+	/** message to be send into the pipeline */
 	public void setMessage(String message) {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;

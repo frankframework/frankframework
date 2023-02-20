@@ -1,36 +1,43 @@
 package nl.nn.adapterframework.testutil.mock;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
+import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseMigratorMock extends DatabaseMigratorBase {
 
 	@Override
 	public boolean validate() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public void update() throws JdbcException {
-		// TODO Auto-generated method stub
+		// Nothing to update
 	}
 
 	@Override
 	public void update(Writer writer) throws JdbcException {
-		// TODO Auto-generated method stub
+		// Nothing to update
 	}
 
 	@Override
 	public void update(Writer writer, Resource resource) throws JdbcException {
-		// TODO Auto-generated method stub
+		try (InputStreamReader reader = new InputStreamReader(resource.openStream())) {
+			Misc.readerToWriter(reader, writer);
+		} catch (IOException e) {
+			throw new JdbcException("unable to write resource contents to write", e);
+		}
 	}
 
 	@Override
 	public Resource getChangeLog() {
-		return null;
+		return Resource.getResource(this, "/Migrator/DatabaseChangelog.xml");
 	}
 
 }

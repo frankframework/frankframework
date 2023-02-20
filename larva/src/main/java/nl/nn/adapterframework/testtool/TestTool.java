@@ -1091,12 +1091,11 @@ public class TestTool {
 	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
-		FileInputStream fileInputStreamPropertiesFile = null;
 		try {
-			fileInputStreamPropertiesFile = new FileInputStream(propertiesFile);
-			properties.load(fileInputStreamPropertiesFile);
-			fileInputStreamPropertiesFile.close();
-			fileInputStreamPropertiesFile = null;
+			try(FileInputStream fis = new FileInputStream(propertiesFile); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(fis)) {
+				properties.load(reader);
+			}
+
 			Properties includedProperties = new Properties();
 			int i = 0;
 			String includeFilename = properties.getProperty("include");
@@ -1124,13 +1123,6 @@ public class TestTool {
 		} catch(Exception e) {
 			properties = null;
 			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
-			if (fileInputStreamPropertiesFile != null) {
-				try {
-					fileInputStreamPropertiesFile.close();
-				} catch(Exception e2) {
-					errorMessage("Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e, writers);
-				}
-			}
 		}
 		return properties;
 	}
@@ -2659,8 +2651,6 @@ public class TestTool {
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 *
-	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
 		ArrayList<String> attributes = null;

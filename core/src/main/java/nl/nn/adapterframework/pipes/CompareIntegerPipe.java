@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -137,7 +136,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 
 	@Deprecated
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	/** reference to one of the session variables to be compared */
 	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
 		sessionKey1 = string;
@@ -147,7 +146,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 	}
 
 	@Deprecated
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	/** reference to the other session variables to be compared */
 	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
 		sessionKey2 = string;

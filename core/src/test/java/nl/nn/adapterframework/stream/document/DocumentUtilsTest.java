@@ -3,7 +3,7 @@ package nl.nn.adapterframework.stream.document;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
@@ -65,6 +65,11 @@ public class DocumentUtilsTest {
 	}
 
 	@Test
+	public void testDecimalDocument() throws SAXException {
+		testBuild(getJsonValue("100.003"), "<root>100.003</root>");
+	}
+
+	@Test
 	public void testTrueDocument() throws SAXException {
 		testBuild(getJsonValue("true"), "<root>true</root>");
 	}
@@ -81,7 +86,7 @@ public class DocumentUtilsTest {
 
 	@Test
 	public void testNestedObjectDocument() throws Exception {
-		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7},[1,2,3]]}}",
+		testBuild("{ \"items\":{ \"numeric\":1, \"chars\":\"waarde\", \"welles\":true, \"nietes\":false, \"rij\":[\"a\",2,true,false,null,{\"a\":1,\"b\":7.2},[1,2,3.9]]}}",
 				"<root>"+
 					"<items>"+
 						"<numeric>1</numeric>"+
@@ -93,11 +98,11 @@ public class DocumentUtilsTest {
 						"<rij>true</rij>"+
 						"<rij>false</rij>"+
 						"<rij nil=\"true\"/>"+
-						"<rij><a>1</a><b>7</b></rij>"+
+						"<rij><a>1</a><b>7.2</b></rij>"+
 						"<rij>"+
 							"<item>1</item>"+
 							"<item>2</item>"+
-							"<item>3</item>"+
+							"<item>3.9</item>"+
 						"</rij>"+
 					"</items>"+
 				"</root>");

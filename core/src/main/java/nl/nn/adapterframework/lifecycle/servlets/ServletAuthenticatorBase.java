@@ -97,7 +97,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable();
-			http.requestMatcher(new URLRequestMatcher(endpoints));
+			http.securityMatcher(new URLRequestMatcher(endpoints));
 			http.formLogin().disable(); //Disable the form login filter
 			http.anonymous().disable(); //Disable the default anonymous filter
 			http.logout().disable(); //Disable the logout endpoint on every filter

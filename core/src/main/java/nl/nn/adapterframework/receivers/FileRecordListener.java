@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -305,7 +304,7 @@ public class FileRecordListener implements IPullingListener {
 	}
 
 	@Override
-	@IbisDoc({"name of the listener as known to the adapter.", ""})
+	/** name of the listener as known to the adapter. */
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -314,11 +313,7 @@ public class FileRecordListener implements IPullingListener {
 		return name;
 	}
 
-	/**
-	 * set the directory name to look in for files.
-	 * @see #setWildcard(String)
-	 */
-	@IbisDoc({"set the directory name to look in for files.", ""})
+	/** the directory name to look in for files. */
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
@@ -326,10 +321,7 @@ public class FileRecordListener implements IPullingListener {
 		return inputDirectory;
 	}
 
-	/**
-	 * set the {@link WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
-	 */
-	@IbisDoc({"the wildcard to look for files in the specified directory, e.g. \"*.inp\"", ""})
+	/** the wildcard to look for files in the specified directory, e.g. \"*.inp\" */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -337,11 +329,7 @@ public class FileRecordListener implements IPullingListener {
 		return wildcard;
 	}
 
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
-	@IbisDoc({"the directory to store processed files in", ""})
+	/** the directory to store processed files in */
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
 	}
@@ -350,9 +338,9 @@ public class FileRecordListener implements IPullingListener {
 	}
 
 	/**
-	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 * The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file
+	 * @ff.default 1000
 	 */
-	@IbisDoc({"The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file", "1000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
@@ -360,7 +348,7 @@ public class FileRecordListener implements IPullingListener {
 		return responseTime;
 	}
 
-	@IbisDoc({"when set, the name of the read file is stored under this session key", ""})
+	/** when set, the name of the read file is stored under this session key */
 	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
 		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
 	}

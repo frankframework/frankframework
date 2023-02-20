@@ -20,7 +20,6 @@ import java.io.IOException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -82,7 +81,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		return messageToReturn;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/** returned message */
 	public void setReturnString(String string) {
 		returnString = string;
 	}
@@ -93,7 +92,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		setFilename(fileName);
 	}
 
-	@IbisDoc({"name of the file containing the resultmessage", ""})
+	/** name of the file containing the resultmessage */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}

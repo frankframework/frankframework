@@ -64,7 +64,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.management.bus.dao.ProcessStateDTO;
+import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -72,7 +72,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -109,8 +108,8 @@ public class AdapterStatus extends BusEndpointBase {
 	public Message<String> getAdapter(Message<?> message) {
 		Expanded expanded = BusMessageUtils.getEnumHeader(message, "expanded", Expanded.class, Expanded.NONE);
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
@@ -398,9 +397,10 @@ public class AdapterStatus extends BusEndpointBase {
 			if (receiver.isThreadCountReadable()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
-			}
-			if (receiver.isThreadCountControllable()) {
-				receiverInfo.put("threadCountControllable", "true");
+
+				if (receiver.isThreadCountControllable()) {
+					receiverInfo.put("threadCountControllable", true);
+				}
 			}
 			receivers.add(receiverInfo);
 		}

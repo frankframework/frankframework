@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PeekableDataIterator;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
@@ -71,16 +70,19 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		return item.toString();
 	}
 
-	@IbisDoc({"If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
+	/** If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string */
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	@IbisDoc({"Marks the start of a new record. If set, a new record is started when this line is read.", ""})
+	/** Marks the start of a new record. If set, a new record is started when this line is read. */
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
 	}
 
-	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/**
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}

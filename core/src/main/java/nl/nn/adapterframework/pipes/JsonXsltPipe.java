@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.senders.JsonXsltSender;
 import nl.nn.adapterframework.senders.XsltSender;
 
@@ -38,13 +37,13 @@ public class JsonXsltPipe extends XsltPipe {
 		return new JsonXsltSender();
 	}
 
-	@IbisDocRef({"1", JSONXSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.JsonXsltSender */
 	public void setJsonResult(boolean jsonResult) {
 		((JsonXsltSender)getSender()).setJsonResult(jsonResult);
 	}
 
 	@Override
-	@IbisDocRef({"2", JSONXSLTSENDER})
+	/** @ff.ref nl.nn.adapterframework.senders.JsonXsltSender */
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

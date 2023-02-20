@@ -49,7 +49,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -198,21 +197,30 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 		checkIndexOnColumnPresent(connection, getKeyField());
 
-		ArrayList<String> columnList= new ArrayList<String>();
+		List<String> columnListIndex01= new ArrayList<String>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
-			columnList.add(getTypeField());
+			columnListIndex01.add(getTypeField());
 		}
 		if (StringUtils.isNotEmpty(getSlotIdField())) {
-			columnList.add(getSlotIdField());
+			columnListIndex01.add(getSlotIdField());
 		}
 		if (StringUtils.isNotEmpty(getDateField())) {
-			columnList.add(getDateField());
+			columnListIndex01.add(getDateField());
 		}
-		checkIndexOnColumnsPresent(connection, columnList);
+		checkIndexOnColumnsPresent(connection, columnListIndex01);
 
 		if (StringUtils.isNotEmpty(getExpiryDateField())) {
 			checkIndexOnColumnPresent(connection, getExpiryDateField());
 		}
+
+		List<String> columnListIndex03= new ArrayList<String>();
+		if (StringUtils.isNotEmpty(getSlotIdField())) {
+			columnListIndex03.add(getSlotIdField());
+		}
+		if (StringUtils.isNotEmpty(getIdField())) {
+			columnListIndex03.add(getIdField());
+		}
+		checkIndexOnColumnsPresent(connection, columnListIndex03);
 	}
 
 	private void checkIndexOnColumnPresent(Connection connection, String column) throws JdbcException {
@@ -818,25 +826,37 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	@Override
-	@IbisDoc({"The name of the column slotids are stored in", "SLOTID"})
+	/**
+	 * The name of the column slotids are stored in
+	 * @ff.default SLOTID
+	 */
 	public void setSlotIdField(String string) {
 		super.setSlotIdField(string);
 	}
 
 	@Override
-	@IbisDoc({"The name of the column types are stored in", "TYPE"})
+	/**
+	 * The name of the column types are stored in
+	 * @ff.default TYPE
+	 */
 	public void setTypeField(String typeField) {
 		super.setTypeField(typeField);
 	}
 
 	@Override
-	@IbisDoc({"The name of the column that stores the hostname of the server", "HOST"})
+	/**
+	 * The name of the column that stores the hostname of the server
+	 * @ff.default HOST
+	 */
 	public void setHostField(String hostField) {
 		super.setHostField(hostField);
 	}
 
 
-	@IbisDoc({"The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle", "seq_ibisstore"})
+	/**
+	 * The name of the sequence used to generate the primary key, for DBMSes that use sequences, like Oracle
+	 * @ff.default seq_ibisstore
+	 */
 	public void setSequenceName(String string) {
 		sequenceName = string;
 	}
@@ -847,32 +867,38 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		setCheckTable(b);
 	}
 
-	@IbisDoc({"If set to <code>true</code>, checks are performed if the table exists and is properly created", "false"})
+	/**
+	 * If set to <code>true</code>, checks are performed if the table exists and is properly created
+	 * @ff.default false
+	 */
 	public void setCheckTable(boolean b) {
 		checkTable = b;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, the table is created if it does not exist", "false"})
+	/**
+	 * If set to <code>true</code>, the table is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}
 
-	@IbisDoc({"The type of the column message themselves are stored in", ""})
+	/** The type of the column message themselves are stored in */
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
 	}
 
-	@IbisDoc({"The type of the column that contains the primary key of the table", ""})
+	/** The type of the column that contains the primary key of the table */
 	public void setKeyFieldType(String string) {
 		keyFieldType = string;
 	}
 
-	@IbisDoc({"The type of the column the timestamps are stored in", ""})
+	/** The type of the column the timestamps are stored in */
 	public void setDateFieldType(String string) {
 		dateFieldType = string;
 	}
 
-	@IbisDoc({"The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments.", ""})
+	/** The type of the columns messageId and correlationId, slotId and comments are stored in. N.B. <code>(100)</code> is appended for id's, <code>(1000)</code> is appended for comments. */
 	public void setTextFieldType(String string) {
 		textFieldType = string;
 	}
@@ -881,29 +907,44 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 
-	@IbisDoc({"If set to <code>true</code>, the messages are stored compressed", "true"})
+	/**
+	 * If set to <code>true</code>, the messages are stored compressed
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"The time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever", "30"})
+	/**
+	 * The time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. when set to -1, the record will live on forever
+	 * @ff.default 30
+	 */
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
 
-	@IbisDoc({"Schema owner to be used to check the database", "&lt;current_schema&gt; (only for oracle)"})
+	/**
+	 * Schema owner to be used to check the database
+	 * @ff.default &lt;current_schema&gt; (only for oracle)
+	 */
 	public void setSchemaOwner4Check(String string) {
 		schemaOwner4Check = string;
 	}
 
 
 
-	@IbisDoc({"If set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message", "true"})
+	/**
+	 * If set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message
+	 * @ff.default true
+	 */
 	public void setStoreFullMessage(boolean storeFullMessage) {
 		this.storeFullMessage = storeFullMessage;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "false"})
+	/**
+	 * If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.
+	 * @ff.default false
+	 */
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}

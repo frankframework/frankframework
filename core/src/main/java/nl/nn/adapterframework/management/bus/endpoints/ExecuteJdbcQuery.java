@@ -41,7 +41,6 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
@@ -78,7 +77,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 
 	@ActionSelector(BusAction.MANAGE)
 	public Message<Object> executeJdbcQuery(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String queryType = BusMessageUtils.getHeader(message, "queryType", "select");
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);

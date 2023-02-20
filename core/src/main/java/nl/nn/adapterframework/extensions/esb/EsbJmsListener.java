@@ -37,7 +37,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Default;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -241,7 +240,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		super.setUseReplyTo(newUseReplyTo);
 	}
 
-	@IbisDoc({"Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property)", ""})
+	/** Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property) */
 	public void setxPathLoggingKeys(String string) {
 		xPathLoggingKeys = string;
 	}

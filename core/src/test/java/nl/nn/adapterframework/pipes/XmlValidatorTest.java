@@ -421,5 +421,19 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("failure", forward.getName());
 	}
 
+	@Test
+	public void testElementFormDefaultUnqualified() throws Exception {
+		XmlValidator validator = getUnconfiguredValidator(ELEMENT_FORM_DEFAULT_UNQUALIFIED_NAMESPACE +" "+ ELEMENT_FORM_DEFAULT_UNQUALIFIED_SCHEMA, false, implementation);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.configure();
+		validator.start();
+
+		String testXml = getTestXml(ELEMENT_FORM_DEFAULT_UNQUALIFIED_INPUT);
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, ELEMENT_FORM_DEFAULT_UNQUALIFIED_MSGROOT);
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
 
 }

@@ -51,7 +51,7 @@ public class CacheControlFilter implements Filter {
 		resp.setDateHeader("Last-Modified", new Date().getTime());
 		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
 		resp.setHeader("Pragma", "no-cache");
-		log.trace("disabling cache for uri ["+req.getRequestURI()+"]");
+		log.trace("disabling cache for uri [{}]", req::getRequestURI);
 		chain.doFilter(request, response);
 	}
 

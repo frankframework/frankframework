@@ -3,6 +3,9 @@ package nl.nn.adapterframework.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
 	protected IFileSystemTestHelper helper;
@@ -68,6 +71,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 		helper._deleteFolder(folderName);
 	}
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		helper = getFileSystemTestHelper();
@@ -75,6 +79,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 		super.setUp();
 	}
 	
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if (helper!=null) helper.tearDown();

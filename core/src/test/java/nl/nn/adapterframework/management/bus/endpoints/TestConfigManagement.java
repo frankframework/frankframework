@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -50,17 +50,20 @@ public class TestConfigManagement extends BusTestBase {
 	@Test
 	public void findConfigurations() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
-		request.setHeader("loaded", true);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":false}]", response.getPayload());
+		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":true}]", response.getPayload());
 	}
 
 	@Test
 	public void findTestConfiguration() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
-		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
-		request.setHeader("loaded", true);
-		Message<?> response = callSyncGateway(request);
-		assertEquals("[{\"name\":\"TestConfiguration\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":false}]", response.getPayload());
+		getConfiguration().setVersion("dummy123");
+		try {
+			MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.CONFIGURATION, BusAction.FIND);
+			request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+			Message<?> response = callSyncGateway(request);
+			assertEquals("[{\"name\":\"TestConfiguration\",\"version\":\"dummy123\",\"stubbed\":false,\"state\":\"STARTING\",\"type\":\"JunitTestClassLoaderWrapper\",\"jdbcMigrator\":true}]", response.getPayload());
+		} finally {
+			getConfiguration().setVersion(null);
+		}
 	}
 }

@@ -46,6 +46,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -67,7 +68,6 @@ import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.xml.IXmlDebugger;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -125,7 +125,16 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
 		}
-		pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+		ibisDebugger.showValue(correlationId, "exitState", pipeLineResult.getState().name());
+		if (pipeLineResult.getExitCode()!=0) {
+			ibisDebugger.showValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
+		}
+		if (!pipeLineResult.isSuccessful()) {
+			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
+			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
+		} else {
+			pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+		}
 		return pipeLineResult;
 	}
 

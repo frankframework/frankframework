@@ -20,6 +20,8 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.stream.Message;
@@ -64,11 +66,11 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination{
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
-	public F toFile(String filename) throws FileSystemException;
+	public F toFile(@Nonnull String filename) throws FileSystemException;
 	/**
 	 * Creates a reference to a file. If filename is not absolute, it will be created in 'defaultFolder'.
 	 */
-	public F toFile(String defaultFolder, String filename) throws FileSystemException;
+	public F toFile(String defaultFolder, @Nonnull String filename) throws FileSystemException;
 	public boolean exists(F f) throws FileSystemException;
 
 	public boolean folderExists(String folder) throws FileSystemException;

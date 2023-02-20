@@ -21,7 +21,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -72,7 +71,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		return "serviceName: "+getServiceName();
 	}
 
-	@IbisDoc({"name of the service that is provided by the adapter of this listener", ""})
+	/** name of the service that is provided by the adapter of this listener */
 	public void setServiceName(String string) {
 		serviceName = string;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -48,7 +47,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
@@ -98,16 +96,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public static final String ACTION_FORWARD="forward";
 	public static final String ACTION_LIST_ATTACHMENTS="listAttachments";
 
-	public final String PARAMETER_ACTION="action";
-	public final String PARAMETER_CONTENTS1="contents";
-	public final String PARAMETER_CONTENTS2="file";
-	public final String PARAMETER_FILENAME="filename";
-	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
-	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
+	public static final String PARAMETER_ACTION="action";
+	public static final String PARAMETER_CONTENTS1="contents";
+	public static final String PARAMETER_CONTENTS2="file";
+	public static final String PARAMETER_FILENAME="filename";
+	public static final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
+	public static final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 
-	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
-	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
-	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
+	public static final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.CREATE, FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
+	public static final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
+	public static final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
 	private @Getter FileSystemAction action;
 	private @Getter String filename;
@@ -456,9 +454,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					if (destinationName.contains("/") || destinationName.contains("\\")) {
 						destination = fileSystem.toFile(destinationName);
 					} else {
-						String sourceName = fileSystem.getCanonicalName(source);
-						File sourceAsFile = new File(sourceName);
-						String folderPath = sourceAsFile.getParent();
+						String folderPath = fileSystem.getParentFolder(source);
 						destination = fileSystem.toFile(folderPath,destinationName);
 					}
 					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
@@ -661,53 +657,72 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		actions.addAll(specificActions);
 	}
 
-	@IbisDoc({"If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter.", "" })
+	/** If parameter [{@value #PARAMETER_ACTION}] is set, then the attribute action value will be overridden with the value of the parameter. */
 	public void setAction(FileSystemAction action) {
 		this.action = action;
 	}
 
-	@IbisDoc({"Folder that is scanned for files when action="+ACTION_LIST+". When not set, the root is scanned", ""})
+	/** Folder that is scanned for files when action={@value #ACTION_LIST}. When not set, the root is scanned */
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the folder to move or copy to is created if it does not exist", "false"})
+	/**
+	 * If set <code>true</code>, the folder to move or copy to is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
 
-	@IbisDoc({"If set <code>true</code>, for actions "+ACTION_CREATE+", "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+", the destination file is overwritten if it already exists", "false"})
+	/**
+	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
+	 * @ff.default false
+	 */
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 
-	@IbisDoc({"Filename to operate on. If not set, the parameter "+PARAMETER_FILENAME+" is used. If that is not set either, the input is used", ""})
+	/** Filename to operate on. If not set, the parameter {@value #PARAMETER_FILENAME} is used. If that is not set either, the input is used */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
-	@IbisDoc({"Destination for "+ACTION_MOVE+", "+ACTION_COPY+" or "+ACTION_RENAME+". If not set, the parameter "+PARAMETER_DESTINATION+" is used. If that is not set either, the input is used", ""})
+	/**
+	 * Destination for {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}. If not set, the parameter {@value #PARAMETER_DESTINATION} is used. If that is not set either, the input is used
+	 */
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
 
 
-	@IbisDoc({"For action="+ACTION_APPEND+": If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides", "0"})
+	/**
+	 * For action={@value #ACTION_APPEND}: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides
+	 * @ff.default 0
+	 */
 	public void setRotateDays(int rotateDays) {
 		this.rotateDays = rotateDays;
 	}
 
-	@IbisDoc({"For action="+ACTION_APPEND+": If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides", "0"})
+	/**
+	 * For action={@value #ACTION_APPEND}: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides
+	 * @ff.default 0
+	 */
 	public void setRotateSize(int rotateSize) {
 		this.rotateSize = rotateSize;
 	}
 
-	@IbisDoc({"For the actions "+ACTION_WRITE1+" and "+ACTION_APPEND+", with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides", "0"})
+	/**
+	 * For the actions {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}, with rotateSize>0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides
+	 * @ff.default 0
+	 */
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
 	}
 
-	@IbisDoc({"For actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded", ""})
+	/**
+	 * For actions {@value #ACTION_READ1}, {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}. When set the stream is base64 encoded or decoded
+	 */
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		this.base64 = base64;
@@ -718,7 +733,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDoc({"Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	/**
+	 * Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
+	 */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -728,32 +745,39 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDoc({"Filter of files to be excluded when looking in inputFolder. Works with actions "+ACTION_MOVE+", "+ACTION_COPY+", "+ACTION_DELETE+" and "+ACTION_LIST, ""})
+	/**
+	 * Filter of files to be excluded when looking in inputFolder. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
+	 */
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
 
-	@IbisDoc({"If set to <code>true</code> then the folder and the content of the non empty folder will be deleted."})
+	/** If set to <code>true</code> then the folder and the content of the non empty folder will be deleted. */
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		this.removeNonEmptyFolder = removeNonEmptyFolder;
 	}
 
-	@IbisDoc({"If set to <code>true</code> then the system specific line separator will be appended to the file after executing the action. Works with actions "+ACTION_WRITE1+" and "+ACTION_APPEND, "false"})
+	/** If set to <code>true</code> then the system specific line separator will be appended to the file after executing the action. Works with actions {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}
+	 * @ff.default false
+	 */
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		this.writeLineSeparator = writeLineSeparator;
 	}
 
-	@IbisDoc({"Charset to be used for "+ACTION_READ1+" and "+ACTION_WRITE1+" action"})
+	/** Charset to be used for {@value #ACTION_READ1} and {@value #ACTION_WRITE1} action */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
-	@IbisDoc({"If set to true then the folder will be deleted if it is empty after processing the action. Works with actions "+ACTION_DELETE+", "+ACTION_READ_DELETE+" and "+ACTION_MOVE})
+	/** If set to true then the folder will be deleted if it is empty after processing the action. Works with actions {@value #ACTION_DELETE}, {@value #ACTION_READ_DELETE} and {@value #ACTION_MOVE} */
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		this.deleteEmptyFolder = deleteEmptyFolder;
 	}
 
-	@IbisDoc({"OutputFormat", "XML"})
+	/**
+	 * OutputFormat
+	 * @ff.default XML
+	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}

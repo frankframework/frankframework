@@ -17,14 +17,17 @@ package nl.nn.adapterframework.http.rest;
 
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public enum MediaTypes {
 
@@ -69,20 +72,40 @@ public enum MediaTypes {
 	/**
 	 * Matches the provided 'Content-Type' to this enum, should always be valid, is not weighted
 	 */
-	public boolean isConsumable(String contentType) {
-		try {
-			MimeType otherType = MimeTypeUtils.parseMimeType(contentType);
-			return mimeType.includes(otherType);
-		} catch (InvalidMimeTypeException e) {
+	public boolean includes(@Nullable String contentTypeHeader) {
+		if (this == ANY) {
+			return true;
+		}
+		if (StringUtils.isBlank(contentTypeHeader)) {
 			return false;
 		}
+		return parseAndEvaluate(contentTypeHeader, parsedType->mimeType.includes(parsedType) && parsedType.getParameter("q") == null);
 	}
 
 	/**
-	 * Checks if this enum match a value in the provided 'Accept' header.
+	 * Checks if this enum matches a value in the provided 'Accept' header.
 	 */
-	public boolean accepts(String acceptHeader) { // Needs to be able to deal with; text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8
-		return (!mimeType.isConcrete()) || acceptHeader.contains("*/*") || acceptHeader.contains(mimeType.toString());
+	public boolean accepts(@Nullable String acceptHeader) {
+		if (this == ANY || StringUtils.isBlank(acceptHeader)) {
+			return true;
+		}
+		//The Accept header may consist out of multiple parts.
+		String[] headerParts = acceptHeader.split(",");
+		for(String headerPart : headerParts) {
+			if(parseAndEvaluate(headerPart, mimeType::isCompatibleWith)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean parseAndEvaluate(String mimeType, Predicate<MimeType> predicate) {
+		try {
+			MimeType type = MimeTypeUtils.parseMimeType(mimeType);
+			return predicate.test(type);
+		} catch (InvalidMimeTypeException e) {
+			return false;
+		}
 	}
 
 	public static MediaTypes fromValue(String contentType) {

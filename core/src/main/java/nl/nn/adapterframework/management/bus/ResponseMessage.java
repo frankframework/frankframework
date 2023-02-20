@@ -27,6 +27,8 @@ import org.springframework.util.MimeType;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.nn.adapterframework.core.Resource;
+
 public class ResponseMessage {
 	public static final String STATUS_KEY = "meta:status";
 	public static final String MIMETYPE_KEY = "meta:type";
@@ -51,6 +53,11 @@ public class ResponseMessage {
 
 		public Builder withStatus(int status) {
 			headers.put(STATUS_KEY, status);
+			return this;
+		}
+
+		public Builder withFilename(String filename) {
+			headers.put(CONTENT_DISPOSITION_KEY, "attachment; filename=\""+filename+"\"");
 			return this;
 		}
 
@@ -102,7 +109,13 @@ public class ResponseMessage {
 					}
 					return new GenericMessage<>(message.asString(), headers);
 				} catch (IOException e) {
-					throw new BusException("unable to convert payload to message", e);
+					throw new BusException("unable to convert payload to Message", e);
+				}
+			} else if(payload instanceof Resource) {
+				try {
+					return new GenericMessage<>(((Resource)payload).openStream(), headers);
+				} catch (IOException e) {
+					throw new BusException("unable to convert payload to Message", e);
 				}
 			}
 			headers.computeIfAbsent(MIMETYPE_KEY, e->MediaType.APPLICATION_OCTET_STREAM_VALUE);

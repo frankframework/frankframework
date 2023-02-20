@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.management.bus;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -57,7 +57,8 @@ public class BusTestBase {
 			try {
 				configuration.configure();
 			} catch (ConfigurationException e) {
-				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
 			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); //AuthAlias is used in BusTopic.SECURITY_ITEMS
@@ -66,12 +67,12 @@ public class BusTestBase {
 		return configuration;
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfiguration().close();
 	}

@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.stream.document;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import jakarta.json.Json;
@@ -18,9 +18,9 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class DocumentBuilderTest {
 
-	private String expectedJson = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":12,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
-	private String expectedXml =     "<root attr1=\"alpha quote[&quot;]\" attr2=\"12\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
-	private String expectedXmlPref = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"12\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
+	private String expectedJson = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":1.2,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
+	private String expectedXml =     "<root attr1=\"alpha quote[&quot;]\" attr2=\"1.2\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
+	private String expectedXmlPref = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"1.2\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
 
 	public void buildDocument(IDocumentBuilder root) throws SAXException {
 		try (ObjectBuilder object = root.startObject()) {
@@ -38,7 +38,7 @@ public class DocumentBuilderTest {
 	
 	public void buildObject(ObjectBuilder object, String prefix) throws SAXException {
 		object.addAttribute(prefix+"attr1", prefix+"alpha quote[\"]");
-		object.addAttribute(prefix+"attr2", 12);
+		object.addAttribute(prefix+"attr2", 1.2);
 		object.addAttribute(prefix+"attr3", true);
 		object.addAttribute(prefix+"attr4", "a b  c\td\re\nf\r\n\t\ng");
 		object.add(prefix+"veld1", prefix+"waarde1 quote[\"]");

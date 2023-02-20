@@ -55,21 +55,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
-		if(instance != null && !instance.doIsSuppressed(suppressionKey, adapter)) {
-			// provide suppression hint as info 
-			String hint = null;
-			if(log.isInfoEnabled()) {
-				if(adapter != null) {
-					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
-					if(suppressionKey.isAllowGlobalSuppression()) {
-						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
-					}
-				} else if(suppressionKey.isAllowGlobalSuppression()) {
-					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
-				}
-			}
-
-			instance.doAdd(source, log, message, hint);
+		if(instance != null) {
+			instance.add((Object) source, log, message, suppressionKey, adapter);
 		}
 	}
 
@@ -117,4 +104,24 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 
 		return instance.doIsSuppressed(key, adapter);
 	}
+
+	public void add(Object source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
+		if(!doIsSuppressed(suppressionKey, adapter)) {
+			// provide suppression hint as info
+			String hint = null;
+			if(log.isInfoEnabled()) {
+				if(adapter != null) {
+					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+					if(suppressionKey.isAllowGlobalSuppression()) {
+						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
+					}
+				} else if(suppressionKey.isAllowGlobalSuppression()) {
+					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				}
+			}
+
+			doAdd(source, log, message, hint);
+		}
+	}
+
 }

@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.ProcessState;
@@ -51,41 +51,34 @@ public class EnumUtilsTest {
 
 	@Test
 	public void testParseNonExistingEnum() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [processState] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
-
-		EnumUtils.parse(ProcessState.class, "tralala");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(ProcessState.class, "tralala"));
+		assertEquals("cannot set field [processState] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingEnumWithFieldName() {
 		EnumUtils.parse(ProcessState.class, "fieldname", "Available"); //Exists
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
-		EnumUtils.parse(ProcessState.class, "fieldname", "tralala2"); //Does not exist
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(ProcessState.class, "fieldname", "tralala2")); //Does not exist
+		assertEquals("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingNormalEnumWithCustomFieldName() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
-
-		EnumUtils.parseNormal(ProcessState.class, "fieldName", "tralala");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseNormal(ProcessState.class, "fieldName", "tralala"));
+		assertEquals("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingDocumentedEnum() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [ftpType] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
-		EnumUtils.parse(FtpType.class, "tralala");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(FtpType.class, "tralala"));
+		assertEquals("cannot set field [ftpType] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingDocumentedEnumWithCustomFieldName() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
-		EnumUtils.parseDocumented(FtpType.class, "fieldName", "tralala");
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseDocumented(FtpType.class, "fieldName", "tralala"));
+		assertEquals("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
 	}
 
 	public static enum TestDocumentedEnum implements DocumentedEnum { @EnumLabel("een") ONE, @EnumLabel("twee") TWO; }
@@ -138,8 +131,7 @@ public class EnumUtilsTest {
 
 	@Test
 	public void testParseNonExistingIntegerValue() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [fieldName] to unparsable value [3]. Must be one of [1, 2]");
-		EnumUtils.parseFromField(EnumWithInteger.class, "fieldName", 3, i -> i.i);
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseFromField(EnumWithInteger.class, "fieldName", 3, i -> i.i));
+		assertEquals("cannot set field [fieldName] to unparsable value [3]. Must be one of [1, 2]", e.getMessage());
 	}
 }

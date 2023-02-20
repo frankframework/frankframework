@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -200,30 +199,42 @@ public class LadybugPipe extends FixedForwardPipe {
 		results.addSubElement(exception);
 	}
 
-	@IbisDoc({"whether or not to write results to the logfile (testtool4&lt;instance.name&gt;)", "false"})
+	/**
+	 * whether or not to write results to the logfile (testtool4&lt;instance.name&gt;)
+	 * @ff.default false
+	 */
 	public void setWriteToLog(boolean writeToLog) {
 		this.writeToLog = writeToLog;
 	}
 
-	@IbisDoc({"whether or not to write results to system out", "false"})
+	/**
+	 * whether or not to write results to system out
+	 * @ff.default false
+	 */
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
-	@IbisDoc({"Set to <code>true</code> when the pipeline is triggered by a user (e.g. using an http based listener "
-			+ "that will add a securityHandler session key) and you don't want the listener to check whether the user "
-			+ "is autorised and/or you want the enforce the roles as configured for the Ladybug", "false"})
+	/**
+	 * Set to <code>true</code> when the pipeline is triggered by a user (e.g. using an http based listener
+	 * that will add a securityHandler session key) and you don't want the listener to check whether the user
+	 * is autorised and/or you want the enforce the roles as configured for the Ladybug
+	 * @ff.default false
+	 */
 	public void setCheckRoles(boolean checkRoles) {
 		this.checkRoles = checkRoles;
 	}
 	
-	@IbisDoc({"Set to <code>true</code> to enable Ladybug's report generator for the duration of the scheduled report runs, "
-			+ "then revert it to its original setting", "false"})
+	/**
+	 * Set to <code>true</code> to enable Ladybug's report generator for the duration of the scheduled report runs
+	 * then revert it to its original setting
+	 * @ff.default false
+	 */
 	public void setEnableReportGenerator(boolean enabled) {
 		enableReportGenerator = enabled;
 	}
 	
-	@IbisDoc({"When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\".", ""})
+	/** When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\". */
 	public void setExclude(String exclude) {
 		this.exclude = exclude;
 	}

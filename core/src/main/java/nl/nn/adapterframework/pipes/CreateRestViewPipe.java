@@ -27,7 +27,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -243,7 +242,10 @@ public class CreateRestViewPipe extends XsltPipe {
 		return imagelink;
 	}
 
-	@IbisDoc({"content type of the servlet response", "text/html"})
+	/**
+	 * content type of the servlet response
+	 * @ff.default text/html
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}

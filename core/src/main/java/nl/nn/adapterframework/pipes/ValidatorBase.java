@@ -249,15 +249,4 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
-
-
-//
-//	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-//	public void setCharset(String string) {
-//		validator.setCharset(string);
-//	}
-//	public String getCharset() {
-//		return  validator.getCharset();
-//	}
-
 }

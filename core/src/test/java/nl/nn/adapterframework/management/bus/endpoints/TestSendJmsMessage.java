@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
@@ -78,7 +78,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		assertEquals(payload.asString(), callSyncGateway(request).getPayload());
 
 		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
-		assertNotNull("expected a response", jmsResponse);
+		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
 		assertEquals(payload.asString(), responseMessage);
@@ -95,7 +95,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		assertEquals(payload, callSyncGateway(request).getPayload());
 
 		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
-		assertNotNull("expected a response", jmsResponse);
+		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
 		assertEquals(payload, responseMessage);
@@ -112,7 +112,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		callAsyncGateway(request);
 
 		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
-		assertNotNull("expected a response", jmsResponse);
+		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
 		assertEquals(payload, responseMessage);

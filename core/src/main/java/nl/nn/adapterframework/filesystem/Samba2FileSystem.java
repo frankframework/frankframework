@@ -68,7 +68,6 @@ import com.hierynomus.smbj.share.File;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
@@ -467,27 +466,27 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
 	}
 
-	@IbisDoc({"the destination, aka smb://xxx/yyy share", "" })
+	/** the destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		this.share = share;
 	}
 
-	@IbisDoc({"the smb share username", "" })
+	/** the smb share username */
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	@IbisDoc({"the smb share password", "" })
+	/** the smb share password */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
+	/** alias used to obtain credentials for the smb share */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({"domain, in case the user account is bound to a domain", "" })
+	/** domain, in case the user account is bound to a domain */
 	public void setAuthenticationDomain(String domain) {
 		this.authenticationDomain = domain;
 	}
@@ -497,22 +496,28 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		setAuthenticationDomain(domain);
 	}
 
-	@IbisDoc({"Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
+	/**
+	 * Type of the authentication either 'NTLM' or 'SPNEGO' 
+	 * @ff.default SPNEGO
+	 */
 	public void setAuthType(Samba2AuthType authType) {
 		this.authType = authType;
 	}
 
-	@IbisDoc({"Kerberos Domain Controller, as set in java.security.krb5.kdc", "" })
+	/** Kerberos Domain Controller, as set in java.security.krb5.kdc */
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
 
-	@IbisDoc({"Kerberos Realm, as set in java.security.krb5.realm", "" })
+	/** Kerberos Realm, as set in java.security.krb5.realm */
 	public void setRealm(String realm) {
 		this.realm = realm;
 	}
 
-	@IbisDoc({"controls whether hidden files are seen or not", "false" })
+	/**
+	 * controls whether hidden files are seen or not
+	 * @ff.default false
+	 */
 	public void setListHiddenFiles(boolean listHiddenFiles) {
 		this.listHiddenFiles = listHiddenFiles;
 	}

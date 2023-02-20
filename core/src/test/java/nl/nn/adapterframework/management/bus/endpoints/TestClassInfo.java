@@ -3,7 +3,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 
 import nl.nn.adapterframework.management.bus.BusAction;

@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.lifecycle;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockServletContext;
@@ -36,13 +36,13 @@ import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 
 public class ServletManagerTest {
 	private static ServletManager manager;
 
-	@BeforeClass
+	@BeforeAll
 	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
@@ -79,7 +79,7 @@ public class ServletManagerTest {
 		}
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Properties properties = new Properties();
 		properties.setProperty("dtap.stage", "ACC");

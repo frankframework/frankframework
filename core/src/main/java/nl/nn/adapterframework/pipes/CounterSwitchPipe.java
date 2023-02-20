@@ -20,8 +20,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -81,7 +81,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		return divisor;
 	}
 
-	@IbisDoc({" ", "2"})
+	@Default ("2")
 	public void setDivisor(int i) {
 		divisor = i;
 	}

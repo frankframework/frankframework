@@ -1039,13 +1039,6 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.file = null;
-	$scope.handleFile = function(files) {
-		if(files.length == 0) {
-			$scope.file = null;
-			return;
-		}
-		$scope.file = files[0]; //Can only parse 1 file!
-	};
 
 	$scope.submit = function() {
 		if($scope.file == null) return;
@@ -1792,7 +1785,7 @@ angular.module('iaf.beheerconsole')
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath();
 	$scope.compileURL = function(apiListener) {
-		return $scope.rootURL + "api/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
+		return $scope.rootURL + "iaf/api/webservices/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
 	}
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
@@ -2210,13 +2203,6 @@ angular.module('iaf.beheerconsole')
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.form = {};
 	$scope.file = null;
-	$scope.handleFile = function(files) {
-		if(files.length == 0) {
-			$scope.file = null;
-			return;
-		}
-		$scope.file = files[0]; //Can only parse 1 file!
-	};
 
 	let findFirstAvailabeConfiguration = function() {
 		for(let i in $scope.configurations) {
@@ -2231,7 +2217,7 @@ angular.module('iaf.beheerconsole')
 	$scope.$on('configurations', findFirstAvailabeConfiguration);
 
 	$scope.download = function() {
-		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");
+		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/");
 	};
 
 	$scope.generateSql = false;
@@ -2267,13 +2253,6 @@ angular.module('iaf.beheerconsole')
 	});
 
 	$scope.file = null;
-	$scope.handleFile = function(files) {
-		if(files.length == 0) {
-			$scope.file = null;
-			return;
-		}
-		$scope.file = files[0]; //Can only parse 1 file!
-	};
 
 	$scope.submit = function(formData) {
 		$scope.processing = true;
@@ -2747,13 +2726,6 @@ angular.module('iaf.beheerconsole')
 		$scope.state.push({type:type, message: message});
 	};
 
-	$scope.handleFile = function(files) {
-		if(files.length == 0) {
-			$scope.file = null;
-			return;
-		}
-		$scope.file = files[0]; //Can only parse 1 file!
-	};
 	$scope.processingMessage = false;
 
 	$scope.sessionKeyIndex=1;
@@ -2848,13 +2820,6 @@ angular.module('iaf.beheerconsole')
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {
 		$scope.state.push({type:type, message: message});
-	};
-	$scope.handleFile = function(files) {
-		if(files.length == 0) {
-			$scope.file = null;
-			return;
-		}
-		$scope.file = files[0]; //Can only parse 1 file!
 	};
 	$scope.processingMessage = false;
 

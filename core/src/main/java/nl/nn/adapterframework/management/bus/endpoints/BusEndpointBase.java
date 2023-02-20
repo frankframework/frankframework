@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -29,6 +31,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -77,6 +80,19 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		String logMessage = (StringUtils.isEmpty(issuedBy)) ? message : message+" issued by "+issuedBy;
 		log.info(logMessage);
 		secLog.info(logMessage);
+	}
+
+	@Nonnull
+	protected MimeType getMediaTypeFromName(String name) {
+		String ext = FilenameUtils.getExtension(name);
+		switch (ext) {
+		case "xml":
+			return MediaType.APPLICATION_XML;
+		case "json":
+			return MediaType.APPLICATION_JSON;
+		default:
+			return MediaType.TEXT_PLAIN;
+		}
 	}
 
 	@Nonnull

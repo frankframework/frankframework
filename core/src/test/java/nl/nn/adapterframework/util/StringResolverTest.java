@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -17,15 +17,15 @@ public class StringResolverTest {
 
 	Properties properties;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		properties = new Properties();
 		URL propertiesURL = TestFileUtils.getTestFileURL("/StringResolver.properties");
-		assertNotNull("properties file [StringResolver.properties] not found!", propertiesURL);
+		assertNotNull(propertiesURL, "properties file [StringResolver.properties] not found!");
 
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
-		assertTrue("did not find any properties!", properties.size() > 0);
+		assertTrue(properties.size() > 0, "did not find any properties!");
 		
 		System.setProperty("authAliases.expansion.allowed", "alias1,alias2");
 	}

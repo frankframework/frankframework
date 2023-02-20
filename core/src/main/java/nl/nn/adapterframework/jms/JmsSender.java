@@ -42,7 +42,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -346,78 +345,108 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	}
 
-	@IbisDoc({"Parameter that is used, if specified and not empty, to determine the destination. Overrides the <code>destination</code> attribute", ""})
+	/** Parameter that is used, if specified and not empty, to determine the destination. Overrides the <code>destination</code> attribute */
 	public void setDestinationParam(String string) {
 		destinationParam = string;
 	}
 
-	@IbisDoc({"If <code>true</code>, the sender operates in RR mode: A reply is expected, either on the queue specified in <code>replyToName</code>, or on a dynamically generated temporary queue", "false"})
+	/**
+	 * If <code>true</code>, the sender operates in RR mode: A reply is expected, either on the queue specified in <code>replyToName</code>, or on a dynamically generated temporary queue
+	 * @ff.default false
+	 */
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous=synchronous;
 	}
 
-	@IbisDoc({"Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.", "a dynamically generated temporary destination"})
+	/**
+	 * Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.
+	 * @ff.default a dynamically generated temporary destination
+	 */
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
 	}
 
-	@IbisDoc({"(Only used when <code>synchronous</code>=<code>true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.", "MESSAGEID"})
+	/**
+	 * (Only used when <code>synchronous</code>=<code>true</code> and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageId in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.
+	 * @ff.default MESSAGEID
+	 */
 	public void setLinkMethod(LinkMethod method) {
 		linkMethod=method;
 	}
 
-	@IbisDoc({"(Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout. ", "5000"})
+	/**
+	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout. 
+	 * @ff.default 5000
+	 */
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
 
-	@IbisDoc({"Value of the JMSType field", "not set by application"})
+	/**
+	 * Value of the JMSType field
+	 * @ff.default not set by application
+	 */
 	public void setMessageType(String string) {
 		messageType = string;
 	}
 
-	@IbisDoc({"Controls mode that messages are sent with", "not set by application"})
+	/**
+	 * Controls mode that messages are sent with
+	 * @ff.default not set by application
+	 */
 	public void setDeliveryMode(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;
 	}
 
 
-	@IbisDoc({"Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4", "-1"})
+	/**
+	 * Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4
+	 * @ff.default -1
+	 */
 	public void setPriority(int i) {
 		priority = i;
 	}
 
-	@IbisDoc({"If <code>true</code>, messages sent are put in a SOAP envelope", "false"})
+	/**
+	 * If <code>true</code>, messages sent are put in a SOAP envelope
+	 * @ff.default false
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
 	}
 
-	@IbisDoc({"SOAP encoding style URI", ""})
+	/** SOAP encoding style URI */
 	public void setEncodingStyleURI(String string) {
 		encodingStyleURI = string;
 	}
 
-	@IbisDoc({"SOAP service namespace URI", ""})
+	/** SOAP service namespace URI */
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
 	}
 
-	@IbisDoc({"SOAPAction string sent as message property", ""})
+	/** SOAPAction string sent as message property */
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}
 
-	@IbisDoc({"Name of parameter containing SOAP header", "soapHeader"})
+	/**
+	 * Name of parameter containing SOAP header
+	 * @ff.default soapHeader
+	 */
 	public void setSoapHeaderParam(String string) {
 		soapHeaderParam = string;
 	}
 
-	@IbisDoc({"session key to store SOAP header of reply", "replySoapHeader"})
+	/**
+	 * session key to store SOAP header of reply
+	 * @ff.default replySoapHeader
+	 */
 	public void setReplySoapHeaderSessionKey(String string) {
 		replySoapHeaderSessionKey = string;
 	}
 
-	@IbisDoc({"A list of JMS headers of the response to add to the PipeLineSession", ""})
+	/** A list of JMS headers of the response to add to the PipeLineSession */
 	public void setResponseHeadersToSessionKeys(String responseHeaders) {
 		this.responseHeaders = responseHeaders;
 	}

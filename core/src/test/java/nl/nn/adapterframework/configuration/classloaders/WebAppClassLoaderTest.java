@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebAppClassLoader> {
 
@@ -31,7 +31,7 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 
 	private String getAbsoluteFilePath(String name) { //For testing purposes the JAR_FILE archive isn't used, we're just using the path
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
+		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
 		return "jar:file:" + file.getFile() + "!/" + name;
 	}
 
@@ -39,7 +39,7 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 	@Test
 	public void absoluteUrl() throws Exception {
 		URL resource = getResource(getAbsoluteFilePath("ClassLoaderTestFile.xml"));
-		assertNotNull("unable to retrieve resource from zip file", resource);
+		assertNotNull(resource, "unable to retrieve resource from zip file");
 	}
 
 	@Test
@@ -55,6 +55,6 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 		createAndConfigure("WebAppClassLoader"); //re-create the classload with basepath
 
 		URL resource = getResource(getAbsoluteFilePath("WebAppClassLoader/ClassLoaderTestFile.xml")); //basepath in url!
-		assertNotNull("unable to retrieve resource from zip file", resource);
+		assertNotNull(resource, "unable to retrieve resource from zip file");
 	}
 }

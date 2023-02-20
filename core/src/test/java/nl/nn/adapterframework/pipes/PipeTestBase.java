@@ -69,12 +69,13 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
-	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
-		return pipe.doPipe(input, session);
-	}
 
 	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(pipe, Message.asMessage(input), session);
+	}
+	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
+		session.computeIfAbsent(PipeLineSession.originalMessageKey, k -> input);
+		return pipe.doPipe(input, session);
 	}
 
 	/**

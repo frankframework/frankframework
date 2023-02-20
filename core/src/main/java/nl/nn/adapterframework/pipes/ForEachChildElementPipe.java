@@ -45,7 +45,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -477,32 +476,44 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 
-	@IbisDoc({"When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration", "false"})
+	/**
+	 * When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {
 		processFile = b;
 	}
 
-	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements. "
-			+ "When empty, the pipe will iterate over each direct child element of the root", ""})
+	/**
+	 * Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the 'root' of elements to be iterated over, i.e. the root of the set of child elements.
+	 * When empty, the pipe will iterate over each direct child element of the root
+	 */
 	public void setContainerElement(String containerElement) {
 		this.containerElement = containerElement;
 	}
 
-	@IbisDoc({"Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements. "
-			+ "When empty, the pipe will iterate over any direct child element of the root or specified containerElement", ""})
+	/**
+	 * Element name (not an XPath-expression), qualified via attribute <code>namespaceDefs</code>, used to determine the type of elements to be iterated over, i.e. the element name of each of the child elements.
+	 * When empty, the pipe will iterate over any direct child element of the root or specified containerElement
+	 */
 	public void setTargetElement(String targetElement) {
 		this.targetElement = targetElement;
 	}
 
-	@IbisDoc({"XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is /*/*, i.e. the pipe will iterate over each direct child element of the root. "
-		+"Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.", ""})
+	/**
+	 * XPath-expression used to determine the set of elements to be iterated over, i.e. the set of child elements. When empty, the effective value is \/*\/*, i.e. the pipe will iterate over each direct child element of the root.
+	 * Be aware that memory consumption appears to increase with file size when this attribute is used. When possible, use containerElement and/or targetElement instead.
+	 */
 	public void setElementXPathExpression(String string) {
 		elementXPathExpression = string;
 	}
 
-	@IbisDoc({"If set to <code>2</code> a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1. This pipe supports up to and including XSLT version 3.0", "1"})
+	/**
+	 * If set to <code>2</code> a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1. This pipe supports up to and including XSLT version 3.0
+	 * @ff.default 1
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -513,7 +524,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		setXsltVersion(b?2:1);
 	}
 
-	@IbisDoc({"If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified"})
+	/** If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}

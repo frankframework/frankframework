@@ -3,27 +3,28 @@ package nl.nn.adapterframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		autowireByName(fileSystem);
@@ -171,13 +172,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
 			waitForActionToFinish();
-			assertFalse("could not remove folder before test", _folderExists(folderName));
+			assertFalse( _folderExists(folderName), "could not remove folder before test");
 		}
 
 		fileSystem.createFolder(folderName);
 		waitForActionToFinish();
 
-		assertTrue("folder does not exist after creation",_folderExists(folderName));
+		assertTrue(_folderExists(folderName), "folder does not exist after creation");
 	}
 
 	@Test
@@ -190,13 +191,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 
 		fileSystem.removeFolder(folderName, false);
 		waitForActionToFinish();
 
-		assertFalse("folder still exists after removal", _folderExists(folderName));
+		assertFalse(_folderExists(folderName), "folder still exists after removal");
 	}
 
 	@Test
@@ -209,7 +210,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 
 		for(int i=0;i<3;i++) {
@@ -219,7 +220,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.removeFolder(folderName, true);
 		waitForActionToFinish();
 
-		assertFalse("folder still exists after removal", _folderExists(folderName));
+		assertFalse(_folderExists(folderName), "folder still exists after removal");
 	}
 
 	@Test
@@ -232,13 +233,13 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 
 		if (!_folderExists(innerFolder)) {
 			_createFolder(innerFolder);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 
 		for(int i=0;i<3;i++) {
@@ -249,7 +250,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.removeFolder(folderName, true);
 		waitForActionToFinish();
 
-		assertFalse("folder still exists after removal", _folderExists(folderName));
+		assertFalse(_folderExists(folderName), "folder still exists after removal");
 	}
 
 	@Test
@@ -262,10 +263,10 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 
-		assertTrue("existing folder is not seen", fileSystem.folderExists(folderName));
+		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen");
 	}
 
 	@Test
@@ -278,10 +279,10 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
 			waitForActionToFinish();
-			assertFalse("could not remove folder before test", _folderExists(folderName));
+			assertFalse(_folderExists(folderName), "could not remove folder before test");
 		}
 
-		assertFalse("non existing folder is seen", fileSystem.folderExists(folderName));
+		assertFalse(fileSystem.folderExists(folderName), "non existing folder is seen");
 	}
 
 	@Test
@@ -294,16 +295,16 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
 			waitForActionToFinish();
-			assertFalse("could not remove folder before test", _folderExists(folderName));
+			assertFalse(_folderExists(folderName), "could not remove folder before test");
 		}
 
 		if (!_fileExists(folderName)) {
 			createFile(null, folderName, "tja");
 			waitForActionToFinish();
-			assertTrue("file must exist before test", _fileExists(folderName));
+			assertTrue(_fileExists(folderName), "file must exist before test");
 		}
 
-		assertFalse("file must not be seen as folder", fileSystem.folderExists(folderName));
+		assertFalse(fileSystem.folderExists(folderName), "file must not be seen as folder");
 	}
 
 
@@ -328,8 +329,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 
-		assertTrue("Destination must exist",_fileExists(destination));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+		assertTrue(_fileExists(destination), "Destination must exist");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 
 	@Test
@@ -358,35 +359,33 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.renameFile(f, d);
 		waitForActionToFinish();
 
-		assertTrue("Destination must exist",_fileExists(destinationFolder, destination));
-		assertFalse("Origin must have disappeared",_fileExists(sourceFolder, fileName));
+		assertTrue(_fileExists(destinationFolder, destination), "Destination must exist");
+		assertFalse(_fileExists(sourceFolder, fileName), "Origin must have disappeared");
 	}
 
 	@Test
 	public void writableFileSystemTestRemovingNonExistingDirectory() throws Exception {
-		exception.expectMessage("Directory does not exist.");
 		String foldername = "nonExistingFolder";
-
 		fileSystem.configure();
 		fileSystem.open();
-
 		if(_folderExists(foldername)) {
 			_deleteFolder(foldername);
 		}
-		fileSystem.removeFolder(foldername, false);
+
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystem.removeFolder(foldername, false));
+		assertThat(e.getMessage(), containsString("Directory does not exist."));
 	}
 
 	@Test
 	public void writableFileSystemTestCreateExistingFolder() throws Exception {
-		exception.expectMessage("Directory already exists.");
 		String folderName = "existingFolder";
-
 		fileSystem.configure();
 		fileSystem.open();
-
 		_createFolder(folderName);
 		waitForActionToFinish();
-		fileSystem.createFolder(folderName);
+
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystem.createFolder(folderName));
+		assertTrue(e.getMessage().endsWith("Directory already exists."));
 	}
 
 	@Test
@@ -445,14 +444,14 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
+		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
 
 		Message result = fileSystem.readFile(file, null);
 		assertEquals(content, result.asString());
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
-		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
 	}
 
 	@Test
@@ -469,11 +468,11 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		out.write(content.getBytes());
 		out.close();
 
-		assertTrue("Expected the file ["+filename+"] to be present",_fileExists(filename));
+		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
-		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
 
 	}
 
@@ -489,7 +488,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
+		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
 
 		OutputStream out = fileSystem.appendFile(file);
 		out.write(content.getBytes());
@@ -499,7 +498,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
 
-		assertFalse("Expected the file ["+filename+"] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected the file ["+filename+"] not to be present");
 	}
 
 	@Test
@@ -551,11 +550,11 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
-		assertThrows("Cannot copy file", FileSystemException.class, () -> fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", false, false));
+		assertThrows(FileSystemException.class, () -> fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", false, false), "Expected that file could not be copied, because folder should not be created");
 	}
 
 	@Test
@@ -568,12 +567,12 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		if (!_folderExists(folderName)) {
 			_createFolder(folderName);
 			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
+			assertTrue(_folderExists(folderName), "could not create folder before test");
 		}
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
 		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true, true);
 
-		assertNotNull("Copied file cannot be null", f);
+		assertNotNull(f, "Copied file cannot be null");
 	}
 }

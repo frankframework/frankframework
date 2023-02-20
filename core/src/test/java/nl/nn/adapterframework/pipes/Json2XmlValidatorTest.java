@@ -19,6 +19,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -28,6 +29,57 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Override
 	public Json2XmlValidator createPipe() {
 		return new Json2XmlValidator();
+	}
+
+	@Test
+	public void testNullInput() throws Exception {
+		//Arrange
+		pipe.setName("null_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		//Act
+		PipeRunResult prr = doPipe(Message.nullMessage());
+
+		//Assert
+		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testEmptyInput() throws Exception {
+		//Arrange
+		pipe.setName("empty_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		//Act
+		PipeRunResult prr = doPipe("");
+
+		//Assert
+		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testInputWithWhitespace() throws Exception {
+		//Arrange
+		pipe.setName("empty_input");
+		pipe.setSchema("/Align/OptionalArray/hbp.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		//Act
+		PipeRunResult prr = doPipe("         			{}");
+
+		//Assert
+		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns1:Root xmlns:ns1=\"urn:pim\"/>", prr.getResult().asString());
 	}
 
 	@Test
@@ -132,25 +184,70 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 
-		doPipe(pipe, input,session); // first run the request validation ...
+		doPipe(pipe, input, session); // first run the request validation ...
 
 		IValidator validator = pipe.getResponseValidator();
 		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
 
 		return prr_response.getResult().asString();
-
 	}
 
 	@Test
-	public void testAcceptHeaderTextJson() throws Exception {
-		String actual = setupAcceptHeaderTest("text/Json");
+	public void testAcceptHeaderFromMessage() throws Exception {
+		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setResponseRoot("BusinessPartner");
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		Message inputMessage = new Message(input, new MessageContext().with("Header.Accept", "application/json"));
+
+		doPipe(inputMessage);
+
+		assertEquals(DocumentFormat.JSON, pipe.getOutputFormat(session, true));
+	}
+
+	@Test
+	public void testAcceptHeaderAndIgnoreMessage() throws Exception {
+		pipe.setName("Response_To_Json_from_acceptSession");
+		pipe.setInputFormatSessionKey("Accept");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setResponseRoot("BusinessPartner");
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		session.put("Accept", "json");
+
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		Message inputMessage = new Message(input, new MessageContext().with("Header.Accept", "application/pdf"));
+
+		doPipe(inputMessage);
+
+		assertEquals(DocumentFormat.JSON, pipe.getOutputFormat(session, true));
+	}
+
+	@Test
+	public void testAcceptHeaderApplicationJson() throws Exception {
+		String actual = setupAcceptHeaderTest("application/json");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
 		assertEquals(expected, actual);
 	}
 
 	@Test
 	public void testAcceptHeaderTextXML() throws Exception {
-		String actual = setupAcceptHeaderTest("text/Xml");
+		String actual = setupAcceptHeaderTest("text/xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testAcceptHeaderApplicationXML() throws Exception {
+		String actual = setupAcceptHeaderTest("application/xml");
 		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 		assertEquals(expected, actual);
 	}

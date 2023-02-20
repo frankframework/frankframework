@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -113,27 +112,33 @@ public class CsvParserPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"Specifies if the first line should be treated as header or as data", "true"})
+	/**
+	 * Specifies if the first line should be treated as header or as data
+	 * @ff.default true
+	 */
 	public void setFileContainsHeader(Boolean fileContainsHeader) {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
-	@IbisDoc({"Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line"})
+	/** Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line */
 	public void setFieldNames(String fieldNames) {
 		this.fieldNames = fieldNames;
 	}
 
-	@IbisDoc({"Character that separates fields",","})
+	/**
+	 * Character that separates fields
+	 * @ff.default ,
+	 */
 	public void setFieldSeparator(String fieldSeparator) {
 		this.fieldSeparator = fieldSeparator;
 	}
 
-	@IbisDoc({"When set, character casing will be changed for the header"})
+	/** When set, character casing will be changed for the header */
 	public void setHeaderCase(HeaderCase headerCase) {
 		this.headerCase = headerCase;
 	}
 
-	@IbisDoc({"Format the XML output in easy legible way"})
+	/** Format the XML output in easy legible way */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}

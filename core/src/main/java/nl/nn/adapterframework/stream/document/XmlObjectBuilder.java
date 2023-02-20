@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	}
 
 	@Override
-	public void addAttribute(String name, long value) throws SAXException {
-		addAttribute(name, Long.toString(value));
+	public void addAttribute(String name, Number value) throws SAXException {
+		addAttribute(name, value.toString());
 	}
 	@Override
 	public void addAttribute(String name, boolean value) throws SAXException {

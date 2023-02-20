@@ -36,7 +36,6 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -227,7 +226,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"If <code>true</code> the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline)", "true"})
+	/**
+	 * If <code>true</code> the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline)
+	 * @ff.default true
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -258,17 +260,20 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 	}
 
-	@IbisDoc({ "If set, MTOM is enabled on the SOAP binding" })
+	/** If set, MTOM is enabled on the SOAP binding */
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
 	}
 
-	@IbisDoc({ "Comma separated list of session keys to hold contents of attachments of the request" })
+	/** Comma separated list of session keys to hold contents of attachments of the request */
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
 
-	@IbisDoc({ "Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified", "multipartXml" })
+	/**
+	 * Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified
+	 * @ff.default multipartXml
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

@@ -4,6 +4,8 @@ src/test/
 src\test\
 webapp/
 webapp\
+overlays/
+overlays\
 docker/
 docker\
 .metadata/

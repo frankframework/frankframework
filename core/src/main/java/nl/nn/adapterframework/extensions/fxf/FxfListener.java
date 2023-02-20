@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.FileUtils;
@@ -130,22 +129,34 @@ public class FxfListener extends EsbJmsListener {
 		}
 	}
 
-	@IbisDoc({"name of the session key to store the name of the received file in", "fxfFile"})
+	/**
+	 * name of the session key to store the name of the received file in
+	 * @ff.default fxfFile
+	 */
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, the received file is moved after being processed", "true"})
+	/**
+	 * If set to <code>true</code>, the received file is moved after being processed
+	 * @ff.default true
+	 */
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
 
-	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed", "processed"})
+	/**
+	 * (only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed
+	 * @ff.default processed
+	 */
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
 
-	@IbisDoc({"(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist", "false"})
+	/**
+	 * (only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
 	}

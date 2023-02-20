@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -126,7 +125,10 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		return resultOnEmptyPostbox;
 	}
 
-	@IbisDoc({"result when no object is on postbox", "empty postbox"})
+	/**
+	 * result when no object is on postbox
+	 * @ff.default empty postbox
+	 */
 	public void setResultOnEmptyPostbox(String string) {
 		resultOnEmptyPostbox = string;
 	}

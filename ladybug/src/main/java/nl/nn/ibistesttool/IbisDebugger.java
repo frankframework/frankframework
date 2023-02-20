@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 public interface IbisDebugger {
 
 	public void setIbisManager(IbisManager ibisManager);
+	public IbisManager getIbisManager();
 
 	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
 	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);

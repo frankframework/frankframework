@@ -35,7 +35,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 
@@ -128,17 +127,23 @@ public class JsonValidator extends ValidatorBase {
 		return result;
 	}
 
-	@IbisDoc({"The JSON Schema to validate to", ""})
+	/** The JSON Schema to validate to */
 	public void setSchema(String schema) {
 		this.schema=schema;
 	}
 
-	@IbisDoc({"Prefix to element name to find subschema in schema", "/definitions/"})
+	/**
+	 * Prefix to element name to find subschema in schema
+	 * @ff.default /definitions/
+	 */
 	public void setSubSchemaPrefix(String prefix) {
 		subSchemaPrefix = prefix;
 	}
 
-	@IbisDoc({"If set: key of session variable to store reasons of mis-validation in", "failureReason"})
+	/**
+	 * If set: key of session variable to store reasons of mis-validation in
+	 * @ff.default failureReason
+	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}

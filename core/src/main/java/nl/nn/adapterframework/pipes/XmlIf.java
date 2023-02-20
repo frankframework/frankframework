@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -148,48 +147,60 @@ public class XmlIf extends AbstractPipe {
 
 	@Deprecated
 	@ConfigurationWarning("Please use getInputFromSessionKey instead.")
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
+	/** name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code> */
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward", ""})
+	/** a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward */
 	public void setExpressionValue(String expressionValue){
 		this.expressionValue = expressionValue;
 	}
 
-	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
+	/**
+	 * forward returned when <code>'true'</code>
+	 * @ff.default then
+	 */
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
 
-	@IbisDoc({"forward returned when 'false'", "else"})
+	/**
+	 * forward returned when 'false'
+	 * @ff.default else
+	 */
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
 	}
 
-	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
+	/** xpath expression to be applied to the input-message. if not set, no transformation is done */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", ""})
+	/** regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward */
 	public void setRegex(String regex){
 		this.regex = regex;
 	}
 
-	@IbisDoc({"specifies the version of xslt to use. This pipe supports up to and including XSLT version 3.0", "2"})
+	/**
+	 * specifies the version of xslt to use. This pipe supports up to and including XSLT version 3.0
+	 * @ff.default 2
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion = xsltVersion;
 	}
 
-	@IbisDoc({"namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions.", ""})
+	/** namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
 
-	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
+	/**
+	 * controls namespace-awareness of XSLT transformation
+	 * @ff.default true
+	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}

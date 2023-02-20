@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -158,7 +159,7 @@ public class ClassLoaderManager {
 		if(StringUtils.isEmpty(classLoaderType)) {
 			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
 			if(StringUtils.isEmpty(classLoaderType)) {
-				classLoaderType = "WebAppClassLoader";
+				classLoaderType = WebAppClassLoader.class.getSimpleName();
 			}
 		}
 

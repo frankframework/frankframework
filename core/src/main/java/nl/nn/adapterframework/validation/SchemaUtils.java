@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -55,8 +54,8 @@ import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.validation.xsd.StringXsd;
 
 /**
  * @author Michiel Meeuwissen
@@ -80,33 +79,33 @@ public class SchemaUtils {
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds) throws ConfigurationException {
+	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
 		return getXsdsRecursive(xsds, false);
 	}
 
-	public static Set<XSD> getXsdsRecursive(Set<XSD> xsds, boolean supportRedefine) throws ConfigurationException {
-		Set<XSD> xsdsRecursive = new LinkedHashSet<XSD>();
+	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
+		Set<IXSD> xsdsRecursive = new LinkedHashSet<IXSD>();
 		xsdsRecursive.addAll(xsds);
-		for (XSD xsd : xsds) {
+		for (IXSD xsd : xsds) {
 			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
 		}
 		return xsdsRecursive;
 	}
 
-	public static Map<String, Set<XSD>> getXsdsGroupedByNamespace(Set<XSD> xsds, boolean sort) {
-		Map<String, Set<XSD>> result;
+	public static Map<String, Set<IXSD>> getXsdsGroupedByNamespace(Set<IXSD> xsds, boolean sort) {
+		Map<String, Set<IXSD>> result;
 		if (sort) {
-			result = new TreeMap<String, Set<XSD>>();
+			result = new TreeMap<String, Set<IXSD>>();
 		} else {
-			result = new LinkedHashMap<String, Set<XSD>>();
+			result = new LinkedHashMap<String, Set<IXSD>>();
 		}
-		for (XSD xsd : xsds) {
-			Set<XSD> set = result.get(xsd.getNamespace());
+		for (IXSD xsd : xsds) {
+			Set<IXSD> set = result.get(xsd.getNamespace());
 			if (set == null) {
 				if (sort) {
-					set = new TreeSet<XSD>();
+					set = new TreeSet<IXSD>();
 				} else {
-					set = new LinkedHashSet<XSD>();
+					set = new LinkedHashSet<IXSD>();
 				}
 				result.put(xsd.getNamespace(), set);
 			}
@@ -115,12 +114,12 @@ public class SchemaUtils {
 		return result;
 	}
 
-	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<XSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
+	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<IXSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
 		// As the root XSD's are written as includes there's no need to change the imports and includes in the root XSD's.
 		for (String namespace: rootXsdsGroupedByNamespace.keySet()) {
 			xmlStreamWriter.writeStartElement(XSD, "schema");
 			xmlStreamWriter.writeAttribute("targetNamespace", namespace);
-			for (XSD xsd : rootXsdsGroupedByNamespace.get(namespace)) {
+			for (IXSD xsd : rootXsdsGroupedByNamespace.get(namespace)) {
 				xmlStreamWriter.writeEmptyElement(XSD, "include");
 				xmlStreamWriter.writeAttribute("schemaLocation", xsd.getResourceTarget());
 			}
@@ -128,44 +127,38 @@ public class SchemaUtils {
 		}
 	}
 
-	public static void addTargetNamespaceToXsds(Set<XSD> xsds) throws ConfigurationException {
-		for (XSD xsd:xsds) {
-			xsd.addTargetNamespace();
-		}
-	}
 
 	/**
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
-	public static Set<XSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<XSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
-		Set<XSD> resultXsds = new LinkedHashSet<XSD>();
+	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
+		Set<IXSD> resultXsds = new LinkedHashSet<IXSD>();
+		// iterate over the namespaces
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
-			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
+			Set<IXSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
 			List<Attribute> rootAttributes = new ArrayList<Attribute>();
 			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
-			for (XSD xsd: xsds) {
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			for (IXSD xsd: xsds) {
+				StringWriter dummySchemaContentsWriter = new StringWriter();
+				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
 				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
 			}
 			// Write XSD's with merged root element
-			XSD resultXsd = null;
+			StringXsd resultXsd = null;
 			XMLStreamWriter w;
 			if (xmlStreamWriter == null) {
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				resultXsd = new XSD();
-				//resultXsd.setClassLoader(classLoader);
-				//resultXsd.setNamespace(namespace);
-				resultXsd.setByteArrayOutputStream(byteArrayOutputStream);
-				//resultXsd.setSourceXsds(xsds);
-				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(byteArrayOutputStream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+				StringWriter schemaContentsWriter = new StringWriter();
+				resultXsd = new StringXsd();
+				resultXsd.setSchemaContentsWriter(schemaContentsWriter);
+				w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(schemaContentsWriter);
 			} else {
 				w = xmlStreamWriter;
 			}
 			int i = 0;
-			for (XSD xsd: xsds) {
+			// perform the merge
+			for (IXSD xsd: xsds) {
 				i++;
 				boolean skipFirstElement = true;
 				boolean skipLastElement = true;
@@ -182,7 +175,7 @@ public class SchemaUtils {
 				xsdToXmlStreamWriter(xsd, w, false, true, skipFirstElement, skipLastElement, rootAttributes, rootNamespaceAttributes, imports, false);
 			}
 			if (resultXsd != null) {
-				XSD firstXsd = xsds.iterator().next();
+				IXSD firstXsd = xsds.iterator().next();
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
 				resultXsd.setUseBaseImportedSchemaLocationsToIgnore(firstXsd.isUseBaseImportedSchemaLocationsToIgnore());
 				resultXsd.setImportedNamespacesToIgnore(firstXsd.getImportedNamespacesToIgnore());
@@ -193,12 +186,12 @@ public class SchemaUtils {
 		return resultXsds;
 	}
 
-	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null, false);
 	}
 
 	/**
-	 * Including a {@link XSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
+	 * Including a {@link IXSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
 	 * (using a low level {@link XMLEventReader} so that certain things can be corrected on the fly.
 	 *
 	 * @param xsd
@@ -207,7 +200,7 @@ public class SchemaUtils {
 	 * @param stripSchemaLocationFromImport Useful when generating a WSDL which should contain all XSD's inline (without includes or imports).
 	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
-	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
+	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
@@ -413,11 +406,11 @@ public class SchemaUtils {
 		return w.toString().trim();
 	}
 
-	public static void sortByDependencies(Set<XSD> xsds, List<Schema> schemas) throws ConfigurationException {
-		Set<XSD> xsdsWithDependencies = new LinkedHashSet<XSD>();
-		Iterator<XSD> iterator = xsds.iterator();
+	public static void sortByDependencies(Set<IXSD> xsds, List<Schema> schemas) throws ConfigurationException {
+		Set<IXSD> xsdsWithDependencies = new LinkedHashSet<IXSD>();
+		Iterator<IXSD> iterator = xsds.iterator();
 		while (iterator.hasNext()) {
-			XSD xsd = iterator.next();
+			IXSD xsd = iterator.next();
 			if (xsd.hasDependency(xsds)) {
 				xsdsWithDependencies.add(xsd);
 			} else {
@@ -427,7 +420,7 @@ public class SchemaUtils {
 		if (xsds.size() == xsdsWithDependencies.size()) {
 			if (LOG.isDebugEnabled()) {
 				String message = "Circular dependencies between schemas:";
-				for (XSD xsd : xsdsWithDependencies) {
+				for (IXSD xsd : xsdsWithDependencies) {
 					message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
 				}
 				LOG.debug(message);

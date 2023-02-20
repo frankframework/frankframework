@@ -2,18 +2,18 @@ package nl.nn.adapterframework.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
@@ -23,7 +23,7 @@ import nl.nn.adapterframework.testutil.TestScopeProvider;
  * @author Niels Meijer
  * @author Gerrit van Brakel
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public class ClassUtilsTest {
 
 	private String fileName = "Configuration.xml";
@@ -178,7 +178,7 @@ public class ClassUtilsTest {
 	}
 
 	public void verifyUrl(URL url, String uri, String expected) throws IOException  {
-		assertNotNull("URL for ["+uri+"] should not be null",url);
+		assertNotNull(url, "URL for ["+uri+"] should not be null");
 
 		if (expected!=null) {
 			assertEquals(expected, Misc.streamToString(url.openStream()));
@@ -229,7 +229,7 @@ public class ClassUtilsTest {
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
 		URL actual = ClassUtils.getResourceURL(scopeProvider, resourceAsFileUrl);
-		assertNull("file protocol was allowed but should not", actual);
+		assertNull(actual, "file protocol was allowed but should not");
 	}
 
 	@Test
@@ -293,15 +293,15 @@ public class ClassUtilsTest {
 		assertThat(resourceAsFileUrl, startsWith("file:"));
 
 		URL actual = ClassUtils.getResourceURL(getBytesClassLoaderProvider(), resourceAsFileUrl);
-		assertNull("file protocol was allowed but should not", actual);
+		assertNull(actual, "file protocol was allowed but should not");
 	}
 
 	private IScopeProvider getBytesClassLoaderProvider() throws Exception {
 
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
+		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
 		JarFile jarFile = new JarFile(file.getFile());
-		assertNotNull("jar file not found",jarFile);
+		assertNotNull(jarFile, "jar file not found");
 
 		JarFileClassLoader cl = new JarFileClassLoader(new ContextClassLoader());
 		cl.setJar(file.getFile());

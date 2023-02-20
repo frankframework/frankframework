@@ -30,7 +30,6 @@ import com.sap.conn.jco.JCoStructure;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
@@ -349,49 +348,58 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	
-	@IbisDoc({"Name of the Ibis-object"})
+	/** Name of the Ibis-object */
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"Name of the {@link SapSystem} used by this object"})
+	/** Name of the {@link SapSystem} used by this object */
 	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 	
-	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
+	/**
+	 * Index of the field in the ImportParameterList of the RFC function that contains the correlationId
+	 * @ff.default 0
+	 */
 	@Override
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
-	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the correlationId"})
+	/** Name of the field in the ImportParameterList of the RFC function that contains the correlationId */
 	@Override
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
-	@IbisDoc({"Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents", "0"})
+	/**
+	 * Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents
+	 * @ff.default 0
+	 */
 	@Override
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
-	@IbisDoc({"Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents"})
+	/** Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents */
 	@Override
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
 
-	@IbisDoc({"Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", "0"})
+	/**
+	 * Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents
+	 * @ff.default 0
+	 */
 	@Override
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
-	@IbisDoc({"Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents"})
+	/** Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents */
 	@Override
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;

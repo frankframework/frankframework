@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -98,7 +97,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private Map<String, TransformerPool> dynamicTransformerPoolMap;
 	private int transformerPoolMapSize = 100;
 
-	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 	protected @Setter IThreadConnectableTransactionManager txManager;
 	private @Getter Boolean streamingXslt = null;
 
@@ -349,7 +348,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 	}
 
-	@IbisDoc({"If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes","set by appconstant xslt.streaming.default"})
+	/**
+	 * If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes
+	 * @ff.default set by appconstant xslt.streaming.default
+	 */
 	public void setStreamingXslt(Boolean streamingActive) {
 		this.streamingXslt = streamingActive;
 	}
@@ -359,48 +361,65 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return true;
 	}
 
-	@IbisDoc({"Location of stylesheet to apply to the input message", ""})
+	/** Location of stylesheet to apply to the input message */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	@IbisDoc({"Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
+	/** Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute */
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		styleSheetNameSessionKey = newSessionKey;
 	}
 
-	@IbisDoc({"Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
+	/**
+	 * Size of cache of stylesheets retrieved from styleSheetNameSessionKey
+	 * @ff.default 100
+	 */
 	public void setStyleSheetCacheSize(int size) {
 		transformerPoolMapSize = size;
 	}
 
-	@IbisDoc({"Alternatively: XPath-expression to create stylesheet from", ""})
+	/** Alternatively: XPath-expression to create stylesheet from */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
+	/**
+	 * Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed
+	 * @ff.default false, if not set in stylesheet
+	 */
 	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly", "false, if not set in stylesheet"})
+	/**
+	 * If set <code>true</code>, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for <code>@disable-output-escaping='yes'</code> and the value is set accordingly
+	 * @ff.default false, if not set in stylesheet
+	 */
 	public void setDisableOutputEscaping(Boolean b) {
 		disableOutputEscaping = b;
 	}
 
-	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace. "+
-				"If left empty, an the xpathExpression will match any namespace", ""})
+	/**
+	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
+	 * If left empty, an the xpathExpression will match any namespace
+	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"For xpathExpression only", "text"})
+	/**
+	 * For xpathExpression only
+	 * @ff.default text
+	 */
 	public void setOutputType(OutputType string) {
 		outputType = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, result is pretty-printed. If not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
+	/**
+	 * If set <code>true</code>, result is pretty-printed. If not set, the value specified in the stylesheet is followed
+	 * @ff.default false, if not set in stylesheet
+	 */
 	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
@@ -411,33 +430,51 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		setRemoveNamespaces(!b);
 	}
 
-	@IbisDoc({"If set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
+	/**
+	 * If set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation
+	 * @ff.default false
+	 */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text. " +
-			"Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2", "false"})
+	/**
+	 * If set <code>true</code>, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+	 * Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2
+	 * @ff.default false
+	 */
 	public void setHandleLexicalEvents(boolean b) {
 		handleLexicalEvents = b;
 	}
 
-	@IbisDoc({"If set <code>true</code> empty tags in the output are removed after transformation", "false"})
+	/**
+	 * If set <code>true</code> empty tags in the output are removed after transformation
+	 * @ff.default false
+	 */
 	public void setSkipEmptyTags(boolean b) {
 		skipEmptyTags = b;
 	}
 
-	@IbisDoc({"If set to <code>1</code> xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). <code>0</code> will auto detect. This class supports up to and including XSLT version 3.0", "0"})
+	/**
+	 * If set to <code>1</code> xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). <code>0</code> will auto detect. This class supports up to and including XSLT version 3.0
+	 * @ff.default 0
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	@IbisDoc({"If set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
+	/**
+	 * If set <code>true</code> the input is written to the log file, at DEBUG level
+	 * @ff.default false
+	 */
 	public void setDebugInput(boolean debugInput) {
 		this.debugInput = debugInput;
 	}
 
-	@IbisDoc({"If set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
+	/**
+	 * If set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)
+	 * @ff.default false
+	 */
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -445,11 +482,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
 	}
 
 }

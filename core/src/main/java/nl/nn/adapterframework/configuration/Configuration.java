@@ -548,10 +548,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public IJob getScheduledJob(String name) {
+		if (scheduleManager == null || !isActive()) {
+			return null;
+		}
 		return scheduleManager.getSchedule(name);
 	}
 
 	public List<IJob> getScheduledJobs() {
+		if (scheduleManager == null || !isActive()) {
+			return Collections.emptyList();
+		}
 		return scheduleManager.getSchedulesList();
 	}
 
@@ -560,11 +566,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public ConfigurationWarnings getConfigurationWarnings() {
-		if(isActive()) {
-			return getBean("configurationWarnings", ConfigurationWarnings.class);
+		if (!isActive()) {
+			return null;
 		}
-
-		return null;
+		return getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
 	@Override

@@ -24,19 +24,8 @@
 
 	<bean name="sharedResources" class="nl.nn.adapterframework.core.SharedResources" scope="singleton"/>
 
-	<bean
-		name="adapterManager"
-		class="nl.nn.adapterframework.configuration.AdapterManager"
-		autowire="byType"
-		scope="singleton"
-	/>
-
-	<bean
-		name="scheduleManager"
-		class="nl.nn.adapterframework.configuration.ScheduleManager"
-		autowire="byType"
-		scope="singleton"
-	/>
+	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
 	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
 

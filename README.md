@@ -13,6 +13,7 @@ Frank!Framework
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/ibissource/iaf.svg)](https://github.com/ibissource/iaf/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
+[![Public Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DVulnerabilities%26pid%3D68wlxudjy%26packageVersion%3Dlatest-alpha)](https://app.soos.io/research/packages/Java/org.ibissource/ibis-adapterframework-parent)
 
 
 ## Open-Source, Low-Code & Stateless
@@ -28,9 +29,9 @@ All our releases can be found on Maven central. Individual builds can be found o
 For more information about our releases, see our [release notes](RELEASES.md) and [releases](https://github.com/ibissource/iaf/releases).
 
 ## Feedback
-For bug reports and feature requests create a new issue at <https://github.com/ibissource/iaf/issues>. The
-Frank!Framework is developed and maintained by [WeAreFrank!](https://wearefrank.nl/). Contact us at
-<https://wearefrank.nl/en/contact/> or send an email to info@wearefrank.nl.
+For bug reports and feature requests, create a new issue at <https://github.com/ibissource/iaf/issues>. 
+For general questions feel free to post them on our [discussions forum](https://github.com/ibissource/iaf/discussions) here on GitHub. 
+If you would like to report a vulnerability, or have security concerns regarding the Frank!Framework, please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
 ## Frank!Manual
 In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question [feel free to contact us](https://wearefrank.nl/en/contact/). If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).

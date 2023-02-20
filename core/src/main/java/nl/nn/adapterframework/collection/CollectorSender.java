@@ -22,7 +22,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -68,7 +67,7 @@ public abstract class CollectorSender<E extends ICollectingElement<C>, C extends
 		return actor.provideOutputStream(session, (E)this);
 	}
 
-	@IbisDocRef({CollectionActor.CLASSNAME})
+	/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
 	public void setAction(Action action) {
 		actor.setAction(action);
 	}
@@ -76,7 +75,7 @@ public abstract class CollectorSender<E extends ICollectingElement<C>, C extends
 		return actor.getAction();
 	}
 
-	@IbisDocRef({CollectionActor.CLASSNAME})
+		/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
 	public void setCollection(String collection) {
 		actor.setCollection(collection);
 	}

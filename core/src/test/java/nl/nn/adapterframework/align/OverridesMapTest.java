@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OverridesMapTest {
 
 	OverridesMap<String> map;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		map = new OverridesMap<String>();
 	}
@@ -28,8 +28,8 @@ public class OverridesMapTest {
 	
 	public void testSubst(String parsedPath, String child, String expectedValue, boolean expectsChild) {
 		AlignmentContext context=parsedPath==null?null:parse(parsedPath);
-		assertEquals("value for '"+child+"' after '"+parsedPath+"'",expectedValue,map.getMatchingValue(context, child));
-		assertEquals("has something for '"+child+"' after '"+parsedPath+"'",expectsChild,map.hasSubstitutionsFor(context, child));
+		assertEquals(expectedValue, map.getMatchingValue(context, child), "value for '"+child+"' after '"+parsedPath+"'");
+		assertEquals(expectsChild, map.hasSubstitutionsFor(context, child), "has something for '"+child+"' after '"+parsedPath+"'");
 	}
 	
 	

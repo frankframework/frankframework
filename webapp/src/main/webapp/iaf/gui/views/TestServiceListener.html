@@ -2,27 +2,27 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="TestServiceListenerCtrl">
-    <uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h4>Test a ServiceListener</h4>
-                </div>
-                <div class="ibox-content">
-                    <form role="form" ng-submit="submit(form)">
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Select a service</label>
-                            <div class="col-sm-9">
-                                <select class="form-control" name="service" ng-model="form.service">
-                                    <option ng-repeat="service in services">{{service}}</option>
-                                </select>
-                            </div>
-                        </div>
+	<uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Test a ServiceListener</h4>
+				</div>
+				<div class="ibox-content">
+					<form role="form" ng-submit="submit(form)">
+						<div class="row form-group">
+							<label class="col-sm-3 control-label label-height-30">Select a service</label>
+							<div class="col-sm-9">
+								<select class="form-control" name="service" ng-model="form.service">
+									<option ng-repeat="service in services">{{service}}</option>
+								</select>
+							</div>
+						</div>
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload File</label>
 							<div class="col-sm-9 col-md-4">
-								<input class="form-control form-file" name="file" type="file" onchange="angular.element(this).scope().handleFile(this.files)" />
+								<input-file-upload />
 							</div>
 							<div class="hidden-xs hidden-sm col-md-1">
 								<label class="control-label label-height-30 pull-right">Encoding</label>
@@ -39,30 +39,30 @@
 								<input class="form-control" name="encoding" type="text" ng-model="form.encoding"/>
 							</div>
 						</div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Message</label>
-                            <div class="col-sm-9">
-                                <textarea class="form-control" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                                <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-12" ng-if="result">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h4>Result</h4>
-                </div>
-                <div class="ibox-content">
-                    <pre class="ng-binding" contenteditable="true">{{result}}</pre>
-                </div>
-            </div>
-        </div>
-    </div>
+						<div class="row form-group">
+							<label class="col-sm-3 control-label label-height-30">Message</label>
+							<div class="col-sm-9">
+								<textarea class="form-control" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
+							</div>
+						</div>
+						<div class="row form-group">
+							<div class="col-sm-offset-3 col-sm-9 m-t-md">
+								<button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-12" ng-if="result">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Result</h4>
+				</div>
+				<div class="ibox-content">
+					<pre class="ng-binding" contenteditable="true">{{result}}</pre>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

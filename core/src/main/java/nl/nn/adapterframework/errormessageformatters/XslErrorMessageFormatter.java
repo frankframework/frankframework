@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -109,12 +108,11 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter}
 	 */
-	@IbisDoc({"stylesheet to use for transformation", ""})
 	public void setStyleSheet(String newStyleSheet) {
 		styleSheet = newStyleSheet;
 	}
 
-	@IbisDoc({"xpathexpression to use for transformation", ""})
+	/** xPathExpression to use for transformation */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}

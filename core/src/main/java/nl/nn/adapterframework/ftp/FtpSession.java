@@ -63,7 +63,6 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -646,52 +645,58 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 	}
 
-	@IbisDoc({"Name or ip address of remote host", ""})
+	/** Name or ip address of remote host */
 	public void setHost(String string) {
 		host = string;
 	}
 
-	@IbisDoc({"Port number of remote host", "21"})
+	/**
+	 * Port number of remote host
+	 * @ff.default 21
+	 */
 	public void setPort(int i) {
 		port = i;
 	}
 
-	@IbisDoc({"Name of the alias to obtain credentials to authenticatie on remote server", ""})
+	/** Name of the alias to obtain credentials to authenticatie on remote server */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"Name of the user to authenticatie on remote server", ""})
+	/** Name of the user to authenticatie on remote server */
 	public void setUsername(String string) {
 		username = string;
 	}
 
-	@IbisDoc({"Password to authenticatie on remote server", ""})
+	/** Password to authenticatie on remote server */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"Proxy hostname", ""})
+	/** Proxy hostname */
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"Proxy port", "1080"})
+	/**
+	 * Proxy port
+	 * @ff.default 1080
+	 */
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"alias to obtain credentials to authenticate on proxy", ""})
+	/** alias to obtain credentials to authenticate on proxy */
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"Default user name in case proxy requires authentication", ""})
+	/** Default user name in case proxy requires authentication */
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
 
-	@IbisDoc({"Default password in case proxy requires authentication", ""})
+	/** Default password in case proxy requires authentication */
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
@@ -701,62 +706,76 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	public void setFtpTypeDescription(FtpType value) {
 		setFtpType(value);
 	}
-	@IbisDoc({"FTP protocol to use", "FTP"})
+	/**
+	 * FTP protocol to use
+	 * @ff.default FTP
+	 */
 	public void setFtpType(FtpType value) {
 		ftpType = value;
 	}
 
-	@IbisDoc({"File type", ""})
 	public void setFileType(FileType value) {
 		fileType = value;
 	}
 
-	@IbisDoc({"If <code>true</code>, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})
+	/**
+	 * If <code>true</code>, the contents of the message is send, otherwise it message contains the local filenames of the files to be send
+	 * @ff.default false
+	 */
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
 
-	@IbisDoc({"If <code>true</code>, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server", "true"})
+	/**
+	 * If <code>true</code>, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server
+	 * @ff.default true
+	 */
 	public void setPassive(boolean b) {
 		passive = b;
 	}
 
-	@IbisDoc({"(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)", "4"})
+	/**
+	 * (sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)
+	 * @ff.default 4
+	 */
 	public void setProxyTransportType(int i) {
 		proxyTransportType = i;
 	}
 
-	@IbisDoc({"(sftp) Optional preferred encryption from client to server for sftp protocol", ""})
+	/** (sftp) Optional preferred encryption from client to server for sftp protocol */
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
 	}
 
-	@IbisDoc({"(sftp) Optional preferred encryption from server to client for sftp protocol", ""})
+	/** (sftp) Optional preferred encryption from server to client for sftp protocol */
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
 
-	@IbisDoc({"(sftp) Path to private key file for sftp authentication", ""})
+	/** (sftp) Path to private key file for sftp authentication */
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
 
-	@IbisDoc({"(sftp) Name of the alias to obtain credentials for passphrase of private key file", ""})
+	/** (sftp) Name of the alias to obtain credentials for passphrase of private key file */
 	public void setPrivateKeyAuthAlias(String string) {
 		privateKeyAuthAlias = string;
 	}
 
-	@IbisDoc({"(sftp) Passphrase of private key file", ""})
+	/** (sftp) Passphrase of private key file */
 	public void setPrivateKeyPassword(String password) {
 		privateKeyPassword = password;
 	}
 
-	@IbisDoc({"(sftp) Path to file with knownhosts", ""})
+	/** (sftp) Path to file with knownhosts */
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
 	}
 
-	@IbisDoc({"(sftp) ", "false"})
+	/**
+	 * (sftp) 
+	 * @ff.default false
+	 */
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
 	}
@@ -893,19 +912,28 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		ignoreCertificateExpiredException = b;
 	}
 
-	@IbisDoc({"(ftps) if true, the server returns data via a SSL socket", "false"})
+	/**
+	 * (ftps) if true, the server returns data via a SSL socket
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("use attribute prot=\"P\" instead")
 	public void setProtP(boolean b) {
 		prot = Prot.P;
 	}
 
-	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>.", "C"})
+	/**
+	 * Sets the <code>Data Channel Protection Level</code>.
+	 * @ff.default C
+	 */
 	public void setProt(Prot prot) {
 		this.prot = prot;
 	}
 
-	@IbisDoc({"When <code>true</code>, keyboardinteractive is used to login", "false"})
+	/**
+	 * When <code>true</code>, keyboardinteractive is used to login
+	 * @ff.default false
+	 */
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
 	}

@@ -33,7 +33,9 @@ import org.xml.sax.SAXParseException;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -55,6 +57,11 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
+	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
+	 */
+	private IAdapter currentAdapter = null;
+
+	/**
 	 * Returns the name of the object. In case a Spring proxy is being used,
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
@@ -65,7 +72,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		if (o instanceof INamedObject) { //This assumes that setName has already been called
 			String named = ((INamedObject) o).getName();
 			if (StringUtils.isNotEmpty(named)) {
-				return result+=" ["+named+"]";
+				return result + " [" + named + "]";
 			}
 		}
 		return result;
@@ -76,12 +83,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Display location information conform {@link IbisException} when the cause is a {@link SAXParseException}.
 	 */
 	protected final void addLocalWarning(String msg) {
-		String message = msg;
-		if(includeLineInformation) {
-			Locator loc = getDigester().getDocumentLocator();
-			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
-		}
-		configurationWarnings.add(getBean(), log, message);
+		configurationWarnings.add(getBean(), log, getLocationString() + msg);
 	}
 
 	/**
@@ -89,6 +91,26 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 */
 	protected final void addGlobalWarning(String message) {
 		applicationWarnings.add(getBean(), log, message);
+	}
+
+	/**
+	 * Add a warning message to the current configuration, unless the suppression key is
+	 * supporessed in the configuration.
+	 *
+	 * @param msg Message to add
+	 * @param suppressionKey {@link SuppressKeys} to check.
+	 */
+	protected final void addSuppressableWarning(String msg, SuppressKeys suppressionKey) {
+		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, currentAdapter);
+	}
+
+	private String getLocationString() {
+		if (!includeLineInformation) {
+			return "";
+		}
+		Locator loc = getDigester().getDocumentLocator();
+		return "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] ";
+
 	}
 
 	/**
@@ -138,6 +160,10 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
+		if (top instanceof IAdapter) {
+			currentAdapter = (IAdapter) top;
+		}
+
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
@@ -152,6 +178,13 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
 			handleAttribute(attribute, entry.getValue(), map);
+		}
+	}
+
+	@Override
+	public void end(String namespace, String name) throws Exception {
+		if ("adapter".equalsIgnoreCase(name)) {
+			currentAdapter = null;
 		}
 	}
 

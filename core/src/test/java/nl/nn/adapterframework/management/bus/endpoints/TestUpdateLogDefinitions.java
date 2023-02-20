@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -55,7 +55,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 			}
 		}
 
-		assertTrue("not testing the log definition retrieval!", foundTestDefinition);
+		assertTrue(foundTestDefinition, "not testing the log definition retrieval!");
 	}
 
 	@Test

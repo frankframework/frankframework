@@ -51,7 +51,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
@@ -988,36 +987,52 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return queryType;
 	}
 
-	@IbisDoc({"When <code>true</code>, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value", "false"})
+	/**
+	 * When <code>true</code>, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value
+	 * @ff.default false
+	 */
 	public void setScalar(boolean b) {
 		scalar = b;
 	}
 
-	@IbisDoc({"When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: <ul>"
-				+ "<li>'[absent]' no row is found</li>"
-				+ "<li>'[null]' a row is found, but the value is a SQL-NULL</li>"
-				+ "<li>'[empty]' a row is found, but the value is a empty string</li>"
-				+ "</ul>", "false"})
+	/** 
+	 * When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: 
+	 * <ul>
+	 * <li>'[absent]' no row is found</li>
+	 * <li>'[null]' a row is found, but the value is a SQL-NULL</li>
+	 * <li>'[empty]' a row is found, but the value is a empty string</li>
+	 * </ul>
+	 * @ff.default false
+	 */
 	public void setScalarExtended(boolean b) {
 		scalarExtended = b;
 	}
 
-	@IbisDoc({"The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows", "-1"})
+	/**
+	 * The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows
+	 * @ff.default -1
+	 */
 	public void setMaxRows(int i) {
 		maxRows = i;
 	}
 
-	@IbisDoc({"The number of the first row to be returned from the output of <code>select</code> queries. Rows before this are skipped from the output.", "1"})
+	/**
+	 * The number of the first row to be returned from the output of <code>select</code> queries. Rows before this are skipped from the output.
+	 * @ff.default 1
+	 */
 	public void setStartRow(int i) {
 		startRow = i;
 	}
 
-	@IbisDoc({"Value used in result as contents of fields that contain no value (sql-null)", "<i>empty string</i>"})
+	/**
+	 * Value used in result as contents of fields that contain no value (sql-null)
+	 * @ff.default <i>empty string</i>
+	 */
 	public void setNullValue(String string) {
 		nullValue = string;
 	}
 
-	@IbisDoc({"Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual", ""})
+	/** Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual */
 	public void setResultQuery(String string) {
 		resultQuery = string;
 	}
@@ -1031,76 +1046,107 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		columnsReturned = string;
 	}
 
-	@IbisDoc({"Named parameters will be auto detected by default. Every string in the query which equals <code>"+UNP_START+"paramname"+UNP_END+"</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.", "null"})
+	/**
+	 * Named parameters will be auto detected by default. Every string in the query which equals <code>{@value #UNP_START}paramname{@value #UNP_END}</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.
+	 * @ff.default null
+	 */
 	public void setUseNamedParams(Boolean b) {
 		useNamedParams = b;
 	}
 
-	@IbisDoc({"when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields", "application default (true)"})
+	/**
+	 * when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields
+	 * @ff.default application default (true)
+	 */
 	public void setIncludeFieldDefinition(boolean b) {
 		includeFieldDefinition = b;
 	}
 
-	@IbisDoc({"Remove trailing blanks from all result values.", "true"})
+	/**
+	 * Remove trailing blanks from all result values.
+	 * @ff.default true
+	 */
 	public void setTrimSpaces(boolean b) {
 		trimSpaces = b;
 	}
 
-	@IbisDoc({"If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown.", ""})
+	/** If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown. */
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
 	}
 
 
-	@IbisDoc({"If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)", "false"})
+	/**
+	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
+	 * @ff.default false
+	 */
 	@Deprecated
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
-	@IbisDoc({"If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect", ""})
+	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
 	public void setSqlDialect(String string) {
 		sqlDialect = string;
 	}
 
-	@IbisDoc({"When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)", "false"})
+	/**
+	 * When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)
+	 * @ff.default false
+	 */
 	public void setLockRows(boolean b) {
 		lockRows = b;
 	}
 
-	@IbisDoc({"when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'", "-1"})
+	/**
+	 * when set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'
+	 * @ff.default -1
+	 */
 	public void setLockWait(int i) {
 		lockWait = i;
 	}
 
-	@IbisDoc({ "", "true" })
+	/**
+	 * When <code>true</code>, the result of sendMessage is the reply of the request.
+	 * @ff.default true
+	 */
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous = synchronous;
 	}
 
-	@IbisDoc({"Only for querytype 'updateBlob': column that contains the BLOB to be updated", "1"})
+	/**
+	 * Only for querytype 'updateBlob': column that contains the BLOB to be updated
+	 * @ff.default 1
+	 */
 	public void setBlobColumn(int i) {
 		blobColumn = i;
 	}
 
-	@IbisDoc({"For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
-					"For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to", ""})
+	/** 
+	 * For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.
+	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to
+	 */
 	public void setBlobSessionKey(String string) {
 		blobSessionKey = string;
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
+	/**
+	 * controls whether blobdata is stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.", ""})
+	/** controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not. */
 	public void setBlobBase64Direction(Base64Pipe.Direction value) {
 		blobBase64Direction = value;
 	}
 
-	@IbisDoc({"Charset that is used to read and write BLOBs. This assumes the blob contains character data. " +
-				"If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case", ""})
+	/**
+	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case
+	 */
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, getLogPrefix()+"setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
@@ -1108,51 +1154,74 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database", "false"})
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database
+	 * @ff.default false
+	 */
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}
 
 
-	@IbisDoc({"Only for querytype 'updateClob': column that contains the CLOB to be updated", "1"})
+	/**
+	 * Only for querytype 'updateClob': column that contains the CLOB to be updated
+	 * @ff.default 1
+	 */
 	public void setClobColumn(int i) {
 		clobColumn = i;
 	}
 
-	@IbisDoc({"For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.<br/>"+
-					"For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to", ""})
+	/**
+	 * For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.
+	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to
+	 */
 	public void setClobSessionKey(String string) {
 		clobSessionKey = string;
 	}
 
-	@IbisDoc({"When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB", "true"})
+	/**
+	 * When set to <code>false</code>, the Inputstream is not closed after it has been used to update a BLOB or CLOB
+	 * @ff.default true
+	 */
 	@Deprecated
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
 
-	@IbisDoc({"When set to <code>false</code>, the Outputstream is not closed after BLOB or CLOB has been written to it", "true"})
+	/**
+	 * When set to <code>false</code>, the Outputstream is not closed after BLOB or CLOB has been written to it
+	 * @ff.default true
+	 */
 	public void setCloseOutputstreamOnExit(boolean b) {
 		closeOutputstreamOnExit = b;
 	}
 
 
-	@IbisDoc({"Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion", ""})
+	/** Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion */
 	public void setStreamCharset(String string) {
 		streamCharset = string;
 	}
 
-	@IbisDoc({"If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'.", "false"})
+	/**
+	 * If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'.
+	 * @ff.default false
+	 */
 	public void setAvoidLocking(boolean avoidLocking) {
 		this.avoidLocking = avoidLocking;
 	}
 
-	@IbisDoc({"If true and scalar=false, multiline indented XML is produced", "false"})
+	/**
+	 * If true and scalar=false, multiline indented XML is produced
+	 * @ff.default false
+	 */
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}
 
-	@IbisDoc({"The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly", "false"})
+	/**
+	 * The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly
+	 * @ff.default false
+	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}

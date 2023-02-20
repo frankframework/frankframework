@@ -29,7 +29,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.Protected;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
@@ -37,27 +36,40 @@ import nl.nn.adapterframework.util.StringResolver;
  * @author Niels Meijer
  */
 public class ValidateAttributeRule extends DigesterRuleBase {
-	private boolean suppressDeprecationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
 
+	/**
+	 * @see DigesterRuleBase#handleBean()
+	 */
 	@Override
 	protected void handleBean() {
-		if(!suppressDeprecationWarnings) {
 			Class<?> clazz = getBeanClass();
 			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
 			if(warning != null) {
 				String msg = "";
-				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
+				boolean isDeprecated = AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null;
+				if(isDeprecated) {
 					msg += "is deprecated";
 				}
 				if(StringUtils.isNotEmpty(warning.value())) {
 					msg += ": "+warning.value();
 				}
 
-				addLocalWarning(msg);
+				if (isDeprecated) {
+					addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+				} else {
+					addLocalWarning(msg);
+				}
 			}
-		}
 	}
 
+	/**
+	 * @see DigesterRuleBase#handleAttribute(String, String, Map)
+	 *
+	 * @param name Name of attribute
+	 * @param value Attribute Value
+	 * @param attributes Map of all attributes
+	 * @throws Exception Can throw any exception in bean property manipulation.
+	 */
 	@Override
 	protected void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception {
 		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(getBean(), name);
@@ -96,7 +108,11 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
 		//Try to parse the value as an Enum
 		if(setterArgumentClass.isEnum()) {
-			return parseAsEnum(setterArgumentClass, value);
+			char[] c = m.getName().substring(3).toCharArray();
+			c[0] = Character.toLowerCase(c[0]);
+			String fieldName = new String(c);
+
+			return parseAsEnum(setterArgumentClass, fieldName, value);
 		}
 
 		return value;
@@ -105,13 +121,14 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	/**
 	 * Attempt to parse the attributes value as an Enum.
 	 * @param enumClass The Enum class used to parse the value
+	 * @param fieldName The setter name (fieldName) to set
 	 * @param value The value to be parsed
 	 * @return The Enum constant or <code>NULL</code> (and a local configuration warning) if it cannot parse the value.
 	 */
 	@SuppressWarnings("unchecked")
-	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
+	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String fieldName, String value) {
 		try {
-			return EnumUtils.parse((Class<E>) enumClass, value);
+			return EnumUtils.parse((Class<E>) enumClass, fieldName, value);
 		} catch(IllegalArgumentException e) {
 			addLocalWarning(e.getMessage());
 			return null;
@@ -120,7 +137,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 
 	/**
 	 * Check if the value:,
-	 * - Can be parsed to match the Getters return type, 
+	 * - Can be parsed to match the Getters return type,
 	 * - Does not equal the default value (parsed by invoking the getter, if present).
 	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
@@ -129,12 +146,12 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		if (rm != null) {
 			try {
 				Object bean = getBean();
-				Object defaultValue = rm.invoke(bean, new Object[0]);
+				Object defaultValue = rm.invoke(bean);
 				if (bean instanceof HasSpecialDefaultValues) {
 					defaultValue = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, defaultValue, attrs);
 				}
-				if (defaultValue!=null && equals(defaultValue, value)) {
-					addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
+				if (equals(defaultValue, value)) {
+					addSuppressableWarning("attribute ["+name+"] already has a default value ["+value+"]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 				}
 				// if the default value is null, then it can mean that the real default value is determined in configure(),
 				// so we cannot assume setting it to "" has no effect
@@ -180,7 +197,18 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				(defaultValue instanceof Boolean && Boolean.valueOf(value).equals(defaultValue)) ||
 				(defaultValue instanceof Integer && Integer.valueOf(value).equals(defaultValue)) ||
 				(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue)) ||
-				(defaultValue instanceof Enum && parseAsEnum(defaultValue.getClass(), value) == defaultValue);
+				(defaultValue instanceof Enum && enumEquals(defaultValue, value));
+	}
+
+	/** Attempt to parse the attribute value as an Enum and compare it to the defaultValue. */
+	@SuppressWarnings("unchecked")
+	private <E extends Enum<E>> boolean enumEquals(Object defaultValue, String value) {
+		Class<?> enumClass = defaultValue.getClass();
+		try {
+			return EnumUtils.parse((Class<E>) enumClass, value) == defaultValue;
+		} catch(IllegalArgumentException e) {
+			return false;
+		}
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
@@ -197,7 +225,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				msg += ": " + warning.value();
 			}
 
-			if(!(suppressDeprecationWarnings && isDeprecated)) { //Don't log if deprecation warnings are suppressed and it is deprecated
+			if (isDeprecated) {
+				addSuppressableWarning(msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+			} else {
 				addLocalWarning(msg);
 			}
 		}

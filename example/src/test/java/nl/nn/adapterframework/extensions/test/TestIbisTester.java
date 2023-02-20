@@ -12,10 +12,12 @@ public class TestIbisTester {
 
 	@Test
 	public void runIbisTester() {
+		// Arrange
 		IbisTester ibisTester = new IbisTester();
 		System.setProperty("junit.active", "true");
 		long start = System.currentTimeMillis();
 
+		// Act
 		ibisTester.initTest();
 		String testResult = ibisTester.testStartAdapters();
 		assertNull(testResult, testResult);
@@ -23,8 +25,9 @@ public class TestIbisTester {
 		IbisContext ibisContext = ibisTester.getIbisContext();
 		assertNotNull(ibisContext);
 
-		//Test generic startup time of an ibis with 3 adapters, should take less then 30 seconds.
+		// Assert
+		// Test generic startup time of an ibis with 3 adapters, should take less than 30 seconds.
 		long startupTime = (System.currentTimeMillis() - start);
-		assertTrue(startupTime < 30000, "Application took ["+startupTime+"] to start up!");
+		assertTrue(startupTime < 30_000, "Application took ["+startupTime+"ms] to start up, longer than allowed 30s!");
 	}
 }

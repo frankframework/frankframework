@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.align;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.net.URL;
@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 
@@ -18,7 +18,7 @@ public class TestMap2Xml extends AlignTestBase {
 
 	public void testStrings(String xmlIn, String mapInStr, URL schemaUrl, String targetNamespace, String rootElement, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
-		if (xmlIn!=null) assertTrue("validated input",Utils.validate(schemaUrl, xmlIn));
+		if (xmlIn!=null) assertTrue(Utils.validate(schemaUrl, xmlIn), "validated input");
 		if (mapInStr==null || mapInStr.isEmpty()) {
 			fail("no input map");
 		}
@@ -40,7 +40,7 @@ public class TestMap2Xml extends AlignTestBase {
 			if (xmlAct==null) {
 				fail("could not convert to xml");
 			}
-			assertTrue("converted XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
+			assertTrue(Utils.validate(schemaUrl, xmlAct), "converted XML is not aligned");
 			MatchUtils.assertXmlEquals(null, xmlIn, xmlAct, true);
 			if (checkRoundTrip) {
 				Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
@@ -75,7 +75,7 @@ public class TestMap2Xml extends AlignTestBase {
 		if (mapString==null) {
 			fail("no map input files found for ["+inputFile+"]");
 		}
-		testStrings(xmlString,mapString, schemaUrl,namespace, rootElement,  true, expectedFailureReason);
+		testStrings(xmlString,mapString, schemaUrl,namespace, rootElement, true, expectedFailureReason);
 	}
 
 	@Test
@@ -87,14 +87,14 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support mixed content")
+	@Disabled("Map2XML does not support mixed content")
 	public void testMixedContent() throws Exception {
 		super.testMixedContent();
 	}
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support null values")
+	@Disabled("Map2XML does not support null values")
 	public void testNull() throws Exception {
 		super.testNull();
 	}
@@ -102,48 +102,48 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testArrays() throws Exception {
 		super.testArrays();
 	}
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testEmptyArrays() throws Exception {
 		super.testEmptyArrays();
 	}
 
 	@Override
 	@Test
-	@Ignore("input file is empty")
+	@Disabled("input file is empty")
 	public void testOK_abc() throws Exception {
 		super.testOK_abc();
 	}
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void test_hcda() throws Exception {
 		super.test_hcda();
 	}
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support arrays of complex values")
+	@Disabled("Map2XML does not support arrays of complex values")
 	public void testSingleComplexArray() throws Exception {
 		super.testSingleComplexArray();
 	}
 
 	@Override
 	@Test
-	@Ignore("Map2XML does not support reporting 'unknown' elements")
+	@Disabled("Map2XML does not support reporting 'unknown' elements")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Test
-	@Ignore("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
+	@Disabled("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
 	public void testDoubleId() throws Exception {
 		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
 	}
@@ -151,21 +151,21 @@ public class TestMap2Xml extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("No content")
+	@Disabled("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Override
 	@Test
-	@Ignore("Generates stackoverflow, known issue")
+	@Disabled("Generates stackoverflow, known issue")
 	public void testFamilyTree() throws Exception {
 		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
 	}
 
 	@Override
 	@Test
-	@Ignore("cannot decide what elements should be inserted at wildcard position")
+	@Disabled("cannot decide what elements should be inserted at wildcard position")
 	public void testAnyElement() throws Exception {
 		super.testAnyElement();
 	}

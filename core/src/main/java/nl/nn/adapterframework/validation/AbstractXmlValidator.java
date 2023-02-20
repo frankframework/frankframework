@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -132,12 +131,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getReasonSessionKey() + "]");
 			session.remove(getReasonSessionKey());
 		}
 
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(logPrefix + "removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
+			log.debug(logPrefix + " removing contents of sessionKey [" + getXmlReasonSessionKey() + "]");
 			session.remove(getXmlReasonSessionKey());
 		}
 		return null;
@@ -278,47 +277,74 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
 
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "false"})
+	/**
+	 * Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.
+	 * @ff.default false
+	 */
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
 
-	@IbisDoc({"If set: key of session variable to store reasons of mis-validation in", "failureReason"})
+	/**
+	 * If set: key of session variable to store reasons of mis-validation in
+	 * @ff.default failureReason
+	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}
 
-	@IbisDoc({"Like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive", "xmlFailureReason"})
+	/**
+	 * Like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive
+	 * @ff.default xmlFailureReason
+	 */
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		this.xmlReasonSessionKey = xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "false"})
+	/**
+	 * If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated
+	 * @ff.default false
+	 */
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
 
-	@IbisDoc({"Characterset used for reading file, only used when <code>validateFile</code> is <code>true</code>", "utf-8"})
+	/**
+	 * Characterset used for reading file, only used when <code>validateFile</code> is <code>true</code>
+	 * @ff.default utf-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
+	/**
+	 * If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)
+	 * @ff.default true
+	 */
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})
+	/**
+	 * Ignore namespaces in the input message which are unknown
+	 * @ff.default true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise
+	 */
 	public void setIgnoreUnknownNamespaces(Boolean b) {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "false"})
+	/**
+	 * If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)
+	 * @ff.default false
+	 */
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}
 
-	@IbisDoc({"If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
+	/**
+	 * If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. 
+	 * @ff.default <code>1.1</code>
+	 */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		this.xmlSchemaVersion = xmlSchemaVersion;
 	}

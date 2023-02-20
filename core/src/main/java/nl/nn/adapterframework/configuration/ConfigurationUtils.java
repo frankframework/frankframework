@@ -530,13 +530,13 @@ public class ConfigurationUtils {
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
-			List<String> stringList = new ArrayList<>();
+			List<String> configurationNames = new ArrayList<>();
 			while (rs.next()) {
-				stringList.add(rs.getString(1));
+				configurationNames.add(rs.getString(1));
 			}
 
-			log.debug("found database configurations {}", stringList);
-			return stringList;
+			log.debug("found database configurations {}", configurationNames);
+			return Collections.unmodifiableList(configurationNames);
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {

@@ -1,11 +1,13 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.containsString;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -14,12 +16,12 @@ import java.io.Writer;
 import java.util.Date;
 
 import org.apache.commons.codec.binary.Base64;
-import org.hamcrest.core.StringContains;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -34,7 +36,7 @@ import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FileSystemActor<F, FS> actor;
@@ -48,7 +50,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected abstract FS createFileSystem();
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		owner= adapter;
@@ -61,7 +63,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 //	@Override
-//	@After
+//	@AfterEach
 //	public void tearDown() throws Exception {
 //		if (actor!=null) {
 //			actor.close();
@@ -77,14 +79,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureNoAction() throws Exception {
-		exception.expectMessage("either attribute [action] or parameter [action] must be specified");
-		exception.expectMessage("fake owner of FileSystemActor");
-		actor.configure(fileSystem,null,owner);
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
+		assertThat(e.getMessage(), containsString("fake owner of FileSystemActor"));
 	}
 
 	@Test
 	public void fileSystemActorEmptyParameterAction() throws Exception {
-		exception.expectMessage("unable to resolve the value of parameter");
 		String filename = "emptyParameterAction" + FILE1;
 		String contents = "Tekst om te lezen";
 
@@ -101,7 +102,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(new Message(""), session);
 
-		actor.doAction(message, pvl, session);
+		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		assertThat(e.getMessage(), containsString("unable to resolve the value of parameter"));
 	}
 
 	@Test
@@ -160,12 +162,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
-		exception.expectMessage("inputFolder [xxx], canonical name [");
-		exception.expectMessage("does not exist");
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
-		actor.open();
+
+		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("inputFolder [xxx], canonical name ["));
+		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 
 	@Test
@@ -200,10 +203,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("inputFolder", "folder2"));
-		exception.expectMessage("inputFolder [folder1], canonical name [");
-		exception.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
-		actor.open();
+
+		FileNotFoundException e = assertThrows(FileNotFoundException.class, actor::open);
+		assertThat(e.getMessage(), containsString("inputFolder [folder1], canonical name ["));
+		assertThat(e.getMessage(), containsString("does not exist"));
 	}
 
 	public void fileSystemActorListActionTest(String inputFolder, int numberOfFiles, int expectedNumberOfFiles) throws Exception {
@@ -393,13 +397,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		out.write("some content".getBytes());
 		out.close();
 		waitForActionToFinish();
-		assertTrue("File ["+filename+"] expected to be present", _fileExists(inputFolder, filename));
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
 
 		OutputStream out2 = _createFile(inputFolder, filename2);
 		out2.write("some content of second file".getBytes());
 		out2.close();
 		waitForActionToFinish();
-		assertTrue("File ["+filename2+"] expected to be present", _fileExists(inputFolder, filename2));
+		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
@@ -426,11 +430,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl = null;
 		String result = (String)actor.doAction(message, pvl, session);
-		assertThat(result,StringContains.containsString("<file name=\"senderfile1.txt\""));
-		assertThat(result,StringContains.containsString("size=\"17\""));
-		assertThat(result,StringContains.containsString("canonicalName="));
-		assertThat(result,StringContains.containsString("modificationDate="));
-		assertThat(result,StringContains.containsString("modificationTime="));
+		assertThat(result, containsString("<file name=\"senderfile1.txt\""));
+		assertThat(result, containsString("size=\"17\""));
+		assertThat(result, containsString("canonicalName="));
+		assertThat(result, containsString("modificationDate="));
+		assertThat(result, containsString("modificationTime="));
 	}
 
 	@Test
@@ -528,10 +532,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message result = Message.asMessage(actor.doAction(message, pvl, session));
 		assertEquals(contents, result.asString());
-		assertFalse("Expected file ["+filename+"] not to be present", _fileExists(filename));
-		assertFalse("Expected file ["+filename+"] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
+		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
 
-		assertFalse("Expected parent folder not to be present", _folderExists(folder));
+		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
 	}
 
 	@Test
@@ -641,7 +645,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	protected Object doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		boolean streamable = actor.canProvideOutputStream();
-		assertEquals("streamability", expectStreamable, streamable);
+		assertEquals(expectStreamable, streamable, "streamability");
 		if (viaOutputStream && streamable) {
 			MessageOutputStream mos = actor.provideOutputStream(session, null);
 			StreamUtil.copyStream(message.asInputStream(), mos.asStream(), 1000);
@@ -1077,10 +1081,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 
 		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
-		assertTrue("last backup with no "+lastSavedBackup+" does not exist",fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)));
+		assertTrue(fileSystem.exists(fileSystem.toFile(filename+"."+lastSavedBackup)), "last backup with no "+lastSavedBackup+" does not exist");
 		for (int i=1;i<=numOfBackups;i++) {
 			String actualContentsi = readFile(null, filename+"."+i);
-			assertEquals("contents of backup no "+i+" is not correct",(contents+(numOfWrites-1-i)).trim(), actualContentsi.trim());
+			assertEquals((contents+(numOfWrites-1-i)).trim(), actualContentsi.trim(),"contents of backup no "+i+" is not correct");
 		}
 	}
 
@@ -1173,8 +1177,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction(FileSystemAction.MOVE);
-		exception.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
-		actor.configure(fileSystem,null,owner);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem,null,owner));
+		assertThat(e.getMessage(), endsWith("the [MOVE] action requires the parameter [destination] or the attribute [destination] to be present"));
 	}
 
 	public void fileSystemActorMoveActionTest(String srcFolder, String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
@@ -1214,7 +1219,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertFalse("file should not exist anymore in original folder ["+srcFolder+"]", _fileExists(srcFolder, filename));
+		assertFalse(_fileExists(srcFolder, filename), "file should not exist anymore in original folder ["+srcFolder+"]");
 	}
 
 
@@ -1228,8 +1233,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		exception.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
-		fileSystemActorMoveActionTest(null,"folder",false,false);
+		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystemActorMoveActionTest(null,"folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File [sendermovefile1.txt]: destination folder [folder] does not exist"));
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreate() throws Exception {
@@ -1263,10 +1268,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Object result = actor.doAction(message, pvl, session);
 
 		assertNotNull(result);
-		assertFalse("file should not exist anymore in original folder", _fileExists(filename));
-		assertTrue("file should not exist anymore in original folder", _fileExists(destinationFolder, filename));
+		assertFalse(_fileExists(filename), "file should not exist anymore in original folder");
+		assertTrue(_fileExists(destinationFolder, filename),"file should not exist anymore in original folder");
 
-		assertFalse("Expected parent folder not to be present", _folderExists("innerFolder"));
+		assertFalse(_folderExists("innerFolder"), "Expected parent folder not to be present");
 	}
 //	@Test
 //	public void fileSystemSenderMoveActionTestFolderToRoot() throws Exception {
@@ -1403,7 +1408,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		// TODO: contents of result should be contents of original file
 
 		// assertTrue("file should exist in destination folder ["+folder2+"]", _fileExists(folder2, filename)); // does not have to be this way. filename may have changed.
-		assertTrue("file should still exist anymore in original folder ["+folder1+"]", _fileExists(folder1, filename));
+		assertTrue(_fileExists(folder1, filename), "file should still exist anymore in original folder ["+folder1+"]");
 	}
 
 	@Test
@@ -1433,8 +1438,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		boolean actual = _folderExists(folder);
 		// test
-		assertEquals("result of actor should be name of created folder",folder,result);
-		assertTrue("Expected folder [" + folder + "] to be present", actual);
+		assertEquals(folder,result, "result of actor should be name of created folder");
+		assertTrue(actual, "Expected folder [" + folder + "] to be present");
 	}
 
 	@Test
@@ -1454,12 +1459,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals("result of actor should be name of removed folder",folder,result);
+		assertEquals(folder,result,"result of actor should be name of removed folder");
 		waitForActionToFinish();
 
 		boolean actual = _folderExists(folder);
 		// test
-		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
+		assertFalse(actual, "Expected folder [" + folder + "] " + "not to be present");
 	}
 	@Test
 	public void fileSystemActorRmNonEmptyDirActionTest() throws Exception {
@@ -1487,17 +1492,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals("result of actor should be name of removed folder",folder,result);
+		assertEquals(folder,result,"result of actor should be name of removed folder");
 		waitForActionToFinish();
 
 		boolean actual = _folderExists(folder);
 		// test
-		assertFalse("Expected folder [" + folder + "] " + "not to be present", actual);
+		assertFalse(actual, "Expected folder [" + folder + "] " + "not to be present");
 	}
 
 	@Test
 	public void fileSystemActorAttemptToRmNonEmptyDir() throws Exception {
-		exception.expectMessage("Cannot remove folder");
 		String folder = DIR1;
 		String innerFolder = DIR1+"/innerFolder";
 		if (!_folderExists(DIR1)) {
@@ -1518,8 +1522,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
-		actor.doAction(message, pvl, session);
-
+		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
 	}
 
 	@Test
@@ -1542,8 +1546,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be name of deleted file",filename,result);
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+		assertEquals(filename,result,"result of sender should be name of deleted file");
+		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 	}
 
 	@Test
@@ -1567,9 +1571,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals("result of sender should be name of deleted file", filename, result);
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
-		assertFalse("Expected parent folder not to be present", _folderExists(folder));
+		assertEquals(filename, result,"result of sender should be name of deleted file");
+		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
+		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
 	}
 
 	@Test
@@ -1594,9 +1598,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", _fileExists(filename));
-		assertTrue("Expected parent folder to be present", _folderExists(folder));
-		assertTrue("Expected parent folder to be present", _folderExists(folder+"/innerFolder1"));
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present");
+		assertTrue(_folderExists(folder), "Expected parent folder to be present");
+		assertTrue(_folderExists(folder+"/innerFolder1"), "Expected parent folder to be present");
 	}
 
 	@Test
@@ -1702,15 +1706,15 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Object result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals("result of actor should be name of new file",dest,result);
+		assertEquals(dest,result,"result of actor should be name of new file");
 
 		boolean actual = _fileExists(filename);
 		// test
-		assertFalse("Expected file [" + filename + "] " + "not to be present", actual);
+		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 
 		actual = _fileExists(dest);
 		// test
-		assertTrue("Expected file [" + dest + "] " + "to be present", actual);
+		assertTrue(actual, "Expected file [" + dest + "] " + "to be present");
 	}
 
 	@Test
@@ -1727,11 +1731,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		boolean actual = _fileExists(filename);
 
-		assertTrue("Expected file [" + filename + "] " + "to be present", actual);
+		assertTrue(actual, "Expected file [" + filename + "] " + "to be present");
 
 		InputStream contents = _readFile(null, filename);
 		// test
-		assertEquals("Expected file [" + filename + "] " + "to be empty", "", Message.asMessage(contents).asString());
+		assertEquals("", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
 	}
 
 	@Test
@@ -1752,11 +1756,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		boolean actual = _fileExists(filename);
 
-		assertTrue("Expected file [" + filename + "] " + "to be present", actual);
+		assertTrue(actual, "Expected file [" + filename + "] " + "to be present");
 
 		InputStream contents = _readFile(null, filename);
 		// test
-		assertEquals("Expected file [" + filename + "] " + "to be empty", "", Message.asMessage(contents).asString());
+		assertEquals( "", Message.asMessage(contents).asString(), "Expected file [" + filename + "] " + "to be empty");
 	}
 
 	@Test

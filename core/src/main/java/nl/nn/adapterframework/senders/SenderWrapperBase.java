@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
@@ -99,27 +98,30 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 
-	@IbisDoc({"If set, input is taken from this session key, instead of regular input", ""})
+	/** If set, input is taken from this session key, instead of regular input */
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
 
-	@IbisDoc({"If set, this fixed value is taken as input, instead of regular input", ""})
+	/** If set, this fixed value is taken as input, instead of regular input */
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	/**
+	 * If set <code>true</code>, the input of a pipe is restored before processing the next one
+	 * @ff.default false
+	 */
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
 
-	@IbisDoc({"If set, the result is stored under this session key", ""})
+	/** If set, the result is stored under this session key */
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
 
-	@IbisDoc({"If set, the input is stored under this session key", ""})
+	/** If set, the input is stored under this session key */
 	public void setStoreInputInSessionKey(String string) {
 		storeInputInSessionKey = string;
 	}

@@ -172,7 +172,7 @@ public class Misc {
 
 		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
 		StringBuilder s = new StringBuilder();
-		s.append(ia).append(getCurrentTimeMillis()).append(hash);
+		s.append(ia).append(System.currentTimeMillis()).append(hash);
 
 		return s.toString();
 	}
@@ -189,13 +189,6 @@ public class Misc {
 	 */
 	public static int unsignedByteToInt(byte b) {
 		return b & 0xFF;
-	}
-
-	/**
-	 * @return the current time in milliseconds.
-	 */
-	public static synchronized long getCurrentTimeMillis(){
-		return System.currentTimeMillis();
 	}
 
 	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
@@ -218,24 +211,6 @@ public class Misc {
 			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
 		}
 		return url;
-	}
-
-	/**
-	 * Copies the content of the specified file to a writer.
-	 *
-	 * <p>
-	 *     Example:
-	 *     <pre>
-	 *         Writer writer = new StringWriter();
-	 *         Misc.fileToWriter(someFileName, writer);
-	 *         System.out.println(writer.toString) // prints the content of the writer
-	 *         				       // that's copied from the file.
-	 *     </pre>
-	 * </p>
-	 * @throws IOException exception to be thrown exception to be thrown if an I/O exception occurs
-	 */
-	public static void fileToWriter(String filename, Writer writer) throws IOException {
-		readerToWriter(new FileReader(filename), writer);
 	}
 
 	/**

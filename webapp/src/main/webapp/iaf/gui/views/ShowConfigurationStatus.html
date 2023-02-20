@@ -336,7 +336,7 @@
                                             <th>Retried</th>
                                             <th>Received</th>
                                             <th>Rejected</th>
-                                            <th>Threads</th>
+                                            <th></th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -347,14 +347,13 @@
                                             <td>{{::receiver.messages.retried}}</td>
                                             <td>{{::receiver.messages.received}}</td>
                                             <td>{{::receiver.messages.rejected}}</td>
-                                            <td ng-if="::receiver.threadCount">{{::receiver.threadCount}}/{{::receiver.maxThreadCount}} Threads
+                                            <td ng-if="::receiver.threadCount != undefined">{{::receiver.threadCount}}/{{::receiver.maxThreadCount}} Threads
                                                 <span ng-if="::receiver.threadCountControllable">
                                                     <button ng-disabled="receiver.state=='loading'" class="btn btn-xs btn-default m-l-xs" ng-click="addThread(adapter, receiver)" type="button" title="Increase the maximum numbers of threads"><i class="fa fa-plus"></i> Inc</button>
                                                     <button ng-disabled="receiver.state=='loading' || receiver.maxThreadCount < 2" class="btn btn-xs btn-default m-l-xs" ng-click="removeThread(adapter, receiver)" type="button" title="Decrease the maximum numbers of threads"><i class="fa fa-minus"></i> Dec</button>
                                                 </span>
                                             </td>
-                                            <td ng-if="!receiver.threadCount && receiver.state =='started'">1 Thread</td>
-                                            <td ng-if="!receiver.threadCount && receiver.state !='started'">-</td>
+                                            <td ng-if="::receiver.threadCount == undefined"></td>
                                             <td>
                                                 <span class="pull-right">
                                                 	<span ng-repeat="store in receiver.transactionalStores">

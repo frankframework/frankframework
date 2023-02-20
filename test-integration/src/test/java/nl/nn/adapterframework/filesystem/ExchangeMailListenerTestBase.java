@@ -15,7 +15,6 @@ import java.util.Properties;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -285,8 +284,9 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -330,8 +330,9 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -381,8 +382,9 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -432,8 +434,9 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getMessage());
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
 
 		System.out.println("message ["+message+"]");
@@ -468,7 +471,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		Map<String,Object> threadContext=new HashMap<String,Object>();
 
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);
 	}
 
@@ -571,7 +574,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.configure();
 		mailListener.open();
 
-		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
 
 		int messageCount = browser.getMessageCount();
@@ -590,7 +593,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 			}
 		}
 		for (String id:itemIds) {
-			EmailMessage email = browser.browseMessage(id);
+			ExchangeMessageReference email = browser.browseMessage(id);
 			Message message = mailListener.getFileSystem().readFile(email, null);
 			log.debug("Id: "+id+"\nEmail: "+message.asString());
 		}
@@ -604,7 +607,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.open();
 		mailListener.close();
 
-		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
 
 		assertEquals(-1, browser.getMessageCount());
@@ -622,7 +625,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 			}
 		}
 		for (String id:itemIds) {
-			EmailMessage email = browser.browseMessage(id);
+			ExchangeMessageReference email = browser.browseMessage(id);
 			Message message = mailListener.getFileSystem().readFile(email, null);
 			log.debug("Id: "+id+"\nEmail: "+message.asString());
 		}
@@ -634,7 +637,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.configure();
 		mailListener.open();
 
-		IMessageBrowser<EmailMessage> browser = mailListener.getMessageBrowser(ProcessState.DONE);
+		IMessageBrowser<ExchangeMessageReference> browser = mailListener.getMessageBrowser(ProcessState.DONE);
 		assertNotNull(browser);
 
 		MessageBrowsingFilter filter = new MessageBrowsingFilter();

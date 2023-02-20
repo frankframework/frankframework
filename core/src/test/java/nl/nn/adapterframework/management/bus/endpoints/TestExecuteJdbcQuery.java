@@ -2,7 +2,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -47,6 +47,6 @@ public class TestExecuteJdbcQuery extends BusTestBase {
 		//Test with CSV resultType
 		request.setHeader("resultType", "csv");
 		String expectedCsv = TestFileUtils.getTestFile("/Management/ExecuteJdbcQueryMessage.csv");
-		TestAssertions.assertEqualsIgnoreCRLF("CSV Mismatch", expectedCsv, (String) callSyncGateway(request).getPayload());
+		TestAssertions.assertEqualsIgnoreCRLF(expectedCsv, (String) callSyncGateway(request).getPayload(), "CSV Mismatch");
 	}
 }

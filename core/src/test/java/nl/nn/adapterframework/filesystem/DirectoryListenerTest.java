@@ -2,26 +2,27 @@ package nl.nn.adapterframework.filesystem;
 
 import java.nio.file.Path;
 
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.receivers.DirectoryListener;
 
 public class DirectoryListenerTest extends FileSystemListenerTest<Path, LocalFileSystem> {
 
-	public TemporaryFolder folder;
+	@TempDir
+	public Path folder;
 	
 	@Override
 	public FileSystemListener<Path, LocalFileSystem> createFileSystemListener() {
 		DirectoryListener result=new DirectoryListener();
-		result.setInputDirectory(folder.getRoot().getAbsolutePath());
-		fileAndFolderPrefix=folder.getRoot().getAbsolutePath()+"/";
+		result.setInputFolder(folder.toAbsolutePath().toString());
+		fileAndFolderPrefix=folder.toAbsolutePath()+"/";
 		return result;
 	}
 	
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		folder = new TemporaryFolder();
-		folder.create();
 		super.setUp();
 	}
 	

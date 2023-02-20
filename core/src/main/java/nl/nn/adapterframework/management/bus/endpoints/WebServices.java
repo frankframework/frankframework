@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,34 +27,53 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.http.RestListener;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
+import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessage.Builder;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 @BusAware("frank-management-bus")
+@TopicSelector(BusTopic.WEBSERVICES)
 public class WebServices extends BusEndpointBase {
-	private static final String WSDL_EXTENSION = ".wsdl";
+	private enum ServiceType {
+		WSDL, OPENAPI
+	}
 
-	@TopicSelector(BusTopic.WEBSERVICES)
+	@ActionSelector(BusAction.GET)
 	public Message<String> getWebServices(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
 
@@ -60,6 +82,100 @@ public class WebServices extends BusEndpointBase {
 		returnMap.put("apiListeners", getApiListeners());
 
 		return ResponseMessage.ok(returnMap);
+	}
+
+	@ActionSelector(BusAction.DOWNLOAD)
+	public Message<?> getService(Message<?> message) {
+		ServiceType type = BusMessageUtils.getEnumHeader(message, "type", ServiceType.class);
+		if(type == ServiceType.OPENAPI) {
+			return getOpenApiSpec(message);
+		} else {
+			return getWSDL(message);
+		}
+	}
+
+	public Message<?> getOpenApiSpec(Message<?> message) {
+		String uri = BusMessageUtils.getHeader(message, "uri", null);
+
+		JsonObject jsonSchema = null;
+		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
+		if(uri != null) {
+			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+			if(apiConfig == null) {
+				throw new BusException("unable to find Dispatch configuration for uri");
+			}
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
+		} else {
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(null);
+		}
+
+		Map<String, Boolean> config = new HashMap<>();
+		config.put(JsonGenerator.PRETTY_PRINTING, true);
+		JsonWriterFactory factory = Json.createWriterFactory(config);
+		StringWriter writer = new StringWriter();
+		try (JsonWriter jsonWriter = factory.createWriter(writer)) {
+			jsonWriter.write(jsonSchema);
+		}
+
+		return ResponseMessage.Builder.create().withPayload(writer.toString()).withMimeType(MediaType.APPLICATION_JSON).raw();
+	}
+
+	public Message<?> getWSDL(Message<?> message) {
+		boolean indent = BusMessageUtils.getBooleanHeader(message, "indent", true);
+		boolean useIncludes = BusMessageUtils.getBooleanHeader(message, "useIncludes", false);
+		boolean zip = BusMessageUtils.getBooleanHeader(message, "zip", false);
+
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
+
+		String generationInfo = "by FrankConsole";
+		WsdlGenerator wsdl = null;
+		try {
+			wsdl = new WsdlGenerator(adapter.getPipeLine(), generationInfo);
+			wsdl.setIndent(indent);
+			wsdl.setUseIncludes(useIncludes||zip);
+			wsdl.init();
+		} catch (Exception e) {
+			throw new BusException("unable to create WSDL generator", e);
+		}
+
+		Builder response = ResponseMessage.Builder.create();
+
+		try {
+			String servletName = getServiceEndpoint(adapter);
+			ByteArrayOutputStream boas = new ByteArrayOutputStream();
+			if (zip) {
+				wsdl.zip(boas, servletName);
+				response.withMimeType(MediaType.APPLICATION_OCTET_STREAM);
+				response.withFilename(adapterName+".zip");
+			} else {
+				wsdl.wsdl(boas, servletName);
+				response.withMimeType(MediaType.APPLICATION_XML);
+			}
+			response.withPayload(boas.toByteArray());
+		} catch (IOException | ConfigurationException | XMLStreamException e) {
+			throw new BusException("unable to generate WSDL", e);
+		}
+
+		return response.raw();
+	}
+
+	private String getServiceEndpoint(IAdapter adapter) {
+		String endpoint = "external address of ibis";
+		for(Receiver<?> receiver : adapter.getReceivers()) {
+			IListener<?> listener = receiver.getListener();
+			if(listener instanceof WebServiceListener) {
+				String address = ((WebServiceListener) listener).getAddress();
+				if(StringUtils.isNotEmpty(address)) {
+					endpoint = address;
+				} else {
+					endpoint = "rpcrouter";
+				}
+				return "/services/" + endpoint;
+			}
+		}
+		return endpoint;
 	}
 
 	private List<ListenerDAO> getApiListeners() {
@@ -87,22 +203,20 @@ public class WebServices extends BusEndpointBase {
 		List<Map<String, Object>> wsdls = new ArrayList<>();
 		for (Configuration config : getIbisManager().getConfigurations()) {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
-				Map<String, Object> wsdlMap = null;
+				Map<String, Object> wsdlMap = new HashMap<>(3);
+				wsdlMap.put("configuration", config.getName());
+				wsdlMap.put("adapter", adapter.getName());
 				try {
 					if(WsdlGeneratorUtils.canProvideWSDL(adapter)) { // check eligibility
-						wsdlMap = new HashMap<>(2);
 						WsdlGenerator wsdl = new WsdlGenerator(adapter.getPipeLine());
 						wsdlMap.put("name", wsdl.getName());
-						wsdlMap.put("extension", WSDL_EXTENSION);
+						wsdls.add(wsdlMap);
 					}
 				} catch (Exception e) {
-					wsdlMap = new HashMap<>(2);
-					wsdlMap.put("name", adapter.getName());
 					wsdlMap.put("error", e.getMessage() != null ? e.getMessage() : e.toString());
-				}
-				if(wsdlMap != null) {
 					wsdls.add(wsdlMap);
 				}
+
 			}
 		}
 		return wsdls;

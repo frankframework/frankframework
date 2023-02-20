@@ -19,7 +19,6 @@ import java.io.Reader;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -39,12 +38,18 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 		}
 	}
 
-	@IbisDoc({"charset used to read and write blobs", "utf-8"})
+	/**
+	 * charset used to read and write blobs
+	 * @ff.default utf-8
+	 */
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
+	/**
+	 * controls whether blobdata is stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

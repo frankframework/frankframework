@@ -74,7 +74,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setType(ParameterType.DOMDOC);
 		inputParameter.setRemoveNamespaces(true);
-		
+
 		pipe.addParameter(inputParameter);
 		pipe.setXsltVersion(1);
 		pipe.setXpathExpression("$source/Envelope/Body/SetRequest/CaseData/CASE_ID");
@@ -126,11 +126,11 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("false","dummy-Path"));
 
 		session=new PipeLineSession();
-		session.put("originalMessage", message);
+		session.put(PipeLineSession.originalMessageKey, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}
-	
+
 	@Test
 	public void testXsltVersionAutoDetect() throws Exception {
 		String message = "<root>2</root>";
@@ -149,7 +149,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("false","dummy-Path"));
 
 		session=new PipeLineSession();
-		session.put("originalMessage", message);
+		session.put(PipeLineSession.originalMessageKey, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}
@@ -181,7 +181,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
 		testSwitch(input,"selectValue");
 	}
-	
+
 	@Test
 	public void storeForwardInSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
@@ -275,7 +275,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		session.put("input", input);
 		testSwitch(input,"dummy");
 	}
-	
+
 	@Test
 	public void configureNotFoundForwardNotRegistered() throws Exception {
 		pipe.setXpathExpression("name(/node()[position()=last()])");

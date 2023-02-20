@@ -16,15 +16,16 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -41,6 +43,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -53,11 +58,14 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -114,6 +122,13 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
+	private static String createEndpointUrlFromRequest(HttpServletRequest request) {
+		String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
+		requestUrl = Misc.urlDecode(requestUrl);
+		String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
+		return requestUrl.substring(0, requestUrl.indexOf(requestPath));
+	}
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -143,51 +158,57 @@ public class ApiListenerServlet extends HttpServletBase {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/**
-		 * Generate OpenApi specification
-		 */
-		if(uri.equalsIgnoreCase("/openapi.json")) {
-			String specUri = request.getParameter("uri");
-			JsonObject jsonSchema = null;
-			if(specUri != null) {
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-				if(apiConfig != null) {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+		try {
+			/*
+			 * Generate OpenApi specification
+			 */
+			if(uri.equalsIgnoreCase("/openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
+				String specUri = request.getParameter("uri");
+				JsonObject jsonSchema = null;
+				if(specUri != null) {
+					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+					if(apiConfig != null) {
+						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+					}
+				} else {
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
 				}
-			} else {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
-			}
-			if(jsonSchema != null) {
-				returnJson(response, 200, jsonSchema);
+				if(jsonSchema != null) {
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		/**
-		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-		 * @Deprecated This is here to support old url's
-		 */
-		if(uri.endsWith("openapi.json")) {
-			uri = uri.substring(0, uri.lastIndexOf("/"));
-			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
-				returnJson(response, 200, jsonSchema);
+			/*
+			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+			 * @Deprecated This is here to support old url's
+			 */
+			if(uri.endsWith("openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
+				uri = uri.substring(0, uri.lastIndexOf("/"));
+				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+				if(apiConfig != null) {
+					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		handleRequest(request, response, method, uri);
+			handleRequest(request, response, method, uri);
+		} finally {
+			ThreadContext.clearAll();
+		}
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
 		String remoteUser = request.getRemoteUser();
 
-		/**
+		/*
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
@@ -204,7 +225,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					return;
 				}
 
-				/**
+				/*
 				 * Handle Cross-Origin Resource Sharing
 				 * TODO make this work behind loadbalancers/reverse proxies
 				 * TODO check if request ip/origin header matches allowOrigin property
@@ -231,7 +252,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Get serviceClient
 				 */
 				ApiListener listener = config.getApiListener(method);
@@ -243,7 +264,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 
-				/**
+				/*
 				 * Check authentication
 				 */
 				ApiPrincipal userPrincipal = null;
@@ -345,26 +366,23 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageContext.put("authorizationToken", authorizationToken);
 					}
 				}
-				//Remove this? it's now available as header value
+				// Remove this? it's now available as header value
 				messageContext.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
 					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				messageContext.put("uri", uri);
 
-				/**
+				/*
 				 * Evaluate preconditions
 				 */
-				String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotEmpty(acceptHeader)) { //If an Accept header is present, make sure we comply to it!
-					if(!listener.accepts(acceptHeader)) {
-						response.setStatus(406);
-						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
-						return;
-					}
+				final String acceptHeader = request.getHeader("Accept");
+				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
+					response.sendError(406, "endpoint cannot provide the supplied MimeType");
+					return;
 				}
 
-				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
+				if(!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;
@@ -395,12 +413,12 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
 
-				/**
+				/*
 				 * Check authorization
 				 */
 				//TODO: authentication implementation
 
-				/**
+				/*
 				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
@@ -424,7 +442,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Map queryParameters into messageContext
 				 */
 				Enumeration<String> paramnames = request.getParameterNames();
@@ -443,7 +461,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
@@ -467,7 +485,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					messageContext.put("headers", headersXml.toXML());
 				}
 
-				/**
+				/*
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
@@ -522,43 +540,31 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						messageContext.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
-						throw new IOException("Could not read mime multipart response", e);
+						response.sendError(400, "Could not read mime multipart response");
+						log.warn(createAbortMessage(remoteUser, 400) + "Could not read mime multipart response");
+						return;
 					}
 				} else {
 					body = MessageUtils.parseContentAsMessage(request);
 				}
 
-				/**
+				/*
 				 * Compile Allow header
 				 */
 				StringBuilder methods = new StringBuilder();
 				methods.append("OPTIONS, ");
 				for (HttpMethod mtd : config.getMethods()) {
-					methods.append(mtd + ", ");
+					methods.append(mtd).append(", ");
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
 
-				String messageId = null;
-				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
-					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
-					if(StringUtils.isNotEmpty(messageIdHeader)) {
-						messageId = messageIdHeader;
-					}
-				}
-				String correlationId = null;
-				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
-					String correlationIdHeaderValue = request.getHeader(listener.getCorrelationIdHeader());
-					if(StringUtils.isNotEmpty(correlationIdHeaderValue)) {
-						messageId = correlationIdHeaderValue;
-					}
-				}
-				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
-					correlationId = messageId;
-				}
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
+				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
 				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+
 				Message result = listener.processRequest(body, messageContext);
 
-				/**
+				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
 				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
@@ -594,57 +600,67 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 
-				/**
+				/*
+				 * If a Last Modified value is present, set the 'Last-Modified' header.
+				 */
+				long lastModDate = Instant.now().toEpochMilli();
+				if(!Message.isEmpty(result)) {
+					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
+					if(StringUtils.isNotEmpty(lastModified)) {
+						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						if(date != null) {
+							lastModDate = date.getTime();
+						}
+					}
+				}
+				response.setDateHeader("Last-Modified", lastModDate);
+				// If no eTag header is present, disable browser caching. Else force browser to revalidate the request.
+				StringBuilder cacheControl = new StringBuilder();
+				if(!response.containsHeader("etag")) {
+					cacheControl.append("no-store, no-cache, ");
+					response.setHeader("Pragma", "no-cache");
+					log.trace("disabling cache for uri [{}]", request::getRequestURI);
+				}
+				cacheControl.append("must-revalidate, max-age=0, post-check=0, pre-check=0");
+				response.setHeader("Cache-Control", cacheControl.toString());
+
+				/*
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				MimeType contentType = listener.getContentType();
-				if(listener.getProduces() == MediaTypes.ANY) {
-					Message parsedContentType = messageContext.getMessage("contentType");
-					if(!Message.isEmpty(parsedContentType)) {
-						contentType = MimeType.valueOf(parsedContentType.asString());
-					} else {
-						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-						if(providedContentType != null) {
-							contentType = providedContentType;
+				if (!Message.isEmpty(result)) {
+					MimeType contentType = determineContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
+
+					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+						String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+						if(StringUtils.isNotEmpty(contentDisposition)) {
+							log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
+							response.setHeader("Content-Disposition", contentDisposition);
 						}
 					}
-				} else if(listener.getProduces() == MediaTypes.DETECT) {
-					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-					if(computedContentType != null) {
-						contentType = computedContentType;
-					}
-				}
-				response.setHeader("Content-Type", contentType.toString());
-
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
-					if(StringUtils.isNotEmpty(contentDisposition)) {
-						log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
-						response.setHeader("Content-Disposition", contentDisposition);
-					}
 				}
 
-				/**
-				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
+				/*
+				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
-				/**
+				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
-				if(!Message.isEmpty(result)) {
-					if(result.isBinary()) {
-						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
-					} else {
-						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
-					}
+				final boolean outputWritten = writeToResponseStream(response, result);
+				if (!outputWritten) {
+					log.debug("No output written, set content-type header to null");
+					response.resetBuffer();
+					response.setContentType(null);
 				}
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
+
+				log.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
 				log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
@@ -653,12 +669,71 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				}
 				catch (IOException | IllegalStateException ex) {
-					log.warn("an error occured while tyring to handle exception ["+e.getMessage()+"]", ex);
+					log.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
+	}
+
+	private static MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+		if(listener.getProduces() == MediaTypes.ANY) {
+			Message parsedContentType = messageContext.getMessage("contentType");
+			if(!Message.isEmpty(parsedContentType)) {
+				return MimeType.valueOf(parsedContentType.asString());
+			} else {
+				MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+				if(providedContentType != null) {
+					return providedContentType;
+				}
+			}
+		} else if(listener.getProduces() == MediaTypes.DETECT) {
+			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+			if(computedContentType != null) {
+				return computedContentType;
+			}
+		}
+		return listener.getContentType();
+	}
+
+	/**
+	 * Write the result to the response, if any data is available. If no data is
+	 * available, then the output-stream or output-writer of the response will not
+	 * be accessed and the method returns false. If data is available, the method
+	 * returns true and the data will be
+	 * written to the output-stream if the message is binary or to the output-writer
+	 * otherwise.
+	 *
+	 * @param response {@link HttpServletResponse} to which data should be written. If
+	 *                                            no data is available, the output-stream or
+	 *                                            output-writer will not be accessed.
+	 * @param result {@link Message} whose data will be written to the response, if any is available.
+	 * @return {@code true} if data was written, {@code false} if not.
+	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
+	 */
+	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		if (!Message.hasDataAvailable(result)) {
+			return false;
+		}
+		if (result.isBinary()) {
+			try (InputStream in = result.asInputStream()) {
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+			}
+		} else {
+			try (Reader reader = result.asReader()) {
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
+			}
+		}
+		return true;
+	}
+
+	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {
+		if (StringUtils.isBlank(headerName)) {
+			return defaultValue;
+		}
+		final String headerValue = request.getHeader(headerName);
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
 	@Override

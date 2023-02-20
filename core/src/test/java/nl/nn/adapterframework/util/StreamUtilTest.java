@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil.MarkCompensatingOutputStream;

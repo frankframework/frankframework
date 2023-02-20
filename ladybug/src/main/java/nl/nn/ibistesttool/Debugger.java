@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
@@ -34,11 +36,12 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -56,7 +59,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
 
 	private TestTool testTool;
-	protected IbisManager ibisManager;
+	protected @Setter @Getter IbisManager ibisManager;
 	private PipeDescriptionProvider pipeDescriptionProvider;
 	private List<String> testerRoles;
 
@@ -64,11 +67,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
-	}
-
-	@Override
-	public void setIbisManager(IbisManager ibisManager) {
-		this.ibisManager = ibisManager;
 	}
 
 	public void setPipeDescriptionProvider(PipeDescriptionProvider pipeDescriptionProvider) {
@@ -272,32 +270,43 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 				Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
 				IAdapter adapter = getRegisteredAdapter(pipelineName);
 				if (adapter != null) {
-					synchronized(inRerun) {
-						inRerun.add(correlationId);
-					}
-					try {
-						// Try with resource will make sure pipeLineSession is closed and all (possibly opened) streams
-						// are also closed and the generated report will not remain in progress
-						try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-							while (checkpoints.size() > i + 1) {
-								i++;
-								checkpoint = checkpoints.get(i);
-								checkpointName = checkpoint.getName();
-								if (checkpointName.startsWith("SessionKey ")) {
-									String sessionKey = checkpointName.substring("SessionKey ".length());
-									if (!sessionKey.equals("messageId") && !sessionKey.equals("originalMessage")) {
-										pipeLineSession.put(sessionKey, checkpoint.getMessage());
-									}
-								} else {
-									i = checkpoints.size();
-								}
-							}
-							adapter.processMessage(correlationId, inputMessage, pipeLineSession);
-						}
-					} finally {
+					RunState runState = adapter.getRunState();
+					if (runState == RunState.STARTED) {
 						synchronized(inRerun) {
-							inRerun.remove(correlationId);
+							inRerun.add(correlationId);
 						}
+						try {
+							// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
+							// streams are also closed and the generated report will not remain in progress
+							try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+								while (checkpoints.size() > i + 1) {
+									i++;
+									checkpoint = checkpoints.get(i);
+									checkpointName = checkpoint.getName();
+									if (checkpointName.startsWith("SessionKey ")) {
+										String sessionKey = checkpointName.substring("SessionKey ".length());
+										if (!sessionKey.equals("cid") && !sessionKey.equals("mid")
+												// messageId and id were used before 7.9
+												&& !sessionKey.equals("messageId") && !sessionKey.equals("id")
+												&& !sessionKey.equals("originalMessage")) {
+											pipeLineSession.put(sessionKey, checkpoint.getMessage());
+										}
+									} else {
+										i = checkpoints.size();
+									}
+								}
+								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
+								String messageId = "ladybug-testmessage" + Misc.createSimpleUUID();
+								pipeLineSession.put(PipeLineSession.correlationIdKey, correlationId);
+								adapter.processMessage(messageId, inputMessage, pipeLineSession);
+							}
+						} finally {
+							synchronized(inRerun) {
+								inRerun.remove(correlationId);
+							}
+						}
+					} else {
+						errorMessage = "Adapter in state '" + runState + "'";
 					}
 				} else {
 					errorMessage = "Adapter '" + pipelineName + "' not found";

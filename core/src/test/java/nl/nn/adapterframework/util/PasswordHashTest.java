@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PasswordHashTest {
 
@@ -25,8 +25,8 @@ public class PasswordHashTest {
 			assertNotEquals("TWO HASHES ARE EQUAL", hash, secondHash);
 
 			String wrongPassword = "" + (i + 1);
-			assertFalse("WRONG PASSWORD ACCEPTED", PasswordHash.validatePassword(wrongPassword, hash));
-			assertTrue("GOOD PASSWORD NOT ACCEPTED", PasswordHash.validatePassword(password, hash));
+			assertFalse(PasswordHash.validatePassword(wrongPassword, hash), "WRONG PASSWORD ACCEPTED");
+			assertTrue(PasswordHash.validatePassword(password, hash), "GOOD PASSWORD NOT ACCEPTED");
 		}
 	}
 }

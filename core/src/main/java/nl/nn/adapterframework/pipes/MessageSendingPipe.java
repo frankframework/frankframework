@@ -58,7 +58,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -1008,7 +1007,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 
-	/**
+	/*
 	 * For asynchronous communication, the server side may either use the messageID or the correlationID
 	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
 	 * <ul>
@@ -1024,89 +1023,100 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 *
 	 * @param method either MESSAGEID or CORRELATIONID
 	 */
-	@IbisDoc({"For asynchronous communication, the server side may either use the messageID or the correlationID "
-		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "CORRELATIONID"})
+	/** For asynchronous communication, the server side may either use the messageID or the correlationID
+	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
+	 * @ff.default CORRELATIONID
+	 */
 	public void setLinkMethod(LinkMethod method) {
 		linkMethod = method;
 	}
 
 
-	@IbisDoc({"Stylesheet to extract correlationid from message", ""})
+	/** Stylesheet to extract correlationid from message */
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
 
-	@IbisDoc({"XPath expression to extract correlationid from message", ""})
+	/** XPath expression to extract correlationid from message */
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
+	/** Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message", ""})
+	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as input for the XPathExpression or stylesheet, instead of the current input message */
 	public void setCorrelationIDSessionKey(String string) {
 		correlationIDSessionKey = string;
 	}
 
 
-	@IbisDoc({"Stylesheet to extract label from message", ""})
+	/** Stylesheet to extract label from message */
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
 
-	@IbisDoc({"XPath expression to extract label from message", ""})
+	/** XPath expression to extract label from message */
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
+	/** Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;
 	}
 
 
-	@IbisDoc({"XPath expression to extract audit trail from message", ""})
+	/** XPath expression to extract audit trail from message */
 	public void setAuditTrailXPath(String string) {
 		auditTrailXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
+	/** Namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
 
-	@IbisDoc({"Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail)", ""})
+	/** Key of a PipelineSession-variable. If specified, the value of the PipelineSession variable is used as audit trail (instead of the default 'no audit trail) */
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
+	/**
+	 * If set <code>true</code>, the input of the Pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)
+	 * @ff.default true
+	 */
 	public void setUseInputForExtract(boolean b) {
 		useInputForExtract = b;
 	}
 
 	@Override
-	@IbisDoc({"Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
+	/** Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked */
 	public void setHideRegex(String hideRegex) {
 		super.setHideRegex(hideRegex);
 	}
 
-	@IbisDoc({"(Only used when hideRegex is not empty and only applies to error/logstore)", "all"})
+	/**
+	 * (Only used when hideRegex is not empty and only applies to error/logstore)
+	 * @ff.default all
+	 */
 	public void setHideMethod(HideMethod hideMethod) {
 		this.hideMethod = hideMethod;
 	}
 
 
 
-	@IbisDoc({"If set <code>true</code>, the XML Well-Formedness of the result is checked", "false"})
+	/**
+	 * If set <code>true</code>, the XML Well-Formedness of the result is checked
+	 * @ff.default false
+	 */
 	public void setCheckXmlWellFormed(boolean b) {
 		checkXmlWellFormed = b;
 	}
 
-	@IbisDoc({"If set, besides the XML Well-Formedness the root element of the result is checked to be equal to the value set", ""})
+	/** If set, besides the XML Well-Formedness the root element of the result is checked to be equal to the value set */
 	public void setCheckRootTag(String s) {
 		checkRootTag = s;
 	}
@@ -1123,39 +1133,54 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		resultOnTimeOut = newResultOnTimeOut;
 	}
 
-	@IbisDoc({"The number of times a processing attempt is retried after a timeout or an exception is caught or after an incorrect reply is received (see also <code>retryXPath</code>)", "0"})
+	/**
+	 * The number of times a processing attempt is retried after a timeout or an exception is caught or after an incorrect reply is received (see also <code>retryXPath</code>)
+	 * @ff.default 0
+	 */
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
 
-	@IbisDoc({"The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code>", "1"})
+	/**
+	 * The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code>
+	 * @ff.default 1
+	 */
 	public void setRetryMinInterval(int i) {
 		retryMinInterval = i;
 	}
 
-	@IbisDoc({"The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
+	/**
+	 * The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made
+	 * @ff.default 600
+	 */
 	public void setRetryMaxInterval(int i) {
 		retryMaxInterval = i;
 	}
 
-	@IbisDoc({"XPath expression evaluated on each technical successful reply. Retry is done if condition returns true", ""})
+	/** XPath expression evaluated on each technical successful reply. Retry is done if condition returns true */
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}
 
-	@IbisDoc({"Namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions", ""})
+	/** Namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceUri</code>-definitions */
 	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 
-	@IbisDoc({"If the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout.", "0"})
+	/**
+	 * If the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout.
+	 * @ff.default 0
+	 */
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Please use a base64pipe to decode the message and send the result to the pipeline exit")
-	@IbisDoc({"If set, the result is first base64 decoded and then streamed to the HttpServletResponse object", "false"})
+	/**
+	 * If set, the result is first base64 decoded and then streamed to the HttpServletResponse object
+	 * @ff.default false
+	 */
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
@@ -1166,17 +1191,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		setStubFilename(fileName);
 	}
 
-	@IbisDoc({"If set, the pipe returns a message from a file, instead of doing the regular process", ""})
+	/** If set, the pipe returns a message from a file, instead of doing the regular process */
 	public void setStubFilename(String filename) {
 		stubFilename = filename;
 	}
 
-	@IbisDoc({"If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)", ""})
+	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only) */
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;
 	}
 
-	@IbisDoc({"If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)", ""})
+	/** If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only) */
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
 	}

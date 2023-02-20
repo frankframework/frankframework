@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
@@ -63,12 +63,13 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@Before
-	public void init() {
+	public void setup() {
 		// Force reconfigure to clean list appender.
-//		Configurator.reconfigure();
-		testAppender = TestAppender.newBuilder().useIbisPatternLayout("%level %m").build();
+		testAppender = TestAppender.newBuilder()
+			.useIbisPatternLayout("%level %m")
+			.minLogLevel(Level.WARN)
+			.build();
 		TestAppender.addToRootLogger(testAppender);
-		Configurator.setLevel("nl.nn.adapterframework", Level.WARN);
 
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
@@ -81,7 +82,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	@After
 	public void tearDown() throws Exception {
 		TestAppender.removeAppender(testAppender);
-		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -49,7 +48,10 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 		setCharset(charset);
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
+	/**
+	 * controls whether blobdata is stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

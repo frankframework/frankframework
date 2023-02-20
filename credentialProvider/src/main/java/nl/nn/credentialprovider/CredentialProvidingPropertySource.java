@@ -33,15 +33,15 @@ import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
  * @author Gerrit van Brakel
  *
  */
-public class CredentialProvidingPropertySource implements PropertySource{
-	
-	public final String DEFAULT_MARKER=":";
-	
+public class CredentialProvidingPropertySource implements PropertySource {
+
+	public static final String DEFAULT_MARKER = ":";
+
 	@Override
 	public String getProperty(String key) {
-		String keyAndDefault[] = key.split(DEFAULT_MARKER);
+		String[] keyAndDefault = key.split(DEFAULT_MARKER);
 
-		String pathElements[] = keyAndDefault[0].split("/"); 
+		String[] pathElements = keyAndDefault[0].split("/");
 		String alias = pathElements[0].trim(); // ignore default value in key, it will be handled by Tomcat when necessary
 		//System.out.println("CredentialProvidingPropertySource key ["+key+"] alias ["+alias+"]");
 
@@ -56,9 +56,10 @@ public class CredentialProvidingPropertySource implements PropertySource{
 			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"] ("+e.getClass().getTypeName()+"): "+e.getMessage());
 			return null;
 		}
+
 		boolean returnPassword = pathElements.length==1 || pathElements[1].trim().equalsIgnoreCase("password");
 		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
-		
+
 		return returnPassword ? credentials.getPassword() : credentials.getUsername();
 	}
 

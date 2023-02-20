@@ -10,11 +10,16 @@
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.19.0</log4j2.version>
+
 		<cxf.version>3.5.5</cxf.version>
+		<spring.version>5.3.25</spring.version>
+		<spring-security.version>5.8.1</spring-security.version>
+		<spring-integration.version>5.5.16</spring-integration.version>
+
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.2</micrometer.version>
+		<micrometer.version>1.10.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -25,10 +30,16 @@
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.31</mysql.driver.version>
-		<mariadb.driver.version>2.7.7</mariadb.driver.version>
-		<postgresql.driver.version>42.5.1</postgresql.driver.version>
-		<mongodb.driver.version>4.8.1</mongodb.driver.version>
+		<mysql.driver.version>8.0.32</mysql.driver.version>
+		<mariadb.driver.version>2.7.8</mariadb.driver.version>
+		<postgresql.driver.version>42.5.3</postgresql.driver.version>
+		<mongodb.driver.version>4.9.0</mongodb.driver.version>
+
+		<!-- Other versions for building Docker images and running IAF-Test -->
+		<activemq.driver.version>5.16.5</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
+		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
+		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
+		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -125,6 +136,11 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-cmis</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -280,7 +296,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.24</version>
+				<version>1.18.26</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -298,7 +314,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.10.0</version>
+				<version>4.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -409,6 +425,15 @@
 					<version>3.3.2</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+								<Enable-CDI>false</Enable-CDI>
+							</manifestEntries>
+						</archive>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -555,7 +580,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.2.1</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
@@ -660,7 +685,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.2.1</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -723,7 +748,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.4.2</version>
 			</plugin>
 			<!--
 				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
@@ -842,6 +867,7 @@
 			</activation>
 			<modules>
 				<module>core</module>
+				<module>console</module>
 				<module>webapp</module>
 				<module>ear</module>
 				<module>larva</module>
@@ -1015,6 +1041,7 @@
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>
+							<show>private</show>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>

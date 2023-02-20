@@ -48,7 +48,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -131,7 +130,7 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
+			if(properties.containsValue("mail.smtp.from")){
 				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
 			}
 			properties.put("mail.smtp.from", getBounceAddress());
@@ -289,6 +288,9 @@ public class MailSender extends MailSenderBase {
 		String messageTypeWithCharset = setCharSet(charSet, messageType);
 
 		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
+			if(!Base64.isBase64(mailSession.getMessage())) {
+				throw new SenderException("Input message contains invalid Base64 characters");
+			}
 			byte[] message = Base64.decodeBase64(mailSession.getMessage());
 			mailSession.setMessage(new String(message));
 		}
@@ -371,12 +373,15 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	@IbisDoc({ "Name of the SMTP-host by which the messages are to be send", "" })
+	/** Name of the SMTP-host by which the messages are to be send */
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
 
-	@IbisDoc({ "Port of the SMTP-host by which the messages are to be send", "25" })
+	/**
+	 * Port of the SMTP-host by which the messages are to be send
+	 * @ff.default 25
+	 */
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
 	}

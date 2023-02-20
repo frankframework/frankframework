@@ -39,7 +39,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -399,34 +398,34 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return false;
 	}
 
-	@IbisDoc({ "authAlias used to obtain credentials for authentication", "" })
+	/** authAlias used to obtain credentials for authentication */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({ "userId on the smtphost", "" })
+	/** userId on the smtphost */
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	@IbisDoc({ "password of userid", "" })
+	/** password of userid */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	@IbisDoc({ "alias used to obtain credentials for authentication to smtphost", "" })
+	/** alias used to obtain credentials for authentication to smtphost */
 	@Deprecated
 	public void setSmtpAuthAlias(String smtpAuthAlias) {
 		setAuthAlias(smtpAuthAlias);
 	}
 
-	@IbisDoc({ "userId on the smtphost", "" })
+	/** userId on the smtphost */
 	@Deprecated
 	public void setSmtpUserid(String smtpUserId) {
 		setUserId(smtpUserId);
 	}
 
-	@IbisDoc({ "password of userid on the smtphost", "" })
+	/** password of userid on the smtphost */
 	@Deprecated
 	public void setSmtpPassword(String smtpPassword) {
 		setPassword(smtpPassword);
@@ -437,7 +436,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Set the default for Subject>
 	 */
-	@IbisDoc({ "value of the subject: header if not specified in message itself", "" })
+	/** value of the subject: header if not specified in message itself */
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
@@ -445,33 +444,47 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Set the default for From
 	 */
-	@IbisDoc({ "value of the from: header if not specified in message itself", "" })
+	/** value of the from: header if not specified in message itself */
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
 
-	@IbisDoc({ "Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts", "20000" })
+	/**
+	 * Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts
+	 * @ff.default 20000
+	 */
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
 
-	@IbisDoc({ "when this name is used, it will be followed by a number which is equal to the node's position",
-			"attachment" })
+	/** 
+	 * When this name is used, it will be followed by a number which is equal to the node's position
+	 * @ff.default attachment
+	 */
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;
 	}
 
-	@IbisDoc({ "when messageType is not specified defaultMessageType will be used", "text/plain" })
+	/**
+	 * when messageType is not specified defaultMessageType will be used
+	 * @ff.default text/plain
+	 */
 	public void setDefaultMessageType(String defaultMessageType) {
 		this.defaultMessageType = defaultMessageType;
 	}
 
-	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
+	/**
+	 * when messageBase64 is not specified defaultMessageBase64 will be used
+	 * @ff.default false
+	 */
 	public void setDefaultMessageBase64(boolean defaultMessageBase64) {
 		this.defaultMessageBase64 = defaultMessageBase64;
 	}
 
-	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
+	/**
+	 * NDR return address when mail cannot be delivered. This adds a Return-Path header
+	 * @ff.default MAIL FROM attribute
+	 */
 	public void setBounceAddress(String string) {
 		bounceAddress = string;
 	}

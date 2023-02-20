@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -92,12 +91,12 @@ public class PutInSession extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@IbisDoc({"Key of the session variable to store the input in", "" })
+	/** Key of the session variable to store the input in */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@IbisDoc({"Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
+	/** Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored */
 	public void setValue(String value) {
 		this.value = value;
 	}

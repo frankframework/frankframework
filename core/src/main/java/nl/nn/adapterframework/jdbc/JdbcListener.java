@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,10 +38,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -65,6 +66,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	private @Getter String messageIdField;
 	private @Getter String correlationIdField;
 	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
+	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 
 	private @Getter String blobCharset = null;
 	private @Getter boolean blobsCompressed=true;
@@ -91,19 +93,21 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
-			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, getSelectQuery());
-			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? getPeekQuery() : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, getSelectQuery());
-		} catch (JdbcException e) {
+			String convertedSelectQuery = convertQuery(getSelectQuery(), QueryType.SELECT);
+			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
+			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery(), QueryType.SELECT) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
+			Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
+			for (ProcessState state : ProcessState.values()) {
+				if(updateStatusQueries.containsKey(state)) {
+					String convertedUpdateStatusQuery = convertQuery(updateStatusQueries.get(state), QueryType.OTHER);
+					orderedUpdateStatusQueries.put(state, convertedUpdateStatusQuery);
+				}
+			}
+			updateStatusQueries=orderedUpdateStatusQueries;
+			targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
+		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		}
-		Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
-		for (ProcessState state : ProcessState.values()) {
-			if(updateStatusQueries.containsKey(state)) {
-				orderedUpdateStatusQueries.put(state, updateStatusQueries.get(state));
-			}
-		}
-		updateStatusQueries=orderedUpdateStatusQueries;
-		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 	}
 
 	@Override
@@ -376,6 +380,15 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		return false;
 	}
 
+	protected String convertQuery(String query, QueryType queryType) throws JdbcException, SQLException {
+		if (StringUtils.isEmpty(getSqlDialect())) {
+			return query;
+		}
+		QueryExecutionContext qec = new QueryExecutionContext(query, queryType, null);
+		getDbmsSupport().convertQuery(qec, getSqlDialect());
+		return qec.getQuery();
+	}
+
 	protected void setUpdateStatusQuery(ProcessState state, String query) {
 		if (StringUtils.isNotEmpty(query)) {
 			updateStatusQueries.put(state, query);
@@ -396,49 +409,75 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		peekUntransacted = b;
 	}
 
-	@IbisDoc({"(only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
+	/**
+	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
+	 * @ff.default selectQuery
+	 */
 	public void setPeekQuery(String string) {
 		peekQuery = string;
 	}
 
 
-	@IbisDoc({"Primary key field of the table, used to identify messages", ""})
+	/** Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
 
-	@IbisDoc({"Field containing the message data", "<i>same as keyField</i>"})
+	/**
+	 * Field containing the message data
+	 * @ff.default <i>same as keyField</i>
+	 */
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
 
-	@IbisDoc({"Type of the field containing the message data", "<i>String</i>"})
+	/**
+	 * Type of the field containing the message data
+	 * @ff.default <i>String</i>
+	 */
 	public void setMessageFieldType(MessageFieldType value) {
 		messageFieldType = value;
 	}
 
-	@IbisDoc({"Field containing the message Id", "<i>same as keyField</i>"})
+	/**
+	 * Field containing the message Id
+	 * @ff.default <i>same as keyField</i>
+	 */
 	public void setMessageIdField(String fieldname) {
 		messageIdField = fieldname;
 	}
 
-	@IbisDoc({"Field containing the correlationId", "<i>same as messageIdField</i>"})
+	/**
+	 * Field containing the correlationId
+	 * @ff.default <i>same as messageIdField</i>
+	 */
 	public void setCorrelationIdField(String fieldname) {
 		correlationIdField = fieldname;
 	}
 
-	@IbisDoc({"Controls whether BLOB is considered stored compressed in the database", "true"})
+	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
+	public void setSqlDialect(String string) {
+		sqlDialect = string;
+	}
+
+	/**
+	 * Controls whether BLOB is considered stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	@IbisDoc({"Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
+	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
 	@Deprecated
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
 
-	@IbisDoc({"Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
+	 * @ff.default false
+	 */
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}

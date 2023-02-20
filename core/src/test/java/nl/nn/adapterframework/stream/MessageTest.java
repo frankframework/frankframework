@@ -17,11 +17,11 @@ package nl.nn.adapterframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +43,7 @@ import java.nio.file.Paths;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -55,10 +55,10 @@ import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
-import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
 	protected Logger log = LogUtil.getLogger(this);
@@ -135,9 +135,9 @@ public class MessageTest {
 
 		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes("UTF-8");
-		assertEquals("lengths differ", expected.length, actual.length);
+		assertEquals(expected.length, actual.length, "lengths differ");
 		for (int i = 0; i < expected.length; i++) {
-			assertEquals("byte arrays differ at position [" + i + "]", expected[i], actual[i]);
+			assertEquals(expected[i], actual[i], "byte arrays differ at position [" + i + "]");
 		}
 	}
 
@@ -926,8 +926,8 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(characterWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
-			assertFalse(label, out.isBinary());
-			assertEquals(label, testString,out.asString());
+			assertFalse(out.isBinary(), label);
+			assertEquals(testString, out.asString(), label);
 		}
 	}
 
@@ -940,9 +940,9 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
-			assertTrue(label, out.isBinary());
-			assertEquals(label, "UTF-8", out.getCharset());
-			assertEquals(label, testString,out.asString());
+			assertTrue(out.isBinary(), label);
+			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(testString, out.asString(), label);
 		}
 	}
 
@@ -950,43 +950,43 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeString() {
 		Message message = Message.asMessage("string");
-		assertEquals("size differs or could not be determined", 6, message.size());
+		assertEquals( 6, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeByteArray() {
 		Message message = Message.asMessage("string".getBytes());
-		assertEquals("size differs or could not be determined", 6, message.size());
+		assertEquals(6, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeFileInputStream() throws Exception {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
 		FileInputStream fis = new FileInputStream(file);
 		Message message = Message.asMessage(fis);
-		assertEquals("size differs or could not be determined", 33, message.size());
+		assertEquals(33, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeFile() throws Exception {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
 		Message message = Message.asMessage(file);
-		assertEquals("size differs or could not be determined", 33, message.size());
+		assertEquals(33, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeURL() {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		Message message = Message.asMessage(url);
-		assertEquals("size differs or could not be determined", -1, message.size());
+		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
@@ -998,7 +998,7 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeExternalURL() throws Exception {
 		URL url = new URL("http://www.file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		Message message = Message.asMessage(url);
 		assertEquals(-1, message.size());
@@ -1007,7 +1007,7 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeReader() throws Exception {
 		Message message = new Message(new StringReader("string"));
-		assertEquals("size differs or could not be determined", -1, message.size());
+		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
@@ -1049,7 +1049,7 @@ public class MessageTest {
 	@Test
 	public void testMessageDetectCharsetISO8859() throws Exception {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
-		assertNotNull("unable to find isoInputFile", isoInputFile);
+		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
 		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
 
@@ -1113,7 +1113,7 @@ public class MessageTest {
 					i++;
 				}
 			}
-			assertEquals("charset should be determined only once", 1, i);
+			assertEquals(1, i, "charset should be determined only once");
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
