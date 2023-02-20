@@ -17,13 +17,10 @@ package nl.nn.adapterframework.validation.xsd;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.net.URL;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.validation.XSD;
@@ -31,14 +28,12 @@ import nl.nn.adapterframework.validation.XSD;
 /**
  * XSD based on a reference to a resource on the classPath.
  * 
- * TODO: replace internal String-and-URL implementation with {@link Resource}.
- * 
  * @author Gerrit van Brakel
  */
 public class ResourceXsd extends XSD {
 
-	private String resource;
-	private @Getter URL url;
+	private String resourceRef;
+	private Resource resource;
 
 	@Override
 	public void initNoNamespace(IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
@@ -47,34 +42,35 @@ public class ResourceXsd extends XSD {
 
 	@Override
 	public void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
-		resource=resourceRef;
-		resource = Misc.replace(resource, "%20", " ");
-		url = ClassUtils.getResourceURL(scopeProvider, resource);
-		if (url == null) {
+		this.resourceRef = Misc.replace(resourceRef, "%20", " ");
+
+		resource = Resource.getResource(scopeProvider, resourceRef);
+		if (resource == null) {
 			throw new ConfigurationException("Cannot find [" + resource + "]");
 		}
-		super.initNamespace(namespace, scopeProvider, resource);
+
+		super.initNamespace(namespace, scopeProvider, resourceRef);
 	}
 
 	@Override
 	public Reader getReader() throws IOException {
-		return StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
+		return StreamUtil.getCharsetDetectingInputStreamReader(resource.openStream());
 	}
 
 	@Override
 	public String getResourceBase() {
-		return resource.substring(0, resource.lastIndexOf('/') + 1);
+		return resourceRef.substring(0, resourceRef.lastIndexOf('/') + 1);
 	}
 
 	@Override
 	public String getSystemId() {
-		return url.toExternalForm();
+		return resource.getSystemId();
 	}
 
 	@Override
 	public int compareToByReferenceOrContents(XSD x) {
 		if (x instanceof ResourceXsd) {
-			return url.toString().compareTo(((ResourceXsd)x).getUrl().toString());
+			return getSystemId().compareTo(((ResourceXsd)x).getSystemId());
 		}
 		return compareToByContents(x);
 	}

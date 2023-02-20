@@ -37,28 +37,31 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.messaging.Message;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessage;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
 public class TransactionalStorage extends FrankApiBase {
 
-	protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-
 	public enum StorageSource {
 		RECEIVERS, PIPES;
 
 		public static StorageSource fromString(String value) {
-			return EnumUtils.parse(StorageSource.class, value);
+			if(StringUtils.isNotBlank(value)) {
+				try {
+					return StorageSource.valueOf(value.toUpperCase());
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException("invalid StorageSource option");
+				}
+			}
+			throw new IllegalArgumentException("no StorageSource option supplied");
 		}
 	}
 

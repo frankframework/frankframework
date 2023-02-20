@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 public @interface SupportsOutputStreaming {
-	@LabelValue public boolean value() default true;
+	@LabelValue boolean value() default true;
 }

@@ -31,6 +31,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -808,6 +809,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
+	@Deprecated
+	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

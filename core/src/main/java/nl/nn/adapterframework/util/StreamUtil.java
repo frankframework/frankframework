@@ -205,7 +205,6 @@ public class StreamUtil {
 			while (bytesRead>0) {
 				bytesRead=in.read(buffer,0,chunkSize);
 				if (bytesRead>0) {
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					out.write(buffer,0,bytesRead);
 				} else {
 					in.close();
@@ -222,7 +221,6 @@ public class StreamUtil {
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
 				if (charsRead>0) {
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
 					if (resolve) {
 						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
 						if (xmlEncode) {

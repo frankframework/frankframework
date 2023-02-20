@@ -20,13 +20,15 @@ import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.RunState;
 
 public class PollGuard extends TimerTask {
 	private Logger log = LogUtil.getLogger(this);
@@ -38,7 +40,7 @@ public class PollGuard extends TimerTask {
 
 	private static AtomicInteger pollTimeouts = new AtomicInteger();
 
-	PollGuard() {
+	public PollGuard() {
 		lastCheck = System.currentTimeMillis();
 	}
 
@@ -46,14 +48,15 @@ public class PollGuard extends TimerTask {
 	public void run() {
 		long lastPollFinishedTime = springJmsConnector.getLastPollFinishedTime();
 		if (log.isTraceEnabled()) {
-			log.trace(springJmsConnector.getLogPrefix() + "check last poll finished time " + simpleDateFormat.format(new Date(lastPollFinishedTime)));
+			log.trace("{} check last poll finished time {}", springJmsConnector::getLogPrefix, ()-> simpleDateFormat.format(new Date(lastPollFinishedTime)));
 		}
 		long currentCheck = System.currentTimeMillis();
 		if (lastPollFinishedTime < lastCheck) {												// if the last poll finished more than the pollGuardInterval seconds ago
 			if (lastPollFinishedTime != previousLastPollFinishedTime						//   and we did not earlier check for this same value
-				&& springJmsConnector.threadsProcessing.getValue() == 0						//   and we are not still processing a message
+				&& springJmsConnector.getThreadsProcessing().getValue() == 0						//   and we are not still processing a message
 				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED		//   and we are ready to pro
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {					//   and we are not already in the process of recovering
+
 				previousLastPollFinishedTime = lastPollFinishedTime;						// then we consider this too long, and suspect a problem.
 				timeoutDetected = true;
 				int pollTimeoutNr=pollTimeouts.incrementAndGet();
@@ -61,13 +64,26 @@ public class PollGuard extends TimerTask {
 
 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
 				try {
-					springJmsConnector.getListener().getReceiver().stopRunning();
+					springJmsConnector.getReceiver().stopRunning();
 				} catch (Exception e) {
-					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling caught Exception when stopping receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]", e);
+					log.warn(() -> "JMS poll timeout ["+pollTimeoutNr+"] handling caught Exception when stopping receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]", e);
 				} finally {
-					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarting receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
-					springJmsConnector.getListener().getReceiver().startRunning();
-					log.warn("JMS poll timeout ["+pollTimeoutNr+"] handling restarted receiver ["+springJmsConnector.getListener().getReceiver().getName()+"]");
+					log.warn("JMS poll timeout [{}] handling restarting receiver [{}]",
+							pollTimeoutNr, springJmsConnector.getListener().getReceiver().getName());
+					try {
+						// Before restarting the receiver, update poll-finished time to current time so that
+						// the PollGuard is not instantly triggered again.
+						springJmsConnector.setLastPollFinishedTime(currentCheck);
+						springJmsConnector.getReceiver().startRunning();
+						if (springJmsConnector.getReceiver().isInRunState(RunState.EXCEPTION_STARTING)) {
+							error("PollGuard: Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "], no exception");
+						} else {
+							log.warn("JMS poll timeout [{}] handling restarted receiver [{}]",
+									pollTimeoutNr, springJmsConnector.getListener().getReceiver().getName());
+						}
+					} catch (Exception e) {
+						error("PollGuard: Error restarting receiver [" + springJmsConnector.getReceiver().getName() + "]", e);
+					}
 				}
 			}
 		} else {
@@ -82,6 +98,14 @@ public class PollGuard extends TimerTask {
 	private void warn(String message) {
 		log.warn(springJmsConnector.getLogPrefix() + message);
 		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.WARN);
+	}
+	private void error(String message) {
+		log.error(springJmsConnector.getLogPrefix() + message);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeperLevel.ERROR);
+	}
+	private void error(String message, @Nonnull Throwable t) {
+		log.error(springJmsConnector.getLogPrefix() + message, t);
+		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message + "; " + t.getMessage(), MessageKeeperLevel.ERROR);
 	}
 
 }

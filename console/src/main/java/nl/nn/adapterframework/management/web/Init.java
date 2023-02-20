@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2017, 2020-2022 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.management.web;
 
@@ -52,16 +52,17 @@ import nl.nn.adapterframework.util.AppConstants;
 public class Init extends FrankApiBase {
 	@Context HttpServletRequest httpServletRequest;
 
-	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+	private static String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
 
 	@GET
 	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles) {
-		List<Object> JSONresources = new ArrayList<Object>();
-		Map<String, Object> HALresources = new HashMap<String, Object>();
-		Map<String, Object> resources = new HashMap<String, Object>(1);
+		List<Object> JSONresources = new ArrayList<>();
+		Map<String, Object> HALresources = new HashMap<>();
+		Map<String, Object> resources = new HashMap<>(1);
 
 		StringBuffer requestPath = httpServletRequest.getRequestURL();
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
@@ -81,7 +82,7 @@ public class Init extends FrankApiBase {
 					continue;
 				}
 
-				Map<String, Object> resource = new HashMap<String, Object>(4);
+				Map<String, Object> resource = new HashMap<>(4);
 
 				if(method.isAnnotationPresent(GET.class))
 					resource.put("type", "GET");
@@ -137,9 +138,9 @@ public class Init extends FrankApiBase {
 		}
 
 		if((HATEOASImplementation.equalsIgnoreCase("hal")))
-			resources.put(ResourceKey, HALresources);
+			resources.put(resourceKey, HALresources);
 		else
-			resources.put(ResourceKey, JSONresources);
+			resources.put(resourceKey, JSONresources);
 
 		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}

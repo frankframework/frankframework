@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 
+/**
+ * A reference to an Exchange folder or object and its mailbox.
+ */
 public class ExchangeObjectReference {
 
 	private final @Getter boolean isStatic;

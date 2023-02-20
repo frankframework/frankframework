@@ -60,7 +60,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 	}
 
 	public String invokeCharArrayGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		char arr[] = (char[])ClassUtils.invokeGetter(o,name);
+		char[] arr = (char[])ClassUtils.invokeGetter(o,name);
 		StringBuffer sb = new StringBuffer();
 		for (int j=0; j<arr.length;j++) {
 			sb.append(arr[j]);

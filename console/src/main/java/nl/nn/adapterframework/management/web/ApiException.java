@@ -1,22 +1,23 @@
 /*
-Copyright 2016-2017, 2022 WeAreFrank!
+   Copyright 2016-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.management.web;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import jakarta.json.Json;
@@ -36,8 +38,6 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Custom errors for the API.
@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class ApiException extends WebApplicationException implements Serializable {
 
 	private static final long serialVersionUID = 2L;
-	private final transient Logger log = LogUtil.getLogger(this);
+	private final transient Logger log = LogManager.getLogger(this);
 	private final Status status;
 	private final String expandedMessage;
 	private transient Response response;
@@ -133,7 +133,7 @@ public class ApiException extends WebApplicationException implements Serializabl
 
 		@Override
 		public void write(OutputStream output) {
-			try (JsonWriter jsonWriter = factory.createWriter(output, StreamUtil.DEFAULT_CHARSET)) {
+			try (JsonWriter jsonWriter = factory.createWriter(output, StandardCharsets.UTF_8)) {
 				jsonWriter.write(json);
 			}
 		}

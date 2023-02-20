@@ -179,24 +179,25 @@ public class MessagingSource  {
 	public String getPhysicalName() {
 		String result="";
 
+		Object managedConnectionFactory=null;
 		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
+			managedConnectionFactory = getManagedConnectionFactory();
+			if (managedConnectionFactory != null) {
+				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+			}
+		} catch (Exception | NoClassDefFoundError e) {
+			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+		}
+
+		try {
+			ConnectionFactory qcfd = getConnectionFactoryDelegate();
+			if (qcfd != managedConnectionFactory) {
+				result += " managed by ["+qcfd+"]";
+			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 
-		try {
-			Object managedConnectionFactory = getManagedConnectionFactory();
-			if (managedConnectionFactory!=null) {
-				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
-				if (result.contains("activemq")) {
-					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
-				}
-			}
-		} catch (Exception | NoClassDefFoundError e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-		}
 		return result;
 	}
 
@@ -235,11 +236,13 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
 		}
+		log.trace("Get/create global connection - synchronize (lock) on {}", this);
 		synchronized (this) {
 			if (globalConnection == null) {
 				globalConnection = createAndStartConnection();
 			}
 		}
+		log.trace("Got global connection, lock released on {}", this);
 		return globalConnection;
 	}
 
@@ -356,12 +359,14 @@ public class MessagingSource  {
 	public Queue getDynamicReplyQueue(Session session) throws JMSException {
 		Queue result;
 		if (useSingleDynamicReplyQueue()) {
+			log.trace("Get/create global dynamic reply queue, synchronize (lock) on {}", this);
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					log.info(getLogPrefix()+"{} created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
 				}
 			}
+			log.trace("Got global dynamic reply queue, lock released on {}", this);
 			result = globalDynamicReplyQueue;
 		} else {
 			result = session.createTemporaryQueue();

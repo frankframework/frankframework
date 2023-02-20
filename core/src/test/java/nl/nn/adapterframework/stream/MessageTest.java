@@ -55,10 +55,10 @@ import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
-import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
 	protected Logger log = LogUtil.getLogger(this);

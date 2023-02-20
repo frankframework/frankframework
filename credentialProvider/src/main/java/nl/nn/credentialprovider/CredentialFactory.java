@@ -15,8 +15,6 @@
 */
 package nl.nn.credentialprovider;
 
-
-
 import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -28,16 +26,23 @@ import nl.nn.credentialprovider.util.Misc;
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
-	private final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
-	private final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
-	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
-	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
+	private static final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
+	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
+	private static final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
+	private static final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
 	private static String optionalPrefix;
 
 	private ICredentialFactory delegate;
 
 	private static CredentialFactory self;
+
+	static {
+		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
+		if (optionalPrefix != null) {
+			optionalPrefix = optionalPrefix.toLowerCase();
+		}
+	}
 
 	public static CredentialFactory getInstance() {
 		if (self==null) {
@@ -47,10 +52,6 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
-		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
-		if (optionalPrefix!=null) {
-			optionalPrefix=optionalPrefix.toLowerCase();
-		}
 		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;

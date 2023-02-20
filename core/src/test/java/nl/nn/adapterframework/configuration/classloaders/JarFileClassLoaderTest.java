@@ -17,13 +17,16 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.testutil.JunitTestClassLoaderWrapper;
 import nl.nn.adapterframework.testutil.TestAppender;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
@@ -86,12 +89,11 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		try {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
-	
+
 			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
 			classLoader.configure(ibisContext, "myConfig");
 
 			List<String> logEvents = appender.getLogLines();
-			System.out.println(logEvents);
 			URL configurationURL = classLoader.getResource("Configuration.xml");
 			assertNotNull(configurationURL, "unable to locate test file [Configuration.xml]");
 
@@ -101,5 +103,23 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
+	}
+
+	@Test
+	public void loadCustomClass() throws Exception {
+		ClassLoaderBase classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+		classLoader.setBasePath(".");
+		classLoader.configure(ibisContext, "myConfig");
+
+		classLoader.setAllowCustomClasses(true);
+		//native classloading
+		Class<?> clazz = Class.forName("nl.nn.adapterframework.pipes.LargeBlockTester", true, classLoader); //With inner-class
+		clazz.newInstance();
+
+		Field loadedClassesField = ClassLoaderBase.class.getDeclaredField("loadedCustomClasses");
+		loadedClassesField.setAccessible(true);
+		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertTrue(loadedCustomClasses.contains("nl.nn.adapterframework.pipes.LargeBlockTester"));
 	}
 }

@@ -153,7 +153,7 @@ public class FileViewerServlet extends HttpServletBase {
 			out.println("<html>");
 			out.println("<head>");
 			out.println("<title>"+AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
-			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
+			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
 

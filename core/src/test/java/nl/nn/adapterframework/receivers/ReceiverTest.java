@@ -1,9 +1,16 @@
 package nl.nn.adapterframework.receivers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -20,6 +27,7 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
 
 public class ReceiverTest {
@@ -32,21 +40,32 @@ public class ReceiverTest {
 		configuration.getBean("adapterManager", AdapterManager.class).close();
 	}
 
-	public SlowStartingListenerBase setupPullingListener(int startupDelay) throws Exception {
-		SlowStartingPullingListener listener = configuration.createBean(SlowStartingPullingListener.class);
+	public SlowListenerBase setupSlowStartPullingListener(int startupDelay) {
+		return createSlowListener(SlowPullingListener.class, startupDelay, 0);
+	}
+
+	public SlowListenerBase setupSlowStartPushingListener(int startupDelay) {
+		return createSlowListener(SlowPushingListener.class, startupDelay, 0);
+	}
+
+	public SlowListenerBase setupSlowStopPullingListener(int shutdownDelay) {
+		return createSlowListener(SlowPullingListener.class, 0, shutdownDelay);
+	}
+
+	public SlowListenerBase setupSlowStopPushingListener(int shutdownDelay) {
+		return createSlowListener(SlowPushingListener.class, 0, shutdownDelay);
+	}
+
+	protected <T extends SlowListenerBase> T createSlowListener(Class<T> cls, int startupDelay, int shutdownDelay) {
+		T listener = configuration.createBean(cls);
 		listener.setStartupDelay(startupDelay);
+		listener.setShutdownDelay(shutdownDelay);
 		return listener;
 	}
 
-	public SlowStartingListenerBase setupPushingListener(int startupDelay) throws Exception {
-		SlowStartingPushingListener listener = configuration.createBean(SlowStartingPushingListener.class);
-		listener.setStartupDelay(startupDelay);
-		return listener;
-	}
-
-	public Receiver<String> setupReceiver(SlowStartingListenerBase listener) throws Exception {
+	public Receiver<javax.jms.Message> setupReceiver(SlowListenerBase listener) throws Exception {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		Receiver<javax.jms.Message> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
@@ -57,7 +76,7 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public Adapter setupAdapter(Receiver<String> receiver) throws Exception {
+	public Adapter setupAdapter(Receiver<javax.jms.Message> receiver) throws Exception {
 
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
@@ -101,16 +120,16 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartBasic() throws Exception {
-		testStartNoTimeout(setupPullingListener(0));
+		testStartNoTimeout(setupSlowStartPullingListener(0));
 	}
 
 	@Test
 	public void testPushingReceiverStartBasic() throws Exception {
-		testStartNoTimeout(setupPushingListener(0));
+		testStartNoTimeout(setupSlowStartPushingListener(0));
 	}
 
-	public void testStartNoTimeout(SlowStartingListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+	public void testStartNoTimeout(SlowListenerBase listener) throws Exception {
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -137,16 +156,16 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartWithTimeout() throws Exception {
-		testStartTimeout(setupPullingListener(10000));
+		testStartTimeout(setupSlowStartPullingListener(10000));
 	}
 
 	@Test
 	public void testPushingReceiverStartWithTimeout() throws Exception {
-		testStartTimeout(setupPushingListener(10000));
+		testStartTimeout(setupSlowStartPushingListener(10000));
 	}
 
-	public void testStartTimeout(SlowStartingListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+	public void testStartTimeout(SlowListenerBase listener) throws Exception {
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -185,8 +204,149 @@ public class ReceiverTest {
 	}
 
 	@Test
+	public void testPullingReceiverStopWithTimeout() throws Exception {
+		testStopTimeout(setupSlowStopPullingListener(100_000));
+	}
+
+	@Test
+	public void testPushingReceiverStopWithTimeout() throws Exception {
+		testStopTimeout(setupSlowStopPushingListener(100_000));
+	}
+
+	public void testStopTimeout(SlowListenerBase listener) throws Exception {
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Receiver RunState "+receiver.getRunState());
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STARTED);
+		waitWhileInState(receiver, RunState.STOPPING);
+		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+	}
+
+	@Test
+	public void testPollGuardStartTimeout() throws Exception {
+		// Create listener without any delays in starting or stopping, they will be set later
+		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
+		listener.setPollGuardInterval(1_000);
+		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
+
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Receiver RunState "+receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		// From here the PollGuard should be triggering startup-delay timeout-guard
+		listener.setStartupDelay(100_000);
+
+		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
+		Thread.sleep(5_000);
+		log.warn("Test resuming");
+
+		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
+
+		List<String> errors = (List<String>) adapter.getMessageKeeper()
+				.stream()
+				.filter((msg) -> msg instanceof MessageKeeperMessage && "ERROR".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.map(Object::toString)
+				.collect(Collectors.toList());
+
+		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STARTED);
+		waitWhileInState(receiver, RunState.STOPPING);
+		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+	}
+
+	@Test
+	public void testPollGuardStopTimeout() throws Exception {
+		// Create listener without any delays in starting or stopping, they will be set later
+		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
+		listener.setPollGuardInterval(1_000);
+		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
+
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		log.info("Adapter RunState "+adapter.getRunState());
+		log.info("Receiver RunState "+receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		// From here the PollGuard should be triggering stop-delay timeout-guard
+		listener.setShutdownDelay(100_000);
+
+		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
+		Thread.sleep(5_000);
+		log.warn("Test resuming");
+
+		// Receiver may be in state "stopping" (by PollGuard) or in state "starting" while we come out of sleep, so wait until it's started
+		waitForState(receiver, RunState.STARTED);
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STARTED);
+		waitWhileInState(receiver, RunState.STOPPING);
+		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+
+		List<String> warnings = (List<String>) adapter.getMessageKeeper()
+				.stream()
+				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.map(Object::toString)
+				.collect(Collectors.toList());
+		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
+	}
+
+	@Test
 	public void startReceiver() throws Exception {
-		Receiver<String> receiver = setupReceiver(setupPullingListener(10000));
+		Receiver<javax.jms.Message> receiver = setupReceiver(setupSlowStartPullingListener(10000));
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());

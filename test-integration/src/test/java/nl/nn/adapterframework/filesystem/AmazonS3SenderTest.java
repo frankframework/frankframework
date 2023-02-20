@@ -1,91 +1,58 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.util.Properties;
-import java.util.UUID;
+import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.senders.AmazonS3Sender;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.testutil.PropertyUtil;
 
 
 /**
  * AmazonS3Sender tests.
- * 
+ *
  * @author alisihab
  *
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	public static final String AMAZONS3_PROPERTIES = "amazonS3.properties";
-	private static Properties properties;
-	
-	@Rule
-	public TestName name = new TestName();
-	
-	private String accessKey = "";
-	private String secretKey = "";
-	private String proxyHost = null;
-	private Integer proxyPort = null;
+	protected String PROPERTY_FILE = "AmazonS3.properties";
 
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
 	private boolean forceGlobalBucketAccessEnabled = false;
 
-	private String bucketName = UUID.randomUUID().toString();//"iaf.s3sender.ali.test";
-//	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
+	protected String accessKey    = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
+	protected String secretKey    = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
+	protected String bucketName   = PropertyUtil.getProperty(PROPERTY_FILE, "bucketName");
+	protected String proxyHost    = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
+	protected int proxyPort;
+
 	private Regions clientRegion = Regions.EU_WEST_1;
-	
+
 	private int waitMilis = 1000;
 
 	{
 		setWaitMillis(waitMilis);
-	}
-	
-	private void setAttributesFromPropertiesFile() throws Exception {
-		try {
-			if (properties == null) {
-				properties = new Properties();
-			}
-			properties.load(ClassUtils.getResourceURL(AMAZONS3_PROPERTIES).openStream());	 
-			accessKey = properties.getProperty("accessKey");
-			secretKey = properties.getProperty("secretKey");
-			proxyHost = properties.getProperty("proxyHost");
-			if (StringUtils.isNotEmpty(properties.getProperty("proxyPort"))) {
-				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
-			}
-		} catch (Exception e) {
-			log.error("There was an error reading propertie file: {} ", e.getMessage());
-			throw e;
+		if (StringUtils.isNotEmpty(PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort"))) {
+			proxyPort = Integer.parseInt(PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort"));
 		}
-	}	
-	
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		setAttributesFromPropertiesFile();
-		super.setUp();
 	}
-	
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
-	}
-	
+
+	@TempDir
+	private Path tempdir;
+
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
+		return new AmazonS3FileSystemTestHelper(tempdir, accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
 				forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
-	
+
 	@Override
 	public AmazonS3Sender createFileSystemSender(){
 		AmazonS3Sender s3 = new AmazonS3Sender();
@@ -151,7 +118,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 //		param.setName("destinationFileName");
 //		param.setValue(dest);
 //		fileSystemSender.addParameter(param);
-//		
+//
 //		fileSystemSender.configure();
 //		fileSystemSender.getFileSystem().open();
 //		S3Object objectTobeCopied = new S3Object();

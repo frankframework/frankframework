@@ -1,23 +1,24 @@
 /*
-Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.management.web;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.spring.JAXRSServerFactoryBeanDefinitionParser.SpringJAXRSServerFactoryBean;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,15 +50,11 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Baseclass to fetch ibisContext + ibisManager
- * 
- * @since	7.0-B1
+ * Base class for API endpoints.
+ * Contains helper methods to read JAX-RS multiparts and handle message conversions to JAX-RS Responses.
  * @author	Niels Meijer
  */
 
@@ -76,8 +74,8 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
-	protected Logger log = LogUtil.getLogger(this);
-	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
+	public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
+	protected Logger log = LogManager.getLogger(this);
 
 	protected final Gateway getGateway() {
 		return getApplicationContext().getBean("gateway", Gateway.class);
@@ -164,7 +162,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
 		Attachment msg = inputDataMap.getAttachment(key);
 		if(msg != null) {
-			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : DEFAULT_CHARSET;
 			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
 				String charset = msg.getContentType().getParameters().get("charset");
 				if(StringUtils.isNotEmpty(charset)) {

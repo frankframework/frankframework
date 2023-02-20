@@ -101,7 +101,7 @@ public class FileUtils {
 
 		// resolve the parameters
 		ParameterValueList pvl = pl.getValues(null, session);
-		String filename = pvl.getParameterValue("__filename").getValue().toString();
+		String filename = pvl.get("__filename").getValue().toString();
 
 		return filename;
 	}
@@ -645,6 +645,15 @@ public class FileUtils {
 	}
 
 	public static boolean readAllowed(String rules, HttpServletRequest request, String fileName) {
+		return readAllowed(rules, fileName, request::isUserInRole);
+	}
+
+	@FunctionalInterface
+	public interface Authenticator {
+		boolean isUserInRole(String role);
+	}
+
+	public static boolean readAllowed(String rules, String fileName, Authenticator authenticator) {
 		List<String> rulesList = Arrays.asList(rules.split("\\|"));
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
@@ -673,7 +682,7 @@ public class FileUtils {
 					log.trace("check allow read file '" + canonicalFileName + "' with rule path '" + canonicalPath + "', role '" + role + "' and type '" + type + "'");
 					if ("*".equals(canonicalPath) || canonicalFileName.startsWith(canonicalPath)) {
 						log.trace("path match");
-						if ("*".equals(role) || request.isUserInRole(role)) {
+						if ("*".equals(role) || authenticator.isUserInRole(role)) {
 							log.trace("role match");
 							if ("allow".equals(type)) {
 								log.trace("allow");

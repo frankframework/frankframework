@@ -18,15 +18,19 @@ package nl.nn.adapterframework.configuration;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Properties;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Validates if the BuildInfo.properties file is present in the configuration (jar), and if the name and version properties are set correctly
@@ -39,6 +43,7 @@ public class BuildInfoValidator {
 	private byte[] jar = null;
 	private String buildInfoFilename = null;
 	protected static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = AppConstants.getInstance().getString(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, null);
+	private static final Logger LOG = LogUtil.getLogger(BuildInfoValidator.class);
 
 	protected BuildInfoValidator(InputStream stream) throws ConfigurationException {
 		String buildInfo = "BuildInfo";
@@ -48,7 +53,7 @@ public class BuildInfoValidator {
 		this.buildInfoFilename = buildInfo + ".properties";
 
 		try {
-			jar = Misc.streamToBytes(stream);
+			jar = Misc.streamToBytes(stream); //Persist Stream so it can be read multiple times.
 
 			read();
 			validate();
@@ -69,7 +74,10 @@ public class BuildInfoValidator {
 					if(buildInfoFilename.equals(fileName)) {
 						name = FilenameUtils.getPathNoEndSeparator(entryName);
 						Properties props = new Properties();
-						props.load(zipInputStream);
+						try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
+							props.load(reader);
+							LOG.info("properties loaded from archive, filename [{}]", name);
+						}
 						version = ConfigurationUtils.getConfigurationVersion(props);
 
 						isBuildInfoPresent = true;

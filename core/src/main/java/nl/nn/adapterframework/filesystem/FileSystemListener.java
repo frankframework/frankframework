@@ -105,6 +105,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void configure() throws ConfigurationException {
+		log.debug("Configuring FileSystemListener");
 		FS fileSystem = getFileSystem();
 		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
@@ -133,6 +134,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void open() throws ListenerException {
+		log.debug("Opening FileSystemListener");
 		try {
 			getFileSystem().open();
 			// folders can only be checked at 'open()', because the checks need an opened file system.
@@ -179,6 +181,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void close() throws ListenerException {
+		log.debug("Closing the FS");
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
@@ -199,12 +202,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public String getPhysicalDestinationName() {
 		StringBuilder destination = new StringBuilder(getFileSystem().getPhysicalDestinationName());
-		if(getInputFolder() != null) destination.append(" inputFolder ["+getInputFolder()+"]");
-		if(getInProcessFolder() != null) destination.append(" inProcessFolder ["+getInProcessFolder()+"]");
-		if(getProcessedFolder() != null) destination.append(" processedFolder ["+getProcessedFolder()+"]");
-		if(getErrorFolder() != null) destination.append(" errorFolder ["+getErrorFolder()+"]");
-		if(getLogFolder() != null) destination.append(" logFolder ["+getLogFolder()+"]");
+		if(getInputFolder() != null) destination.append(" inputFolder [").append(getInputFolder()).append("]");
+		if(getInProcessFolder() != null) destination.append(" inProcessFolder [").append(getInProcessFolder()).append("]");
+		if(getProcessedFolder() != null) destination.append(" processedFolder [").append(getProcessedFolder()).append("]");
+		if(getErrorFolder() != null) destination.append(" errorFolder [").append(getErrorFolder()).append("]");
+		if(getLogFolder() != null) destination.append(" logFolder [").append(getLogFolder()).append("]");
 
+		log.debug("Physical destination name: [{}]", destination);
 		return destination.toString();
 	}
 
@@ -215,7 +219,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+		log.debug("Get Raw Message");
 		FS fileSystem=getFileSystem();
+		log.debug("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
 			if (ds==null) {
 				return null;
@@ -254,6 +260,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
+		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
 		if ((rawMessageOrWrapper instanceof MessageWrapper)) {
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
@@ -263,16 +270,16 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 		} else {
 			@SuppressWarnings("unchecked")
-			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F
+			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, then it must be an F
 			try {
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(rawMessage);
-					return;
 				}
 			} catch (FileSystemException e) {
 				throw new ListenerException("Could not copy or delete file ["+fileSystem.getName(rawMessage)+"]",e);
 			}
 		}
+		log.debug("After Message Processed - end");
 	}
 
 	/**
@@ -280,6 +287,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 */
 	@Override
 	public Message extractMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		log.debug("Extract message from raw message");
 		try {
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
 				return new Message(getFileSystem().getName(rawMessage));
@@ -371,6 +379,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
 	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
+		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
 			if (!getFileSystem().exists(message) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.

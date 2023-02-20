@@ -7,7 +7,7 @@ import java.io.Writer;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseMigratorMock extends DatabaseMigratorBase {
 
