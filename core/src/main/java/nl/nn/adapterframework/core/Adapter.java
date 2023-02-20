@@ -135,7 +135,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
 
-	private RunStateManager runState = new RunStateManager();
+	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
@@ -158,7 +158,7 @@ public class Adapter implements IAdapter, NamedBean {
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
-		log.debug("configuring adapter [" + getName() + "]");
+		log.debug("configuring adapter [{}]", name);
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
 		}
@@ -223,7 +223,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("already configured receiver, skipping");
 		}
 
-		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
+		log.info("Adapter [{}] is initializing receiver [{}]", name, receiver.getName());
 		receiver.setAdapter(this);
 		try {
 			receiver.configure();
@@ -242,7 +242,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("Adapter [" + getName() + "] "+msg);
+		log.warn("Adapter [{}] {}", name, msg);
 		getMessageKeeper().warn(msg);
 	}
 
@@ -250,7 +250,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
-		log.error("Adapter [" + getName() + "] " + msg, t);
+		log.error("Adapter [{}] {}", name, msg, t);
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
@@ -674,7 +674,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
 
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
-				log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
+				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
@@ -726,7 +726,8 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 
 	/**
@@ -745,7 +746,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
-		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
+		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 	@Override
 	public PipeLine getPipeLine() {
@@ -776,7 +777,7 @@ public class Adapter implements IAdapter, NamedBean {
 			case STARTED:
 			case STOPPING:
 			case EXCEPTION_STOPPING:
-				log.warn("cannot start adapter ["+getName()+"] that is stopping, starting or already started");
+				log.warn("cannot start adapter [{}] that is stopping, starting or already started", name);
 				return;
 			default:
 				break;
@@ -789,13 +790,13 @@ public class Adapter implements IAdapter, NamedBean {
 				try {
 					// See also Receiver.startRunning()
 					if (!configurationSucceeded) {
-						log.error("configuration of adapter [" + getName() + "] did not succeed, therefore starting the adapter is not possible");
+						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
 						runState.setRunState(RunState.ERROR);
 						return;
 					}
 					if (configuration.isUnloadInProgressOrDone()) {
-						log.error("configuration of adapter [" + getName() + "] unload in progress or done, therefore starting the adapter is not possible");
+						log.error("configuration of adapter [{}] unload in progress or done, therefore starting the adapter is not possible", name);
 						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
 						return;
 					}
@@ -813,7 +814,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 					// start the pipeline
 					try {
-						log.debug("Adapter [" + getName() + "] is starting pipeline");
+						log.debug("Adapter [{}] is starting pipeline", name);
 						pipeline.start();
 					} catch (PipeStartException pre) {
 						addErrorMessageToMessageKeeper("got error starting PipeLine", pre);
@@ -829,7 +830,7 @@ public class Adapter implements IAdapter, NamedBean {
 					// this allows the use of test-pipeline without (running) receivers
 					runState.setRunState(RunState.STARTED);
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
-					log.info("Adapter [" + getName() + "] up and running");
+					log.info("Adapter [{}] up and running", name);
 
 					// starting receivers
 					for (Receiver<?> receiver: receivers) {
@@ -875,13 +876,13 @@ public class Adapter implements IAdapter, NamedBean {
 						case STARTING:
 						case STOPPING:
 						case STOPPED:
-							log.warn("adapter ["+getName()+"] currently in state [" + getRunState() + "], ignoring stop() command");
+							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunStateAsString());
 							return;
 						default:
 							break;
 					}
 					runState.setRunState(RunState.STOPPING);
-					log.debug("Adapter [" + name + "] is stopping receivers");
+					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
 						receiver.stopRunning();
 					}
@@ -892,14 +893,15 @@ public class Adapter implements IAdapter, NamedBean {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
 						while (receiver.getRunState() != RunState.STOPPED) {
-							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
+							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
+							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								log.warn("Interrupted waiting for threads of receiver [" + receiver.getName() + "] to end", e);
+								if (log.isWarnEnabled()) log.warn("Interrupted waiting for threads of receiver [{}] to end", receiver.getName(), e);
 							}
 						}
-						log.info("Adapter [" + getName() + "] successfully stopped receiver [" + receiver.getName() + "]");
+						log.info("Adapter [{}] successfully stopped receiver [{}]", name, receiver.getName());
 					}
 					int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
 					if (currentNumOfMessagesInProcess > 0) {
@@ -907,7 +909,7 @@ public class Adapter implements IAdapter, NamedBean {
 						warn(msg);
 					}
 					waitForNoMessagesInProcess();
-					log.debug("Adapter [" + name + "] is stopping pipeline");
+					log.debug("Adapter [{}] is stopping pipeline", name);
 					pipeline.stop();
 					//Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
