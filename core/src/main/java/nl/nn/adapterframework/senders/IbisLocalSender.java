@@ -44,10 +44,16 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * Posts a message to another IBIS-adapter in the same IBIS instance.
- *
- * Returns exit.code as forward name to SenderPipe.
- *
+ * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
+ * that has state {@link nl.nn.adapterframework.core.PipeLine.ExitState#ERROR}, an error is considered to happen
+ * in the caller which means that the <code>exception</code> forward is followed if it is present.
+ * <p/>
+ * <p/>
+ * Returns exit.name as forward name to SenderPipe. For example, if the called adapter has an exit state with name
+ * <code>XYZ</code>, then the {@link nl.nn.adapterframework.pipes.SenderPipe} supports a forward with name <code>XYZ</code>
+ * that is followed when the called adapter exits with the mentioned exit.
+ * <p/>
+ * <p/>
  * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
