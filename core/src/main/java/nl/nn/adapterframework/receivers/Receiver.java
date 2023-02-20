@@ -927,7 +927,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		PipeLineResult plr = new PipeLineResult();
 		Message result=new Message("<error>"+XmlUtils.encodeChars(comments)+"</error>");
 		plr.setResult(result);
-		plr.setState(ExitState.ERROR);
+		plr.setState(ExitState.REJECTED);
 		if (getSender()!=null) {
 			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {

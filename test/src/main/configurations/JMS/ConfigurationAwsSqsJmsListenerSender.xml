@@ -38,9 +38,9 @@
 	</adapter>
 
 	<adapter name="AWS SQS JmsFFListener" active="${active.aws.sqs}">
-		<receiver name="JmsFFListener" maxRetries="2">
+		<receiver name="JmsFFListener" maxRetries="1">
 			<listener className="nl.nn.adapterframework.jms.JmsListener" acknowledgeMode="client"
-				queueConnectionFactoryName="jms/qcf-aws_sqs"
+				queueConnectionFactoryName="jms/qcf-aws_sqs" cacheMode="CACHE_CONSUMER"
 				destinationName="i4testiaf_ff" 
 				useReplyTo="false" pollGuardInterval="-1" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"

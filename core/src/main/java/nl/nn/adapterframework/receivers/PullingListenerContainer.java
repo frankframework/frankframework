@@ -250,7 +250,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
 									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
-										log.debug("Transaction Started, Get Message from Listener");
+										log.trace("Transaction Started, Get Message from Listener");
 									}
 									rawMessage = listener.getRawMessage(threadContext);
 								}
@@ -270,7 +270,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 							if (rawMessage == null) {
 								if (txStatus!=null) {
-									log.debug("Rollback; raw message == null");
+									log.trace("Rollback; raw message == null");
 									txManager.rollback(txStatus);
 								}
 								return;
