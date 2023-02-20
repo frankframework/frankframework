@@ -5,7 +5,7 @@ services:
         restart: unless-stopped
         volumes:
           - type: bind
-            source: ../../../test/src/test/testtool/
+            source: ../../test/src/test/testtool/
             target: /opt/frank/testtool-ext
         ports:
             - "80:9080"
