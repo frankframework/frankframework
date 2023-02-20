@@ -169,7 +169,19 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 
 
+	@Override
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
+		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
+			Session session = (Session)threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+			if (session!=null) {
+				releaseSession(session);
+			}
+		}
+	}
 
+
+	@Override
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
 		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {

@@ -90,9 +90,10 @@ public class AmazonSqsFactoryTest {
 		log.info("queue ["+senderQueue+"]");
 
 		log.debug("reading all messages from queue");
-		for (TextMessage message=readMessage(queueName); message!=null; message=readMessage(queueName)) {
-			// loop
-		}
+		TextMessage message;
+		do {
+			message=readMessage(queueName);
+		} while (message!=null);
 
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
@@ -137,7 +138,10 @@ public class AmazonSqsFactoryTest {
 		log.info("queue ["+senderQueue+"]");
 
 		log.debug("reading all messages from queue");
-		for (TextMessage message=readMessage(queueName); message!=null; message=readMessage(queueName));
+		TextMessage message;
+		do {
+			message=readMessage(queueName);
+		} while (message!=null);
 
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
