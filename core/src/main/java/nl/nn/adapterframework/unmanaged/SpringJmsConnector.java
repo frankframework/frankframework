@@ -279,7 +279,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				getReceiver().processRawMessage(listener, message, pipeLineSession, false);
 				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", displayTransactionStatus(txStatus));
 			} catch (ListenerException e) {
-				getReceiver().increaseRetryIntervalAndWait(e, logPrefix);
 				if (txStatus != null) {
 					txStatus.setRollbackOnly();
 				}
