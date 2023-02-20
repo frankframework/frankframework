@@ -88,10 +88,12 @@ public class AmazonSqsFactoryTest {
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
 		log.info("queue ["+senderQueue+"]");
-		
+
 		log.debug("reading all messages from queue");
-		for (TextMessage message=readMessage(queueName); message!=null; message=readMessage(queueName));
-		
+		for (TextMessage message=readMessage(queueName); message!=null; message=readMessage(queueName)) {
+			// loop
+		}
+
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
 		TextMessage sent = senderSession.createTextMessage("Hello World!");
@@ -100,7 +102,7 @@ public class AmazonSqsFactoryTest {
 		assertNotNull(messageId);
 		senderSession.close();
 		connection.close();
-		
+
 
 		log.debug("reading message");
 		connection = (SQSConnection) createConnection();
@@ -110,9 +112,9 @@ public class AmazonSqsFactoryTest {
 		Queue receiverQueue = receiverSsession.createQueue(queueName);
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
 		TextMessage received = (TextMessage)consumer.receive(1000);
-		
+
 		assertNotNull(received);
-		
+
 		assertEquals(sent.getJMSMessageID(), received.getJMSMessageID());
 		assertEquals(sent.getText(), received.getText());
 
@@ -122,7 +124,7 @@ public class AmazonSqsFactoryTest {
 		receiverSsession.close();
 		connection.close();
 	}
-	
+
 	@Test
 	public void testSendAndReceiveMessageClientAcknowledge() throws JMSException, InterruptedException {
 		// arrange
@@ -133,10 +135,10 @@ public class AmazonSqsFactoryTest {
 		Session senderSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		Queue senderQueue = senderSession.createQueue(queueName);
 		log.info("queue ["+senderQueue+"]");
-		
+
 		log.debug("reading all messages from queue");
 		for (TextMessage message=readMessage(queueName); message!=null; message=readMessage(queueName));
-		
+
 		log.debug("sending message");
 		MessageProducer producer = senderSession.createProducer(senderQueue);
 		TextMessage sent = senderSession.createTextMessage("Hello World!");
@@ -145,7 +147,7 @@ public class AmazonSqsFactoryTest {
 		assertNotNull(messageId);
 		senderSession.close();
 		connection.close();
-		
+
 
 		log.debug("reading message");
 		connection = (SQSConnection) createConnection();
@@ -155,15 +157,15 @@ public class AmazonSqsFactoryTest {
 		Queue receiverQueue = receiverSsession.createQueue(queueName);
 		MessageConsumer consumer = receiverSsession.createConsumer(receiverQueue);
 		TextMessage received = (TextMessage)consumer.receive(1000);
-		
+
 		assertNotNull(received);
-		
+
 		assertEquals(sent.getJMSMessageID(), received.getJMSMessageID());
 		assertEquals(sent.getText(), received.getText());
 
 		log.debug("sleep 30 seconds");
 		Thread.sleep(30000);
-		
+
 		log.debug("rereading message");
 		// we did not acknowledge the message, it should be visibile again after the visibility timeout expires
 		received = (TextMessage)consumer.receive(1000);
@@ -174,7 +176,7 @@ public class AmazonSqsFactoryTest {
 		receiverSsession.close();
 		connection.close();
 	}
-	
+
 	private TextMessage readMessage(String queueName) throws JMSException {
 		SQSConnection connection = (SQSConnection) createConnection();
 		connection.start();
@@ -190,5 +192,5 @@ public class AmazonSqsFactoryTest {
 		connection.close();
 		return received;
 	}
-	
+
 }
