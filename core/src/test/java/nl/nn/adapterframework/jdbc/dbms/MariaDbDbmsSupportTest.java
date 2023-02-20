@@ -24,4 +24,10 @@ public class MariaDbDbmsSupportTest {
 		MariaDbDbmsSupport d = new MariaDbDbmsSupport("10.6.1");
 		assertTrue(d.hasSkipLockedFunctionality());
 	}
+
+	@Test
+	public void testHasSkipLockedServerVersion() {
+		MariaDbDbmsSupport d = new MariaDbDbmsSupport("5.5.5-10.6.5-MariaDB-1:10.6.5+maria~focal");
+		assertTrue(d.hasSkipLockedFunctionality());
+	}
 }
