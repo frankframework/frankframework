@@ -209,7 +209,7 @@
 				<!-- Use MySQL driver for MariaDB for proper XA support. -->
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
 					<driver>mysql</driver>
-					<xa-datasource-property name="URL">jdbc:mysql://${jdbc.hostname:host.docker.internal}:3307/testiaf</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:mysql://${jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
@@ -233,7 +233,7 @@
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
-				</xa-datasource>	
+				</xa-datasource>
 				<!-- End of Framework datasources -->
 				<drivers>
 					<driver name="h2" module="com.h2database.h2">
@@ -566,7 +566,7 @@
 				<sampler-configuration sampler-type="const" sampler-param="1.0"/>
 			</jaeger-tracer>
 		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:naming:2.0">   
+		<subsystem xmlns="urn:jboss:domain:naming:2.0">
 			<remote-naming/>
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
@@ -575,14 +575,14 @@
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
 		<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
-			<resource-adapters>  
-				<resource-adapter id="activemq">  
+			<resource-adapters>
+				<resource-adapter id="activemq">
 				  	<archive>activemq-rar.rar</archive>
-					<transaction-support>XATransaction</transaction-support>  
-					<config-property name="ServerUrl">  
+					<transaction-support>XATransaction</transaction-support>
+					<config-property name="ServerUrl">
 						tcp://${jms.hostname:host.docker.internal}:61616
-					</config-property>  
-					<connection-definitions>  
+					</config-property>
+					<connection-definitions>
 						<connection-definition class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory" jndi-name="jms/qcf-activemq" enabled="true" use-java-context="true" pool-name="jms/qcf-activemq" use-ccm="true">
 							<xa-pool>
 								<min-pool-size>1</min-pool-size>
@@ -590,20 +590,20 @@
 								<is-same-rm-override>false</is-same-rm-override>
 							</xa-pool>
 						</connection-definition>
-					</connection-definitions>  
-					<admin-objects>  
-						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_in-activemq" use-java-context="true" pool-name="jms/i4testiaf_in">  
-							<config-property name="PhysicalName">dynamicQueues/Q.TEST.IN</config-property>  
-						</admin-object>  
-						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_out-activemq" use-java-context="true" pool-name="jms/i4testiaf_out">  
-							<config-property name="PhysicalName">dynamicQueues/Q.TEST.OUT</config-property>   
-						</admin-object>  
-						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_ff-activemq" use-java-context="true" pool-name="jms/i4testiaf_ff">  
-							<config-property name="PhysicalName">dynamicQueues/Q.TEST.FF</config-property>  
-						</admin-object>  
-					</admin-objects>  
+					</connection-definitions>
+					<admin-objects>
+						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_in-activemq" use-java-context="true" pool-name="jms/i4testiaf_in">
+							<config-property name="PhysicalName">dynamicQueues/Q.TEST.IN</config-property>
+						</admin-object>
+						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_out-activemq" use-java-context="true" pool-name="jms/i4testiaf_out">
+							<config-property name="PhysicalName">dynamicQueues/Q.TEST.OUT</config-property>
+						</admin-object>
+						<admin-object class-name="org.apache.activemq.command.ActiveMQQueue" jndi-name="jms/i4testiaf_ff-activemq" use-java-context="true" pool-name="jms/i4testiaf_ff">
+							<config-property name="PhysicalName">dynamicQueues/Q.TEST.FF</config-property>
+						</admin-object>
+					</admin-objects>
 				</resource-adapter>
-	 		</resource-adapters> 
+	 		</resource-adapters>
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:security-manager:1.0">
 			<deployment-permissions>

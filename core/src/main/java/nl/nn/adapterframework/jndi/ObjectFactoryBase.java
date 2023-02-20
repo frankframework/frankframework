@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @param <L> Class looked up
  */
 public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	protected Map<String,O> objects = new ConcurrentHashMap<>();
 

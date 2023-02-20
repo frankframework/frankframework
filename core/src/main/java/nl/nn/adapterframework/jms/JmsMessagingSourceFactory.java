@@ -89,7 +89,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			throw new JmsException("Could not find connection factory ["+cfName+"]");
 		}
 		// wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring
-		// see http://forum.springsource.org/archive/index.php/t-43700.html
+		// see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
 		if (jmsFacade.useJms102()) {
 			if (connectionFactory instanceof QueueConnectionFactory) {
 				connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory)connectionFactory);
@@ -137,6 +137,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		return info;
 	}
 
+	//Wrapping seems WebsShere specific, shouldn't this be done by the QueueConnectionFactoryFactory
 	private class ConnectionFactoryWrapper implements ConnectionFactory {
 		private ConnectionFactory wrapped;
 

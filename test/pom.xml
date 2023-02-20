@@ -18,6 +18,13 @@
 	</properties>
 
 	<dependencies>
+		<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jms_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- This dependency is here because of the IbisMetricsPipe -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -305,7 +312,7 @@
 				<dependency>
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jms_1.1_spec</artifactId>
-					<scope>runtime</scope>
+					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.geronimo.specs</groupId>
