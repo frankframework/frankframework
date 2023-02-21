@@ -1109,7 +1109,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
-	private void setMailboxOnService(ExchangeService service, String mailbox) {
+	private void setMailboxOnService(ExchangeService service, String mailbox) throws FileSystemException {
 		log.debug("Set mailservice mailbox to [{}]", mailbox);
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 
@@ -1118,6 +1118,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 			ImpersonatedUserId impersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, mailbox);
 			log.debug("Set mailservice impersonated user ID to [{}]", impersonatedUserId::getId);
 			service.setImpersonatedUserId(impersonatedUserId);
+			//refresh token
+			setCredentialsOnService(service);
 		}
 	}
 
