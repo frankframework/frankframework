@@ -30,4 +30,16 @@ public class MariaDbDbmsSupportTest {
 		MariaDbDbmsSupport d = new MariaDbDbmsSupport("5.5.5-10.6.5-MariaDB-1:10.6.5+maria~focal");
 		assertTrue(d.hasSkipLockedFunctionality());
 	}
+
+	@Test
+	public void testHasSkipLockedRdsLow() {
+		MariaDbDbmsSupport d = new MariaDbDbmsSupport("5.5.5-10.4.26-MariaDB-log");
+		assertFalse(d.hasSkipLockedFunctionality());
+	}
+
+	@Test
+	public void testHasSkipLockedRdsHigh() {
+		MariaDbDbmsSupport d = new MariaDbDbmsSupport("5.5.5-10.6.26-MariaDB-log");
+		assertTrue(d.hasSkipLockedFunctionality());
+	}
 }

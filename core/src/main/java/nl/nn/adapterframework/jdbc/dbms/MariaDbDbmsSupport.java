@@ -54,16 +54,8 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	public boolean hasSkipLockedFunctionality() {
 		if (dbmsHasSkipLockedFunctionality==null) {
 			if (StringUtils.isNotEmpty(productVersion)) {
-				String strippedProductVersion = productVersion;
-				int colonPos = productVersion.indexOf(":");
-				if (colonPos>=0) {
-					String secondPart=productVersion.substring(colonPos+1);
-					int plusPos=secondPart.indexOf("+");
-					if (plusPos>0) {
-						strippedProductVersion=secondPart.substring(0, plusPos);
-					}
-					log.debug("stripped productversion [{}] down to [{}]", productVersion, strippedProductVersion);
-				}
+				String[] productVersionArr = productVersion.split("-");
+				String strippedProductVersion = productVersionArr.length>1 ? productVersionArr[1] : productVersion;
 				DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
 				DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
 				dbmsHasSkipLockedFunctionality = thisVersion.compareTo(targetVersion) >= 0;
