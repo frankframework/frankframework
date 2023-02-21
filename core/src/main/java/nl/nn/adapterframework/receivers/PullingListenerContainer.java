@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,11 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -55,7 +59,7 @@ import nl.nn.adapterframework.util.Semaphore;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PullingListenerContainer<M> implements IThreadCountControllable {
+public class PullingListenerContainer<M> implements IThreadCountControllable, HasStatistics {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransactionDefinition txNew = null;
@@ -69,6 +73,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private boolean idle = false; // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
 	private int maxThreadCount = 1;
+
+	private @Getter StatisticsKeeper messagePeekingStatistics = null;
+	private @Getter StatisticsKeeper messageReceivingStatistics = new StatisticsKeeper("receive request");
 
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -92,6 +99,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				txDef.setTimeout(receiver.getTransactionTimeout());
 			}
 			txNew = txDef;
+		}
+		if (receiver.getListener() instanceof IPeekableListener) {
+			messagePeekingStatistics = new StatisticsKeeper("peek request");
 		}
 	}
 
@@ -242,7 +252,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (isIdle() && listener instanceof IPeekableListener) {
 									IPeekableListener<?> peekableListener = (IPeekableListener<?>) listener;
 									if (peekableListener.isPeekUntransacted()) {
+										long startPeeking = System.currentTimeMillis();
 										messageAvailable = peekableListener.hasRawMessageAvailable();
+										long endPeeking = System.currentTimeMillis();
+										messagePeekingStatistics.addValue(endPeeking-startPeeking);
 									}
 								}
 								if (messageAvailable) {
@@ -252,7 +265,10 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 										txStatus = txManager.getTransaction(txNew);
 										log.debug("Transaction Started, Get Message from Listener");
 									}
+									long startReceiving = System.currentTimeMillis();
 									rawMessage = listener.getRawMessage(threadContext);
+									long endReceiving = System.currentTimeMillis();
+									messageReceivingStatistics.addValue(endReceiving-startReceiving);
 								}
 								resetRetryInterval();
 								setIdle(rawMessage==null);
@@ -414,7 +430,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) {
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
 					.map(StackTraceElement::toString)
@@ -490,6 +506,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			log.trace("{} Set PullingListenerContainer idle={} - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, ()->b, this::toString);
 		}
 	}
+
 	public boolean isIdle() {
 		log.trace("{} Check if PullingListenerContainer is idle - synchronize (lock) on PullingListenerContainer[{}]", receiver::getLogPrefix, this::toString);
 		try {
@@ -499,6 +516,16 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		} finally {
 			log.trace("{} Check if PullingListenerContainer is idle - lock on PullingListenerContainer[{}] released", receiver::getLogPrefix, this::toString);
 		}
+	}
+
+	@Override
+	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException {
+		if (messagePeekingStatistics!=null) {
+			hski.handleStatisticsKeeper(data, messagePeekingStatistics);
+			messagePeekingStatistics.performAction(action);
+		}
+		hski.handleStatisticsKeeper(data, messageReceivingStatistics);
+		messageReceivingStatistics.performAction(action);
 	}
 
 }

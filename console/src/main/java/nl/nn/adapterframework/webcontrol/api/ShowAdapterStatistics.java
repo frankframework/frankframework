@@ -1,18 +1,18 @@
 /*
-Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
@@ -31,10 +31,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.management.web.ApiException;
 import nl.nn.adapterframework.management.web.Relation;
+import nl.nn.adapterframework.receivers.PullingListenerContainer;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.ScalarMetricBase;
@@ -59,6 +61,7 @@ public final class ShowAdapterStatistics extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStatistics(@PathParam("adapterName") String adapterName) throws ApiException {
 
+		// TODO: implement this method using a StatisticsKeeperIterationHandler
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
 
 		statisticsMap.put("labels", StatisticsKeeper.getLabels());
@@ -97,6 +100,19 @@ public final class ShowAdapterStatistics extends Base {
 			receiverMap.put("class", receiver.getClass().getName());
 			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
+
+			if (receiver.getListener() instanceof IPullingListener) {
+				ArrayList<Map<String, Object>> receiveStatsMap = new ArrayList<Map<String, Object>>();
+				if (receiver.getListenerContainer()!=null) {
+					PullingListenerContainer container = receiver.getListenerContainer();
+					if (container.getMessagePeekingStatistics()!=null) {
+						receiveStatsMap.add(container.getMessagePeekingStatistics().asMap());
+					}
+					receiveStatsMap.add(container.getMessageReceivingStatistics().asMap());
+					receiveStatsMap.add(receiver.getMessageExtractionStatistics().asMap());
+				}
+				receiverMap.put("receiving", receiveStatsMap);
+			}
 
 			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
 //			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));

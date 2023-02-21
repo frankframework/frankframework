@@ -49,6 +49,24 @@
 							</tbody>
 						</table>
 					</div>
+					<div class="col-md-12 m-t-md table-responsive" > <!-- could/should have something like ng-if="count(stats.receivers.receiving)>0" -->
+						<h4>Receive statistics for receivers (in ms)</h4>
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Receiver</th>
+									<th>Statistic</th>
+									<th ng-repeat="name in statisticsTimeBoundaries" ng-if="$index > 0">{{::name}}</th>
+								</tr>
+							</thead>
+							<tbody ng-repeat="receiver in stats.receivers">
+								<tr ng-repeat="stat in ::receiver.receiving">
+									<td>{{receiver.name}}</td>
+									<td ng-repeat="values in ::stat | formatStatistics:statisticsTimeBoundaries">{{::values}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 					<div class="col-md-12 m-t-md table-responsive">
 						<h4>Process statistics for receivers (in ms)</h4>
 						<table class="table">

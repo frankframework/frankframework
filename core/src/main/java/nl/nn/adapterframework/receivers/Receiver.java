@@ -296,7 +296,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private List<StatisticsKeeper> idleStatistics = new ArrayList<>();
 	private List<StatisticsKeeper> queueingStatistics;
 
-	private StatisticsKeeper messageExtractionStatistics = new StatisticsKeeper("request extraction");
+	private @Getter StatisticsKeeper messageExtractionStatistics = new StatisticsKeeper("extract request");
 
 //	private StatisticsKeeper requestSizeStatistics = new StatisticsKeeper("request size");
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
@@ -1677,7 +1677,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
 			hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
 			hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
+
+			Object rstatData=hski.openGroup(recData,null,"receiveStats");
+			if (listenerContainer!=null) {
+				listenerContainer.iterateOverStatistics(hski, rstatData, action);
+			}
+			hski.handleStatisticsKeeper(rstatData, messageExtractionStatistics);
 			messageExtractionStatistics.performAction(action);
+			hski.closeGroup(rstatData);
+
 			Object pstatData=hski.openGroup(recData,null,"procStats");
 			for(StatisticsKeeper pstat:getProcessStatistics()) {
 				hski.handleStatisticsKeeper(pstatData,pstat);
