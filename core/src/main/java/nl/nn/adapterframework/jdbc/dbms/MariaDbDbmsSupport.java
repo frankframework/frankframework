@@ -54,18 +54,24 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	public boolean hasSkipLockedFunctionality() {
 		if (dbmsHasSkipLockedFunctionality==null) {
 			if (StringUtils.isNotEmpty(productVersion)) {
-				String[] productVersionArr = productVersion.split("-");
-				String strippedProductVersion = productVersionArr.length>1 ? productVersionArr[1] : productVersion;
-				DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
-				DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
-				dbmsHasSkipLockedFunctionality = thisVersion.compareTo(targetVersion) >= 0;
-				log.debug("based on Mariadb productversion [{}] dbms hasSkipLockedFunctionality [{}]", strippedProductVersion, dbmsHasSkipLockedFunctionality);
+				dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
 			} else {
 				dbmsHasSkipLockedFunctionality = false; // to be safe
 			}
 		}
 		return dbmsHasSkipLockedFunctionality;
 	}
+
+	private boolean determineSkipLockedCapability(String productVersion) {
+		String[] productVersionArr = productVersion.split("-");
+		String strippedProductVersion = productVersionArr.length>1 ? productVersionArr[1] : productVersion;
+		DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
+		DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
+		boolean result = thisVersion.compareTo(targetVersion) >= 0;
+		log.debug("based on Mariadb productversion [{}] dbms hasSkipLockedFunctionality [{}]", strippedProductVersion, result);
+		return result;
+	}
+
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
