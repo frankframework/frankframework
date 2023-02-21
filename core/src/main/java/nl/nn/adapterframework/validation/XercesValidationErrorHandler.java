@@ -37,24 +37,32 @@ class XercesValidationErrorHandler implements XMLErrorHandler {
 
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
-		if (allowConsoleWarnings) {
-			ConfigurationWarnings.add(source, log, e.getMessage(), SuppressKeys.XSD_VALIDATION_SUPPRESS_KEY);
+		warnAndPotentiallyThrow(e, SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+	}
+
+	@Override
+	public void error(String domain, String key, XMLParseException e) throws XNIException {
+		warnAndPotentiallyThrow(e, SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+	}
+
+	@Override
+	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
+		warnAndPotentiallyThrow(e, null);
+		throw e;
+	}
+
+	private void warnAndPotentiallyThrow(XMLParseException e, SuppressKeys suppressKey) {
+		if (suppressKey!=null) {
+			if (allowConsoleWarnings) {
+				ConfigurationWarnings.add(source, log, e.toString(), suppressKey);
+			}
+		} else {
+			ConfigurationWarnings.add(source, log, e.toString());
 		}
 
 		// In case the XSD doesn't exist throw an exception to prevent the adapter from starting.
 		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
 			throw e;
 		}
-	}
-
-	@Override
-	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		warning(domain, key, e);
-	}
-
-	@Override
-	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		warning(domain, key, e);
-		throw e;
 	}
 }
