@@ -37,10 +37,10 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 	public BtmDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
-		minPoolSize = appConstants.getInt(MIN_POOL_SIZE_PROPERTY, minPoolSize);
-		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
-		maxIdleTime = appConstants.getInt(MAX_IDLE_TIME_PROPERTY, maxIdleTime);
-		maxLifeTime = appConstants.getInt(MAX_LIFE_TIME_PROPERTY, maxLifeTime);
+		minPoolSize = appConstants.getInt("transactionmanager.btm.jdbc.connection.minPoolSize", minPoolSize);
+		maxPoolSize = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxPoolSize", maxPoolSize);
+		maxIdleTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxIdleTime", maxIdleTime);
+		maxLifeTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxLifeTime", maxLifeTime);
 	}
 
 	@Override

@@ -5,6 +5,7 @@
 	<!ENTITY ConfigurationJmsListenerSender SYSTEM "./ConfigurationJmsListenerSender.xml">
 	<!ENTITY ConfigurationWsdlGenerator SYSTEM "./ConfigurationWsdlGenerator.xml">
 	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
+	<!ENTITY TestHighDeliveryCountWithEsbJmsListener SYSTEM "./TestHighDeliveryCountWithEsbJmsListener.xml">
 ]>
 <configuration>
 	&ConfigurationCompactMessage;
@@ -13,4 +14,5 @@
 	&ConfigurationJmsListenerSender;
 	&ConfigurationWsdlGenerator;
 	&ConfigurationJmsHeaders;
+	&TestHighDeliveryCountWithEsbJmsListener;
 </configuration>
