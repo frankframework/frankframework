@@ -2,14 +2,14 @@ package nl.nn.adapterframework.jta.narayana;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Test;
 
 import nl.nn.adapterframework.util.AppConstants;
 
 public class NarayanaConnectionFactoryFactoryTest {
 
-	@AfterAll
+	@AfterClass
 	public static void tearDown() {
 		AppConstants.removeInstance();
 	}

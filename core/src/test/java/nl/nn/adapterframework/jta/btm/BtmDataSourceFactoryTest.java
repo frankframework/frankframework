@@ -2,15 +2,15 @@ package nl.nn.adapterframework.jta.btm;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Test;
 
 import nl.nn.adapterframework.util.AppConstants;
 
 
 public class BtmDataSourceFactoryTest {
 
-	@AfterAll
+	@AfterClass
 	public static void tearDown() {
 		AppConstants.removeInstance();
 	}

@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.jta.narayana;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -17,34 +17,48 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.jboss.narayana.jta.jms.TransactionHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NarayanaTransactionHelperTest {
 
 	private TransactionManager txManager;
 	private TransactionHelper txHelper;
 
-	@BeforeEach
+	@Before
 	public void setup() {
 		txManager = mock(TransactionManager.class);
 		txHelper = new NarayanaTransactionHelper(txManager);
 	}
 
-	@ParameterizedTest
-	@ValueSource(ints = {Status.STATUS_ACTIVE, Status.STATUS_PREPARING, Status.STATUS_MARKED_ROLLBACK})
-	public void isActiveTransactionAvailable(int status) throws Exception {
-		when(txManager.getStatus()).thenReturn(status);
+	@Test
+	public void testIsActiveTransactionAvailable1() throws Exception {
+		when(txManager.getStatus()).thenReturn(Status.STATUS_ACTIVE);
+		assertTrue(txHelper.isTransactionAvailable());
+		verify(txManager, times(2)).getStatus();
+	}
+	@Test
+	public void testIsActiveTransactionAvailable2() throws Exception {
+		when(txManager.getStatus()).thenReturn(Status.STATUS_PREPARING);
+		assertTrue(txHelper.isTransactionAvailable());
+		verify(txManager, times(2)).getStatus();
+	}
+	@Test
+	public void testIsActiveTransactionAvailable3() throws Exception {
+		when(txManager.getStatus()).thenReturn(Status.STATUS_MARKED_ROLLBACK);
 		assertTrue(txHelper.isTransactionAvailable());
 		verify(txManager, times(2)).getStatus();
 	}
 
-	@ParameterizedTest
-	@ValueSource(ints = {Status.STATUS_ROLLEDBACK, Status.STATUS_NO_TRANSACTION})
-	public void isNotActiveTransactionAvailable(int status) throws Exception {
-		when(txManager.getStatus()).thenReturn(status);
+	@Test
+	public void isNotActiveTransactionAvailable() throws Exception {
+		when(txManager.getStatus()).thenReturn(Status.STATUS_ROLLEDBACK);
+		assertFalse(txHelper.isTransactionAvailable());
+		verify(txManager, atMost(2)).getStatus();
+	}
+	@Test
+	public void isNotActiveTransactionAvailable2() throws Exception {
+		when(txManager.getStatus()).thenReturn(Status.STATUS_NO_TRANSACTION);
 		assertFalse(txHelper.isTransactionAvailable());
 		verify(txManager, atMost(2)).getStatus();
 	}
