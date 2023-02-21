@@ -9,7 +9,7 @@ import java.util.jar.JarFile;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -77,7 +77,7 @@ public class ResourceTest {
 	}
 
 	@Test
-	@Ignore("we do not see this as a problem for situations outside ConfigurationClassLoaded classes")
+	@Disabled("we do not see this as a problem for situations outside ConfigurationClassLoaded classes")
 	public void testResolveOutsideParentsFolder() throws TransformerException {
 		String baseResource = "/org/apache/xerces/impl/Constants.class";
 		String relativeResource = "../dom/CommentImpl.class";
