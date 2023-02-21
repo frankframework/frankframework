@@ -1,5 +1,5 @@
 /*
-Copyright 2020, 2021 WeAreFrank!
+Copyright 2020, 2021, 2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,14 +19,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 
 /**
 * Support for MariaDB.
-* 
+*
 */
 public class MariaDbDbmsSupport extends MySqlDbmsSupport {
+
+	private Boolean dbmsHasSkipLockedFunctionality;
+	private String productVersion;
+
+	public MariaDbDbmsSupport() {
+		this(false);
+	}
+
+	public MariaDbDbmsSupport(String productVersion) {
+		this.productVersion = productVersion;
+	}
+
+	public MariaDbDbmsSupport(boolean dbmsHasSkipLockedFunctionality) {
+		this.dbmsHasSkipLockedFunctionality = dbmsHasSkipLockedFunctionality;
+	}
+
 
 	@Override
 	public Dbms getDbms() {
@@ -35,8 +52,26 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	@Override
 	public boolean hasSkipLockedFunctionality() {
-		return false;
+		if (dbmsHasSkipLockedFunctionality==null) {
+			if (StringUtils.isNotEmpty(productVersion)) {
+				dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
+			} else {
+				dbmsHasSkipLockedFunctionality = false; // to be safe
+			}
+		}
+		return dbmsHasSkipLockedFunctionality;
 	}
+
+	private boolean determineSkipLockedCapability(String productVersion) {
+		String[] productVersionArr = productVersion.split("-");
+		String strippedProductVersion = productVersionArr.length>1 ? productVersionArr[1] : productVersion;
+		DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
+		DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
+		boolean result = thisVersion.compareTo(targetVersion) >= 0;
+		log.debug("based on Mariadb productversion [{}] dbms hasSkipLockedFunctionality [{}]", strippedProductVersion, result);
+		return result;
+	}
+
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
@@ -44,10 +79,9 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT 0"; // Mariadb has no 'skip locked'
-		} else {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE "+ (hasSkipLockedFunctionality() ? "SKIP LOCKED" : "WAIT 1"); // Mariadb used to have no 'skip locked', WAIT 1 is next best
 		}
+		return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
 	}
 
 	@Override
@@ -57,9 +91,8 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		}
 		if (wait < 0) {
 			return selectQuery+(batchSize>0?" LIMIT "+batchSize:""); // Mariadb has no 'skip locked'
-		} else {
-			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
+		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}
 
 	@Override
