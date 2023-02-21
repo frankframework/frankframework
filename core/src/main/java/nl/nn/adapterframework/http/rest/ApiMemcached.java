@@ -40,7 +40,7 @@ public class ApiMemcached implements IApiCache {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private MemcachedClient client = null;
-	private final int DEFAULT_OPERATION_TIMEOUT = 10000;
+	private final int DEFAULT_OPERATION_TIMEOUT = 2500;
 
 	final ConnectionObserver obs = new ConnectionObserver() {
 		@Override
