@@ -24,15 +24,17 @@ best practices and perform security testing before releasing your application.
 
 ## Supported Versions
 
-| Version | Supported          | Security Fixes   | Released         |
+| Version | Supported          | Security Fixes*  | Released         |
 | ------- | ------------------ |----------------- |------------------|
+| latest  | :white_check_mark: |:white_check_mark:|                  |
 | 7.8.x   | :white_check_mark: |:white_check_mark:|                  |
 | 7.7.x   | :white_check_mark: |:white_check_mark:| Mar 29, 2022     |
-| 7.6.x   | :white_check_mark: |:white_check_mark:| Aug 3, 2021      |
-| 7.5.x   | :x:                |:white_check_mark:| Nov 16, 2020     |
+| 7.6.x   | :x:                |:white_check_mark:| Aug 3, 2021      |
+| 7.5.x   | :x:                |:x:               | Nov 16, 2020     |
 | 7.0.x   | :x:                |:x:               | Jun 1, 2018      |
 | < 6.1   | :x:                |:x:               | Dec 13, 2016     |
 
+*Please always update to the latest available release. CVE's are solved on a best-effort basis, on version not older then 1 year after the initial release date (specified in the table above).
 
 ## Reporting a Vulnerability
 
