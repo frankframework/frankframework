@@ -237,7 +237,6 @@
 					<driver>mysql</driver>
 					<xa-datasource-property name="URL">jdbc:mysql://${jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
 					<xa-datasource-property name="sslMode">DISABLED</xa-datasource-property>
-					<xa-datasource-property name="disableMariaDbDriver">true</xa-datasource-property>
 					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
 					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
 					<security>
