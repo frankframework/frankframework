@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1831,7 +1831,7 @@ public class XmlUtils {
 	public static String canonicalize(String input) throws IOException {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
-		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter, true);
 		handler = new CanonicalizeFilter(handler);
 		try {
 			XmlUtils.parseXml(input, handler);

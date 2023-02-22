@@ -198,7 +198,7 @@ public abstract class ValidatorTestBase {
 			@Override
 			public List<Schema> getSchemas() throws ConfigurationException {
 				Set<IXSD> xsds = getXsds();
-				xsds = SchemaUtils.getXsdsRecursive(xsds);
+				xsds = XSD.getXsdsRecursive(xsds);
 				//checkRootValidations(xsds);
 				try {
 					Map<String, Set<IXSD>> xsdsGroupedByNamespace = SchemaUtils.getXsdsGroupedByNamespace(xsds, false);

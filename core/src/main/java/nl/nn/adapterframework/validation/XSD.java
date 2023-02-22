@@ -18,11 +18,15 @@ package nl.nn.adapterframework.validation;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLEventReader;
@@ -261,17 +265,41 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public abstract Reader getReader() throws IOException;
 
-
-	@Override
-	public Set<IXSD> getXsdsRecursive(boolean supportRedifine) throws ConfigurationException {
-		return getXsdsRecursive(new HashSet<IXSD>(), supportRedifine);
+	private static String getNormalizeSystemId(IXSD xsd) {
+		String prefix="";
+		String systemId = xsd.getSystemId();
+		int colonPos = systemId.indexOf(":");
+		if (colonPos>=0) {
+			prefix = systemId.substring(0, colonPos+1);
+			systemId = systemId.substring(colonPos+1);
+		}
+		return prefix+Paths.get(systemId).normalize().toString();
+	}
+	
+	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
+		return getXsdsRecursive(xsds, false);
 	}
 
-	public Set<IXSD> getXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
+	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
+		Map<String,IXSD> xsdsRecursive = new LinkedHashMap<>();
+		int i=0;
+		for (IXSD xsd : xsds) {
+			// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId.
+			String normalizedSystemId = "["+(++i)+"]"+getNormalizeSystemId(xsd);
+			xsdsRecursive.put(normalizedSystemId, xsd);
+			xsd.getXsdsRecursive(xsdsRecursive, supportRedefine);
+		}
+		Set<IXSD> allXsds = new LinkedHashSet<>();
+		allXsds.addAll(xsdsRecursive.values());
+		return allXsds;
+	}
+
+	@Override
+	public void getXsdsRecursive(Map<String,IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		try {
 			Reader reader = getReader();
 			if (reader == null) {
-				return null;
+				return;
 			}
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
@@ -339,8 +367,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 								x.setParentLocation(getResourceBase());
 								x.setRootXsd(false);
 								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
-								if (xsds.add(x)) {
+								String normalizedSystemId = getNormalizeSystemId(x);
+								if (!xsds.containsKey(normalizedSystemId)) {
+									LOG.trace("Adding xsd ["+normalizedSystemId+"] to set ");
+									xsds.put(normalizedSystemId,x);
 									x.getXsdsRecursive(xsds, supportRedefine);
+								} else {
+									LOG.trace("xsd ["+normalizedSystemId+"] already in set ");
 								}
 							}
 						}
@@ -357,7 +390,6 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			LOG.error(message, e);
 			throw new ConfigurationException(message, e);
 		}
-		return xsds;
 	}
 
 	private List<String> listOf(String commaSeparatedItems) {

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.validation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -41,7 +42,7 @@ public interface IXSD extends Schema {
 		return false;
 	}
 
-	Set<IXSD> getXsdsRecursive(boolean supportRedefine) throws ConfigurationException;
+	void getXsdsRecursive(Map<String,IXSD> xsds, boolean supportRedefine) throws ConfigurationException;
 
 	String getImportedSchemaLocationsToIgnore();
 	boolean isUseBaseImportedSchemaLocationsToIgnore();
