@@ -320,7 +320,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 
 	/**
 	 * If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s).
-	 * Alternatively, warnings can be switched off using suppression properties {@value SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY} and {@value SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY}
+	 * Alternatively, warnings can be switched off using suppression properties {@value SuppressKeys#XSD_VALIDATION_WARNINGS_SUPPRESS_KEY}, {@value SuppressKeys#XSD_VALIDATION_ERROR_SUPPRESS_KEY} and {@value SuppressKeys#XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY}
 	 * @ff.default true
 	 */
 	public void setWarn(boolean warn) {

@@ -36,7 +36,8 @@ public enum SuppressKeys {
 	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true),
 	XSLT_STREAMING_SUPRESS_KEY("warnings.suppress.xslt.streaming", true),
 	XSD_VALIDATION_WARNINGS_SUPPRESS_KEY("warnings.suppress.xsd.warning", true),
-	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true);
+	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true),
+	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true);
 
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;

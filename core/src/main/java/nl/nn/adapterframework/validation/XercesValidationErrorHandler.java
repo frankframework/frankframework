@@ -37,21 +37,21 @@ class XercesValidationErrorHandler implements XMLErrorHandler {
 
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
-		warnAndPotentiallyThrow(e, SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+		handleException(e, SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
 	}
 
 	@Override
 	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		warnAndPotentiallyThrow(e, SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+		handleException(e, SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		warnAndPotentiallyThrow(e, null);
+		handleException(e, SuppressKeys.XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY);
 		throw e;
 	}
 
-	private void warnAndPotentiallyThrow(XMLParseException e, SuppressKeys suppressKey) {
+	private void handleException(XMLParseException e, SuppressKeys suppressKey) {
 		if (suppressKey!=null) {
 			if (allowConsoleWarnings) {
 				ConfigurationWarnings.add(source, log, e.toString(), suppressKey);
