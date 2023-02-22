@@ -36,7 +36,7 @@ public enum Dbms {
 	private String key;
 	private String productName;
 	private Class<? extends IDbmsSupport> dbmsSupportClass;
-	
+
 	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
@@ -58,7 +58,7 @@ public enum Dbms {
 	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
 		if (MYSQL.getProductName().equals(product) && productVersion.contains("MariaDB")) {
 			log.debug("Setting databasetype to MARIADB (using MySQL driver)");
-			return new MariaDbDbmsSupport();
+			return new MariaDbDbmsSupport(productVersion);
 		}
 		for (Dbms dbms: values()) {
 			if (dbms.getProductName().equals(product)) {

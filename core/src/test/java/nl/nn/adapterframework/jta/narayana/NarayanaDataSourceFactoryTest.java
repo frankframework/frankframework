@@ -2,26 +2,28 @@ package nl.nn.adapterframework.jta.narayana;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import nl.nn.adapterframework.util.AppConstants;
 
 public class NarayanaDataSourceFactoryTest {
 
+	@AfterClass
+	public static void tearDown() {
+		AppConstants.removeInstance();
+	}
+
 	@Test
 	public void testSetup() {
-		//arrange
+		// Arrange
 		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.setProperty("jdbc.connection.minPoolSize", "1");
-		appConstants.setProperty("jdbc.connection.maxPoolSize", "2");
-		appConstants.setProperty("jdbc.connection.maxIdleTime", "3");
-		appConstants.setProperty("jdbc.connection.maxLifeTime", "4");
+		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "2");
 
-		// act
+		// Act
 		NarayanaDataSourceFactory factory = new NarayanaDataSourceFactory();
 
-		// assert
+		// Assert
 		assertEquals(2, factory.getMaxPoolSize());
-
 	}
 }

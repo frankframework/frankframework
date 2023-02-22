@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.ibm;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -45,7 +45,8 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 	@Override
 	public IMSSender createSender() {
 		return new IMSSender() {
-			TestJMSMessage message = (new TestJMSMessage());
+			TestJMSMessage message = TestJMSMessage.newInstance();
+
 			@Override
 			public String getQueueConnectionFactoryName() {
 				return "TESTQCF";
@@ -71,7 +72,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 			protected Session createSession() throws JmsException {
 				Session s = mock(Session.class);
 				try {
-					doReturn(message).when(s).createBytesMessage();
+					doAnswer(message).when(s).createBytesMessage();
 				} catch (JMSException e) {
 					throw new JmsException(e);
 				}
@@ -85,7 +86,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 				MessageConsumer mc = mock(MessageConsumer.class);
 
 				try {
-					doReturn(message).when(mc).receive(getReplyTimeout());
+					doAnswer(message).when(mc).receive(getReplyTimeout());
 				} catch (Exception e) {
 					throw new JMSException(e.getMessage());
 				}
