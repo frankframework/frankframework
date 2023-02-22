@@ -35,6 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IRedeliveringListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
@@ -55,7 +56,7 @@ import nl.nn.adapterframework.util.DateUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
+public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
 
 	private @Getter long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo=true;
@@ -335,7 +336,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
+	}
 
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError(Map<String, Object> context) {
+		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
