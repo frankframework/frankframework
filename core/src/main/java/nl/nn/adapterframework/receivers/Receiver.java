@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1053,16 +1053,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		processRawMessage(origin, rawMessage, null, -1, false);
 	}
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, session, -1, duplicatesAlreadyChecked);
+	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, boolean historyAlreadyChecked) throws ListenerException {
+		processRawMessage(origin, rawMessage, session, -1, historyAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, long waitingDuration, boolean historyAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		processRawMessage(rawMessage, session, waitingDuration, false, duplicatesAlreadyChecked);
+		processRawMessage(rawMessage, session, waitingDuration, false, historyAlreadyChecked);
 	}
 
 	/**
@@ -1071,7 +1071,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (rawMessageOrWrapper==null) {
 				log.debug(getLogPrefix()+"received null message, returning directly");
@@ -1117,7 +1117,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				LogUtil.setIdsToThreadContext(ctc, messageId, (String)session.get(PipeLineSession.businessCorrelationIdKey));
 				long endExtractingMessage = System.currentTimeMillis();
 				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
+				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, historyAlreadyChecked);
 				try {
 					output.close();
 				} catch (Exception e) {
@@ -1194,7 +1194,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String technicalCorrelationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private Message processMessageInAdapter(Object rawMessageOrWrapper, Message message, String messageId, String technicalCorrelationId, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		long startProcessingTimestamp = System.currentTimeMillis();
 		try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(getAdapter(), messageId, session)) {
 			lastMessageDate = startProcessingTimestamp;
@@ -1272,7 +1272,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			try {
 				final Message messageFinal = message;
-				if (!duplicatesAlreadyChecked && hasProblematicHistory(messageId, manualRetry, rawMessageOrWrapper, () -> messageFinal, session, businessCorrelationId)) {
+				if (!historyAlreadyChecked && hasProblematicHistory(messageId, manualRetry, rawMessageOrWrapper, () -> messageFinal, session, businessCorrelationId)) {
 					if (!isTransacted()) {
 						log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 					}
@@ -1394,10 +1394,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 			} finally {
+				log.trace("{} Receiver process message in adapter - CacheProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
+				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
+				log.trace("{} Receiver process message in adapter - CacheProcessResult - lock on Receiver released", this::getLogPrefix);
 				try {
-					log.trace("{} Receiver process message in adapter - CacheProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
-					cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
-					log.trace("{} Receiver process message in adapter - CacheProcessResult - lock on Receiver released", this::getLogPrefix);
 					if (!isTransacted() && messageInError && !manualRetry) {
 						final Message messageFinal = message;
 						moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
@@ -1439,6 +1439,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
+						if (messageInError && !historyAlreadyChecked) {
+							// Only do this if history has not already been checked previously by the caller.
+							// If it has, then the caller is also responsible for handling the retry-interval.
+							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
+						}
 					}
 				}
 			}
@@ -1455,7 +1460,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@SuppressWarnings("synthetic-access")
-	public synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
+	public synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
 		if (cacheItem==null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for messageId ["+messageId+"]");
@@ -1468,6 +1473,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		cacheItem.comments=errorMessage;
 		processResultCache.put(messageId, cacheItem);
+		return cacheItem;
 	}
 	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
 		return processResultCache.get(messageId);
@@ -1501,57 +1507,64 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public boolean hasProblematicHistory(String messageId, boolean manualRetry, Object rawMessageOrWrapper, ThrowingSupplier<Message,ListenerException> messageSupplier, Map<String,Object>threadContext, String correlationId) throws ListenerException {
 		if (manualRetry) {
 			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-		} else {
-			IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
-			log.trace("{} Receiver check has problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
-			ProcessResultCacheItem prci = getCachedProcessResult(messageId);
-			log.trace("{} Receiver check has problematic history - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
-			if (prci==null) {
-				if (getMaxDeliveries()!=-1) {
-					int deliveryCount=-1;
-					if (origin instanceof IKnowsDeliveryCount) {
-						deliveryCount = ((IKnowsDeliveryCount<M>)origin).getDeliveryCount((M)rawMessageOrWrapper); // cast to M is done only if !manualRetry
-					}
-					if (deliveryCount>1) {
-						log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
-						threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-					}
-					if (deliveryCount>getMaxDeliveries()) {
-						warn("message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
-						String comments="too many deliveries";
-						increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxDeliveries=["+getMaxDeliveries()+"]");
-						moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, messageSupplier, threadContext, prci, comments); // cast to M is done only if !manualRetry
-						return true;
-					}
-				}
-				resetRetryInterval();
-				return false;
-			}
-			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
-			if (getMaxRetries()<0) {
-				increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times; maxRetries=["+getMaxRetries()+"]");
-				return false;
-			}
-			if (prci.receiveCount<=getMaxRetries()) {
-				log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
-				resetRetryInterval();
-				return false;
-			}
-			if (isSupportProgrammaticRetry()) {
-				warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, but programmatic retries supported; maxRetries=["+getMaxRetries()+"]");
-				return true; // message will be retried because supportProgrammaticRetry=true, but when it fails, it will be moved to error state.
-			}
-			warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
-			String comments="too many retries";
-			if (prci.receiveCount>getMaxRetries()+1) {
-				increaseRetryIntervalAndWait(null,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]");
-			}
-			moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, messageSupplier, threadContext, prci, comments); // cast to M is done only if !manualRetry
-			prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
-			return true;
+			return isCheckForDuplicates() && getMessageLog() != null && getMessageLog().containsMessageId(messageId);
 		}
-		return isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId);
+
+		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
+		log.trace("{} Receiver check has problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
+		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		log.trace("{} Receiver check has problematic history - getCachedProcessResult - lock on Receiver released", this::getLogPrefix);
+		if (prci==null) {
+			if (getMaxDeliveries()!=-1) {
+				int deliveryCount=-1;
+				if (origin instanceof IKnowsDeliveryCount) {
+					deliveryCount = ((IKnowsDeliveryCount<M>)origin).getDeliveryCount((M)rawMessageOrWrapper); // cast to M is done only if !manualRetry
+				}
+				if (deliveryCount>1) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has delivery count ["+(deliveryCount)+"]");
+					threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
+				}
+				if (deliveryCount>getMaxDeliveries()) {
+					warn("message with messageId ["+messageId+"] has already been delivered ["+deliveryCount+"] times, will not process; maxDeliveries=["+getMaxDeliveries()+"]");
+					String comments="too many deliveries";
+					try {
+						moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, messageSupplier, threadContext, prci, comments); // cast to M is done only if !manualRetry
+					} catch (ListenerException e) {
+						increaseRetryIntervalAndWait(e,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxDeliveries=["+getMaxDeliveries()+"]. Error occurred while moving to error-storage");
+						throw e;
+					}
+					return true;
+				}
+			}
+			resetRetryInterval();
+			return false;
+		}
+		threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
+		if (getMaxRetries()<0) {
+			log.warn(getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times but no max-retry limit set; will try again.");
+			return false;
+		}
+		if (prci.receiveCount<=getMaxRetries()) {
+			log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been received ["+prci.receiveCount+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
+			resetRetryInterval();
+			return false;
+		}
+		if (isSupportProgrammaticRetry()) {
+			warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, but programmatic retries supported; maxRetries=["+getMaxRetries()+"]");
+			// TODO: I believe that this should return false instead of true but for 7.8 I do not want to change this behaviour.
+			return true; // message will be retried because supportProgrammaticRetry=true, but when it fails, it will be moved to error state.
+		}
+		warn("message with messageId ["+messageId+"] has been received ["+prci.receiveCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+		String comments="too many retries";
+		try {
+			moveInProcessToErrorAndDoPostProcessing(origin, messageId, correlationId, (M)rawMessageOrWrapper, messageSupplier, threadContext, prci, comments); // cast to M is done only if !manualRetry
+		} catch (ListenerException e) {
+			increaseRetryIntervalAndWait(e,getLogPrefix()+"received message with messageId ["+messageId+"] too many times ["+prci.receiveCount+"]; maxRetries=["+getMaxRetries()+"]. Error occurred while moving message to error store.");
+			throw e;
+		}
+		prci.receiveCount++; // make sure that the next time this message is seen, the retry interval will be increased
+		return true;
 	}
 
 	private void resetProblematicHistory(String messageId) {
