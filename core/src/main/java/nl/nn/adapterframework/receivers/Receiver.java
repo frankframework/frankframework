@@ -1439,7 +1439,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						}
 					} finally {
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
-						if (messageInError && prci.receiveCount > 1) {
+						if (messageInError && !historyAlreadyChecked) {
 							increaseRetryIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + errorMessage + "]");
 						} else {
 							resetRetryInterval();
