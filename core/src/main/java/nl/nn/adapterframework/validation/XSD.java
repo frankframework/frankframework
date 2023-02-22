@@ -275,7 +275,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		}
 		return prefix+Paths.get(systemId).normalize().toString();
 	}
-	
+
 	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
 		return getXsdsRecursive(xsds, false);
 	}

@@ -33,7 +33,7 @@ public class PrettyPrintFilter extends FullXmlFilter {
 	private boolean elementsSeen;
 	private boolean elementContentSeen;
 	private @Setter boolean sortAttributes;
-	
+
 	private Map<String,String> prefixMappings;
 
 	public PrettyPrintFilter(ContentHandler handler) {
