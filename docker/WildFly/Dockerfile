@@ -28,3 +28,7 @@ COPY target/dependencies/frank /opt/frank
 
 # Copy war
 COPY target/dependencies/ibis-adapterframework-test.war /opt/jboss/wildfly/standalone/deployments/iaf-test.war
+
+USER root
+RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/data
+USER jboss
