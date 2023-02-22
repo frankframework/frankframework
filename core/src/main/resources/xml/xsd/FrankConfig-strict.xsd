@@ -3308,7 +3308,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       </xs:enumeration>
       <xs:enumeration value="dups">
         <xs:annotation>
-          <xs:documentation>dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+          <xs:documentation>dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the
  delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
  of messages to the server until a convenient time; meanwhile the server might redeliver messages.
  This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages.</xs:documentation>
