@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8-RC2">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8-RC3">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -115,7 +115,6 @@
  &lt;b&gt;Transaction control&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
  If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be received and processed under transaction control.
  This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- &lt;ul&gt;
  &lt;table border="1"&gt;
  &lt;tr&gt;&lt;th&gt;situation&lt;/th&gt;&lt;th&gt;input listener&lt;/th&gt;&lt;th&gt;Pipeline&lt;/th&gt;&lt;th&gt;inProcess storage&lt;/th&gt;&lt;th&gt;errorSender&lt;/th&gt;&lt;th&gt;summary of effect&lt;/th&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;successful&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message processed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message processed&lt;/td&gt;&lt;/tr&gt;
@@ -133,9 +132,8 @@
  &lt;li&gt;It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
      the message is removed from the input queue and either (one of) still in inProcess storage &lt;i&gt;or&lt;/i&gt; sent to the errorSender&lt;/li&gt;
  &lt;/ul&gt;
- &lt;/p&gt;
 
- &lt;p&gt;&lt;b&gt;commit or rollback&lt;/b&gt;&lt;br&gt;
+ &lt;p&gt;&lt;b&gt;commit or rollback&lt;/b&gt;&lt;br/&gt;
  If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be either committed or rolled back.
  All message-processing transactions are committed, unless one or more of the following apply:
  &lt;ul&gt;
@@ -216,11 +214,6 @@
     <xs:attribute name="processResultCacheSize" type="frankInt">
       <xs:annotation>
         <xs:documentation>Size of the cache to keep process results, used by maxRetries Default: 100</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="returnedSessionKeys" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDXPath" type="xs:string">
@@ -394,7 +387,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect</xs:documentation>
+        <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -405,7 +398,7 @@
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed</xs:documentation>
+        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="defaultValue" type="xs:string">
@@ -415,7 +408,7 @@
     </xs:attribute>
     <xs:attribute name="defaultValueMethods" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of methods (&lt;code&gt;defaultValue&lt;/code&gt;, &lt;code&gt;sessionKey&lt;/code&gt;, &lt;code&gt;pattern&lt;/code&gt;, &lt;code&gt;value&lt;/code&gt; or &lt;code&gt;input&lt;/code&gt;) to use as default value. Used in the order they appear until a non-null value is found.</xs:documentation>
+        <xs:documentation>Comma separated list of methods (&lt;code&gt;defaultValue&lt;/code&gt;, &lt;code&gt;sessionKey&lt;/code&gt;, &lt;code&gt;pattern&lt;/code&gt;, &lt;code&gt;value&lt;/code&gt; or &lt;code&gt;input&lt;/code&gt;) to use as default value. Used in the order they appear until a non-null value is found. Default: &lt;code&gt;defaultValue&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="pattern" type="xs:string">
@@ -436,11 +429,11 @@
  &lt;li&gt;{fixedhostname}: fake hostname, for testing only&lt;/li&gt;
  &lt;/ul&gt;
  A guid can be generated using {hostname}_{uid}, see also
- &lt;a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\"&gt;http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html&lt;/a&gt; for more information about (g)uid's or
- &lt;a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\"&gt;http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html&lt;/a&gt; for more information about uuid's.
+ &lt;a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html"&gt;http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html&lt;/a&gt; for more information about (g)uid's or
+ &lt;a href="http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html"&gt;http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html&lt;/a&gt; for more information about uuid's.
  &lt;br/&gt;
  When combining a date or time &lt;code&gt;pattern&lt;/code&gt; like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP &lt;code&gt;type&lt;/code&gt;, the effective value of the attribute
- &lt;code&gt;formatString&lt;/code&gt; must match the effective value of the formatString in the &lt;/code&gt;pattern&lt;/code&gt;.</xs:documentation>
+ &lt;code&gt;formatString&lt;/code&gt; must match the effective value of the formatString in the &lt;code&gt;pattern&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
@@ -458,29 +451,34 @@
         <xs:documentation>Default password that is used when a &lt;code&gt;pattern&lt;/code&gt; containing {password} is specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="ignoreUnresolvablePatternElements" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="formatString" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Used in combination with types &lt;code&gt;DATE&lt;/code&gt;, &lt;code&gt;TIME&lt;/code&gt;, &lt;code&gt;DATETIME&lt;/code&gt; and &lt;code&gt;TIMESTAMP&lt;/code&gt; to parse the raw parameter string data into an object of the respective type</xs:documentation>
+        <xs:documentation>Used in combination with types &lt;code&gt;DATE&lt;/code&gt;, &lt;code&gt;TIME&lt;/code&gt;, &lt;code&gt;DATETIME&lt;/code&gt; and &lt;code&gt;TIMESTAMP&lt;/code&gt; to parse the raw parameter string data into an object of the respective type Default: depends on type</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="decimalSeparator" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt; Default: system default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="groupingSeparator" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Used in combination with type &lt;code&gt;NUMBER&lt;/code&gt; Default: system default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="minLength" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded</xs:documentation>
+        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded Default: -1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxLength" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length</xs:documentation>
+        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length Default: -1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxInclusive" type="xs:string">
@@ -495,7 +493,7 @@
     </xs:attribute>
     <xs:attribute name="hidden" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks)</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" use="prohibited" />
@@ -1524,7 +1522,7 @@
       </xs:element>
       <xs:element name="ExchangeFolderSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in a Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1707,13 +1705,12 @@
       <xs:element name="IbisLocalSender">
         <xs:annotation>
           <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance.
- 
- Returns exit.code as forward name to SenderPipe. 
+
+ Returns exit.code as forward name to SenderPipe.
 
  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
  or a JavaListener.
 
- Any parameters are copied to the PipeLineSession of the service called.
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
  A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -3224,6 +3221,14 @@
         <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="outputFormat">
+      <xs:annotation>
+        <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcQuerySenderBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcQuerySenderBaseDeclaredAttributeGroup" />
@@ -3885,7 +3890,13 @@
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>if set and &lt;code&gt;methodtype=post&lt;/code&gt; and &lt;code&gt;paramsinurl=false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created</xs:documentation>
+        <xs:documentation>If set and &lt;code&gt;methodType&lt;/code&gt;=&lt;code&gt;POST&lt;/code&gt; and &lt;code&gt;paramsInUrl&lt;/code&gt;=&lt;code&gt;false&lt;/code&gt;, a multipart/form-data entity is created instead of a request body.
+ For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
+ &lt;ul&gt;
+ &lt;li&gt;name: optional, used as 'filename' in Content-Disposition&lt;/li&gt;
+ &lt;li&gt;sessionKey: mandatory, refers to contents of part&lt;/li&gt;
+ &lt;li&gt;mimeType: optional MIME type&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mtomContentTransferEncoding" type="xs:string" />
@@ -3919,7 +3930,7 @@
     <xs:attribute ref="maxExecuteRetries" />
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication Alias used for authentication to the host</xs:documentation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -3938,6 +3949,7 @@
     <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -4015,7 +4027,8 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)</xs:documentation>
+        <xs:documentation>Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+ The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartResponse" type="frankBoolean">
@@ -4054,6 +4067,12 @@
         <xs:documentation>name of the sessionkey which holds the name of the JavaListener that should be called</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="returnedSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+ The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="javaListener" type="xs:string">
       <xs:annotation>
         <xs:documentation>name of the JavaListener that should be called (will be ignored when javaListenerSessionKey is set)</xs:documentation>
@@ -4072,11 +4091,6 @@
     <xs:attribute name="dependencyTimeOut" type="frankInt">
       <xs:annotation>
         <xs:documentation>maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely Default: 60</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="returnedSessionKeys" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)&lt;br/&gt;N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="throwJavaListenerNotFoundException" type="frankBoolean">
@@ -5128,6 +5142,7 @@
     <xs:attribute ref="clientId" />
     <xs:attribute ref="clientSecret" />
     <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
     <xs:attribute ref="proxyHost" />
     <xs:attribute ref="proxyPort" />
     <xs:attribute ref="proxyAuthAlias" />
@@ -6168,10 +6183,10 @@
         <xs:annotation>
           <xs:documentation>Use this listener to receive messages from other adapters or a scheduler within the same Frank-application or from other components residing in the same JVM.
  JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
- &lt;p&gt;
+ &lt;br/&gt;
  To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
- The JavaListener listens to Java method calls. You can issue Java method calls using a nl.nn.adapterframework.senders.IbisJavaSender (external call)
- or nl.nn.adapterframework.senders.IbisLocalSender (internal call).
+ The JavaListener listens to Java method calls. You can issue Java method calls using a IbisJavaSender (external call)
+ or IbisLocalSender (internal call).
  For more information see the ibis-servicedispatcher project.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -6642,7 +6657,8 @@
     </xs:attribute>
     <xs:attribute name="characterEncoding" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The specified character encoding on the response contentType header Default: UTF-8</xs:documentation>
+        <xs:documentation>The specified character encoding on the response contentType header. NULL or empty
+ values will be ignored. Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="updateEtag" type="frankBoolean">
@@ -6670,7 +6686,7 @@
     </xs:attribute>
     <xs:attribute name="messageIdHeader" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the header which contains the message-id Default: message-id</xs:documentation>
+        <xs:documentation>Name of the header which contains the Message-Id.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="operationId" type="xs:string">
@@ -7257,7 +7273,7 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.JavaListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JavaListenerDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its &lt;code&gt;javaListener&lt;/code&gt;-attribute.</xs:documentation>
       </xs:annotation>
@@ -7265,6 +7281,12 @@
     <xs:attribute name="serviceName" type="xs:string">
       <xs:annotation>
         <xs:documentation>External Name of the listener. An IbisJavaSender refers to this name in its &lt;code&gt;serviceName&lt;/code&gt;-attribute.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="returnedSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. 
+ If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="throwException" type="frankBoolean">
@@ -7320,6 +7342,7 @@
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobSmartGet" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
@@ -7507,6 +7530,7 @@
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute ref="trace" />
     <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
@@ -7999,7 +8023,7 @@
       </xs:element>
       <xs:element name="ExchangeFolderErrorSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in a Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8182,13 +8206,12 @@
       <xs:element name="IbisLocalErrorSender">
         <xs:annotation>
           <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance.
- 
- Returns exit.code as forward name to SenderPipe. 
+
+ Returns exit.code as forward name to SenderPipe.
 
  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
  or a JavaListener.
 
- Any parameters are copied to the PipeLineSession of the service called.
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
  A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -9664,7 +9687,7 @@
   <xs:attributeGroup name="WsdlXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="wsdl" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the wsdl to read the xsd's from</xs:documentation>
+        <xs:documentation>The WSDL to read the XSDs from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapBody" type="xs:string">
@@ -9674,12 +9697,12 @@
     </xs:attribute>
     <xs:attribute name="schemaLocationToAdd" type="xs:string">
       <xs:annotation>
-        <xs:documentation>pairs of uri references which will be added to the wsdl</xs:documentation>
+        <xs:documentation>Pairs of URI references which will be added to the WSDL</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapBodyNamespace" type="xs:string">
       <xs:annotation>
-        <xs:documentation>creates &lt;code&gt;schemalocation&lt;/code&gt; attribute based on the wsdl and replaces the namespace of the soap body element</xs:documentation>
+        <xs:documentation>Creates &lt;code&gt;schemaLocation&lt;/code&gt; attribute based on the WSDL and replaces the namespace of the soap body element</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -13102,6 +13125,19 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="LogContextPipe">
+        <xs:annotation>
+          <xs:documentation>Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
+ The input is passed through to the output.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="LogContextPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="MailSenderPipe">
         <xs:annotation>
           <xs:documentation>Pipe that sends a mail-message using a MailSender as its sender.
@@ -13126,19 +13162,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MailSenderPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="MdcPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe that stores all its parameter values in the ThreadContext, formerly known as Mapped Diagnostic Context (MDC), to be used in logging.
- The input is passed through to the output.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MdcPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -15651,27 +15674,27 @@
     <xs:attributeGroup ref="FileSystemPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="MailSenderPipeType">
-    <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MailSenderPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:complexType name="MdcPipeType">
+  <xs:complexType name="LogContextPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="MdcPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MdcPipe" use="prohibited" />
+    <xs:attributeGroup ref="LogContextPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.LogContextPipe" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="MdcPipeDeclaredAttributeGroup">
+  <xs:attributeGroup name="LogContextPipeDeclaredAttributeGroup">
     <xs:attribute name="export" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the ThreadContext parameters will be exported from the current PipeLine up in the call tree. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="MdcPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="MdcPipeDeclaredAttributeGroup" />
+  <xs:attributeGroup name="LogContextPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="LogContextPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="MailSenderPipeType">
+    <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
+    <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MailSenderPipe" use="prohibited" />
+  </xs:complexType>
   <xs:complexType name="PGPPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PGPPipeCumulativeAttributeGroup" />
@@ -17258,6 +17281,16 @@
         <xs:documentation>If the Configuration should automatically start all Adapters and Jobs.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Configurations should be wired through Spring, which in turn should call #setBeanName(String).
+ Once the ConfigurationContext has a name it should not be changed anymore, hence
+ super.setBeanName(String) only sets the name once.
+ If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
+
+ The DisplayName will always be updated, which is purely used for logging purposes.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -17477,6 +17510,12 @@
       <xs:enumeration value="DECODE" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="DocumentFormatAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="XML" />
+      <xs:enumeration value="JSON" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="MessageProtocolAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="FF">
@@ -17539,7 +17578,7 @@
       </xs:enumeration>
       <xs:enumeration value="dups">
         <xs:annotation>
-          <xs:documentation>dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+          <xs:documentation>dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the
  delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
  of messages to the server until a convenient time; meanwhile the server might redeliver messages.
  This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages.</xs:documentation>
@@ -17760,12 +17799,6 @@
       <xs:enumeration value="UPDATEMANY" />
       <xs:enumeration value="DELETEONE" />
       <xs:enumeration value="DELETEMANY" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DocumentFormatAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="XML" />
-      <xs:enumeration value="JSON" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="HashAlgorithmAttributeValuesType">
@@ -18031,6 +18064,8 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="MD5" />
       <xs:enumeration value="SHA" />
+      <xs:enumeration value="SHA256" />
+      <xs:enumeration value="SHA512" />
       <xs:enumeration value="CRC32" />
       <xs:enumeration value="ADLER32" />
     </xs:restriction>
@@ -18347,7 +18382,7 @@
   </xs:attribute>
   <xs:attribute name="methodType">
     <xs:annotation>
-      <xs:documentation>The HTTP Method used to execute the request Default: GET</xs:documentation>
+      <xs:documentation>The HTTP Method used to execute the request Default: &lt;code&gt;GET&lt;/code&gt;</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="HttpMethodAttributeValuesType_2 variableRef" />
@@ -18355,12 +18390,12 @@
   </xs:attribute>
   <xs:attribute name="contentType" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Content-Type (superset of mimetype + charset) of the request, for POST and PUT methods Default: text/html</xs:documentation>
+      <xs:documentation>Content-Type (superset of mimetype + charset) of the request, for &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;PATCH&lt;/code&gt; methods Default: text/html, when postType=&lt;code&gt;RAW&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="charSet" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Charset of the request. Typically only used on PUT and POST requests. Default: UTF-8</xs:documentation>
+      <xs:documentation>Charset of the request. Typically only used on &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;POST&lt;/code&gt; requests. Default: UTF-8</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="timeout" type="frankInt">
@@ -18411,6 +18446,11 @@
   <xs:attribute name="scope" type="xs:string">
     <xs:annotation>
       <xs:documentation>Space or comma separated list of scope items requested for accessToken, e.g. &lt;code&gt;read write&lt;/code&gt;. Only used when &lt;code&gt;tokenEndpoint&lt;/code&gt; is specified</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="authenticatedTokenRequest" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>if set true, clientId and clientSecret will be added as Basic Authentication header to the tokenRequest, instead of as request parameters</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="proxyHost" type="xs:string">
@@ -18824,6 +18864,11 @@
   <xs:attribute name="peekQuery" type="xs:string">
     <xs:annotation>
       <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) Peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="sqlDialect" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />
