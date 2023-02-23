@@ -18,6 +18,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-catalina</artifactId>
 			<version>${apache.tomcat.version}</version>
@@ -91,7 +95,7 @@
 			<artifactId>slf4j-api</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- commons-collections 3.2.2 included to override 3.2.1 version included in apacheds-test-framework -->
 		<dependency>
 			<groupId>commons-collections</groupId>

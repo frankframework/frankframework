@@ -6,7 +6,7 @@
 	<version>${revision}</version>
 	<packaging>pom</packaging>
 
-	<properties>
+    <properties>
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.19.0</log4j2.version>
@@ -88,6 +88,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
@@ -866,6 +871,7 @@
 				</property>
 			</activation>
 			<modules>
+				<module>iaf-commons</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>
