@@ -1203,7 +1203,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/** If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
-	 * A non-okay response is not considered an error which means that the <code>exception</code> forward is not applicable. */
+	 * Setting this property has a side effect. A non-okay response is not considered an error which means that the <code>exception</code> forward is not
+	 * followed if a 4xx or 5xx HTTP response code is received. */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}
