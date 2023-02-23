@@ -1,6 +1,11 @@
 ARG WILDFLY_VERSION=26.1.1.Final
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS wildfly-iaf-test-base
 
+USER root
+RUN mkdir /opt/jboss/wildfly/standalone/data
+RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/data
+USER jboss
+
 FROM wildfly-iaf-test-base AS wildfly-iaf-test-CredentialStoreCreator
 COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets

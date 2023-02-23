@@ -5,6 +5,8 @@ USER root
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* \
 	&& sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* \
 	&& yum install -y --nogpgcheck python3
+RUN mkdir /home/jboss/jboss-eap-7.3/standalone/data
+RUN chown jboss:jboss /home/jboss/jboss-eap-7.3/standalone/data
 USER jboss
 
 # Create credential store in separate image
