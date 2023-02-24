@@ -34,7 +34,7 @@ best practices and perform security testing before releasing your application.
 | 7.0.x   | :x:                |:x:               | Jun 1, 2018      |
 | < 6.1   | :x:                |:x:               | Dec 13, 2016     |
 
-*Please always update to the latest available release. CVE's are solved on a best-effort basis, on version not older then 1 year after the initial release date (specified in the table above).
+*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above).
 
 ## Reporting a Vulnerability
 
