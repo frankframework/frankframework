@@ -18,7 +18,6 @@ package nl.nn.adapterframework.validation;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -265,17 +264,6 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public abstract Reader getReader() throws IOException;
 
-	private static String getNormalizeSystemId(IXSD xsd) {
-		String prefix="";
-		String systemId = xsd.getSystemId();
-		int colonPos = systemId.indexOf(":");
-		if (colonPos>=0) {
-			prefix = systemId.substring(0, colonPos+1);
-			systemId = systemId.substring(colonPos+1);
-		}
-		return prefix+Paths.get(systemId).normalize().toString();
-	}
-
 	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
 		return getXsdsRecursive(xsds, false);
 	}
@@ -285,7 +273,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		int i=0;
 		for (IXSD xsd : xsds) {
 			// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId.
-			String normalizedSystemId = "["+(++i)+"]"+getNormalizeSystemId(xsd);
+			String normalizedSystemId = FilenameUtils.normalize(xsd.getSystemId())+"["+(++i)+"]";
 			xsdsRecursive.put(normalizedSystemId, xsd);
 			xsd.getXsdsRecursive(xsdsRecursive, supportRedefine);
 		}
@@ -367,7 +355,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 								x.setParentLocation(getResourceBase());
 								x.setRootXsd(false);
 								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
-								String normalizedSystemId = getNormalizeSystemId(x);
+								String normalizedSystemId = FilenameUtils.normalize(x.getSystemId());
 								if (!xsds.containsKey(normalizedSystemId)) {
 									LOG.trace("Adding xsd ["+normalizedSystemId+"] to set ");
 									xsds.put(normalizedSystemId,x);
