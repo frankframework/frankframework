@@ -346,7 +346,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		assertEquals("success", forward.getName());
 	}
 
-	@Test 
+	@Test
 	public void testMultipleImport() throws Exception {
 		ApplicationWarnings.removeInstance();
 		XmlValidator validator = new XmlValidator();
@@ -357,7 +357,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.setThrowException(true);
 		validator.configure();
 		validator.start();
-		
+
 		// assert the absence of the message: "sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'urn:frank/leaf01,leaf01'."
 		assertEquals(0, ApplicationWarnings.getSize());
 
