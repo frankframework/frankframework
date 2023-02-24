@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 import lombok.Getter;
+import nl.nn.adapterframework.align.DomTreeAligner;
 import nl.nn.adapterframework.align.Json2Xml;
+import nl.nn.adapterframework.align.Tree2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
@@ -43,6 +45,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingRunnable;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -82,6 +85,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter boolean produceNamespacelessXml=false;
 	private @Getter boolean validateJsonToRootElementOnly=true;
 	private @Getter boolean allowJson = true;
+	private @Getter boolean alignXml = false;
 
 	{
 		setSoapNamespace("");
@@ -167,7 +171,18 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
 					//log.debug("added namespace to message [{}]", messageToValidate);
 				}
+
+				// Align XML if required
 				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
+				if (isAlignXml() || getParameterList()!=null && !getParameterList().isEmpty()) {
+					try {
+						return align(DocumentFormat.XML, messageToValidate, session, responseMode);
+					} catch (Exception e) {
+						throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+					}
+				}
+
+				// Just validate XML if that is sufficient
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
 					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
 					if (isProduceNamespacelessXml()) {
@@ -179,23 +194,28 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					}
 					return result;
 				}
+
+				// otherwise validate XML and convert to JSON
 				try {
-					return alignXml2Json(messageToValidate, session, responseMode);
+					return validateXml2Json(messageToValidate, session, responseMode);
 				} catch (Exception e) {
-					throw new PipeRunException(this, "Alignment of XML to JSON failed",e);
+					throw new PipeRunException(this, "Validation of XML to JSON failed",e);
 				}
 			}
+
 			if (!isAllowJson() && !responseMode) {
 				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
 			}
 			if (firstChar!='{' && firstChar!='[') {
 				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
 			}
+
+			// message is JSON
 			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
 
 		try {
-			return alignJson(messageToValidate, session, responseMode);
+			return align(DocumentFormat.JSON, messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
 			throw new PipeRunException(this, "Cannot align JSON", e);
 		}
@@ -212,7 +232,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return getRootValidations(responseMode);
 	}
 
-	protected PipeRunResult alignXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	protected PipeRunResult validateXml2Json(String messageToValidate, PipeLineSession session, boolean responseMode) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		ValidationContext context = validator.createValidationContext(session, getJsonRootValidations(responseMode), getInvalidRootNamespaces());
 		ValidatorHandler validatorHandler = validator.getValidatorHandler(session,context);
@@ -241,7 +261,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return result;
 	}
 
-	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
+	protected PipeRunResult align(DocumentFormat inputFormat, String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
 
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
@@ -254,53 +274,17 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		ValidationResult validationResult;
 		String out=null;
 		try {
-			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
-			if (StringUtils.isNotEmpty(getTargetNamespace())) {
-				aligner.setTargetNamespace(getTargetNamespace());
-			}
-			aligner.setDeepSearch(isDeepSearch());
-			aligner.setErrorHandler(context.getErrorHandler());
-			aligner.setFailOnWildcards(isFailOnWildcards());
-			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
-			ParameterList parameterList = getParameterList();
-			if (parameterList!=null) {
-				Map<String,Object> parametervalues = null;
-				parametervalues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
-				// remove parameters with null values, to support optional request parameters
-				for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
-					String key=it.next();
-					if (parametervalues.get(key)==null) {
-						it.remove();
-					}
-				}
-				aligner.setOverrideValues(parametervalues);
-			}
-			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
-
-			// cannot build filter chain as usual backwardly, because it ends differently.
-			// This will be fixed once an OutputStream can be provided to Xml2Json
-			XMLFilterImpl sourceFilter = aligner;
-			if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
-				XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null);
-				aligner.setContentHandler(storeRootFilter);
-				sourceFilter=storeRootFilter;
-			}
-
-			if (getOutputFormat(session,responseMode) == DocumentFormat.JSON) {
-				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
-				sourceFilter.setContentHandler(xml2json);
-				aligner.startParse(jsonStructure);
-				out=xml2json.toString();
-			} else {
-				XmlWriter xmlWriter = new XmlWriter();
-				xmlWriter.setIncludeXmlDeclaration(true);
-				ContentHandler handler = xmlWriter;
-				if (isProduceNamespacelessXml()) {
-					handler = new NamespaceRemovingFilter(handler);
-				}
-				sourceFilter.setContentHandler(handler);
-				aligner.startParse(jsonStructure);
-				out = xmlWriter.toString();
+			switch (inputFormat) {
+				case XML:
+					DomTreeAligner domTreeAligner = new DomTreeAligner(validatorHandler, context.getXsModels());
+					out = configureAndRunAligner(domTreeAligner, context, messageToValidate, session, responseMode, ()->domTreeAligner.startParse(XmlUtils.buildDomDocument(messageToValidate)));
+					break;
+				case JSON:
+					final Json2Xml json2Xml = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
+					out = configureAndRunAligner(json2Xml, context, messageToValidate, session, responseMode, ()->json2Xml.startParse(Json.createReader(new StringReader(messageToValidate)).read()));
+					break;
+				default:
+					throw new IllegalArgumentException("DocumentFormat ["+inputFormat+"] unknown");
 			}
 			validationResult= validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {
@@ -309,6 +293,53 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 		PipeForward forward=determineForward(validationResult, session, responseMode);
 		return new PipeRunResult(forward,out);
+	}
+
+	private String configureAndRunAligner(Tree2Xml aligner, ValidationContext context, String messageToValidate, PipeLineSession session, boolean responseMode, ThrowingRunnable<Exception> startParse) throws Exception {
+		if (StringUtils.isNotEmpty(getTargetNamespace())) {
+			aligner.setTargetNamespace(getTargetNamespace());
+		}
+		aligner.setDeepSearch(isDeepSearch());
+		aligner.setErrorHandler(context.getErrorHandler());
+		aligner.setFailOnWildcards(isFailOnWildcards());
+		aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
+		ParameterList parameterList = getParameterList();
+		if (parameterList!=null) {
+			Map<String,Object> parametervalues = null;
+			parametervalues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
+			// remove parameters with null values, to support optional request parameters
+			for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
+				String key=it.next();
+				if (parametervalues.get(key)==null) {
+					it.remove();
+				}
+			}
+			aligner.setOverrideValues(parametervalues);
+		}
+		// cannot build filter chain as usual backwardly, because it ends differently.
+		// This will be fixed once an OutputStream can be provided to Xml2Json
+		XMLFilterImpl sourceFilter = aligner;
+		if (StringUtils.isNotEmpty(getRootElementSessionKey())) {
+			XMLFilterImpl storeRootFilter = new RootElementToSessionKeyFilter(session, getRootElementSessionKey(), getRootNamespaceSessionKey(), null);
+			aligner.setContentHandler(storeRootFilter);
+			sourceFilter=storeRootFilter;
+		}
+
+		if (getOutputFormat(session,responseMode) == DocumentFormat.JSON) {
+			Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
+			sourceFilter.setContentHandler(xml2json);
+			startParse.run();
+			return xml2json.toString();
+		}
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeXmlDeclaration(true);
+		ContentHandler handler = xmlWriter;
+		if (isProduceNamespacelessXml()) {
+			handler = new NamespaceRemovingFilter(handler);
+		}
+		sourceFilter.setContentHandler(handler);
+		startParse.run();
+		return xmlWriter.toString();
 	}
 
 	public String addNamespace(String xml) {
@@ -405,7 +436,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	/** 
+	/**
 	 * Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response
 	 * @ff.default {@value #INPUT_FORMAT_SESSION_KEY_PREFIX}&lt;name of the pipe&gt;
 	 */
@@ -509,6 +540,14 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 */
 	public void setAllowJson(boolean allowJson) {
 		this.allowJson = allowJson;
+	}
+
+	/**
+	 * If true, XML input is aligned (elements put in the right order, substitutes applied from parameters), rather then only validated. This is implied when parameters are present.
+	 * @ff.default true
+	 */
+	public void setAlignXml(boolean alignXml) {
+		this.alignXml = alignXml;
 	}
 
 }

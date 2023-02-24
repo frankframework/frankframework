@@ -253,8 +253,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 
-	@Test
-	public void testWithParameters() throws Exception {
+	public void testWithParameters(String input) throws Exception {
 		pipe.setName("RestGet");
 		pipe.setRoot("Root");
 		pipe.setOutputFormat(DocumentFormat.XML);
@@ -268,7 +267,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input="";
 		String expected = TestFileUtils.getTestFile("/Validation/Parameters/out.xml");
 
 		session.put("b_key","b_value");
@@ -281,7 +279,17 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testWithParametersNestedElement() throws Exception {
+	public void testWithParamtersJson() throws Exception {
+		testWithParameters("");
+	}
+
+
+	@Test
+	public void testWithParamtersXml() throws Exception {
+		testWithParameters("<Root/>");
+	}
+
+	public void testWithParametersNestedElement(String input) throws Exception {
 		pipe.setName("Find with Nested Element");
 		pipe.setSchema("/Align/NestedValue/nestedValue.xsd");
 		pipe.setRoot("NestedValue");
@@ -294,7 +302,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input="";
 		String expected = TestFileUtils.getTestFile("/Align/NestedValue/nestedValue.xml");
 
 		PipeRunResult prr = doPipe(pipe, input,session);
@@ -302,6 +309,16 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String actualXml = Message.asString(prr.getResult());
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testWithParametersNestedElementJson() throws Exception {
+		testWithParametersNestedElement("");
+	}
+
+	@Test
+	public void testWithParametersNestedElementXml() throws Exception {
+		testWithParametersNestedElement("<NestedValue/>");
 	}
 
 	@Test
@@ -351,8 +368,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 
-	@Test
-	public void testMultivaluedParameters() throws Exception {
+	public void testMultivaluedParameters(String input) throws Exception {
 		pipe.setName("testMultivaluedParameters");
 		pipe.setSchema("/Align/Options/options.xsd");
 		pipe.setRoot("Options");
@@ -377,7 +393,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
 
 		PipeRunResult prr = doPipe(pipe, input,session);
@@ -388,7 +403,17 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testMultivaluedParametersFindDocuments() throws Exception {
+	public void testMultivaluedParametersJson() throws Exception {
+		testMultivaluedParameters("{ \"stringArray\" : [ \"xx\", \"yy\" ] }");
+	}
+
+	@Test
+	@Ignore("Multivalued substitution parameters not yet working for XML alignment")
+	public void testMultivaluedParametersXml() throws Exception {
+		testMultivaluedParameters("<Options><stringArray><stringElem>xx</stringElem><stringElem>yy</stringElem></stringArray></Options>");
+	}
+
+	public void testMultivaluedParametersFindDocuments(String input) throws Exception {
 		pipe.setName("testMultivaluedParameters");
 		pipe.setSchema("/Align/FindDocuments/findDocuments.xsd");
 		pipe.setRoot("FindDocuments_Request");
@@ -407,7 +432,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		session.put("agreementNumbers", agreementNumbers);
 
-		String input    = "{}";
 		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
 
 
@@ -416,6 +440,17 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String actualXml = Message.asString(prr.getResult());
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testMultivaluedParametersFindDocumentsJson() throws Exception {
+		testMultivaluedParametersFindDocuments("{}");
+	}
+
+	@Test
+	@Ignore("Multivalued substitution parameters not yet working for XML alignment")
+	public void testMultivaluedParametersFindDocumentsXml() throws Exception {
+		testMultivaluedParametersFindDocuments("<FindDocuments_Request/>");
 	}
 
 	@Test
@@ -450,8 +485,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
-	@Test
-	public void testSingleValueInArrayListParam() throws Exception {
+	public void testSingleValueInArrayListParam(String input) throws Exception {
 		pipe.setName("testMultivaluedParameters");
 		pipe.setSchema("/Align/Options/options.xsd");
 		pipe.setRoot("Options");
@@ -464,7 +498,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
 
 		PipeRunResult prr = doPipe(pipe, input,session);
@@ -475,7 +508,16 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testSingleValueInArrayStringParam() throws Exception {
+	public void testSingleValueInArrayListParamJson() throws Exception {
+		testSingleValueInArrayListParam("{}");
+	}
+	@Test
+	@Ignore("Multivalued substitution parameters not yet working for XML alignment")
+	public void testSingleValueInArrayListParamXml() throws Exception {
+		testSingleValueInArrayListParam("<Options/>");
+	}
+
+	public void testSingleValueInArrayStringParam(String input) throws Exception {
 		pipe.setName("testMultivaluedParameters");
 		pipe.setSchema("/Align/Options/options.xsd");
 		pipe.setRoot("Options");
@@ -486,7 +528,6 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 
-		String input    = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
 
 
@@ -495,6 +536,16 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String actualXml = Message.asString(prr.getResult());
 
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testSingleValueInArrayStringParamJson() throws Exception {
+		testSingleValueInArrayStringParam("{}");
+	}
+	@Test
+	@Ignore("Multivalued substitution parameters not yet working for XML alignment")
+	public void testSingleValueInArrayStringParamXml() throws Exception {
+		testSingleValueInArrayStringParam("<Options/>");
 	}
 
 	public void testStoreRootElement(DocumentFormat outputFormat, String inputFile, boolean setRootElement) throws Exception {

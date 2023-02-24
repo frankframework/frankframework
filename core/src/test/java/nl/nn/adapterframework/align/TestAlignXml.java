@@ -119,6 +119,16 @@ public class TestAlignXml {
 	}
 
 	@Test
+	public void testAbcWrongOrder() throws Exception {
+		String schemaFile = "Abc/abc.xsd";
+		String inputFile = "Abc/abc-wrongorder";
+		String expectedFailureReason = null;
+		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
+		String xmlString = getTestFile(inputFile + ".xml");
+		testXml(xmlString, schemaUrl, expectedFailureReason, "root elements in wrong order", false, false);
+	}
+
+	@Test
 	public void testOK_hcda() throws Exception {
 		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd", "", "HandleCollectionDisbursementAccount", "HCDA/HandleCollectionDisbursementAccount");
 	}

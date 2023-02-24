@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,27 +66,18 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	}
 
 	@Override
-	public boolean hasChild(XSElementDeclaration elementDeclaration, Node node, String childName) throws SAXException {
-		// TODO this does not take overrideValues and defaultValues into account...
-		if (log.isTraceEnabled()) log.trace("hasChild() node ["+node+"] childName ["+childName+"]");
-		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
-			if (cur.getNodeType()==Node.ELEMENT_NODE && childName.equals(getNodeName(cur))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public Set<String> getAllNodeChildNames(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"]");
+		if (log.isTraceEnabled()) log.trace("getAllNodeChildNames() node ["+node+"]");
 		Set<String> children = new HashSet<String>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			//if (log.isTraceEnabled()) log.trace("getAllChildNames() found node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"] ["+ToStringBuilder.reflectionToString(cur)+"]");
 			if (cur.getNodeType()==Node.ELEMENT_NODE) {
-				if (log.isTraceEnabled()) log.trace("getAllChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
+				if (log.isTraceEnabled()) log.trace("getAllNodeChildNames() node ["+node+"] added node ["+getNodeName(cur)+"] type ["+cur.getNodeType()+"]");
 				children.add(getNodeName(cur));
 			}
+		}
+		if (children.isEmpty()) {
+			return null;
 		}
 		return children;
 	}
@@ -94,13 +85,16 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	@Override
 	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
-		if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] name ["+name+"]");
+		if (log.isTraceEnabled()) log.trace("getNodeChildrenByName() node ["+node+"] name ["+name+"]");
 		List<Node> children = new LinkedList<Node>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
-				if (log.isTraceEnabled()) log.trace("getChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
+				if (log.isTraceEnabled()) log.trace("getNodeChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
 				children.add(cur);
 			}
+		}
+		if (children.isEmpty()) {
+			return null;
 		}
 		return children;
 	}
