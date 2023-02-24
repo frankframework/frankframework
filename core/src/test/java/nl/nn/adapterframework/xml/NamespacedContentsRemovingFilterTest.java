@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.xml;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringWriter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -32,22 +32,22 @@ public class NamespacedContentsRemovingFilterTest {
 	private String messageBasicNoNS="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub nil=\"true\"/></root>";
 	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"http://www.w3.org/2001/XMLSchema-instance\" nil=\"true\"/></root>";
 	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><sub xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/></ns:root>";
-	
+
 	private String messageMixed="<root xmlns:ns=\"urn:test\"><sub noname=\"x\" ns:name=\"p &amp; Q\">A &amp; B</sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"<other/></ns:sub><sub xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/></root>";
 	private String messageMixedFiltered="<root><sub noname=\"x\">A &amp; B</sub><sub/></root>";
 
 	public void testToWriter(String source, String expected) throws Exception {
 		StringWriter target = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(target);
-		
+
 		NamespacedContentsRemovingFilter filter = new NamespacedContentsRemovingFilter(xmlWriter);
-		
+
 		XmlUtils.parseXml(source, filter);
 
 		String actual = new String (target.toString());
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	public void testToWriterNoNamespace() throws Exception {
 		testToWriter(messageBasicNoNS,messageBasicNoNS);
@@ -62,7 +62,7 @@ public class NamespacedContentsRemovingFilterTest {
 	public void testToWriterNamespacePrefixed() throws Exception {
 		testToWriter(messageBasicNS2,"");
 	}
-	
+
 	@Test
 	public void testToWriterMixed() throws Exception {
 		testToWriter(messageMixed,messageMixedFiltered);
