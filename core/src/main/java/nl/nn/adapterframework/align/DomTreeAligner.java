@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.align;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,7 +86,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 	public Iterable<Node> getNodeChildrenByName(Node node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String name=childElementDeclaration.getName();
 		if (log.isTraceEnabled()) log.trace("getNodeChildrenByName() node ["+node+"] name ["+name+"]");
-		List<Node> children = new LinkedList<Node>();
+		List<Node> children = new ArrayList<Node>();
 		for (Node cur=node.getFirstChild();cur!=null;cur=cur.getNextSibling()) {
 			if (cur.getNodeType()==Node.ELEMENT_NODE && name.equals(getNodeName(cur))) {
 				if (log.isTraceEnabled()) log.trace("getNodeChildrenByName() node ["+node+"] added node ["+getNodeName(cur)+"]");
