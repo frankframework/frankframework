@@ -31,10 +31,9 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
@@ -157,8 +156,11 @@ public class MessagingSource  {
 			if (qcf instanceof PoolingConnectionFactory) { //BTM
 				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
 			}
+			if (qcf instanceof JmsPoolXAConnectionFactory) { //Narayana with pooling
+				return ((JmsPoolXAConnectionFactory)qcf).getConnectionFactory();
+			}
 			try {
-				if (qcf instanceof ConnectionFactoryProxy) { // Narayana
+				if (qcf instanceof ConnectionFactoryProxy) { // Narayana without pooling
 					return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
 				}
 				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
@@ -183,7 +185,7 @@ public class MessagingSource  {
 		try {
 			managedConnectionFactory = getManagedConnectionFactory();
 			if (managedConnectionFactory != null) {
-				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+				result += managedConnectionFactory.toString();
 			}
 		} catch (Exception | NoClassDefFoundError e) {
 			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
@@ -193,6 +195,23 @@ public class MessagingSource  {
 			ConnectionFactory qcfd = getConnectionFactoryDelegate();
 			if (qcfd != managedConnectionFactory) {
 				result += " managed by ["+qcfd+"]";
+				if (qcfd instanceof PoolingConnectionFactory) {
+					PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
+					result += " min poolsize ["+poolcf.getMinPoolSize()+"] " +
+							"max poolsize ["+poolcf.getMaxPoolSize()+"] " +
+							"max idle time ["+poolcf.getMaxIdleTime()+"] " +
+							"max life time ["+poolcf.getMaxLifeTime()+"] ";
+				}
+				if (qcfd instanceof JmsPoolXAConnectionFactory) {
+					JmsPoolXAConnectionFactory poolcf = ((JmsPoolXAConnectionFactory)qcfd);
+					result += " max connections ["+poolcf.getMaxConnections()+"] " +
+							"num connections ["+poolcf.getNumConnections()+"] " +
+							"max sessions per connection ["+poolcf.getMaxSessionsPerConnection()+"] " +
+							"block if session pool is full ["+poolcf.isBlockIfSessionPoolIsFull()+"] " +
+							"block if session pool is full timeout ["+poolcf.getBlockIfSessionPoolIsFullTimeout()+"] " +
+							"connection check interval ["+poolcf.getConnectionCheckInterval()+"] " +
+							"connection idle timeout ["+poolcf.getConnectionIdleTimeout()+"] ";
+				}
 			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
