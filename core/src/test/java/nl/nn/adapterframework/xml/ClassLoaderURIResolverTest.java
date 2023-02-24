@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.xml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,19 +17,25 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ClassLoaderURIResolverTest {
+
+	private final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 
 	private Logger log = LogUtil.getLogger(this);
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
@@ -46,8 +54,6 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
-	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-
 	private static Stream<Arguments> testParameters() {
 		List<Arguments> result = new ArrayList<>();
 		for(BaseType baseType:BaseType.values()) {
@@ -64,9 +70,9 @@ public class ClassLoaderURIResolverTest {
 		Source source = resolver.resolve(ref, base);
 		assertNotNull(source);
 		if (expected!=null) {
-			assertEquals("BaseType ["+baseType+"] refType ["+refType+"]", expected, XmlUtils.source2String(source, false));
+			assertEquals(expected, XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
 		} else {
-			assertNotNull("BaseType ["+baseType+"] refType ["+refType+"]", XmlUtils.source2String(source, false));
+			assertNotNull(XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
 		}
 	}
 
@@ -74,7 +80,7 @@ public class ClassLoaderURIResolverTest {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
-		return new TestScopeProvider();
+		return scopeProvider;
 	}
 
 	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
@@ -149,7 +155,7 @@ public class ClassLoaderURIResolverTest {
 
 	@ParameterizedTest
 	@MethodSource("testParameters")
-	public void runTests(BaseType baseType, RefType refType) throws Exception {
+	public void resolveToSource(BaseType baseType, RefType refType) throws Exception {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		log.debug("BaseType [{}] classLoader [{}] BaseUrl [{}]", baseType, classLoaderProvider, baseUrl);
@@ -168,14 +174,85 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {"AppConstants.properties", "/AppConstants.properties", "/Xslt/importDocument/lookup.xml"})
+	public void localClassPathLookup(String filename) throws Exception {
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
+
+		Resource resource = resolver.resolveToResource(filename, null);
+		assertNotNull(resource);
+	}
+
+	@Test
+	public void bytesClassPath() throws Exception {
+		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
+
+		URL file = this.getClass().getResource(JAR_FILE);
+		assertNotNull(file, "jar url not found");
+		JarFile jarFile = new JarFile(file.getFile());
+		assertNotNull(jarFile, "jar file not found");
+
+		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
+		cl.setJar(file.getFile());
+		cl.configure(null, "");
+
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(TestScopeProvider.wrap(cl));
+
+		Resource resource = resolver.resolveToResource("ClassLoader/Xslt/names.xsl", null);
+		assertNotNull(resource);
+	}
+
+	@Test
+	public void bytesClassPathAbsolute() throws Exception  {
+		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
+
+		URL file = this.getClass().getResource(JAR_FILE);
+		assertNotNull(file, "jar url not found");
+		JarFile jarFile = new JarFile(file.getFile());
+		assertNotNull(jarFile, "jar file not found");
+
+		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
+		cl.setJar(file.getFile());
+		cl.configure(null, "");
+
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(TestScopeProvider.wrap(cl));
+
+		Resource resource = resolver.resolveToResource("ClassLoader/Xslt/names.xsl", null);
+		assertNotNull(resource);
+	}
+
+	@Test
+	public void classLoaderURIResolverCanLoadLocalEntities() throws Exception {
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
+
+		URL url = this.getClass().getResource("/ClassLoader/request.xsd");
+		assertNotNull(url);
+
+		Resource resource = resolver.resolveToResource("UDTSchema.xsd", url.toExternalForm());
+		assertNotNull(resource);
+	}
+
+	@Test
+	public void classLoaderURIResolverCannotLoadExternalEntities() throws Exception {
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
+
+		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");
+		assertNotNull(url);
+
+		TransformerException thrown = assertThrows(TransformerException.class, () -> {
+			resolver.resolveToResource("ftp://share.host.org/UDTSchema.xsd", url.toExternalForm());
+		});
+
+		assertThat(thrown.getMessage(), startsWith("Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] not allowed with protocol [ftp]"));
+	}
 
 	private IScopeProvider getBytesClassLoader() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
+		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
 		JarFile jarFile = new JarFile(file.getFile());
-		assertNotNull("jar file not found",jarFile);
+		assertNotNull(jarFile, "jar file not found");
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());

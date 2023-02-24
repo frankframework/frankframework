@@ -2,8 +2,8 @@ package nl.nn.adapterframework.xml;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -229,7 +229,7 @@ public class SaxExceptionTest {
 			assertThat("location info must be shown", e.getMessage(),StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
 		}
 		Throwable cause2 = e.getCause();
-		assertNotNull("SaxException should have proper cause",cause2);
+		assertNotNull(cause2, "SaxException should have proper cause");
 		assertThat(cause2, IsInstanceOf.instanceOf(IOException.class));
 		Throwable cause1 = cause2.getCause();
 		assertThat(cause1, IsInstanceOf.instanceOf(NullPointerException.class));
