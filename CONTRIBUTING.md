@@ -253,7 +253,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 	- Set the context to `/iaf-test` for the Test module.  
       __NB__: This is very important, otherwise a lot of tests will fail!
 	- Set the following VM options:
-      `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/Users/tnleeuw/SoftwareDevelopment/iaf/test/src/main/secrets`
+      `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/iaf/test/src/main/secrets`
 	- In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project
 	  build (providing this is supported by your JDK)
     - Name your configuration and save it
