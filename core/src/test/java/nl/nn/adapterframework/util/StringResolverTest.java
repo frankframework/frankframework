@@ -29,7 +29,7 @@ public class StringResolverTest {
 		properties.load(propsStream);
 		assertTrue(properties.size() > 0, "did not find any properties!");
 
-		System.setProperty("authAliases.expansion.allowed", "alias1,alias2");
+		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}
 
 	@Test
@@ -56,10 +56,16 @@ public class StringResolverTest {
 
 	@Test
 	public void resolveSimple() {
+		// Act
 		String result = StringResolver.substVars("blalblalab ${key1}", properties);
+
+		// Assert
 		assertEquals("blalblalab value1", result);
 
+		// Act
 		result = StringResolver.substVars("blalblalab ${key1}", properties, true);
+
+		// Assert
 		assertEquals("blalblalab ${key1:-value1}", result);
 	}
 
@@ -269,6 +275,33 @@ public class StringResolverTest {
 
 		result = StringResolver.substVars("${cyclic}", properties, true);
 		assertEquals("${cyclic:-prefix ${cyclic} suffix}", result);
+	}
+
+	@Test
+	public void resolveWithCustomDelimiters() {
+		// Act
+		String result = StringResolver.substVars("blalblalab [key1]", properties, null, null, "[", "]");
+
+		// Assert
+		assertEquals("blalblalab value1", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab [key1]", properties, null, null, "[", "]", true);
+
+		// Assert
+		assertEquals("blalblalab [key1:-value1]", result);
+	}
+
+	@Test
+	public void resolveWithIncorrectExpression() {
+		// Act
+		assertThrows(IllegalArgumentException.class, ()-> StringResolver.substVars("blablabla ${key1", properties));
+	}
+
+	@Test
+	public void resolveWithIncorrectCustomDelimiters() {
+		// Act
+		assertThrows(IllegalArgumentException.class, ()-> StringResolver.substVars("blalblalab |key1|", properties, null, null, "|", "|"));
 	}
 
 	@Test

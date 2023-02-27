@@ -101,6 +101,11 @@ public class StringResolver {
 	}
 
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
+		if (delimStart.equals(delimStop)) {
+			throw new IllegalArgumentException("Start and End delimiters of substitution variables cannot be the same: both are '" +
+				delimStart + "'");
+		}
+
 		StringBuilder sb = new StringBuilder();
 		String providedDefaultValue=null;
 		boolean containsDefault = false;
@@ -299,5 +304,4 @@ public class StringResolver {
 		}
 		return authAliasesAllowedToExpand.contains(aliasName);
 	}
-
 }
