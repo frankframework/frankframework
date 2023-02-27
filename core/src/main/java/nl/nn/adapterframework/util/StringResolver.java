@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2014 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-
-import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -215,7 +213,7 @@ public class StringResolver {
 			Object replacementSource = props.get(key);
 			if (replacementSource != null) {
 				try {
-					return replacementSource instanceof Message ? ((Message)replacementSource).asString() : replacementSource.toString();
+					return replacementSource instanceof StringDataSource ? ((StringDataSource)replacementSource).asString() : replacementSource.toString();
 				} catch(IOException e) {
 					LogUtil.getLogger(StringResolver.class).error("Failed to resolve value for ["+ key +"]", e);
 				}

@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
@@ -179,6 +180,39 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${msg1:-My Message}", result);
+	}
+
+	@Test
+	public void resolveResultIsStringDataSourceWithException() {
+		// Arrange
+		StringDataSource message = () -> {
+			throw new IOException("No Can't Do");
+		};
+		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
+
+		// Act
+		String result = StringResolver.substVars("blalblalab ${msg1}", propsMap);
+
+		// Assert
+		assertEquals("blalblalab ", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap);
+
+		// Assert
+		assertEquals("blalblalab ", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${msg1}", propsMap, true);
+
+		// Assert
+		assertEquals("blalblalab ${msg1:-}", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap, true);
+
+		// Assert
+		assertEquals("blalblalab ${msg1:-}", result);
 	}
 
 	@Test

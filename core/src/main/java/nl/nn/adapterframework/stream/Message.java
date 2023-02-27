@@ -45,6 +45,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
+import nl.nn.adapterframework.util.*;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -58,14 +59,8 @@ import lombok.Lombok;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message implements Serializable {
+public class Message implements Serializable, StringDataSource {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
@@ -566,6 +561,7 @@ public class Message implements Serializable {
 	/**
 	 * return the request object as a String. Has the side effect of preserving the input as a String.
 	 */
+	@Override
 	public String asString() throws IOException {
 		return asString(null);
 	}
