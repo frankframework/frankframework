@@ -94,15 +94,15 @@ public class StringResolver {
 	 * the second object.
 	 *
 	 */
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, false);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, delimStart, delimStop, false);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		String providedDefaultValue=null;
 		boolean containsDefault = false;
@@ -118,11 +118,11 @@ public class StringResolver {
 					return val;
 				}
 				// add the tail string which contains no variables and return the result.
-				sb.append(val.substring(head, val.length()));
+				sb.append(val.substring(head));
 				return sb.toString();
 			}
-			sb.append(val.substring(head, resolveWithPropertyName ? pointer + delimStart.length() : pointer));
-			if(val.indexOf(VALUE_SEPARATOR) != -1) {
+			sb.append(val, head, resolveWithPropertyName ? pointer + delimStart.length() : pointer);
+			if(val.contains(VALUE_SEPARATOR)) {
 				tail = val.indexOf(VALUE_SEPARATOR);
 				providedDefaultValue = val.substring(tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, pointer, delimStart, delimStop));
 				containsDefault=true;
@@ -168,34 +168,14 @@ public class StringResolver {
 
 			// then try props parameter
 			if (replacement == null && props1 != null) {
-				if (props1 instanceof Properties) {
-					replacement = ((Properties) props1).getProperty(key);
-				} else {
-					Object replacementSource = props1.get(key);
-					if (replacementSource != null) {
-						try {
-							replacement = replacementSource instanceof Message ? ((Message)replacementSource).asString() : replacementSource.toString();
-						} catch(IOException e) {
-							LogUtil.getLogger(StringResolver.class).error("Failed to resolve value for ["+key+"]", e);
-						}
-					}
-				}
+				replacement = getReplacementFromProps(props1, key);
 			}
 			if (replacement == null && props2 != null) {
-				if (props2 instanceof Properties) {
-					replacement = ((Properties) props2).getProperty(key);
-				} else {
-					Object replacementSource = props2.get(key);
-					try {
-						replacement = replacementSource instanceof Message ? ((Message)replacementSource).asString() : replacementSource.toString();
-					} catch(IOException e) {
-						LogUtil.getLogger(StringResolver.class).error("Failed to resolve value for ["+key+"]", e);
-					}
-				}
+				replacement = getReplacementFromProps(props2, key);
 			}
 
 			if(resolveWithPropertyName) {
-				sb.append(propertyComposer + VALUE_SEPARATOR);
+				sb.append(propertyComposer).append(VALUE_SEPARATOR);
 			}
 
 			if (replacement != null) {
@@ -228,16 +208,32 @@ public class StringResolver {
 		}
 	}
 
+	private static String getReplacementFromProps(Map<?, ?> props, String key) {
+		if (props instanceof Properties) {
+			return ((Properties) props).getProperty(key);
+		} else {
+			Object replacementSource = props.get(key);
+			if (replacementSource != null) {
+				try {
+					return replacementSource instanceof Message ? ((Message)replacementSource).asString() : replacementSource.toString();
+				} catch(IOException e) {
+					LogUtil.getLogger(StringResolver.class).error("Failed to resolve value for ["+ key +"]", e);
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Resolves just the values of the properties in case a property key depends on other keys
-	 * e.g System.getProperty("prefix_${key:-value}") will find no matching data, this method extracts the 'value' for property lookup prefix_value
+	 * e.g. System.getProperty("prefix_${key:-value}") will find no matching data, this method extracts the 'value' for property lookup prefix_value
 	 */
 	private static String extractKeyValue(String key, String delimStart, String delimStop, String defaultValueSeparator) {
 		StringBuilder sb = new StringBuilder();
 		int pointer = 0;
 		int delimStartIndex = key.indexOf(delimStart, pointer);
 		if(delimStartIndex != -1) {
-			sb.append(key.substring(pointer, delimStartIndex));
+			sb.append(key, pointer, delimStartIndex);
 			int valueSeparator = key.indexOf(defaultValueSeparator, delimStartIndex);
 			if(valueSeparator != -1) {
 				int delimStopIndex = indexOfDelimStop(key, delimStartIndex, delimStart, delimStop);
@@ -252,29 +248,29 @@ public class StringResolver {
 		return sb.toString();
 	}
 
-	public static String substVars(String val, Map props1, Map props2) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null);
 	}
 
-	public static String substVars(String val, Map props) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props) throws IllegalArgumentException {
 		return substVars(val, props, null);
 	}
 
-	public static String substVars(String val, Map props, boolean resolveWithPropertyName) {
+	public static String substVars(String val, Map<?, ?> props, boolean resolveWithPropertyName) {
 		return substVars(val, props, null, resolveWithPropertyName);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, List<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
-		return j>=0 && string.indexOf(DELIM_START)>=0 && string.indexOf(DELIM_STOP, j) >= 0;
+		return j>=0 && string.contains(DELIM_START) && string.indexOf(DELIM_STOP, j) >= 0;
 	}
 
 	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {
@@ -294,14 +290,13 @@ public class StringResolver {
 		return stopPos;
 	}
 
-	private static boolean mayExpandAuthAlias(String aliasName, Map props1) {
+	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
 		if (authAliasesAllowedToExpand==null) {
-			Set<String> aliases = new HashSet<>();
 			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
 			if(StringResolver.needsResolution(property)) {
 				property = StringResolver.substVars(property, props1);
 			}
-			aliases.addAll(Arrays.asList(property.split(",")));
+			Set<String> aliases = new HashSet<>(Arrays.asList(property.split(",")));
 			authAliasesAllowedToExpand = aliases;
 		}
 		return authAliasesAllowedToExpand.contains(aliasName);

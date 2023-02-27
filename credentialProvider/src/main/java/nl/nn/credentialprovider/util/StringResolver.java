@@ -77,13 +77,13 @@ public class StringResolver {
 	 * the second object.
 	 *
 	 */
-	public static String substVars(String val, Map props1, Map props2) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2) throws IllegalArgumentException {
 		return substVars(val, props1, props2, DELIM_START, DELIM_STOP);
 	}
 
-	public static String substVars(String val, Map props1, Map props2, String delimStart, String delimStop) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, String delimStart, String delimStop) throws IllegalArgumentException {
 
-		StringBuffer sbuf = new StringBuffer();
+		StringBuilder sbuf = new StringBuilder();
 
 		int i = 0;
 		int j, k;
@@ -96,10 +96,10 @@ public class StringResolver {
 					return val;
 				}
 				// add the tail string which contains no variables and return the result.
-				sbuf.append(val.substring(i, val.length()));
+				sbuf.append(val.substring(i));
 				return sbuf.toString();
 			}
-			sbuf.append(val.substring(i, j));
+			sbuf.append(val, i, j);
 			k = indexOfDelimStop(val, j, delimStart, delimStop);
 			if (k == -1) {
 				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + j + "]");
@@ -114,24 +114,10 @@ public class StringResolver {
 			String replacement = getSystemProperty(key, null);
 			// then try props parameter
 			if (replacement == null && props1 != null) {
-				if (props1 instanceof Properties) {
-					replacement = ((Properties) props1).getProperty(key);
-				} else {
-					Object replacementSource = props1.get(key);
-					if (replacementSource != null) {
-						replacement = replacementSource.toString();
-					}
-				}
+				replacement = getReplacementFromProps(props1, key);
 			}
 			if (replacement == null && props2 != null) {
-				if (props2 instanceof Properties) {
-					replacement = ((Properties) props2).getProperty(key);
-				} else {
-					Object replacementSource = props2.get(key);
-					if (replacementSource != null) {
-						replacement = replacementSource.toString();
-					}
-				}
+				replacement = getReplacementFromProps(props2, key);
 			}
 
 			if (replacement != null) {
@@ -151,13 +137,25 @@ public class StringResolver {
 		}
 	}
 
-	public static String substVars(String val, Map props) throws IllegalArgumentException {
+	private static String getReplacementFromProps(Map<?, ?> props, String key) {
+		if (props instanceof Properties) {
+			return ((Properties) props).getProperty(key);
+		} else {
+			Object replacementSource = props.get(key);
+			if (replacementSource != null) {
+				return replacementSource.toString();
+			}
+		}
+		return null;
+	}
+
+	public static String substVars(String val, Map<?, ?> props) throws IllegalArgumentException {
 		return substVars(val, props, null);
 	}
 
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
-		return j>=0 && string.indexOf(DELIM_START)>=0 && string.indexOf(DELIM_STOP, j) >= 0;
+		return j>=0 && string.contains(DELIM_START) && string.indexOf(DELIM_STOP, j) >= 0;
 	}
 
 	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {
