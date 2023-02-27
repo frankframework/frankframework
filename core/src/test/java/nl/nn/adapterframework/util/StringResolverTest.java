@@ -1,10 +1,19 @@
 package nl.nn.adapterframework.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import nl.nn.adapterframework.stream.Message;
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class StringResolverTest {
 
@@ -304,61 +311,6 @@ public class StringResolverTest {
 		assertThrows(IllegalArgumentException.class, ()-> StringResolver.substVars("blalblalab |key1|", properties, null, null, "|", "|"));
 	}
 
-	@Test
-	public void resolveUsername() {
-		// N.B. the notation ${credential:alias1/username} will work too, for some implementations of CredentialProvider, but not for all!
-		String result = StringResolver.substVars("${credential:username:alias1}", properties);
-		assertEquals("username1", result);
-
-		result = StringResolver.substVars("${credential:username:alias1}", properties, true);
-		assertEquals("${credential:username:alias1:-username1}", result);
-	}
-
-	@Test
-	public void resolvePassword1() {
-		// N.B. the notation ${credential:alias1/password} will work too, for some implementations of CredentialProvider, but not for all!
-		String result = StringResolver.substVars("${credential:password:alias1}", properties);
-		assertEquals("password1", result);
-
-		result = StringResolver.substVars("${credential:password:alias1}", properties, true);
-		assertEquals("${credential:password:alias1:-password1}", result);
-	}
-
-	@Test
-	public void resolvePassword2() {
-		String result = StringResolver.substVars("${credential:alias1}", properties); // the 'credential:' prefix defaults to return the password
-		assertEquals("password1", result);
-
-		result = StringResolver.substVars("${credential:alias1}", properties, true);
-		assertEquals("${credential:alias1:-password1}", result);
-	}
-
-	@Test
-	public void resolvePasswordOnlyAlias() {
-		String result = StringResolver.substVars("${credential:alias2}", properties);
-		assertEquals("passwordOnly", result);
-
-		result = StringResolver.substVars("${credential:alias2}", properties, true);
-		assertEquals("${credential:alias2:-passwordOnly}", result);
-	}
-
-	@Test
-	public void resolvePasswordOnlyAlias2() {
-		String result = StringResolver.substVars("${credential:password:alias2}", properties);
-		assertEquals("passwordOnly", result);
-
-		result = StringResolver.substVars("${credential:password:alias2}", properties, true);
-		assertEquals("${credential:password:alias2:-passwordOnly}", result);
-	}
-
-	@Test
-	public void resolvePasswordNotAllowed() {
-		String result = StringResolver.substVars("${credential:password:alias3}", properties);
-		assertEquals("!!not allowed to expand credential of authAlias [alias3]!!", result);
-
-		result = StringResolver.substVars("${credential:password:alias3}", properties, true);
-		assertEquals("${credential:password:alias3:-!!not allowed to expand credential of authAlias [alias3]!!}", result);
-	}
 
 	@Test
 	public void resolveSimpleHideProperty() {
@@ -386,42 +338,5 @@ public class StringResolverTest {
 
 		result = StringResolver.substVars("${credential:username:alias1}", properties, null, Collections.emptyList(), true);
 		assertEquals("${credential:username:alias1:-*********}", result);
-	}
-
-	@Test
-	public void resolvePassword1AndHide() {
-		// N.B. the notation ${credential:alias1/password} will work too, for some implementations of CredentialProvider, but not for all!
-		String result = StringResolver.substVars("${credential:password:alias1}", properties, null, Collections.emptyList());
-		assertEquals("*********", result);
-
-		result = StringResolver.substVars("${credential:password:alias1}", properties, null, Collections.emptyList(), true);
-		assertEquals("${credential:password:alias1:-*********}", result);
-	}
-
-	@Test
-	public void resolvePassword2AndHide() {
-		String result = StringResolver.substVars("${credential:alias1}", properties, null, Collections.emptyList()); // the 'credential:' prefix defaults to return the password
-		assertEquals("*********", result);
-
-		result = StringResolver.substVars("${credential:alias1}", properties, null, Collections.emptyList(), true);
-		assertEquals("${credential:alias1:-*********}", result);
-	}
-
-	@Test
-	public void resolvePasswordOnlyAliasAndHide() {
-		String result = StringResolver.substVars("${credential:alias2}", properties, null, Collections.emptyList());
-		assertEquals("************", result);
-
-		result = StringResolver.substVars("${credential:alias2}", properties, null, Collections.emptyList(), true);
-		assertEquals("${credential:alias2:-************}", result);
-	}
-
-	@Test
-	public void resolvePasswordOnlyAlias2AndHide() {
-		String result = StringResolver.substVars("${credential:password:alias2}", properties, null, Collections.emptyList());
-		assertEquals("************", result);
-
-		result = StringResolver.substVars("${credential:password:alias2}", properties, null, Collections.emptyList(), true);
-		assertEquals("${credential:password:alias2:-************}", result);
 	}
 }

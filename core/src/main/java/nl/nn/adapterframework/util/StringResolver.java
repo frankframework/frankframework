@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013, 2014 Nationale-Nederlanden, 2020 - 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -39,22 +39,17 @@ public class StringResolver {
 	public static final String DELIM_START = "${";
 	public static final String DELIM_STOP = "}";
 
-	public static final String CREDENTIAL_PREFIX="credential:";
-	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
-	public static final String PASSWORD_PREFIX="password:";
-
-	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
-
-	private static Set<String> authAliasesAllowedToExpand=null;
+	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
-	 * Very similar to <code>System.getProperty</code> except that the
-	 * {@link SecurityException} is hidden.
+	 * Look up the key in the environment with {@link System#getenv(String)} and next in the System properties with
+	 * {@link System#getProperty(String, String)}. The {@link SecurityException} if thrown, is hidden.
 	 *
 	 * @param key The key to search for.
-	 * @param def The default value to return.
+	 * @param def The default value to return, may be {@code null}.
 	 * @return the string value of the system property, or the default value if
 	 *         there is no property with that key.
+	 *         May return {@code null} if the default value was {@code null}.
 	 *
 	 * @since 1.1
 	 */
@@ -85,21 +80,83 @@ public class StringResolver {
 	 * System.out.println(prop.get("test.name"));
 	 * </pre></code> will print <code>this is a name with again</code>
 	 * <p>
-	 * First it looks in the System properties, if none is found and a
-	 * <code>Properties</code> object is specified, it looks in the specified
-	 * <code>Properties</code> object. If two <code>Properties</code> objects are
-	 * specified, first it look in the first object. If none is found, it looks in
-	 * the second object.
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
 	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
+	 *                    all credentials will also be hidden, in addition to properties named in the collection.
+	 *
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, false);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
+	 *                    all credentials will also be hidden, in addition to properties named in the collection.
+	 * @param delimStart Start of substitution pattern delimiter
+	 * @param delimStop End of substitution pattern delimiter
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, delimStart, delimStop, false);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
+	 *                    all credentials will also be hidden, in addition to properties named in the collection.
+	 * @param delimStart Start of substitution pattern delimiter
+	 * @param delimStop End of substitution pattern delimiter
+	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
+	 *                                configurations.
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		if (delimStart.equals(delimStop)) {
 			throw new IllegalArgumentException("Start and End delimiters of substitution variables cannot be the same: both are '" +
@@ -147,42 +204,14 @@ public class StringResolver {
 				}
 			}
 
-			// first try in System properties
-			String replacement = getSystemProperty(key, null);
-
-			boolean mustHideCredential=false;
-			// then check if we search for a credential
-			if (replacement == null && key.startsWith(CREDENTIAL_PREFIX)) {
-				mustHideCredential=true;
-				key = key.substring(CREDENTIAL_PREFIX.length());
-				boolean username = key.startsWith(USERNAME_PREFIX);
-				boolean password = key.startsWith(PASSWORD_PREFIX);
-				if (username||password) {
-					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
-				}
-				if (username || mayExpandAuthAlias(key, props1)) {
-					String defaultValue = delimStart + key+ delimStop;
-					CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
-					replacement = username ? cf.getUsername() : cf.getPassword();
-				} else {
-					replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
-				}
-			}
-
-			// then try props parameter
-			if (replacement == null && props1 != null) {
-				replacement = getReplacementFromProps(props1, key);
-			}
-			if (replacement == null && props2 != null) {
-				replacement = getReplacementFromProps(props2, key);
-			}
+			String replacement = resolveReplacement(props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName, key);
 
 			if(resolveWithPropertyName) {
 				sb.append(propertyComposer).append(VALUE_SEPARATOR);
 			}
 
 			if (replacement != null) {
-				if (propsToHide != null && (propsToHide.contains(key) || mustHideCredential)) {
+				if (propsToHide != null && propsToHide.contains(key)) {
 					replacement = Misc.hide(replacement);
 				}
 				// Do variable substitution on the replacement string
@@ -209,6 +238,25 @@ public class StringResolver {
 			}
 			head = tail + delimStop.length();
 		}
+	}
+
+	private static String resolveReplacement(Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName, String key) {
+		// first try in System properties
+		String replacement = getSystemProperty(key, null);
+
+		Iterator<AdditionalStringResolver> resolvers = getAdditionalStringResolvers().iterator();
+		while (replacement == null && resolvers.hasNext()) {
+			AdditionalStringResolver resolver = resolvers.next();
+			replacement = resolver.resolve(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName);
+		}
+		// then try props parameter
+		if (replacement == null && props1 != null) {
+			replacement = getReplacementFromProps(props1, key);
+		}
+		if (replacement == null && props2 != null) {
+			replacement = getReplacementFromProps(props2, key);
+		}
+		return replacement;
 	}
 
 	private static String getReplacementFromProps(Map<?, ?> props, String key) {
@@ -251,26 +299,147 @@ public class StringResolver {
 		return sb.toString();
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props Property object in which to find substitutions
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props) throws IllegalArgumentException {
 		return substVars(val, props, null);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props Property object in which to find substitutions
+	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
+	 *                                configurations.
+	 * 	@return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props, boolean resolveWithPropertyName) {
 		return substVars(val, props, null, resolveWithPropertyName);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
+	 *                                configurations.
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
+	/**
+	 * Do variable substitution on a string to resolve ${x2} to the value of the
+	 * property x2. This is done recursive, so that <br/>
+	 * <code><pre>
+	 * Properties prop = new Properties();
+	 * prop.put("test.name", "this is a name with ${test.xx}");
+	 * prop.put("test.xx", "again");
+	 * System.out.println(prop.get("test.name"));
+	 * </pre></code> will print <code>this is a name with again</code>
+	 * <p>
+	 * First it looks in the System environment and System properties, if none is found
+	 * then all installed {@link AdditionalStringResolver}s are scanned for providing a replacement.
+	 * If no replacement is found still and a {@link Map} (or {@link Properties}) object is specified, it looks in the specified
+	 * object. If two {@link Map} or {@link Properties} objects are supplied, it looks first in the first and if none found
+	 * then in the second object.
+	 *
+	 * @param val Value in which to provide string substitutions
+	 * @param props1 First property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions
+	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
+	 *                    all credentials will also be hidden, in addition to properties named in the collection.
+	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
+	 *                                configurations.
+	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
+	 * @throws IllegalArgumentException if there were invalid input arguments.
+	 */
 	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
+	/**
+	 * Check if the input string needs property substitution applied.
+	 * @param string String to check
+	 * @return {@code true} if the input string contains the default start and end delimiters in consecutive
+	 * order, otherwise {@code false}.
+	 * The default delimiters are {@code "${"} and {@code "}"} respectively.
+	 */
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
 		return j>=0 && string.contains(DELIM_START) && string.indexOf(DELIM_STOP, j) >= 0;
@@ -293,15 +462,10 @@ public class StringResolver {
 		return stopPos;
 	}
 
-	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
-		if (authAliasesAllowedToExpand==null) {
-			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
-			if(StringResolver.needsResolution(property)) {
-				property = StringResolver.substVars(property, props1);
-			}
-			Set<String> aliases = new HashSet<>(Arrays.asList(property.split(",")));
-			authAliasesAllowedToExpand = aliases;
+	private static Collection<AdditionalStringResolver> getAdditionalStringResolvers() {
+		if (additionalStringResolvers == null) {
+			additionalStringResolvers = CollectionUtils.collect(AdditionalStringResolver.serviceLoader.iterator(), input -> input);
 		}
-		return authAliasesAllowedToExpand.contains(aliasName);
+		return additionalStringResolvers;
 	}
 }
