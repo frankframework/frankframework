@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
@@ -45,7 +46,6 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -93,7 +93,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	//Does not support async requests because receiver requests are synchronous
 	private Message<Object> processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
-		String messageId = "testmessage" + Misc.createSimpleUUID();
+		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			if(threadContext != null) {

@@ -42,7 +42,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * @author  Gerrit van Brakel
@@ -638,8 +638,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 					// A semicolon between single quotes is ignored (number of single quotes in the query must be zero or an even number)
 					int countApos = StringUtils.countMatches(line, "'");
 					// A semicolon directly after 'END' is ignored when there is also a 'BEGIN' in the query
-					int countBegin = Misc.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
-					int countEnd = Misc.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					int countBegin = StringUtil.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
+					int countEnd = StringUtil.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
 					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
 						splittedQueries.add(line.trim());
 						i = j + 1;

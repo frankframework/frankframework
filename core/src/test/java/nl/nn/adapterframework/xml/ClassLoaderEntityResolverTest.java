@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -16,7 +17,6 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
-import nl.nn.adapterframework.util.Misc;
 
 public class ClassLoaderEntityResolverTest {
 
@@ -49,12 +49,12 @@ public class ClassLoaderEntityResolverTest {
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		String systemId="/Xslt/importDocument/lookup.xml";
-		
+
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
 		assertNotNull(inputSource);
 	}
 
-	
+
 	@Test
 	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
@@ -110,12 +110,12 @@ public class ClassLoaderEntityResolverTest {
 		assertNotNull(context);
 
 		//Get a random filename
-		final String randomName = "myFile-"+Misc.createRandomUUID();
+		final String randomName = "myFile-"+ UUIDUtil.createRandomUUID();
 
 		//Find a file which does not exist, but also does not return NULL
 		URL file = new URL(context, randomName);
 		assertNotNull(file);
-		
+
 
 		ClassLoader dummyClassLoader = new ClassLoader(localClassLoader) {
 			@Override

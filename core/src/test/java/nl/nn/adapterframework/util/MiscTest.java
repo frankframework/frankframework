@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -51,13 +50,11 @@ public class MiscTest {
 
 	@TempDir
 	public static Path testFolder;
-	private static String sourceFolderPath;
 
 	private static Path file;
 
 	@BeforeAll
 	public static void setUp() throws IOException {
-		sourceFolderPath = testFolder.toString();
 		file = Files.createFile(testFolder.resolve("lebron.txt"));
 	}
 
@@ -99,63 +96,6 @@ public class MiscTest {
 
 			super.close();
 		}
-	}
-
-	/**
-	 * Method: createSimpleUUID()
-	 */
-	@Test
-	public void testCreateSimpleUUID() throws Exception {
-		String uuid = Misc.createSimpleUUID();
-		assertFalse(sourceFolderPath.isEmpty()); // for avoiding code quality warnings
-		assertEquals("-", uuid.substring(8, 9));
-		assertFalse(uuid.isEmpty());
-	}
-
-	/**
-	 * Method: createRandomUUID(boolean removeDashes)
-	 */
-	@Test
-	public void testCreateRandomUUIDRemoveDashes() throws Exception {
-		String uuid = Misc.createRandomUUID(true);
-		assertNotEquals(uuid.substring(8, 9), "-"); // assert that dashes are removed
-		assertEquals(32, uuid.length());
-	}
-
-	@Test
-	public void testCreateRandomUUID() throws Exception {
-		String uuid = Misc.createRandomUUID();
-		assertFalse(uuid.isEmpty());
-	}
-
-	/**
-	 * Method: asHex(byte[] buf)
-	 */
-	@Test
-	public void testAsHex() throws Exception {
-		String test = "test";
-		String hex = Misc.asHex(test.getBytes());
-		assertEquals("74657374", hex);
-	}
-
-	/**
-	 * Method: createNumericUUID()
-	 */
-	@Test
-	public void testCreateNumericUUID() throws Exception {
-		String uuid = Misc.createNumericUUID();
-		assertEquals(31, uuid.length()); // Unique string is <ipaddress with length 4*3><currentTime with length
-											// 13><hashcode with length 6>
-	}
-
-	/**
-	 * Method: unsignedByteToInt(byte b)
-	 */
-	@Test
-	public void testUnsignedByteToInt() throws Exception {
-		assertEquals(244, Misc.unsignedByteToInt(new Byte("-12")));
-		assertEquals(12, Misc.unsignedByteToInt(new Byte("12")));
-
 	}
 
 	/**
@@ -272,73 +212,6 @@ public class MiscTest {
 	}
 
 	/**
-	 * Method: replace(String source, String from, String to)
-	 */
-	@Test
-	public void testReplace() throws Exception {
-		String a = "Kobe";
-		String res = Misc.replace(a, "Ko", "Phoe");
-		assertEquals("Phoebe", res);
-	}
-
-	/**
-	 * Method: concatStrings(String part1, String separator, String part2)
-	 */
-	@Test
-	public void testConcatStrings() throws Exception {
-		String a = "LeBron";
-		String b = "James";
-		String seperator = "//";
-		String res = Misc.concatStrings(a, seperator, b);
-		assertEquals("LeBron//James", res);
-	}
-
-	@Test
-	public void testConcatStringsFirstEmpty() throws Exception {
-		String a = "";
-		String b = "James";
-		String seperator = "//";
-		String res = Misc.concatStrings(a, seperator, b);
-		assertEquals("James", res);
-	}
-
-	@Test
-	public void testConcatStringsSecondEmpty() throws Exception {
-		String a = "LeBron";
-		String b = "";
-		String seperator = "//";
-		String res = Misc.concatStrings(a, seperator, b);
-		assertEquals("LeBron", res);
-	}
-
-	@Test
-	public void testConcat() throws Exception {
-		String seperator = "|";
-		String res = Misc.concat(seperator, null, "a", "b", null, "c", null);
-		assertEquals("a|b|c", res);
-	}
-
-	/**
-	 * Method: hide(String string)
-	 */
-	@Test
-	public void testHideString() throws Exception {
-		String a = "test";
-		String res = Misc.hide(a);
-		assertEquals("****", res);
-	}
-
-	/**
-	 * Method: hide(String string, int mode)
-	 */
-	@Test
-	public void testHideForStringMode() throws Exception {
-		String a = "test";
-		String res = Misc.hide(a, 1);
-		assertEquals("t**t", res);
-	}
-
-	/**
 	 * Method: byteArrayToString(byte[] input, String endOfLineString, boolean
 	 * xmlEncode)
 	 */
@@ -348,55 +221,6 @@ public class MiscTest {
 		byte[] arr = s.getBytes();
 		String res = Misc.byteArrayToString(arr, "", true);
 		assertEquals(s, res);
-	}
-
-	/**
-	 * Method: gzip(String input)
-	 */
-	@Test
-	public void testGzipGUnzipInput() throws Exception {
-		String s = "test";
-		byte[] arr = s.getBytes();
-		byte[] zipped = Misc.gzip(arr);
-		assertEquals("test", Misc.gunzipToString(zipped));
-	}
-
-	@Test
-	public void testGzipString() throws Exception {
-		String s = "you deserved this";
-		byte[] zipped = Misc.gzip(s);
-		assertEquals("you deserved this", Misc.gunzipToString(zipped));
-
-	}
-
-	/**
-	 * Method: compress(String input)
-	 */
-	@Test
-	public void testCompressed() throws Exception {
-		String s = "#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$#!@#$";
-		String s1 = "teststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststeststests";
-		String s3 = "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123";
-		byte[] compressedSymbols = Misc.compress(s);
-		byte[] compressedText = Misc.compress(s1);
-		byte[] compressedNumbers = Misc.compress(s3);
-		assertTrue(compressedNumbers.length < s3.length());
-		assertEquals(120, compressedNumbers[0]);
-		assertEquals(-38, compressedNumbers[1]);
-		assertTrue(compressedText.length < s1.length());
-		assertEquals(120, compressedText[0]);
-		assertEquals(-38, compressedText[1]);
-		assertTrue(compressedSymbols.length < s.length());
-		assertEquals(120, compressedSymbols[0]);
-		assertEquals(-38, compressedSymbols[1]);
-	}
-
-	@Test
-	public void testCompressDecompressInput() throws Exception {
-		String s = "test";
-		byte[] compressed = Misc.compress(s);
-		String decompressed = Misc.decompressToString(compressed);
-		assertEquals("test", decompressed);
 	}
 
 	/**
@@ -562,36 +386,6 @@ public class MiscTest {
 		String regex = "\\d";
 		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
 		assertEquals("Donald Duck **  Hey hey  **  Wooo", res);
-	}
-
-	/**
-	 * Method: hideFirstHalf(String inputString, String regex)
-	 */
-	@Test
-	public void testHideFirstHalf() throws Exception {
-		String s = "Donald Duck     Hey hey     Wooo";
-		String hideRegex = "[^\\s*].*[^\\s*]";
-		String res = Misc.hideFirstHalf(s, hideRegex);
-		assertEquals("****************Hey hey     Wooo", res);
-	}
-
-	/**
-	 * Method: toSortName(String name)
-	 */
-	@Test
-	public void testToSortName() throws Exception {
-		assertEquals("NEW*NAME", Misc.toSortName("new_name"));
-	}
-
-	/**
-	 * Method: countRegex(String string, String regex)
-	 */
-	@Test
-	public void testCountRegex() throws Exception {
-		String s = "12ab34";
-		String regex = "\\d";
-		int regexCount = Misc.countRegex(s, regex);
-		assertEquals(4, regexCount);
 	}
 
 	/**

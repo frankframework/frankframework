@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Exception thrown when the <code>doPipe()</code> method
@@ -28,12 +28,12 @@ public class PipeRunException extends IbisException {
 	private @Getter IPipe pipeInError = null;
 
 	public PipeRunException(IPipe pipe, String msg) {
-		super(Misc.concatStrings(pipe!=null? "Pipe ["+pipe.getName()+"]" : null, " ", msg));
+		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg));
 		pipeInError = pipe;
 	}
 
 	public PipeRunException(IPipe pipe, String msg, Throwable e) {
-		super(Misc.concatStrings(pipe!=null? "Pipe ["+pipe.getName()+"]" : null, " ", msg), e);
+		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg), e);
 		pipeInError = pipe;
 	}
 

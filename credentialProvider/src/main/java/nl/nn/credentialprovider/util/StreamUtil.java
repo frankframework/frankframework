@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 
 /**
  * Functions to read and write from one stream to another.
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
@@ -46,7 +46,7 @@ public class StreamUtil {
 		}
 		if (target instanceof String) {
 			String filename=(String)target;
-			if (Misc.isEmpty(filename)) {
+			if (StringUtil.isEmpty(filename)) {
 				throw new IOException("target string cannot be empty but must contain a filename");
 			}
 			try {

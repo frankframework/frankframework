@@ -76,7 +76,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * because the configuration might be loaded from outside the webapp
 	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
-	 * 
+	 *
 	 * @param cl ClassLoader to retrieve AppConstants from
 	 * @return AppConstants instance
 	 */
@@ -112,7 +112,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Very similar to <code>System.getProperty</code> except
 	 * that the {@link SecurityException} is hidden.
-	 * 
+	 *
 	 * @param key The key to search for.
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
@@ -206,7 +206,7 @@ public final class AppConstants extends Properties implements Serializable {
 	public Properties getAppConstants(String keyBase) {
 		return getAppConstants(keyBase, true, true);
 	}
-	
+
 
 	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
@@ -220,7 +220,7 @@ public final class AppConstants extends Properties implements Serializable {
 			constants.putAll(System.getProperties());
 		if(useEnvironmentVariables) {
 			try {
-				constants.putAll(Misc.getEnvironmentVariables());
+				constants.putAll(Environment.getEnvironmentVariables());
 			} catch (IOException e) {
 				log.log(Level.WARNING, "unable to retrieve environment variables", e);
 			}
@@ -249,7 +249,7 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
-		if(Misc.isEmpty(filename)) {
+		if(StringUtil.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
@@ -285,11 +285,11 @@ public final class AppConstants extends Properties implements Serializable {
 				}
 
 				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
-				if (loadAdditionalPropertiesFiles && Misc.isNotEmpty(loadFile)) {
+				if (loadAdditionalPropertiesFiles && StringUtil.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
-					if (Misc.isNotEmpty(loadFileSuffix)){
+					if (StringUtil.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
 						load(classLoader, loadFile, false);
@@ -302,7 +302,7 @@ public final class AppConstants extends Properties implements Serializable {
 					String suffixedFilename = baseName
 							+ "_"
 							+ suffix
-							+ (Misc.isEmpty(extension) ? "" : "."
+							+ (StringUtil.isEmpty(extension) ? "" : "."
 									+ extension);
 					load(classLoader, suffixedFilename, false);
 				}
@@ -315,8 +315,8 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Add property only in the local AppConstants!
 	 * Try to avoid using this method and use {@link #setProperty(String, String)} if you want to set the property globally!
-	 * 
-	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
+	 *
+	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream)
 	 * to the {@link Hashtable}.
 	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */

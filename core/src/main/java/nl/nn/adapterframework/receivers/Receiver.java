@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -102,7 +103,6 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateManager;
@@ -1202,7 +1202,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
 			if (StringUtils.isEmpty(messageId)) {
-				messageId=Misc.createSimpleUUID();
+				messageId= UUIDUtil.createSimpleUUID();
 				if (log.isDebugEnabled())
 					log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 			}

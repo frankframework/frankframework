@@ -44,9 +44,9 @@ import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.adapterframework.util.StringUtil;
 
 
 /**
@@ -329,7 +329,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							} else {
 								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Date receivedDate = new Date();
-								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
+								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
@@ -381,7 +381,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
 						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
-						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
 						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);

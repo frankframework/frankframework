@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.credentialprovider.util.StringUtil;
 
 public class FileSystemCredentials extends Credentials {
 
@@ -39,8 +39,8 @@ public class FileSystemCredentials extends Credentials {
 	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernamefile, String passwordfile, Path root) {
 		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.root = root;
-		this.usernamefile = Misc.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
-		this.passwordfile = Misc.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
+		this.usernamefile = StringUtil.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
+		this.passwordfile = StringUtil.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
 	}
 
 
@@ -58,7 +58,7 @@ public class FileSystemCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (Misc.isNotEmpty(getAlias()) && root!=null) {
+		if (StringUtil.isNotEmpty(getAlias()) && root!=null) {
 			try {
 				Path aliasPath = Paths.get(root.toString(), getAlias());
 				if (Files.exists(aliasPath)) {

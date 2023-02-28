@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -103,11 +104,11 @@ public class FileRecordListener implements IPullingListener {
 			throw new ListenerException(getName() + " error renaming directory: The directory [" + directoryTo + "] to move the file [" + fullFilePath + "] is not a directory!");
 		}
 		// Move file to new directory
-		String newFileName = Misc.createSimpleUUID() + "-" + file.getName();
+		String newFileName = UUIDUtil.createSimpleUUID() + "-" + file.getName();
 
 		int dotPosition = file.getName().lastIndexOf(".");
 		if (dotPosition > 0)
-			newFileName = file.getName().substring(0, dotPosition) + "-" + Misc.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
+			newFileName = file.getName().substring(0, dotPosition) + "-" + UUIDUtil.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
 
 		success = file.renameTo(new File(dir, newFileName));
 		if (!success) {

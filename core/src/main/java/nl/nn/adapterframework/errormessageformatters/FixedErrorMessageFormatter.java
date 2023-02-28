@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +32,7 @@ import lombok.Getter;
 
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
- * 
+ *
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
@@ -61,7 +62,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			try {
-				messageToReturn = new Message(Misc.replace(messageToReturn.asString(), getReplaceFrom(), getReplaceTo()));
+				messageToReturn = new Message(StringUtil.replace(messageToReturn.asString(), getReplaceFrom(), getReplaceTo()));
 			} catch (IOException e) {
 				log.error("got error formatting errorMessage", e);
 			}

@@ -45,7 +45,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
-import nl.nn.adapterframework.util.*;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +58,13 @@ import lombok.Lombok;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringDataSource;
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable, StringDataSource {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
@@ -611,7 +617,7 @@ public class Message implements Serializable, StringDataSource {
 		writer.write("context:\n");
 		for (Entry<String, Object> entry : context.entrySet()) {
 			if ("authorization".equalsIgnoreCase(entry.getKey())) {
-				String value = Misc.hide((String) entry.getValue());
+				String value = StringUtil.hide((String) entry.getValue());
 				writer.write(entry.getKey() + ": " + value + "\n");
 				continue;
 			}

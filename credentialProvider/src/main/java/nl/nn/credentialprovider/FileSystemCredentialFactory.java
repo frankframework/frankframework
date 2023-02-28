@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.credentialprovider.util.StringUtil;
 
 public class FileSystemCredentialFactory implements ICredentialFactory {
 
@@ -44,7 +44,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	public void initialize() {
 		AppConstants appConstants = AppConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
-		if (Misc.isEmpty(fsroot)) {
+		if (StringUtil.isEmpty(fsroot)) {
 			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
 		}
 		this.root = Paths.get(fsroot);

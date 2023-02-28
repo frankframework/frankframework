@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -74,9 +74,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = Misc.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
 		}
-		errorMessage = Misc.concatStrings(prefix, ": ", errorMessage);
+		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
 		// Build a Base xml

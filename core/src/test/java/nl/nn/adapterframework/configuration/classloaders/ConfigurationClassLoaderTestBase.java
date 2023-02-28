@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
 
 public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 
@@ -88,7 +88,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	 */
 	protected String getConfigurationName() {
 		if(configurationName == null)
-			configurationName = "dummyConfigurationName"+Misc.createRandomUUID();
+			configurationName = "dummyConfigurationName"+ UUIDUtil.createRandomUUID();
 
 		return configurationName;
 	}
@@ -248,7 +248,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 
 //		classLoader.setBasePath(basePath);
 
-		// We have to set both the name as well as the appconstants variable. 
+		// We have to set both the name as well as the appconstants variable.
 		String configKey = "configurations."+getConfigurationName()+".configurationFile";
 		AppConstants.getInstance(classLoader).put(configKey, file);
 		classLoader.setConfigurationFile(path);

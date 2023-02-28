@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 public class ClassUtils {
 	protected static Logger log = Logger.getLogger(ClassUtils.class.getName());
-	
+
     /**
      * Return the context classloader.
      * BL: if this is command line operation, the classloading issues
@@ -64,7 +64,7 @@ public class ClassUtils {
 
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes
 
-		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
 		// Resources retrieved from ClassLoaders should never start with a leading slash
 		if (resourceToUse.startsWith("/")) {
 			resourceToUse = resourceToUse.substring(1);
@@ -74,7 +74,7 @@ public class ClassUtils {
 		// then try to get it as a URL
 		if (url == null && resourceToUse.contains(":")) {
 			try {
-				url = new URL(Misc.replace(resourceToUse, " ", "%20"));
+				url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
 			} catch (MalformedURLException e) {
 				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
 				fnfe.initCause(e);
@@ -85,7 +85,7 @@ public class ClassUtils {
 		return url;
 	}
 
-	
+
     /**
      * Tests if a class implements a given interface
      *

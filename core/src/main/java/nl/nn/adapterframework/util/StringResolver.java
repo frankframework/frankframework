@@ -212,7 +212,7 @@ public class StringResolver {
 
 			if (replacement != null) {
 				if (propsToHide != null && propsToHide.contains(key)) {
-					replacement = Misc.hide(replacement);
+					replacement = StringUtil.hide(replacement);
 				}
 				// Do variable substitution on the replacement string
 				// such that we can solve "Hello ${x1}" as "Hello p2"

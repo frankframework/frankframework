@@ -136,7 +136,7 @@ public abstract class ClassUtils {
 					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
 					if(protocols.contains(protocol)) {
 						try {
-							url = new URL(Misc.replace(resourceToUse, " ", "%20"));
+							url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
 						} catch(MalformedURLException e) {
 							log.debug("Could not find resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
@@ -272,7 +272,7 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
-		return Misc.concatStrings(classNameOf(o), " ", tail);
+		return StringUtil.concatStrings(classNameOf(o), " ", tail);
 	}
 
 	/**

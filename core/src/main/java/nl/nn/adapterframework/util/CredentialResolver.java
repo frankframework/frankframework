@@ -60,7 +60,7 @@ public class CredentialResolver implements AdditionalStringResolver {
 			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
 		}
 		if (mustHideCredential) {
-			return Misc.hide(replacement);
+			return StringUtil.hide(replacement);
 		}
 
 		return replacement;

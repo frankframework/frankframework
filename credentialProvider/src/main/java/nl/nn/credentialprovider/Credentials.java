@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.credentialprovider.util.StringUtil;
 
 public class Credentials implements ICredentials {
 	protected Logger log = Logger.getLogger(this.getClass().getName());
@@ -42,7 +42,7 @@ public class Credentials implements ICredentials {
 	private void getCredentials() {
 		if (!gotCredentials) {
 
-			if (Misc.isNotEmpty(getAlias())) {
+			if (StringUtil.isNotEmpty(getAlias())) {
 				try {
 					getCredentialsFromAlias();
 				} catch (RuntimeException e) {
@@ -54,7 +54,7 @@ public class Credentials implements ICredentials {
 						password = passwordSupplier.get();
 					}
 
-					if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
+					if (StringUtil.isEmpty(username) && StringUtil.isEmpty(password)) {
 						throw e;
 					}
 				}
@@ -70,7 +70,7 @@ public class Credentials implements ICredentials {
 	}
 
 	protected void getCredentialsFromAlias() {
-		if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
+		if (StringUtil.isEmpty(username) && StringUtil.isEmpty(password)) {
 			log.warning("no credential factory for alias ["+alias+"], and no default credentials, username ["+username+"]");
 		}
 	}
