@@ -16,8 +16,12 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
@@ -28,9 +32,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.function.Function;
 
 import org.apache.commons.io.ByteOrderMark;
@@ -43,11 +50,11 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.functional.ThrowingRunnable;
-import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
@@ -61,9 +68,10 @@ public class StreamUtil {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=DEFAULT_CHARSET.displayName();
 	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
 	public static final String AUTO_DETECT_CHARSET = "auto";
+	public static final int BUFFERSIZE=20000;
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
-	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
+	protected static Logger log = LogManager.getLogger(StreamUtil.class);
 
 	@Deprecated
 	public static OutputStream getOutputStream(Object target) throws IOException {
@@ -73,9 +81,10 @@ public class StreamUtil {
 		if (target instanceof String) {
 			return getFileOutputStream((String)target);
 		}
-		if (target instanceof Message) {
-			if(((Message) target).asObject() instanceof String) {
-				return getFileOutputStream(((Message)target).asString());
+		if (target instanceof StringDataSource) {
+			StringDataSource stringDataSource = (StringDataSource) target;
+			if(stringDataSource.isStringNative()) {
+				return getFileOutputStream(stringDataSource.asString());
 			}
 		}
 		return null;
@@ -172,7 +181,7 @@ public class StreamUtil {
 
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
-		return Misc.streamToBytes(bOMInputStream);
+		return streamToBytes(bOMInputStream);
 	}
 
 	/**
@@ -408,6 +417,262 @@ public class StreamUtil {
 
 	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
 		return new MarkCompensatingOutputStream(stream);
+	}
+
+	/**
+	 * Copies the content of the specified file to an output stream.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         OutputStream os = new ByteArrayOutputStream
+	 *         Misc.fileToStream(someFileName, os);
+	 *         System.out.println(os.toString) // prints the content of the output stream
+	 *         				   // that's copied from the file.
+	 *     </pre>
+	 * </p>
+	 * @throws IOException exception to be thrown if an I/O exception occurs
+	 */
+	public static void fileToStream(String filename, OutputStream output) throws IOException {
+		streamToStream(Files.newInputStream(Paths.get(filename)), output);
+	}
+
+	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
+		streamToStream(input, output, null);
+	}
+
+	/**
+	 * Writes the content of an input stream to an output stream by copying the buffer of input stream to the buffer of the output stream.
+	 * If eof is specified, appends the eof(could represent a new line) to the outputstream
+	 * Closes the input stream if specified.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         OutputStream baos = new ByteArrayOutputStream();
+	 *         Misc.streamToStream(bais, baos);
+	 *         System.out.println(baos.toString()); // prints "test"
+	 *     </pre>
+	 * </p>
+	 * @throws IOException  exception to be thrown if an I/O exception occurs
+	 */
+	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
+		if (input!=null) {
+			try {
+				byte[] buffer=new byte[BUFFERSIZE];
+				int bytesRead;
+				while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
+					output.write(buffer,0,bytesRead);
+				}
+				if(eof != null) {
+					output.write(eof);
+				}
+			} finally {
+				input.close();
+			}
+		}
+	}
+
+	/**
+	 * Writes the content of an input stream to a specified file.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         Misc.streamToFile(bais, file); // "test" copied inside the file.
+	 *     </pre>
+	 * </p>
+	 * @throws IOException exception to be thrown if an I/O exception occurs
+	 */
+	public static void streamToFile(InputStream inputStream, File file) throws IOException {
+		try (OutputStream fileOut = Files.newOutputStream(file.toPath())) {
+			streamToStream(inputStream, fileOut);
+		}
+	}
+
+	/**
+	 * Writes the content of an input stream to a byte array.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         String test = "test";
+	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+	 *         byte[] arr = Misc.streamToBytes(bais);
+	 *         System.out.println(new String(arr, StandardCharsets.UTF_8)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 */
+	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int r = inputStream.read(buffer);
+				if (r == -1) {
+					break;
+				}
+				out.write(buffer, 0, r);
+			}
+
+			return out.toByteArray();
+		} finally {
+			inputStream.close();
+		}
+	}
+
+	/**
+	 * Copies the content of a reader to the buffer of a writer.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         Reader reader = new StringReader("test");
+	 *         Writer writer = new StringWriter();
+	 *         Misc.readerToWriter(reader, writer, true);
+	 *         System.out.println(writer.toString)); // prints "test"
+	 *     </pre>
+	 * </p>
+	 */
+	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
+		if (reader!=null) {
+			try {
+				char[] buffer=new char[BUFFERSIZE];
+				int charsRead;
+				while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
+					writer.write(buffer,0,charsRead);
+				}
+			} finally {
+				reader.close();
+			}
+		}
+	}
+
+	/**
+	 * Please consider using resourceToString() instead of relying on files.
+	 */
+	@Deprecated
+	static String fileToString(String fileName) throws IOException {
+		return fileToString(fileName, null, false);
+	}
+
+	/**
+	 * Please consider using resourceToString() instead of relying on files.
+	 */
+	@Deprecated
+	public static String fileToString(String fileName, String endOfLineString) throws IOException {
+		return fileToString(fileName, endOfLineString, false);
+	}
+
+	/**
+	 * Please consider using resourceToString() instead of relying on files.
+	 */
+	@Deprecated
+	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
+		try (FileReader reader = new FileReader(fileName)) {
+			return readerToString(reader, endOfLineString, xmlEncode);
+		}
+	}
+
+	/**
+	 * Copies the content of a reader into a string, adds specified string to the end of the line, if specified.
+	 * <p>
+	 *     Example:
+	 *     <pre>
+	 *         Reader r = new StringReader("<root> WeAreFrank'</root> \n";
+	 *         String s = Misc.readerToString(r, "!!", true);
+	 *         System.out.println(s);
+	 *         // prints "&lt;root&gt; WeAreFrank!!&lt;/root&gt;"
+	 *     </pre>
+	 * </p>
+	 * @param xmlEncode if set to true, applies XML encodings to the content of the reader
+	 */
+	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int curChar = -1;
+		int prevChar = -1;
+		try {
+			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
+				if (prevChar == '\r' || curChar == '\n') {
+					if (endOfLineString == null) {
+						if (prevChar == '\r')
+							sb.append((char) prevChar);
+						if (curChar == '\n')
+							sb.append((char) curChar);
+					}
+					else {
+						sb.append(endOfLineString);
+					}
+				}
+				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
+					String appendStr =""+(char) curChar;
+					sb.append(xmlEncode ? XmlUtils.encodeChars(appendStr) : appendStr);
+				}
+				prevChar = curChar;
+			}
+			return sb.toString();
+		} finally {
+			reader.close();
+		}
+	}
+
+	/**
+	 * @see #streamToString(InputStream, String, boolean)
+	 * @return String that's included in the stream
+	 */
+	public static String streamToString(InputStream stream) throws IOException {
+		return streamToString(stream, null, false);
+	}
+
+	/**
+	 * @see #streamToString(InputStream, String, String, boolean)
+	 */
+	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
+		return streamToString(stream, null, streamEncoding, false);
+	}
+
+	/**
+	 * @see #streamToString(InputStream, String, String, boolean)
+	 */
+	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
+		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
+	}
+
+	/**
+	 * @see #readerToString(Reader, String, boolean)
+	 */
+	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
+		return readerToString(getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
+	}
+
+	/**
+	 * @see StreamUtil#streamToString(InputStream, String, boolean)
+	 */
+	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
+		InputStream stream = resource.openStream();
+		return streamToString(stream, endOfLineString, xmlEncode);
+	}
+
+	/**
+	 * @see StreamUtil#streamToString(InputStream, String, boolean)
+	 */
+	public static String resourceToString(URL resource) throws IOException {
+		return resourceToString(resource, null, false);
+	}
+
+	/**
+	 * @see StreamUtil#streamToString(InputStream, String, boolean)
+	 */
+	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
+		return resourceToString(resource, endOfLineString, false);
+	}
+
+	/**
+	 * Writes the string to a file.
+	 */
+	public static void stringToFile(String string, String fileName) throws IOException {
+		try (FileWriter fw = new FileWriter(fileName)) {
+			fw.write(string);
+		}
 	}
 
 	static class MarkCompensatingOutputStream extends FilterOutputStream {

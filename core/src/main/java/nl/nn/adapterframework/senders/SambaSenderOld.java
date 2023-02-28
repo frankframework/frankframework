@@ -42,29 +42,30 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Samba Sender: The standard Windows interoperability suite for Linux and Unix.
- * 
- * 
+ *
+ *
  * <p><b>Parameters:</b></p>
  * <p>The <code>upload</code> action requires the file parameter to be set which should contain the fileContent to upload in either Stream, Bytes or String format</p>
  * <p>The <code>rename</code> action requires the destination parameter to be set which should contain the full path relative to the share + filename</p>
- * 
+ *
  * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
  * <p>If you do not want to specify the username/password used to authenticate with the Samba Share, you can use the authalias property.</p>
- * 
+ *
  * <p><b>NOTES:</b></p>
  * <p>Folders must always end with a slash.</p>
  * <p>It is possible to move files with the <code>rename</code> action. When doing so, make sure that the target folder exists!</p>
  * <p>It is possible to create multiple directories at once, when the <code>force</code> argument is set to <code>true</code>.</p>
  * <p>The <code>download</code> action returns a base64 encoded string containing the file content.</p>
- * 
+ *
  * <br/>
  * <br/>
  * <br/>
- * 
+ *
  * @author	Niels Meijer
  * @since	7.1-B4
  */
@@ -150,7 +151,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			if (getAction().equalsIgnoreCase("download")) {
 				SmbFileInputStream is = new SmbFileInputStream(file);
 				InputStream base64 = new Base64InputStream(is, true);
-				return new SenderResult(Misc.streamToString(base64));
+				return new SenderResult(StreamUtil.streamToString(base64));
 			} else if (getAction().equalsIgnoreCase("list")) {
 				return new SenderResult(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {

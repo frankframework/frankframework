@@ -394,10 +394,10 @@ public class JdbcUtil {
 			return null;
 		}
 		if (encodeBlobBase64) {
-			return Misc.streamToString(new Base64InputStream(blobIntputStream,true),null,false);
+			return StreamUtil.streamToString(new Base64InputStream(blobIntputStream,true),null,false);
 		}
 		if (blobSmartGet) {
-			byte[] bytes = Misc.streamToBytes(blobIntputStream);
+			byte[] bytes = StreamUtil.streamToBytes(blobIntputStream);
 			Object result = null;
 			boolean objectOK = true;
 			try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
@@ -427,7 +427,7 @@ public class JdbcUtil {
 
 			return XmlUtils.replaceNonValidXmlCharacters(rawMessage);
 		}
-		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null, false);
+		return StreamUtil.readerToString(getBlobReader(blobIntputStream, charset),null, false);
 	}
 
 	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, boolean compressBlob) throws JdbcException, SQLException {
@@ -511,14 +511,14 @@ public class JdbcUtil {
 		if (reader == null) {
 			return null;
 		}
-		return Misc.readerToString(reader, null, xmlEncode);
+		return StreamUtil.readerToString(reader, null, xmlEncode);
 	}
 	public static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = dbmsSupport.getClobReader(rs, columnName);
 		if (reader == null) {
 			return null;
 		}
-		return Misc.readerToString(reader, null, xmlEncode);
+		return StreamUtil.readerToString(reader, null, xmlEncode);
 	}
 
 	public static void putStringAsClob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {

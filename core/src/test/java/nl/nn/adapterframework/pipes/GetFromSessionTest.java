@@ -21,12 +21,12 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 	private PipeLineSession session;
-	
+
 	private final String DUMMY_DATA = "dummy data";
 
 	@Before
@@ -99,7 +99,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 		PipeRunResult prr = doPipe(pipe, "ingored", session);
 		InputStream result = (InputStream) prr.getResult().asObject();
-		assertEquals(DUMMY_DATA, Misc.streamToString(result));
+		assertEquals(DUMMY_DATA, StreamUtil.streamToString(result));
 	}
 
 	@Test

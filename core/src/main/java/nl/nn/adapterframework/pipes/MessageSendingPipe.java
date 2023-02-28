@@ -81,6 +81,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -206,7 +207,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("could not find resource for stubfile ["+getStubFilename()+"]");
 			}
 			try {
-				returnString = Misc.resourceToString(stubUrl, Misc.LINE_SEPARATOR);
+				returnString = StreamUtil.resourceToString(stubUrl, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading stubfile ["+getStubFilename()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
@@ -484,7 +485,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				if (sfn != null) {
 					try {
-						result = new Message(Misc.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
+						result = new Message(StreamUtil.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
 						log.info("returning result from dynamic stub [{}]", sfn);
 					} catch (Throwable e) {
 						throw new PipeRunException(this,"got exception loading result from stub [" + sfn + "]",e);

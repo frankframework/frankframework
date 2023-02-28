@@ -41,7 +41,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -217,7 +216,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						InputStream inputStream = StreamUtil.dontClose(zis);
 						byte[] fileContentBytes = null;
 						if (isCollectFileContents()) {
-							fileContentBytes = Misc.streamToBytes(inputStream);
+							fileContentBytes = StreamUtil.streamToBytes(inputStream);
 							inputStream = new ByteArrayInputStream(fileContentBytes);
 						}
 
@@ -246,7 +245,7 @@ public class UnzipPipe extends FixedForwardPipe {
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
-								Misc.streamToStream(inputStream, fileOutputStream);
+								StreamUtil.streamToStream(inputStream, fileOutputStream);
 							}
 						}
 						if (isCollectResults()) {

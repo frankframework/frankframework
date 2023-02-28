@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
-import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -73,7 +72,7 @@ public class LogUtil {
 		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
 	}
 
-	public static CloseableThreadContext.Instance getThreadContext(Adapter adapter, String messageId, PipeLineSession session) {
+	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {
 		String lastAdapter= ThreadContext.get("adapter");
 		String currentAdapter= adapter.getName();
 		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", currentAdapter);

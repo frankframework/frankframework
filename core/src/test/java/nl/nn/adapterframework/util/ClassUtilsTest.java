@@ -50,19 +50,19 @@ public class ClassUtilsTest {
 	@Test
 	public void getResourceURLAndValidateContentsO() throws URISyntaxException, IOException {
 		URL url = ClassUtils.getResourceURL(fileName);
-		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
+		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
 	public void getResourceURLAndValidateContentsC1() throws URISyntaxException, IOException {
 		URL url = ClassUtils.getResourceURL(scopeProvider, fileName);
-		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
+		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
 	public void getResourceURLAndValidateContentsC2() throws URISyntaxException, IOException {
 		URL url = ClassUtils.getResourceURL(scopeProvider, fileName);
-		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
+		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
@@ -148,7 +148,7 @@ public class ClassUtilsTest {
 	@Test
 	public void getResourceURLnullClassLoader1() throws URISyntaxException, IOException {
 		URL url = ClassUtils.getResourceURL(nullScopeProvider, fileName);
-		assertEquals(fileContent, Misc.streamToString(url.openStream()).trim());
+		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
@@ -181,7 +181,7 @@ public class ClassUtilsTest {
 		assertNotNull(url, "URL for ["+uri+"] should not be null");
 
 		if (expected!=null) {
-			assertEquals(expected, Misc.streamToString(url.openStream()));
+			assertEquals(expected, StreamUtil.streamToString(url.openStream()));
 		}
 	}
 

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -42,7 +41,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
 /**
@@ -225,7 +225,7 @@ public class FileRecordListener implements IPullingListener {
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
-				fileContent = Misc.fileToString(fullInputFileName, "\n");
+				fileContent = StreamUtil.fileToString(fullInputFileName, "\n");
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {

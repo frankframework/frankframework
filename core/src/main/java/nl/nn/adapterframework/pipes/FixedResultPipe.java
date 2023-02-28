@@ -42,6 +42,7 @@ import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -119,7 +120,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
 			}
 			try {
-				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
 			}

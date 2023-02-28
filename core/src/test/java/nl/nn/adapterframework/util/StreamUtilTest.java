@@ -1,22 +1,55 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
+import org.junit.AfterClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil.MarkCompensatingOutputStream;
 
 public class StreamUtilTest {
+
+	@TempDir
+	public static Path testFolder;
+
+	private static Path file;
+
+	@BeforeAll
+	public static void setUp() throws IOException {
+		file = Files.createFile(testFolder.resolve("lebron.txt"));
+	}
+
+	@AfterClass
+	public static void cleanUp() {
+		File f = new File("lebron.txt");
+		f.delete();
+	}
 
 	private String UTF8_EXPECTED="ABC één euro: €1,00";
 	private String OTHER_EXPECTED="ABC néé hè";
@@ -146,5 +179,152 @@ public class StreamUtilTest {
 
 		//D, E, prefix has already been written before the first skip has been called.
 		assertEquals("D, E, B, C, E, F, H, J, K, M, N, P, R, S, U, V, X, Z", new String(boas.toByteArray()));
+	}
+
+	private void writeToTestFile() throws IOException {
+		Writer w = new FileWriter(file.toString());
+		w.write("inside the lebron file");
+		w.close();
+	}
+
+	@Test
+	public void testStreamToString() throws IOException {
+		String tekst = "dit is een string";
+		ByteArrayInputStream bais = new ByteArrayInputStream(tekst.getBytes());
+
+		CloseChecker closeChecker = new CloseChecker(bais);
+		String actual = StreamUtil.streamToString(closeChecker);
+
+		assertEquals(tekst, actual);
+		assertTrue(closeChecker.inputStreamClosed, "inputstream was not closed");
+	}
+
+	private class CloseChecker extends FilterInputStream {
+
+		boolean inputStreamClosed;
+
+		public CloseChecker(InputStream arg0) {
+			super(arg0);
+		}
+
+		@Override
+		public void close() throws IOException {
+			inputStreamClosed = true;
+
+			super.close();
+		}
+	}
+
+	/**
+	 * Method: fileToStream(String filename, OutputStream output)
+	 */
+	@Test
+	public void testFileToStream() throws Exception {
+		writeToTestFile();
+		OutputStream os = new ByteArrayOutputStream();
+		StreamUtil.fileToStream(file.toString(), os);
+		assertEquals("inside the lebron file", os.toString());
+	}
+
+	/**
+	 * Method: streamToStream(InputStream input, OutputStream output)
+	 */
+	@Test
+	public void testStreamToStreamForInputOutput() throws Exception {
+		String test = "test";
+		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+		OutputStream baos = new ByteArrayOutputStream();
+		StreamUtil.streamToStream(bais, baos);
+		assertEquals("test", baos.toString());
+	}
+
+	/**
+	 * Method: streamToStream(InputStream input, OutputStream output, boolean
+	 * closeInput)
+	 */
+	@Test
+	public void testStreamToStreamForInputOutputCloseInput() throws Exception {
+		String test = "test";
+		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+		OutputStream baos = new ByteArrayOutputStream();
+		StreamUtil.streamToStream(bais, baos);
+		assertEquals("test", baos.toString());
+	}
+
+	/**
+	 * Method: streamToFile(InputStream inputStream, File file)
+	 */
+	@Test
+	public void testStreamToFile() throws Exception {
+		String test = "test";
+		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+		StreamUtil.streamToFile(bais, file.toFile());
+
+		// to read from the file
+		InputStream is = new FileInputStream(file.toString());
+		BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+
+		String line = buf.readLine();
+		StringBuilder sb = new StringBuilder();
+
+		while(line != null) {
+			sb.append(line).append("\n");
+			line = buf.readLine();
+		}
+		buf.close();
+
+		String fileAsString = sb.toString();
+		assertEquals("test\n", fileAsString);
+	}
+
+	/**
+	 * Method: streamToBytes(InputStream inputStream)
+	 */
+	@Test
+	public void testStreamToBytes() throws Exception {
+		String test = "test";
+		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
+		byte[] arr = StreamUtil.streamToBytes(bais);
+		assertEquals("test", new String(arr, StandardCharsets.UTF_8));
+	}
+
+	/**
+	 * Method: readerToWriter(Reader reader, Writer writer)
+	 */
+	@Test
+	public void testReaderToWriterForReaderWriter() throws Exception {
+		Reader reader = new StringReader("test");
+		Writer writer = new StringWriter();
+		StreamUtil.readerToWriter(reader, writer);
+		assertEquals("test", writer.toString());
+	}
+
+	@Test
+	public void testFileToStringFileNameEndLine() throws Exception {
+		// Misc.resourceToString()
+		writeToTestFile();
+		assertEquals("inside the lebron file", StreamUtil.fileToString(file.toString(), " the end"));
+	}
+
+	/**
+	 * Method: readerToString(Reader reader, String endOfLineString, boolean
+	 * xmlEncode)
+	 */
+	@Test
+	public void testReaderToStringNoXMLEncode() throws Exception {
+		Reader r = new StringReader("<root> \n" + "    <name>GeeksforGeeks</name> \n" + "    <address> \n" + "        <sector>142</sector> \n" + "        <location>Noida</location> \n" + "    </address> \n" + "</root> r");
+		String s = StreamUtil.readerToString(r, "23", false);
+		assertEquals("<root> 23    <name>GeeksforGeeks</name> 23    <address> 23        <sector>142</sector> 23        <location>Noida</location> 23    </address> 23</root> r", s);
+	}
+
+	/**
+	 * Method: readerToString(Reader reader, String endOfLineString, boolean
+	 * xmlEncode)
+	 */
+	@Test
+	public void testReaderToStringXMLEncodeWithEndOfLineString() throws Exception {
+		Reader r = new StringReader("<root> \n" + "    <name>GeeksforGeeks</name> \n" + "    <address> \n" + "        <sector>142</sector> \n" + "        <location>Noida</location> \n" + "    </address> \n" + "</root> r");
+		String s = StreamUtil.readerToString(r, "23", true);
+		assertEquals("&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r", s);
 	}
 }

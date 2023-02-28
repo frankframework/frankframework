@@ -19,10 +19,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Environment {
-	static Logger log = LogUtil.getLogger(Environment.class);
+	private static final Logger log = LogManager.getLogger(Environment.class);
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		Properties props = new Properties();

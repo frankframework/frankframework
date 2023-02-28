@@ -38,8 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 /**
  * Utilities for batch file handling.
- * 
+ *
  * @author John Dekker
  */
 public class FileUtils {
@@ -56,7 +56,7 @@ public class FileUtils {
 	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
 
 	/**
-	 * Construct a filename from a pattern and session variables. 
+	 * Construct a filename from a pattern and session variables.
 	 */
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
@@ -350,7 +350,7 @@ public class FileUtils {
 				curFile=srcFile;
 			}
 		}
-		// move current file to backup 
+		// move current file to backup
 		String backupFilename=targetFile.getPath()+".1";
 		File backupFile=new File(backupFilename);
 		targetFile.renameTo(backupFile);
@@ -528,7 +528,7 @@ public class FileUtils {
 	}
 
 	/*
-	 * create a filled array   
+	 * create a filled array
 	 */
 	public static char[] getFilledArray(int length, char fillchar) {
 		char[] fill = new char[length];
@@ -637,7 +637,7 @@ public class FileUtils {
 					}
 					try (FileOutputStream fos = new FileOutputStream(zipFile)) {
 						log.debug("writing ZipEntry [" + ze.getName() + "] to file [" + zipFile.getPath() + "]");
-						Misc.streamToStream(StreamUtil.dontClose(zis), fos);
+						StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
 					}
 				}
 			}

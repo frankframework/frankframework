@@ -30,7 +30,7 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
@@ -170,7 +170,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
 
-		String expected = Misc.resourceToString(expectedUrl);
+		String expected = StreamUtil.resourceToString(expectedUrl);
 		Diff diff = XMLUnit.compareXML(expected, result);
 		diff.overrideDifferenceListener(new DifferenceListener() {
 			@Override

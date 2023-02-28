@@ -176,7 +176,7 @@ public class FileViewerServlet extends HttpServletBase {
 				lastPart=filename;
 			}
 			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			Misc.readerToWriter(reader, out);
+			StreamUtil.readerToWriter(reader, out);
 		}
 		if (type.equalsIgnoreCase("xml")) {
 			response.setContentType("application/xml");
@@ -223,7 +223,7 @@ public class FileViewerServlet extends HttpServletBase {
 			lastPart=filename;
 		}
 		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		Misc.streamToStream(inputStream, outputStream);
+		StreamUtil.streamToStream(inputStream, outputStream);
 		outputStream.close();
 	}
 

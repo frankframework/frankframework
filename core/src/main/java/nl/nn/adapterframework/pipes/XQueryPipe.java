@@ -42,7 +42,7 @@ import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Perform an XQuery.
@@ -79,7 +79,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 
 		try {
-			xquery = Misc.resourceToString(url);
+			xquery = StreamUtil.resourceToString(url);
 		} catch (IOException e) {
 			throw new ConfigurationException("could not read XQuery", e);
 		}

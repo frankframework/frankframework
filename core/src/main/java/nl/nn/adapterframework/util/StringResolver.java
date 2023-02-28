@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -60,12 +61,12 @@ public class StringResolver {
 				return result;
 			}
 		} catch (Throwable e) {
-			LogUtil.getLogger(StringResolver.class).warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
 		}
 		try {
 			return System.getProperty(key, def);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			LogUtil.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
+			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
 			return def;
 		}
 	}
@@ -268,7 +269,7 @@ public class StringResolver {
 				try {
 					return replacementSource instanceof StringDataSource ? ((StringDataSource)replacementSource).asString() : replacementSource.toString();
 				} catch(IOException e) {
-					LogUtil.getLogger(StringResolver.class).error("Failed to resolve value for ["+ key +"]", e);
+					LogManager.getLogger(StringResolver.class).error("Failed to resolve value for ["+ key +"]", e);
 				}
 			}
 		}

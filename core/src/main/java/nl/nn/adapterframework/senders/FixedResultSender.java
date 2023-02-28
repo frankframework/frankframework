@@ -37,6 +37,7 @@ import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -66,7 +67,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
+				returnString = StreamUtil.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+getFilename()+"]", e);
 			}

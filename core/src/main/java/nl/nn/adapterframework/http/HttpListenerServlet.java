@@ -30,11 +30,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.x (still experimental)
  */
@@ -90,7 +90,7 @@ public class HttpListenerServlet extends HttpServletBase {
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		String message=Misc.streamToString(request.getInputStream(),"\n",false);
+		String message= StreamUtil.streamToString(request.getInputStream(),"\n",false);
 		invoke(message,request,response);
 	}
 
