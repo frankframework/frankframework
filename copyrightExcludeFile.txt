@@ -68,3 +68,10 @@ overview.html
 checkstyle.xml
 .template
 TransformerHandlerImpl.java
+secrets/
+secrets\
+.lift.toml
+setup.sh
+.mvn/
+mvnw
+mvnw.cmd
