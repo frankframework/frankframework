@@ -78,6 +78,7 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
+      # Use Maven Wrapper so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
