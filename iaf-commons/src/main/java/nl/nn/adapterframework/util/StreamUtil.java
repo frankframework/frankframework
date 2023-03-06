@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
@@ -135,32 +134,7 @@ public class StreamUtil {
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
-		try {
-			StringBuilder sb = new StringBuilder();
-			int curChar = -1;
-			int prevChar = -1;
-			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
-				if (prevChar == '\r' || curChar == '\n') {
-					if (endOfLineString == null) {
-						if (prevChar == '\r')
-							sb.append((char) prevChar);
-						if (curChar == '\n')
-							sb.append((char) curChar);
-					}
-					else {
-						sb.append(endOfLineString);
-					}
-				}
-				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-					String appendStr =""+(char) curChar;
-					sb.append(appendStr);
-				}
-				prevChar = curChar;
-			}
-			return sb.toString();
-		} finally {
-			reader.close();
-		}
+		return readerToString(reader, endOfLineString, false);
 	}
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
@@ -501,7 +475,7 @@ public class StreamUtil {
 	 * Writes the string to a file.
 	 */
 	public static void stringToFile(String string, String fileName) throws IOException {
-try (Writer fw = Files.newBufferedWriter(Paths.get(fileName), Charset.defaultCharset())) {
+		try (Writer fw = Files.newBufferedWriter(Paths.get(fileName), Charset.defaultCharset())) {
 			fw.write(string);
 		}
 	}

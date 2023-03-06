@@ -216,7 +216,7 @@ public class StringUtil {
 	}
 
 	/**
-	 * Counts the number of characters that the specified reges will affect in the specified string.
+	 * Counts the number of characters that the specified regexes will affect in the specified string.
 	 * <pre>
 	 *     String s = "12ab34";
 	 *     String regex = "\\d";
