@@ -35,6 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -81,7 +82,7 @@ public class Text2XmlPipe extends StreamingPipe {
 					@Override
 					public int read(char[] cbuf, int off, int len) throws IOException {
 						int lenRead = super.read(cbuf, off, len);
-						return XmlUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
+						return XmlEncodingUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 					}
 
 				} : new EncapsulatingReader(message.asReader(), prefix, suffix);
@@ -106,7 +107,7 @@ public class Text2XmlPipe extends StreamingPipe {
 							}
 							char[] characters = line.toCharArray();
 							if (isReplaceNonXmlChars()) {
-								XmlUtils.replaceNonPrintableCharacters(characters, 0, characters.length);
+								XmlEncodingUtils.replaceNonPrintableCharacters(characters, 0, characters.length);
 							}
 							handler.characters(characters, 0, characters.length);
 							lineWritten=true;

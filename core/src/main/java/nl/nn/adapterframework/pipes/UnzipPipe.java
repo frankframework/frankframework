@@ -42,7 +42,7 @@ import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Assumes input to be the file name of a ZIP archive, and unzips it to a
@@ -249,9 +249,9 @@ public class UnzipPipe extends FixedForwardPipe {
 							}
 						}
 						if (isCollectResults()) {
-							entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
+							entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
 							if (targetDirectory != null) {
-								entryResults += "<fileName>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
+								entryResults += "<fileName>" + XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
 							}
 							if (isCollectFileContents()) {
 								String fileContent;
@@ -259,7 +259,7 @@ public class UnzipPipe extends FixedForwardPipe {
 									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
 								} else {
 									fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-									fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
+									fileContent = XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 								}
 								entryResults += "<fileContent>" + fileContent + "</fileContent>";
 							}

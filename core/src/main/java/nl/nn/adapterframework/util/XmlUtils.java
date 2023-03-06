@@ -145,14 +145,7 @@ public class XmlUtils {
 	private static Integer buffersize=null;
 
 	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
-	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
-
-	public static final String IDENTITY_TRANSFORM =
-		"<?xml version=\"1.0\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
-			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
-			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
@@ -234,9 +227,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String,String> getXsltConfig(Resource source) throws TransformerException, IOException, SAXException {
-			return getXsltConfig(source.asSource());
-	}
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
@@ -429,11 +419,6 @@ public class XmlUtils {
 	public static TransformerPool getCopyOfSelectTransformerPool(String xpath, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		return getUtilityTransformerPool(()->makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent);
 	}
-
-	public static TransformerPool getIdentityTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(()->IDENTITY_TRANSFORM,"Identity",true,true);
-	}
-
 
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
@@ -700,9 +685,6 @@ public class XmlUtils {
 	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
 		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration);
 	}
-	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, useDeclarationEncoding);
-	}
 
 	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
 		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, true);
@@ -823,7 +805,7 @@ public class XmlUtils {
 
 		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
 
-		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
+		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
 	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
@@ -874,21 +856,6 @@ public class XmlUtils {
 		return xsl;
 	}
 
-
-
-	public static Transformer createXPathEvaluator(String XPathExpression)
-		throws TransformerConfigurationException {
-		return createTransformer(createXPathEvaluatorSource(XPathExpression));
-	}
-
-	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, OutputType outputMethod)
-		throws TransformerConfigurationException {
-		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
-	}
-
-	public static Transformer createXPathEvaluator(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
-		return createXPathEvaluator(null, XPathExpression, outputMethod);
-	}
 
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
@@ -1004,10 +971,6 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
-		return createTransformer(source, 0);
-	}
-
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
 		Transformer result = tFactory.newTransformer(source);
@@ -1083,172 +1046,8 @@ public class XmlUtils {
 		return normalizeWhitespace(convertEndOfLines(input));
 	}
 
-	public static String encodeChars(String string) {
-		return encodeChars(string, false);
-	}
-
-	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	 */
-	public static String encodeChars(String string, boolean escapeNewLines) {
-		if (string==null) {
-			return null;
-		}
-		int length = string.length();
-		char[] characters = new char[length];
-		string.getChars(0, length, characters, 0);
-		return encodeChars(characters, 0, length, escapeNewLines);
-	}
-
-	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
-		return encodeChars(replaceNonValidXmlCharacters(string));
-	}
-
-	public static String encodeChars(char[] chars, int offset, int length) {
-		return encodeChars(chars, offset, length, false);
-	}
-
-	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	 */
-	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
-
-		if (length<=0) {
-			return "";
-		}
-		StringBuilder encoded = new StringBuilder(length);
-		String escape;
-		for (int i = 0; i < length; i++) {
-			char c=chars[offset+i];
-			escape = escapeChar(c, escapeNewLines);
-			if (escape == null)
-				encoded.append(c);
-			else
-				encoded.append(escape);
-		}
-		return encoded.toString();
-	}
-
-	/**
-	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
-	 */
-	public static String decodeChars(String string) {
-		StringBuilder decoded = new StringBuilder();
-
-		boolean inEscape = false;
-		int escapeStartPos = 0;
-
-		for (int i = 0; i < string.length(); i++) {
-			char cur=string.charAt(i);
-			if (inEscape) {
-				if ( cur == ';') {
-					inEscape = false;
-					String escapedString = string.substring(escapeStartPos, i + 1);
-					char unEscape = unEscapeString(escapedString);
-					if (unEscape == 0x0) {
-						decoded.append(escapedString);
-					}
-					else {
-						decoded.append(unEscape);
-					}
-				}
-			} else {
-				if (cur == '&') {
-					inEscape = true;
-					escapeStartPos = i;
-				} else {
-					decoded.append(cur);
-				}
-			}
-		}
-		if (inEscape) {
-			decoded.append(string.substring(escapeStartPos));
-		}
-		return decoded.toString();
-	}
-
-	/**
-	   * Conversion of special xml signs. Please note that non valid xml chars
-	   * are not changed, hence you might want to use
-	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	   **/
-	private static String escapeChar(char c, boolean escapeNewLines) {
-		switch (c) {
-			case ('<') :
-				return "&lt;";
-			case ('>') :
-				return "&gt;";
-			case ('&') :
-				return "&amp;";
-			case ('\"') :
-				return "&quot;";
-			case ('\'') :
-				// return "&apos;"; // apos does not work in Internet Explorer
-				return "&#39;";
-			case ('\n')  :
-				if(escapeNewLines)
-					return "&#10;";
-		}
-		return null;
-	}
-
-	private static char unEscapeString(String str) {
-		if (str.equalsIgnoreCase("&lt;"))
-			return '<';
-		else if (str.equalsIgnoreCase("&gt;"))
-			return '>';
-		else if (str.equalsIgnoreCase("&amp;"))
-			return '&';
-		else if (str.equalsIgnoreCase("&quot;"))
-			return '\"';
-		else if (str.equalsIgnoreCase("&apos;") || str.equalsIgnoreCase("&#39;"))
-			return '\'';
-		else
-			return 0x0;
-	}
-
 	public static String cleanseElementName(String candidateName) {
 		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-\\.]", "_") : null;
-	}
-
-	/**
-	 * encodes a url
-	 */
-	public static String encodeURL(String url) {
-		String mark = "-_.!~*'()\"";
-		StringBuilder encodedUrl = new StringBuilder();
-		int len = url.length();
-		for (int i = 0; i < len; i++) {
-			char c = url.charAt(i);
-			if ((c >= '0' && c <= '9')
-				|| (c >= 'a' && c <= 'z')
-				|| (c >= 'A' && c <= 'Z'))
-				encodedUrl.append(c);
-			else {
-				int imark = mark.indexOf(c);
-				if (imark >= 0) {
-					encodedUrl.append(c);
-				} else {
-					encodedUrl.append('%');
-					encodedUrl.append(toHexChar((c & 0xF0) >> 4));
-					encodedUrl.append(toHexChar(c & 0x0F));
-				}
-			}
-		}
-		return encodedUrl.toString();
-	}
-
-	private static char toHexChar(int digitValue) {
-		if (digitValue < 10) {
-			return (char) ('0' + digitValue);
-		}
-		return (char) ('A' + (digitValue - 10));
 	}
 
 	/**
@@ -1421,7 +1220,7 @@ public class XmlUtils {
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList<Node>();
+		c = new LinkedList<>();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 
@@ -1494,119 +1293,6 @@ public class XmlUtils {
 
 	}
 
-	/**
-	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
-	 */
-	public static int replaceNonPrintableCharacters(char[] buf, int offset, int len) {
-		if (len<0) {
-			return len;
-		}
-		int c;
-		int charCount = 0;
-		int counter = 0;
-		int readPos = 0;
-		int writePos = 0;
-		while(readPos<len) { // while no shift needs to be made, loop and replace where necessary
-			c=Character.codePointAt(buf, readPos+offset);
-			charCount = Character.charCount(c);
-			if (isPrintableUnicodeChar(c, true)) {
-				readPos += charCount;
-			} else {
-				buf[offset+readPos]=REPLACE_NON_XML_CHAR;
-				if (charCount==1) {
-					readPos++;
-				} else {
-					writePos = readPos+1;
-					readPos += charCount;
-					break;
-				}
-			}
-		}
-		while(readPos<len) { // continue with loop and shift after replacement was shorter than original
-			c=Character.codePointAt(buf, readPos+offset);
-			charCount = Character.charCount(c);
-			if (isPrintableUnicodeChar(c, true)) {
-				for(int j=0;j<charCount;j++) {
-					buf[offset+writePos++]=buf[offset+readPos++];
-				}
-			} else {
-				buf[offset+writePos++]=REPLACE_NON_XML_CHAR;
-				readPos+=charCount;
-				counter++;
-			}
-		}
-		if (counter>0 && log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+REPLACE_NON_XML_CHAR+"] in char array of length ["+len+"]");
-		return writePos>0 ? writePos : readPos;
-	}
-
-	/**
-	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
-	 * appended with #, the character number and ;.
-	 */
-	public static String replaceNonValidXmlCharacters(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
-	}
-
-	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
-		if (string==null) {
-			return null;
-		}
-		int length = string.length();
-		StringBuilder encoded = new StringBuilder(length);
-		int c;
-		int counter = 0;
-		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
-			if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
-				encoded.appendCodePoint(c);
-			} else {
-				if (appendCharNum) {
-					encoded.append(to + "#" + c + ";");
-				} else {
-					encoded.append(to);
-				}
-				counter++;
-			}
-		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
-		}
-		return encoded.toString();
-	}
-
-
-	public static String stripNonValidXmlCharacters(String string, boolean allowUnicodeSupplementaryCharacters) {
-		int length = string.length();
-		StringBuilder encoded = new StringBuilder(length);
-		int c;
-		int counter = 0;
-		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
-			if (isPrintableUnicodeChar(c,
-					allowUnicodeSupplementaryCharacters)) {
-				encoded.appendCodePoint(c);
-			} else {
-				counter++;
-			}
-		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("stripped ["+counter+"] non valid xml characters in string of length ["+length+"]");
-		}
-		return encoded.toString();
-	}
-
-	public static boolean isPrintableUnicodeChar(int c) {
-		return isPrintableUnicodeChar(c, false);
-	}
-
-	public static boolean isPrintableUnicodeChar(int c, boolean allowUnicodeSupplementaryCharacters) {
-		return (c == 0x0009)
-			|| (c == 0x000A)
-			|| (c == 0x000D)
-			|| (c >= 0x0020 && c <= 0xD7FF)
-			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
-	}
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.

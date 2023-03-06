@@ -99,7 +99,7 @@ public class DB2XMLWriter {
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+			return "<error>"+ XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
 		}
 	}
 

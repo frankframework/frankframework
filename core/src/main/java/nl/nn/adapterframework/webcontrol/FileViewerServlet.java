@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -160,7 +161,7 @@ public class FileViewerServlet extends HttpServletBase {
 			LineNumberReader lnr = new LineNumberReader(reader);
 			String line;
 			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlUtils.encodeChars(line))+"<br/>");
+				out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
 			}
 
 			out.println("</body>");

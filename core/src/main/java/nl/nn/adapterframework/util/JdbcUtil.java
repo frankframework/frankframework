@@ -425,7 +425,7 @@ public class JdbcUtil {
 				rawMessage = new String(bytes,charset);
 			}
 
-			return XmlUtils.replaceNonValidXmlCharacters(rawMessage);
+			return XmlEncodingUtils.replaceNonValidXmlCharacters(rawMessage);
 		}
 		return StreamUtil.readerToString(getBlobReader(blobIntputStream, charset),null, false);
 	}

@@ -21,7 +21,7 @@ import java.net.URLStreamHandler;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Classloader which loads an empty Configuration.
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * DummyClassLoader can be used in the head IBIS application to prevent a
  * "could not find config" exception.
  * </p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 
@@ -49,7 +49,7 @@ public class DummyClassLoader extends ClassLoaderBase {
 	@Override
 	public URL getLocalResource(String name) {
 		if (name.equals(getConfigurationFile())) {
-			String config = "<configuration name=\"" + XmlUtils.encodeChars(getConfigurationName()) + "\" />";
+			String config = "<configuration name=\"" + XmlEncodingUtils.encodeChars(getConfigurationName()) + "\" />";
 			byte[] bytes = config.getBytes();
 			if (bytes != null) {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);

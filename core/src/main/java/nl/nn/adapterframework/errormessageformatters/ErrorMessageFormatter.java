@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
@@ -83,7 +83,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		XmlBuilder errorXml = new XmlBuilder("errorMessage");
 		errorXml.addAttribute("timestamp", new Date().toString());
 		errorXml.addAttribute("originator", originator);
-		errorXml.addAttribute("message", XmlUtils.replaceNonValidXmlCharacters(errorMessage));
+		errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
 		if (location != null) {
 			XmlBuilder locationXml = new XmlBuilder("location");
@@ -95,7 +95,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (details != null && !details.equals("")) {
 			XmlBuilder detailsXml = new XmlBuilder("details");
 			// detailsXml.setCdataValue(details);
-			detailsXml.setValue(XmlUtils.replaceNonValidXmlCharacters(details), true);
+			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
 			errorXml.addSubElement(detailsXml);
 		}
 

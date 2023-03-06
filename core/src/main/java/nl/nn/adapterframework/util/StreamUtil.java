@@ -233,13 +233,13 @@ public class StreamUtil {
 					if (resolve) {
 						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
 						if (xmlEncode) {
-							writer.write(XmlUtils.encodeChars(resolved));
+							writer.write(XmlEncodingUtils.encodeChars(resolved));
 						} else {
 							writer.write(resolved);
 						}
 					} else {
 						if (xmlEncode) {
-							writer.write(XmlUtils.encodeChars(buffer,0,charsRead));
+							writer.write(XmlEncodingUtils.encodeChars(buffer,0,charsRead));
 						} else {
 							writer.write(buffer,0,charsRead);
 						}
@@ -605,7 +605,7 @@ public class StreamUtil {
 				}
 				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
 					String appendStr =""+(char) curChar;
-					sb.append(xmlEncode ? XmlUtils.encodeChars(appendStr) : appendStr);
+					sb.append(xmlEncode ? XmlEncodingUtils.encodeChars(appendStr) : appendStr);
 				}
 				prevChar = curChar;
 			}

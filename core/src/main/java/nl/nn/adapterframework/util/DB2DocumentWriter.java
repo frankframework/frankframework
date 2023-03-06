@@ -75,7 +75,7 @@ public class DB2DocumentWriter {
 			return documentBuilder.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+			return "<error>"+ XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
 		}
 	}
 
