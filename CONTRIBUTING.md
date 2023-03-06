@@ -228,22 +228,37 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
-- Clone this any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:ibissource/iaf.git`
+- Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:ibissource/iaf.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
-- When asked to open the Eclipse project or the Maven project, probably best to choose opening the Maven project.
+- When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
 - Make sure to select Java 8 as a default JDK.
-- You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it.
+- In the Maven tool window, open the "Profiles" section and make sure to select the profile `database-drivers` amongst other profiles that are selected by default.
+  After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
+- You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
+  If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
 - Download Tomcat 9 from https://tomcat.apache.org/download-90.cgi and unzip it anywhere you like. (On windows make sure to extract it on a folder which can be edited by non-admin users.), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
 - Open Settings | Application Servers, add the Tomcat installation you just did.
-- Create a run configuration for a Tomcat server.
+- Create a run configuration for a Tomcat server for the Example project.
 	- In the tab "Deployments", choose the module "ibis-adapterframework-example:war exploded"
 	  (or ibis-adapterframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
-	- Set the context to "/iaf-example"
-	- Add `-Ddtap.stage=LOC` to VM Options
+	- Set the context to `/iaf-example`.
+	- Add `-Ddtap.stage=LOC` to VM Options.
+    - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+    - Name your configuration and save it.
+- Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
+  Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependenty paths. 
+	- In the tab "Deployments", choose the module "ibis-adapterframework-test:war exploded"
+	- Set the context to `/iaf-test` for the Test module.  
+      __NB__: This is very important, otherwise a lot of tests will fail!
+	- Set the following VM options:
+      `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 -DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory -DcredentialFactory.filesystem.root=/<path to source>/iaf/test/src/main/secrets`
+	- In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project
+	  build (providing this is supported by your JDK)
     - Name your configuration and save it
-- Run your configuration and you are ready to go.
+- Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
+
 
 # Frank!Doc - Documentation for Frank developers
 
