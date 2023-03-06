@@ -1051,6 +1051,40 @@ public class XmlUtils {
 	}
 
 	/**
+	 * encodes a url
+	 */
+	public static String encodeURL(String url) {
+		String mark = "-_.!~*'()\"";
+		StringBuilder encodedUrl = new StringBuilder();
+		int len = url.length();
+		for (int i = 0; i < len; i++) {
+			char c = url.charAt(i);
+			if ((c >= '0' && c <= '9')
+					|| (c >= 'a' && c <= 'z')
+					|| (c >= 'A' && c <= 'Z'))
+				encodedUrl.append(c);
+			else {
+				int imark = mark.indexOf(c);
+				if (imark >= 0) {
+					encodedUrl.append(c);
+				} else {
+					encodedUrl.append('%');
+					encodedUrl.append(toHexChar((c & 0xF0) >> 4));
+					encodedUrl.append(toHexChar(c & 0x0F));
+				}
+			}
+		}
+		return encodedUrl.toString();
+	}
+
+	private static char toHexChar(int digitValue) {
+		if (digitValue < 10) {
+			return (char) ('0' + digitValue);
+		}
+		return (char) ('A' + (digitValue - 10));
+	}
+
+	/**
 	 * Method getChildTagAsBoolean.
 	 * Return the boolean-value of the first element with tag
 	 * <code>tag</code> in the DOM subtree <code>el</code>.
