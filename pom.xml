@@ -13,7 +13,7 @@
 
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.25</spring.version>
-		<spring-security.version>5.8.1</spring-security.version>
+		<spring-security.version>5.8.2</spring-security.version>
 		<spring-integration.version>5.5.16</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
