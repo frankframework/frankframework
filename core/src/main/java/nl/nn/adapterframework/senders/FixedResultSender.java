@@ -39,6 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -79,7 +80,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
-			returnString = replace(returnString, replaceFrom, replaceTo );
+			returnString = StringUtil.replace(returnString, replaceFrom, replaceTo );
 		}
 	}
 
@@ -95,7 +96,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			}
 			if (pvl!=null) {
 				for(ParameterValue pv : pvl) {
-					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
+					result=StringUtil.replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 				}
 			}
 		}
@@ -115,26 +116,6 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 		log.debug("returning fixed result [" + result + "]");
 		return new SenderResult(result);
-	}
-
-	public static String replace (String target, String from, String to) {
-		// target is the original string
-		// from   is the string to be replaced
-		// to     is the string which will used to replace
-		int start = target.indexOf (from);
-		if (start==-1) return target;
-		int lf = from.length();
-		char [] targetChars = target.toCharArray();
-		StringBuilder builder = new StringBuilder();
-		int copyFrom=0;
-		while (start != -1) {
-			builder.append (targetChars, copyFrom, start-copyFrom);
-			builder.append (to);
-			copyFrom=start+lf;
-			start = target.indexOf (from, copyFrom);
-		}
-		builder.append (targetChars, copyFrom, targetChars.length-copyFrom);
-		return builder.toString();
 	}
 
 	@Override

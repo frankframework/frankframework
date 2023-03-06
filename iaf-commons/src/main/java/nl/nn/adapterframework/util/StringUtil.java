@@ -188,19 +188,19 @@ public class StringUtil {
 		Matcher matcher = pattern.matcher(inputString);
 		int previous = 0;
 		while (matcher.find()) {
-			result.append(inputString.substring(previous, matcher.start()));
+			result.append(inputString, previous, matcher.start());
 			int len = matcher.end() - matcher.start();
 			if (mode == 1) {
 				int lenFirstHalf = (int) Math.ceil((double) len / 2);
 				result.append(StringUtils.repeat("*", lenFirstHalf));
-				result.append(inputString.substring(matcher.start()
-						+ lenFirstHalf, matcher.start() + len));
+				result.append(inputString, matcher.start()
+						+ lenFirstHalf, matcher.start() + len);
 			} else {
 				result.append(StringUtils.repeat("*", len));
 			}
 			previous = matcher.end();
 		}
-		result.append(inputString.substring(previous, inputString.length()));
+		result.append(inputString.substring(previous));
 		return result.toString();
 	}
 
