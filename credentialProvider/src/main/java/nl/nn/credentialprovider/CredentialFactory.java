@@ -20,8 +20,9 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.StringUtil;
 
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
@@ -71,7 +72,7 @@ public class CredentialFactory {
 	}
 
 	private boolean tryFactory(String factoryClassName) {
-		if (StringUtil.isNotEmpty(factoryClassName)) {
+		if (StringUtils.isNotEmpty(factoryClassName)) {
 			log.info("trying to configure CredentialFactory ["+factoryClassName+"]");
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);

@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.util.Environment;
 import nl.nn.adapterframework.util.StringResolver;
 
@@ -252,7 +254,7 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
-		if(StringUtil.isEmpty(filename)) {
+		if(StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
@@ -288,11 +290,11 @@ public final class AppConstants extends Properties implements Serializable {
 				}
 
 				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
-				if (loadAdditionalPropertiesFiles && StringUtil.isNotEmpty(loadFile)) {
+				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
-					if (StringUtil.isNotEmpty(loadFileSuffix)){
+					if (StringUtils.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
 						load(classLoader, loadFile, false);
@@ -305,7 +307,7 @@ public final class AppConstants extends Properties implements Serializable {
 					String suffixedFilename = baseName
 							+ "_"
 							+ suffix
-							+ (StringUtil.isEmpty(extension) ? "" : "."
+							+ (StringUtils.isEmpty(extension) ? "" : "."
 									+ extension);
 					load(classLoader, suffixedFilename, false);
 				}
