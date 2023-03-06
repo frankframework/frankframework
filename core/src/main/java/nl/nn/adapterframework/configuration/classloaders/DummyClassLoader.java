@@ -50,7 +50,7 @@ public class DummyClassLoader extends ClassLoaderBase {
 	public URL getLocalResource(String name) {
 		if (name.equals(getConfigurationFile())) {
 			String config = "<configuration name=\"" + XmlEncodingUtils.encodeChars(getConfigurationName()) + "\" />";
-			byte[] bytes = config.getBytes();
+byte[] bytes = config.getBytes(Charset.defaultCharset());
 			if (bytes != null) {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 				try {
