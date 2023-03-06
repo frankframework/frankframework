@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import nl.nn.adapterframework.util.Environment;
+import nl.nn.adapterframework.util.StringResolver;
+
 
 /**
  * Singleton class that has the constant values for this application. <br/>

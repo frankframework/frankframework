@@ -121,10 +121,6 @@ public class XmlUtils {
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
-	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
-	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
-
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";

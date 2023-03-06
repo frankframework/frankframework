@@ -218,7 +218,7 @@ public class XmlEncodingUtils {
 				encoded.appendCodePoint(c);
 			} else {
 				if (appendCharNum) {
-					encoded.append(to + "#" + c + ";");
+					encoded.append(to).append("#").append(c).append(";");
 				} else {
 					encoded.append(to);
 				}
