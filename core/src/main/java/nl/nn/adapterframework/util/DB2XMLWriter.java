@@ -145,17 +145,6 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public static String getFieldDefinitions(ResultSet rs) throws SAXException, SQLException {
-		XmlWriter writer = new XmlWriter();
-		addFieldDefinitions(rs, writer);
-		return writer.toString();
-	}
-	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
-		ResultSetMetaData rsmeta = rs.getMetaData();
-		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-			addFieldDefinitionsToContainer(fields, rsmeta);
-		}
-	}
 	public static void addFieldDefinitions(SaxElementBuilder root, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
 			addFieldDefinitionsToContainer(fields, rsmeta);
