@@ -87,7 +87,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -132,11 +131,6 @@ public class XmlUtils {
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
 	public static final String INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY = "query.includeFieldDefinition.default";
-
-	public static final String OPEN_FROM_FILE = "file";
-	public static final String OPEN_FROM_URL = "url";
-	public static final String OPEN_FROM_RESOURCE = "resource";
-	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean xsltStreamingByDefault = null;
@@ -451,10 +445,9 @@ public class XmlUtils {
 
 	public static synchronized int getBufSize() {
 		if (buffersize==null) {
-			int size=AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
-			buffersize = new Integer(size);
+			buffersize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
 		}
-		return buffersize.intValue();
+		return buffersize;
 	}
 
 	public static void parseXml(Resource resource, ContentHandler handler) throws IOException, SAXException {
@@ -550,13 +543,7 @@ public class XmlUtils {
 				builder.setEntityResolver(new NonResolvingExternalEntityResolver());
 			}
 			document = builder.parse(src);
-		} catch (SAXParseException e) {
-			throw new DomBuilderException(e);
-		} catch (ParserConfigurationException e) {
-			throw new DomBuilderException(e);
-		} catch (IOException e) {
-			throw new DomBuilderException(e);
-		} catch (SAXException e) {
+		} catch (ParserConfigurationException | IOException | SAXException e) {
 			throw new DomBuilderException(e);
 		}
 		if (document == null) {
@@ -1528,16 +1515,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static String removeUnusedNamespaces(String input) {
-		try {
-			TransformerPool tp = getRemoveUnusedNamespacesTransformerPool(true,false);
-			return tp.transform(input,null);
-		} catch (Exception e) {
-			log.warn("unable to remove unused namespaces", e);
-			return null;
-		}
-	}
-
 	public static String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
@@ -1729,30 +1706,6 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr, String xpathExpr2) throws DomBuilderException, XPathExpressionException {
-		String msg = XmlUtils.removeNamespaces(input);
-
-		Collection<String> c = new LinkedList<>();
-		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = getXPathFactory().newXPath();
-		XPathExpression xPathExpression = xPath.compile(xpathExpr);
-		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
-		NodeList nodes = (NodeList) result;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				XPathExpression xPathExpression2 = xPath.compile(xpathExpr2);
-				Object result2 = xPathExpression2.evaluate(element, XPathConstants.STRING);
-				c.add((String) result2);
-			}
-		}
-		if (!c.isEmpty()) {
-			return c;
-		}
-		return null;
-	}
-
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String xhtmlString = new String(message.getMagic(512));
@@ -1783,7 +1736,6 @@ public class XmlUtils {
 		}
 	}
 
-
 	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = sf.newSchema(schemaURL);
@@ -1795,5 +1747,4 @@ public class XmlUtils {
 		Schema schema = sf.newSchema(schemaSource);
 		return schema.newValidatorHandler();
 	}
-
 }

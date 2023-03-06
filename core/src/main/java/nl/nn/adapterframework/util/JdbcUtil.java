@@ -314,7 +314,7 @@ public class JdbcUtil {
 		Writer writer = getWriter(target);
 		if (writer !=null) {
 			Reader reader = JdbcUtil.getBlobReader(blobIntputStream, charset);
-			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			if (close) {
 				writer.close();
 			}
@@ -342,7 +342,7 @@ public class JdbcUtil {
 		Writer writer = getWriter(target);
 		if (writer !=null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
-				StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+				StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			}
 			if (close) {
 				writer.close();
@@ -353,7 +353,7 @@ public class JdbcUtil {
 		if (outputStream!=null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
 				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
-					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000, false, false);
+					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000);
 				}
 			}
 			if (close) {

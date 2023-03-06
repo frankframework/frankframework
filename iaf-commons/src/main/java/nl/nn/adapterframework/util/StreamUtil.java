@@ -203,14 +203,13 @@ public class StreamUtil {
 				bytesRead=in.read(buffer,0,chunkSize);
 				if (bytesRead>0) {
 					out.write(buffer,0,bytesRead);
-				} else {
-					in.close();
 				}
 			}
+			in.close();
 		}
 	}
 
-	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
+	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize) throws IOException {
 		if (reader!=null) {
 			char[] buffer=new char[chunkSize];
 
@@ -218,24 +217,10 @@ public class StreamUtil {
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
 				if (charsRead>0) {
-					if (resolve) {
-						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
-						if (xmlEncode) {
-							writer.write(XmlEncodingUtils.encodeChars(resolved));
-						} else {
-							writer.write(resolved);
-						}
-					} else {
-						if (xmlEncode) {
-							writer.write(XmlEncodingUtils.encodeChars(buffer,0,charsRead));
-						} else {
-							writer.write(buffer,0,charsRead);
-						}
-					}
-				} else {
-					reader.close();
+					writer.write(buffer,0,charsRead);
 				}
 			}
+			reader.close();
 		}
 	}
 
