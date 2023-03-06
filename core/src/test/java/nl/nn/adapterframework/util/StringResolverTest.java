@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import nl.nn.adapterframework.stream.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StringResolverTest {
@@ -198,8 +198,16 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsStringDataSourceWithException() {
 		// Arrange
-		StringDataSource message = () -> {
-			throw new IOException("No Can't Do");
+		StringDataSource message = new StringDataSource() {
+			@Override
+			public String asString() throws IOException {
+				throw new IOException("No Can't Do");
+			}
+
+			@Override
+			public boolean isStringNative() {
+				return false;
+			}
 		};
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 
