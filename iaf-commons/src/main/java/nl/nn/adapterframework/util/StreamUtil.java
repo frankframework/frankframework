@@ -501,7 +501,7 @@ public class StreamUtil {
 	 * Writes the string to a file.
 	 */
 	public static void stringToFile(String string, String fileName) throws IOException {
-		try (FileWriter fw = new FileWriter(fileName)) {
+try (Writer fw = Files.newBufferedWriter(Paths.get(fileName), Charset.defaultCharset())) {
 			fw.write(string);
 		}
 	}
