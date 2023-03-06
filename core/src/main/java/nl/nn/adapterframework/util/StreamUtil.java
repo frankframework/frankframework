@@ -148,7 +148,7 @@ public class StreamUtil {
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		try {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			int curChar = -1;
 			int prevChar = -1;
 			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
