@@ -16,18 +16,18 @@ add_alias() {
 	file=$SOURCE_PATH/$2
 	if [ -f $file ]
 	then
-		$SECRETS_TOOL credential-store --location $SECRETS_LOCATION --password $SECRETS_PASSWORD --add "$name" --secret "$(cat $file)"
+		$SECRETS_TOOL credential-store --location $SECRETS_LOCATION --password $SECRETS_PASSWORD --add "$name" --secret "$(cat "$file")"
 	fi
 }
 
-cd $SOURCE_PATH
+cd $SOURCE_PATH || return
 for alias in *
 do
 	if [ -d $alias ] 
 	then 
-		add_alias $alias/username $alias/username
-		add_alias $alias          $alias/password
+		add_alias "$alias/username" "$alias/username"
+		add_alias "$alias"          "$alias/password"
 	else
-		add_alias $alias $alias
+		add_alias "$alias" "$alias"
 	fi
-done	
+done
