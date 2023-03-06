@@ -10,7 +10,7 @@ def createJMSProvider(name, extContextFactory, extProviderURL, attributes):
 
 def createGenericJMSCF(jmsProviderName, name, jndiName, extJndiName):
 	print "Creating Generic JMS Connection Factory: ", name
-	attributes = [['connectionPool',[['agedTimeout','100'],['connectionTimeout','1000'],['freePoolDistributionTableSize',10],['maxConnections','12'],['minConnections','5'],['numberOfFreePoolPartitions','3'],['numberOfSharedPoolPartitions','6'],['numberOfUnsharedPoolPartitions','3'],['purgePolicy','EntirePool'],['reapTime','10000'],['surgeCreationInterval','10'],['surgeThreshold','10'],['testConnection','true'],['testConnectionInterval','10'],['unusedTimeout','10000']]]]
+	attributes = [['connectionPool', [['agedTimeout', '100'], ['connectionTimeout', '1000'], ['freePoolDistributionTableSize', 10], ['maxConnections', '12'], ['minConnections', '5'], ['numberOfFreePoolPartitions', '3'], ['numberOfSharedPoolPartitions', '6'], ['numberOfUnsharedPoolPartitions', '3'], ['purgePolicy', 'EntirePool'], ['reapTime', '10000'], ['surgeCreationInterval', '10'], ['surgeThreshold', '10'], ['testConnection', 'true'], ['testConnectionInterval', '10'], ['unusedTimeout', '10000']]]]
 	jmsCFId = AdminJMS.createGenericJMSConnectionFactory(node, server, jmsProviderName, name, jndiName, extJndiName, attributes)
 	return(jmsCFId)
 
