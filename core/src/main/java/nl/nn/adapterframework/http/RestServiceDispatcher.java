@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,17 +31,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.receivers.ServiceClient;
@@ -179,42 +177,28 @@ public class RestServiceDispatcher {
 			boolean writeToSecLog = false;
 			if (listener instanceof RestListener) {
 				RestListener restListener = (RestListener) listener;
-				if (restListener.isRetrieveMultipart()) {
-					if (ServletFileUpload.isMultipartContent(httpServletRequest)) {
-						try {
-							DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-							ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-							List<FileItem> items = servletFileUpload.parseRequest(httpServletRequest);
-							for(FileItem item : items) {
-								if(item.isFormField()) {
-									// Process regular form field (input type="text|radio|checkbox|etc", select,
-									// etc).
-									String fieldName = item.getFieldName();
-									String fieldValue = item.getString();
-									log.trace("setting parameter [" + fieldName + "] to [" + fieldValue + "]");
-									context.put(fieldName, fieldValue);
-								} else {
-									// Process form file field (input type="file").
-									String fieldName = item.getFieldName();
-									String fieldNameName = fieldName + "Name";
-									String fileName = FilenameUtils.getName(item.getName());
-									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
-									context.put(fieldNameName, fileName);
-									InputStream inputStream = item.getInputStream();
-									if(inputStream.available() > 0) {
-										log.trace("setting parameter [" + fieldName + "] to input stream of file [" + fileName + "]");
-										context.put(fieldName, inputStream);
-									} else {
-										log.trace("setting parameter [" + fieldName + "] to [" + null + "]");
-										context.put(fieldName, null);
-									}
-								}
+				if (restListener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
+					try {
+						InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); //the entire InputStream will be read here!
+						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+
+						for (int i = 0; i < mimeMultipart.getCount(); i++) {
+							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+							String fieldName = MultipartUtils.getFieldName(bodyPart);
+							PartMessage bodyPartMessage = new PartMessage(bodyPart);
+
+							log.trace("setting parameter [" + fieldName + "] to [" + bodyPartMessage + "]");
+							context.put(fieldName, bodyPartMessage);
+
+							if (MultipartUtils.isBinary(bodyPart)) { // Process form file field (input type="file").
+								String fieldNameName = fieldName + "Name";
+								String fileName = MultipartUtils.getFileName(bodyPart);
+								if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
+								context.put(fieldNameName, fileName);
 							}
-						} catch (FileUploadException e) {
-							throw new ListenerException(e);
-						} catch (IOException e) {
-							throw new ListenerException(e);
 						}
+					} catch (MessagingException | IOException e) {
+						throw new ListenerException(e);
 					}
 				}
 				writeToSecLog = restListener.isWriteToSecLog();

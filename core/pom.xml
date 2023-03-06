@@ -186,11 +186,6 @@
 			<version>1.7</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.5</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 		</dependency>
