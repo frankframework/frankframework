@@ -63,13 +63,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j2.version}</version>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
 
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -310,11 +303,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
 			<version>${spring-security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-			<version>2.5.2.RELEASE</version>
 		</dependency>
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
