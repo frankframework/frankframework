@@ -439,7 +439,7 @@ public class StringResolver {
 	 * @param string String to check
 	 * @return {@code true} if the input string contains the default start and end delimiters in consecutive
 	 * order, otherwise {@code false}.
-	 * The default delimiters are {@code "${"} and {@code "}"} respectively.
+	 * The default delimiters are <pre>"${"</pre> and <pre>"}"</pre> respectively.
 	 */
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
