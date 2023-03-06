@@ -61,6 +61,7 @@ import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.StreamCaptureUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringDataSource;
 import nl.nn.adapterframework.util.StringUtil;
@@ -902,7 +903,7 @@ public class Message implements Serializable, StringDataSource {
 	}
 
 	public void captureBinaryStream(OutputStream outputStream) throws IOException {
-		captureBinaryStream(outputStream, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
+		captureBinaryStream(outputStream, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
@@ -911,9 +912,9 @@ public class Message implements Serializable, StringDataSource {
 			log.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getId(), request.getClass().getTypeName());
 		}
 		if (isBinary()) {
-			request = StreamUtil.captureInputStream(asInputStream(), outputStream, maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize, true);
 		} else {
-			request = StreamUtil.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize, true);
 		}
 		closeOnClose(outputStream);
 	}
@@ -932,7 +933,7 @@ public class Message implements Serializable, StringDataSource {
 	}
 
 	public void captureCharacterStream(Writer writer) throws IOException {
-		captureCharacterStream(writer, StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
+		captureCharacterStream(writer, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
@@ -941,10 +942,10 @@ public class Message implements Serializable, StringDataSource {
 			log.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getId(), request.getClass().getTypeName());
 		}
 		if (!isBinary()) {
-			request = StreamUtil.captureReader(asReader(), writer, maxSize, true);
+			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize, true);
 		} else {
 			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
+			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 		}
 		closeOnClose(writer);
 	}
