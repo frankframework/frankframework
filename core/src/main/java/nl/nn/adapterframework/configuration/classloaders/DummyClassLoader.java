@@ -18,6 +18,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.nio.charset.Charset;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -50,14 +51,12 @@ public class DummyClassLoader extends ClassLoaderBase {
 	public URL getLocalResource(String name) {
 		if (name.equals(getConfigurationFile())) {
 			String config = "<configuration name=\"" + XmlEncodingUtils.encodeChars(getConfigurationName()) + "\" />";
-byte[] bytes = config.getBytes(Charset.defaultCharset());
-			if (bytes != null) {
-				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
-				try {
-					return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
-				} catch (MalformedURLException e) {
-					log.error("Could not create url", e);
-				}
+			byte[] bytes = config.getBytes(Charset.defaultCharset());
+			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
+			try {
+				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
+			} catch (MalformedURLException e) {
+				log.error("Could not create url", e);
 			}
 		}
 
