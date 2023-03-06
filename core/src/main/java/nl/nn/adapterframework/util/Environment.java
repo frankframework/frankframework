@@ -34,34 +34,47 @@ public class Environment {
 			log.debug("Exception getting environment variables", e);
 		}
 
-		if (props.size() == 0) {
-			BufferedReader br;
-			Process p;
-			Runtime r = Runtime.getRuntime();
-			String OS = System.getProperty("os.name").toLowerCase();
-			if (OS.contains("windows 9")) {
-				p = r.exec("command.com /c set");
-			} else if (
-					(OS.contains("nt"))
-							|| (OS.contains("windows 20"))
-							|| (OS.contains("windows xp"))) {
-				p = r.exec("cmd.exe /c set");
-			} else {
-				//assume Unix
-				p = r.exec("env");
-			}
-			br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				int idx = line.indexOf('=');
-				if (idx>=0) {
-					String key = line.substring(0, idx);
-					String value = line.substring(idx + 1);
-					props.setProperty(key,value);
-				}
+		if (!props.isEmpty()) {
+			return props;
+		}
+		return readEnvironmentFromOsCommand();
+
+	}
+
+	private static Properties readEnvironmentFromOsCommand() throws IOException {
+		Properties props = new Properties();
+		String command = determineOsSpecificEnvCommand();
+		log.debug("Reading environment variables from OS using command [{}]", command);
+		Runtime r = Runtime.getRuntime();
+		Process p = r.exec(command);
+
+		BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
+		String line;
+		while ((line = br.readLine()) != null) {
+			int idx = line.indexOf('=');
+			if (idx>=0) {
+				String key = line.substring(0, idx);
+				String value = line.substring(idx + 1);
+				props.setProperty(key,value);
 			}
 		}
-
 		return props;
+	}
+
+	private static String determineOsSpecificEnvCommand() {
+		String OS = System.getProperty("os.name").toLowerCase();
+		String envCommand;
+		if (OS.contains("windows 9")) {
+			envCommand = "command.com /c set";
+		} else if (
+			(OS.contains("nt"))
+				|| (OS.contains("windows 20"))
+				|| (OS.contains("windows xp"))) {
+			envCommand = "cmd.exe /c set";
+		} else {
+			//assume Unix
+			envCommand = "env";
+		}
+		return envCommand;
 	}
 }
