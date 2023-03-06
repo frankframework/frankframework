@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.util;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class XmlEncodingUtils {
-	static Logger log = LogUtil.getLogger(XmlEncodingUtils.class);
+	static Logger log = LogManager.getLogger(XmlEncodingUtils.class);
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);

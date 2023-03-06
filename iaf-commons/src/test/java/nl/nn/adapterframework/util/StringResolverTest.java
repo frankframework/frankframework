@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StringResolverTest {
 
@@ -29,7 +27,7 @@ public class StringResolverTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		properties = new Properties();
-		URL propertiesURL = TestFileUtils.getTestFileURL("/StringResolver.properties");
+		URL propertiesURL = getClass().getResource("/StringResolver.properties");
 		assertNotNull(propertiesURL, "properties file [StringResolver.properties] not found!");
 
 		InputStream propsStream = propertiesURL.openStream();
@@ -160,7 +158,17 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsMessage() {
 		// Arrange
-		Message message = Message.asMessage("My Message");
+		StringDataSource message = new StringDataSource() {
+			@Override
+			public String asString() throws IOException {
+				return "My Message";
+			}
+
+			@Override
+			public boolean isStringNative() {
+				return true;
+			}
+		};
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 
 		// Act
@@ -179,7 +187,17 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsMessageWithProps2() {
 		// Arrange
-		Message message = Message.asMessage("My Message");
+		StringDataSource message = new StringDataSource() {
+			@Override
+			public String asString() throws IOException {
+				return "My Message";
+			}
+
+			@Override
+			public boolean isStringNative() {
+				return true;
+			}
+		};
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 
 		// Act
@@ -336,15 +354,5 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${key1:-******}", result);
-	}
-
-	@Test
-	public void resolveUsernameAndHide() {
-		// N.B. the notation ${credential:alias1/username} will work too, for some implementations of CredentialProvider, but not for all!
-		String result = StringResolver.substVars("${credential:username:alias1}", properties, null, Collections.emptyList());
-		assertEquals("*********", result);
-
-		result = StringResolver.substVars("${credential:username:alias1}", properties, null, Collections.emptyList(), true);
-		assertEquals("${credential:username:alias1:-*********}", result);
 	}
 }

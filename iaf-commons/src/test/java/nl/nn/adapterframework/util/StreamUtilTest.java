@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,7 +41,7 @@ public class StreamUtilTest {
 		file = Files.createFile(testFolder.resolve("lebron.txt"));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void cleanUp() {
 		File f = new File("lebron.txt");
 		f.delete();
@@ -55,7 +55,7 @@ public class StreamUtilTest {
 	}
 
 	public void testReader(String inputFile, String expected, String defaultCharset) throws IOException {
-		URL input = ClassUtils.getResourceURL(inputFile);
+		URL input = getClass().getResource(inputFile);
 
 		int i;
 		InputStream inputStream = input.openStream();
@@ -108,7 +108,7 @@ public class StreamUtilTest {
 
 
 	public void testStreamToByteArray(String inputFile, boolean skipBOM, String expected, boolean expectBOM) throws IOException {
-		URL input = ClassUtils.getResourceURL(inputFile);
+		URL input = getClass().getResource(inputFile);
 
 		byte[] byteArray = StreamUtil.streamToByteArray(input.openStream(), skipBOM);
 

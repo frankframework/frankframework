@@ -4,14 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import nl.nn.adapterframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 class CredentialResolverTest {
 
@@ -121,5 +122,15 @@ class CredentialResolverTest {
 
 		result = StringResolver.substVars("${credential:password:alias2}", properties, null, Collections.emptyList(), true);
 		assertEquals("${credential:password:alias2:-************}", result);
+	}
+
+	@Test
+	public void resolveUsernameAndHide() {
+		// N.B. the notation ${credential:alias1/username} will work too, for some implementations of CredentialProvider, but not for all!
+		String result = StringResolver.substVars("${credential:username:alias1}", properties, null, Collections.emptyList());
+		assertEquals("*********", result);
+
+		result = StringResolver.substVars("${credential:username:alias1}", properties, null, Collections.emptyList(), true);
+		assertEquals("${credential:username:alias1:-*********}", result);
 	}
 }
