@@ -4,18 +4,18 @@ node = AdminControl.getNode()
 server = 'server1'
 
 def createJMSProvider(name, extContextFactory, extProviderURL, attributes):
-	print "Creating JMS Provider: ", name
+	print("Creating JMS Provider: ", name)
 	jmsProviderId = AdminJMS.createJMSProvider(node, server, name, extContextFactory, extProviderURL, attributes)
 	return(jmsProviderId)
 
 def createGenericJMSCF(jmsProviderName, name, jndiName, extJndiName):
-	print "Creating Generic JMS Connection Factory: ", name
+	print("Creating Generic JMS Connection Factory: ", name)
 	attributes = [['connectionPool', [['agedTimeout', '100'], ['connectionTimeout', '1000'], ['freePoolDistributionTableSize', 10], ['maxConnections', '12'], ['minConnections', '5'], ['numberOfFreePoolPartitions', '3'], ['numberOfSharedPoolPartitions', '6'], ['numberOfUnsharedPoolPartitions', '3'], ['purgePolicy', 'EntirePool'], ['reapTime', '10000'], ['surgeCreationInterval', '10'], ['surgeThreshold', '10'], ['testConnection', 'true'], ['testConnectionInterval', '10'], ['unusedTimeout', '10000']]]]
 	jmsCFId = AdminJMS.createGenericJMSConnectionFactory(node, server, jmsProviderName, name, jndiName, extJndiName, attributes)
 	return(jmsCFId)
 
 def createGenericJMSDestination(jmsProviderName, name, jndiName, extJndiName):
-	print "Creating Generic JMS Destination: ", name
+	print("Creating Generic JMS Destination: ", name)
 	jmsDestinationId = AdminJMS.createGenericJMSDestination(node, server, jmsProviderName, name, jndiName, extJndiName)
 	return(jmsDestinationId)
 
@@ -39,8 +39,8 @@ createGenericJMSDestination('Artemis', 'i4testiaf_ff-artemis', 'jms/i4testiaf_ff
 
 
 #p0 = AdminJMS.listJMSProviders()
-#print 'JMS Provider templates: ', p0
+#print('JMS Provider templates: ', p0)
 #p1 = AdminJMS.listGenericJMSConnectionFactories()
-#print 'JMS CF: ', p1
+#print('JMS CF: ', p1)
 #p2 = AdminJMS.listGenericJMSDestinations()
-#print 'JMS Destination: ', p2
+#print('JMS Destination: ', p2)

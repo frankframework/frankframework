@@ -3,12 +3,12 @@ node = AdminControl.getNode()
 server = 'server1'
 
 #p0 = AdminConfig.listTemplates('JDBCProvider')
-#print 'JDBCProvider templates: ', p0
+#print('JDBCProvider templates: ', p0)
 #p1 = AdminConfig.listTemplates('DataSource')
-#print 'DataSource templates: ', p1
+#print('DataSource templates: ', p1)
 
 def createTemplatedProvider(templateName, implementationClass, classpath):
-	print "Creating JDBC Provider using template: ", templateName
+	print("Creating JDBC Provider using template: ", templateName)
 	providerName = templateName
 	attributes = 'classpath='+classpath
 	providerTemplate = AdminConfig.listTemplates('JDBCProvider', templateName)
@@ -16,19 +16,19 @@ def createTemplatedProvider(templateName, implementationClass, classpath):
 	return(providerId)
 
 def createProvider(providerName, implementationClass, attributes):
-	print "Creating JDBC Provider: ", providerName
+	print("Creating JDBC Provider: ", providerName)
 	providerId = AdminJDBC.createJDBCProvider(node, server, providerName, implementationClass, attributes)
 	return(providerId)
 
 def createTemplatedDatasource(datasourceName, providerName, templateName, authAlias, properties):
-	print "Creating Datasource using template: ", datasourceName
+	print("Creating Datasource using template: ", datasourceName)
 	attributes = [['jndiName', 'jdbc/'+datasourceName], ['authDataAlias', authAlias], ['propertySet', [['resourceProperties', properties]]]]
 	template = AdminConfig.listTemplates('DataSource', templateName)
 	datasourceId = AdminJDBC.createDataSourceUsingTemplate(node, server, providerName, template, datasourceName, attributes)
 	return(datasourceId)
 
 def createDatasource(datasourceName, providerName, authAlias, properties):
-	print "Creating Datasource: ", datasourceName
+	print("Creating Datasource: ", datasourceName)
 	attributes = [['jndiName', 'jdbc/'+datasourceName], ['datasourceHelperClassname', 'com.ibm.websphere.rsadapter.GenericDataStoreHelper'], ['authDataAlias', authAlias], ['propertySet', [['resourceProperties', properties]]]]
 	datasourceId = AdminJDBC.createDataSource(node, server, providerName, datasourceName, attributes)
 	return(datasourceId)

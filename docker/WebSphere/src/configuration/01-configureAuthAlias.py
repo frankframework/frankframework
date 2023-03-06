@@ -6,7 +6,7 @@ server = 'server1'
 
 
 def createAuthAlias(aliasName, username, password):
-	print "Creating Auth Alias ", aliasName
+	print("Creating Auth Alias ", aliasName)
 	security = AdminConfig.getid('/Security:/')
 	alias = ['alias', aliasName ]
 	userid = ['userId', username ]

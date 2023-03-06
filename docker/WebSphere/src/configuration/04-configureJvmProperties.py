@@ -5,17 +5,17 @@ server = 'server1'
 #AdminTask.showJVMProperties(['-serverName', server, '-nodeName', node])
 
 def setJVMSystemProperty(name, value ):
-	print "Setting JVM System property:", name, "=", value
+	print("Setting JVM System property:", name, "=", value)
 	propertyId = AdminTask.setJVMSystemProperties(['-serverName', server, '-nodeName', node, '-propertyName', name, '-propertyValue', value])
 	return(propertyId)
 
 def setJVMProperty(name, value ):
-	print "Setting JVM property:", name, "=", value
+	print("Setting JVM property:", name, "=", value)
 	propertyId = AdminTask.setJVMProperties(['-serverName', server, '-nodeName', node, name, value])
 	return(propertyId)
 
 def setSecurityProperty(name, value ):
-	print "Setting Security property:", name, "=", value
+	print("Setting Security property:", name, "=", value)
 	security = AdminConfig.list('Security')
 	AdminConfig.modify(security, [[name, value]])
 	return
