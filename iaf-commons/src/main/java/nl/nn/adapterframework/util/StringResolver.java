@@ -165,83 +165,107 @@ public class StringResolver {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		String providedDefaultValue=null;
-		boolean containsDefault = false;
-		int head = 0;
-		int pointer, tail;
-		String propertyComposer = "";
+		SubstitutionContext ctx = new SubstitutionContext();
 
 		while (true) {
-			pointer = val.indexOf(delimStart, head); // index delimiter
-			if (pointer == -1) { // no delimiter
-				// no more variables
-				if (head == 0) { // this is a simple string
-					return val;
-				}
-				// add the tail string which contains no variables and return the result.
-				sb.append(val.substring(head));
-				return sb.toString();
+			findNextVariable(val, delimStart, delimStop, ctx);
+			if (ctx.isNoDelimiterFound()) { // no delimiter
+				return produceFinalOutputResult(val, sb, ctx);
 			}
-			sb.append(val, head, resolveWithPropertyName ? pointer + delimStart.length() : pointer);
-			if(val.contains(VALUE_SEPARATOR)) {
-				tail = val.indexOf(VALUE_SEPARATOR);
-				providedDefaultValue = val.substring(tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, pointer, delimStart, delimStop));
-				containsDefault=true;
-			} else {
-				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
-			}
-			if (tail == -1) {
-				throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + pointer + "]");
-			}
-			String expression = val.substring(pointer, tail + delimStop.length());
-			pointer += delimStart.length();
-			String key = val.substring(pointer, tail);
-			propertyComposer = key;
-			if (key.contains(delimStart)) {
-				key = substVars(key, props1, props2, resolveWithPropertyName);
-				if(key.contains(VALUE_SEPARATOR) && resolveWithPropertyName) {
-					propertyComposer = key;
-					key = extractKeyValue(key, delimStart, delimStop, VALUE_SEPARATOR);
-				}
-			}
+			appendFromInput(sb, val, delimStart, resolveWithPropertyName, ctx);
 
-			String replacement = resolveReplacement(props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName, key);
+			String expression = extractNextExpression(val, delimStart, delimStop, ctx);
+			String key = extractNextKey(val, props1, props2, delimStart, delimStop, resolveWithPropertyName, ctx);
 
-			if(resolveWithPropertyName) {
-				sb.append(propertyComposer).append(VALUE_SEPARATOR);
-			}
-
-			if (replacement != null) {
-				if (propsToHide != null && propsToHide.contains(key)) {
-					replacement = StringUtil.hide(replacement);
-				}
-				// Do variable substitution on the replacement string
-				// such that we can solve "Hello ${x1}" as "Hello p2"
-				// the where the properties are
-				// x1=${x2}
-				// x2=p2
-				if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
-					String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
-					sb.append(recursiveReplacement);
-				} else {
-					sb.append(replacement);
-				}
-			} else {
-				if(providedDefaultValue != null) { // use default value of property if missing actual
-					sb.append(providedDefaultValue);
-				}
-			}
-			if(resolveWithPropertyName) {
-				sb.append(delimStop);
-			}
-			if(containsDefault) { // tail points to index of ':-' update tail to point delimStop
-				tail = indexOfDelimStop(val, pointer, delimStart, delimStop);
-			}
-			head = tail + delimStop.length();
+			String replacement = resolveReplacement(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName);
+			appendReplacement(sb, key, replacement, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName, ctx.providedDefaultValue, ctx.propertyComposer, expression);
 		}
 	}
 
-	private static String resolveReplacement(Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName, String key) {
+	private static String extractNextKey(String val, Map<?, ?> props1, Map<?, ?> props2, String delimStart, String delimStop, boolean resolveWithPropertyName, SubstitutionContext ctx) {
+		String key = val.substring(ctx.pointer, ctx.tail);
+		ctx.propertyComposer = key;
+		if (key.contains(delimStart)) {
+			key = substVars(key, props1, props2, resolveWithPropertyName);
+			if(key.contains(VALUE_SEPARATOR) && resolveWithPropertyName) {
+				ctx.propertyComposer = key;
+				key = extractKeyValue(key, delimStart, delimStop, VALUE_SEPARATOR);
+			}
+		}
+		return key;
+	}
+
+	private static String extractNextExpression(String val, String delimStart, String delimStop, SubstitutionContext ctx) {
+		if(val.contains(VALUE_SEPARATOR)) {
+			ctx.tail = val.indexOf(VALUE_SEPARATOR);
+			ctx.providedDefaultValue = val.substring(ctx.tail+VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, delimStart, delimStop));
+			ctx.containsDefault=true;
+		} else {
+			ctx.tail = indexOfDelimStop(val, ctx.pointer, delimStart, delimStop);
+		}
+		if (ctx.tail == -1) {
+			throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + ctx.pointer + "]");
+		}
+		String expression = val.substring(ctx.pointer, ctx.tail + delimStop.length());
+		ctx.pointer += delimStart.length();
+		return expression;
+	}
+
+	private static void appendFromInput(StringBuilder sb, String val, String delimStart, boolean resolveWithPropertyName, SubstitutionContext ctx) {
+		sb.append(val, ctx.head, resolveWithPropertyName ? ctx.pointer + delimStart.length() : ctx.pointer);
+	}
+
+	private static String produceFinalOutputResult(String val, StringBuilder sb, SubstitutionContext ctx) {
+		// no more variables
+		if (ctx.head == 0) { // this is a simple string
+			return val;
+		}
+		// add the tail string which contains no variables and return the result.
+		sb.append(val.substring(ctx.head));
+		return sb.toString();
+	}
+
+	private static void findNextVariable(String val, String delimStart, String delimStop, SubstitutionContext ctx) {
+		if (ctx.tail > 0) { // Not the first variable, so move head & tail beyond previous tail.
+			if(ctx.containsDefault) { // tail points to index of ':-' update tail to point delimStop
+				ctx.tail = indexOfDelimStop(val, ctx.pointer, delimStart, delimStop);
+			}
+			ctx.head = ctx.tail + delimStop.length();
+		}
+		ctx.pointer = val.indexOf(delimStart, ctx.head); // index delimiter
+	}
+
+	private static void appendReplacement(StringBuilder sb, String key, String replacement, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName, String providedDefaultValue, String propertyComposer, String expression) {
+		if(resolveWithPropertyName) {
+			sb.append(propertyComposer).append(VALUE_SEPARATOR);
+		}
+
+		if (replacement != null) {
+			if (propsToHide != null && propsToHide.contains(key)) {
+				replacement = StringUtil.hide(replacement);
+			}
+			// Do variable substitution on the replacement string
+			// such that we can solve "Hello ${x1}" as "Hello p2"
+			// the where the properties are
+			// x1=${x2}
+			// x2=p2
+			if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
+				String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
+				sb.append(recursiveReplacement);
+			} else {
+				sb.append(replacement);
+			}
+		} else {
+			if(providedDefaultValue != null) { // use default value of property if missing actual
+				sb.append(providedDefaultValue);
+			}
+		}
+		if(resolveWithPropertyName) {
+			sb.append(delimStop);
+		}
+	}
+
+	private static String resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		// first try in System properties
 		String replacement = getSystemProperty(key, null);
 
@@ -468,5 +492,18 @@ public class StringResolver {
 			additionalStringResolvers = CollectionUtils.collect(AdditionalStringResolver.serviceLoader.iterator(), input -> input);
 		}
 		return additionalStringResolvers;
+	}
+
+	private static class SubstitutionContext {
+		String providedDefaultValue=null;
+		boolean containsDefault = false;
+		int head = 0;
+		int pointer;
+		int tail;
+		String propertyComposer = "";
+
+		boolean isNoDelimiterFound() {
+			return pointer == -1;
+		}
 	}
 }
