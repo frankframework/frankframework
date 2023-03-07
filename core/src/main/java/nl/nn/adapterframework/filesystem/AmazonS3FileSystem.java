@@ -312,7 +312,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(S3Object f) {
 		Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put("name", bucketName);
+		attributes.put("bucketName", bucketName);
 		return attributes;
 	}
 	
