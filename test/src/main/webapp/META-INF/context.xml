@@ -17,6 +17,15 @@
 	/>
 
 	<Resource
+		name="jdbc/ibis4test-oracle-orcldb"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="oracle.jdbc.xa.client.OracleXADataSource"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+	/>
+
+	<Resource
 		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
@@ -209,4 +218,15 @@
 		brokerURL="tcp://${jms.hostname:-host.docker.internal}:61615"
 	/>
 
+	<!-- AWS SQS resource configuration -->
+	<!-- The queues configured in the queues attribute will be created if they do not exist -->
+	<Resource name="jms/qcf-aws_sqs"
+		factory="nl.nn.adapterframework.jms.AmazonSqsFactory"
+		type="javax.jms.ConnectionFactory"
+
+		region="eu-west-1"
+		authAlias="aws"
+
+		queues="i4testiaf_ff,i4testiaf_in,i4testiaf_out"
+	/>
 </Context>

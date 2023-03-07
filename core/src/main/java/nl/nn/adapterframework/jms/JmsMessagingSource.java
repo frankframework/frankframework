@@ -89,7 +89,7 @@ public class JmsMessagingSource extends MessagingSource {
 			session = createSession(false, Session.AUTO_ACKNOWLEDGE);
 			dest = session.createQueue(destinationName);
 		} catch (Exception e) {
-			throw new JmsException("cannot create destination", e);
+			throw new JmsException("cannot create destination ["+destinationName+"]", e);
 		} finally {
 			releaseSession(session);
 		}

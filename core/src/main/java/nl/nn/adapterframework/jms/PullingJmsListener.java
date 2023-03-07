@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +34,7 @@ import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.RunState;
@@ -175,43 +172,16 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	@Override
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
-		try {
-
-			// TODO Do we still need this? Should we rollback too? See
-			// PushingJmsListener.afterMessageProcessed() too (which does a
-			// rollback, but no commit).
-			if (!isTransacted()) {
-				if (isJmsTransacted()) {
-					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
-					Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
-					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] has no session to commit or rollback");
-					} else {
-						if (plr.getState()==ExitState.SUCCESS) {
-							session.commit();
-						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] not committed nor rolled back either");
-							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
-							// session.rollback();
-						}
-						if (isSessionsArePooled()) {
-							threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
-							releaseSession(session);
-						}
-					}
-				} else {
-					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-						log.debug("["+getName()+"] acknowledges message with id ["+threadContext.get(PipeLineSession.messageIdKey)+"]");
-						((TextMessage)rawMessageOrWrapper).acknowledge();
-					}
-				}
+		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
+			Session session = (Session)threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+			if (session!=null) {
+				releaseSession(session);
 			}
-		} catch (JMSException e) {
-			throw new ListenerException(e);
 		}
 	}
 
+
+	@Override
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
 		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {

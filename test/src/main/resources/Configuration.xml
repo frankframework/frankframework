@@ -7,5 +7,6 @@
 		<jmsRealm realmName="fxf" queueConnectionFactoryName="${jms.connectionfactory.fxf}" active="${active.fxf}"/>
 		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="jms/qcf_tibco_esb_rr" active="${active.tibco}"/>
 		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="jms/qcf_tibco_esb_ff" active="${active.tibco}"/>
+		<jmsRealm realmName="sqs" queueConnectionFactoryName="jms/qcf-aws_sqs" active="${active.aws.sqs}"/>
 	</jmsRealms>
 </configuration>
