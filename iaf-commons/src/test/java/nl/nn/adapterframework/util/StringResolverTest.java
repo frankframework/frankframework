@@ -160,7 +160,7 @@ public class StringResolverTest {
 		// Arrange
 		StringDataSource message = new StringDataSource() {
 			@Override
-			public String asString() throws IOException {
+			public String asString() {
 				return "My Message";
 			}
 
@@ -189,7 +189,7 @@ public class StringResolverTest {
 		// Arrange
 		StringDataSource message = new StringDataSource() {
 			@Override
-			public String asString() throws IOException {
+			public String asString() {
 				return "My Message";
 			}
 
@@ -354,5 +354,14 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${key1:-******}", result);
+	}
+
+	@Test
+	public void resolveViaAdditionalResolver() {
+		// Act
+		String result = StringResolver.substVars("lalala ${reversi} blah", properties);
+
+		// Assert
+		assertEquals("lalala isrever blah", result);
 	}
 }
