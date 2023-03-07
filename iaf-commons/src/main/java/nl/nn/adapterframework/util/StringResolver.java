@@ -43,35 +43,6 @@ public class StringResolver {
 	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
-	 * Look up the key in the environment with {@link System#getenv(String)} and next in the System properties with
-	 * {@link System#getProperty(String, String)}. The {@link SecurityException} if thrown, is hidden.
-	 *
-	 * @param key The key to search for.
-	 * @param def The default value to return, may be {@code null}.
-	 * @return the string value of the system property, or the default value if
-	 *         there is no property with that key.
-	 *         May return {@code null} if the default value was {@code null}.
-	 *
-	 * @since 1.1
-	 */
-	public static String getSystemProperty(String key, String def) {
-		try {
-			String result = System.getenv().get(key);
-			if (result!=null) {
-				return result;
-			}
-		} catch (Throwable e) {
-			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
-		}
-		try {
-			return System.getProperty(key, def);
-		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			LogManager.getLogger(StringResolver.class).warn("Was not allowed to read system property [" + key + "]: " + e.getMessage());
-			return def;
-		}
-	}
-
-	/**
 	 * Do variable substitution on a string to resolve ${x2} to the value of the
 	 * property x2. This is done recursive, so that <br/>
 	 * <code><pre>
@@ -267,7 +238,7 @@ public class StringResolver {
 
 	private static String resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		// first try in System properties
-		String replacement = getSystemProperty(key, null);
+		String replacement = Environment.getSystemProperty(key, null);
 
 		Iterator<AdditionalStringResolver> resolvers = getAdditionalStringResolvers().iterator();
 		while (replacement == null && resolvers.hasNext()) {

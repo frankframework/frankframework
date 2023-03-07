@@ -85,14 +85,6 @@ class StringUtilTest {
 	}
 
 	/**
-	 * Method: toSortName(String name)
-	 */
-	@Test
-	public void testToSortName() {
-		assertEquals("NEW*NAME", StringUtil.toSortName("new_name"));
-	}
-
-	/**
 	 * Method: countRegex(String string, String regex)
 	 */
 	@Test

@@ -18,6 +18,8 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -48,6 +50,7 @@ import javax.jms.TextMessage;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -292,7 +295,7 @@ public class JdbcUtil {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
-		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		OutputStream outputStream= getOutputStream(target);
 		if (outputStream!=null) {
 			if (blobBase64Direction == Direction.DECODE){
 				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
@@ -349,7 +352,7 @@ public class JdbcUtil {
 			}
 			return;
 		}
-		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		OutputStream outputStream= getOutputStream(target);
 		if (outputStream!=null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
 				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
@@ -1077,6 +1080,36 @@ public class JdbcUtil {
 			return true;
 		default:
 			return false;
+		}
+	}
+
+	@Deprecated
+	private static OutputStream getOutputStream(Object target) throws IOException {
+		if (target instanceof OutputStream) {
+			return (OutputStream) target;
+		}
+		if (target instanceof String) {
+			return getFileOutputStream((String)target);
+		}
+		if (target instanceof Message) {
+			if(((Message) target).asObject() instanceof String) {
+				return getFileOutputStream(((Message)target).asString());
+			}
+		}
+		return null;
+	}
+
+	@Deprecated
+	private static OutputStream getFileOutputStream(String filename) throws IOException {
+		if (StringUtils.isEmpty(filename)) {
+			throw new IOException("target string cannot be empty but must contain a filename");
+		}
+		try {
+			return new FileOutputStream(filename);
+		} catch (FileNotFoundException e) {
+			FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
+			fnfe.initCause(e);
+			throw fnfe;
 		}
 	}
 }

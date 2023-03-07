@@ -158,17 +158,7 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsMessage() {
 		// Arrange
-		StringDataSource message = new StringDataSource() {
-			@Override
-			public String asString() {
-				return "My Message";
-			}
-
-			@Override
-			public boolean isStringNative() {
-				return true;
-			}
-		};
+		StringDataSource message = () -> "My Message";
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 
 		// Act
@@ -187,17 +177,7 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsMessageWithProps2() {
 		// Arrange
-		StringDataSource message = new StringDataSource() {
-			@Override
-			public String asString() {
-				return "My Message";
-			}
-
-			@Override
-			public boolean isStringNative() {
-				return true;
-			}
-		};
+		StringDataSource message = () -> "My Message";
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 
 		// Act
@@ -216,16 +196,8 @@ public class StringResolverTest {
 	@Test
 	public void resolveResultIsStringDataSourceWithException() {
 		// Arrange
-		StringDataSource message = new StringDataSource() {
-			@Override
-			public String asString() throws IOException {
-				throw new IOException("No Can't Do");
-			}
-
-			@Override
-			public boolean isStringNative() {
-				return false;
-			}
+		StringDataSource message = () -> {
+			throw new IOException("No Can't Do");
 		};
 		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
 

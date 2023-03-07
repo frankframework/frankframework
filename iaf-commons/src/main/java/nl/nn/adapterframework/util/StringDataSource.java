@@ -29,13 +29,4 @@ public interface StringDataSource {
 	 * @throws IOException If an exception occurs during getting the String data.
 	 */
 	String asString() throws IOException;
-
-	/**
-	 * Is the data representation of the implementing object natively String data,
-	 * or will the data be translated to String by calling {@link #asString()}.
-	 *
-	 * @return {@code true} if data is natively a String data, {@code false} if the data needs
-	 * to be translated into String by calling {@link #asString()}.
-	 */
-	boolean isStringNative();
 }

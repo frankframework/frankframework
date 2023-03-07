@@ -255,11 +255,6 @@ public class Message implements Serializable, StringDataSource {
 		return request;
 	}
 
-	@Override
-	public boolean isStringNative() {
-		return request instanceof String;
-	}
-
 	public boolean isBinary() {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}

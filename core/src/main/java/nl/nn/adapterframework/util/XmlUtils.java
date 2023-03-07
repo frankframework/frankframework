@@ -74,6 +74,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -93,6 +94,7 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
+import net.sf.saxon.xpath.XPathFactoryImpl;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -796,10 +798,10 @@ public class XmlUtils {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
-		String paramsString = "";
+		StringBuilder paramsString = new StringBuilder();
 		if (params != null) {
 			for (Parameter param: params) {
-				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
+				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
@@ -971,23 +973,22 @@ public class XmlUtils {
 
 	public static TransformerFactory getTransformerFactory(int xsltVersion, ErrorListener errorListener) {
 		TransformerFactory factory;
-		switch (xsltVersion) {
-		case 1:
-			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
+		if (xsltVersion == 1) {
+			factory = new TransformerFactoryImpl();
 			factory.setErrorListener(errorListener);
 			if (isXsltStreamingByDefault()) {
-				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}
 			return factory;
-		default:
-			factory = new net.sf.saxon.TransformerFactoryImpl();
-			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
-			// is included or imported more than once. This is permitted, but
-			// may lead to errors or unexpected behavior" written to System.err
-			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
-			factory.setErrorListener(errorListener);
-			return factory;
 		}
+		// XSLT version 2 or 3.
+		factory = new net.sf.saxon.TransformerFactoryImpl();
+		// Use ErrorListener to prevent warning "Stylesheet module ....xsl
+		// is included or imported more than once. This is permitted, but
+		// may lead to errors or unexpected behavior" written to System.err
+		// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
+		factory.setErrorListener(errorListener);
+		return factory;
 	}
 
 	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
@@ -1313,7 +1314,7 @@ public class XmlUtils {
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
-	 * @throws IOException
+	 * @throws IOException If an IOException occurs.
 	 */
 	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
@@ -1704,12 +1705,13 @@ public class XmlUtils {
 
 	public static String toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
-			String xhtmlString = new String(message.getMagic(512));
+			String messageCharset = message.getCharset();
+			String xhtmlString = new String(message.getMagic(512), messageCharset != null ? messageCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				props.setOmitDoctypeDeclaration(true);
-				if(message.getCharset() != null) {
-					props.setCharset(message.getCharset());
+				if(messageCharset != null) {
+					props.setCharset(messageCharset);
 				}
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(message.asReader());
@@ -1724,12 +1726,13 @@ public class XmlUtils {
 	}
 
 	public static synchronized XPathFactory getXPathFactory(int xsltVersion) {
-		switch (xsltVersion) {
-		case 2:
-			return new net.sf.saxon.xpath.XPathFactoryImpl();
-		default:
+		// NB: Currently this method is only called always with XSLT version = 2, but it
+		// should be prepared to work correctly if called with version 1 or 3 as well.
+		if (xsltVersion == 1) {
 			return new org.apache.xpath.jaxp.XPathFactoryImpl();
 		}
+		// XSLT version 2 or 3
+		return new XPathFactoryImpl();
 	}
 
 	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {

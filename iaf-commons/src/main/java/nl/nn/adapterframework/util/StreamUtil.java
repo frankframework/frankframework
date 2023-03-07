@@ -18,8 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
@@ -59,37 +57,6 @@ public class StreamUtil {
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogManager.getLogger(StreamUtil.class);
-
-	@Deprecated
-	public static OutputStream getOutputStream(Object target) throws IOException {
-		if (target instanceof OutputStream) {
-			return (OutputStream) target;
-		}
-		if (target instanceof String) {
-			return getFileOutputStream((String)target);
-		}
-		if (target instanceof StringDataSource) {
-			StringDataSource stringDataSource = (StringDataSource) target;
-			if(stringDataSource.isStringNative()) {
-				return getFileOutputStream(stringDataSource.asString());
-			}
-		}
-		return null;
-	}
-
-	@Deprecated
-	private static OutputStream getFileOutputStream(String filename) throws IOException {
-		if (StringUtils.isEmpty(filename)) {
-			throw new IOException("target string cannot be empty but must contain a filename");
-		}
-		try {
-			return new FileOutputStream(filename);
-		} catch (FileNotFoundException e) {
-			FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
-			fnfe.initCause(e);
-			throw fnfe;
-		}
-	}
 
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {

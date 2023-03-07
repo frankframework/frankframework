@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -181,7 +182,7 @@ public class UnzipPipe extends FixedForwardPipe {
 				}
 			}
 
-			String entryResults = "";
+			StringBuilder entryResults = new StringBuilder();
 			int count = 0;
 			try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in))) {
 				ZipEntry ze;
@@ -249,21 +250,22 @@ public class UnzipPipe extends FixedForwardPipe {
 							}
 						}
 						if (isCollectResults()) {
-							entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
+							entryResults.append("<result item=\"").append(count).append("\"><zipEntry>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname)).append("</zipEntry>");
 							if (targetDirectory != null) {
-								entryResults += "<fileName>" + XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
+								entryResults.append("<fileName>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath())).append("</fileName>");
 							}
 							if (isCollectFileContents()) {
+								Objects.requireNonNull(fileContentBytes);
 								String fileContent;
 								if (base64Extensions.contains(extension)) {
-									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
+									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes), StreamUtil.DEFAULT_CHARSET);
 								} else {
-									fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+									fileContent = new String((fileContentBytes), StreamUtil.DEFAULT_CHARSET);
 									fileContent = XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 								}
-								entryResults += "<fileContent>" + fileContent + "</fileContent>";
+								entryResults.append("<fileContent>").append(fileContent).append("</fileContent>");
 							}
-							entryResults += "</result>";
+							entryResults.append("</result>");
 						}
 
 					}

@@ -205,17 +205,6 @@ public class StringUtil {
 	}
 
 	/**
-	 * Replaces low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
-	 * <pre>
-	 *      StringUtil.toSortName("new_name"); // gives out "NEW*NAME"
-	 * </pre>
-	 */
-	public static String toSortName(String name) {
-		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter
-		return StringUtils.upperCase(StringUtils.replace(name,"_", "*"));
-	}
-
-	/**
 	 * Counts the number of characters that the specified regexes will affect in the specified string.
 	 * <pre>
 	 *     String s = "12ab34";
