@@ -5,8 +5,8 @@ node = AdminControl.getNode()
 server = 'server1'
 
 
-def createAuthAlias( aliasName, username, password ):
-	print "Creating Auth Alias ", aliasName
+def createAuthAlias(aliasName, username, password):
+	print("Creating Auth Alias ", aliasName)
 	security = AdminConfig.getid('/Security:/')
 	alias = ['alias', aliasName ]
 	userid = ['userId', username ]
