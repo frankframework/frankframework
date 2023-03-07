@@ -364,4 +364,17 @@ public class StringResolverTest {
 		// Assert
 		assertEquals("lalala isrever blah", result);
 	}
+
+	@Test
+	public void testAdditionalResolversMatchBeforeProperties() {
+		// Arrange
+		Properties props2 = new Properties();
+		props2.setProperty("reversi", "not reversed");
+
+		// Act
+		String result = StringResolver.substVars("lalala ${reversi} blah", properties, props2);
+
+		// Assert
+		assertEquals("lalala isrever blah", result);
+	}
 }
