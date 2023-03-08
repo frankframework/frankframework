@@ -7,7 +7,7 @@ RUN set -eux && \
 	mkdir -p /opt/frank/secrets && \
 	# Create tomcat user for stepping down from root
 	groupadd -g ${TOMCAT_GROUPID} tomcat && \
-	useradd -u ${TOMCAT_USERID} -g tomcat -s /usr/sbin/nologin tomcat && \
+	useradd -u ${TOMCAT_USERID} -g tomcat -s /usr/sbin/nologin -l tomcat && \
 	# Change permissions and ownership of files
 	chown -hR tomcat:tomcat ${CATALINA_HOME} && \
 	chown -hR tomcat:tomcat /opt/frank

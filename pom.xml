@@ -9,7 +9,7 @@
     <properties>
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.19.0</log4j2.version>
+		<log4j2.version>2.20.0</log4j2.version>
 
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.25</spring.version>

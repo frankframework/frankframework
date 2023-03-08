@@ -24,13 +24,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -109,8 +109,8 @@ public class RestListenerServlet extends HttpServletBase {
 				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
 			}
-			if (!ServletFileUpload.isMultipartContent(request)) {
-				body= StreamUtil.streamToString(request.getInputStream(),"\n",false);
+			if (!MultipartUtils.isMultipart(request)) {
+				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
 			}
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,9 +35,11 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IRedeliveringListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -54,7 +56,7 @@ import nl.nn.adapterframework.util.DateUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters {
+public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
 
 	private @Getter long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo=true;
@@ -204,14 +206,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
-		try {
-			if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-				message.acknowledge();
-				log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
-			}
-		} catch (JMSException e) {
-			log.error("Warning in ack", e);
-		}
 		return id;
 	}
 
@@ -262,14 +256,14 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
 		}
 
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in JmsListener.afterMessageProcessed()");
+		// handle reply
 		try {
 			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
 			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
 				replyTo = getDestination(getReplyDestinationName());
 			}
 
-			// handle reply
 			if (replyTo != null) {
 
 				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
@@ -312,6 +306,41 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException | JmsException e) {
 			throw new ListenerException(e);
 		}
+
+		// handle commit/rollback or acknowledge
+		try {
+			if (plr!=null && !isTransacted()) {
+				if (isJmsTransacted()) {
+					Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
+					if (session==null) {
+						log.error(getLogPrefix()+"session is null, cannot commit or roll back session");
+					} else {
+						if (plr.getState()!=ExitState.SUCCESS) {
+							log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
+							session.rollback();
+						} else {
+							session.commit();
+						}
+					}
+				} else {
+					if (rawMessageOrWrapper instanceof javax.jms.Message && getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+						if (plr.getState()!=ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
+							log.debug(getLogPrefix()+"acknowledgeing message");
+							((javax.jms.Message)rawMessageOrWrapper).acknowledge();
+						} else {
+							log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], skipping acknowledge");
+						}
+					}
+				}
+			}
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError(Map<String, Object> context) {
+		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {

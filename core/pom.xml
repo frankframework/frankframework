@@ -64,13 +64,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j2.version}</version>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
 
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -195,11 +188,6 @@
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
 			<version>1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -575,7 +563,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.19.0</version>
+			<version>4.19.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -844,7 +832,7 @@
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail-junit5</artifactId>
-			<version>2.0.0-alpha-3</version>
+			<version>2.0.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
