@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.util;
+package nl.nn.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,7 +12,8 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.StringResolver;
+
 
 class CredentialResolverTest {
 
@@ -21,7 +22,7 @@ class CredentialResolverTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		properties = new Properties();
-		URL propertiesURL = TestFileUtils.getTestFileURL("/StringResolver.properties");
+		URL propertiesURL = getClass().getResource("/StringResolver.properties");
 		assertNotNull(propertiesURL, "properties file [StringResolver.properties] not found!");
 
 		InputStream propsStream = propertiesURL.openStream();

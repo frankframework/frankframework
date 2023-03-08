@@ -13,13 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.credentialprovider;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import nl.nn.adapterframework.util.AdditionalStringResolver;
+import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Implementation of {@link AdditionalStringResolver} for resolving user credentials using
@@ -54,8 +58,8 @@ public class CredentialResolver implements AdditionalStringResolver {
 		String replacement;
 		if (username || mayExpandAuthAlias(key, props1)) {
 			String defaultValue = delimStart + key+ delimStop;
-			CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
-			replacement = username ? cf.getUsername() : cf.getPassword();
+			ICredentials credentials = CredentialFactory.getCredentials(key, ()-> defaultValue, ()-> defaultValue);
+			replacement = username ? credentials.getUsername() : credentials.getPassword();
 		} else {
 			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
 		}
