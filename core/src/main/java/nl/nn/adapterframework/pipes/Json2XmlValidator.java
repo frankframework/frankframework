@@ -174,7 +174,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 				// Align XML if required
 				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
-				if (isAlignXml() || getParameterList()!=null && !getParameterList().isEmpty()) {
+				if (isAlignXml() || (getParameterList()!=null && !getParameterList().isEmpty())) {
 					try {
 						return align(DocumentFormat.XML, messageToValidate, session, responseMode);
 					} catch (Exception e) {

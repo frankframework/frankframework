@@ -3,14 +3,12 @@ package nl.nn.adapterframework.align;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class TestAlignXml {
@@ -62,31 +60,13 @@ public class TestAlignXml {
 		testXml(xmlIn, schemaUrl, expectedFailureReason, "");
 	}
 
-	protected String getTestFile(String file) throws IOException {
-		URL url = AlignTestBase.class.getResource(BASEDIR + file);
-		if (url == null) {
-			return null;
-		}
-		BufferedReader buf = new BufferedReader(new InputStreamReader(url.openStream()));
-		StringBuilder string = new StringBuilder();
-		String line = buf.readLine();
-		while (line != null) {
-			string.append(line);
-			line = buf.readLine();
-			if (line != null) {
-				string.append("\n");
-			}
-		}
-		return string.toString();
-	}
-
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile) throws Exception {
 		testFiles(schemaFile, namespace, rootElement, inputFile, null);
 	}
 
 	public void testFiles(String schemaFile, String namespace, String rootElement, String file, String expectedFailureReason) throws Exception {
-		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
-		String xmlString = getTestFile(file + ".xml");
+		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
+		String xmlString = TestFileUtils.getTestFile(file + ".xml");
 		testStrings(xmlString, schemaUrl, namespace, rootElement, expectedFailureReason);
 	}
 
@@ -102,8 +82,8 @@ public class TestAlignXml {
 		String schemaFile = "Abc/abc.xsd";
 		String inputFile = "Abc/abc-x";
 		String expectedFailureReason = "Cannot find the declaration of element [x]";
-		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
-		String xmlString = getTestFile(inputFile + ".xml");
+		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
+		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "extra elements not allowed", false, false);
 	}
 
@@ -113,8 +93,8 @@ public class TestAlignXml {
 		String schemaFile = "Abc/abc.xsd";
 		String inputFile = "Abc/abc-x";
 		String expectedFailureReason = null;
-		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
-		String xmlString = getTestFile(inputFile + ".xml");
+		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
+		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "extra elements not allowed", false, true);
 	}
 
@@ -123,8 +103,8 @@ public class TestAlignXml {
 		String schemaFile = "Abc/abc.xsd";
 		String inputFile = "Abc/abc-wrongorder";
 		String expectedFailureReason = null;
-		URL schemaUrl = Utils.class.getResource(BASEDIR + schemaFile);
-		String xmlString = getTestFile(inputFile + ".xml");
+		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
+		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "root elements in wrong order", false, false);
 	}
 
