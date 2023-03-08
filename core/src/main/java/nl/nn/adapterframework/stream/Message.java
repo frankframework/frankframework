@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,6 +47,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.io.input.TeeReader;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -442,16 +444,7 @@ public class Message implements Serializable {
 		}
 
 		if (request instanceof InputStream) {
-			if (!((InputStream) request).markSupported()) {
-				request = new BufferedInputStream((InputStream) request, readLimit);
-			}
-			InputStream stream = (InputStream) request;
-			stream.mark(readLimit);
-			try {
-				return readBytesFromInputStream(stream, readLimit);
-			} finally {
-				stream.reset();
-			}
+			return readBytesFromInputStream(readLimit);
 		}
 		if (request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
 			return Arrays.copyOf((byte[]) request, readLimit);
@@ -466,14 +459,59 @@ public class Message implements Serializable {
 	}
 
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
-		String characterData = asString();
-		if (characterData.isEmpty()) {
-			return new byte[0];
+		if (request instanceof Reader) {
+			if (!((Reader) request).markSupported() || request instanceof TeeReader) {
+				request = new BufferedReader((Reader)request, readLimit);
+			}
+			Reader reader = (Reader) request;
+			reader.mark(readLimit);
+			try {
+				return readBytesFromReader(reader, readLimit);
+			} finally {
+				reader.reset();
+			}
 		}
-		byte[] data = characterData.getBytes(StreamUtil.DEFAULT_CHARSET);
-		return Arrays.copyOf(data, readLimit);
+
+		if (request instanceof String) {
+			if (((String) request).isEmpty()) {
+				return new byte[0];
+			}
+			byte[] data = ((String) request).getBytes(StreamUtil.DEFAULT_CHARSET);
+			return Arrays.copyOf(data, readLimit);
+		}
+
+		if (isRepeatable()) {
+			try (Reader reader = asReader()) {
+				return readBytesFromReader(reader, readLimit);
+			}
+		}
+		return new byte[0];
 	}
 
+	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
+		char[] chars = new char[readLimit];
+		int charsRead = asReader().read(chars);
+		if (charsRead <= 0) {
+			return new byte[0];
+		}
+		byte[] data = new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
+		return data;
+	}
+
+	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
+		if (!((InputStream) request).markSupported()) {
+			request = new BufferedInputStream((InputStream) request, readLimit);
+		}
+		InputStream stream = (InputStream) request;
+		stream.mark(readLimit);
+
+		try {
+			return readBytesFromInputStream(stream, readLimit);
+		} finally {
+			stream.reset();
+		}
+	}
+	
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
 		byte[] bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);

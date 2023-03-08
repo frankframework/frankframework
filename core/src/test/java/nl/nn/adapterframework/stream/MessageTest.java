@@ -478,6 +478,18 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testEmptyStringAsString() throws Exception {
+		String source = "";
+		Message message = new Message(source);
+
+		byte[] header = message.getMagic(6);
+		assertEquals("", new String(header));
+
+		String actual = message.asString();
+		MatchUtils.assertXmlEquals("", actual);
+	}
+
+	@Test
 	public void testStringToString() throws Exception {
 		String source = testString;
 		Message adapter = new Message(source);
@@ -726,6 +738,17 @@ public class MessageTest {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
 		Message adapter = new Message(source);
 		testAsInputStream(adapter);
+	}
+	
+	@Test
+	public void testFileInputStreamAsInputStream() throws Exception {
+		URL url = this.getClass().getResource("/Message/testString.txt");
+		assertNotNull(url, "cannot find testfile");
+
+		File file = new File(url.toURI());
+		FileInputStream fis = new FileInputStream(file);
+		Message message = Message.asMessage(fis);
+		testAsInputStream(message);
 	}
 
 	@Test
