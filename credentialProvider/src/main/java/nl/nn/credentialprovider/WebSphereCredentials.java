@@ -102,100 +102,14 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 				continue;
 			}
 			log.fine("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
-//			log.debug("contents of callback ["+ToStringBuilder.reflectionToString(cb)+"]");
-//			Class itf[] = cbc.getInterfaces();
-//			for (int j=0; j<itf.length; j++) {
-//				log.info("interface "+j+": "+itf[j].getName());
-//			}
-//			Method methods[] = cbc.getMethods();
-//			for (int j=0; j<methods.length; j++) {
-//				log.info("method "+j+": "+methods[j].getName()+", "+methods[j].toString());
-//			}
-//			if (cb instanceof ChoiceCallback) {
-//				ChoiceCallback ccb = (ChoiceCallback) cb;
-//				log.info("ChoiceCallback: "+ccb.getPrompt());
-//			}
-
 		}
 		log.info("Handled callbacks for alias ["+getAlias()+"]");
 	}
 
-	private class LoginCallbackHandler implements CallbackHandler {
-		@Override
-		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-			//log.info("callback: "+ToStringBuilder.reflectionToString(callbacks));
-			for (int i=0; i<callbacks.length; i++) {
-				Callback cb=callbacks[i];
-				if (cb instanceof NameCallback) {
-					NameCallback ncb = (NameCallback) cb;
-					log.info("setting name of NameCallback to ["+getUsername()+"]");
-					ncb.setName(getUsername());
-				} else if (cb instanceof PasswordCallback) {
-					PasswordCallback pcb = (PasswordCallback) cb;
-					log.info("setting password of PasswordCallback");
-					String password=getPassword();
-					if (password==null) {
-						pcb.setPassword(null);
-					} else {
-						pcb.setPassword(password.toCharArray());
-					}
-				} else {
-					log.fine("ignoring callback of type ["+cb.getClass().getName()+"]");
-				}
-//				if (cb instanceof ChoiceCallback) {
-//					ChoiceCallback ccb = (ChoiceCallback) cb;
-//					log.info("ChoiceCallback: "+ccb.getPrompt());
-//				}
-
-			}
-		}
-	}
-
-	/**
-	 * return a loginContext, obtained by logging in using the obtained credentials
-	 */
-	public LoginContext getLoginContext() throws LoginException {
-		String loginConfig="ClientContainer";
-		getCredentialsFromAlias();
-		log.fine("logging in using context["+loginConfig+"]");
-		LoginContext lc = new LoginContext(loginConfig, new LoginCallbackHandler());
-		lc.login();
-		return lc;
-	}
-
-//	private class PasswordGetter implements PrivilegedAction {
-//
-//		Subject s;
-//
-//		public PasswordGetter(Subject s) {
-//			this.s=s;
-//		}
-//
-//		public Object run() {
-//			//log.debug("Subject: "+s.toString());
-//			//			log.info("Subject: "+ToStringBuilder.reflectionToString(s));
-//			//			showSet(s.getPrincipals(),"principals");
-//			//			showSet(s.getPublicCredentials(),"PublicCredentials");
-//						Set pcs = s.getPrivateCredentials();
-//						return pcs.toArray()[0];
-//			//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred));
-//		};
-//
-//	}
-
-//	private void showSet(Set set, String string) {
-//		String msg=string+"("+set.getClass().getName()+"): ";
-//		for(Iterator it=set.iterator();it.hasNext();){
-//			Object item=it.next();
-//			msg+=item.getClass().getName()+" "+item+"; ";
-//		}
-//		log.debug(msg);
-//	}
-
 	/*
 	 * Dummy principal, to populate subject, to have at least a principal.
 	 */
-	private class FrankPrincipal implements Principal{
+	private static class FrankPrincipal implements Principal{
 		@Override
 		public String getName() {
 			return "Frank";
