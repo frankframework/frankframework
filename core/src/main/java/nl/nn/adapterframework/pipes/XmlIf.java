@@ -184,7 +184,7 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	/**
-	 * specifies the version of xslt to use. This pipe supports up to and including XSLT version 3.0
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan)
 	 * @ff.default 2
 	 */
 	public void setXsltVersion(int xsltVersion) {
