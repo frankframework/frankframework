@@ -63,11 +63,10 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamCaptureUtils;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.StringDataSource;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message implements Serializable, StringDataSource {
+public class Message implements Serializable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
@@ -568,7 +567,6 @@ public class Message implements Serializable, StringDataSource {
 	/**
 	 * return the request object as a String. Has the side effect of preserving the input as a String.
 	 */
-	@Override
 	public String asString() throws IOException {
 		return asString(null);
 	}

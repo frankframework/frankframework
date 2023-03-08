@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.Properties;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -261,11 +259,7 @@ public class StringResolver {
 		} else {
 			Object replacementSource = props.get(key);
 			if (replacementSource != null) {
-				try {
-					return replacementSource instanceof StringDataSource ? ((StringDataSource)replacementSource).asString() : replacementSource.toString();
-				} catch(IOException e) {
-					LogManager.getLogger(StringResolver.class).error("Failed to resolve value for ["+ key +"]", e);
-				}
+				return replacementSource.toString();
 			}
 		}
 		return null;

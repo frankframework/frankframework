@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
@@ -60,7 +59,45 @@ public class StringResolverTest {
 	}
 
 	@Test
-	public void resolveSimple() {
+	void resolveFromSystemProperties() {
+		// Arrange
+		properties.put("user.home", "wrong answer");
+
+		// Act
+		String result = StringResolver.substVars("${user.home}", properties);
+
+		// Assert
+		assertEquals(System.getProperty("user.home"), result);
+	}
+
+	@Test
+	public void resolveFromEnvironmentBeforeProps() {
+		// Arrange
+		String envVarName = System.getenv().containsKey("Path") ? "Path" : "PATH";
+		String substString = "${" + envVarName + "}";
+		properties.put(envVarName, "not the right answer");
+
+		// Act
+		String result = StringResolver.substVars(substString, properties);
+
+		// Assert
+		assertNotNull(result);
+		assertFalse(StringUtils.isBlank(result));
+		assertTrue(result.contains(File.pathSeparator));
+		assertFalse(result.contains("not the right answer"));
+
+		// Act
+		result = StringResolver.substVars(substString, properties, true);
+
+		// Assert
+		assertNotNull(result);
+		assertTrue(result.startsWith("${" + envVarName + ":-"));
+		assertTrue(result.contains(File.pathSeparator));
+		assertFalse(result.contains("not the right answer"));
+	}
+
+	@Test
+	public void resolveSimpleWithProperties() {
 		// Act
 		String result = StringResolver.substVars("blalblalab ${key1}", properties);
 
@@ -90,6 +127,42 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${key1:-value1}", result);
+	}
+
+	@Test
+	void resolveSimpleWithMap() {
+		// Arrange
+		Map<String, Object> propsMap = Collections.singletonMap("key1", "map-value");
+
+		// Act
+		String result = StringResolver.substVars("blalblalab ${key1}", propsMap, properties);
+
+		// Assert
+		assertEquals("blalblalab map-value", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${key1}", propsMap, properties, true);
+
+		// Assert
+		assertEquals("blalblalab ${key1:-map-value}", result);
+	}
+
+	@Test
+	void resolveSimpleWithMapInProps2() {
+		// Arrange
+		Map<String, Object> propsMap = Collections.singletonMap("map-key", "map-value");
+
+		// Act
+		String result = StringResolver.substVars("blalblalab ${map-key}", properties, propsMap);
+
+		// Assert
+		assertEquals("blalblalab map-value", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${map-key}", properties, propsMap, true);
+
+		// Assert
+		assertEquals("blalblalab ${map-key:-map-value}", result);
 	}
 
 	@Test
@@ -153,77 +226,6 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${dir2:-${log.dir:-c:/temp}/dir}", result);
-	}
-
-	@Test
-	public void resolveResultIsMessage() {
-		// Arrange
-		StringDataSource message = () -> "My Message";
-		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
-
-		// Act
-		String result = StringResolver.substVars("blalblalab ${msg1}", propsMap);
-
-		// Assert
-		assertEquals("blalblalab My Message", result);
-
-		// Act
-		result = StringResolver.substVars("blalblalab ${msg1}", propsMap, true);
-
-		// Assert
-		assertEquals("blalblalab ${msg1:-My Message}", result);
-	}
-
-	@Test
-	public void resolveResultIsMessageWithProps2() {
-		// Arrange
-		StringDataSource message = () -> "My Message";
-		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
-
-		// Act
-		String result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap);
-
-		// Assert
-		assertEquals("blalblalab My Message", result);
-
-		// Act
-		result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap, true);
-
-		// Assert
-		assertEquals("blalblalab ${msg1:-My Message}", result);
-	}
-
-	@Test
-	public void resolveResultIsStringDataSourceWithException() {
-		// Arrange
-		StringDataSource message = () -> {
-			throw new IOException("No Can't Do");
-		};
-		Map<String, Object> propsMap = Collections.singletonMap("msg1", message);
-
-		// Act
-		String result = StringResolver.substVars("blalblalab ${msg1}", propsMap);
-
-		// Assert
-		assertEquals("blalblalab ", result);
-
-		// Act
-		result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap);
-
-		// Assert
-		assertEquals("blalblalab ", result);
-
-		// Act
-		result = StringResolver.substVars("blalblalab ${msg1}", propsMap, true);
-
-		// Assert
-		assertEquals("blalblalab ${msg1:-}", result);
-
-		// Act
-		result = StringResolver.substVars("blalblalab ${msg1}", properties, propsMap, true);
-
-		// Assert
-		assertEquals("blalblalab ${msg1:-}", result);
 	}
 
 	@Test

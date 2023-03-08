@@ -279,15 +279,18 @@ public class FileUtils {
 	}
 
 	public static File createTempDir() throws IOException {
-		return createTempDir(null);
+		return createTempDir(null, null, null, null);
 	}
+
 	public static File createTempDir(File baseDir) throws IOException {
 		return createTempDir(baseDir, null);
 	}
+
 	public static File createTempDir(File baseDir, String subDir) throws IOException {
 		return createTempDir(baseDir, subDir, null, null);
 	}
-	public static File createTempDir(File baseDir, String subDir, String prefix, String suffix) throws IOException {
+
+	private static File createTempDir(File baseDir, String subDir, String prefix, String suffix) throws IOException {
 		if (baseDir == null) {
 			String baseDirStr = AppConstants.getInstance().getString("ibis.tmpdir", null);
 			if (baseDirStr == null) {
@@ -302,6 +305,7 @@ public class FileUtils {
 						+ baseDir.getPath() + "]");
 			}
 		}
+		// TODO: Shouldn't this use Java method to create temp-dir inside base dir?
 		String baseName = System.currentTimeMillis() + "-";
 		int tempDirAttempts = 50;
 		File tempDir = null;
