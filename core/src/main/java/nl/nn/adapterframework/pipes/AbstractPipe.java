@@ -78,7 +78,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
  * @ff.forward success successful processing of the message of the pipe
- * @ff.forward exception some error happened while processing the message; may or may not be a Java exception
+ * @ff.forward exception some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.
  *
  * @author     Johan Verrips / Gerrit van Brakel
  *
