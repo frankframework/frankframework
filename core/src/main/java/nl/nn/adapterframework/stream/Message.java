@@ -466,7 +466,7 @@ public class Message implements Serializable {
 			Reader reader = (Reader) request;
 			reader.mark(readLimit);
 			try {
-				return readBytesFromReader(reader, readLimit);
+				return readBytesFromReader(readLimit);
 			} finally {
 				reader.reset();
 			}
@@ -482,13 +482,13 @@ public class Message implements Serializable {
 
 		if (isRepeatable()) {
 			try (Reader reader = asReader()) {
-				return readBytesFromReader(reader, readLimit);
+				return readBytesFromReader(readLimit);
 			}
 		}
 		return new byte[0];
 	}
 
-	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
+	private byte[] readBytesFromReader(int readLimit) throws IOException {
 		char[] chars = new char[readLimit];
 		int charsRead = asReader().read(chars);
 		if (charsRead <= 0) {
@@ -511,7 +511,7 @@ public class Message implements Serializable {
 			stream.reset();
 		}
 	}
-	
+
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
 		byte[] bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);

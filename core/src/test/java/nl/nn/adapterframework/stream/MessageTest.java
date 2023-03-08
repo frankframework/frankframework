@@ -739,7 +739,7 @@ public class MessageTest {
 		Message adapter = new Message(source);
 		testAsInputStream(adapter);
 	}
-	
+
 	@Test
 	public void testFileInputStreamAsInputStream() throws Exception {
 		URL url = this.getClass().getResource("/Message/testString.txt");
