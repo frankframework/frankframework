@@ -88,14 +88,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void configure() throws ConfigurationException {
 
-		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
-			throw new ConfigurationException(" empty credential fields, please prodive aws credentials");
+		if (StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) {
+			throw new ConfigurationException(" empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
+		}
 
-		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion()))
+		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
 			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+		}
 
-		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName()))
+		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName())) {
 			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
+		}
 	}
 
 	@Override
