@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,8 +9,8 @@ import java.util.jar.JarFile;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
@@ -31,7 +31,7 @@ public class ResourceTest {
 
 	private void testUri(IScopeProvider cl, String ref, String allowedProtocol, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		Resource resource = Resource.getResource(cl, ref, allowedProtocol);
-		assertNotNull(ref,resource);
+		assertNotNull(resource, "<null> resource: "+ref);
 		if (expectedContents!=null) {
 			assertEquals(expectedContents, XmlUtils.source2String(resource.asSource(), false));
 		} else {
@@ -39,7 +39,6 @@ public class ResourceTest {
 		}
 		assertEquals(expectedSystemId,resource.getSystemId());
 	}
-
 
 	@Test
 	public void localClassLoaderPlainRef() throws Exception {
@@ -63,7 +62,7 @@ public class ResourceTest {
 	public void bytesClassLoaderPlainRef() throws Exception {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
-	
+
 	@Test
 	public void bytesClassLoaderClasspathRef() throws Exception {
 		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
@@ -78,19 +77,17 @@ public class ResourceTest {
 	}
 
 	@Test
-	@Ignore("we do not see this as a problem for situations outside ConfigurationClassLoaded classes")
+	@Disabled("we do not see this as a problem for situations outside ConfigurationClassLoaded classes")
 	public void testResolveOutsideParentsFolder() throws TransformerException {
-		
 		String baseResource = "/org/apache/xerces/impl/Constants.class";
 		String relativeResource = "../dom/CommentImpl.class";
-		
+
 		URL url = this.getClass().getResource(baseResource);
 		//System.out.println("url ["+url.toExternalForm()+"]");
 		Resource resource = Resource.getResource(baseResource);
 		//System.out.println("resource ["+resource.getSystemId()+"]");
-		
+
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(resource);
-		
 		assertNotNull(resolver.resolve(relativeResource, url.toExternalForm()));
 	}
 
@@ -185,9 +182,9 @@ public class ResourceTest {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
-		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
+		assertNotNull(file, "jar url ["+JAR_FILE+"] not found");
 		JarFile jarFile = new JarFile(file.getFile());
-		assertNotNull("jar file not found",jarFile);
+		assertNotNull(jarFile, "jar file not found");
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());

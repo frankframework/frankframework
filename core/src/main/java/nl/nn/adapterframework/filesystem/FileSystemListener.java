@@ -208,7 +208,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		if(getErrorFolder() != null) destination.append(" errorFolder [").append(getErrorFolder()).append("]");
 		if(getLogFolder() != null) destination.append(" logFolder [").append(getLogFolder()).append("]");
 
-		log.debug("Physical destination name: [{}]", destination);
+		log.trace("Physical destination name: [{}]", destination);
 		return destination.toString();
 	}
 
@@ -219,9 +219,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		log.debug("Get Raw Message");
+		log.trace("Get Raw Message");
 		FS fileSystem=getFileSystem();
-		log.debug("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
+		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
 			if (ds==null) {
 				return null;
