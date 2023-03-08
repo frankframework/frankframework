@@ -16,15 +16,15 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageToStringResolver implements AdditionalStringResolver {
 	@Override
-	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		// TODO: With Java9 or higher this code can be cleaner, using Optional<>.or()
 		return getMessageFromMap(key, props1)
 				.map(Optional::of)

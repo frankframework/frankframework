@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * Interface to be implemented by framework-classes that provide extra property-resolving sources, such as credentials, which cannot be directly included of the
  * {@link StringResolver} methods.
  * <p>
  * Implementors of the interface should have a no-args constructor and not need any injected dependencies. The {@link StringResolver} will create instances
- * of each class that implements this interface, and invoke it from {@link StringResolver#substVars(String, Map, Map, List, String, String, boolean)}.
+ * of each class that implements this interface, and invoke it from {@link StringResolver#substVars(String, Map, Map, Set, String, String, boolean)}.
  * </p>
  * <p>
  *     Implementors are loaded via the JDK {@link java.util.ServiceLoader} mechanism.
@@ -44,7 +44,7 @@ public interface AdditionalStringResolver {
 	/**
 	 * Method to implement string resolution.
 	 * <p>
-	 * Parameters are mostly as from {@link StringResolver#substVars(String, Map, Map, List, String, String, boolean)}, except the first parameter,
+	 * Parameters are mostly as from {@link StringResolver#substVars(String, Map, Map, Set, String, String, boolean)}, except the first parameter,
 	 * {@code key}, which is the key to be resolved instead of the full string in which to substitute.
 	 * </p>
 	 *
@@ -61,5 +61,5 @@ public interface AdditionalStringResolver {
 	 *                                needed by caller.
 	 * @return Resolved property value, or {@link Optional#empty()} if it cannot be resolved by this implementation.
 	 */
-	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
+	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
 }

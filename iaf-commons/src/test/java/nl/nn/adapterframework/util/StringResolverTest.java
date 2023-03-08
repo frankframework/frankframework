@@ -10,9 +10,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -317,7 +317,7 @@ public class StringResolverTest {
 	@Test
 	public void resolveSimpleHideProperty() {
 		// Arrange
-		List<String> propsToHide = Collections.singletonList("key1");
+		Set<String> propsToHide = Collections.singleton("key1");
 
 		// Act
 		String result = StringResolver.substVars("blalblalab ${key1}", properties, null, propsToHide );

@@ -17,7 +17,6 @@ package nl.nn.credentialprovider;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +41,7 @@ public class CredentialResolver implements AdditionalStringResolver {
 	private static Set<String> authAliasesAllowedToExpand=null;
 
 	@Override
-	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		if (!key.startsWith(CREDENTIAL_PREFIX)) {
 			return Optional.empty();
 		}
