@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Sender for the HTTP protocol using GET, POST, PUT or DELETE. By default, any response code outside the 2xx or 3xx range
+ * Sender for the HTTP protocol using {@link nl.nn.adapterframework.http.HttpSenderBase.HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
  * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
  * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
  * are returned by this sender so they are available to the SenderPipe.
