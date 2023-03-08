@@ -277,6 +277,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			xsdsRecursive.put(normalizedSystemId, xsd);
 			xsd.getXsdsRecursive(xsdsRecursive, supportRedefine);
 		}
+		// turn Map values into Set, as required for the return type.
+		// TODO: return Map instead of Set, to benefit from the knowledge of the SystemId.
 		Set<IXSD> allXsds = new LinkedHashSet<>();
 		allXsds.addAll(xsdsRecursive.values());
 		return allXsds;
@@ -357,11 +359,11 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
 								String normalizedSystemId = FilenameUtils.normalize(x.getSystemId());
 								if (!xsds.containsKey(normalizedSystemId)) {
-									LOG.trace("Adding xsd ["+normalizedSystemId+"] to set ");
+									LOG.trace("Adding xsd [{}] to set ", normalizedSystemId);
 									xsds.put(normalizedSystemId,x);
 									x.getXsdsRecursive(xsds, supportRedefine);
 								} else {
-									LOG.trace("xsd ["+normalizedSystemId+"] already in set ");
+									LOG.trace("xsd [{}] already in set ", normalizedSystemId);
 								}
 							}
 						}
