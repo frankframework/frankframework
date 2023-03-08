@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 /**
@@ -46,18 +47,19 @@ public interface AdditionalStringResolver {
 	 * Parameters are mostly as from {@link StringResolver#substVars(String, Map, Map, List, String, String, boolean)}, except the first parameter,
 	 * {@code key}, which is the key to be resolved instead of the full string in which to substitute.
 	 * </p>
-	 * @param key Key to look up
-	 * @param props1 First property map in which to look up values
-	 * @param props2 Second property map in which to look up values
-	 * @param propsToHide List of properties to hide. If {@code null}, then no hiding of properties should be done.
-	 *                    If not {@code null}, any properties whose name is in the collection will be hidden by
-	 *                    the caller but the implementation may make its own decision on hiding property values.
-	 *                    For instance, hiding credentials.
-	 * @param delimStart Start delimiter, normally only needed by caller
-	 * @param delimStop End delimiter, normally only needed by caller
+	 *
+	 * @param key                     Key to look up
+	 * @param props1                  First property map in which to look up values
+	 * @param props2                  Second property map in which to look up values
+	 * @param propsToHide             List of properties to hide. If {@code null}, then no hiding of properties should be done.
+	 *                                If not {@code null}, any properties whose name is in the collection will be hidden by
+	 *                                the caller but the implementation may make its own decision on hiding property values.
+	 *                                For instance, hiding credentials.
+	 * @param delimStart              Start delimiter, normally only needed by caller
+	 * @param delimStop               End delimiter, normally only needed by caller
 	 * @param resolveWithPropertyName Flag if values should be prefixed with name of resolved property, normally only
 	 *                                needed by caller.
-	 * @return Resolved property value, or {@code null} if it cannot be resolved by this implementation.
+	 * @return Resolved property value, or {@link Optional#empty()} if it cannot be resolved by this implementation.
 	 */
-	String resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
+	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
 }

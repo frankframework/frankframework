@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import nl.nn.adapterframework.util.AdditionalStringResolver;
@@ -41,9 +42,9 @@ public class CredentialResolver implements AdditionalStringResolver {
 	private static Set<String> authAliasesAllowedToExpand=null;
 
 	@Override
-	public String resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		if (!key.startsWith(CREDENTIAL_PREFIX)) {
-			return null;
+			return Optional.empty();
 		}
 		boolean mustHideCredential = propsToHide != null;
 
@@ -63,11 +64,7 @@ public class CredentialResolver implements AdditionalStringResolver {
 		} else {
 			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
 		}
-		if (mustHideCredential) {
-			return StringUtil.hide(replacement);
-		}
-
-		return replacement;
+		return Optional.of(mustHideCredential ? StringUtil.hide(replacement) : replacement);
 	}
 
 	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {

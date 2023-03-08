@@ -24,11 +24,11 @@ import nl.nn.adapterframework.stream.Message;
 
 public class MessageToStringResolver implements AdditionalStringResolver {
 	@Override
-	public String resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		// TODO: With Java9 or higher this code can be cleaner, using Optional<>.or()
 		return getMessageFromMap(key, props1)
-				.orElseGet(()-> getMessageFromMap(key, props2)
-						.orElse(null));
+				.map(Optional::of)
+				.orElseGet(()-> getMessageFromMap(key, props2));
 	}
 
 	private Optional<String> getMessageFromMap(String key, Map<?, ?> map) {

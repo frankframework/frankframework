@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -146,7 +146,7 @@ public class StringResolver {
 			String expression = extractNextExpression(val, delimStart, delimStop, ctx);
 			String key = extractNextKey(val, props1, props2, delimStart, delimStop, resolveWithPropertyName, ctx);
 
-			String replacement = resolveReplacement(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName);
+			Optional<String> replacement = resolveReplacement(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName);
 			appendReplacement(sb, key, replacement, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName, ctx.providedDefaultValue, ctx.propertyComposer, expression);
 		}
 	}
@@ -204,25 +204,28 @@ public class StringResolver {
 		ctx.pointer = val.indexOf(delimStart, ctx.head); // index delimiter
 	}
 
-	private static void appendReplacement(StringBuilder sb, String key, String replacement, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName, String providedDefaultValue, String propertyComposer, String expression) {
+	private static void appendReplacement(StringBuilder sb, String key, Optional<String> replacement, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName, String providedDefaultValue, String propertyComposer, String expression) {
 		if(resolveWithPropertyName) {
 			sb.append(propertyComposer).append(VALUE_SEPARATOR);
 		}
 
-		if (replacement != null) {
+		if (replacement.isPresent()) {
+			String replacementValue;
 			if (propsToHide != null && propsToHide.contains(key)) {
-				replacement = StringUtil.hide(replacement);
+				replacementValue = StringUtil.hide(replacement.get());
+			} else {
+				replacementValue = replacement.get();
 			}
 			// Do variable substitution on the replacement string
 			// such that we can solve "Hello ${x1}" as "Hello p2"
 			// the where the properties are
 			// x1=${x2}
 			// x2=p2
-			if (!replacement.equals(expression) && !replacement.contains(delimStart + key + delimStop)) {
-				String recursiveReplacement = substVars(replacement, props1, props2, resolveWithPropertyName);
+			if (!replacementValue.equals(expression) && !replacementValue.contains(delimStart + key + delimStop)) {
+				String recursiveReplacement = substVars(replacementValue, props1, props2, resolveWithPropertyName);
 				sb.append(recursiveReplacement);
 			} else {
-				sb.append(replacement);
+				sb.append(replacementValue);
 			}
 		} else {
 			if(providedDefaultValue != null) { // use default value of property if missing actual
@@ -234,35 +237,40 @@ public class StringResolver {
 		}
 	}
 
-	private static String resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
-		// first try in System properties
-		String replacement = Environment.getSystemProperty(key, null);
+	private static Optional<String> resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+		// TODO: In Java9 and later this can be done a bit nicer using Optional.or()
+		return Environment.getSystemProperty(key, null)
+				.map(Optional::of)
+				.orElseGet(() -> findInAdditionalResolvers(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName))
+				.map(Optional::of)
+				.orElseGet((()-> getReplacementFromProps(key, props1)))
+				.map(Optional::of)
+				.orElseGet((()-> getReplacementFromProps(key, props2)))
+				;
+	}
 
-		Iterator<AdditionalStringResolver> resolvers = getAdditionalStringResolvers().iterator();
-		while (replacement == null && resolvers.hasNext()) {
-			AdditionalStringResolver resolver = resolvers.next();
-			replacement = resolver.resolve(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName);
-		}
-		// then try props parameter
-		if (replacement == null && props1 != null) {
-			replacement = getReplacementFromProps(props1, key);
-		}
-		if (replacement == null && props2 != null) {
-			replacement = getReplacementFromProps(props2, key);
-		}
+	private static Optional<String> findInAdditionalResolvers(String key, Map<?, ?> props1, Map<?, ?> props2, List<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+		Optional<String> replacement;
+		replacement = getAdditionalStringResolvers().stream()
+				.map(resolver -> resolver.resolve(key, props1, props2, propsToHide, delimStart, delimStop, resolveWithPropertyName))
+				.filter(Optional::isPresent)
+				.findFirst()
+				.orElse(Optional.empty());
 		return replacement;
 	}
 
-	private static String getReplacementFromProps(Map<?, ?> props, String key) {
-		if (props instanceof Properties) {
-			return ((Properties) props).getProperty(key);
+	private static Optional<String> getReplacementFromProps(String key, Map<?, ?> props) {
+		if (props == null) {
+			return Optional.empty();
+		} else if (props instanceof Properties) {
+			return Optional.ofNullable(((Properties) props).getProperty(key));
 		} else {
 			Object replacementSource = props.get(key);
 			if (replacementSource != null) {
-				return replacementSource.toString();
+				return Optional.of(replacementSource.toString());
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -432,7 +440,7 @@ public class StringResolver {
 	 */
 	public static boolean needsResolution(String string) {
 		int j = string.indexOf(DELIM_START);
-		return j>=0 && string.contains(DELIM_START) && string.indexOf(DELIM_STOP, j) >= 0;
+		return j>=0 && string.indexOf(DELIM_STOP, j) > j;
 	}
 
 	private static int indexOfDelimStop(String val, int startPos, String delimStart, String delimStop) {

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -94,20 +95,20 @@ public class Environment {
 	 *
 	 * @since 1.1
 	 */
-	public static String getSystemProperty(String property, String def) {
+	public static Optional<String> getSystemProperty(String property, String def) {
 		try {
 			String result = System.getenv().get(property);
 			if (result!=null) {
-				return result;
+				return Optional.of(result);
 			}
 		} catch (Throwable e) {
 			getLogger().warn("Was not allowed to read environment variable [" + property + "]: "+ e.getMessage());
 		}
 		try {
-			return System.getProperty(property, def);
+			return Optional.ofNullable(System.getProperty(property, def));
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			getLogger().warn("Was not allowed to read system property [" + property + "]: " + e.getMessage());
-			return def;
+			return Optional.ofNullable(def);
 		}
 	}
 }

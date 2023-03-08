@@ -17,6 +17,8 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 
 public class StringResolverTest {
@@ -350,5 +352,18 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("lalala isrever blah", result);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"'blah${key}blah', true",
+			"'blah}booh${blah', false",
+			"'blah${blah', false",
+			"'blah$}blah', false"
+	}
+	)
+	void testNeedsResolution(String input, boolean expected) {
+		// Act / Assert
+		assertEquals(expected, StringResolver.needsResolution(input));
 	}
 }
