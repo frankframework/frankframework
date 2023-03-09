@@ -27,7 +27,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class ClassLoaderManagerTest extends Mockito {
 
@@ -139,7 +139,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
 		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
-		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
+		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
 		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);

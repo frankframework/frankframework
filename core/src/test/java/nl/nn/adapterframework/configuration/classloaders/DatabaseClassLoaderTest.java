@@ -46,7 +46,7 @@ import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
 	private static final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
@@ -91,7 +91,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(!throwException).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
 		URL file = this.getClass().getResource(JAR_FILE);
-		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
+		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
 		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
@@ -114,9 +114,9 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 				return null;
 			}
 		};
-		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a 
+		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a
 		//new ApplicationContext if non exists. This functionality should be removed sometime in the future.
-		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The 
+		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The
 		//creation of the ApplicationContext during the test phase causes IllegalStateExceptions
 		//In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
 		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));

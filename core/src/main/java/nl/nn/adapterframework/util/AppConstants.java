@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
@@ -46,7 +47,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
  *
  */
 public final class AppConstants extends Properties implements Serializable {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
@@ -55,9 +56,9 @@ public final class AppConstants extends Properties implements Serializable {
 	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
 
-	private static Properties additionalProperties = new Properties();
+	private static final Properties additionalProperties = new Properties();
 
-	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
@@ -69,7 +70,7 @@ public final class AppConstants extends Properties implements Serializable {
 
 		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
-			log.info("created new AppConstants instance for classloader ["+ClassUtils.nameOf(classLoader)+"]");
+			log.info("created new AppConstants instance for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
 		}
 		else {
 			log.info("created new AppConstants instance for root classloader");
@@ -96,15 +97,14 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(final ClassLoader cl) {
-		ClassLoader classLoader = cl;
 		if(cl == null) {
 			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
 		}
 
-		AppConstants instance = appConstantsMap.get(classLoader);
+		AppConstants instance = appConstantsMap.get(cl);
 		if(instance == null) {
-			instance = new AppConstants(classLoader);
-			appConstantsMap.put(classLoader, instance);
+			instance = new AppConstants(cl);
+			appConstantsMap.put(cl, instance);
 		}
 		return instance;
 	}
@@ -114,13 +114,12 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	public static synchronized void removeInstance(final ClassLoader cl) {
-		ClassLoader classLoader = cl;
-		if(classLoader == null) {
+		if(cl == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
 		}
-		AppConstants instance = appConstantsMap.get(classLoader);
+		AppConstants instance = appConstantsMap.get(cl);
 		if (instance != null) {
-			appConstantsMap.remove(classLoader);
+			appConstantsMap.remove(cl);
 		}
 	}
 
@@ -138,12 +137,12 @@ public final class AppConstants extends Properties implements Serializable {
 				return result;
 			}
 		} catch (Throwable e) {
-			log.warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+			log.warn("Was not allowed to read environment variable [{}]: {}", ()->key, e::getMessage);
 		}
 		try {
 			return System.getProperty(key);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+			log.warn("Was not allowed to read system property [{}]: {}", ()->key, e::getMessage);
 			return null;
 		}
 	}
@@ -168,8 +167,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	public String getResolvedProperty(String key) {
-		String value = null;
-		value=getSystemProperty(key); // first try custom properties
+		String value = getSystemProperty(key); // first try custom properties
 		if (value==null) {
 			value = super.getProperty(key); // then try DeploymentSpecifics and appConstants
 		}
@@ -180,19 +178,16 @@ public final class AppConstants extends Properties implements Serializable {
 					return value;
 				}
 				String result=StringResolver.substVars(value, this);
-				if (log.isTraceEnabled()) {
-					if (!value.equals(result)){
-						log.trace("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
-					}
-
+				if (log.isTraceEnabled() && !value.equals(result)) {
+					log.trace("resolved key [{}], value [{}] to [{}]", key, value, result);
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
-				log.error("Bad option value [" + value + "].", e);
+				log.error("bad option value [{}]", value, e);
 				return value;
 			}
 		} else {
-			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+			if (log.isTraceEnabled()) log.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
 			return null;
 		}
 	}
@@ -236,7 +231,7 @@ public final class AppConstants extends Properties implements Serializable {
 			constants.putAll(System.getProperties());
 		if(useEnvironmentVariables) {
 			try {
-				constants.putAll(Misc.getEnvironmentVariables());
+				constants.putAll(Environment.getEnvironmentVariables());
 			} catch (IOException e) {
 				log.warn("unable to retrieve environment variables", e);
 			}
@@ -264,7 +259,7 @@ public final class AppConstants extends Properties implements Serializable {
 		load(classLoader, filename, null, loadAdditionalPropertiesFiles);
 	}
 
-	private synchronized void load(ClassLoader classLoader, String filename, String suffix, boolean loadAdditionalPropertiesFiles) {
+	private synchronized void load(final ClassLoader classLoader, final String filename, final String suffix, final boolean loadAdditionalPropertiesFiles) {
 		if(StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
@@ -273,11 +268,10 @@ public final class AppConstants extends Properties implements Serializable {
 		while (tokenizer.hasMoreTokens()) {
 			String theFilename = tokenizer.nextToken().trim();
 			try {
-				ClassLoader cl = classLoader;
 				if(classLoader == null) {
 					throw new IllegalStateException("no classloader found!");
 				}
-				List<URL> resources = Collections.list(cl.getResources(theFilename));
+				List<URL> resources = Collections.list(classLoader.getResources(theFilename));
 				if(resources.isEmpty()) {
 					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
 						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
@@ -286,10 +280,10 @@ public final class AppConstants extends Properties implements Serializable {
 					}
 					//An additional file to load properties from cannot be found
 					if(log.isDebugEnabled()) {
-						if(cl instanceof IConfigurationClassLoader) {
-							log.debug("cannot find resource ["+theFilename+"] in classloader ["+cl+"] to load additional properties from, ignoring");
+						if(classLoader instanceof IConfigurationClassLoader) {
+							log.debug("cannot find resource ["+theFilename+"] in classloader ["+ classLoader +"] to load additional properties from, ignoring");
 						} else {
-							log.debug("cannot find resource ["+theFilename+"] in classloader ["+cl.getClass().getSimpleName()+"] to load additional properties from, ignoring");
+							log.debug("cannot find resource ["+theFilename+"] in classloader ["+ classLoader.getClass().getSimpleName()+"] to load additional properties from, ignoring");
 						}
 					}
 				}
@@ -298,9 +292,9 @@ public final class AppConstants extends Properties implements Serializable {
 				Collections.reverse(resources);
 
 				for (URL url : resources) {
-					try(InputStream is = url.openStream()) {
-						load(is);
-						log.info("Application constants loaded from url [" + url.toString() + "]");
+					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+						load(reader);
+						log.info("Application constants loaded from url [{}]", url::toString);
 					}
 				}
 
@@ -327,7 +321,7 @@ public final class AppConstants extends Properties implements Serializable {
 					load(classLoader, suffixedFilename, false);
 				}
 			} catch (IOException e) {
-				log.error("error reading [" + APP_CONSTANTS_PROPERTIES_FILE + "]", e);
+				log.error("error reading [{}]", APP_CONSTANTS_PROPERTIES_FILE, e);
 			}
 		}
 	}
@@ -335,7 +329,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Add property only in the local AppConstants!
 	 * Try to avoid using this method and use {@link #setProperty(String, String)} if you want to set the property globally!
-	 *
+	 * <p>
 	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream)
 	 * to the {@link Hashtable}.
 	 * @deprecated Use {@link #setProperty(String, String)} instead!

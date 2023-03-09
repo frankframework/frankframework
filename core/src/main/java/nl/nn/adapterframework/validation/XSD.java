@@ -46,7 +46,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.validation.xsd.ResourceXsd;
  * @author  Jaco de Groot
  */
 public abstract class XSD implements IXSD, Comparable<XSD> {
-	private static final Logger LOG = LogUtil.getLogger(IXSD.class);
+	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
 	private IScopeProvider scopeProvider;
 	private @Setter String resourceInternalReference;
@@ -71,8 +71,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private @Getter @Setter String parentLocation;
 	private @Getter @Setter boolean rootXsd = true;
 	private @Getter @Setter String targetNamespace;
-	private @Getter List<String> rootTags = new ArrayList<String>();
-	private @Getter Set<String> importedNamespaces = new HashSet<String>();
+	private @Getter List<String> rootTags = new ArrayList<>();
+	private @Getter Set<String> importedNamespaces = new HashSet<>();
 	private String xsdTargetNamespace;
 	private String xsdDefaultNamespace;
 
@@ -229,7 +229,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	@Override
-	public int compareTo(XSD x) {
+	public int compareTo(XSD x) { // CompareTo is required for WSDL generation
 		if (x == null) return 1;
 		if (namespace != null && x.namespace != null) {
 			int c = namespace.compareTo(x.namespace);
@@ -250,7 +250,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			if (diff.similar()) {
 				return 0;
 			}
-			return Misc.readerToString(getReader(), "\n", false).compareTo(Misc.readerToString(x.getReader(), "\n", false));
+			// TODO: check necessity of this compare. If Diff says they are different, is it useful to check again for the plain contents?
+			return StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(x.getReader(), "\n", false));
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
 			return 1;

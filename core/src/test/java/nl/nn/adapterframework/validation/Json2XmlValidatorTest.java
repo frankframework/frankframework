@@ -1,7 +1,10 @@
 package nl.nn.adapterframework.validation;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -184,34 +187,69 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	@Ignore // no such thing as unknown namespace, align() determines it from the schema
 	public void step5ValidationUnknownNamespaces() throws Exception {
 	}
-	
+
 	@Test
-	public void issue3973_missingLocalWarning() throws Exception {
-		
-		TestConfiguration c = new TestConfiguration();
-		
-		Json2XmlValidator json2xml = c.createBean(Json2XmlValidator.class);
+	public void issue3973MissingLocalWarning() throws Exception {
+		TestConfiguration config = new TestConfiguration();
+
+		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
 		json2xml.setDeepSearch(true);
-		json2xml.setNoNamespaceSchemaLocation(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/main.xsd");
+		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/main.xsd");
 		json2xml.setRoot("GetDocument_Error");
 		json2xml.setOutputFormat(DocumentFormat.JSON);
-		
+
 		json2xml.addParameter(new Parameter("type", "aaa"));
 		json2xml.addParameter(new Parameter("title", "bbb"));
 		json2xml.addParameter(new Parameter("status", "ccc"));
 		json2xml.addParameter(new Parameter("detail", "ddd"));
 		json2xml.addParameter(new Parameter("instance", "eee"));
-		
+
 		json2xml.setThrowException(true);
-		
+
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		
+
 		PipeRunResult prr = json2xml.doPipe(new Message("{}"),pipeLineSession);
 		String expected = TestFileUtils.getTestFile(BASE_DIR_VALIDATION+"/IncludeWithoutNamespace/out.json");
 		assertEquals(expected, prr.getResult().asString());
+		assertEquals(0, config.getConfigurationWarnings().size(), "no config warning thrown by XercesValidationErrorHandler");
 	}
 
+	@Test
+	public void nonExistingResourceImportFromSchemaWithoutNamespace() throws Exception {
+		ClassLoader appClassLoader = Thread.currentThread().getContextClassLoader();
+		TestConfiguration config = new TestConfiguration();
+
+		Json2XmlValidator json2xml = config.createBean(Json2XmlValidator.class);
+		json2xml.setSchema(BASE_DIR_VALIDATION+"/IncludeNonExistingResource/main.xsd");
+		json2xml.setRoot("GetDocument_Request");
+		json2xml.setResponseRoot("GetDocument_Error");
+		json2xml.setOutputFormat(DocumentFormat.JSON);
+		json2xml.setDeepSearch(true);
+		json2xml.setProduceNamespacelessXml(true);
+
+		json2xml.addParameter(new Parameter("documentId", "aaa"));
+		json2xml.addParameter(new Parameter("externalDocumentId", "bbb"));
+		json2xml.addParameter(new Parameter("requestUserId", "ccc"));
+		json2xml.addParameter(new Parameter("authorizedTo", "ddd"));
+		json2xml.addParameter(new Parameter("idType", "documentId"));
+
+		json2xml.setThrowException(true);
+
+		json2xml.registerForward(new PipeForward("success", null));
+
+		try {
+			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
+
+			// Should pass because the ScopeProvider is set during class initialization
+			ConfigurationException thrown = assertThrows(ConfigurationException.class, json2xml::configure);
+			assertThat(thrown.getMessage(), startsWith("Cannot find ["));
+
+			assertEquals(0, config.getConfigurationWarnings().size(), "no config warning thrown by XercesValidationErrorHandler");
+		} finally {
+			Thread.currentThread().setContextClassLoader(appClassLoader);
+		}
+	}
 }

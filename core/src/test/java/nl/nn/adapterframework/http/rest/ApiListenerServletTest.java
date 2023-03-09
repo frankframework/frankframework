@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,9 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,12 +42,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,6 +86,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -103,8 +111,6 @@ public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
 	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
-	private static final String RESPONSE_CONTENT_KEY = "response-content";
-	private static final String REQUEST_CONTENT_KEY = "request-content";
 
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
@@ -117,7 +123,9 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private ApiListenerServlet servlet;
-	private Map<String, Object> session = null;
+	private PipeLineSession session = null;
+	private Message requestMessage = null;
+	private boolean handlerInvoked;
 
 	@BeforeEach
 	public void setUp() throws ServletException {
@@ -127,6 +135,7 @@ public class ApiListenerServletTest extends Mockito {
 		servlet.init();
 
 		session = null;
+		handlerInvoked = false;
 	}
 
 	@AfterEach
@@ -215,7 +224,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private Response service(HttpServletRequest request) throws ServletException, IOException {
-		MockHttpServletResponse response = new MockHttpServletResponse();
+		MockHttpServletResponse response = new StricterMockHttpServletResponse();
 
 		servlet.service(request, response);
 
@@ -224,17 +233,27 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void noUri() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
 		new ApiListenerBuilder("test", Methods.GET).build();
 
+		// Act
 		Response result = service(createRequest(null, Methods.GET));
+
+		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(400, result.getStatus());
 	}
 
 	@Test
 	public void uriNotFound() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
 		new ApiListenerBuilder("test", Methods.GET).build();
 
+		// Act
 		Response result = service(createRequest("/not-test", Methods.GET));
+
+		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(404, result.getStatus());
 	}
 
@@ -364,13 +383,113 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutput() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+			.withResponseContent("")
+			.build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+		);
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyStream() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+			.withResponseContent(new ByteArrayInputStream(new byte[0]))
+			.build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+		);
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONReturnsNoOutputEmptyReader() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesJSONReturnsNoOutput/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+			.withResponseContent(new StringReader(""))
+			.build();
+		HttpServletRequest request = createRequest(uri, Methods.POST, "{}");
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+		);
+	}
+
+	@Test
+	public void apiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
+		String uri="/ApiListenerThatProducesXMLReturnsNoOutputNonStringResultMessage/";
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.XML).build();
+		Map<String, String> headers = new HashMap<>();
+
+		HttpServletRequest request = createRequest(uri, Methods.POST, null, headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(200, result.getStatus()),
+			() -> assertEquals("", result.getContentAsString(), "Content found but was not expected"),
+			() -> assertEquals("OPTIONS, POST", result.getHeader("Allow")),
+			() -> assertNull(result.getContentType(), "Content-Type header not supposed to be set"),
+			() -> assertEquals(0, result.response.getContentLength(), "Content-Length header not supposed to be set"),
+			() -> assertNull(result.getErrorMessage())
+		);
+	}
+
+	@Test
 	public void clientAcceptHeaderDoesNotLikeJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
 		String uri="/ApiListenerAllow/";
-		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
+			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/xml");
-		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
+		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{}", headers);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(406, result.getStatus());
 	}
 
@@ -398,6 +517,7 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(415, result.getStatus());
 	}
 
@@ -431,8 +551,8 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(request);
 
 		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(415, result.getStatus());
-
 	}
 
 	@Test
@@ -454,7 +574,6 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertTrue(result.getContentType().contains("application/json"), "Content-Type header does not contain [application/json]");
 		assertNull(result.getErrorMessage());
-
 	}
 
 	@Test
@@ -641,6 +760,7 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(request);
 
 		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(400, result.getStatus());
 		assertEquals("Could not read mime multipart response", result.getErrorMessage());
 	}
@@ -715,13 +835,13 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void customExitCode() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/exitcode";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, Methods.GET)
+			.withExitCode(234)
+			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		session = new HashMap<String, Object>();
-		session.put("exitCode", "234");
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
 		assertEquals(234, result.getStatus());
@@ -731,18 +851,21 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void apiListenerWithRepeatableMessageShouldReturnEtag() throws Exception {
+		// Arrange
 		String uri="/etag1";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
+		new ApiListenerBuilder(uri, Methods.GET)
+			.withResponseContent(repeatableMessage)
+			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		session = new HashMap<String, Object>();
 
-		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
-		session.put(RESPONSE_CONTENT_KEY, repeatableMessage);
+		// Act
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
+		// Assert
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -754,20 +877,22 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void apiListenerWithNonRepeatableMessageShouldNotReturnEtag() throws Exception {
+		// Arrange
 		String uri="/etag2";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
+		Message nonRepeatableMessage = new Message(new FilterInputStream(repeatableMessage.asInputStream()) {}, new MessageContext().withModificationTime("2023-01-13 14:02:00"));
+		new ApiListenerBuilder(uri, Methods.GET)
+			.withResponseContent(nonRepeatableMessage)
+			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
-		session = new HashMap<String, Object>();
 
-		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
-		Message nonRepeatableMessage = new Message(new FilterInputStream(repeatableMessage.asInputStream()) {}, new MessageContext().withModificationTime("2023-01-13 14:02:00"));
-		session.put(RESPONSE_CONTENT_KEY, nonRepeatableMessage);
-
+		// Act
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
+		// Assert
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -779,17 +904,23 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagGetEtagMatches() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
 		String uri = "/etag31";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, Methods.GET)
+			.withExitCode(201)
+			.withResponseContent("{\"tralalalallala\":true}")
+			.build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("if-none-match", "my-etag-value");
-		session = new HashMap<String, Object>();
-		session.put(RESPONSE_CONTENT_KEY, "{\"tralalalallala\":true}");
+
+		// Act
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
+		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, etag should have matched");
 		assertEquals(304, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -797,17 +928,21 @@ public class ApiListenerServletTest extends Mockito {
 
 	@Test
 	public void eTagGetEtagDoesNotMatch() throws ServletException, IOException, ListenerException, ConfigurationException {
+		// Arrange
 		String uri = "/etag32";
-		new ApiListenerBuilder(uri, Methods.GET).build();
+		new ApiListenerBuilder(uri, Methods.GET)
+			.withResponseContent("{\"tralalalallala\":true}")
+			.build();
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("if-none-match", "my-etag-value7");
-		session = new HashMap<String, Object>();
-		session.put(RESPONSE_CONTENT_KEY, "{\"tralalalallala\":true}");
+
+		// Act
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
 
+		// Assert
 		assertEquals(200, result.getStatus());
 		assertTrue(result.containsHeader("Allow"));
 		assertEquals("{\"tralalalallala\":true}", result.getContentAsString());
@@ -842,6 +977,7 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("if-match", "my-etag-value2");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, etag-matching should have aborted before handling request");
 		assertEquals(412, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -855,6 +991,7 @@ public class ApiListenerServletTest extends Mockito {
 		Map<String, String> headers = new HashMap<String, String>();
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -871,6 +1008,7 @@ public class ApiListenerServletTest extends Mockito {
 		request.setCookies(cookies);
 		Response result = service(request);
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -911,6 +1049,7 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("Authorization", "blalablaaaa");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -953,6 +1092,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(request);
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertFalse(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -1030,13 +1170,13 @@ public class ApiListenerServletTest extends Mockito {
 
 	@ParameterizedTest
 	@EnumSource(Methods.class)
-	public void testGetRequestWithAccept(Methods method) throws Exception {
+	public void testRequestWithAccept(Methods method) throws Exception {
 		//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
 		assumeFalse(method.equals(Methods.OPTIONS));
 
 		// Arrange
 		String uri = "/messageWithJson2XmlValidator";
-		new ApiListenerBuilder(uri, method).build();
+		new ApiListenerBuilder(uri, method, null, MediaTypes.XML).build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("accept", "application/xml");
@@ -1047,7 +1187,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		Message input = (Message) session.get(REQUEST_CONTENT_KEY);
+		Message input = requestMessage;
 		assertEquals("application/xml", input.getContext().get("Header.accept"));
 		assertNull(result.getErrorMessage());
 	}
@@ -1090,7 +1230,8 @@ public class ApiListenerServletTest extends Mockito {
 	public void testEndpointDoesNotAcceptHeader(String acceptHeaderValue) throws Exception {
 		// Arrange
 		String uri = "/messageThatDoesNotAcceptAcceptHeader";
-		new ApiListenerBuilder(uri, Methods.GET, null, MediaTypes.JSON).build();
+		new ApiListenerBuilder(uri, Methods.GET, null, MediaTypes.JSON)
+			.build();
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("accept", acceptHeaderValue);
@@ -1100,8 +1241,27 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(request);
 
 		// Assert
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(406, result.getStatus());
 		assertEquals("endpoint cannot provide the supplied MimeType", result.getErrorMessage());
+	}
+
+	@Test
+	public void testRequestExceptionHandling() throws Exception {
+		// Arrange
+		String uri = "/testThrowsError";
+		new ApiListenerBuilder(uri, Methods.GET, null, null)
+			.withShouldThrow(true)
+			.build();
+
+		HttpServletRequest request = createRequest(uri, Methods.GET, null, null);
+
+		// Act
+		Response result = service(request);
+
+		// Assert
+		assertEquals(500, result.getStatus());
+		assertNotNull(result.getErrorMessage());
 	}
 
 	@Test
@@ -1145,6 +1305,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertEquals("illegal issuer [JWTPipeTest], must be [test]", result.getErrorMessage());
 	}
@@ -1161,6 +1322,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(token));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertEquals("Payload of JWS object is not a valid JSON object",result.getErrorMessage());
 
@@ -1177,6 +1339,8 @@ public class ApiListenerServletTest extends Mockito {
 			.build();
 
 		Response result = service(prepareJWTRequest(token));
+
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
 		assertEquals("Signed JWT rejected: Invalid signature",result.getErrorMessage());
 
@@ -1227,6 +1391,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(403, result.getStatus());
 		assertEquals("JWT missing required claims: [kid]", result.getErrorMessage());
 	}
@@ -1242,6 +1407,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(403, result.getStatus());
 		assertEquals("JWT aud claim has value [Framework], must be [test]", result.getErrorMessage());
 	}
@@ -1316,9 +1482,158 @@ public class ApiListenerServletTest extends Mockito {
 		return createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 	}
 
+	private static class StricterMockHttpServletResponse extends MockHttpServletResponse {
+		private static Logger log = LogUtil.getLogger(StricterMockHttpServletResponse.class);
+		boolean responseAccessed = false;
+		boolean responseCommitted = false;
+
+		private void assertResponseNotAccessed() {
+			if (responseAccessed) {
+				throw new IllegalStateException("Cannot perform this operation after response writer has been accessed");
+			}
+			assertResponseNotCommitted();
+		}
+
+		private void assertResponseNotCommitted() {
+			if (responseCommitted) {
+				throw new IllegalStateException("Operation cannot be performed after response has been committed");
+			}
+		}
+
+		@Override
+		@Nonnull
+		public PrintWriter getWriter() throws UnsupportedEncodingException {
+			responseAccessed = true;
+			return super.getWriter();
+		}
+
+		@Override
+		public ServletOutputStream getOutputStream() {
+			responseAccessed = true;
+			return super.getOutputStream();
+		}
+
+		@Override
+		public void flushBuffer() {
+			log.warn("Flushing buffer. Committing response.");
+			responseCommitted = true;
+			super.flushBuffer();
+		}
+
+		@Override
+		public void setCommitted(boolean committed) {
+			log.warn("Set Committed = {}", committed);
+			responseCommitted = committed;
+			super.setCommitted(committed);
+		}
+
+		@Override
+		public void sendError(int status, String errorMessage) throws IOException {
+			log.warn("Send Error. Committing response.");
+			assertResponseNotCommitted();
+			responseCommitted = true;
+			super.sendError(status, errorMessage);
+		}
+
+		@Override
+		public void sendError(int status) throws IOException {
+			log.warn("Send Error. Committing response.");
+			assertResponseNotCommitted();
+			responseCommitted = true;
+			super.sendError(status);
+		}
+
+		@Override
+		public void reset() {
+			assertResponseNotCommitted();
+			responseAccessed = false;
+			super.reset();
+		}
+
+		@Override
+		public void resetBuffer() {
+			assertResponseNotCommitted();
+			responseAccessed = false;
+			super.resetBuffer();
+		}
+
+		@Override
+		public void setLocale(Locale locale) {
+			assertResponseNotAccessed();
+			super.setLocale(locale);
+		}
+
+		@Override
+		public void setContentType(String contentType) {
+			assertResponseNotAccessed();
+			super.setContentType(contentType);
+		}
+
+		@Override
+		public void setContentLength(int contentLength) {
+			assertResponseNotAccessed();
+			super.setContentLength(contentLength);
+		}
+
+		@Override
+		public void addDateHeader(String name, long value) {
+			assertResponseNotAccessed();
+			super.addDateHeader(name, value);
+		}
+
+		@Override
+		public void setDateHeader(String name, long value) {
+			assertResponseNotAccessed();
+			super.setDateHeader(name, value);
+		}
+
+		@Override
+		public void addIntHeader(String name, int value) {
+			assertResponseNotAccessed();
+			super.addIntHeader(name, value);
+		}
+
+		@Override
+		public void setIntHeader(String name, int value) {
+			assertResponseNotAccessed();
+			super.setIntHeader(name, value);
+		}
+
+		@Override
+		public void addHeader(String name, String value) {
+			assertResponseNotAccessed();
+			super.addHeader(name, value);
+			if ("Content-Type".equalsIgnoreCase(name)) {
+				setContentType(value);
+			}
+		}
+
+		@Override
+		public void setHeader(String name, String value) {
+			assertResponseNotAccessed();
+			super.setHeader(name, value);
+			if ("Content-Type".equalsIgnoreCase(name)) {
+				setContentType(value);
+			}
+		}
+
+		@Override
+		public void addCookie(Cookie cookie) {
+			assertResponseNotAccessed();
+			super.addCookie(cookie);
+		}
+
+		@Override
+		public void setStatus(int status) {
+			assertResponseNotAccessed();
+			super.setStatus(status);
+		}
+	}
+
 	private class ApiListenerBuilder {
 
 		private final ApiListener listener;
+		private MessageHandler handler;
 
 		public ApiListenerBuilder(String uri, Methods method) throws ListenerException, ConfigurationException {
 			this(uri, method, null, null);
@@ -1337,7 +1652,7 @@ public class ApiListenerServletTest extends Mockito {
 			listener.setUriPattern(uri);
 			listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
 
-			IMessageHandler<Message> handler = new MessageHandler();
+			handler = new MessageHandler();
 			listener.setHandler(handler);
 
 			if(consumes != null)
@@ -1399,18 +1714,36 @@ public class ApiListenerServletTest extends Mockito {
 			return this;
 		}
 
+		public ApiListenerBuilder withExitCode(int exitCode) {
+			handler.setExitCode(exitCode);
+			return this;
+		}
+
+		public ApiListenerBuilder withShouldThrow(boolean shouldThrow) {
+			handler.setShouldThrow(shouldThrow);
+			return this;
+		}
+
+		public ApiListenerBuilder withResponseContent(Object responseContent) {
+			handler.setResponseContent(responseContent);
+			return this;
+		}
+
 		public ApiListener build() throws ConfigurationException, ListenerException {
 			listener.configure();
 			listener.open();
 
 			listeners.add(listener);
-			log.info("created ApiListener "+listener.toString());
+			log.info("created ApiListener "+ listener);
 			return listener;
 		}
 	}
 
 
 	private class MessageHandler implements IMessageHandler<Message> {
+		private @Setter int exitCode = 0;
+		private @Setter boolean shouldThrow = false;
+		private @Setter Object responseContent = null;
 
 		@Override
 		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
@@ -1430,19 +1763,26 @@ public class ApiListenerServletTest extends Mockito {
 
 		@Override
 		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
+			handlerInvoked = true;
 			if(session != null) {
 				context.putAll(session);
 			}
 			session = context;
-			session.put(REQUEST_CONTENT_KEY, message);
-			if(session.containsKey(RESPONSE_CONTENT_KEY)) {
-				return Message.asMessage(session.get(RESPONSE_CONTENT_KEY));
+			requestMessage = message;
+			if (shouldThrow) {
+				throw new ListenerException("Hard Throw");
+			}
+			if (exitCode > 0) {
+				context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
+			}
+			if (responseContent != null) {
+				return Message.asMessage(responseContent);
 			}
 			return message;
 		}
 
 		@Override
-		public Message formatException(String extrainfo, String correlationId, Message message, Throwable t) {
+		public Message formatException(String extraInfo, String correlationId, Message message, Throwable t) {
 			t.printStackTrace();
 
 			return new Message(t.getMessage());
@@ -1450,7 +1790,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private static class Response {
-		private MockHttpServletResponse response;
+		private final MockHttpServletResponse response;
 
 		Response(MockHttpServletResponse response) {
 			this.response = response;
@@ -1490,7 +1830,9 @@ public class ApiListenerServletTest extends Mockito {
 			try {
 				content = getContentAsString();
 			}
-			catch (Exception e) {}
+			catch (Exception e) {
+				// Ignore
+			}
 
 			return "status["+getStatus()+"] contentType["+getContentType()+"] inError["+(getErrorMessage()!=null)+"] content["+content+"]";
 		}

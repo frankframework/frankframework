@@ -16,7 +16,7 @@
 package nl.nn.ibistesttool.transform;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.testtool.transform.MessageTransformer;
 
 import java.util.Set;
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Hide the same data as is hidden in the Ibis logfiles based on the
  * log.hideRegex property in log4j4ibis.properties.
- * 
+ *
  * @author Jaco de Groot
  */
 public class HideRegexMessageTransformer implements MessageTransformer {
@@ -37,10 +37,10 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 	@Override
 	public String transform(String message) {
 		if (message != null) {
-			message = Misc.hideAll(message, hideRegex);
+			message = StringUtil.hideAll(message, hideRegex);
 
 			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = Misc.hideAll(message, threadHideRegex);
+			message = StringUtil.hideAll(message, threadHideRegex);
 		}
 		return message;
 	}

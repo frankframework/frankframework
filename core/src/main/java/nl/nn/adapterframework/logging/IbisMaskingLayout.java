@@ -30,7 +30,7 @@ import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * This is a wrapper for Log4j2 layouts.
@@ -80,8 +80,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = Misc.hideAll(message, globalReplace);
-			message = Misc.hideAll(message, threadLocalReplace.get());
+			message = StringUtil.hideAll(message, globalReplace);
+			message = StringUtil.hideAll(message, threadLocalReplace.get());
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {

@@ -8,13 +8,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
-import microsoft.exchange.webservices.data.property.complex.Attachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
-public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage, Attachment, ExchangeFileSystem>{
+public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeFileSystem>{
 
 	//private String DEFAULT_URL = "https://outlook.office365.com/EWS/Exchange.asmx";
 
@@ -34,8 +32,6 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		ExchangeFileSystem fileSystem = new ExchangeFileSystem();
 		if (StringUtils.isNotEmpty(url)) fileSystem.setUrl(url);
 		fileSystem.setMailAddress(mailaddress);
-		fileSystem.setUsername(username);
-		fileSystem.setPassword(password);
 		fileSystem.setBaseFolder(basefolder1);
 		fileSystem.setClientId(client_id);
 		fileSystem.setClientSecret(client_secr);
@@ -54,8 +50,6 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		autowireByName(listener);
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);
 		listener.setMailAddress(mailaddress);
-		listener.setUsername(username);
-		listener.setPassword(password);
 		listener.setBaseFolder(basefolder1);
 		listener.setInputFolder(sourceFolder);
 		if (inProcessFolder!=null) listener.setInProcessFolder(inProcessFolder);
@@ -69,7 +63,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		String sourceFolder = "SourceFolder";
 		String inProcessFolder = "InProcessFolder";
 
-		EmailMessage orgMsg = prepareFolderAndGetFirstMessage(sourceFolder, null);
+		ExchangeMessageReference orgMsg = prepareFolderAndGetFirstMessage(sourceFolder, null);
 		if (!fileSystem.folderExists(inProcessFolder)) {
 			fileSystem.createFolder(inProcessFolder);
 		}
@@ -81,12 +75,12 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<EmailMessage,
 		Map<String,Object> threadContext1 = new HashMap<>();
 		Map<String,Object> threadContext2 = new HashMap<>();
 
-		EmailMessage msg1 = listener1.getRawMessage(threadContext1);
+		ExchangeMessageReference msg1 = listener1.getRawMessage(threadContext1);
 		String msgId1 = listener1.getIdFromRawMessage(msg1, threadContext1);
 		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
 
 
-		EmailMessage msg2 = listener2.getRawMessage(threadContext2);
+		ExchangeMessageReference msg2 = listener2.getRawMessage(threadContext2);
 		String msgId2 = listener2.getIdFromRawMessage(msg2, threadContext2);
 		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
 

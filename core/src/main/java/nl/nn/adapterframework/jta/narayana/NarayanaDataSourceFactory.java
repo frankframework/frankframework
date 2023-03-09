@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,12 +29,16 @@ import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
-	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
+	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSourceFactory.class);
+
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
@@ -43,10 +47,12 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		if (dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			DataSource result = new NarayanaDataSource(dataSource, dataSourceName);
+			NarayanaDataSource result = new NarayanaDataSource(dataSource, dataSourceName);
+			result.setMaxConnections(maxPoolSize);
 			checkModifiers(result);
 			return result;
 		}
+
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource) dataSource;
 	}
@@ -59,11 +65,11 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			int minor = metadata.getDriverMinorVersion();
 
 			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
 		} catch (SQLException e) {
-			log.warn("Could not check for existence of Modifier", e);
+			LOG.warn("Could not check for existence of Modifier", e);
 		}
 	}
 

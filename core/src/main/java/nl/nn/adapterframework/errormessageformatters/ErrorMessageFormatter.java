@@ -24,15 +24,16 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.IErrorMessageFormatter;
-import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
+
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
@@ -73,16 +74,16 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = Misc.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
 		}
-		errorMessage = Misc.concatStrings(prefix, ": ", errorMessage);
+		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
 		// Build a Base xml
 		XmlBuilder errorXml = new XmlBuilder("errorMessage");
 		errorXml.addAttribute("timestamp", new Date().toString());
 		errorXml.addAttribute("originator", originator);
-		errorXml.addAttribute("message", XmlUtils.replaceNonValidXmlCharacters(errorMessage));
+		errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
 		if (location != null) {
 			XmlBuilder locationXml = new XmlBuilder("location");
@@ -94,7 +95,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (details != null && !details.equals("")) {
 			XmlBuilder detailsXml = new XmlBuilder("details");
 			// detailsXml.setCdataValue(details);
-			detailsXml.setValue(XmlUtils.replaceNonValidXmlCharacters(details), true);
+			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
 			errorXml.addSubElement(detailsXml);
 		}
 

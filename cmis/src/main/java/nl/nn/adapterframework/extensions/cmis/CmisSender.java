@@ -83,7 +83,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -434,7 +434,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				response.setHeader("Content-Disposition", contentDisposition);
 				OutputStream outputStream;
 				outputStream = response.getOutputStream();
-				Misc.streamToStream(inputStream, outputStream);
+				StreamUtil.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 
 				return new SenderResult(Message.nullMessage());

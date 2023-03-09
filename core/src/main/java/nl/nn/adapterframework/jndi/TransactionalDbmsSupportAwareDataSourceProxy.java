@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -95,14 +95,10 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(obtainTargetDataSource().toString());
-
 		if(metadata != null && log.isInfoEnabled()) {
-			builder.append("; ");
-			builder.append(getInfo());
+			return getInfo();
 		}
-
-		return builder.toString();
+		return obtainTargetDataSource().toString();
 	}
 
 	public String getInfo() {
@@ -116,6 +112,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			builder.append(" driver ["+metadata.get("driver")+"]");
 			builder.append(" driver version ["+metadata.get("driver-version")+"]");
 		}
+		builder.append(" datasource ["+obtainTargetDataSource().toString()+"]");
 
 		return builder.toString();
 	}

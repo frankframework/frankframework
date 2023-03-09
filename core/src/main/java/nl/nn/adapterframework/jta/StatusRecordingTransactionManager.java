@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 
 import javax.transaction.TransactionManager;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -87,7 +88,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
-			String tmuid = Misc.getHostname()+"-"+Misc.createSimpleUUID();
+			String tmuid = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 			if (tmuid.length()>TMUID_MAX_LENGTH) {
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}

@@ -26,7 +26,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StreamCaptureUtils;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems} that use a 'Connection' to connect to their storage.
@@ -159,7 +159,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 	 * If any IOExceptions on the stream occur, the connection is invalidated.
 	 */
 	protected InputStream pendingRelease(InputStream stream, C connection) {
-		return StreamUtil.watch(stream, () -> releaseConnection(connection) , () -> invalidateConnection(connection));
+		return StreamCaptureUtils.watch(stream, () -> releaseConnection(connection) , () -> invalidateConnection(connection));
 	}
 
 	private void openPool() {

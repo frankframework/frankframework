@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -33,34 +35,36 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author Gerrit van Brakel
  */
-public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
+public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //ClassLoaderXmlEntityResolver 
 	protected Logger log = LogUtil.getLogger(this);
 
-	private List<Schema> schemas;
+	private final List<Schema> schemas;
+	private final IScopeProvider scopeProvider;
 
-	public IntraGrammarPoolEntityResolver(List<Schema> schemas) {
+	public IntraGrammarPoolEntityResolver(IScopeProvider scopeProvider, List<Schema> schemas) {
 		this.schemas = schemas;
+		this.scopeProvider = scopeProvider;
 	}
 
 	@Override
 	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
 		if (log.isDebugEnabled()) log.debug("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"]");
-		if (resourceIdentifier.getBaseSystemId() == null
-				&& resourceIdentifier.getExpandedSystemId() == null
+		if (resourceIdentifier.getExpandedSystemId() == null
 				&& resourceIdentifier.getLiteralSystemId() == null
 				&& resourceIdentifier.getNamespace() == null
 				&& resourceIdentifier.getPublicId() == null) {
+			// The baseSystemId may be resolved to a namespace with all other values being NULL. This behavior changed between the 7.7 and 7.8 branch.
 			// This seems to happen sometimes. For example with import of
 			// sub01a.xsd and sub05.xsd without namespace in
 			// /XmlValidator/import_include/root.xsd of Ibis4TestIAF. The
 			// default resolve entity implementation seems to ignore it, hence
 			// return null.
-			if (log.isTraceEnabled()) log.trace("all relevant Ids are null, returning null");
+			log.trace("all relevant Ids are null, returning null. baseSystemId [{}]", resourceIdentifier::getBaseSystemId);
 			return null;
 		}
 
 		String targetNamespace = resourceIdentifier.getNamespace();
-		if (targetNamespace!=null) {
+		if (targetNamespace != null) {
 			for(Schema schema:schemas) {
 				if (log.isTraceEnabled()) log.trace("matching namespace ["+targetNamespace+"] to schema ["+schema.getSystemId()+"]");
 				if (targetNamespace.equals(schema.getSystemId())) {
@@ -69,9 +73,20 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver {
 			}
 			log.warn("namespace ["+targetNamespace+"] not found in list of schemas");
 		}
-		log.warn("resolveEntity publicId ["+resourceIdentifier.getPublicId()+"] baseSystemId ["+resourceIdentifier.getBaseSystemId()+"] expandedSystemId ["+resourceIdentifier.getExpandedSystemId()+"] literalSystemId ["+resourceIdentifier.getLiteralSystemId()+"] namespace ["+resourceIdentifier.getNamespace()+"] falling back to external resource");
-		// return explicit resource reference, do not rely on default mechanism by returning null. This appears to be unreliable. See https://github.com/ibissource/iaf/issues/3973
-		return new XMLInputSource(resourceIdentifier);
+
+		if(resourceIdentifier.getExpandedSystemId() != null) {
+			Resource resource = Resource.getResource(scopeProvider, resourceIdentifier.getExpandedSystemId());
+			if(resource != null) {
+				return resource.asXMLInputSource();
+			}
+		}
+
+		// Throw an exception so the XercesValidationErrorHandler picks this up as ERROR.
+		// Do not rely on the fallback resource resolver, this will bypass configuration classloaders.
+		// See https://github.com/ibissource/iaf/issues/3973
+		throw new XNIException("Cannot find resource [" + resourceIdentifier.getExpandedSystemId() +
+			"] from systemId [" + resourceIdentifier.getLiteralSystemId() +
+			"] with base [" + resourceIdentifier.getBaseSystemId() + "]");
 	}
 
 }

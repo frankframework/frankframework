@@ -69,7 +69,6 @@ import nl.nn.adapterframework.util.DB2DocumentWriter;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -606,7 +605,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					if (!isCloseInputstreamOnExit()) {
 						inputStream = StreamUtil.dontClose(inputStream);
 					}
-					Misc.streamToStream(inputStream,blobOutputStream);
+					StreamUtil.streamToStream(inputStream,blobOutputStream);
 				}
 			} finally {
 				if (blobOutputStream!=null) {
@@ -640,7 +639,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					if (!isCloseInputstreamOnExit()) {
 						reader = StreamUtil.dontClose(reader);
 					}
-					Misc.readerToWriter(reader, clobWriter);
+					StreamUtil.readerToWriter(reader, clobWriter);
 				}
 			} finally {
 				if (clobWriter!=null) {
@@ -995,8 +994,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		scalar = b;
 	}
 
-	/** 
-	 * When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned: 
+	/**
+	 * When <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned:
 	 * <ul>
 	 * <li>'[absent]' no row is found</li>
 	 * <li>'[null]' a row is found, but the value is a SQL-NULL</li>
@@ -1122,7 +1121,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		blobColumn = i;
 	}
 
-	/** 
+	/**
 	 * For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.
 	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to
 	 */

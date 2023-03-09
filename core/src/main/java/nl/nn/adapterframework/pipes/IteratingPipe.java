@@ -54,6 +54,7 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -349,14 +350,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} catch (SenderException e) {
 					if (isIgnoreExceptions()) {
 						log.info("ignoring SenderException after excution of sender for item ["+item+"]",e);
-						itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+						itemResult="<exception>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</exception>";
 					} else {
 						throw e;
 					}
 				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
 						log.info("ignoring TimeOutException after excution of sender for item ["+item+"]",e);
-						itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
+						itemResult="<timeout>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</timeout>";
 					} else {
 						throw e;
 					}
@@ -421,10 +422,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							if (senderResult.isSuccess()) {
 								itemResult = senderResult.getResult().asString();
 							} else {
-								itemResult = "<exception>"+XmlUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
+								itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
 							}
 						} else {
-							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
+							itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
@@ -536,7 +537,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		omitXmlDeclaration = b;
 	}
 
-	/** Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. */
+	/** Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1. */
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}

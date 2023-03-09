@@ -34,19 +34,17 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
- * 
+ *
  * Appends a BasePath to every resource when set. This allows the use of sub config's in src/main/resources
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
- * 
+ *
  * @author Niels Meijer
  */
 public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
-
-	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
@@ -108,7 +106,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	/**
 	 * The root directory where all resources are located. This may purely be used within the ClassLoader and resources
 	 * should not be aware of this 'root' directory.
-	 * 
+	 *
 	 * @return the path prefix that is used for retrieving files through this ClassLoader
 	 */
 	protected String getBasePath() {
@@ -219,7 +217,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	@Override
 	public final Enumeration<URL> getResources(String name) throws IOException {
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
-		if(name.startsWith("META-INF/")) {
+		if(name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
 		}
 
@@ -272,7 +270,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	/**
 	 * This method will only be called for classes that have not been previously loaded yet.
 	 * Custom code will not update if you change the configuration.
-	 * 
+	 *
 	 * Introspector#findExplicitBeanInfo/BeanInfoFinder#find attempts to lookup classes with the 'BeanInfo' postfix.
 	 * Introspector#findCustomizerClass attempts to lookup classes with the 'Customizer' postfix.
 	 */
@@ -287,7 +285,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 					log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
 
 					try {
-						byte[] bytes = Misc.streamToBytes(url.openStream());
+						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 						Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
 
 						if(resolve) {

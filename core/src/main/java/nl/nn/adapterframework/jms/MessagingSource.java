@@ -179,24 +179,25 @@ public class MessagingSource  {
 	public String getPhysicalName() {
 		String result="";
 
+		Object managedConnectionFactory=null;
 		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
+			managedConnectionFactory = getManagedConnectionFactory();
+			if (managedConnectionFactory != null) {
+				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+			}
+		} catch (Exception | NoClassDefFoundError e) {
+			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+		}
+
+		try {
+			ConnectionFactory qcfd = getConnectionFactoryDelegate();
+			if (qcfd != managedConnectionFactory) {
+				result += " managed by ["+qcfd+"]";
+			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 
-		try {
-			Object managedConnectionFactory = getManagedConnectionFactory();
-			if (managedConnectionFactory!=null) {
-				result +=ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
-				if (result.contains("activemq")) {
-					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
-				}
-			}
-		} catch (Exception | NoClassDefFoundError e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-		}
 		return result;
 	}
 

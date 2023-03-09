@@ -1,0 +1,29 @@
+<data>{
+  "Envelope": {
+    "Header": {
+      "MessageHeader": {
+        "From": {
+          "Id": "sf"
+        },
+        "HeaderFields": {
+          "ConversationId": "sdfa",
+          "MessageId": "asdf",
+          "Timestamp": "2010-12-28T17:11:18.688+01:00"
+        }
+      }
+    },
+    "Body": {
+      "SetRequest": {
+        "CaseData": {
+          "RVS_PARTY_ID": 60,
+          "COMPANY_CODE": "NN1",
+          "NN_PARTY_ID": "SET BY SC1",
+          "CASE_ID": 2,
+          "CONVERSATION_ID": "ConvID60",
+          "PAYLOAD": "PAYLOAD60",
+          "STATUS": "CREATED BY SC1"
+        }
+      }
+    }
+  }
+}</data>

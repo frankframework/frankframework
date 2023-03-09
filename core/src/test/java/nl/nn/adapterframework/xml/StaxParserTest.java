@@ -1,21 +1,21 @@
 package nl.nn.adapterframework.xml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.xml.stream.XMLEventReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import microsoft.exchange.webservices.data.core.EwsServiceMultiResponseXmlReader;
 import microsoft.exchange.webservices.data.core.EwsXmlReader;
 import microsoft.exchange.webservices.data.security.XmlNodeType;
 
 public class StaxParserTest {
-	
+
 	private final String validDocument   = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>testContent</test>";
 	private final String invalidDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>test&#x3;Content</test>";
 
@@ -51,5 +51,4 @@ public class StaxParserTest {
 		assertEquals(content, "test\u0003Content");
 		impl.read(new XmlNodeType(XmlNodeType.END_DOCUMENT));
 	}
-	
 }

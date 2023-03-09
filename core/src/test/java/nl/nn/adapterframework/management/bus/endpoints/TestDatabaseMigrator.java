@@ -32,7 +32,6 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.credentialprovider.util.Misc;
 
 public class TestDatabaseMigrator extends BusTestBase {
 
@@ -43,7 +42,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
 		InputStream resource = (InputStream) response.getPayload();
-		String payload = Misc.streamToString(resource);
+		String payload = StreamUtil.streamToString(resource);
 
 		assertThat(payload, Matchers.startsWith("<databaseChangeLog"));
 	}

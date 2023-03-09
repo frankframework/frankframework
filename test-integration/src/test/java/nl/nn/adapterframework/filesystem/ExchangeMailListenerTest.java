@@ -9,8 +9,6 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
-import microsoft.exchange.webservices.data.core.service.item.Item;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
@@ -31,14 +29,14 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		String recipient=mailaddress_fancy;
 		String from=recipient;
 		String subject="With Attachements";
-		
+
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
 		//assertEquals("name","x",fileSystem.getName(file));
 
@@ -54,14 +52,14 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 		String recipient=mailaddress_fancy;
 		String from=recipient;
 		String subject="With Attachements";
-		
+
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
 		//assertEquals("name","x",fileSystem.getName(file));
 
@@ -81,30 +79,30 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 //		String subfolder="Basic";
 //		String filename = "readFile";
 //		String contents = "Tekst om te lezen";
-		
+
 		mailListener.setBaseFolder(baseFolder);
 		mailListener.setProcessedFolder(processedFolder);
 		mailListener.setLogFolder(logFolder);
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
-		
+
 //		if (!folderContainsMessages(subfolder)) {
 //			createFile(null, filename, contents);
 //			waitForActionToFinish();
 //		}
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-		Item rawMessage = (Item)mailListener.getRawMessage(threadContext);
+		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull("no message found", rawMessage);
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message("ResultOfPipeline"));
 		plr.setExitCode(200);
-		
+
 		mailListener.afterMessageProcessed(plr, rawMessage, threadContext);
 
-		
+
 	}
 
 }

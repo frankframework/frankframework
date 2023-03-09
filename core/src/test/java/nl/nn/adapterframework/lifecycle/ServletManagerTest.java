@@ -22,6 +22,7 @@ import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import javax.servlet.http.HttpServlet;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +37,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
 
 
 public class ServletManagerTest {
@@ -109,7 +109,7 @@ public class ServletManagerTest {
 
 	@Test
 	public void testUrlMappingOverride() {
-		String name = Misc.createNumericUUID();
+		String name = UUIDUtil.createNumericUUID();
 		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", " test2 ");
 
 		DummyServletImpl servlet = new DummyServletImpl();
@@ -132,7 +132,7 @@ public class ServletManagerTest {
 
 	@Test
 	public void testUrlMultipleMappingsOverride() {
-		String name = Misc.createNumericUUID();
+		String name = UUIDUtil.createNumericUUID();
 		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
 
 		DummyServletImpl servlet = new DummyServletImpl();
@@ -156,7 +156,7 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeOverride() {
-		String name = Misc.createNumericUUID();
+		String name = UUIDUtil.createNumericUUID();
 		AppConstants.getInstance().setProperty("servlet."+name+".transportGuarantee", "none");
 
 		DummyServletImpl servlet = new DummyServletImpl();
@@ -174,7 +174,7 @@ public class ServletManagerTest {
 		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "none");
 		ServletManager.setupDefaultSecuritySettings(properties);
 
-		String name = Misc.createNumericUUID();
+		String name = UUIDUtil.createNumericUUID();
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping(name);
@@ -224,7 +224,7 @@ public class ServletManagerTest {
 
 
 	private DynamicServletRegistration createAndRegister(DummyServletImpl servlet) {
-		return createAndRegister(Misc.createNumericUUID(), servlet);
+		return createAndRegister(UUIDUtil.createNumericUUID(), servlet);
 	}
 
 	private DynamicServletRegistration createAndRegister(String name, DummyServletImpl servlet) {

@@ -6,20 +6,20 @@
 	<version>${revision}</version>
 	<packaging>pom</packaging>
 
-	<properties>
+    <properties>
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.19.0</log4j2.version>
+		<log4j2.version>2.20.0</log4j2.version>
 
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.25</spring.version>
-		<spring-security.version>5.8.1</spring-security.version>
+		<spring-security.version>5.8.2</spring-security.version>
 		<spring-integration.version>5.5.16</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.3</micrometer.version>
+		<micrometer.version>1.10.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -32,11 +32,11 @@
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
 		<mysql.driver.version>8.0.32</mysql.driver.version>
 		<mariadb.driver.version>2.7.8</mariadb.driver.version>
-		<postgresql.driver.version>42.5.3</postgresql.driver.version>
-		<mongodb.driver.version>4.8.2</mongodb.driver.version>
+		<postgresql.driver.version>42.5.4</postgresql.driver.version>
+		<mongodb.driver.version>4.9.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.16.5</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
+		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
 		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
@@ -88,6 +88,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
@@ -399,7 +404,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.10.1</version>
+					<version>3.11.0</version>
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
@@ -515,7 +520,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.5.0</version>
 					<configuration>
 						<doclint>none</doclint>
 						<tags>
@@ -757,7 +762,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.5.0</version>
 				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
@@ -866,6 +871,7 @@
 				</property>
 			</activation>
 			<modules>
+				<module>iaf-commons</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>
@@ -973,7 +979,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.4.1</version>
+						<version>3.5.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>

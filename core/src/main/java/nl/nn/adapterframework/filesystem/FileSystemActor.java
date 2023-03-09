@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.File;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -62,7 +61,6 @@ import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -455,9 +453,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					if (destinationName.contains("/") || destinationName.contains("\\")) {
 						destination = fileSystem.toFile(destinationName);
 					} else {
-						String sourceName = fileSystem.getCanonicalName(source);
-						File sourceAsFile = new File(sourceName);
-						String folderPath = sourceAsFile.getParent();
+						String folderPath = fileSystem.getParentFolder(source);
 						destination = fileSystem.toFile(folderPath,destinationName);
 					}
 					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
@@ -544,9 +540,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 		out = augmentOutputStream(out);
 		if (contents instanceof Message) {
-			Misc.streamToStream(((Message)contents).asInputStream(), out);
+			StreamUtil.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
-			Misc.streamToStream((InputStream)contents, out);
+			StreamUtil.streamToStream((InputStream)contents, out);
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {

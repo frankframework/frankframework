@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import lombok.ToString;
@@ -25,7 +25,7 @@ public class PipeLineSessionBaseTest {
 	private static final double DELTA = 1e-15;
 	private static final Object TEST_OBJECT = new Object();
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		session.put("boolean1", true);
 		session.put("boolean2", false);
@@ -177,7 +177,7 @@ public class PipeLineSessionBaseTest {
 		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream q = (InputStream)ma.asObject();
 
-		assertTrue("scheduling a resource twice must yield the same object", p==q);
+		assertTrue(p==q, "scheduling a resource twice must yield the same object");
 
 		mb.closeOnCloseOf(session, "testCloseables()");
 		mc.closeOnCloseOf(session, "testCloseables()");

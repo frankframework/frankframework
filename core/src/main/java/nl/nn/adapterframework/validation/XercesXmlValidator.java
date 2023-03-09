@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
@@ -40,14 +39,11 @@ import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -59,12 +55,10 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
@@ -186,7 +180,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
 		Set<String> namespaceSet = new HashSet<String>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(schemas));
+		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(this, schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -203,8 +197,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
-		errorHandler.warn = warn;
+		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this, warn);
 		preparser.setErrorHandler(errorHandler);
 		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
@@ -343,7 +336,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 
-	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
+	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException {
 		// SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (except when
 		// noNamespaceSchemaLocation is being used this is already done in
@@ -414,37 +407,5 @@ class PreparseResult {
 		return xsModels;
 	}
 
-}
-class XercesValidationErrorHandler implements XMLErrorHandler {
-	protected Logger log = LogUtil.getLogger(this);
-	protected boolean warn = true;
-	private IConfigurationAware source;
-
-	public XercesValidationErrorHandler(IConfigurationAware source) {
-		this.source = source;
-	}
-
-	@Override
-	public void warning(String domain, String key, XMLParseException e) throws XNIException {
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
-	}
-
-	@Override
-	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		// In case the XSD doesn't exist throw an exception to prevent the
-		// the adapter from starting.
-		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
-			throw e;
-		}
-		warning(domain, key, e);
-	}
-
-	@Override
-	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		warning(domain, key, e);
-		throw new XNIException(e);
-	}
 }
 

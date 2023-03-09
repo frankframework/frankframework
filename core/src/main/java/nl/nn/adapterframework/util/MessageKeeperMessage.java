@@ -57,10 +57,10 @@ public class MessageKeeperMessage {
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
 			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = Misc.hideAll(message, hideRegex);
+			message = StringUtil.hideAll(message, hideRegex);
 
 			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = Misc.hideAll(message, threadHideRegex);
+			message = StringUtil.hideAll(message, threadHideRegex);
 		}
 		return message;
 	}

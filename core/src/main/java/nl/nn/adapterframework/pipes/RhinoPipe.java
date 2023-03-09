@@ -25,8 +25,8 @@ import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Rhino JavaScript Runtime Factory Pipe.
@@ -81,7 +82,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource [" + getFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
@@ -122,7 +123,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,"cannot find resource ["+getFileName()+"]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception loading ["+getFileName()+"]", e);
 			}

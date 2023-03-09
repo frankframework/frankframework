@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 import javax.jms.JMSException;
+
+import org.junit.jupiter.api.Test;
+
 import jakarta.mail.internet.AddressException;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 
 public class IbisExceptionTest {

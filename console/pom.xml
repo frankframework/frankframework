@@ -13,7 +13,7 @@
 
 	<properties>
 		<apache.tomcat.version>9.0.71</apache.tomcat.version>
-		<spring-security.version>5.8.1</spring-security.version>
+		<spring-security.version>5.8.2</spring-security.version>
 		<jackson.version>2.14.2</jackson.version>
 	</properties>
 
@@ -27,6 +27,10 @@
 					<groupId>*</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -311,6 +315,10 @@
 						</execution>
 					</executions>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

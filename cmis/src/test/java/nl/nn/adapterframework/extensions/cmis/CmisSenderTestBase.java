@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	protected static final boolean STUBBED = true;
@@ -141,7 +141,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 			this.mimeType = (String) invocation.getArguments()[2];
 			InputStream content = (InputStream) invocation.getArguments()[3];
 
-			stream = Misc.streamToBytes(content);
+			stream = StreamUtil.streamToBytes(content);
 			if(length > 0) { //if a length has been provided, validate it.
 				assertEquals(stream.length, length);
 			}

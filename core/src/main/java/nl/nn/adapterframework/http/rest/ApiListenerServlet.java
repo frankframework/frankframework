@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -377,6 +379,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
 					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
 					response.sendError(406, "endpoint cannot provide the supplied MimeType");
+					return;
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {
@@ -626,35 +629,21 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				MimeType contentType = listener.getContentType();
-				if(listener.getProduces() == MediaTypes.ANY) {
-					Message parsedContentType = messageContext.getMessage("contentType");
-					if(!Message.isEmpty(parsedContentType)) {
-						contentType = MimeType.valueOf(parsedContentType.asString());
-					} else {
-						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-						if(providedContentType != null) {
-							contentType = providedContentType;
-						}
-					}
-				} else if(listener.getProduces() == MediaTypes.DETECT) {
-					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-					if(computedContentType != null) {
-						contentType = computedContentType;
-					}
-				}
-				response.setHeader("Content-Type", contentType.toString());
+				if (!Message.isEmpty(result)) {
+					MimeType contentType = determineContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
-					if(StringUtils.isNotEmpty(contentDisposition)) {
-						log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
-						response.setHeader("Content-Disposition", contentDisposition);
+					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+						String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+						if(StringUtils.isNotEmpty(contentDisposition)) {
+							log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
+							response.setHeader("Content-Disposition", contentDisposition);
+						}
 					}
 				}
 
 				/*
-				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
+				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
@@ -664,14 +653,14 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
-				if(!Message.isEmpty(result)) {
-					if(result.isBinary()) {
-						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
-					} else {
-						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
-					}
+				final boolean outputWritten = writeToResponseStream(response, result);
+				if (!outputWritten) {
+					log.debug("No output written, set content-type header to null");
+					response.resetBuffer();
+					response.setContentType(null);
 				}
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
+
+				log.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
 				log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
@@ -680,12 +669,63 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				}
 				catch (IOException | IllegalStateException ex) {
-					log.warn("an error occured while tyring to handle exception ["+e.getMessage()+"]", ex);
+					log.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
+	}
+
+	private static MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+		if(listener.getProduces() == MediaTypes.ANY) {
+			Message parsedContentType = messageContext.getMessage("contentType");
+			if(!Message.isEmpty(parsedContentType)) {
+				return MimeType.valueOf(parsedContentType.asString());
+			} else {
+				MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+				if(providedContentType != null) {
+					return providedContentType;
+				}
+			}
+		} else if(listener.getProduces() == MediaTypes.DETECT) {
+			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+			if(computedContentType != null) {
+				return computedContentType;
+			}
+		}
+		return listener.getContentType();
+	}
+
+	/**
+	 * Write the result to the response, if any data is available. If no data is
+	 * available, then the output-stream or output-writer of the response will not
+	 * be accessed and the method returns false. If data is available, the method
+	 * returns true and the data will be
+	 * written to the output-stream if the message is binary or to the output-writer
+	 * otherwise.
+	 *
+	 * @param response {@link HttpServletResponse} to which data should be written. If
+	 *                                            no data is available, the output-stream or
+	 *                                            output-writer will not be accessed.
+	 * @param result {@link Message} whose data will be written to the response, if any is available.
+	 * @return {@code true} if data was written, {@code false} if not.
+	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
+	 */
+	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		if (!Message.hasDataAvailable(result)) {
+			return false;
+		}
+		if (result.isBinary()) {
+			try (InputStream in = result.asInputStream()) {
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+			}
+		} else {
+			try (Reader reader = result.asReader()) {
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
+			}
+		}
+		return true;
 	}
 
 	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {

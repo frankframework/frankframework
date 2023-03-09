@@ -231,7 +231,7 @@ public abstract class MessageUtils {
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
 			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
 			byte[] magic = message.getMagic(tikaMimeMagicLength);
-			if(magic == null || magic.length == 0) {
+			if(magic.length == 0) {
 				return null;
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);

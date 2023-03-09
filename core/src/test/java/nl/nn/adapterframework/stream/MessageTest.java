@@ -44,7 +44,7 @@ import java.nio.file.Paths;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
-import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
 	protected Logger log = LogUtil.getLogger(this);
@@ -147,7 +146,6 @@ public class MessageTest {
 
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
-		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
 		valuePart = valuePart.replaceAll("\\sMessage\\[[a-fA-F0-9]+\\]", "");
@@ -821,10 +819,8 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testSerializeWithFile() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+	public void testSerializeWithFile(@TempDir Path folder) throws Exception {
+		File source = folder.resolve("testSerializeWithFile").toFile();
 		writeContentsToFile(source, testString);
 
 		Message in = new FileMessage(source);
@@ -837,10 +833,8 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testSerializeWithURL() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File file = folder.newFile();
+	public void testSerializeWithURL(@TempDir Path folder) throws Exception {
+		File file = folder.resolve("testSerializeWithURL").toFile();
 		writeContentsToFile(file, testString);
 		URL source = file.toURI().toURL();
 
@@ -1054,7 +1048,7 @@ public class MessageTest {
 		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
 
 		String stringResult = message.asString("auto"); //detect when reading
-		assertEquals(Misc.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
+		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 
 	@Test

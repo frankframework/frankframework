@@ -38,7 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IScopeProvider;
@@ -112,8 +111,8 @@ public abstract class ClassUtils {
 		}
 
 		String resourceToUse = resource; //Don't change the original resource name for logging purposes
-		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-			resourceToUse = resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+		if (resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
+			resourceToUse = resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
 		}
 
 		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
@@ -136,7 +135,7 @@ public abstract class ClassUtils {
 					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
 					if(protocols.contains(protocol)) {
 						try {
-							url = new URL(Misc.replace(resourceToUse, " ", "%20"));
+							url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
 						} catch(MalformedURLException e) {
 							log.debug("Could not find resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
@@ -272,7 +271,7 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
-		return Misc.concatStrings(classNameOf(o), " ", tail);
+		return StringUtil.concatStrings(classNameOf(o), " ", tail);
 	}
 
 	/**

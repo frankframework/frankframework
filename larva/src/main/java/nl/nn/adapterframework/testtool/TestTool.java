@@ -91,6 +91,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -462,11 +463,11 @@ public class TestTool {
 			while (scenariosRootDirectoriesIterator.hasNext()) {
 				String directory = (String)scenariosRootDirectoriesIterator.next();
 				String description = (String)scenariosRootDescriptionsIterator.next();
-				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 				if (scenariosRootDirectory.equals(directory)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
+				option = option + ">" + XmlEncodingUtils.encodeChars(description) + "</option>";
 				writeHtml(option, writers, false);
 			}
 			writeHtml("</select>", writers, false);
@@ -513,11 +514,11 @@ public class TestTool {
 			while (tokenizer.hasMoreTokens()) {
 				String level = tokenizer.nextToken().trim();
 				level = level.substring(1, level.length() - 1);
-				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
+				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level) + "\"";
 				if (((String)writers.get("loglevel")).equals(level)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+				option = option + ">" + XmlEncodingUtils.encodeChars(level) + "</option>";
 				writeHtml(option, writers, false);
 			}
 			writeHtml("</select>", writers, false);
@@ -576,12 +577,12 @@ public class TestTool {
 						debugMessage("longName: '" + longName + "'", writers);
 						if (!addedDirectories.contains(longName)) {
 							String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
-							String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+							String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 							debugMessage("paramExecute: '" + paramExecute + "'", writers);
 							if (paramExecute != null && paramExecute.equals(longName)) {
 								option = option + " selected";
 							}
-							option = option + ">" + XmlUtils.encodeChars(shortName) + "</option>";
+							option = option + ">" + XmlEncodingUtils.encodeChars(shortName) + "</option>";
 							writeHtml(option, writers, false);
 							addedDirectories.add(longName);
 						}
@@ -590,11 +591,11 @@ public class TestTool {
 					String longName = scenarioFile.getAbsolutePath();
 					String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 					debugMessage("shortName: '" + shortName + "'", writers);
-					String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+					String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 					if (paramExecute != null && paramExecute.equals(longName)) {
 						option = option + " selected";
 					}
-					option = option + ">" + XmlUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+					option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
 					writeHtml(option, writers, false);
 				}
 			}
@@ -669,7 +670,7 @@ public class TestTool {
 	public static void debugMessage(String message, Map<String, Object> writers) {
 		String method = "debug";
 		logger.debug(message);
-		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
+		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
 	}
 
 	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
@@ -681,8 +682,8 @@ public class TestTool {
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -698,8 +699,8 @@ public class TestTool {
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -714,8 +715,8 @@ public class TestTool {
 
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -741,7 +742,7 @@ public class TestTool {
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
 			writeLog("<h5>Result (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<div class='expectedContainer'>", method, writers, false);
@@ -749,7 +750,7 @@ public class TestTool {
 			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
 			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<hr/>", method, writers, false);
@@ -770,12 +771,12 @@ public class TestTool {
 						scenario_passed_failed, writers, false);
 				writeLog(
 						"<p class='diffMessage' hidden='true'>"
-								+ XmlUtils.encodeChars(message) + "</p>",
+								+ XmlEncodingUtils.encodeChars(message) + "</p>",
 						scenario_passed_failed, writers, true);
 			} else {
 				writeLog("<h5>Difference description:</h5>", method, writers,
 						false);
-				writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
+				writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)
 						+ "</p>", method, writers, true);
 				writeLog("</form>", method, writers, false);
 				writeLog("</div>", method, writers, false);
@@ -814,7 +815,7 @@ public class TestTool {
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
 			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			messageCounter++;
@@ -823,7 +824,7 @@ public class TestTool {
 			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
 			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<hr/>", method, writers, false);
@@ -866,32 +867,32 @@ public class TestTool {
 
 	public static void stepPassedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='passed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void stepAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void stepFailedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='failed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void scenarioPassedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='passed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenarioAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenarioFailedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario failed";
-		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenariosTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
@@ -902,7 +903,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='total'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -914,7 +915,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -926,7 +927,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -938,13 +939,13 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='failed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
 	public static void errorMessage(String message, Map<String, Object> writers) {
 		String method = "error";
-		writeLog("<h1 class='error'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		if (silentOut!=null) {
 			try {
 				silentOut.write(message);
@@ -968,7 +969,7 @@ public class TestTool {
 				writeLog("<div class='container'>", method, writers, false);
 				writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 				writeLog("<h5>Stack trace:</h5>", method, writers, false);
-				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
+				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
 				writeLog("</div>", method, writers, false);
 				writers.put("messagecounter", new Integer(messageCounter));
 				throwable = throwable.getCause();
@@ -1091,12 +1092,11 @@ public class TestTool {
 	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
-		FileInputStream fileInputStreamPropertiesFile = null;
 		try {
-			fileInputStreamPropertiesFile = new FileInputStream(propertiesFile);
-			properties.load(fileInputStreamPropertiesFile);
-			fileInputStreamPropertiesFile.close();
-			fileInputStreamPropertiesFile = null;
+			try(FileInputStream fis = new FileInputStream(propertiesFile); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(fis)) {
+				properties.load(reader);
+			}
+
 			Properties includedProperties = new Properties();
 			int i = 0;
 			String includeFilename = properties.getProperty("include");
@@ -1124,13 +1124,6 @@ public class TestTool {
 		} catch(Exception e) {
 			properties = null;
 			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
-			if (fileInputStreamPropertiesFile != null) {
-				try {
-					fileInputStreamPropertiesFile.close();
-				} catch(Exception e2) {
-					errorMessage("Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e, writers);
-				}
-			}
 		}
 		return properties;
 	}
@@ -1860,8 +1853,8 @@ public class TestTool {
 				printableActualResult = actualResult;
 			}
 		} else {
-			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
-			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+			printableExpectedResult = XmlEncodingUtils.replaceNonValidXmlCharacters(expectedResult);
+			printableActualResult = XmlEncodingUtils.replaceNonValidXmlCharacters(actualResult);
 		}
 
 		// Map all identifier based properties once

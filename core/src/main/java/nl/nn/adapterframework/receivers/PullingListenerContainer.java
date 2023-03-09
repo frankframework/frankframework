@@ -44,9 +44,9 @@ import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.adapterframework.util.StringUtil;
 
 
 /**
@@ -250,7 +250,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
 									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
-										log.debug("Transaction Started, Get Message from Listener");
+										log.trace("Transaction Started, Get Message from Listener");
 									}
 									rawMessage = listener.getRawMessage(threadContext);
 								}
@@ -270,7 +270,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 							if (rawMessage == null) {
 								if (txStatus!=null) {
-									log.debug("Rollback; raw message == null");
+									log.trace("Rollback; raw message == null");
 									txManager.rollback(txStatus);
 								}
 								return;
@@ -329,7 +329,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							} else {
 								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Date receivedDate = new Date();
-								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
+								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
@@ -381,7 +381,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
 						log.debug("noMoreRetries [{}] deliveryCount [{}] targetState [{}]", noMoreRetries, deliveryCount, targetState);
-						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						String errorMessage = StringUtil.concatStrings(noMoreRetries ? "too many retries" : null, "; ", receiver.getCachedErrorMessage(messageId));
 						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);

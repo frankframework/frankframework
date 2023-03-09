@@ -1,0 +1,343 @@
+/*
+   Copyright 2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.util;
+
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.CharBuffer;
+import java.util.function.Function;
+
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.input.TeeInputStream;
+import org.apache.commons.io.input.TeeReader;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.commons.io.output.TeeWriter;
+import org.apache.commons.io.output.ThresholdingOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class StreamCaptureUtils {
+	protected static Logger log = LogManager.getLogger(StreamCaptureUtils.class);
+
+	public static final int DEFAULT_STREAM_CAPTURE_LIMIT=10000;
+
+	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
+		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; });
+	}
+
+	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
+		class WatchedInputStream extends FilterInputStream {
+			public WatchedInputStream(InputStream in) {
+				super(in);
+			}
+
+			private IOException handleException(IOException e) {
+				if (onException!=null) {
+					IOException r = onException.apply(e);
+					if (r!=null) {
+						return r;
+					}
+				}
+				return e;
+			}
+
+			@Override
+			public void close() throws IOException {
+				try {
+					super.close();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+				if (onClose!=null) {
+					onClose.run();
+				}
+			}
+
+			@Override
+			public int read() throws IOException {
+				try {
+					return super.read();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b) throws IOException {
+				try {
+					return super.read(b);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int read(byte[] b, int off, int len) throws IOException {
+				try {
+					return super.read(b, off, len);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public long skip(long n) throws IOException {
+				try {
+					return super.skip(n);
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public int available() throws IOException {
+				try {
+					return super.available();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				try {
+					super.reset();
+				} catch (IOException e) {
+					throw handleException(e);
+				}
+			}
+
+		}
+
+		return new WatchedInputStream(stream);
+	}
+
+	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
+		return new MarkCompensatingOutputStream(stream);
+	}
+
+	/**
+	 * Triggers the next byte after the threshold has been reached.
+	 * If bytes are written in chunks it triggers after processing the entire chunk.
+	 */
+	public static OutputStream limitSize(OutputStream stream, int maxSize) {
+		return new ThresholdingOutputStream(maxSize) {
+
+			@Override
+			protected void thresholdReached() throws IOException {
+				stream.close();
+			}
+
+			@Override
+			protected OutputStream getStream() throws IOException {
+				if (isThresholdExceeded()) {
+					return NullOutputStream.NULL_OUTPUT_STREAM;
+				}
+				return stream;
+			}
+
+		};
+	}
+
+	public static Writer limitSize(Writer writer, int maxSize) {
+		return new Writer() {
+
+			private long written;
+
+			@Override
+			public void write(char[] buffer, int offset, int length) throws IOException {
+				if (written<maxSize) {
+					writer.write(buffer, offset, length);
+					if ((written+=length)>=maxSize) {
+						writer.close();
+					}
+				}
+			}
+
+			@Override
+			public void flush() throws IOException {
+				writer.flush();
+			}
+
+			@Override
+			public void close() throws IOException {
+				if (written<maxSize) {
+					writer.close();
+				}
+			}
+		};
+	}
+
+	public static InputStream captureInputStream(InputStream in, OutputStream capture) {
+		return captureInputStream(in, capture, 10000, true);
+	}
+
+	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
+
+		CountingInputStream counter = new CountingInputStream(in);
+		MarkCompensatingOutputStream markCompensatingOutputStream = markCompensatingOutputStream(limitSize(capture, maxSize));
+		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
+
+			@Override
+			public void close() throws IOException {
+				try {
+					if (counter.getByteCount()<maxSize && available()>0) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new byte[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" bytes available at close");
+					}
+				} finally {
+					super.close();
+				}
+			}
+
+			@Override
+			public synchronized void mark(int readlimit) {
+				markCompensatingOutputStream.mark(readlimit);
+				super.mark(readlimit);
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				markCompensatingOutputStream.reset();
+				super.reset();
+			}
+		};
+
+	}
+
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
+		return captureOutputStream(stream, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
+	}
+
+	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
+		return new TeeOutputStream(stream, limitSize(capture,maxSize));
+	}
+
+	public static Reader captureReader(Reader in, Writer capture) {
+		return captureReader(in, capture, 10000, true);
+	}
+
+	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
+		return new TeeReader(in, limitSize(capture, maxSize), true) {
+
+			private int charsRead;
+
+			private int readCounted(ReadMethod reader) throws IOException {
+				int len = reader.read();
+				if (len>0) {
+					charsRead+=len;
+				}
+				return len;
+			}
+
+			@Override
+			public int read() throws IOException {
+				return readCounted(() -> super.read());
+			}
+
+			@Override
+			public int read(char[] chr) throws IOException {
+				return readCounted(() -> super.read(chr));
+			}
+
+			@Override
+			public int read(char[] chr, int st, int end) throws IOException {
+				return readCounted(() -> super.read(chr, st, end));
+			}
+
+			@Override
+			public int read(CharBuffer target) throws IOException {
+				return readCounted(() -> super.read(target));
+			}
+
+			@Override
+			public void close() throws IOException {
+				try {
+					if (charsRead<maxSize && ready()) {
+						// Make the bytes available for debugger even when the stream was not used (might be because the
+						// pipe or sender that normally consumes the stream is stubbed by the debugger)
+						int len = read(new char[maxSize]);
+						if (log.isTraceEnabled()) log.trace(len+" chararacters available at close");
+					}
+				} finally {
+					super.close();
+				}
+			}
+
+		};
+	}
+
+	public static Writer captureWriter(Writer writer, Writer capture) {
+		return captureWriter(writer, capture, DEFAULT_STREAM_CAPTURE_LIMIT);
+	}
+
+	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
+		return new TeeWriter(writer, limitSize(capture,maxSize));
+	}
+
+	private interface ReadMethod {
+		int read() throws IOException;
+	}
+
+	static class MarkCompensatingOutputStream extends FilterOutputStream {
+		private int bytesToSkip = 0;
+
+		public MarkCompensatingOutputStream(OutputStream out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if(bytesToSkip > 0) {
+				--bytesToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) throws IOException {
+			if(bytesToSkip == 0) {
+				out.write(b, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if(bytesToSkip < sizeToRead) {
+				out.write(b, off + bytesToSkip, len - bytesToSkip);
+				reset();
+			} else {
+				bytesToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int bytesToSkip) {
+			this.bytesToSkip = bytesToSkip;
+		}
+		public void reset() {
+			mark(0);
+		}
+	}
+}

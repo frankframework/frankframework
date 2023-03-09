@@ -11,7 +11,7 @@ import org.junit.Test;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.credentialprovider.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassUtils;
 
 public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 
