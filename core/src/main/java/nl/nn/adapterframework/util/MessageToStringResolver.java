@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014 Nationale-Nederlanden, 2020 - 2023 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,11 @@ public class MessageToStringResolver implements AdditionalStringResolver {
 		} catch (IOException e) {
 			// Do not get Logger early as this code might run during logger configuration.
 			LogUtil.getLogger(MessageToStringResolver.class).error("Cannot get String representation for key [{}] of Message:", key, e);
+
+			// Return an empty string instead of empty Optional, to stop further parameter
+			// substitution beyond this point (we found the match, the match was broken.
+			// Should not look for more matches as we might just find it again but call
+			// .toString() which gives wrong result).
 			return Optional.of("");
 		}
 	}

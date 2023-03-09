@@ -17,7 +17,6 @@ package nl.nn.adapterframework.util;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
@@ -36,10 +35,6 @@ import java.util.Set;
  * </p>
  */
 public interface AdditionalStringResolver {
-	/**
-	 * Static field to access all instances via the {@link ServiceLoader}.
-	 */
-	ServiceLoader<AdditionalStringResolver> serviceLoader = ServiceLoader.load(AdditionalStringResolver.class);
 
 	/**
 	 * Method to implement string resolution.
@@ -59,7 +54,9 @@ public interface AdditionalStringResolver {
 	 * @param delimStop               End delimiter, normally only needed by caller
 	 * @param resolveWithPropertyName Flag if values should be prefixed with name of resolved property, normally only
 	 *                                needed by caller.
-	 * @return Resolved property value, or {@link Optional#empty()} if it cannot be resolved by this implementation.
+	 * @return Resolved property value, or {@link Optional#empty()} if it cannot be resolved by this implementation. If {@link Optional#empty()} is
+	 * returned, the {@link StringResolver} will then continue to try resolving the {@code key}. If any non-empty {@link Optional} is returned,
+	 * the {@link StringResolver} will use the value of that as value for the {@code key} and not look for other resolutions for the key.
 	 */
 	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
 }

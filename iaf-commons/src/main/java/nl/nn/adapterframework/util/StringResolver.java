@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +31,10 @@ import org.apache.commons.lang3.StringUtils;
  * @author Johan Verrips
  */
 public class StringResolver {
+	/**
+	 * Static field to access all instances via the {@link ServiceLoader}.
+	 */
+	private static final ServiceLoader<AdditionalStringResolver> serviceLoader = ServiceLoader.load(AdditionalStringResolver.class);
 	// Not allowed to use a static reference to the logger in this class.
 	// Log4j2 uses StringResolver during instantiation.
 
@@ -462,7 +467,7 @@ public class StringResolver {
 
 	private static Collection<AdditionalStringResolver> getAdditionalStringResolvers() {
 		if (additionalStringResolvers == null) {
-			additionalStringResolvers = CollectionUtils.collect(AdditionalStringResolver.serviceLoader.iterator(), input -> input);
+			additionalStringResolvers = CollectionUtils.collect(serviceLoader.iterator(), input -> input);
 		}
 		return additionalStringResolvers;
 	}

@@ -29,7 +29,7 @@ public class UUIDUtil {
 	public static String createSimpleUUID() {
 		UID uid = new UID();
 
-		String uidString=asHex(getIPAddress())+"-"+uid.toString();
+		String uidString=asHex(getIPAddress())+"-"+ uid;
 		// Replace semicolons by underscores, so IBIS will support it
 		uidString = uidString.replace(':', '_');
 		return uidString;
