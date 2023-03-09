@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.lifecycle;
+package nl.nn.adapterframework.management.bus;
 
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
@@ -22,7 +22,7 @@ import org.springframework.messaging.Message;
  * A Spring Integration Gateway in it's most simplistic form.
  * Put's messages on their respective Channels.
  */
-public class Gateway<T> extends MessagingGatewaySupport {
+public class BusTestGateway<T> extends MessagingGatewaySupport {
 
 	// T in T out.
 	@SuppressWarnings("unchecked")

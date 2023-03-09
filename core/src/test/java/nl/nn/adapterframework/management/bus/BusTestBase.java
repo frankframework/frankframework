@@ -15,7 +15,6 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
@@ -94,7 +93,7 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		BusTestGateway gateway = getParentContext().getBean("gateway", BusTestGateway.class);
 		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
@@ -106,7 +105,7 @@ public class BusTestBase {
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
+		BusTestGateway gateway = getParentContext().getBean("gateway", BusTestGateway.class);
 		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
 		gateway.sendAsyncMessage(input.build());
 	}

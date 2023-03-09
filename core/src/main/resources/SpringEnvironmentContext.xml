@@ -17,10 +17,6 @@
 		</integration:interceptors>
 	</integration:publish-subscribe-channel>
 
-	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
-		<property name="requestChannel" ref="frank-management-bus" />
-	</bean>
-
 	<context:property-placeholder />
 
 	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">

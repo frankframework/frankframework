@@ -48,9 +48,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.webcontrol.Gateway;
 
 /**
  * Base class for API endpoints.
