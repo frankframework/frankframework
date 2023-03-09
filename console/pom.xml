@@ -159,7 +159,8 @@
 			<artifactId>jakarta.json</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-<!-- 
+
+<!--
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
@@ -186,12 +187,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+<!--
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-xerces</artifactId>
 			<version>2.12.2-xml-schema-1.1</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -217,11 +219,6 @@
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
 		</dependency>
 
 			<dependency>
