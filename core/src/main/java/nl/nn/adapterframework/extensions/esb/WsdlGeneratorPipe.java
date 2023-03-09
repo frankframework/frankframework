@@ -31,9 +31,9 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
@@ -45,10 +45,10 @@ import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 @Category("NN-Special")
 public class WsdlGeneratorPipe extends FixedForwardPipe {
@@ -74,7 +74,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				FileUtils.unzipStream(inputStream, tempDir);
 			} else {
 				File file = new File(tempDir, fileName);
-				Misc.streamToFile(inputStream, file);
+				StreamUtil.streamToFile(inputStream, file);
 				file.deleteOnExit();
 			}
 		} catch (IOException e) {

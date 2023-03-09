@@ -61,7 +61,6 @@ import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -541,9 +540,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 		out = augmentOutputStream(out);
 		if (contents instanceof Message) {
-			Misc.streamToStream(((Message)contents).asInputStream(), out);
+			StreamUtil.streamToStream(((Message)contents).asInputStream(), out);
 		} else if (contents instanceof InputStream) {
-			Misc.streamToStream((InputStream)contents, out);
+			StreamUtil.streamToStream((InputStream)contents, out);
 		} else if (contents instanceof byte[]) {
 			out.write((byte[])contents);
 		} else if (contents instanceof String) {

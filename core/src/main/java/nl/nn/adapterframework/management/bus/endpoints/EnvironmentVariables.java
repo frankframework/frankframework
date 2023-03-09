@@ -32,7 +32,8 @@ import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.Environment;
 
 @BusAware("frank-management-bus")
 public class EnvironmentVariables extends BusEndpointBase {
@@ -58,7 +59,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 		envVars.put("System Properties", convertPropertiesToMap(System.getProperties(), propsToHide));
 
 		try {
-			envVars.put("Environment Variables", convertPropertiesToMap(Misc.getEnvironmentVariables()));
+			envVars.put("Environment Variables", convertPropertiesToMap(Environment.getEnvironmentVariables()));
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
@@ -81,7 +82,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 			try {
 				propValue = props.getProperty(propName);
 				if (propsToHide != null && propsToHide.contains(propName)) {
-					propValue = Misc.hide(propValue);
+					propValue = StringUtil.hide(propValue);
 				}
 			} catch (Exception | StackOverflowError e) {
 				// catch StackOverflowErrors, to enable analysis of cyclic property definitions

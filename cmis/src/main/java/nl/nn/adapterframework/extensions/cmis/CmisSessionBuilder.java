@@ -36,7 +36,7 @@ import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
@@ -155,7 +155,7 @@ public class CmisSessionBuilder {
 				URL url = ClassUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
-						parameterMap.put(OVERRIDE_WSDL_KEY, Misc.streamToString(url.openStream()));
+						parameterMap.put(OVERRIDE_WSDL_KEY, StreamUtil.streamToString(url.openStream()));
 
 						//We need to setup a fake URL in order to initialize the CMIS Session
 						parameterMap.setWebServicesBindingUrl(OVERRIDE_WSDL_URL);

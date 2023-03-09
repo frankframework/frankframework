@@ -95,8 +95,8 @@ import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
@@ -1106,7 +1106,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 		} catch (Exception e) {
 			log.warn("Could not get url", e);
 		}
-		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
+		return StringUtil.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
 	private void setMailboxOnService(ExchangeService service, String mailbox) throws FileSystemException {

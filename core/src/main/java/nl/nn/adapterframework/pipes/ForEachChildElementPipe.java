@@ -58,9 +58,10 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ExceptionCatchingFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -159,7 +160,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		paramsString +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"<xsl:copy-of select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -314,7 +315,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
-			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
+			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
 			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
 		}
 
@@ -511,7 +512,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	/**
-	 * If set to <code>2</code> a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively, otherwise an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1
 	 * @ff.default 1
 	 */
 	public void setXsltVersion(int xsltVersion) {

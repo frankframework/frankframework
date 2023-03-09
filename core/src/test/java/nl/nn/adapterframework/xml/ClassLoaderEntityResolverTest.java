@@ -14,13 +14,13 @@ import java.util.jar.JarFile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
-import nl.nn.adapterframework.util.Misc;
 
 public class ClassLoaderEntityResolverTest {
 
@@ -86,7 +86,7 @@ public class ClassLoaderEntityResolverTest {
 		assertNotNull(context);
 
 		//Get a random filename
-		final String randomName = "myFile-"+Misc.createRandomUUID();
+		final String randomName = "myFile-"+ UUIDUtil.createRandomUUID();
 
 		//Find a file which does not exist, but also does not return NULL
 		URL file = new URL(context, randomName);

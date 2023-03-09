@@ -27,7 +27,7 @@ import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
 import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
@@ -132,7 +132,7 @@ public class GraphvizEngine {
 		URL vizRenderURL = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
 		if(vizWrapperURL == null || vizRenderURL == null)
 			throw new IOException("failed to open vizjs file for version ["+version+"]");
-		return Misc.streamToString(vizWrapperURL.openStream()) + Misc.streamToString(vizRenderURL.openStream());
+		return StreamUtil.streamToString(vizWrapperURL.openStream()) + StreamUtil.streamToString(vizRenderURL.openStream());
 	}
 
 

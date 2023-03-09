@@ -52,7 +52,7 @@ import nl.nn.adapterframework.http.InputStreamDataSource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,7 +85,7 @@ public class SoapProviderTest {
 
 	/*
 	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
-	 * 
+	 *
 		java.lang.VerifyError: JVMVRFY012 stack shape inconsistent; class=com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl, method=createDocumentFragment()Lorg/w3c/dom/DocumentFragment;, pc=5; Type Mismatch, argument 0 in signature com/sun/xml/messaging/saaj/soap/SOAPDocumentFragment.<init>:(Lcom/sun/org/apache/xerces/internal/dom/CoreDocumentImpl;)V does not match
 		Exception Details:
 		  Location:
@@ -167,7 +167,7 @@ public class SoapProviderTest {
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
-			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
+			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
 
@@ -360,7 +360,7 @@ public class SoapProviderTest {
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
-			String attachment = Misc.streamToString(soapAttachmentPart.getRawContent());
+			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
 			//ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
 
@@ -410,7 +410,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void soapActionInSessionKeySOAP1_1() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		String value = "1.1-SoapAction";
 		webServiceContext.getMessageContext().put("SOAPAction", value);
@@ -421,7 +421,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void noSoapActionInSessionKeySOAP1_1() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		SOAPProvider.invoke(request);
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
@@ -429,7 +429,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void soap1_1MessageWithActionInContentTypeHeader() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		String value = "ActionInContentTypeHeader";
 		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);

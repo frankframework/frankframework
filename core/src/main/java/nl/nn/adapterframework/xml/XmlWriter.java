@@ -37,7 +37,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -127,7 +127,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
 			writer.append(":").append(prefixMapping.prefix);
 		}
-		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
+		writer.append("=\"").append(XmlEncodingUtils.encodeChars(prefixMapping.uri)).append("\"");
 	}
 
 	@Override
@@ -161,7 +161,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				for (int i=0; i<attributes.getLength(); i++) {
 					String attrValue = attributes.getValue(i);
 					if (attrValue!=null) {
-						writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attrValue, true).replace("&#39;", "'")+"\"");
+						writer.append(" "+attributes.getQName(i)+"=\""+ XmlEncodingUtils.encodeChars(attrValue, true).replace("&#39;", "'")+"\"");
 					}
 				}
 				for (int i=0; i<newNamespaceDefinitions.size(); i++) {
@@ -208,7 +208,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				if (inCdata || !outputEscaping) {
 					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
+					writer.append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
 				}
 			}
 		} catch (IOException e) {

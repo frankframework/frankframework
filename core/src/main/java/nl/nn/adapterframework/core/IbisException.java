@@ -28,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xml.sax.SAXParseException;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Base Exception with compact but informative getMessage().
@@ -58,11 +58,11 @@ public class IbisException extends Exception {
 			AddressException ae = (AddressException)t;
 			String parsedString=ae.getRef();
 			if (StringUtils.isNotEmpty(parsedString)) {
-				result = Misc.concatStrings(result, " ", "["+parsedString+"]");
+				result = StringUtil.concatStrings(result, " ", "["+parsedString+"]");
 			}
 			int column = ae.getPos()+1;
 			if (column>0) {
-				result = Misc.concatStrings(result, " ", "at column ["+column+"]");
+				result = StringUtil.concatStrings(result, " ", "at column ["+column+"]");
 			}
 		}
 		if (t instanceof SAXParseException) {
@@ -76,12 +76,12 @@ public class IbisException extends Exception {
 				locationInfo = "SystemId ["+sysid+"]";
 			}
 			if (line>=0) {
-				locationInfo = Misc.concatStrings(locationInfo, " ", "line ["+line+"]");
+				locationInfo = StringUtil.concatStrings(locationInfo, " ", "line ["+line+"]");
 			}
 			if (col>=0) {
-				locationInfo = Misc.concatStrings(locationInfo, " ", "column ["+col+"]");
+				locationInfo = StringUtil.concatStrings(locationInfo, " ", "column ["+col+"]");
 			}
-			result = Misc.concatStrings(locationInfo, ": ", result);
+			result = StringUtil.concatStrings(locationInfo, ": ", result);
 		}
 		if (t instanceof TransformerException) {
 			TransformerException te = (TransformerException)t;
@@ -96,12 +96,12 @@ public class IbisException extends Exception {
 					locationInfo = "SystemId ["+sysid+"]";
 				}
 				if (line>=0) {
-					locationInfo = Misc.concatStrings(locationInfo, " ", "line ["+line+"]");
+					locationInfo = StringUtil.concatStrings(locationInfo, " ", "line ["+line+"]");
 				}
 				if (col>=0) {
-					locationInfo = Misc.concatStrings(locationInfo, " ", "column ["+col+"]");
+					locationInfo = StringUtil.concatStrings(locationInfo, " ", "column ["+col+"]");
 				}
-				result = Misc.concatStrings(locationInfo, ": ", result);
+				result = StringUtil.concatStrings(locationInfo, ": ", result);
 			}
 		}
 		if (t instanceof SQLException) {
@@ -109,17 +109,17 @@ public class IbisException extends Exception {
 			int errorCode = sqle.getErrorCode();
 			String sqlState = sqle.getSQLState();
 			if (errorCode!=0) {
-				result = Misc.concatStrings("errorCode ["+errorCode+"]", ", ", result);
+				result = StringUtil.concatStrings("errorCode ["+errorCode+"]", ", ", result);
 			}
 			if (StringUtils.isNotEmpty(sqlState)) {
-				result = Misc.concatStrings("SQLState ["+sqlState+"]", ", ", result);
+				result = StringUtil.concatStrings("SQLState ["+sqlState+"]", ", ", result);
 			}
 		}
 		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
 			oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
 			int xaError = oxae.getXAError();
 			if (xaError != 0) {
-				result = Misc.concatStrings("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
+				result = StringUtil.concatStrings("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
 			}
 		}
 		return result;
@@ -143,8 +143,8 @@ public class IbisException extends Exception {
 		Throwable t = e;
 		for(String message:msgChain) {
 			String exceptionType = filter.accept(t) ? "" : "("+t.getClass().getSimpleName()+")";
-			message = Misc.concatStrings(exceptionType, " ", message);
-			result = Misc.concatStrings(result, ": ", message);
+			message = StringUtil.concatStrings(exceptionType, " ", message);
+			result = StringUtil.concatStrings(result, ": ", message);
 			t = getCause(t);
 		}
 		if (result==null) {
@@ -227,7 +227,7 @@ public class IbisException extends Exception {
 				}
 			}
 			if (!tailContainsDetails) {
-				message= Misc.concatStrings(specificDetails, ": ", message);
+				message= StringUtil.concatStrings(specificDetails, ": ", message);
 			}
 		}
 		result.addFirst(message);

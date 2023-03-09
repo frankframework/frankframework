@@ -18,9 +18,9 @@ package nl.nn.adapterframework.core;
 import javax.transaction.TransactionManager;
 
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -61,7 +61,7 @@ public class IbisTransaction {
 		txIsNew = txStatus.isNewTransaction();
 
 		if (txIsNew) {
-			txName = Misc.createSimpleUUID();
+			txName = UUIDUtil.createSimpleUUID();
 			TransactionSynchronizationManager.setCurrentTransactionName(txName);
 			int txTimeout = txDef.getTimeout();
 			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + descriptionOfOwner + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-import nl.nn.credentialprovider.util.Misc;
+import org.apache.commons.lang3.StringUtils;
 
 public class MapCredentials extends Credentials {
 
@@ -35,8 +35,8 @@ public class MapCredentials extends Credentials {
 	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
 		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.aliases = aliases;
-		this.usernameSuffix = Misc.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
-		this.passwordSuffix = Misc.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
+		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
+		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
 	}
 
 	@Override

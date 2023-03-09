@@ -103,12 +103,13 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -926,7 +927,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			moveInProcessToError(messageId, correlationId, messageSupplier, rcvDate, comments, rawMessage, TXREQUIRED);
 		}
 		PipeLineResult plr = new PipeLineResult();
-		Message result=new Message("<error>"+XmlUtils.encodeChars(comments)+"</error>");
+		Message result=new Message("<error>"+ XmlEncodingUtils.encodeChars(comments)+"</error>");
 		plr.setResult(result);
 		plr.setState(ExitState.REJECTED);
 		if (getSender()!=null) {
@@ -1203,7 +1204,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
 			if (StringUtils.isEmpty(messageId)) {
-				messageId=Misc.createSimpleUUID();
+				messageId= UUIDUtil.createSimpleUUID();
 				if (log.isDebugEnabled())
 					log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 			}

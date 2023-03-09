@@ -1619,4 +1619,18 @@ public class ParameterTest {
 		p.configure();
 	}
 
+	@Test
+	public void testParameterfromStylesheetXsltVersion3() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setXsltVersion(3);
+		p.setStyleSheetName("Param/ParameterXslt3.0.xsl");
+		p.configure();
+
+		Message input = new Message("<data>{\"pad\":{\"naar\":{\"wat\":{\"de\":{\"waarde\":{\"moet\":{\"zijn\":\"hallo\"}}}}}}}</data>");
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("hallo", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
 }

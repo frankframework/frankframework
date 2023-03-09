@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
@@ -31,7 +31,7 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
-				messageId=Misc.createSimpleUUID();
+				messageId= UUIDUtil.createSimpleUUID();
 				log.error("null value for messageId, setting to ["+messageId+"]");
 
 		}

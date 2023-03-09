@@ -44,7 +44,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -236,7 +236,7 @@ public class PipeDescriptionProvider {
 		try {
 			URL resourceUrl = ClassUtils.getResourceURL(pipeLine, resourceName);
 			if(resourceUrl != null)
-				resource = Misc.resourceToString(resourceUrl, "\n", false);
+				resource = StreamUtil.resourceToString(resourceUrl, "\n", false);
 			else
 				resource = "File not found: " + resourceName;
 		} catch(IOException e) {

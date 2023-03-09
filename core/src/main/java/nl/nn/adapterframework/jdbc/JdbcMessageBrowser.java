@@ -38,8 +38,8 @@ import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -149,11 +149,11 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 			}
 			return " WHERE "+clause;
 		}
-		return Misc.concatStrings(" WHERE "+selector," AND ", clause);
+		return StringUtil.concatStrings(" WHERE "+selector," AND ", clause);
 	}
 
 	protected String createSelector() {
-		return Misc.concatStrings(
+		return StringUtil.concatStrings(
 				(StringUtils.isNotEmpty(getSlotIdField()) ? getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'") : ""),
 				" AND ",
 				(StringUtils.isNotEmpty(getType()) && StringUtils.isNotEmpty(getTypeField()) ? getTypeField()+"="+(useParameters?"?":"'"+getTypeField()+"'") : ""));

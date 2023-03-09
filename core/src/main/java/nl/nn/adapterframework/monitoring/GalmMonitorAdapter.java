@@ -26,15 +26,16 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * MonitorAdapter that creates log lines for the GALM log adapter.
- * 
+ *
  * configuration is done via the AppConstants 'galm.stage' and 'galm.source',
  * that in the default implemenation obtain their values from custom properties 'galm.stage' and
  * appConstant 'instance.name'.
- *  
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -95,7 +96,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 
 	public String getGalmRecord(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message) {
 		if (subSource.indexOf(' ')>=0) {
-			String replacement=Misc.replace(subSource," ","_");
+			String replacement= StringUtil.replace(subSource," ","_");
 			if (log.isDebugEnabled()) log.debug("subSource ["+subSource+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
 			subSource=replacement;
 		}
