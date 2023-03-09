@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.UUID;
 
 public class UUIDUtil {
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
@@ -43,7 +44,7 @@ public class UUIDUtil {
 	 * Creates a Universally Unique Identifier, via the java.util.UUID class (36 characters or 32 characters without dashes).
 	 */
 	public static String createRandomUUID(boolean removeDashes) {
-		String uuidString = java.util.UUID.randomUUID().toString();
+		String uuidString = UUID.randomUUID().toString();
 		if (removeDashes) {
 			return uuidString.replaceAll("-", "");
 		}

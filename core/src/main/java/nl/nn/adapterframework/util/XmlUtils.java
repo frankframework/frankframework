@@ -25,11 +25,11 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -1238,15 +1238,11 @@ public class XmlUtils {
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList<>();
+		c = new ArrayList<>();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 
-		if ("*".equals(tag)) {
-			allChildren = true;
-		} else {
-			allChildren = false;
-		}
+		allChildren = "*".equals(tag);
 
 		for (int i = 0; i < len; i++) {
 			Node n = nl.item(i);
@@ -1641,7 +1637,7 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Collection<String> c = new LinkedList<>();
+		Collection<String> c = new ArrayList<>();
 		Document doc = buildDomDocument(msg, true, true);
 		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
