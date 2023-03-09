@@ -494,8 +494,7 @@ public class Message implements Serializable {
 		if (charsRead <= 0) {
 			return new byte[0];
 		}
-		byte[] data = new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
-		return data;
+		return new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
 	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
