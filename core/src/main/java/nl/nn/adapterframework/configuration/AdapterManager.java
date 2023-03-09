@@ -41,8 +41,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
@@ -51,7 +51,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		log.debug("registering adapter [{}] with AdapterManager [{}]", adapter, this);
+		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}]", adapter.toString(), this.toString());
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
@@ -145,7 +146,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
 	 * the {@link LifecycleProcessor} will trigger this method.
-	 * 
+	 *
 	 * Starts all Adapters registered in this manager.
 	 */
 	@Override

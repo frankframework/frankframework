@@ -12,11 +12,15 @@
 	<description>Framework to provide credentials from various secret stores</description>
 
 	<properties>
-		<apache.tomcat.version>9.0.71</apache.tomcat.version>
+		<apache.tomcat.version>9.0.73</apache.tomcat.version>
 		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-catalina</artifactId>
@@ -57,7 +61,7 @@
 		<dependency>
 			<groupId>org.wildfly.security</groupId>
 			<artifactId>wildfly-elytron</artifactId>
-			<version>2.0.0.Final</version>
+			<version>2.1.0.Final</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -91,7 +95,7 @@
 			<artifactId>slf4j-api</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- commons-collections 3.2.2 included to override 3.2.1 version included in apacheds-test-framework -->
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -106,4 +110,13 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

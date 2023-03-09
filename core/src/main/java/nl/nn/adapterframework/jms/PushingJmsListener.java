@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
 */
 package nl.nn.adapterframework.jms;
 
-import java.util.Map;
-
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,8 +32,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -144,27 +138,6 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-
-	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
-		try {
-			// TODO Do we still need this? Should we commit too? See
-			// PullingJmsListener.afterMessageProcessed() too (which does a
-			// commit, but no rollback).
-			if (plr!=null && !isTransacted() && isJmsTransacted() && plr.getState()==ExitState.SUCCESS) {
-				Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-				if (session==null) {
-					log.error(getLogPrefix()+"session is null, cannot roll back session");
-				} else {
-					log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
-					session.rollback();
-				}
-			}
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
 
 	@Override
 	public IListenerConnector<javax.jms.Message> getListenerPortConnector() {

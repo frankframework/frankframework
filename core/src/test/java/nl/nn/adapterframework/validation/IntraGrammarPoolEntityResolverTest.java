@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -48,17 +48,17 @@ public class IntraGrammarPoolEntityResolverTest {
 			resourceIdentifier.setNamespace(namespace);
 		}
 
-		resourceIdentifier.setBaseSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+"Xslt/importDocument/importLookupRelative1.xsl");
-		resourceIdentifier.setExpandedSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+href);
+		resourceIdentifier.setBaseSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/importDocument/importLookupRelative1.xsl");
+		resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href);
 		if(href.startsWith("../")) {
-			resourceIdentifier.setExpandedSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
+			resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
 		}
-		resourceIdentifier.setLiteralSystemId(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
+		resourceIdentifier.setLiteralSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
 		return resourceIdentifier;
 	}
 
 	@ParameterizedTest
-	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
+	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
 	public void noClassPathSchemaResource(String base) throws Exception {
 		List<Schema> schemas = new ArrayList<>();
 		schemas.add(new ResourceSchema("namespace1", "AppConstants.properties"));

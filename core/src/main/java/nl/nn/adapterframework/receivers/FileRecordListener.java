@@ -41,7 +41,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
 /**
@@ -103,11 +104,11 @@ public class FileRecordListener implements IPullingListener {
 			throw new ListenerException(getName() + " error renaming directory: The directory [" + directoryTo + "] to move the file [" + fullFilePath + "] is not a directory!");
 		}
 		// Move file to new directory
-		String newFileName = Misc.createSimpleUUID() + "-" + file.getName();
+		String newFileName = UUIDUtil.createSimpleUUID() + "-" + file.getName();
 
 		int dotPosition = file.getName().lastIndexOf(".");
 		if (dotPosition > 0)
-			newFileName = file.getName().substring(0, dotPosition) + "-" + Misc.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
+			newFileName = file.getName().substring(0, dotPosition) + "-" + UUIDUtil.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
 
 		success = file.renameTo(new File(dir, newFileName));
 		if (!success) {
@@ -224,7 +225,7 @@ public class FileRecordListener implements IPullingListener {
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
-				fileContent = Misc.fileToString(fullInputFileName, "\n");
+				fileContent = StreamUtil.fileToString(fullInputFileName, "\n");
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {

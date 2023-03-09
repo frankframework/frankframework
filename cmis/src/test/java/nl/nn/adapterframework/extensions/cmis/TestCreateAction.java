@@ -23,7 +23,7 @@ import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 @SuppressWarnings("deprecation")
 @RunWith(Parameterized.class)
@@ -87,7 +87,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 	private Message getTestFile(boolean base64Encoded) throws Exception {
 		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
 		assertNotNull(testFile);
-		byte[] bytes = Misc.streamToBytes(testFile.openStream());
+		byte[] bytes = StreamUtil.streamToBytes(testFile.openStream());
 
 		return new Message(base64Encoded ? Base64.encodeBase64(bytes) : bytes);
 	}

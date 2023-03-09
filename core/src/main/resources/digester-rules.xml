@@ -55,8 +55,6 @@
 	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
-<!-- 	<rule pattern="*/statisticsHandler" registerMethod="registerStatisticsHandler" beanClass="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"/> -->
-<!-- 	<rule pattern="*/statisticsHandlers" registerMethod="registerStatisticsHandler" paramtype="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler" beanClass="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"/> -->
 	<rule pattern="*/cache" registerMethod="setCache" beanClass="nl.nn.adapterframework.cache.EhCache"/>
 
 	<!-- Digester rules for monitoring -->

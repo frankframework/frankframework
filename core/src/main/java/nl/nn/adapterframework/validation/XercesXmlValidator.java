@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
@@ -40,14 +39,11 @@ import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -59,12 +55,10 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
@@ -203,8 +197,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this);
-		errorHandler.warn = warn;
+		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this, warn);
 		preparser.setErrorHandler(errorHandler);
 		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
@@ -414,37 +407,5 @@ class PreparseResult {
 		return xsModels;
 	}
 
-}
-class XercesValidationErrorHandler implements XMLErrorHandler {
-	protected Logger log = LogUtil.getLogger(this);
-	protected boolean warn = true; //TODO this needs to be replaced with a suppression-key based configuration-warning
-	private IConfigurationAware source;
-
-	public XercesValidationErrorHandler(IConfigurationAware source) {
-		this.source = source;
-	}
-
-	@Override
-	public void warning(String domain, String key, XMLParseException e) throws XNIException {
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
-
-		// In case the XSD doesn't exist throw an exception to prevent the adapter from starting.
-		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
-			throw e;
-		}
-	}
-
-	@Override
-	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		warning(domain, key, e);
-	}
-
-	@Override
-	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		warning(domain, key, e);
-		throw e;
-	}
 }
 

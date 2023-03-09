@@ -21,7 +21,7 @@ import java.io.Reader;
 
 /**
  * Reader that encapsulates a file within a prefix and a postfix.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  */
@@ -47,10 +47,10 @@ public class EncapsulatingReader extends FilterReader {
 	}
 
 	private char charPrintable(char c) {
-		if (!encodePrintable || XmlUtils.isPrintableUnicodeChar(c)) {
+		if (!encodePrintable || XmlEncodingUtils.isPrintableUnicodeChar(c)) {
 			return c;
 		} else {
-			return XmlUtils.REPLACE_NON_XML_CHAR;
+			return XmlEncodingUtils.REPLACE_NON_XML_CHAR;
 		}
 	}
 

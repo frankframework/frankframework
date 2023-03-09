@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -160,7 +161,7 @@ public class FileViewerServlet extends HttpServletBase {
 			LineNumberReader lnr = new LineNumberReader(reader);
 			String line;
 			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlUtils.encodeChars(line))+"<br/>");
+				out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
 			}
 
 			out.println("</body>");
@@ -176,7 +177,7 @@ public class FileViewerServlet extends HttpServletBase {
 				lastPart=filename;
 			}
 			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			Misc.readerToWriter(reader, out);
+			StreamUtil.readerToWriter(reader, out);
 		}
 		if (type.equalsIgnoreCase("xml")) {
 			response.setContentType("application/xml");
@@ -223,7 +224,7 @@ public class FileViewerServlet extends HttpServletBase {
 			lastPart=filename;
 		}
 		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		Misc.streamToStream(inputStream, outputStream);
+		StreamUtil.streamToStream(inputStream, outputStream);
 		outputStream.close();
 	}
 

@@ -29,6 +29,13 @@
 				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="CoordinatorEnvironmentBean.defaultTimeout">${transactionmanager.defaultTransactionTimeout}</prop>
+
+				<prop key="CoordinatorEnvironmentBean.txReaperTimeout">${transactionmanager.narayana.reapTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperMode">DYNAMIC</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperZombieMax">2</prop> <!-- default 8. how many stuck threads need to be present before things are logged -->
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceGracePeriod">${transactionmanager.narayana.stuckTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceInterval">${transactionmanager.narayana.stuckTimerTime}</prop>
 			</props>
 		</property>
 	</bean>

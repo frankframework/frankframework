@@ -36,16 +36,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
-	protected static Logger log = LogUtil.getLogger(NarayanaDataSourceFactory.class);
+	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
-	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
-
-	public NarayanaDataSourceFactory() {
-		AppConstants appConstants = AppConstants.getInstance();
-		maxPoolSize = appConstants.getInt(MAX_POOL_SIZE_PROPERTY, maxPoolSize);
-	}
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
@@ -57,6 +52,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			checkModifiers(result);
 			return result;
 		}
+
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource) dataSource;
 	}
@@ -69,11 +65,11 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 			int minor = metadata.getDriverMinorVersion();
 
 			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
 		} catch (SQLException e) {
-			log.warn("Could not check for existence of Modifier", e);
+			LOG.warn("Could not check for existence of Modifier", e);
 		}
 	}
 

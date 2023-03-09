@@ -57,7 +57,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Implementation of {@link IPortConnectedListener} that acts as an IFSA-service.
@@ -467,7 +467,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			}
 			return  new Message("<poisonmessage>"+
 					"  <source>"+source+"</source>"+
-					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
+					"  <contents>"+ XmlEncodingUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
 					"</poisonmessage>");
 		}
 

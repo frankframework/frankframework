@@ -39,6 +39,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender used to run javascript code using J2V8 or Rhino
@@ -99,7 +100,7 @@ public class JavascriptSender extends SenderSeries {
 				throw new SenderException(getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				fileInput = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix() + "got exception loading [" + getJsFileName() + "]", e);
 			}

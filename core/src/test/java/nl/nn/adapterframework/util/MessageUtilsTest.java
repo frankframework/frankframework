@@ -98,8 +98,8 @@ public class MessageUtilsTest {
 		MessageDataSource ds = new MessageDataSource(message);
 		assertEquals("file.xml", ds.getName(), "filename should be the same");
 		assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
-		assertEquals(Misc.streamToString(url.openStream()), Misc.streamToString(ds.getInputStream()), "contents should be the same");
-		assertEquals(Misc.streamToString(url.openStream()), Misc.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 
 	@Test
@@ -110,8 +110,8 @@ public class MessageUtilsTest {
 		MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
 		assertEquals(null, ds.getName(), "filename is unknown");
 		assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
-		assertEquals(Misc.streamToString(url.openStream()), Misc.streamToString(ds.getInputStream()), "contents should be the same");
-		assertEquals(Misc.streamToString(url.openStream()), Misc.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class MessageUtilsTest {
 		MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
 		assertEquals(null, ds.getName(), "filename is unknown");
 		assertEquals(ds.getContentType(),"application/xml", "content-type cannot be determined");
-		assertEquals(Misc.streamToString(ds.getInputStream()), Misc.streamToString(url.openStream()), "contents should be the same");
-		assertEquals(Misc.streamToString(url.openStream()), Misc.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 }

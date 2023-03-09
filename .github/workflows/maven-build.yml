@@ -78,13 +78,14 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
+      # Use Maven Wrapper so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: mvn -B -V -T1 package -P${{env.PROFILES}}
+      run: ./mvnw -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2

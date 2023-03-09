@@ -48,8 +48,15 @@ on your system, for instance `$HOME/ibis4test-logs` but be aware that you cannot
 
 ## 3. Create a Run Configuration - IntelliJ
 
-Create a Tomcat Run Configuration and set the following:
+Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependent
+paths, so you have to make your own Run Configuration for this. Be careful, because a few things can go wrong that can cause tests or the startup to fail.
+
+If you have checked out multiple workspaces, you may wish to set different ports for HTTP and JMX in the RunConfiguration in each workspace. This allows you to start instances from each workspace in
+parallel, so you can for instance run multiple debug sessions side by side to compare system-behaviour in a test in different branches.
+
+### Create a Tomcat Run Configuration and set the following:
 1. Select your installed Tomcat Application Server
+2. Make sure that you have enabled the Maven profile `database-drivers` and reload the Maven project after enabling it.
 2. Add the following parameters to the VM Options:
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`

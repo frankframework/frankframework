@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,8 +107,11 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testGetAliases() throws Exception {
+		// Act
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
-		assertEquals("[straight, noUsername, singleValue]", aliases.toString());
-	}
 
+		// Arrange
+		List<String> sortedAliases = aliases.stream().sorted().collect(Collectors.toList());
+		assertEquals("[noUsername, singleValue, straight]", sortedAliases.toString());
+	}
 }

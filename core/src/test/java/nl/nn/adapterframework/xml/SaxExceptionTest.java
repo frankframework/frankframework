@@ -2,10 +2,10 @@ package nl.nn.adapterframework.xml;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
@@ -187,8 +187,6 @@ public class SaxExceptionTest {
 	}
 
 	public void inspectViaSenderAndTransformerException(SenderException e, SAXException originalException, String expectedInSaxExceptionMessage, Locator locator) {
-		System.out.println("multiwrapped getMessage() ["+e.getMessage()+"]");
-		System.out.println("multiwrapped toString() ["+e.toString()+"]");
 		if (locator!=null) {
 			String message= e.getMessage();
 			assertThat(message, StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART1));
@@ -196,7 +194,7 @@ public class SaxExceptionTest {
 			String messageTail=message.substring(locationInfoPos+EXPECTED_LOCATION_MESSAGE_PART1.length());
 			assertThat("part of message after location info should not contain location info",messageTail, not(StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART1)));
 		}
-		//e.printStackTrace();
+
 		Throwable cause = e.getCause();
 		assertThat(cause, IsInstanceOf.instanceOf(TransformerException.class));
 		TransformerException tCause = (TransformerException)cause;
@@ -204,12 +202,6 @@ public class SaxExceptionTest {
 	}
 
 	public void inspectViaTransformerException(TransformerException e, SAXException originalException, String expectedInSaxExceptionMessage, Locator locator) {
-		System.out.println("TransformerException getMessage() ["+e.getMessage()+"]");
-		System.out.println("TransformerException toString() ["+e.toString()+"]");
-		//e.printStackTrace();
-//		if (locator!=null) {
-//			assertThat(e.getMessage(), StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
-//		}
 		Throwable cause = e.getCause();
 		assertThat(cause, IsInstanceOf.instanceOf(SAXException.class));
 		SAXException saxCause = (SAXException)cause;
@@ -217,9 +209,6 @@ public class SaxExceptionTest {
 	}
 
 	public void inspectViaSenderException(SenderException e, SAXException originalException, String expectedInSaxExceptionMessage, Locator locator) {
-		System.out.println("SenderException getMessage() ["+e.getMessage()+"]");
-		System.out.println("SenderException toString() ["+e.toString()+"]");
-		//e.printStackTrace();
 		if (locator!=null) {
 			assertThat(e.getMessage(), StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
 		}
@@ -230,9 +219,6 @@ public class SaxExceptionTest {
 	}
 
 	public void inspectSAXException(SAXException e, String expectedInMessage, Locator locator) {
-//		System.out.println("SAXException getMessage() ["+e.getMessage()+"]");
-//		System.out.println("SAXException toString() ["+e.toString()+"]");
-		//e.printStackTrace();
 		assertThat("SaxException toString() must show itself",e.toString(),StringContains.containsString(e.getClass().getSimpleName()));
 		assertThat("SaxException toString() must only show itself, not also its cause",e.toString(),not(StringContains.containsString("java.io.IOException")));
 		if (StringUtils.isNotEmpty(expectedInMessage)) {
@@ -243,7 +229,7 @@ public class SaxExceptionTest {
 			assertThat("location info must be shown", e.getMessage(),StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
 		}
 		Throwable cause2 = e.getCause();
-		assertNotNull("SaxException should have proper cause",cause2);
+		assertNotNull(cause2, "SaxException should have proper cause");
 		assertThat(cause2, IsInstanceOf.instanceOf(IOException.class));
 		Throwable cause1 = cause2.getCause();
 		assertThat(cause1, IsInstanceOf.instanceOf(NullPointerException.class));

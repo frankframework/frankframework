@@ -36,6 +36,8 @@ import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.wss4j.common.WSS4JConstants;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
@@ -54,7 +56,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.AttributesWrapper;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -80,7 +81,7 @@ public class SoapWrapperTest {
 			+ "<Status>OK</Status></Result></FindDocuments_Response>";
 	private String expectedSoapBody12 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
 			+ "<Status>OK</Status></Result></FindDocuments_Response>";
-	
+
 	@Test
 	public void getBody11() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
@@ -108,7 +109,7 @@ public class SoapWrapperTest {
 		}
 		assertEquals(expectedSoapBody, soapBody);
 	}
-	
+
 	@Test
 	public void getBodyXml() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
@@ -122,7 +123,7 @@ public class SoapWrapperTest {
 		}
 		assertEquals(expectedSoapBody, soapBody);
 	}
-	
+
 	@Test
 	public void getBody11AndStoreSoapNamespace() throws ConfigurationException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
@@ -431,12 +432,12 @@ public class SoapWrapperTest {
 				if(prefix.equals("SIG-")) {
 					prefix = "Signature-";
 				}
-				return Misc.concat("", prefix, ""+i.getAndIncrement());
+				return StringUtil.concat("", prefix, ""+i.getAndIncrement());
 			}
 
 			@Override
 			public String createSecureId(String prefix, Object o) {
-				return Misc.concat("", prefix, Misc.createUUID());
+				return StringUtil.concat("", prefix, UUIDUtil.createUUID());
 			}
 		});
 	}

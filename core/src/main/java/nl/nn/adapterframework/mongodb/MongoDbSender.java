@@ -76,12 +76,12 @@ import nl.nn.adapterframework.util.StringResolver;
 
 /**
  * Sender to perform action on a MongoDB database.
- * 
+ *
  * @ff.parameter database Database to connect to. Overrides attribute <code>database</code>
  * @ff.parameter collection Collection to act upon. Overrides attribute <code>collection</code>
  * @ff.parameter filter Filter. Can contain references to parameters between '?{' and '}'. Overrides attribute <code>filter</code>
  * @ff.parameter limit Limit to number of results returned. A value of 0 means 'no limit'. Overrides attribute <code>limit</code>
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -356,7 +356,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			filterSpec = Message.isEmpty(message) ? "" : message.asString();
 		}
 		if (filterSpec.contains(NAMED_PARAM_START) && filterSpec.contains(NAMED_PARAM_END)) {
-			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, (List)null, NAMED_PARAM_START, NAMED_PARAM_END);
+			filterSpec = StringResolver.substVars(filterSpec, pvl.getValueMap(), null, null, NAMED_PARAM_START, NAMED_PARAM_END);
 		}
 		return getDocument(filterSpec);
 	}
