@@ -1202,7 +1202,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		this.protocol = protocol;
 	}
 
-	/** If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned */
+	/** If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
+	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
+	 * the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.
+	 */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}
