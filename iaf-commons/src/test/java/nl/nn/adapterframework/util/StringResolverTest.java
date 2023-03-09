@@ -114,6 +114,28 @@ public class StringResolverTest {
 	}
 
 	@Test
+	public void resolveSimpleWithPropertiesDefault() {
+		// This test verifies that a property is retrieved from a Properties that is supplied
+		// as default to the Properties parameter given to the StringResolver.
+
+		// Arrange
+		Properties props = new Properties(properties);
+
+
+		// Act
+		String result = StringResolver.substVars("blalblalab ${key1}", props);
+
+		// Assert
+		assertEquals("blalblalab value1", result);
+
+		// Act
+		result = StringResolver.substVars("blalblalab ${key1}", properties, true);
+
+		// Assert
+		assertEquals("blalblalab ${key1:-value1}", result);
+	}
+
+	@Test
 	public void resolveSimpleFromProps2() {
 		// Arrange
 		Map<Object, Object> emptyMap = Collections.emptyMap();
