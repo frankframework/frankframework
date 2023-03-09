@@ -27,6 +27,10 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -186,4 +190,13 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

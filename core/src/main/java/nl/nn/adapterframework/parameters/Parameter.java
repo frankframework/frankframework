@@ -34,6 +34,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -839,9 +840,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if ("now".equals(name.toLowerCase())) {
 				substitutionValue = preFormatDateType(new Date(), formatType, formatString);
 			} else if ("uid".equals(namelc)) {
-				substitutionValue = Misc.createSimpleUUID();
+				substitutionValue = UUIDUtil.createSimpleUUID();
 			} else if ("uuid".equals(namelc)) {
-				substitutionValue = Misc.createRandomUUID();
+				substitutionValue = UUIDUtil.createRandomUUID();
 			} else if ("hostname".equals(namelc)) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(namelc)) {

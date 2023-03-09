@@ -26,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 
@@ -141,7 +141,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 			whereClause=getDateField()+">=?";
 		}
 		if (endTime!=null) {
-			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
+			whereClause= StringUtil.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
 		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrder();
@@ -159,7 +159,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	@Override
 	protected String createSelector() {
 		if (StringUtils.isNotEmpty(selectCondition)) {
-			return Misc.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
+			return StringUtil.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
 		}
 		return super.createSelector();
 	}

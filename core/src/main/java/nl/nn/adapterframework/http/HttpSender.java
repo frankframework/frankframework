@@ -29,9 +29,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -61,6 +58,9 @@ import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -75,7 +75,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -461,7 +460,7 @@ public class HttpSender extends HttpSenderBase {
 				try {
 					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
 					File file = new File(fileName);
-					Misc.streamToFile(responseMessage.asInputStream(), file);
+					StreamUtil.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
@@ -557,7 +556,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 		if (is != null) {
 			try (OutputStream outputStream = response.getOutputStream()) {
-				Misc.streamToStream(is, outputStream);
+				StreamUtil.streamToStream(is, outputStream);
 				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 			}
 		}
@@ -692,7 +691,7 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * If <code>true</code>, the input will be added to the URL for <code>methodType</code>=<code>GET</code>, or for <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code> if <code>postType</code>=<code>RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier
-	 * @ff.default for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code> 
+	 * @ff.default for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code>
 	 */
 	public void setTreatInputMessageAsParameters(Boolean b) {
 		treatInputMessageAsParameters = b;

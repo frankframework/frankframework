@@ -153,7 +153,7 @@ public class XmlBuilderTest {
 		XmlBuilder root = new XmlBuilder("root");
 		root.setValue(value);
 
-		String expected = "<root>" + XmlUtils.encodeChars(value) + "</root>";
+		String expected = "<root>" + XmlEncodingUtils.encodeChars(value) + "</root>";
 		MatchUtils.assertXmlEquals(expected, root.toXML(false));
 	}
 

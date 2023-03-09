@@ -32,9 +32,9 @@ import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.http.HttpSender;
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Stream an input stream to an output stream.
@@ -240,7 +240,7 @@ public class StreamPipe extends FixedForwardPipe {
 					}
 				}
 			} else {
-				Misc.streamToStream(inputStream, outputStream);
+				StreamUtil.streamToStream(inputStream, outputStream);
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException streaming input to output", e);

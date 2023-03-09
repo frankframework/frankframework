@@ -2,17 +2,9 @@ package nl.nn.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CredentialProvidingPropertySourceTest {
-
-	@BeforeEach
-	public void setup() {
-		MockCredentialFactory mcf = new MockCredentialFactory();
-		mcf.add("alias1", "username1", "password1");
-		CredentialFactory.getInstance().forceDelegate(mcf);
-	}
 
 	@Test
 	public void testGetExistingUsername() {

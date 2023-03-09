@@ -32,12 +32,12 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * This class is a 'comparison helper' for file assertions
- * 
+ *
  * @author Niels Meijer
  */
 public class TestAssertions extends org.junit.jupiter.api.Assertions {
@@ -133,7 +133,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
 		URL svg = ClassUtils.getResourceURL("test1.xml");
-		String str1 = Misc.streamToString(svg.openStream());
+		String str1 = StreamUtil.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 
 		assertEqualsIgnoreWhitespaces(str1, str2);

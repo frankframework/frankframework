@@ -53,10 +53,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Implementation of {@link IPullingListener} that acts as an IFSA-service.
@@ -558,7 +558,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			}
 			return  new Message("<poisonmessage>"+
 					"  <source>"+source+"</source>"+
-					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
+					"  <contents>"+ XmlEncodingUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
 					"</poisonmessage>");
 		}
 

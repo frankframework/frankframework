@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class Nashorn implements JavascriptEngine<ScriptEngine> {
@@ -57,7 +57,7 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
 			//Add PromiseJS polyfill
 			URL promise = ClassUtils.getResourceURL("net/arnx/nashorn/lib/promise.js");
-			executeScript(Misc.resourceToString(promise));
+			executeScript(StreamUtil.resourceToString(promise));
 		} catch (Exception e) { //Catch all exceptions
 			throw new JavascriptException("error initializing Nashorn, unable to load Promise.js", e);
 		}

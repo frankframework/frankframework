@@ -58,9 +58,10 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerErrorListener;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ExceptionCatchingFilter;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -159,7 +160,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		paramsString +
 		"<xsl:template match=\"/\">" +
 		"<xsl:element "+namespaceClause+" name=\"" + rootElementname + "\">" +
-		"<xsl:copy-of select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"/>" +
+		"<xsl:copy-of select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
@@ -314,7 +315,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String containerElementString = StringUtils.isNotEmpty(getContainerElement()) ? "filter to containerElement '"+getContainerElement()+"'" : null;
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
-			String label = "XML after preprocessing: " + Misc.concat(", ",containerElementString, targetElementString, xpathString);
+			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
 			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
 		}
 

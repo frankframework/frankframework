@@ -27,12 +27,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
  * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -57,8 +58,8 @@ public class EscapePipe extends FixedForwardPipe {
 			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
-			substringStart = XmlUtils.encodeChars(substringStart);
-			substringEnd = XmlUtils.encodeChars(substringEnd);
+			substringStart = XmlEncodingUtils.encodeChars(substringStart);
+			substringEnd = XmlEncodingUtils.encodeChars(substringEnd);
 		}
 	}
 
@@ -96,9 +97,9 @@ public class EscapePipe extends FixedForwardPipe {
 	private String handle(String input) {
 		switch (getDirection()) {
 		case ENCODE:
-			return XmlUtils.encodeChars(input);
+			return XmlEncodingUtils.encodeChars(input);
 		case DECODE:
-			return XmlUtils.decodeChars(input);
+			return XmlEncodingUtils.decodeChars(input);
 		case CDATA2TEXT:
 			return XmlUtils.cdataToText(input);
 		default:

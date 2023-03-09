@@ -17,12 +17,12 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -244,8 +244,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
 	}
 
-	private List<String> getPropsToHide(Properties appConstants) {
-		List<String> propsToHide = new ArrayList<>();
+	private Set<String> getPropsToHide(Properties appConstants) {
+		Set<String> propsToHide = new HashSet<>();
 		String propertiesHideString = appConstants.getProperty("properties.hide");
 		if (propertiesHideString != null) {
 			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));

@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpMessageEntityTest {
 	private static final String MESSAGE_CONTENT = "dummy content here";
@@ -128,7 +128,7 @@ public class HttpMessageEntityTest {
 		assertNull("should not be set", entity.getContentEncoding());
 
 		assertEquals("text/plain", entity.getContentType().getValue());
-		assertEquals(MESSAGE_CONTENT, Misc.streamToString(entity.getContent()));
+		assertEquals(MESSAGE_CONTENT, StreamUtil.streamToString(entity.getContent()));
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class HttpMessageEntityTest {
 		assertNotNull(entity.getContentEncoding());
 
 		assertEquals("text/plain", entity.getContentType().getValue());
-		assertEquals(MESSAGE_CONTENT, Misc.streamToString(entity.getContent()));
+		assertEquals(MESSAGE_CONTENT, StreamUtil.streamToString(entity.getContent()));
 	}
 
 	@Test

@@ -50,7 +50,7 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Base class for API endpoints.
@@ -172,7 +172,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 			InputStream is = msg.getObject(InputStream.class);
 
 			try {
-				String inputMessage = Misc.streamToString(is, "\n", encoding, false);
+				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
 				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+encoding+"]");
@@ -203,7 +203,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		if(clazz.isAssignableFrom(InputStream.class)) {
 			return (T) is;
 		}
-		String str = Misc.streamToString(is);
+		String str = StreamUtil.streamToString(is);
 		if(str == null) {
 			return null;
 		}

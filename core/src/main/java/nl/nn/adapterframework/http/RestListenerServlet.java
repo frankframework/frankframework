@@ -34,7 +34,7 @@ import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
@@ -110,7 +110,7 @@ public class RestListenerServlet extends HttpServletBase {
 				messageContext.put(paramname, paramvalue);
 			}
 			if (!MultipartUtils.isMultipart(request)) {
-				body=Misc.streamToString(request.getInputStream(),"\n",false);
+				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
 			}
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");

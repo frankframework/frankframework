@@ -35,6 +35,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -64,7 +65,7 @@ public class XmlIf extends AbstractPipe {
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
 		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
-															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
+															"<xsl:when "+namespaceClause+" test=\"" + XmlEncodingUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
 															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
 														"</xsl:choose>",
 													xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"),

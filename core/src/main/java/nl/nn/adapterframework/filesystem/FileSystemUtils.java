@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -140,7 +141,7 @@ public class FileSystemUtils {
 		}
 		String filename = fileSystem.getCanonicalName(file);
 
-		String tmpFilename = filename+".tmp-"+Misc.createUUID();
+		String tmpFilename = filename+".tmp-"+ UUIDUtil.createUUID();
 		F tmpFile = fileSystem.toFile(tmpFilename);
 		tmpFile = fileSystem.renameFile(file, tmpFile);
 
