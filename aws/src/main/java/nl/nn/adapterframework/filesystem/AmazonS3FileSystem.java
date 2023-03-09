@@ -52,7 +52,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -135,7 +135,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(Misc.concatStrings(folder, "/", filename));
+		return toFile(StringUtil.concatStrings(folder, "/", filename));
 	}
 
 

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -41,9 +42,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Assumes input to be the file name of a ZIP archive, and unzips it to a
@@ -182,7 +182,7 @@ public class UnzipPipe extends FixedForwardPipe {
 				}
 			}
 
-			String entryResults = "";
+			StringBuilder entryResults = new StringBuilder();
 			int count = 0;
 			try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in))) {
 				ZipEntry ze;
@@ -217,7 +217,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						InputStream inputStream = StreamUtil.dontClose(zis);
 						byte[] fileContentBytes = null;
 						if (isCollectFileContents()) {
-							fileContentBytes = Misc.streamToBytes(inputStream);
+							fileContentBytes = StreamUtil.streamToBytes(inputStream);
 							inputStream = new ByteArrayInputStream(fileContentBytes);
 						}
 
@@ -246,25 +246,26 @@ public class UnzipPipe extends FixedForwardPipe {
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
-								Misc.streamToStream(inputStream, fileOutputStream);
+								StreamUtil.streamToStream(inputStream, fileOutputStream);
 							}
 						}
 						if (isCollectResults()) {
-							entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
+							entryResults.append("<result item=\"").append(count).append("\"><zipEntry>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname)).append("</zipEntry>");
 							if (targetDirectory != null) {
-								entryResults += "<fileName>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
+								entryResults.append("<fileName>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath())).append("</fileName>");
 							}
 							if (isCollectFileContents()) {
+								Objects.requireNonNull(fileContentBytes);
 								String fileContent;
 								if (base64Extensions.contains(extension)) {
-									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
+									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes), StreamUtil.DEFAULT_CHARSET);
 								} else {
-									fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-									fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
+									fileContent = new String((fileContentBytes), StreamUtil.DEFAULT_CHARSET);
+									fileContent = XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 								}
-								entryResults += "<fileContent>" + fileContent + "</fileContent>";
+								entryResults.append("<fileContent>").append(fileContent).append("</fileContent>");
 							}
-							entryResults += "</result>";
+							entryResults.append("</result>");
 						}
 
 					}

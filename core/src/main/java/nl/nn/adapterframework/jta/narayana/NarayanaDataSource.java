@@ -108,6 +108,7 @@ public class NarayanaDataSource implements DataSource {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		if (iface.isInstance(this)) {
 			return (T) this;
@@ -115,10 +116,11 @@ public class NarayanaDataSource implements DataSource {
 		return ((Wrapper)targetDataSource).unwrap(iface);
 	}
 
+	@Override
 	public String toString() {
 		Set<?> connections=null;
 		try {
-			connections = (Set)ClassUtils.getDeclaredFieldValue(null, ConnectionManager.class,"_connections");
+			connections = (Set<?>)ClassUtils.getDeclaredFieldValue(null, ConnectionManager.class,"_connections");
 		} catch (IllegalArgumentException | SecurityException | IllegalAccessException | NoSuchFieldException e) {
 			log.warn("could not obtain connectionPool size", e);
 		}

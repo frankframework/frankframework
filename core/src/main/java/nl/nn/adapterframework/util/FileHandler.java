@@ -215,7 +215,7 @@ public class FileHandler implements IScopeProvider {
 					response.setHeader("Content-Disposition", contentDisposition);
 				}
 				OutputStream outputStream = response.getOutputStream();
-				Misc.streamToStream(inputStream, outputStream);
+				StreamUtil.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix(session) + "copied response body input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 				return "";
 			} else {
@@ -378,7 +378,7 @@ public class FileHandler implements IScopeProvider {
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
-				Misc.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null);
+				StreamUtil.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null);
 			}
 			return tmpFile.getPath().getBytes();
 		}
@@ -683,7 +683,7 @@ public class FileHandler implements IScopeProvider {
 	}
 
 	/**
-	 * Sets actions the pipe has to perform. Possible action values: 
+	 * Sets actions the pipe has to perform. Possible action values:
 	 * <ul>
 	 *   <li>write: create a new file and write input to it</li>
 	 *   <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>

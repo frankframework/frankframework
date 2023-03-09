@@ -22,10 +22,12 @@ import nl.nn.adapterframework.configuration.IbisContext;
 
 /**
  * Interface for IBIS Configuration ClassLoaders.
- * 
+ *
  * @author Niels Meijer
  */
 public interface IConfigurationClassLoader {
+
+	String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
 	public enum ReportLevel {
 		DEBUG, INFO, WARN, ERROR;

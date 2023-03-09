@@ -35,7 +35,7 @@ import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Read messages from the ibisstore previously stored by a
@@ -163,7 +163,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			conditionClause = "("+conditionClause+")";
 		}
 		String slotIdClause = StringUtils.isNotEmpty(getSlotId()) ? "SLOTID='"+slotId+"'" : null;
-		return Misc.concatStrings(slotIdClause, " AND ", conditionClause);
+		return StringUtil.concatStrings(slotIdClause, " AND ", conditionClause);
 	}
 
 

@@ -14,9 +14,6 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
@@ -24,8 +21,11 @@ import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
@@ -146,7 +146,7 @@ public class MatchUtils {
 	}
 
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
-		assertTestFileEquals(file1, Misc.streamToString(fileStream));
+		assertTestFileEquals(file1, StreamUtil.streamToString(fileStream));
 	}
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {

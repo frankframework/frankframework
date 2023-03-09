@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -172,5 +172,15 @@ public class SoapValidator extends Json2XmlValidator {
 	 */
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
+	}
+
+	/**
+	 * Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
+	 * this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. 
+	 * @ff.default true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise
+	 */
+	@Override
+	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
+		super.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
 }

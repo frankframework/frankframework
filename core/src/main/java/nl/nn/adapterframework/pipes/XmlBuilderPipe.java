@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -66,7 +67,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 	}
 
 	private String buildXml(String xml) {
-		String result = XmlUtils.decodeChars(xml);
+		String result = XmlEncodingUtils.decodeChars(xml);
 		if (XmlUtils.isWellFormed(result)) {
 			result = XmlUtils.removeNamespaces(result);
 		} else {

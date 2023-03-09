@@ -32,7 +32,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @IbisInitializer
@@ -147,7 +146,7 @@ public class LarvaServlet extends HttpServletBase {
 	}
 
 	private String getTemplate(String title) throws IOException {
-		String content = Misc.resourceToString(INDEX_TEMPLATE);
+		String content = StreamUtil.resourceToString(INDEX_TEMPLATE);
 		return content.replace("{{title}}", title);
 	}
 

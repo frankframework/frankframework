@@ -61,8 +61,8 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
@@ -174,11 +174,11 @@ public class OAuthAccessTokenManager {
 			List<NameValuePair> clientInfo= new LinkedList<>();
 			clientInfo.add(new BasicNameValuePair("client_id",client_cf.getUsername()));
 			clientInfo.add(new BasicNameValuePair("client_secret",client_cf.getPassword()));
-			query = Misc.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
+			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
 		}
 		switch (httpRequest.getMethod()) {
 			case GET:
-				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
+				String url = StringUtil.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
 				apacheHttpRequest = new HttpGet(url);
 				break;
 			case POST:

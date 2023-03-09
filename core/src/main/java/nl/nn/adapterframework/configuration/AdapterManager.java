@@ -41,8 +41,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
@@ -51,7 +51,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		if (log.isDebugEnabled()) log.debug("registering adapter [" + adapter + "] with AdapterManager [" + this + "]");
+		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}]", adapter.toString(), this.toString());
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}

@@ -39,11 +39,6 @@ public class JndiDataSourceFactory extends JndiObjectFactory<DataSource,CommonDa
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "jdbc.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 
-	public static final String MIN_POOL_SIZE_PROPERTY="jdbc.connection.minPoolSize";
-	public static final String MAX_POOL_SIZE_PROPERTY="jdbc.connection.maxPoolSize";
-	public static final String MAX_IDLE_TIME_PROPERTY="jdbc.connection.maxIdleTime";
-	public static final String MAX_LIFE_TIME_PROPERTY="jdbc.connection.maxLifeTime";
-
 	public JndiDataSourceFactory() {
 		super(CommonDataSource.class);
 	}

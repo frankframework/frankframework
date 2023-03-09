@@ -29,12 +29,11 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Validates if the BuildInfo.properties file is present in the configuration (jar), and if the name and version properties are set correctly
- * 
+ *
  * @author Niels Meijer
  */
 public class BuildInfoValidator {
@@ -53,7 +52,7 @@ public class BuildInfoValidator {
 		this.buildInfoFilename = buildInfo + ".properties";
 
 		try {
-			jar = Misc.streamToBytes(stream); //Persist Stream so it can be read multiple times.
+			jar = StreamUtil.streamToBytes(stream); //Persist Stream so it can be read multiple times.
 
 			read();
 			validate();

@@ -67,6 +67,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiverStatistics;
+import nl.nn.adapterframework.core.IRedeliveringListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionRequirements;
@@ -102,12 +103,13 @@ import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -925,9 +927,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			moveInProcessToError(messageId, correlationId, messageSupplier, rcvDate, comments, rawMessage, TXREQUIRED);
 		}
 		PipeLineResult plr = new PipeLineResult();
-		Message result=new Message("<error>"+XmlUtils.encodeChars(comments)+"</error>");
+		Message result=new Message("<error>"+ XmlEncodingUtils.encodeChars(comments)+"</error>");
 		plr.setResult(result);
-		plr.setState(ExitState.ERROR);
+		plr.setState(ExitState.REJECTED);
 		if (getSender()!=null) {
 			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
@@ -1203,7 +1205,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug(logPrefix +"{} received message with messageId [{}] correlationId [{}]", logPrefix, messageId, correlationId);
 
 			if (StringUtils.isEmpty(messageId)) {
-				messageId="synthetic-message-id-" + Misc.createSimpleUUID();
+				messageId="synthetic-message-id-" + UUIDUtil.createSimpleUUID();
 				if (log.isDebugEnabled())
 					log.debug("{} Message without message id; generated messageId [{}]", logPrefix, messageId);
 			}
@@ -1327,7 +1329,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.trace("{} Receiver process message in adapter - CacheProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 					cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
 					log.trace("{} Receiver process message in adapter - CacheProcessResult - lock on Receiver released", this::getLogPrefix);
-					if (!isTransacted() && messageInError && !manualRetry) {
+					if (!isTransacted() && messageInError && !manualRetry
+							&& !(getListener() instanceof IRedeliveringListener<?> && ((IRedeliveringListener)getListener()).messageWillBeRedeliveredOnExitStateError(session))) {
 						final Message messageFinal = message;
 						moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 					}

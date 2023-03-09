@@ -16,7 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
@@ -108,7 +108,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		assertNotNull(testFile);
 
 		Message result = fileSystem.readFile(new File(testFile.toURI()).toPath(), "auto");
-		assertEquals(Misc.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
+		assertEquals(StreamUtil.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
 	}
 
 }

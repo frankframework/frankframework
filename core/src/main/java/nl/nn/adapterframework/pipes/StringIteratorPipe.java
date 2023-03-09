@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * IteratingPipe that has Strings as items.
@@ -113,7 +113,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 						previousKey=key;
 					}
 				}
-				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
+				String itemInEnvelope = getLinePrefix()+(isEscapeXml() ? XmlEncodingUtils.encodeChars(item) : item)+getLineSuffix();
 				StopReason result = null;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
@@ -149,7 +149,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		stringIteratorPipeBlockSize = i;
 	}
 
-	/** 
+	/**
 	 * If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0);
 	 * A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.
 	 * @ff.default -1

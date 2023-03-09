@@ -40,6 +40,7 @@ public class ApiMemcached implements IApiCache {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private MemcachedClient client = null;
+	private final int DEFAULT_OPERATION_TIMEOUT = 2500;
 
 	final ConnectionObserver obs = new ConnectionObserver() {
 		@Override
@@ -62,7 +63,7 @@ public class ApiMemcached implements IApiCache {
 		String address = ac.getProperty("etag.cache.server", "localhost:11211");
 		String username = ac.getProperty("etag.cache.username", "");
 		String password = ac.getProperty("etag.cache.password", "");
-		int timeout = ac.getInt("etag.cache.timeout", 10);
+		int timeout = ac.getInt("etag.cache.timeout", DEFAULT_OPERATION_TIMEOUT);
 
 		List<InetSocketAddress> addresses = AddrUtil.getAddresses(address);
 

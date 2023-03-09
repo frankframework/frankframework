@@ -72,3 +72,6 @@ secrets/
 secrets\
 .lift.toml
 setup.sh
+.mvn/
+mvnw
+mvnw.cmd

@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.xml;
 
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -28,14 +28,10 @@ import nl.nn.adapterframework.util.StringResolver;
 
 public class AttributePropertyResolver extends FullXmlFilter {
 	private Properties properties;
-	private List<String> propsToHide;
+	private Set<String> propsToHide;
 	private static final boolean resolveWithPropertyName = AppConstants.getInstance().getBoolean("properties.resolve.withName", false);
 
-	public AttributePropertyResolver(Properties properties) {
-		this(new XmlWriter(), properties, null);
-	}
-
-	public AttributePropertyResolver(ContentHandler handler, Properties properties, List<String> propsToHide) {
+	public AttributePropertyResolver(ContentHandler handler, Properties properties, Set<String> propsToHide) {
 		super(handler);
 		if(properties == null) {
 			throw new IllegalArgumentException("no properties defined");

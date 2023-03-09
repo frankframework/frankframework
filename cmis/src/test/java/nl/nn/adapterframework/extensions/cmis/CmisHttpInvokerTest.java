@@ -26,7 +26,7 @@ import org.mockito.MockitoAnnotations;
 import nl.nn.adapterframework.http.HttpResponseMock;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisHttpInvokerTest extends Mockito {
 
@@ -45,13 +45,13 @@ public class CmisHttpInvokerTest extends Mockito {
 			protected CmisHttpSender createSender() {
 				try {
 					CmisHttpSender sender = spy(super.createSender());
-	
+
 					CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-	
+
 					//Mock all requests
 					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
 					when(sender.getHttpClient()).thenReturn(httpClient);
-	
+
 					return sender;
 				} catch (Throwable t) {
 					t.printStackTrace();
@@ -69,13 +69,13 @@ public class CmisHttpInvokerTest extends Mockito {
 		return new Output() {
 			@Override
 			public void write(OutputStream out) throws Exception {
-				Misc.streamToStream(url.openStream(), out);
+				StreamUtil.streamToStream(url.openStream(), out);
 			}
 		};
 	}
 
 	private void assertResponse(String string, Response response) throws IOException {
-		String result = Misc.streamToString(response.getStream());
+		String result = StreamUtil.streamToString(response.getStream());
 		String expected = TestFileUtils.getTestFile(string);
 		assertNotNull("cannot find test file", expected);
 

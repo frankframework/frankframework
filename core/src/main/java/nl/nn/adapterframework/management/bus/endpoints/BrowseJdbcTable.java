@@ -47,6 +47,7 @@ import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -148,7 +149,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 		Map<String, Object> resultObject = new HashMap<>();
 		resultObject.put("table", table);
-		resultObject.put("query", XmlUtils.encodeChars(query));
+		resultObject.put("query", XmlEncodingUtils.encodeChars(query));
 		resultObject.put("fielddefinition", fieldDef);
 		resultObject.put("result", resultMap);
 
@@ -170,7 +171,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ table
 				+ "</tableName>"
 				+ "<where>"
-				+ (where==null?"":XmlUtils.encodeChars(where))
+				+ (where==null? "": XmlEncodingUtils.encodeChars(where))
 				+ "</where>"
 				+ "<numberOfRowsOnly>"
 				+ numberOfRowsOnly

@@ -220,6 +220,17 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
+	public void testXsltVersion3() throws Exception {
+		pipe.setXsltVersion(3);
+		// The '||' operator is used to concatenate the string representation of two values. This operator is new to XPath 3.0.
+		pipe.setXpathExpression("/company/office/employee/first_name = ('Joh' || 'n')");
+		configureAndStartPipe();
+		
+		PipeRunResult pipeRunResult = doPipe(pipe, "<company><office><employee><first_name>John</first_name></employee></office></company>", session);
+		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
 	public void someXMLInputNotEqualtoXPath() throws Exception {
 		pipe.setXpathExpression("/test");
 		pipe.setExpressionValue("");

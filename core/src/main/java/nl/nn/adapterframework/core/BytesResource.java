@@ -21,12 +21,12 @@ import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
  * Reference to an byte[]. Can be accessed multiple times.
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -45,7 +45,7 @@ public class BytesResource extends Resource {
 	}
 
 	public BytesResource(InputStream inputStream, String name, IScopeProvider scopeProvider) throws IOException {
-		this(Misc.streamToBytes(inputStream), name, scopeProvider);
+		this(StreamUtil.streamToBytes(inputStream), name, scopeProvider);
 	}
 
 	@Override
