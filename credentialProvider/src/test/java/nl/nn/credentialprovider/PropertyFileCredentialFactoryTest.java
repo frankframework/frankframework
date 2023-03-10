@@ -106,6 +106,16 @@ public class PropertyFileCredentialFactoryTest {
 	}
 
 	@Test
+	public void testPasswordWithSlashes() {
+		// Act
+		ICredentials mc = credentialFactory.getCredentials("slash", null, null);
+
+		// Assert
+		assertEquals("username from alias", mc.getUsername());
+		assertEquals("password/with/slash", mc.getPassword());
+	}
+
+	@Test
 	public void testGetAliases() throws Exception {
 		// Act
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
