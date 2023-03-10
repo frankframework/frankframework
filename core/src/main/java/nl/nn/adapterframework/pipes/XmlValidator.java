@@ -805,7 +805,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	/**
 	 * The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
 	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
-	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP 
+	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP
 	 * message needs to be validated, in other cases give this property an empty value.
 	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
 	 */
