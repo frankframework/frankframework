@@ -486,7 +486,7 @@ public class MessageTest {
 		assertEquals("", new String(header));
 
 		String actual = message.asString();
-		MatchUtils.assertXmlEquals("", actual);
+		assertEquals("", actual);
 	}
 
 	@Test
@@ -742,7 +742,7 @@ public class MessageTest {
 
 	@Test
 	public void testFileInputStreamAsInputStream() throws Exception {
-		URL url = this.getClass().getResource("/Message/testString.txt");
+		URL url = TestFileUtils.getTestFileURL("/Message/testString.txt");
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
