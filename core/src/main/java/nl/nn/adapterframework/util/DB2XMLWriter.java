@@ -71,7 +71,7 @@ public class DB2XMLWriter {
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
@@ -99,7 +99,7 @@ public class DB2XMLWriter {
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+			return "<error>"+ XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
 		}
 	}
 
@@ -145,17 +145,6 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public static String getFieldDefinitions(ResultSet rs) throws SAXException, SQLException {
-		XmlWriter writer = new XmlWriter();
-		addFieldDefinitions(rs, writer);
-		return writer.toString();
-	}
-	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
-		ResultSetMetaData rsmeta = rs.getMetaData();
-		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-			addFieldDefinitionsToContainer(fields, rsmeta);
-		}
-	}
 	public static void addFieldDefinitions(SaxElementBuilder root, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
 			addFieldDefinitionsToContainer(fields, rsmeta);

@@ -39,6 +39,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
@@ -163,8 +164,8 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
-		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		parameterValues.put("messageId", 		Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
+		parameterValues.put("messageId", 		Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		parameterValues.put("timestamp", 		DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);

@@ -42,7 +42,9 @@ import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -119,7 +121,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot find resource ["+getFilename()+"]");
 			}
 			try {
-				returnString = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
+				returnString = StreamUtil.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception loading ["+getFilename()+"]", e);
 			}
@@ -165,7 +167,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = replace(result, getReplaceFrom(), getReplaceTo());
+			result = StringUtil.replace(result, getReplaceFrom(), getReplaceTo());
 		}
 		if (!getParameterList().isEmpty()) {
 			try {
@@ -177,7 +179,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 					} else {
 						replaceFrom="${"+pv.getName()+"}";
 					}
-					result=replace(result, replaceFrom, pv.asStringValue(""));
+					result= StringUtil.replace(result, replaceFrom, pv.asStringValue(""));
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);
@@ -201,26 +203,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 		log.debug("returning fixed result [{}]", result);
 		return new PipeRunResult(getSuccessForward(), result);
-	}
-
-	public static String replace (String target, String from, String to) {
-		// target is the original string
-		// from   is the string to be replaced
-		// to	 is the string which will used to replace
-		int start = target.indexOf(from);
-		if (start==-1) return target;
-		int lf = from.length();
-		char [] targetChars = target.toCharArray();
-		StringBuilder builder = new StringBuilder();
-		int copyFrom = 0;
-		while (start != -1) {
-			builder.append(targetChars, copyFrom, start-copyFrom);
-			builder.append(to);
-			copyFrom = start+lf;
-			start = target.indexOf (from, copyFrom);
-		}
-		builder.append (targetChars, copyFrom, targetChars.length-copyFrom);
-		return builder.toString();
 	}
 
 	/**

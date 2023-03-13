@@ -130,17 +130,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 				statisticsHandler.configure();
 			}
 
-//			StatisticsKeeperIterationHandlerCollection skihc = new StatisticsKeeperIterationHandlerCollection();
-//
-//			StatisticsKeeperLogger skl =new StatisticsKeeperLogger();
-//			skl.configure();
-//			skihc.registerIterationHandler(skl);
-//
-//			StatisticsKeeperStore skih = new StatisticsKeeperStore();
-//			skih.setJmsRealm("lokaal");
-//			skih.configure();
-//			skihc.registerIterationHandler(skih);
-
 			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);

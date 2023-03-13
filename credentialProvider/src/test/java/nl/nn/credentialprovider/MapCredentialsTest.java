@@ -17,16 +17,17 @@ public class MapCredentialsTest {
 	@BeforeEach
 	public void setup() {
 		aliases = new HashMap<>();
-		aliases.put("noUsername/password","password from alias");
-		aliases.put("straight/username","username from alias");
-		aliases.put("straight/password","password from alias");
-		aliases.put("singleValue","Plain Credential");
+		aliases.put("noUsername/password", "password from alias");
+		aliases.put("straight/username", "username from alias");
+		aliases.put("straight/password", "password from alias");
+		aliases.put("slash/username", "username from alias");
+		aliases.put("slash/password", "password/with/slash");
+		aliases.put("singleValue", "Plain Credential");
 	}
 
 
 	@Test
 	public void testNoAlias() {
-
 		String alias = null;
 		String username = "fakeUsername";
 		String password = "fakePassword";
@@ -39,7 +40,6 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testUnknownAliasNoDefaults() {
-
 		String alias = "fakeAlias";
 		String username = null;
 		String password = null;
@@ -53,19 +53,28 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testUnknownAlias() {
-
 		String alias = "fakeAlias";
 		String username = "fakeUsername";
 		String password = "fakePassword";
 
-		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, null);
+		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}
 
 	@Test
-	public void testPlainAlias() {
+	public void testPasswordWithSlashes() {
+		String alias = "slash";
+		String username = "fakeUsername";
+		String password = "fakePassword";
 
+		MapCredentials mc = new MapCredentials(alias, ()->username, ()->password, aliases);
+		assertEquals("username from alias", mc.getUsername());
+		assertEquals("password/with/slash", mc.getPassword());
+	}
+
+	@Test
+	public void testPlainAlias() {
 		String alias = "straight";
 		String username = "fakeUsername";
 		String password = "fakePassword";
@@ -80,7 +89,6 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-
 		String alias = "noUsername";
 		String username = "fakeUsername";
 		String password = "fakePassword";
@@ -95,7 +103,6 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testPlainCredential() {
-
 		String alias = "singleValue";
 		String username = null;
 		String password = "fakePassword";

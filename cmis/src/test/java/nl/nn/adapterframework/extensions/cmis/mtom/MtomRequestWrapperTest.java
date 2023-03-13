@@ -11,7 +11,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class MtomRequestWrapperTest {
 	private static final String BASEPATH = "/proxy/";
@@ -50,7 +50,7 @@ public class MtomRequestWrapperTest {
 
 		String contentType = wrapper.getContentType();
 		assertTrue(contentType.contains("type=\"application/xop+xml\";"));
-		String result = Misc.streamToString(wrapper.getInputStream());
+		String result = StreamUtil.streamToString(wrapper.getInputStream());
 
 		String boundary = getBoundary(contentType);
 		assertNotNull("no boundary found", boundary);

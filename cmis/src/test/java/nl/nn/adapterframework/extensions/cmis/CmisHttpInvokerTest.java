@@ -26,7 +26,7 @@ import org.mockito.MockitoAnnotations;
 import nl.nn.adapterframework.http.HttpResponseMock;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisHttpInvokerTest extends Mockito {
 
@@ -69,13 +69,13 @@ public class CmisHttpInvokerTest extends Mockito {
 		return new Output() {
 			@Override
 			public void write(OutputStream out) throws Exception {
-				Misc.streamToStream(url.openStream(), out);
+				StreamUtil.streamToStream(url.openStream(), out);
 			}
 		};
 	}
 
 	private void assertResponse(String string, Response response) throws IOException {
-		String result = Misc.streamToString(response.getStream());
+		String result = StreamUtil.streamToString(response.getStream());
 		String expected = TestFileUtils.getTestFile(string);
 		assertNotNull("cannot find test file", expected);
 

@@ -22,13 +22,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * Pipe that generates an UUID (Universally Unique Identifier).
  *
- * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  
- * 
+ * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.
+ *
  * @author Peter Leeuwenburgh
  */
 @ElementType(ElementTypes.TRANSLATOR)
@@ -48,9 +48,9 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 		String result = null;
 		if (getType()==Type.ALPHANUMERIC) {
-			result = Misc.createUUID();
+			result = UUIDUtil.createUUID();
 		} else {
-			result = Misc.createNumericUUID();
+			result = UUIDUtil.createNumericUUID();
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);

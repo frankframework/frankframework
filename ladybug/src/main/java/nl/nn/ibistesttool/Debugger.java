@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;
 
@@ -40,7 +42,6 @@ import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -208,7 +209,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		if (parameter.isHidden()) {
 			String hiddenValue=null;
 			try {
-				hiddenValue = Misc.hide(Message.asString(value));
+				hiddenValue = StringUtil.hide(Message.asString(value));
 			} catch (IOException e) {
 				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
 				log.warn(hiddenValue, e);
@@ -296,7 +297,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 									}
 								}
 								// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-								String messageId = "ladybug-testmessage" + Misc.createSimpleUUID();
+								String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
 								pipeLineSession.put(PipeLineSession.correlationIdKey, correlationId);
 								adapter.processMessage(messageId, inputMessage, pipeLineSession);
 							}

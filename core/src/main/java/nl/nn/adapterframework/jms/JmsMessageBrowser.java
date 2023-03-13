@@ -36,13 +36,13 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Basic browser of JMS Messages.
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
- * 
+ *
  * @author  Johan Verrips
  */
 public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
@@ -76,10 +76,10 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		String selector=getSelector();
 		if (startTime!=null) {
-			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
 		}
 		if (endTime!=null) {
-			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
 		}
 		try {
 			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),selector);

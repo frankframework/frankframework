@@ -57,7 +57,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
@@ -591,7 +591,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
-		return Misc.concatStrings(name," ", super.getPhysicalDestinationName());
+		return StringUtil.concatStrings(name," ", super.getPhysicalDestinationName());
 	}
 
 	@Override

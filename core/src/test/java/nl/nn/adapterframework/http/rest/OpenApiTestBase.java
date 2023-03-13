@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
@@ -49,6 +51,7 @@ public class OpenApiTestBase extends Mockito {
 	private static TaskExecutor taskExecutor;
 	private Configuration configuration;
 	private ThreadLocalServlet servlets = new ThreadLocalServlet();
+	protected final Logger log = LogUtil.getLogger(this);
 
 	@BeforeClass
 	public static void beforeClass() {
@@ -226,19 +229,19 @@ public class OpenApiTestBase extends Mockito {
 			}
 			return this;
 		}
-		public AdapterBuilder addExit(String exitCode) {
+		public AdapterBuilder addExit(int exitCode) {
 			return addExit(exitCode, null, false);
 		}
-		public AdapterBuilder addExit(String exitCode, String responseRoot, boolean isEmpty) {
+		public AdapterBuilder addExit(int exitCode, String responseRoot, boolean isEmpty) {
 			PipeLineExit ple = new PipeLineExit();
 			ple.setCode(exitCode);
 			ple.setResponseRoot(responseRoot);
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
-				case "200":
+				case 200:
 					ple.setState(ExitState.SUCCESS);
 					break;
-				case "201":
+				case 201:
 					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
@@ -263,7 +266,7 @@ public class OpenApiTestBase extends Mockito {
 			pipeline.setInputValidator(inputValidator);
 			pipeline.setOutputValidator(outputValidator);
 			for (PipeLineExit exit : exits) {
-				exit.setPath("success"+exit.getExitCode());
+				exit.setName("success"+exit.getExitCode());
 
 				pipeline.registerPipeLineExit(exit);
 			}
@@ -287,12 +290,12 @@ public class OpenApiTestBase extends Mockito {
 
 		public void start(Adapter... adapters) {
 			for (Adapter adapter : adapters) {
-				System.out.println("attempting to start adapter "+ adapter.getName());
+				log.info("attempting to start adapter [{}]", adapter::getName);
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
 				while (adapter.getRunState()!=RunState.STARTED) {
-					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
+					log.info("adapter RunState [{}]", adapter::getRunStateAsString);
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -310,7 +313,7 @@ public class OpenApiTestBase extends Mockito {
 			}
 			@Override
 			public synchronized void add(String message, Date date, MessageKeeperLevel level) {
-				System.out.println("SysOutMessageKeeper " + level + " - " + message);
+				log.debug("SysOutMessageKeeper {} - {}", level, message);
 				if(MessageKeeperLevel.ERROR.equals(level)) fail(message);
 			}
 		}

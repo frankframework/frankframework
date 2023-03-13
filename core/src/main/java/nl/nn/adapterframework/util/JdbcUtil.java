@@ -18,6 +18,8 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -48,6 +50,7 @@ import javax.jms.TextMessage;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -292,7 +295,7 @@ public class JdbcUtil {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
-		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		OutputStream outputStream= getOutputStream(target);
 		if (outputStream!=null) {
 			if (blobBase64Direction == Direction.DECODE){
 				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
@@ -314,7 +317,7 @@ public class JdbcUtil {
 		Writer writer = getWriter(target);
 		if (writer !=null) {
 			Reader reader = JdbcUtil.getBlobReader(blobIntputStream, charset);
-			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			if (close) {
 				writer.close();
 			}
@@ -342,18 +345,18 @@ public class JdbcUtil {
 		Writer writer = getWriter(target);
 		if (writer !=null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
-				StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+				StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			}
 			if (close) {
 				writer.close();
 			}
 			return;
 		}
-		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		OutputStream outputStream= getOutputStream(target);
 		if (outputStream!=null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
 				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
-					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000, false, false);
+					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000);
 				}
 			}
 			if (close) {
@@ -394,10 +397,10 @@ public class JdbcUtil {
 			return null;
 		}
 		if (encodeBlobBase64) {
-			return Misc.streamToString(new Base64InputStream(blobIntputStream,true),null,false);
+			return StreamUtil.streamToString(new Base64InputStream(blobIntputStream,true),null,false);
 		}
 		if (blobSmartGet) {
-			byte[] bytes = Misc.streamToBytes(blobIntputStream);
+			byte[] bytes = StreamUtil.streamToBytes(blobIntputStream);
 			Object result = null;
 			boolean objectOK = true;
 			try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
@@ -425,9 +428,9 @@ public class JdbcUtil {
 				rawMessage = new String(bytes,charset);
 			}
 
-			return XmlUtils.replaceNonValidXmlCharacters(rawMessage);
+			return XmlEncodingUtils.replaceNonValidXmlCharacters(rawMessage);
 		}
-		return Misc.readerToString(getBlobReader(blobIntputStream, charset),null, false);
+		return StreamUtil.readerToString(getBlobReader(blobIntputStream, charset),null, false);
 	}
 
 	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, boolean compressBlob) throws JdbcException, SQLException {
@@ -511,14 +514,14 @@ public class JdbcUtil {
 		if (reader == null) {
 			return null;
 		}
-		return Misc.readerToString(reader, null, xmlEncode);
+		return StreamUtil.readerToString(reader, null, xmlEncode);
 	}
 	public static String getClobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = dbmsSupport.getClobReader(rs, columnName);
 		if (reader == null) {
 			return null;
 		}
-		return Misc.readerToString(reader, null, xmlEncode);
+		return StreamUtil.readerToString(reader, null, xmlEncode);
 	}
 
 	public static void putStringAsClob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
@@ -1077,6 +1080,36 @@ public class JdbcUtil {
 			return true;
 		default:
 			return false;
+		}
+	}
+
+	@Deprecated
+	private static OutputStream getOutputStream(Object target) throws IOException {
+		if (target instanceof OutputStream) {
+			return (OutputStream) target;
+		}
+		if (target instanceof String) {
+			return getFileOutputStream((String)target);
+		}
+		if (target instanceof Message) {
+			if(((Message) target).asObject() instanceof String) {
+				return getFileOutputStream(((Message)target).asString());
+			}
+		}
+		return null;
+	}
+
+	@Deprecated
+	private static OutputStream getFileOutputStream(String filename) throws IOException {
+		if (StringUtils.isEmpty(filename)) {
+			throw new IOException("target string cannot be empty but must contain a filename");
+		}
+		try {
+			return new FileOutputStream(filename);
+		} catch (FileNotFoundException e) {
+			FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
+			fnfe.initCause(e);
+			throw fnfe;
 		}
 	}
 }

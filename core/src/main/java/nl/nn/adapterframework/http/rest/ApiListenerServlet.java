@@ -722,7 +722,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			}
 		} else {
 			try (Reader reader = result.asReader()) {
-				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096, false, false);
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
 			}
 		}
 		return true;

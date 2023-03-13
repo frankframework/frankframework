@@ -31,7 +31,7 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -84,8 +84,8 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@Nonnull
 	private String normalizeName(@Nonnull String name) {
-		if (name.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-			return name.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+		if (name.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
+			return name.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
 		}
 		return name;
 	}

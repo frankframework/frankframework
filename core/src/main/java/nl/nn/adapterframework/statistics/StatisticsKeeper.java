@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Keeps statistics (min, max, count etc).
@@ -366,7 +366,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			XmlBuilder item = new XmlBuilder("item");
 			items.addSubElement(item);
 			item.addAttribute("index",""+i);
-			item.addAttribute("name",XmlUtils.encodeChars(getItemName(i)));
+			item.addAttribute("name", XmlEncodingUtils.encodeChars(getItemName(i)));
 			item.addAttribute("type", getItemType(i).name());
 			item.addAttribute("value",ItemUtil.getItemValueFormated(this,i));
 		}
