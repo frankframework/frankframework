@@ -23,6 +23,8 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
+			<version>${project.version}</version>
+			<classifier>fatjar</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
