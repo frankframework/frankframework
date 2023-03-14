@@ -80,7 +80,10 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
-		return message.size();
+		if(message.isBinary()) {
+			return message.size();
+		}
+		return -1;
 	}
 
 	@Override

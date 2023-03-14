@@ -36,7 +36,7 @@ public class TestFileUtils {
 		return getTestFile(url, charset);
 	}
 
-	public static URL getTestFileURL(String file) throws IOException {
+	public static URL getTestFileURL(String file) {
 		String normalizedFilename = FilenameUtils.normalize(file, true);
 		URL url = TestFileUtils.class.getResource(normalizedFilename);
 		if(url == null) LOG.warn("unable to find testfile [{}]", normalizedFilename);
