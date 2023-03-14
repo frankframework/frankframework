@@ -66,7 +66,7 @@ public class TestAlignXml {
 
 	public void testFiles(String schemaFile, String namespace, String rootElement, String file, String expectedFailureReason) throws Exception {
 		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
-		String xmlString = TestFileUtils.getTestFile(file + ".xml");
+		String xmlString = TestFileUtils.getTestFile(BASEDIR + file + ".xml");
 		testStrings(xmlString, schemaUrl, namespace, rootElement, expectedFailureReason);
 	}
 
