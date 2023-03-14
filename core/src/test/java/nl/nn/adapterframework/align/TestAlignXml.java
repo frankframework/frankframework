@@ -83,7 +83,7 @@ public class TestAlignXml {
 		String inputFile = "Abc/abc-x";
 		String expectedFailureReason = "Cannot find the declaration of element [x]";
 		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
-		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
+		String xmlString = TestFileUtils.getTestFile(BASEDIR + inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "extra elements not allowed", false, false);
 	}
 
@@ -94,7 +94,7 @@ public class TestAlignXml {
 		String inputFile = "Abc/abc-x";
 		String expectedFailureReason = null;
 		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
-		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
+		String xmlString = TestFileUtils.getTestFile(BASEDIR + inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "extra elements not allowed", false, true);
 	}
 
@@ -104,7 +104,7 @@ public class TestAlignXml {
 		String inputFile = "Abc/abc-wrongorder";
 		String expectedFailureReason = null;
 		URL schemaUrl = TestFileUtils.getTestFileURL(BASEDIR + schemaFile);
-		String xmlString = TestFileUtils.getTestFile(inputFile + ".xml");
+		String xmlString = TestFileUtils.getTestFile(BASEDIR + inputFile + ".xml");
 		testXml(xmlString, schemaUrl, expectedFailureReason, "root elements in wrong order", false, false);
 	}
 
