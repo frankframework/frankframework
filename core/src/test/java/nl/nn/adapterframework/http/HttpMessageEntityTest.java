@@ -182,7 +182,6 @@ public class HttpMessageEntityTest {
 
 		// Assert
 		assertEquals(charMessage.asString(), boas.toString());
-//		assertEquals(charMessage.size(), boas.size()); // fails
 	}
 
 	private String toString(HttpEntity entity) throws IOException {

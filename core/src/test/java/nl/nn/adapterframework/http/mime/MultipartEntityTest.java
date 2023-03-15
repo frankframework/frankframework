@@ -12,8 +12,12 @@ import java.nio.charset.Charset;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -163,6 +167,22 @@ public class MultipartEntityTest {
 		assertEquals(FORMDATA_BOUNDARY, entity.getContentType().getValue());
 		assertEquals(-1, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart-message.txt"), toString(entity));
+	}
+
+	@ParameterizedTest
+	@EnumSource(value = MessageType.class)
+	public void testWriteToCharacterData(MessageType type) throws Exception {
+		Message charMessage = MessageTestUtils.getMessage(type);
+
+		charMessage.preserve();
+		MessageContentBody contentBody = new MessageContentBody(charMessage);
+
+		// Act
+		ByteArrayOutputStream boas = new ByteArrayOutputStream();
+		contentBody.writeTo(boas);
+
+		// Assert
+		assertEquals(charMessage.asString(), boas.toString());
 	}
 
 	private String toString(HttpEntity entity) throws IOException {

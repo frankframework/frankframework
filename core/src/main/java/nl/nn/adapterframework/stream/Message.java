@@ -866,15 +866,16 @@ public class Message implements Serializable {
 			}
 		}
 
-		if (request instanceof String) {
-			return ((String) request).length();
-		}
 		if (request instanceof byte[]) {
 			return ((byte[]) request).length;
 		}
 
 		if (context.containsKey(MessageContext.METADATA_SIZE)) {
 			return (long) context.get(MessageContext.METADATA_SIZE);
+		}
+
+		if (request instanceof String) {
+			return ((String) request).length();
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {
