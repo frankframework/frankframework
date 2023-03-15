@@ -21,11 +21,15 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +37,7 @@ import javax.jms.Destination;
 import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -82,6 +87,11 @@ public class ReceiverTest {
 		configuration.getBean("adapterManager", AdapterManager.class).close();
 	}
 
+	@AfterEach
+	void tearDown() {
+		configuration.stop();
+	}
+
 	public SlowListenerBase setupSlowStartPullingListener(int startupDelay) {
 		return createSlowListener(SlowPullingListener.class, startupDelay, 0);
 	}
@@ -105,9 +115,9 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public Receiver<javax.jms.Message> setupReceiver(IListener<javax.jms.Message> listener) throws Exception {
+	public <M> Receiver<M> setupReceiver(IListener<M> listener) throws Exception {
 		@SuppressWarnings("unchecked")
-		Receiver<javax.jms.Message> receiver = configuration.createBean(Receiver.class);
+		Receiver<M> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
@@ -118,7 +128,11 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public Adapter setupAdapter(Receiver<javax.jms.Message> receiver) throws Exception {
+	public <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
+		return setupAdapter(receiver, ExitState.SUCCESS);
+	}
+
+	public <M> Adapter setupAdapter(Receiver<M> receiver, ExitState exitState) throws Exception {
 
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
@@ -126,7 +140,7 @@ public class ReceiverTest {
 		PipeLine pl = spy(new PipeLine());
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
-			plr.setState(ExitState.SUCCESS);
+			plr.setState(exitState);
 			plr.setResult(p.getArgument(1));
 			return plr;
 		}).when(pl).process(anyString(), any(nl.nn.adapterframework.stream.Message.class), any(PipeLineSession.class));
@@ -138,7 +152,7 @@ public class ReceiverTest {
 
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
-		ple.setState(ExitState.SUCCESS);
+		ple.setState(exitState);
 		pl.registerPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
@@ -166,21 +180,35 @@ public class ReceiverTest {
 		}
 	}
 
-	public static Stream<Arguments> testJmsMessageWithHighDeliveryCount() {
+	static <T> Supplier<T> asSupplier(Supplier<T> s) {
+		return s;
+	}
+
+	static <T,R> Function<T,R> asFunction(Function<T,R> f) {
+		return f;
+	}
+
+	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(NarayanaJtaTransactionManager.class),
-			Arguments.of(BtmJtaTransactionManager.class)
+			Arguments.of(asSupplier(() -> NarayanaJtaTransactionManager.class)),
+			Arguments.of(asSupplier(() -> {
+				if (TransactionManagerServices.isTransactionManagerRunning()) {
+					TransactionManagerServices.getTransactionManager().shutdown();
+				}
+				return BtmJtaTransactionManager.class;
+			}))
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource
-	public void testJmsMessageWithHighDeliveryCount(Class<? extends JtaTransactionManager> txManagerClass) throws Exception {
+	@MethodSource("transactionManagers")
+	void testJmsMessageWithHighDeliveryCount(Supplier<Class<? extends JtaTransactionManager>> txManagerClass) throws Exception {
 		// Arrange
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
 
+		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 
 		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
@@ -194,14 +222,8 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
-		if (txManagerClass.equals(BtmJtaTransactionManager.class)) {
-			if (TransactionManagerServices.isTransactionManagerRunning()) {
-				TransactionManagerServices.getTransactionManager().shutdown();
-			}
-		}
-		final JtaTransactionManager txManager = configuration.createBean(txManagerClass);
+		final JtaTransactionManager txManager = configuration.createBean(txManagerClass.get());
 		txManager.setDefaultTimeout(1);
-
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
@@ -254,7 +276,7 @@ public class ReceiverTest {
 									throw new SQLException("TX is rollback-only. Getting out!");
 								}
 								int count = movedToErrorStorage.incrementAndGet();
-								return "" + count;
+								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
 							receiver.processRawMessage(listener, jmsMessage, session, false);
@@ -291,13 +313,228 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get(), "Mismatch in nr of messages marked for rollback by TX manager"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "Mismatch in nr of messages processed without exception from receiver"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txRollbackOnlyInErrorStorage.get(), "Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
-			() -> assertEquals(0, exceptionsFromReceiver.get(), "Mismatch in nr of exceptions from Receiver method"),
-			() -> assertEquals(0, movedToErrorStorage.get(), "Mismatch in nr of messages moved to error storage"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "Mismatch in nr of transactions not completed after receiver finishes")
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
+			() -> assertEquals(0, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("transactionManagers")
+	void testJmsMessageWithException(Supplier<Class<? extends JtaTransactionManager>> txManagerClass) throws Exception {
+		// Arrange
+		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		doReturn(mock(Destination.class)).when(listener).getDestination();
+		doNothing().when(listener).open();
+
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+
+		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
+		messagingSourceField.setAccessible(true);
+		MessagingSource messagingSource = mock(MessagingSource.class);
+		messagingSourceField.set(listener, messagingSource);
+
+		@SuppressWarnings("unchecked")
+		IListenerConnector<javax.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
+		listener.setJmsConnector(jmsConnectorMock);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		receiver.setErrorStorage(errorStorage);
+		receiver.setMessageLog(messageLog);
+
+		final JtaTransactionManager txManager = configuration.createBean(txManagerClass.get());
+		txManager.setDefaultTimeout(1);
+
+		receiver.setTxManager(txManager);
+		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
+
+		// assume there was no connectivity, the message was not able to be stored in the database, retryInterval keeps increasing.
+		final Field retryIntervalField = Receiver.class.getDeclaredField("retryInterval");
+		retryIntervalField.setAccessible(true);
+		retryIntervalField.set(receiver, 2);
+
+		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		final int TEST_MAX_RETRIES = 2;
+		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 2;
+		receiver.setMaxRetries(TEST_MAX_RETRIES);
+
+		final AtomicInteger rolledBackTXCounter = new AtomicInteger();
+		final AtomicInteger txRollbackOnlyInErrorStorage = new AtomicInteger();
+		final AtomicInteger movedToErrorStorage = new AtomicInteger();
+		final AtomicInteger exceptionsFromReceiver = new AtomicInteger();
+		final AtomicInteger processedNoException = new AtomicInteger();
+		final AtomicInteger txNotCompletedAfterReceiverEnds = new AtomicInteger();
+
+		TextMessage jmsMessage = mock(TextMessage.class);
+		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
+		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
+		doReturn("message").when(jmsMessage).getText();
+
+
+		final Semaphore semaphore = new Semaphore(0);
+		Thread mockListenerThread = new Thread("mock-listener-thread") {
+			@SneakyThrows
+			@Override
+			public void run() {
+				try {
+					int nrTries = 0;
+					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
+						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
+						reset(errorStorage, listener);
+						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
+							.thenAnswer(invocation -> {
+								if (tx.isRollbackOnly()) {
+									txRollbackOnlyInErrorStorage.incrementAndGet();
+									throw new SQLException("TX is rollback-only. Getting out!");
+								}
+								int count = movedToErrorStorage.incrementAndGet();
+								return String.valueOf(count);
+							});
+						try (PipeLineSession session = new PipeLineSession()) {
+							receiver.processRawMessage(listener, jmsMessage, session, false);
+							processedNoException.incrementAndGet();
+						} catch (Exception e) {
+							log.warn("Caught exception in Receiver:", e);
+							exceptionsFromReceiver.incrementAndGet();
+						} finally {
+							if (tx.isRollbackOnly()) {
+								rolledBackTXCounter.incrementAndGet();
+							} else {
+								log.warn("I had expected TX to be marked for rollback-only by now?");
+							}
+							if (!tx.isCompleted()) {
+								// We do rollback inside the Receiver already but if the TX is aborted
+								/// it never seems to be marked "Completed" by Narayana.
+								txNotCompletedAfterReceiverEnds.incrementAndGet();
+								txManager.rollback(tx);
+							}
+							retryIntervalField.set(receiver, 2); // To avoid test taking too long.
+						}
+					}
+				} finally {
+					semaphore.release();
+				}
+			}
+		};
+
+		// Act
+		mockListenerThread.start();
+		semaphore.acquire(); // Wait until thread is finished.
+
+		((DisposableBean) txManager).destroy();
+
+		// Assert
+		assertAll(
+			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
+			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
+			() -> assertEquals(1, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
+		);
+	}
+
+	@Test
+	void testGetDeliveryCountWithJmsListener() throws Exception {
+		// Arrange
+		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		doReturn(mock(Destination.class)).when(listener).getDestination();
+		doNothing().when(listener).open();
+
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+
+		Field messagingSourceField = JMSFacade.class.getDeclaredField("messagingSource");
+		messagingSourceField.setAccessible(true);
+		MessagingSource messagingSource = mock(MessagingSource.class);
+		messagingSourceField.set(listener, messagingSource);
+
+		@SuppressWarnings("unchecked")
+		IListenerConnector<javax.jms.Message> jmsConnectorMock = mock(IListenerConnector.class);
+		listener.setJmsConnector(jmsConnectorMock);
+		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
+		receiver.setErrorStorage(errorStorage);
+		receiver.setMessageLog(messageLog);
+
+		TextMessage jmsMessage = mock(TextMessage.class);
+		doReturn("dummy-message-id").when(jmsMessage).getJMSMessageID();
+		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
+		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
+		doReturn("message").when(jmsMessage).getText();
+
+		// Act
+		int result = receiver.getDeliveryCount("dummy-message-id", jmsMessage);
+
+		// Assert
+		assertEquals(4, result);
+	}
+
+	@Test
+	void testGetDeliveryCountWithDirectoryListener() throws Exception {
+		// Arrange
+		DirectoryListener listener = spy(configuration.createBean(DirectoryListener.class));
+		doNothing().when(listener).open();
+
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+		@SuppressWarnings("unchecked")
+		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+
+		Receiver<Path> receiver = setupReceiver(listener);
+		receiver.setErrorStorage(errorStorage);
+		receiver.setMessageLog(messageLog);
+
+		final JtaTransactionManager txManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		txManager.setDefaultTimeout(1);
+		receiver.setTxManager(txManager);
+		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
+
+		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
+		configuration.configure();
+		configuration.start();
+		waitForState(adapter, RunState.STARTED);
+
+		final String messageId = "A Path";
+		Path fileMessage = Paths.get(messageId);
+
+		// Act
+		int result1 = receiver.getDeliveryCount(messageId, fileMessage);
+
+		// Assert
+		assertEquals(1, result1);
+
+		// Arrange (for 2nd invocation)
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put(PipeLineSession.messageIdKey, messageId);
+			receiver.processRawMessage(listener, fileMessage, session, false);
+		} catch (Exception e) {
+			// We expected an exception here...
+		}
+
+		// Act
+		int result2 = receiver.getDeliveryCount(messageId, fileMessage);
+
+		// Assert
+		assertEquals(2, result2);
 	}
 
 	@Test

@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -124,8 +125,8 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		try {
-			messageHandler.processRawMessage(this, message);
+		try (PipeLineSession session = new PipeLineSession()) {
+			messageHandler.processRawMessage(this, message, session, false);
 		} catch(Throwable t) {
 			log.error("Could not process raw message", t);
 		}
