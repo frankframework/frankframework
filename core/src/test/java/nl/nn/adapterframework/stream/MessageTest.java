@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -40,6 +41,7 @@ import java.net.URL;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
@@ -50,6 +52,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -1136,4 +1139,28 @@ public class MessageTest {
 		}
 	}
 
+	@Test
+	public void testMagicCharactersCounted() throws Exception {
+		Reader reader = new Message(testString).asReader();
+		AtomicInteger charsRead = new AtomicInteger();
+		FilterReader filterReader = new FilterReader(reader) {
+			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
+				int len = reader.get();
+				if (len>0) {
+					charsRead.addAndGet(len);
+				}
+				return len;
+			}
+
+			@Override
+			public int read(char[] chr, int st, int end) throws IOException {
+				return readCounted(() -> super.read(chr, st, end));
+			}
+		};
+		Message message = new Message(filterReader);
+		int charsToRead = 6;
+		message.getMagic(charsToRead);
+
+		assertEquals(charsRead.get(), charsToRead);
+	}
 }
