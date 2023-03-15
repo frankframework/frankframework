@@ -99,9 +99,8 @@ public class BusMessageUtils {
 	}
 
 	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
-		MessageHeaders headers = response.getHeaders();
-		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
-		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
+		int status = getIntHeader(response, ResponseMessage.STATUS_KEY, 200);
+		String mimeType = getHeader(response, ResponseMessage.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
 		if(mimeType != null) {
@@ -112,7 +111,7 @@ public class BusMessageUtils {
 			builder.entity(response.getPayload());
 		}
 
-		String contentDisposition = (String) headers.get(ResponseMessage.CONTENT_DISPOSITION_KEY);
+		String contentDisposition = getHeader(response, ResponseMessage.CONTENT_DISPOSITION_KEY, null);
 		if(contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}

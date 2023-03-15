@@ -30,9 +30,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.nn.adapterframework.core.Resource;
 
 public class ResponseMessage {
-	public static final String STATUS_KEY = "meta:status";
-	public static final String MIMETYPE_KEY = "meta:type";
-	public static final String CONTENT_DISPOSITION_KEY = "meta:contentdisposition";
+	public static final String STATUS_KEY = "meta-status";
+	public static final String MIMETYPE_KEY = "meta-type";
+	public static final String CONTENT_DISPOSITION_KEY = "meta-contentdisposition";
 
 	public static class Builder {
 		private Object payload;

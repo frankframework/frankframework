@@ -31,7 +31,6 @@ import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import nl.nn.adapterframework.http.HttpUtils;
@@ -56,10 +55,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	private Logger log = LogManager.getLogger(this);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	@Value("${property}")
-	private String dummy;
-
+//	@Value("${iaf-api.enabled}") doesn't work on final
 	private static final boolean IAF_API_ENABLED = APP_CONSTANTS.getBoolean("iaf-api.enabled", true);
+
 	private static final String CORS_ALLOW_ORIGIN = APP_CONSTANTS.getString("iaf-api.cors.allowOrigin", ""); //Defaults to nothing
 	private static final String CORS_EXPOSE_HEADERS = APP_CONSTANTS.getString("iaf-api.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods

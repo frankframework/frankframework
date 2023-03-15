@@ -18,6 +18,13 @@
 	<bean class="nl.nn.adapterframework.webcontrol.runner.CreateApiEndpointBean"/>
 
 	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
-		<property name="port" value="80"/>
+		<property name="port" value="8080"/>
 	</bean>
+
+	<!-- Messaging Gateway -->
+	<bean id="gateway" class="nl.nn.adapterframework.management.gateway.Gateway" />
+
+	<bean id="HttpOutboundGateway" class="nl.nn.adapterframework.management.gateway.HttpOutboundGateway" lazy-init="true" />
+
+	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 </beans>

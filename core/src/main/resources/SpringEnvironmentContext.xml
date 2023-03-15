@@ -41,4 +41,11 @@
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />
 
+
+	<!-- Messaging Gateway -->
+	<bean id="gateway" class="nl.nn.adapterframework.management.gateway.Gateway" />
+
+	<bean id="LocalGateway" class="nl.nn.adapterframework.management.gateway.LocalGateway" lazy-init="true" />
+
+	<bean id="HttpOutboundGateway" class="nl.nn.adapterframework.management.gateway.HttpOutboundGateway" lazy-init="true" />
 </beans>

@@ -18,7 +18,6 @@ package nl.nn.adapterframework.management.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Map;
 
@@ -49,8 +48,8 @@ import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.gateway.IntegrationGateway;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.Gateway;
 
 /**
  * Base class for API endpoints.
@@ -74,11 +73,11 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
-	public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
+	public static final String DEFAULT_CHARSET = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected Logger log = LogManager.getLogger(this);
 
-	protected final Gateway getGateway() {
-		return getApplicationContext().getBean("gateway", Gateway.class);
+	protected final IntegrationGateway getGateway() {
+		return getApplicationContext().getBean("gateway", IntegrationGateway.class);
 	}
 
 	@Nonnull
@@ -116,7 +115,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
-		Gateway gateway = getGateway();
+		IntegrationGateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
 		return Response.ok().build();
 	}

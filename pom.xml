@@ -6,7 +6,7 @@
 	<version>${revision}</version>
 	<packaging>pom</packaging>
 
-    <properties>
+	<properties>
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.20.0</log4j2.version>
@@ -147,6 +147,7 @@
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-console</artifactId>
 				<version>${project.version}</version>
+				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
