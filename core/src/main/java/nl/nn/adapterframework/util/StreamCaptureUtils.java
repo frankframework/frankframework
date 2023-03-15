@@ -17,12 +17,12 @@ package nl.nn.adapterframework.util;
 
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.CharBuffer;
 import java.util.function.Function;
 
 import org.apache.commons.io.input.CountingInputStream;
@@ -34,6 +34,8 @@ import org.apache.commons.io.output.TeeWriter;
 import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 
 public class StreamCaptureUtils {
 	protected static Logger log = LogManager.getLogger(StreamCaptureUtils.class);
@@ -133,6 +135,10 @@ public class StreamCaptureUtils {
 
 	public static MarkCompensatingOutputStream markCompensatingOutputStream(OutputStream stream) {
 		return new MarkCompensatingOutputStream(stream);
+	}
+
+	public static MarkCompensatingWriter markCompensatingWriter(Writer writer) {
+		return new MarkCompensatingWriter(writer);
 	}
 
 	/**
@@ -239,12 +245,14 @@ public class StreamCaptureUtils {
 	}
 
 	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
-		return new TeeReader(in, limitSize(capture, maxSize), true) {
+		MarkCompensatingWriter markCompensatingWriter = markCompensatingWriter(limitSize(capture, maxSize));
+
+		return new TeeReader(in, markCompensatingWriter, true) {
 
 			private int charsRead;
 
-			private int readCounted(ReadMethod reader) throws IOException {
-				int len = reader.read();
+			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
+				int len = reader.get();
 				if (len>0) {
 					charsRead+=len;
 				}
@@ -253,22 +261,21 @@ public class StreamCaptureUtils {
 
 			@Override
 			public int read() throws IOException {
-				return readCounted(() -> super.read());
+				char cb[] = new char[1];
+				if (read(cb, 0, 1) == -1)
+					return -1;
+				else
+					return cb[0];
 			}
 
 			@Override
 			public int read(char[] chr) throws IOException {
-				return readCounted(() -> super.read(chr));
+				return read(chr, 0, chr.length);
 			}
 
 			@Override
 			public int read(char[] chr, int st, int end) throws IOException {
 				return readCounted(() -> super.read(chr, st, end));
-			}
-
-			@Override
-			public int read(CharBuffer target) throws IOException {
-				return readCounted(() -> super.read(target));
 			}
 
 			@Override
@@ -285,6 +292,18 @@ public class StreamCaptureUtils {
 				}
 			}
 
+			@Override
+			public synchronized void mark(int readLimit) throws IOException {
+				markCompensatingWriter.mark(readLimit);
+				super.mark(readLimit);
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				markCompensatingWriter.reset();
+				super.reset();
+			}
+
 		};
 	}
 
@@ -293,11 +312,7 @@ public class StreamCaptureUtils {
 	}
 
 	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
-		return new TeeWriter(writer, limitSize(capture,maxSize));
-	}
-
-	private interface ReadMethod {
-		int read() throws IOException;
+		return new TeeWriter(writer, limitSize(capture, maxSize));
 	}
 
 	static class MarkCompensatingOutputStream extends FilterOutputStream {
@@ -336,6 +351,49 @@ public class StreamCaptureUtils {
 		public synchronized void mark(int bytesToSkip) {
 			this.bytesToSkip = bytesToSkip;
 		}
+
+		public void reset() {
+			mark(0);
+		}
+	}
+
+	static class MarkCompensatingWriter extends FilterWriter {
+		private int charsToSkip = 0;
+
+		public MarkCompensatingWriter(Writer out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if (charsToSkip > 0) {
+				--charsToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(char[] c, int off, int len) throws IOException {
+			if (charsToSkip == 0) {
+				out.write(c, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if (charsToSkip < sizeToRead) {
+				out.write(c, off + charsToSkip, len - charsToSkip);
+				reset();
+			} else {
+				charsToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int charsToSkip) {
+			this.charsToSkip = charsToSkip;
+		}
+
 		public void reset() {
 			mark(0);
 		}

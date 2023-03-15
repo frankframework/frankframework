@@ -461,7 +461,7 @@ public class Message implements Serializable {
 
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
 		if (request instanceof Reader) {
-			if (!((Reader) request).markSupported() || request instanceof TeeReader) {
+			if (!((Reader) request).markSupported()) {
 				request = new BufferedReader((Reader)request, readLimit);
 			}
 			Reader reader = (Reader) request;
