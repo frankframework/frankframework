@@ -122,6 +122,6 @@ public class PropertyFileCredentialFactoryTest {
 
 		// Arrange
 		List<String> sortedAliases = aliases.stream().sorted().collect(Collectors.toList());
-		assertEquals("[noUsername, singleValue, straight]", sortedAliases.toString());
+		assertEquals("[noUsername, singleValue, slash, straight]", sortedAliases.toString());
 	}
 }
