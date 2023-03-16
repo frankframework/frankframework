@@ -182,7 +182,7 @@ public class MultipartEntityTest {
 		contentBody.writeTo(boas);
 
 		// Assert
-		assertEquals(charMessage.asString(), boas.toString());
+		assertEquals(charMessage.asString(), boas.toString().replace("\ufeff", ""));//remove BOM if present
 	}
 
 	private String toString(HttpEntity entity) throws IOException {
