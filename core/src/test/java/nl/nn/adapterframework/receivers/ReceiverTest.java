@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -50,6 +51,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
@@ -69,9 +71,11 @@ import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager;
+import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
@@ -180,29 +184,77 @@ public class ReceiverTest {
 		}
 	}
 
+	/**
+	 * Helper function to cast parameter as a {@link Supplier} when the compiler cannot work it
+	 * out by itself.
+	 *
+	 * TODO: Put in a good home.
+	 *
+	 * @param s
+	 * @return
+	 * @param <T>
+	 */
 	static <T> Supplier<T> asSupplier(Supplier<T> s) {
 		return s;
 	}
 
+	/**
+	 * Helper function to cast parameter as {@link Function} when the compiler cannot work it
+	 * out by itself.
+	 * TODO: Put in a good home.
+	 *
+	 * @param f
+	 * @return
+	 * @param <T>
+	 * @param <R>
+	 */
 	static <T,R> Function<T,R> asFunction(Function<T,R> f) {
 		return f;
 	}
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(asSupplier(() -> NarayanaJtaTransactionManager.class)),
-			Arguments.of(asSupplier(() -> {
-				if (TransactionManagerServices.isTransactionManagerRunning()) {
-					TransactionManagerServices.getTransactionManager().shutdown();
-				}
-				return BtmJtaTransactionManager.class;
-			}))
+			Arguments.of(asFunction(ReceiverTest::buildNarayanaTransactionManager)),
+			Arguments.of(asFunction(ReceiverTest::buildBtmTransactionManager))
 		);
+	}
+
+	private static JtaTransactionManager buildBtmTransactionManager(TestConfiguration configuration) {
+		if (TransactionManagerServices.isTransactionManagerRunning()) {
+			TransactionManagerServices.getTransactionManager().shutdown();
+		}
+		String logDir = AppConstants.getInstance().getResolvedProperty("transactionmanager.log.dir") + "/TXLOGS/BTM";
+		Configuration txCfg = TransactionManagerServices.getConfiguration();
+		txCfg.setDisableJmx(true);
+		txCfg.setLogPart1Filename(logDir + "/1.tlog");
+		txCfg.setLogPart2Filename(logDir + "/2.tlog");
+		BtmJtaTransactionManager txm = configuration.createBean(BtmJtaTransactionManager.class);
+		txm.setStatusFile(logDir + "/status.txt");
+		txm.setUidFile(logDir + "/btm-uid.txt");
+
+		return txm;
+	}
+
+	private static JtaTransactionManager buildNarayanaTransactionManager(TestConfiguration configuration) {
+		String logDir = AppConstants.getInstance().getResolvedProperty("transactionmanager.log.dir") + "/TXLOGS/NARAYANA";
+		Properties properties = new Properties();
+		properties.put("JDBCEnvironmentBean.isolationLevel", "2");
+		properties.setProperty("ObjectStoreEnvironmentBean.objectStoreDir", logDir + "/ObjectStoreDir");
+		properties.setProperty("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", logDir + "/ObjectStoreDir");
+		properties.setProperty("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", logDir + "/ObjectStoreDir");
+
+		NarayanaConfigurationBean cfg = new NarayanaConfigurationBean();
+		cfg.setProperties(properties);
+		cfg.afterPropertiesSet();
+		NarayanaJtaTransactionManager txm = configuration.createBean(NarayanaJtaTransactionManager.class);
+		txm.setStatusFile(logDir + "/status.txt");
+		txm.setUidFile(logDir + "/ntm-uid.txt");
+		return txm;
 	}
 
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
-	void testJmsMessageWithHighDeliveryCount(Supplier<Class<? extends JtaTransactionManager>> txManagerClass) throws Exception {
+	void testJmsMessageWithHighDeliveryCount(Function<TestConfiguration, JtaTransactionManager> txManagerBuilder) throws Exception {
 		// Arrange
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
@@ -222,7 +274,7 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
-		final JtaTransactionManager txManager = configuration.createBean(txManagerClass.get());
+		final JtaTransactionManager txManager = txManagerBuilder.apply(configuration);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -324,7 +376,7 @@ public class ReceiverTest {
 
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
-	void testJmsMessageWithException(Supplier<Class<? extends JtaTransactionManager>> txManagerClass) throws Exception {
+	void testJmsMessageWithException(Function<TestConfiguration, JtaTransactionManager> txManagerBuilder) throws Exception {
 		// Arrange
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
@@ -347,7 +399,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = configuration.createBean(txManagerClass.get());
+		final JtaTransactionManager txManager = txManagerBuilder.apply(configuration);
 		txManager.setDefaultTimeout(1);
 
 		receiver.setTxManager(txManager);
@@ -504,7 +556,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		final JtaTransactionManager txManager = buildNarayanaTransactionManager(configuration);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
