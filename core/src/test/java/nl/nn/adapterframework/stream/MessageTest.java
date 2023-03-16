@@ -1141,7 +1141,7 @@ public class MessageTest {
 
 	@Test
 	public void testMagicCharactersCounted() throws Exception {
-		Reader reader = new Message(testString).asReader();
+		Reader reader = new StringReader(testString);
 		AtomicInteger charsRead = new AtomicInteger();
 		FilterReader filterReader = new FilterReader(reader) {
 			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
