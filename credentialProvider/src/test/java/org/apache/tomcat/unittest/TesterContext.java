@@ -86,13 +86,13 @@ public class TesterContext implements Context {
 			return realRole;
 		else
 			return role;
-	}	
-	
+	}
+
 	@Override
 	public void addRoleMapping(String role, String link) {
 		roleMappings.put(role, link);
-	}	
-	
+	}
+
 	private List<String> securityRoles = new ArrayList<>();
 
 	@Override
@@ -1355,9 +1355,11 @@ public class TesterContext implements Context {
 		return false;
 	}
 
+	@Override
 	public boolean isParallelAnnotationScanning() {
 		return false;
 	}
+	@Override
 	public boolean getParallelAnnotationScanning() {
 		return isParallelAnnotationScanning();
 	}

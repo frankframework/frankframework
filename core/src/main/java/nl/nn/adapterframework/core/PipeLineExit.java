@@ -76,8 +76,8 @@ public class PipeLineExit implements IForwardTarget {
 	 * HTTP statusCode e.g. <code>500</code>
 	 * @ff.default 200
 	 */
-	public void setCode(String code) {
-		this.exitCode = Integer.parseInt(code);
+	public void setCode(int code) {
+		this.exitCode = code;
 	}
 
 	/**
