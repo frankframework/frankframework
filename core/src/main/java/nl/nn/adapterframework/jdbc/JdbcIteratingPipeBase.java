@@ -190,4 +190,19 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
 	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	public void setBlobCharset(String charset) {
+		querySender.setBlobCharset(charset);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	public void setBlobSmartGet(boolean isSmartBlob) {
+		querySender.setBlobSmartGet(isSmartBlob);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	public void setBlobsCompressed(boolean compressed) {
+		querySender.setBlobsCompressed(compressed);
+	}
 }

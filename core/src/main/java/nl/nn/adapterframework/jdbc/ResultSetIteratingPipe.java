@@ -63,7 +63,7 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 	@Override
 	protected IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException {
 		try {
-			return new ResultSetIterator(dbmsSupport, conn, rs);
+			return new ResultSetIterator(dbmsSupport, conn, rs, querySender.getBlobCharset(), querySender.isBlobsCompressed(), querySender.isBlobSmartGet());
 		} catch (SQLException e) {
 			throw new SenderException(e);
 		}
