@@ -191,48 +191,6 @@ public class StreamCaptureUtils {
 
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
 
-		class MarkCompensatingOutputStream extends FilterOutputStream {
-			private int bytesToSkip = 0;
-
-			public MarkCompensatingOutputStream(OutputStream out) {
-				super(out);
-			}
-
-			@Override
-			public synchronized void write(int b) throws IOException {
-				if(bytesToSkip > 0) {
-					--bytesToSkip;
-					return;
-				}
-
-				out.write(b);
-			}
-
-			@Override
-			public synchronized void write(byte[] b, int off, int len) throws IOException {
-				if(bytesToSkip == 0) {
-					out.write(b, off, len);
-					return;
-				}
-
-				int sizeToRead = Math.abs(off - len);
-				if(bytesToSkip < sizeToRead) {
-					out.write(b, off + bytesToSkip, len - bytesToSkip);
-					reset();
-				} else {
-					bytesToSkip -= sizeToRead;
-				}
-			}
-
-			public synchronized void mark(int bytesToSkip) {
-				this.bytesToSkip = bytesToSkip;
-			}
-
-			public void reset() {
-				mark(0);
-			}
-		}
-
 		CountingInputStream counter = new CountingInputStream(in);
 		MarkCompensatingOutputStream markCompensatingOutputStream = new MarkCompensatingOutputStream(limitSize(capture, maxSize));
 		return new TeeInputStream(counter, markCompensatingOutputStream, true) {
@@ -279,50 +237,7 @@ public class StreamCaptureUtils {
 	}
 
 	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
-
-		class MarkCompensatingWriter extends FilterWriter {
-			private int charsToSkip = 0;
-
-			public MarkCompensatingWriter(Writer out) {
-				super(out);
-			}
-
-			@Override
-			public synchronized void write(int b) throws IOException {
-				if (charsToSkip > 0) {
-					--charsToSkip;
-					return;
-				}
-
-				out.write(b);
-			}
-
-			@Override
-			public synchronized void write(char[] c, int off, int len) throws IOException {
-				if (charsToSkip == 0) {
-					out.write(c, off, len);
-					return;
-				}
-
-				int sizeToRead = Math.abs(off - len);
-				if (charsToSkip < sizeToRead) {
-					out.write(c, off + charsToSkip, len - charsToSkip);
-					reset();
-				} else {
-					charsToSkip -= sizeToRead;
-				}
-			}
-
-			public synchronized void mark(int charsToSkip) {
-				this.charsToSkip = charsToSkip;
-			}
-
-			public void reset() {
-				mark(0);
-			}
-		}
-
-		MarkCompensatingWriter markCompensatingWriter = new MarkCompensatingWriter(limitSize(capture, maxSize));
+		MarkCompensatingWriter markCompensatingWriter =  new MarkCompensatingWriter(limitSize(capture, maxSize));
 
 		return new TeeReader(in, markCompensatingWriter, true) {
 
@@ -338,7 +253,7 @@ public class StreamCaptureUtils {
 
 			@Override
 			public int read() throws IOException {
-				char cb[] = new char[1];
+				char[] cb = new char[1];
 				if (read(cb, 0, 1) == -1)
 					return -1;
 				else
@@ -390,5 +305,89 @@ public class StreamCaptureUtils {
 
 	public static Writer captureWriter(Writer writer, Writer capture, int maxSize) {
 		return new TeeWriter(writer, limitSize(capture, maxSize));
+	}
+
+	static class MarkCompensatingOutputStream extends FilterOutputStream {
+		private int bytesToSkip = 0;
+
+		public MarkCompensatingOutputStream(OutputStream out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if(bytesToSkip > 0) {
+				--bytesToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) throws IOException {
+			if(bytesToSkip == 0) {
+				out.write(b, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if(bytesToSkip < sizeToRead) {
+				out.write(b, off + bytesToSkip, len - bytesToSkip);
+				reset();
+			} else {
+				bytesToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int bytesToSkip) {
+			this.bytesToSkip = bytesToSkip;
+		}
+
+		public void reset() {
+			mark(0);
+		}
+	}
+
+	static class MarkCompensatingWriter extends FilterWriter {
+		private int charsToSkip = 0;
+
+		public MarkCompensatingWriter(Writer out) {
+			super(out);
+		}
+
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if (charsToSkip > 0) {
+				--charsToSkip;
+				return;
+			}
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(char[] c, int off, int len) throws IOException {
+			if (charsToSkip == 0) {
+				out.write(c, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if (charsToSkip < sizeToRead) {
+				out.write(c, off + charsToSkip, len - charsToSkip);
+				reset();
+			} else {
+				charsToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void mark(int charsToSkip) {
+			this.charsToSkip = charsToSkip;
+		}
+
+		public void reset() {
+			mark(0);
+		}
 	}
 }
