@@ -321,7 +321,7 @@ public class StreamCaptureUtils {
 				mark(0);
 			}
 		}
-		
+
 		MarkCompensatingWriter markCompensatingWriter = new MarkCompensatingWriter(limitSize(capture, maxSize));
 
 		return new TeeReader(in, markCompensatingWriter, true) {
