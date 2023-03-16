@@ -1,0 +1,13 @@
+--test-boundary
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+Content-ID: <part1>
+
+content1
+--test-boundary
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+Content-ID: <part2>
+
+content2
+--test-boundary--
