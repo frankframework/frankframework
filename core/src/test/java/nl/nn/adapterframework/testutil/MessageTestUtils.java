@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.FilterInputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,11 +43,7 @@ public class MessageTestUtils {
 
 		public Message getMessage() throws IOException {
 			try {
-				Message message = new FileMessage(new File(url.toURI()));
-				if(!this.equals(MessageType.BINARY)) {
-					return new Message(message.asReader(StreamUtil.AUTO_DETECT_CHARSET), message.getContext());
-				}
-				return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
+				return new FileMessage(new File(url.toURI()));
 			} catch (URISyntaxException e) {
 				throw new IOException(e);
 			}
@@ -59,9 +56,9 @@ public class MessageTestUtils {
 
 	public static Message getNonRepeatableMessage(MessageType type) throws IOException {
 		Message message = type.getMessage();
-		if(message.isBinary()) {
-			return new Message(message.asInputStream(), message.getContext());
+		if(type.equals(MessageType.BINARY)) {
+			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
 		}
-		return new Message(message.asReader(), message.getContext());
+		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
 	}
 }
