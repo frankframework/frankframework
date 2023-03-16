@@ -162,7 +162,7 @@ public class MultipartEntityBuilder {
 		return buffer.toString();
 	}
 
-	private MultipartEntity buildEntity() {
+	public MultipartEntity build() {
 		String boundaryCopy = boundary;
 		if (boundaryCopy == null && contentType != null) {
 			boundaryCopy = contentType.getParameter("boundary");
@@ -197,9 +197,5 @@ public class MultipartEntityBuilder {
 		List<FormBodyPart> bodyPartsCopy = bodyParts != null ? new ArrayList<>(bodyParts) : Collections.<FormBodyPart>emptyList();
 		MultipartForm form = new MultipartForm(charsetCopy, boundaryCopy, bodyPartsCopy);
 		return new MultipartEntity(form, contentTypeCopy);
-	}
-
-	public HttpEntity build() {
-		return buildEntity();
 	}
 }

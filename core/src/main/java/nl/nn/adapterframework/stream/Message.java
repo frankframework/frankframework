@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
+	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -775,11 +776,26 @@ public class Message implements Serializable {
 	}
 
 	/**
+	 * Note that the size may not be an exact measure of the content size and may or may not account for any encoding of the content.
+	 * The size is appropriate for display in a user interface to give the user a rough idea of the size of this part.
+	 * 
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
-		if(request == null) {
-			return 0;
+		if (request == null) {
+			return 0L;
+		}
+
+		if (context.containsKey(MessageContext.METADATA_SIZE)) {
+			return (long) context.get(MessageContext.METADATA_SIZE);
+		}
+
+		if (request instanceof String) {
+			return ((String) request).length();
+		}
+
+		if (request instanceof byte[]) {
+			return ((byte[]) request).length;
 		}
 
 		if (request instanceof FileInputStream) {
@@ -791,23 +807,12 @@ public class Message implements Serializable {
 			}
 		}
 
-		if(request instanceof String) {
-			return ((String) request).length();
-		}
-		if (request instanceof byte[]) {
-			return ((byte[]) request).length;
-		}
-
-		if(context.containsKey(MessageContext.METADATA_SIZE)) {
-			return (long) context.get(MessageContext.METADATA_SIZE);
-		}
-
-		if(!(request instanceof InputStream || request instanceof Reader)) {
+		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
 			log.debug("unable to determine size of Message [{}]", ClassUtils.nameOf(request));
 		}
 
-		return -1;
+		return MESSAGE_SIZE_UNKNOWN;
 	}
 
 	/**
