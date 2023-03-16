@@ -172,4 +172,8 @@
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
 
+	<bean name="customReportAction" class="nl.nn.ibistesttool.larva.ConvertToLarvaAction">
+		<property name="reportsFolder" value="${ibistesttool.directory}"/>
+	</bean>
+
 </beans>
