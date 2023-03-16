@@ -69,14 +69,13 @@ public class UpdateLoggingConfig extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLogConfiguration() throws ApiException {
 
-		Map<String, Object> logSettings = new HashMap<String, Object>(3);
+		Map<String, Object> logSettings = new HashMap<>(5);
 		LoggerContext logContext = LoggerContext.getContext(false);
 		Logger rootLogger = logContext.getRootLogger();
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
-		List<String> errorLevels = new ArrayList<String>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
-		logSettings.put("errorLevels", errorLevels);
+		logSettings.put("errorLevels", Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true));
@@ -159,7 +158,7 @@ public class UpdateLoggingConfig extends Base {
 					log.warn("no applicationEventPublisher, cannot set debugger enabled to ["+enableDebugger+"]");
 				}
 			}
- 		}
+		}
 
 		if(msg.length() > 0) {
 			log.warn(msg.toString());
