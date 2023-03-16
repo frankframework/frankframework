@@ -192,6 +192,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	@Deprecated //BLOBs are binary, they should not contain character data
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
