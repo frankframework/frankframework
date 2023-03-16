@@ -313,11 +313,11 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
+			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
 			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
-			() -> assertEquals(0, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
+			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
 	}
@@ -371,8 +371,9 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STARTING);
 
 		final int TEST_MAX_RETRIES = 2;
-		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 2;
+		final int NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 1;
 		receiver.setMaxRetries(TEST_MAX_RETRIES);
+		receiver.setMaxDeliveries(TEST_MAX_RETRIES);
 
 		final AtomicInteger rolledBackTXCounter = new AtomicInteger();
 		final AtomicInteger txRollbackOnlyInErrorStorage = new AtomicInteger();
