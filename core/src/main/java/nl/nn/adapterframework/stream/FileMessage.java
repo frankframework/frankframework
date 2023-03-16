@@ -23,6 +23,14 @@ public class FileMessage extends Message {
 
 	private static final long serialVersionUID = 5219660236736759665L;
 
+	public FileMessage(File file) {
+		this(file, new MessageContext());
+	}
+
+	public FileMessage(File file, String charset) {
+		this(file, new MessageContext(charset));
+	}
+
 	public FileMessage(File file, Map<String,Object> context) {
 		super(() -> new FileInputStream(file), new MessageContext(context)
 				.withModificationTime(file.lastModified())
@@ -30,13 +38,5 @@ public class FileMessage extends Message {
 				.withName(file.getName())
 				.withLocation(file.getAbsolutePath())
 			, file.getClass());
-	}
-
-	public FileMessage(File file, String charset) {
-		this(file, new MessageContext(charset));
-	}
-
-	public FileMessage(File file) {
-		this(file, new MessageContext());
 	}
 }

@@ -850,11 +850,26 @@ public class Message implements Serializable {
 	}
 
 	/**
+	 * Note that the size may not be an exact measure of the content size and may or may not account for any encoding of the content.
+	 * The size is appropriate for display in a user interface to give the user a rough idea of the size of this part.
+	 * 
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
 		if (request == null) {
 			return 0L;
+		}
+
+		if (context.containsKey(MessageContext.METADATA_SIZE)) {
+			return (long) context.get(MessageContext.METADATA_SIZE);
+		}
+
+		if (request instanceof String) {
+			return ((String) request).length();
+		}
+
+		if (request instanceof byte[]) {
+			return ((byte[]) request).length;
 		}
 
 		if (request instanceof FileInputStream) {
@@ -864,18 +879,6 @@ public class Message implements Serializable {
 			} catch (IOException e) {
 				log.debug("unable to determine size of stream [{}]", ClassUtils.nameOf(request), e);
 			}
-		}
-
-		if (request instanceof byte[]) {
-			return ((byte[]) request).length;
-		}
-
-		if (context.containsKey(MessageContext.METADATA_SIZE)) {
-			return (long) context.get(MessageContext.METADATA_SIZE);
-		}
-
-		if (request instanceof String) {
-			return ((String) request).length();
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {

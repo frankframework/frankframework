@@ -56,4 +56,12 @@ public class MessageTestUtils {
 	public static Message getMessage(MessageType type) throws IOException {
 		return type.getMessage();
 	}
+
+	public static Message getNonRepeatableMessage(MessageType type) throws IOException {
+		Message message = type.getMessage();
+		if(message.isBinary()) {
+			return new Message(message.asInputStream(), message.getContext());
+		}
+		return new Message(message.asReader(), message.getContext());
+	}
 }
