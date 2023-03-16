@@ -1161,6 +1161,6 @@ public class MessageTest {
 		int charsToRead = 6;
 		message.getMagic(charsToRead);
 
-		assertEquals(charsRead.get(), charsToRead);
+		assertEquals(charsToRead, charsRead.get());
 	}
 }
