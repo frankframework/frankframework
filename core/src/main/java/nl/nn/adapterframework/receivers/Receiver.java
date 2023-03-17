@@ -17,6 +17,7 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -104,7 +105,6 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunState;
@@ -347,7 +347,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private static class ProcessResultCacheItem {
 		private int receiveCount;
-		private Date receiveDate;
+		private Instant receiveDate;
 		private String comments;
 	}
 
@@ -901,12 +901,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, String messageId, String correlationId, M rawMessageOrWrapper, ThrowingSupplier<Message,ListenerException> messageSupplier, Map<String,Object> threadContext, ProcessResultCacheItem prci, String comments) throws ListenerException {
 		try {
-			Date rcvDate;
+			Instant rcvDate;
 			if (prci!=null) {
 				comments+="; "+prci.comments;
 				rcvDate=prci.receiveDate;
 			} else {
-				rcvDate=new Date();
+				rcvDate=Instant.now();
 			}
 			if (isTransacted() || getListener() instanceof IHasProcessState ||
 					(getErrorStorage() != null &&
@@ -938,7 +938,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	public void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
+	public void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Instant receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 		final ISender errorSender = getErrorSender();
 		final ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 
@@ -981,7 +981,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			if (errorStorage!=null) {
 				Serializable sobj = serializeMessageObject(originalMessageId, rawMessage, message);
-				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
+				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
@@ -1154,11 +1154,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
-					String receivedDateStr = (String)session.get(PipeLineSession.TS_RECEIVED_KEY);
-					if (receivedDateStr==null) {
+					Date receivedDate = PipeLineSession.getTsReceived(session);
+					if (receivedDate==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 					} else {
-						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);
 						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg);
 					}
@@ -1289,12 +1288,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 			} finally {
-				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, new Date(startProcessingTimestamp));
+				ProcessResultCacheItem prci = cacheProcessResult(messageId, errorMessage, Instant.ofEpochMilli(startProcessingTimestamp));
 				try {
 					if (!isTransacted() && messageInError && !manualRetry
 							&& !(getListener() instanceof IRedeliveringListener<?> && ((IRedeliveringListener)getListener()).messageWillBeRedeliveredOnExitStateError(session))) {
 						final Message messageFinal = message;
-						moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, new Date(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
+						moveInProcessToError(messageId, businessCorrelationId, () -> messageFinal, Instant.ofEpochMilli(startProcessingTimestamp), errorMessage, rawMessageOrWrapper, TXNEW_CTRL);
 					}
 					Map<String,Object> afterMessageProcessedMap=session;
 					try {
@@ -1486,7 +1485,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@SuppressWarnings("synthetic-access")
-	public synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
+	public synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Instant receivedDate) {
 		final String logPrefix = getLogPrefix();
 		final Optional<ProcessResultCacheItem> cacheItem=getCachedProcessResult(messageId);
 		ProcessResultCacheItem prci = cacheItem.map(item -> {
