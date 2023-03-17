@@ -1664,9 +1664,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} else {
 			log.warn("{}, will continue retrieving messages in [{}] seconds", description, currentInterval, t);
 		}
-		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
-			suspensionMessagePending=true;
-			throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
+		synchronized (this) {
+			if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+				suspensionMessagePending=true;
+				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
+			}
 		}
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
