@@ -15,7 +15,6 @@
 */
 package nl.nn.ibistesttool.larva;
 
-//import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
@@ -24,8 +23,11 @@ import nl.nn.testtool.extensions.CustomReportActionResult;
 import nu.studer.java.util.OrderedProperties;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.stream.Stream;
 
 public class ConvertToLarvaAction implements CustomReportAction {
 
@@ -73,8 +76,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				return customReportActionResult;
 			}
 			String scenarioSuffix = "01";
-			try {
-				OptionalInt maxSuffix = Files.list(testDir).filter(path -> path.getFileName().toString().matches("scenario\\d+.properties")).mapToInt(path -> {
+			try (Stream<Path> files = Files.list(testDir).filter(path -> path.getFileName().toString().matches("scenario\\d+.properties"))) {
+				OptionalInt maxSuffix = files.mapToInt(path -> {
 					String fileName = path.getFileName().toString();
 					return Integer.parseInt(fileName.substring(8,fileName.indexOf(".")));
 				}).max();
@@ -96,8 +99,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					return customReportActionResult;
 				}
 			} else {
-				try {
-					if (Files.list(scenarioDir).findAny().isPresent()) {
+				try(Stream<Path> files = Files.list(scenarioDir)) {
+					if (files.findAny().isPresent()) {
 						customReportActionResult.setErrorMessage("Error: scenario directory [" + scenarioDir.toAbsolutePath() + "] already exists and is not empty. Not converting report [" + reportName + "]");
 						return customReportActionResult;
 					}
@@ -118,6 +121,10 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		}
 
 		return customReportActionResult;
+	}
+
+	public static String stepPadding(int i) {
+		return String.format("%0" + 2 + "d", i);
 	}
 
 	private static class Scenario {
@@ -170,7 +177,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			String scenarioDirPrefix = scenarioDir.getFileName().toString() + "/";
 			File scenarioFile = scenario.toFile();
 			File commonFile = common.toFile();
-			FileWriter scenarioWriter, commonWriter;
+			OutputStreamWriter scenarioWriter, commonWriter;
 
 			OrderedProperties.OrderedPropertiesBuilder commonBuilder = new OrderedProperties.OrderedPropertiesBuilder();
 			commonBuilder.withOrdering(new CommonPropertiesComparator());
@@ -255,14 +262,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			System.out.println("Scenario dir: " + scenarioDir.toAbsolutePath());
 
 			try {
-				scenarioWriter = new FileWriter(scenarioFile);
+				scenarioWriter = new OutputStreamWriter(Files.newOutputStream(scenarioFile.toPath()), StandardCharsets.UTF_8);;
 				scenarioProperties.store(scenarioWriter, null);
 			} catch (IOException e) {
 				customReportActionResult.setErrorMessage("Failed to write properties to file [" + scenarioFile + "] for report [" + reportName + "]");
 				return;
 			}
 			try {
-				commonWriter = new FileWriter(commonFile);
+				commonWriter = new OutputStreamWriter(Files.newOutputStream(commonFile.toPath()), StandardCharsets.UTF_8);;
 				commonProperties.store(commonWriter, null);
 			} catch (IOException e) {
 				customReportActionResult.setErrorMessage("Failed to write properties to file [" + commonFile + "] for report [" + reportName + "]");
@@ -299,10 +306,6 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			} catch (IOException e) {
 				customReportActionResult.setErrorMessage(customReportActionResult.getErrorMessage() + "\nFailed to create file for message: [" + messageFile + "] for report [" + reportName + "]");
 			}
-		}
-
-		private static String stepPadding(int i) {
-			return String.format("%0" + 2 + "d", i);
 		}
 	}
 
