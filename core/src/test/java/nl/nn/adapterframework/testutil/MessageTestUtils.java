@@ -28,6 +28,7 @@ import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
+@SuppressWarnings("resource")
 public class MessageTestUtils {
 	public enum MessageType {
 		CHARACTER_UTF8("/Util/MessageUtils/utf8-with-bom.txt"),
@@ -42,11 +43,21 @@ public class MessageTestUtils {
 		}
 
 		public Message getMessage() throws IOException {
-			try {
-				return new FileMessage(new File(url.toURI()));
-			} catch (URISyntaxException e) {
-				throw new IOException(e);
-			}
+			return MessageTestUtils.getMessage(url);
+		}
+	}
+
+	public static Message getMessage(String resource) throws IOException {
+		URL url = TestFileUtils.getTestFileURL(resource);
+		assertNotNull(url, "unable to find test file");
+		return getMessage(url);
+	}
+
+	public static Message getMessage(URL url) throws IOException {
+		try {
+			return new FileMessage(new File(url.toURI()));
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
 		}
 	}
 
@@ -60,5 +71,21 @@ public class MessageTestUtils {
 			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
 		}
 		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+	}
+
+	public static Message getBinaryMessage(String resource, boolean repeatable) throws IOException {
+		Message message = getMessage(resource);
+		if(!repeatable) {
+			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
+		}
+		return message;
+	}
+
+	public static Message getCharacterMessage(String resource, boolean repeatable) throws IOException {
+		Message message = getMessage(resource);
+		if(!repeatable) {
+			return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+		}
+		return message;
 	}
 }

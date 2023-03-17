@@ -2,7 +2,6 @@ package nl.nn.adapterframework.soap;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -10,12 +9,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 
-/**
- * @author Michiel Meeuwissen
- */
 public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
 	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
@@ -27,29 +24,10 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	public String INPUT_FILE_GPBDB_INVALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap.xml";
 	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY			=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap_body.xml";
 	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY	=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/unknown_namespace_soap_body.xml";
-	
 
 	@Override
 	public SoapValidator createPipe() {
 		return new SoapValidator();
-	}
-
-	@Test
-	@Ignore("Don't know what it should test any more")
-	public void basic() {
-		pipe.setSchemaLocation("http://www.ing.com/pim test.xsd");
-		pipe.setSoapBody("{http://www.ing.com/pim}a");
-		System.out.println(pipe.getSoapBody());
-		// WTF it was something with QName, it is a string. I have no idea whether and how that must be tested (I don't know what the string is meant to represent any more)
-		// assertEquals(new QName("http://www.ing.com/pim", "a"), validator.getSoapBodyTags().iterator().next());
-	}
-
-	@Test
-	@Ignore("Don't know what it should test any more")
-	public void defaultNamespace() {
-		pipe.setSchemaLocation("http://www.ing.com/pim test.xsd");
-		pipe.setSoapBody("a");
-//		WTF assertEquals(new QName("http://www.ing.com/pim", "a"), validator.getSoapBodyTags().iterator().next());
 	}
 
 	@Test
@@ -60,7 +38,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -74,7 +52,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP_1_2;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -89,7 +67,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -104,7 +82,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -119,7 +97,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -133,7 +111,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -147,7 +125,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
@@ -161,13 +139,12 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_VALID_SOAP;
-		Message input = TestFileUtils.getTestFileMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
 		assertEquals(expected, prr.getResult().asString());
 	}
 
-	
 	@Test
 	public void issue4183CharsetProblemInXSD() throws Exception {
 		configureSoapValidator(false);
@@ -175,7 +152,6 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.configure();
 		pipe.start();
 	}
-	
 
 	private void configureSoapValidator() throws ConfigurationException {
 		configureSoapValidator(false);
