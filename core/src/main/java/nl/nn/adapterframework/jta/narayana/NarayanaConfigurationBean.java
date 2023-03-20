@@ -19,11 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 
@@ -71,11 +69,5 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
-
-		String dfaultTimeoutStr = getProperties().getProperty("CoordinatorEnvironmentBean.defaultTransactionTimeout");
-		if(StringUtils.isNotBlank(dfaultTimeoutStr)) {
-			int timeout = Integer.parseInt(dfaultTimeoutStr);
-			arjPropertyManager.getCoordinatorEnvironmentBean().setDefaultTimeout(timeout);
-		}
 	}
 }

@@ -939,14 +939,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Instant receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
-		final ISender errorSender = getErrorSender();
-		final ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-
-		// Bail out early with logging if there is no error destination at all
-		if (errorSender == null && errorStorage == null && (!(getListener() instanceof IHasProcessState) || knownProcessStates.isEmpty())) {
-			log.debug("{} has no errorSender, errorStorage or knownProcessStates, will not move message with id [{}] correlationId [{}] to errorSender/errorStorage", this::getLogPrefix, ()->originalMessageId, ()->correlationId);
-			return;
-		}
 		if (getListener() instanceof IHasProcessState && !knownProcessStates.isEmpty()) {
 			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 			try {
@@ -955,9 +947,15 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				log.error("{} Could not set process state to ERROR", (Supplier<?>) this::getLogPrefix, e);
 			}
 		}
-		// Bail out now if we could move to error/done state but have no error sender/storage,
-		// so we do not have to create a TX and get message from supplier.
+
+		final ISender errorSender = getErrorSender();
+		final ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+
+		// Bail out now if we have no error sender/storage, so we do not have to create a TX and get message from supplier.
 		if (errorSender==null && errorStorage==null) {
+			if (!(getListener() instanceof IHasProcessState) || knownProcessStates.isEmpty()) {
+				log.debug("{} has no errorSender, errorStorage or knownProcessStates, will not move message with id [{}] correlationId [{}] to errorSender/errorStorage", this::getLogPrefix, () -> originalMessageId, () -> correlationId);
+			}
 			return;
 		}
 		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
@@ -1485,20 +1483,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@SuppressWarnings("synthetic-access")
 	public synchronized ProcessResultCacheItem cacheProcessResult(String messageId, String errorMessage, Instant receivedDate) {
-		final String logPrefix = getLogPrefix();
-		final Optional<ProcessResultCacheItem> cacheItem=getCachedProcessResult(messageId);
-		ProcessResultCacheItem prci = cacheItem.map(item -> {
-			item.receiveCount++;
-			if (log.isDebugEnabled())
-				log.debug("{} increased try count for messageId [{}] to [{}]", logPrefix, messageId, item.receiveCount);
-			return item;
-		}).orElseGet(() -> {
-			if (log.isDebugEnabled()) log.debug("{} caching first result for messageId [{}]", logPrefix, messageId);
+		final ProcessResultCacheItem prci = processResultCache.computeIfAbsent(messageId, key -> {
+			log.debug("{} caching first result for messageId [{}]", this::getLogPrefix, ()->messageId);
 			ProcessResultCacheItem item = new ProcessResultCacheItem();
-			item.receiveCount = 1;
 			item.receiveDate = receivedDate;
 			return item;
 		});
+		prci.receiveCount++;
+		if (prci.receiveCount > 1) {
+			log.debug("{} increased try count for messageId [{}] to [{}]", this::getLogPrefix, ()->messageId, ()->prci.receiveCount);
+		}
 		prci.comments = errorMessage;
 		processResultCache.put(messageId, prci);
 		return prci;
