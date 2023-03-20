@@ -1189,8 +1189,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 
 			final String label = extractLabel(message);
-			boolean exitWithoutProcessing;
-			exitWithoutProcessing = checkMessageHistory(rawMessageOrWrapper, message, messageId, businessCorrelationId, session, manualRetry, historyAlreadyChecked);
+			boolean exitWithoutProcessing = checkMessageHistory(rawMessageOrWrapper, message, messageId, businessCorrelationId, session, manualRetry, historyAlreadyChecked);
 			if (exitWithoutProcessing) {
 				return Message.nullMessage();
 			}
