@@ -1154,7 +1154,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
-					Date receivedDate = PipeLineSession.getTsReceived(session);
+					Date receivedDate = session.getTsReceived();
 					if (receivedDate==null) {
 						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 					} else {
