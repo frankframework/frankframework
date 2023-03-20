@@ -45,13 +45,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
@@ -71,11 +72,9 @@ import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager;
-import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
@@ -83,12 +82,11 @@ import nl.nn.adapterframework.util.RunState;
 public class ReceiverTest {
 	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	protected Logger log = LogUtil.getLogger(this);
-	private TestConfiguration configuration = new TestConfiguration();
+	private TestConfiguration configuration;
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		configuration.stop();
-		configuration.getBean("adapterManager", AdapterManager.class).close();
+		configuration = buildConfiguration("TEST_TXM");
 	}
 
 	@AfterEach
@@ -195,33 +193,26 @@ public class ReceiverTest {
 		if (TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();
 		}
-		String logDir = AppConstants.getInstance().getResolvedProperty("transactionmanager.log.dir") + "/TXLOGS/BTM";
-		Configuration txCfg = TransactionManagerServices.getConfiguration();
-		txCfg.setDisableJmx(true);
-		txCfg.setLogPart1Filename(logDir + "/1.tlog");
-		txCfg.setLogPart2Filename(logDir + "/2.tlog");
-		BtmJtaTransactionManager txm = configuration.createBean(BtmJtaTransactionManager.class);
-		txm.setStatusFile(logDir + "/status.txt");
-		txm.setUidFile(logDir + "/btm-uid.txt");
-
-		return txm;
+		return configuration.getBean(BtmJtaTransactionManager.class);
 	}
 
 	private static JtaTransactionManager buildNarayanaTransactionManager(TestConfiguration configuration) {
-		String logDir = AppConstants.getInstance().getResolvedProperty("transactionmanager.log.dir") + "/TXLOGS/NARAYANA";
-		Properties properties = new Properties();
-		properties.put("JDBCEnvironmentBean.isolationLevel", "2");
-		properties.setProperty("ObjectStoreEnvironmentBean.objectStoreDir", logDir + "/ObjectStoreDir");
-		properties.setProperty("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", logDir + "/ObjectStoreDir");
-		properties.setProperty("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", logDir + "/ObjectStoreDir");
+		return configuration.getBean(NarayanaJtaTransactionManager.class);
+	}
 
-		NarayanaConfigurationBean cfg = new NarayanaConfigurationBean();
-		cfg.setProperties(properties);
-		cfg.afterPropertiesSet();
-		NarayanaJtaTransactionManager txm = configuration.createBean(NarayanaJtaTransactionManager.class);
-		txm.setStatusFile(logDir + "/status.txt");
-		txm.setUidFile(logDir + "/ntm-uid.txt");
-		return txm;
+	private static TestConfiguration buildConfiguration(String txManagerName) {
+		TestConfiguration configuration = new TestConfiguration("testConfigurationContextWithTxManagers.xml");
+		MutablePropertySources propertySources = configuration.getEnvironment().getPropertySources();
+		propertySources.remove("testProperties");
+		Properties properties = new Properties();
+		properties.setProperty("DataSourceName", txManagerName);
+		properties.setProperty("TransactionManagerType", txManagerName);
+		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
+
+		configuration.refresh();
+		configuration.stop();
+		configuration.getBean("adapterManager", AdapterManager.class).close();
+		return configuration;
 	}
 
 	@ParameterizedTest
