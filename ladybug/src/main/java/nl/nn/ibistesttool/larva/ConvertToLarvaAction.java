@@ -23,16 +23,15 @@ import nl.nn.testtool.extensions.CustomReportActionResult;
 import nu.studer.java.util.OrderedProperties;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +41,7 @@ import java.util.stream.Stream;
 public class ConvertToLarvaAction implements CustomReportAction {
 
 	String dir;
+	CustomReportActionResult customReportActionResult;
 
 	@Override
 	public String getButtonText() {
@@ -54,17 +54,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 	@Override
 	public CustomReportActionResult handleReports(List<Report> reports) {
-		CustomReportActionResult customReportActionResult = new CustomReportActionResult();
-		customReportActionResult.setSuccessMessage("Generated larva test scenario(s) for reports: " + reports);
+		List<Report> successReports = new ArrayList<>();
+		customReportActionResult = new CustomReportActionResult();
+		StringBuilder additionalErrors = new StringBuilder();
 
 		for (Report report : reports) {
-			if (report == null) {
-				customReportActionResult.setErrorMessage("Couldn't get corresponding report object for row.");
-				return customReportActionResult;
-			}
 			if (!report.getName().startsWith("Pipeline ")) {
-				customReportActionResult.setErrorMessage("Report [" + report.getName() + "] is not a pipeline report. Test generation isn't implemented for this type of report.");
-				return customReportActionResult;
+				addErrorToResult(report.getName(), "This not a pipeline report. Test generation isn't implemented for this type of report.");
+				continue;
 			}
 			String reportName = report.getName();
 			String adapterName = reportName.substring(9);
@@ -72,8 +69,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			try {
 				Files.createDirectories(testDir);
 			} catch (IOException e) {
-				customReportActionResult.setErrorMessage("Error occurred when creating test directory [" + testDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
-				return customReportActionResult;
+				addErrorToResult(report.getName(), "Could not create test directory [" + testDir.toAbsolutePath().normalize() + "]");
+				continue;
 			}
 			String scenarioSuffix = "01";
 			try (Stream<Path> files = Files.list(testDir).filter(path -> path.getFileName().toString().matches("scenario\\d+.properties"))) {
@@ -85,8 +82,8 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					scenarioSuffix = String.format("%0" + 2 + "d", maxSuffix.getAsInt() + 1);
 				}
 			} catch (IOException e) {
-				customReportActionResult.setErrorMessage("Error occurred counting existing scenarios in test directory [" + testDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
-				return customReportActionResult;
+				addErrorToResult(report.getName(), "Could not count existing scenarios in test directory [" + testDir.toAbsolutePath().normalize() + "]");
+				continue;
 			}
 			Path scenarioDir = testDir.resolve(scenarioSuffix);
 			Path scenarioFile = testDir.resolve("scenario" + scenarioSuffix + ".properties");
@@ -95,32 +92,53 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				try {
 					Files.createDirectory(scenarioDir);
 				} catch (IOException e) {
-					customReportActionResult.setErrorMessage("Error occurred when creating scenario directory [" + scenarioDir.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
-					return customReportActionResult;
+					addErrorToResult(report.getName(), "Could not create scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "]");
+					continue;
 				}
 			} else {
 				try(Stream<Path> files = Files.list(scenarioDir)) {
 					if (files.findAny().isPresent()) {
-						customReportActionResult.setErrorMessage("Error: scenario directory [" + scenarioDir.toAbsolutePath() + "] already exists and is not empty. Not converting report [" + reportName + "]");
-						return customReportActionResult;
+						addErrorToResult(report.getName(), "Scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "] already exists and is not empty");
+						continue;
 					}
 				} catch (IOException e) {
-					customReportActionResult.setErrorMessage("Error: could not read from the filesystem. Not converting report [" + reportName + "]");
-					return customReportActionResult;
+					addErrorToResult(report.getName(), "Could not read from scenario directory [" + scenarioDir.toAbsolutePath().normalize() + "]");
+					continue;
 				}
 			}
 			if (!Files.exists(commonFile)) {
 				try {
 					Files.createFile(commonFile);
 				} catch (IOException e) {
-					customReportActionResult.setErrorMessage("Error occurred when creating common file [" + commonFile.toAbsolutePath() + "] for report [" + reportName + "]: " + e);
-					return customReportActionResult;
+					addErrorToResult(report.getName(), "Could not create common file [" + commonFile.toAbsolutePath().normalize() + "]");
+					continue;
 				}
 			}
-			new Scenario(report, scenarioDir, scenarioFile, commonFile, adapterName, customReportActionResult);
+			Scenario scenario = new Scenario(report, scenarioDir, scenarioFile, commonFile, adapterName);
+			if (scenario.errors.size() != 0) {
+				additionalErrors.append("\t[").append(report).append("]: ").append(String.join("\r\n", scenario.errors));
+			}
+			successReports.add(report);
 		}
 
+		if (additionalErrors.length() != 0) {
+			String oldError = customReportActionResult.getErrorMessage();
+			customReportActionResult.setErrorMessage(
+					(oldError != null && oldError.length() > 0 ? oldError + "\r\n" : "") +
+					"Errors while generating tests: \r\n" +
+					additionalErrors
+			);
+		}
+		customReportActionResult.setSuccessMessage("Generated larva test scenario(s) for reports: " + successReports);
 		return customReportActionResult;
+	}
+
+	private void addErrorToResult(String report, String reason) {
+		String oldError = customReportActionResult.getErrorMessage();
+		customReportActionResult.setErrorMessage(
+				(oldError != null && oldError.length() > 0 ? oldError : "Following reports could not be converted:") +
+				"\r\n\t[" + report + "]: " + reason
+		);
 	}
 
 	public static String stepPadding(int i) {
@@ -128,11 +146,9 @@ public class ConvertToLarvaAction implements CustomReportAction {
 	}
 
 	private static class Scenario {
-		private static final HashSet<String> ignoredSenders = new HashSet(Arrays.asList(
-				"nl.nn.adapterframework.jdbc.ResultSet2FileSender",
-				"nl.nn.adapterframework.jdbc.DirectQuerySender",
-				"nl.nn.adapterframework.jdbc.FixedQuerySender",
-				"nl.nn.adapterframework.jdbc.XmlQuerySender",
+
+
+		private static final HashSet<String> allowedSenders = new HashSet(Arrays.asList(
 				"nl.nn.adapterframework.senders.DelaySender",
 				"nl.nn.adapterframework.senders.EchoSender",
 				"nl.nn.adapterframework.senders.IbisLocalSender",
@@ -146,8 +162,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				"nl.nn.adapterframework.senders.JavascriptSender",
 				"nl.nn.adapterframework.jdbc.MessageStoreSender",
 				"nl.nn.adapterframework.senders.ReloadSender",
-				"nl.nn.adapterframework.compression.ZipWriterSender",
-				"nl.nn.adapterframework.senders.LocalFileSystemSender"
+				"nl.nn.adapterframework.compression.ZipWriterSender"
 		));
 
 		private static final HashSet<String> ignoredSessionKeys = new HashSet(Arrays.asList(
@@ -163,17 +178,18 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				"tsSent",
 				"xPathLogKeys",
 				"replyTo",
-				"JmsSession"
+				"JmsSession",
+				"servletResponse",
+				"servletRequest",
+				"servletContext",
+				"securityHandler"
 		));
-		Path resultFolder;
-		private String suffix = "01", reportName;
-		OrderedProperties scenarioProperties, commonProperties;
-		Map<String, String> existingStubs;
-		CustomReportActionResult customReportActionResult;
 
-		public Scenario(Report report, Path scenarioDir, Path scenario, Path common, String adapterName, CustomReportActionResult customReportActionResult) {
-			this.reportName = report.getName();
-			this.customReportActionResult = customReportActionResult;
+		public List<String> errors = new ArrayList<>();
+
+		public Scenario(Report report, Path scenarioDir, Path scenario, Path common, String adapterName) {
+			Map<String, String> existingStubs = new HashMap<>();
+
 			String scenarioDirPrefix = scenarioDir.getFileName().toString() + "/";
 			File scenarioFile = scenario.toFile();
 			File commonFile = common.toFile();
@@ -182,12 +198,12 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			OrderedProperties.OrderedPropertiesBuilder commonBuilder = new OrderedProperties.OrderedPropertiesBuilder();
 			commonBuilder.withOrdering(new CommonPropertiesComparator());
 			commonBuilder.withSuppressDateInComment(true);
-			commonProperties = commonBuilder.build();
+			OrderedProperties commonProperties = commonBuilder.build();
 
 			OrderedProperties.OrderedPropertiesBuilder scenarioBuilder = new OrderedProperties.OrderedPropertiesBuilder();
 			scenarioBuilder.withOrdering(new ScenarioPropertiesComparator());
 			scenarioBuilder.withSuppressDateInComment(true);
-			scenarioProperties = scenarioBuilder.build();
+			OrderedProperties scenarioProperties = scenarioBuilder.build();
 
 			scenarioProperties.setProperty("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
 			scenarioProperties.setProperty("include", "common.properties");
@@ -213,7 +229,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						skipUntilEndOfSender = false;
 					}
 				} else if (checkpoint.getType() < 3 && checkpoint.getName().startsWith("Sender ")) {
-					if (!ignoredSenders.contains(checkpoint.getSourceClassName())) {
+					if (allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7);
 						String senderProperty = "stub." + senderName;
@@ -232,10 +248,9 @@ public class ConvertToLarvaAction implements CustomReportAction {
 								commonProperties.removeProperty(existingStubName + ".className");
 								commonProperties.removeProperty(existingStubName + ".serviceName");
 								try {
-									replaceStubName(resultFolder, existingStubName, senderProperty);
+									replaceStubName(scenario.getParent(), existingStubName, senderProperty);
 								} catch (IOException e) {
-									customReportActionResult.setErrorMessage(customReportActionResult.getErrorMessage() + "\nError occured when replacing old stub name [" + existingStubName + "] with new stub name [" + senderProperty + "] for report [" + reportName + "]");
-									return;
+									errors.add("Could not replace old stub name [" + existingStubName + "] with new stub name [" + senderProperty + "]");
 								}
 							}
 						}
@@ -265,15 +280,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				scenarioWriter = new OutputStreamWriter(Files.newOutputStream(scenarioFile.toPath()), StandardCharsets.UTF_8);;
 				scenarioProperties.store(scenarioWriter, null);
 			} catch (IOException e) {
-				customReportActionResult.setErrorMessage("Failed to write properties to file [" + scenarioFile + "] for report [" + reportName + "]");
-				return;
+				errors.add("Could not write properties to file [" + scenarioFile + "]");
 			}
 			try {
 				commonWriter = new OutputStreamWriter(Files.newOutputStream(commonFile.toPath()), StandardCharsets.UTF_8);;
 				commonProperties.store(commonWriter, null);
 			} catch (IOException e) {
-				customReportActionResult.setErrorMessage("Failed to write properties to file [" + commonFile + "] for report [" + reportName + "]");
-				return;
+				errors.add("Could not write properties to file [" + commonFile + "]");
 			}
 		}
 
@@ -304,7 +317,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					Files.write(messageFile.toPath(), message.getBytes(StandardCharsets.UTF_8));
 				}
 			} catch (IOException e) {
-				customReportActionResult.setErrorMessage(customReportActionResult.getErrorMessage() + "\nFailed to create file for message: [" + messageFile + "] for report [" + reportName + "]");
+				errors.add("Could not create message file: [" + messageFile + "]");
 			}
 		}
 	}
