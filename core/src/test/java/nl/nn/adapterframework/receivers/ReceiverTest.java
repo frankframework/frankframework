@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.receivers;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.function;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
@@ -30,7 +31,6 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -184,38 +184,10 @@ public class ReceiverTest {
 		}
 	}
 
-	/**
-	 * Helper function to cast parameter as a {@link Supplier} when the compiler cannot work it
-	 * out by itself.
-	 *
-	 * TODO: Put in a good home.
-	 *
-	 * @param s
-	 * @return
-	 * @param <T>
-	 */
-	static <T> Supplier<T> asSupplier(Supplier<T> s) {
-		return s;
-	}
-
-	/**
-	 * Helper function to cast parameter as {@link Function} when the compiler cannot work it
-	 * out by itself.
-	 * TODO: Put in a good home.
-	 *
-	 * @param f
-	 * @return
-	 * @param <T>
-	 * @param <R>
-	 */
-	static <T,R> Function<T,R> asFunction(Function<T,R> f) {
-		return f;
-	}
-
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(asFunction(ReceiverTest::buildNarayanaTransactionManager)),
-			Arguments.of(asFunction(ReceiverTest::buildBtmTransactionManager))
+			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager)),
+			Arguments.of(function(ReceiverTest::buildBtmTransactionManager))
 		);
 	}
 

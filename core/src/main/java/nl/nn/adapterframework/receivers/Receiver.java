@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
+import static nl.nn.adapterframework.functional.FunctionalUtil.supply;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
@@ -38,7 +41,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.util.Supplier;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.ApplicationContext;
@@ -944,7 +946,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			try {
 				changeProcessState(rawMessage, targetState, comments);
 			} catch (ListenerException e) {
-				log.error("{} Could not set process state to ERROR", (Supplier<?>) this::getLogPrefix, e);
+				log.error("{} Could not set process state to ERROR", supplier(this::getLogPrefix), e);
 			}
 		}
 
@@ -964,7 +966,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
-			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", (Supplier<?>) this::getLogPrefix, (Supplier<?>) () -> originalMessageId, (Supplier<?>) () -> correlationId, e);
+			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), e);
 			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
@@ -983,13 +985,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"Exception moving message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to error sender or error storage, original message: [" + message + "]", e);
+			log.error(getLogPrefix()+"{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(message), e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error(getLogPrefix()+"Exception while rolling back transaction for message  with id ["+originalMessageId+"] correlationId ["+correlationId+"], original message: [" + message + "]", rbe);
+				log.error(getLogPrefix()+"{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(message), rbe);
 			}
 		}
 	}
@@ -1383,7 +1385,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		String logPrefix = getLogPrefix();
 		try {
 			Optional<ProcessResultCacheItem> cachedProcessResult = getCachedProcessResult(messageId);
-			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceeded(messageId, manualRetry, rawMessageOrWrapper, () -> message, session, businessCorrelationId)) {
+			if (!duplicatesAlreadyChecked && isDeliveryRetryLimitExceeded(messageId, businessCorrelationId, rawMessageOrWrapper, session, manualRetry)) {
 				if (!isTransacted()) {
 					log.warn("{} received message with messageId [{}] which has a problematic history; aborting processing", logPrefix, messageId);
 				}
@@ -1521,7 +1523,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * returns true if message should not be processed
 	 */
-	public boolean isDeliveryRetryLimitExceeded(String messageId, boolean manualRetry, M rawMessageOrWrapper, ThrowingSupplier<Message,ListenerException> messageSupplier, Map<String,Object>threadContext, String correlationId) throws ListenerException {
+	public boolean isDeliveryRetryLimitExceeded(String messageId, String correlationId, M rawMessageOrWrapper, Map<String,Object> threadContext, boolean manualRetry) throws ListenerException {
 		if (manualRetry) {
 			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
 			return isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId);
@@ -1529,7 +1531,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		final IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
 		final String logPrefix = getLogPrefix();
-		if (log.isDebugEnabled()) log.debug("{} checking try count for messageId [{}]", logPrefix, messageId);
+		log.debug("{} checking try count for messageId [{}]", logPrefix, messageId);
 		Optional<ProcessResultCacheItem> oprci = getCachedProcessResult(messageId);
 
 		final boolean isProblematic = oprci.map(prci -> {
@@ -1560,9 +1562,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	private void resetProblematicHistory(String messageId) {
-		log.trace("{} Receiver reset problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		Optional<ProcessResultCacheItem> prci = getCachedProcessResult(messageId);
-		log.trace("{} Receiver reset problematic history - getCachedProcessResult - synchronize (lock) on Receiver", this::getLogPrefix);
 		prci.ifPresent(processResultCacheItem -> processResultCacheItem.receiveCount = 0);
 	}
 

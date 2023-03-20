@@ -27,11 +27,7 @@ public enum TransactionManagerType {
 	private Class<? extends URLDataSourceFactory> factory;
 	private String[] springConfigurationFiles;
 
-	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
-		this(clazz, null);
-	}
-
-	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
+	TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
 			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
 		} else {
@@ -67,7 +63,7 @@ public enum TransactionManagerType {
 
 	public TestConfiguration getConfigurationContext(String productKey) {
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, key -> create(key));
+			return datasourceConfigurations.computeIfAbsent(productKey, this::create);
 		}
 		return transactionManagerConfigurations.computeIfAbsent(this, TransactionManagerType::create);
 	}
