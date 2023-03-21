@@ -85,6 +85,8 @@ public class ConfigurationUtils {
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
+	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
+
 	/**
 	 * Checks if a configuration is stubbed or not
 	 */
@@ -157,7 +159,7 @@ public class ConfigurationUtils {
 		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
 			qs.open();
@@ -165,16 +167,18 @@ public class ConfigurationUtils {
 			String query;
 			if(version == null) {//Return active config
 				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				rs = stmt.executeQuery();
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					rs = stmt.executeQuery();
+				}
 			}
 			else {
 				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				stmt.setString(2, version);
-				rs = stmt.executeQuery();
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					stmt.setString(2, version);
+					rs = stmt.executeQuery();
+				}
 			}
 			if (!rs.next()) {
 				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
@@ -241,7 +245,7 @@ public class ConfigurationUtils {
 		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 
 		PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
@@ -254,33 +258,36 @@ public class ConfigurationUtils {
 
 			if (activateConfig) {
 				String query = ("UPDATE IBISCONFIG SET ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(false))+" WHERE NAME=?");
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				updated = stmt.executeUpdate();
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					updated = stmt.executeUpdate();
+				}
 			}
 			if (updated > 0) {
 				String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION = ?");
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				stmt.setString(2, version);
-				stmt.execute();
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					stmt.setString(2, version);
+					stmt.execute();
+				}
 			}
 
 			String activeBool = qs.getDbmsSupport().getBooleanValue(activateConfig);
 			String reloadBool = qs.getDbmsSupport().getBooleanValue(automaticReload);
 			String query = ("INSERT INTO IBISCONFIG (NAME, VERSION, FILENAME, CONFIG, CRE_TYDST, RUSER, ACTIVECONFIG, AUTORELOAD) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, "+activeBool+", "+reloadBool+")");
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, name);
-			stmt.setString(2, version);
-			stmt.setString(3, fileName);
-			stmt.setBinaryStream(4, file);
-			if (StringUtils.isEmpty(ruser)) {
-				stmt.setNull(5, Types.VARCHAR);
-			} else {
-				stmt.setString(5, ruser);
-			}
+			try (PreparedStatement stmt = conn.prepareStatement(query)) {
+				stmt.setString(1, name);
+				stmt.setString(2, version);
+				stmt.setString(3, fileName);
+				stmt.setBinaryStream(4, file);
+				if (StringUtils.isEmpty(ruser)) {
+					stmt.setNull(5, Types.VARCHAR);
+				} else {
+					stmt.setString(5, ruser);
+				}
 
-			return stmt.executeUpdate() > 0;
+				return stmt.executeUpdate() > 0;
+			}
 		} catch (SenderException | JdbcException | SQLException e) {
 			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
@@ -297,25 +304,23 @@ public class ConfigurationUtils {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
 			qs.open();
-			conn = qs.getConnection();
-
-			String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
-			PreparedStatement stmt = conn.prepareStatement(query);
-			stmt.setString(1, name);
-			stmt.setString(2, version);
-			stmt.execute();
+			try (Connection conn = qs.getConnection()) {
+				String query = ("DELETE FROM IBISCONFIG WHERE NAME=? AND VERSION=?");
+				try (PreparedStatement stmt = conn.prepareStatement(query)) {
+					stmt.setString(1, name);
+					stmt.setString(2, version);
+					stmt.execute();
+				}
+			}
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 	}
@@ -330,10 +335,9 @@ public class ConfigurationUtils {
 		}
 
 		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		String booleanValueFalse = qs.getDbmsSupport().getBooleanValue(false);
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
@@ -347,24 +351,25 @@ public class ConfigurationUtils {
 			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
 			selectStmt.setString(1, name);
 			selectStmt.setString(2, version);
-			rs = selectStmt.executeQuery();
-			if(rs.next()) {
-				String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueFalse+" WHERE NAME=?";
+			try (ResultSet rs = selectStmt.executeQuery()) {
+				if(rs.next()) {
+					String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueFalse+" WHERE NAME=?";
 
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				updated = stmt.executeUpdate();
+					PreparedStatement stmt = conn.prepareStatement(query);
+					stmt.setString(1, name);
+					updated = stmt.executeUpdate();
 
-				if(updated > 0) {
-					String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueTrue+" WHERE NAME=? AND VERSION=?";
-					PreparedStatement stmt2 = conn.prepareStatement(query2);
-					stmt2.setString(1, name);
-					stmt2.setString(2, version);
-					return (stmt2.executeUpdate() > 0) ? true : false;
+					if(updated > 0) {
+						String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueTrue+" WHERE NAME=? AND VERSION=?";
+						PreparedStatement stmt2 = conn.prepareStatement(query2);
+						stmt2.setString(1, name);
+						stmt2.setString(2, version);
+						return (stmt2.executeUpdate() > 0) ? true : false;
+					}
 				}
 			}
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
+			JdbcUtil.close(conn);
 			qs.close();
 		}
 		return false;
@@ -379,32 +384,31 @@ public class ConfigurationUtils {
 			workdataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs =  SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 
 		try {
 			qs.open();
-			conn = qs.getConnection();
+			try (Connection conn = qs.getConnection()) {
 
-			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
-			selectStmt.setString(1, name);
-			selectStmt.setString(2, version);
-			rs = selectStmt.executeQuery();
-			if(rs.next()) {
-				String query = "UPDATE IBISCONFIG SET AUTORELOAD="+qs.getDbmsSupport().getBooleanValue(booleanValue)+" WHERE NAME=? AND VERSION=?";
+				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+				PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
+				selectStmt.setString(1, name);
+				selectStmt.setString(2, version);
+				try (ResultSet rs = selectStmt.executeQuery()) {
+					if(rs.next()) {
+						String query = "UPDATE IBISCONFIG SET AUTORELOAD="+qs.getDbmsSupport().getBooleanValue(booleanValue)+" WHERE NAME=? AND VERSION=?";
 
-				PreparedStatement stmt = conn.prepareStatement(query);
-				stmt.setString(1, name);
-				stmt.setString(2, version);
-				return stmt.executeUpdate() > 0;
+						PreparedStatement stmt = conn.prepareStatement(query);
+						stmt.setString(1, name);
+						stmt.setString(2, version);
+						return stmt.executeUpdate() > 0;
+					}
+				}
 			}
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 		return false;
@@ -513,34 +517,32 @@ public class ConfigurationUtils {
 
 	@Nonnull
 	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
 			qs.open();
-			conn = qs.getConnection();
-			if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
-				log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
-				return Collections.emptyList();
-			}
+			try (Connection conn = qs.getConnection()) {
+				if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
+					log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
+					return Collections.emptyList();
+				}
 
-			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-			PreparedStatement stmt = conn.prepareStatement(query);
-			rs = stmt.executeQuery();
-			List<String> configurationNames = new ArrayList<>();
-			while (rs.next()) {
-				configurationNames.add(rs.getString(1));
-			}
+				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+					List<String> configurationNames = new ArrayList<>();
+					while (rs.next()) {
+						configurationNames.add(rs.getString(1));
+					}
 
-			log.debug("found database configurations {}", configurationNames);
-			return Collections.unmodifiableList(configurationNames);
+					log.debug("found database configurations {}", configurationNames);
+					return Collections.unmodifiableList(configurationNames);
+				}
+			}
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
 	}
