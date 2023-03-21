@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.Reader;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -38,15 +37,4 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 			throw new SenderException(e);
 		}
 	}
-
-	@IbisDoc({"charset used to read and write blobs", "utf-8"})
-	public void setBlobCharset(String charset) {
-		querySender.setBlobCharset(charset);
-	}
-
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
-	public void setBlobsCompressed(boolean compressed) {
-		querySender.setBlobsCompressed(compressed);
-	}
-	
 }
