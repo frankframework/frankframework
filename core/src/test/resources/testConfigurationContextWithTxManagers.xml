@@ -35,9 +35,9 @@
 		<property name="properties">
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
-				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}/NARAYANA</prop>
-				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}/NARAYANA</prop>
-				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}/NARAYANA</prop>
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="CoordinatorEnvironmentBean.defaultTimeout">${transactionmanager.defaultTransactionTimeout}</prop>
 
 				<prop key="CoordinatorEnvironmentBean.txReaperTimeout">${transactionmanager.narayana.reapTime}</prop>
@@ -56,8 +56,8 @@
 			depends-on="btmConfig"
 			lazy-init="true"
 	>
-		<property name="statusFile" value="${transactionmanager.log.dir}/BTM/status.txt"/>
-		<property name="uidFile" value="${transactionmanager.log.dir}/BTM/tm-uid.txt"/>
+		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt"/>
+		<property name="uidFile" value="${transactionmanager.log.dir}/tm-uid.txt"/>
 		<property name="uid" value="${transactionmanager.uid}"/>
 	</bean>
 
@@ -68,8 +68,8 @@
 			lazy-init="true"
 	>
 		<property name="disableJmx" value="${management.endpoints.jmx.btm.disableJmx}"/>
-		<property name="logPart1Filename" value="${transactionmanager.log.dir}/BTM/1.tlog"/>
-		<property name="logPart2Filename" value="${transactionmanager.log.dir}/BTM/2.tlog"/>
+		<property name="logPart1Filename" value="${transactionmanager.log.dir}/1.tlog"/>
+		<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog"/>
 		<property name="defaultTransactionTimeout" value="${transactionmanager.defaultTransactionTimeout}"/>
 	</bean>
 

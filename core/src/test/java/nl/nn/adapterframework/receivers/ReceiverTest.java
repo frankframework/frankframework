@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.receivers;
 
-import static nl.nn.adapterframework.functional.FunctionalUtil.function;
+import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -184,20 +184,24 @@ public class ReceiverTest {
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager)),
-			Arguments.of(function(ReceiverTest::buildBtmTransactionManager))
+			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
+			Arguments.of(supplier(ReceiverTest::buildBtmTransactionManagerConfiguration))
 		);
 	}
 
-	private static JtaTransactionManager buildBtmTransactionManager(TestConfiguration configuration) {
+	private static TestConfiguration buildBtmTransactionManagerConfiguration() {
+		TestConfiguration configuration = buildConfiguration("BTM");
 		if (TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();
 		}
-		return configuration.getBean(BtmJtaTransactionManager.class);
+		configuration.getBeanFactory().registerSingleton("txManager", configuration.getBean(BtmJtaTransactionManager.class));
+		return configuration;
 	}
 
-	private static JtaTransactionManager buildNarayanaTransactionManager(TestConfiguration configuration) {
-		return configuration.getBean(NarayanaJtaTransactionManager.class);
+	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
+		TestConfiguration configuration = buildConfiguration("NARAYANA");
+		configuration.getBeanFactory().registerSingleton("txManager", configuration.getBean(NarayanaJtaTransactionManager.class));
+		return configuration;
 	}
 
 	private static TestConfiguration buildConfiguration(String txManagerName) {
@@ -217,8 +221,9 @@ public class ReceiverTest {
 
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
-	void testJmsMessageWithHighDeliveryCount(Function<TestConfiguration, JtaTransactionManager> txManagerBuilder) throws Exception {
+	void testJmsMessageWithHighDeliveryCount(Supplier<TestConfiguration> configurationSupplier) throws Exception {
 		// Arrange
+		configuration = configurationSupplier.get();
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
@@ -237,7 +242,7 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
-		final JtaTransactionManager txManager = txManagerBuilder.apply(configuration);
+		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -339,8 +344,9 @@ public class ReceiverTest {
 
 	@ParameterizedTest
 	@MethodSource("transactionManagers")
-	void testJmsMessageWithException(Function<TestConfiguration, JtaTransactionManager> txManagerBuilder) throws Exception {
+	void testJmsMessageWithException(Supplier<TestConfiguration> configurationSupplier) throws Exception {
 		// Arrange
+		configuration = configurationSupplier.get();
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
@@ -362,7 +368,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = txManagerBuilder.apply(configuration);
+		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 
 		receiver.setTxManager(txManager);
@@ -507,6 +513,7 @@ public class ReceiverTest {
 	@Test
 	void testGetDeliveryCountWithDirectoryListener() throws Exception {
 		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		DirectoryListener listener = spy(configuration.createBean(DirectoryListener.class));
 		doNothing().when(listener).open();
 
@@ -519,7 +526,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = buildNarayanaTransactionManager(configuration);
+		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
