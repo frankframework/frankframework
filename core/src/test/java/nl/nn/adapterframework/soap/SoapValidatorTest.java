@@ -9,6 +9,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -41,7 +42,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -55,7 +56,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test(expected = PipeRunException.class)
@@ -114,7 +115,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -128,7 +129,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -142,7 +143,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
 		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
