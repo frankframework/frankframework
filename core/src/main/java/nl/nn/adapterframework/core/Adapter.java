@@ -546,12 +546,9 @@ public class Adapter implements IAdapter, NamedBean {
 
 	@Override
 	public RunState getRunState() {
-		log.trace("Get Adapter RunState, synchronize (lock) on runState[{}]", runState);
-		try {
-			return runState.getRunState();
-		} finally {
-			log.trace("Got Adapter RunState, lock released on runState[{}]", runState);
-		}
+		RunState state = runState.getRunState();
+		log.trace("Adapter [{}] runstate: [{}]", name, state);
+		return state;
 	}
 
 	@JmxAttribute(description = "RunState")

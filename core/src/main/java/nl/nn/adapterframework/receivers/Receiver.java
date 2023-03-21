@@ -1796,22 +1796,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Override
 	public RunState getRunState() {
-		try {
-			log.trace("Receiver get runState - synchronize (lock) on Receiver runState[{}]", runState);
-			return runState.getRunState();
-		} finally {
-			log.trace("Receiver get runState - lock on Receiver runState[{}] released", runState);
-		}
+		RunState state = runState.getRunState();
+		log.trace("Receiver [{}] runstate: [{}]", name, state);
+		return state;
 	}
 
 	public boolean isInRunState(RunState someRunState) {
-		try {
-			log.trace("Receiver check runState={} - synchronize (lock) on Receiver runState {}", someRunState, runState);
-			return runState.getRunState()==someRunState;
-		} finally {
-			log.trace("Receiver check runState={} - lock on Receiver runState {} released", someRunState, runState);
-		}
+		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, runState);
+		return runState.getRunState()==someRunState;
 	}
+
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
 		try {

@@ -1,15 +1,16 @@
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -26,9 +27,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -163,23 +167,26 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public void waitWhileInState(IManagable object, RunState state) {
-		while(object.getRunState()==state) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				fail("test interrupted");
-			}
-		}
+	public void waitWhileInState(IManagable object, RunState... state) {
+		Set<RunState> states = new HashSet<>();
+		Collections.addAll(states, state);
+
+		log.debug("Wait while runstate of [{}] (currently in [{}]) to change to any of [{}]", object.getName(), object.getRunState(), states);
+		await()
+				.atMost(60, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(()-> !states.contains(object.getRunState()));
 	}
-	public void waitForState(IManagable object, RunState state) {
-		while(object.getRunState()!=state) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				fail("test interrupted");
-			}
-		}
+
+	public void waitForState(IManagable object, RunState... state) {
+		Set<RunState> states = new HashSet<>();
+		Collections.addAll(states, state);
+
+		log.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
+		await()
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> states.contains(object.getRunState()));
 	}
 
 	public static Stream<Arguments> transactionManagers() {
@@ -628,18 +635,18 @@ public class ReceiverTest {
 
 		log.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
-		Thread.sleep(500); //Extra timeout to give the receiver some time to close all resources
+		await().atMost(500, TimeUnit.MILLISECONDS)
+						.until(()-> receiver.getSender().isSynchronous());
 		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); //isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-		while(receiver.getRunState()!=RunState.STOPPED) {
-			System.out.println(receiver.getRunState());
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				fail("test interrupted");
-			}
-		}
+		await()
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> {
+					System.out.println(receiver.getRunState());
+					return receiver.isInRunState(RunState.STOPPED);
+				});
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 		assertTrue(listener.isClosed());
@@ -712,14 +719,14 @@ public class ReceiverTest {
 		listener.setStartupDelay(100_000);
 
 		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
-		Thread.sleep(5_000);
-		log.warn("Test resuming");
+		await().atMost(5, TimeUnit.SECONDS)
+				.until(receiver::getRunState, equalTo(RunState.EXCEPTION_STARTING));
 
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
-		List<String> errors = (List<String>) adapter.getMessageKeeper()
+		List<String> errors = adapter.getMessageKeeper()
 				.stream()
-				.filter((msg) -> msg instanceof MessageKeeperMessage && "ERROR".equals(((MessageKeeperMessage)msg).getMessageLevel()))
+				.filter((msg) -> msg != null && "ERROR".equals(msg.getMessageLevel()))
 				.map(Object::toString)
 				.collect(Collectors.toList());
 
@@ -763,9 +770,9 @@ public class ReceiverTest {
 		// From here the PollGuard should be triggering stop-delay timeout-guard
 		listener.setShutdownDelay(100_000);
 
-		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
-		Thread.sleep(5_000);
-		log.warn("Test resuming");
+//		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
+//		Thread.sleep(5_000);
+//		log.warn("Test resuming");
 
 		// Receiver may be in state "stopping" (by PollGuard) or in state "starting" while we come out of sleep, so wait until it's started
 		waitForState(receiver, RunState.STARTED);
@@ -806,18 +813,29 @@ public class ReceiverTest {
 		log.info("Adapter RunState "+adapter.getRunState());
 
 		// stop receiver then start
-		SimpleAsyncTaskExecutor taskExecuter = new SimpleAsyncTaskExecutor();
-		taskExecuter.execute(()-> {
-			configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-			waitWhileInState(receiver, RunState.STOPPING);
+		Semaphore semaphore = new Semaphore(0);
+		SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+		taskExecutor.execute(()-> {
+			try {
+				log.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
+				configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+				waitForState(receiver, RunState.STOPPED, RunState.STOPPING);
 
-			configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-			waitWhileInState(receiver, RunState.STARTING);
+				if (receiver.getRunState() != RunState.STOPPED) {
+					log.error("Receiver should be in state STOPPED, instead is in state [{}]", receiver.getRunState());
+					return;
+				}
+
+				log.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
+				configuration.getIbisManager().handleAction(IbisAction.STARTRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+				waitForState(receiver, RunState.STARTING, RunState.EXCEPTION_STARTING);
+				waitWhileInState(receiver, RunState.STARTING);
+			} finally {
+				semaphore.release();
+			}
 		});
 
-		// when receiver is in starting state
-		waitWhileInState(receiver, RunState.STOPPED);
-		waitWhileInState(receiver, RunState.STARTING);
+		semaphore.acquire();
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
 		// try to stop the started adapter
