@@ -35,6 +35,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -64,7 +65,7 @@ public class XmlIf extends AbstractPipe {
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
 		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
-															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
+															"<xsl:when "+namespaceClause+" test=\"" + XmlEncodingUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
 															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
 														"</xsl:choose>",
 													xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"),
@@ -184,7 +185,7 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	/**
-	 * specifies the version of xslt to use
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan)
 	 * @ff.default 2
 	 */
 	public void setXsltVersion(int xsltVersion) {

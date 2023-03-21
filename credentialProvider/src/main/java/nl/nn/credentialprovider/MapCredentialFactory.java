@@ -26,9 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.ClassUtils;
-import nl.nn.credentialprovider.util.Misc;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 
@@ -62,7 +63,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
-		if (Misc.isEmpty(filename)) {
+		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
 		}
 		try {

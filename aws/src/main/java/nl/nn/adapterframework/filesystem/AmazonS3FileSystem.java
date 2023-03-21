@@ -52,7 +52,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
@@ -88,14 +88,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public void configure() throws ConfigurationException {
 
-		if (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))
-			throw new ConfigurationException(" empty credential fields, please prodive aws credentials");
+		if (StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) {
+			throw new ConfigurationException(" empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
+		}
 
-		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion()))
+		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
 			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+		}
 
-		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName()))
+		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName())) {
 			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
+		}
 	}
 
 	@Override
@@ -135,7 +138,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(Misc.concatStrings(folder, "/", filename));
+		return toFile(StringUtil.concatStrings(folder, "/", filename));
 	}
 
 

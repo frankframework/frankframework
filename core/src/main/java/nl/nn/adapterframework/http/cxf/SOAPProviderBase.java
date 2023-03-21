@@ -39,6 +39,7 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
+import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
@@ -54,13 +55,12 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageDataSource;
 import nl.nn.adapterframework.util.MessageUtils;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for handling JAX-WS SOAP messages
- * 
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  *
@@ -89,7 +89,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	public SOAPMessage invoke(SOAPMessage request) {
 		Message response;
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
-			String messageId = Misc.createSimpleUUID();
+			String messageId = UUIDUtil.createSimpleUUID();
 			PipeLineSession.setListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
 			log.debug((messageId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;

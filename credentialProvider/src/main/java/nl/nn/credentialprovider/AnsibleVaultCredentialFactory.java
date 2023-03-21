@@ -25,8 +25,8 @@ import java.util.Properties;
 
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.StreamUtil;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 

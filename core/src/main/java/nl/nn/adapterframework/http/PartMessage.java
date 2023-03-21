@@ -39,9 +39,17 @@ public class PartMessage extends Message {
 		this(new MessageContext(charset), part);
 	}
 
-	public PartMessage(Part part, Map<String,Object> context) throws MessagingException {
-		this(context instanceof MessageContext ? (MessageContext)context : context==null ? new MessageContext() : new MessageContext(context), part);
+	public PartMessage(Part part, Map<String, Object> context) throws MessagingException {
+		this(toMessageContext(context), part);
 	}
+
+	private static MessageContext toMessageContext(Map<String, Object> context) {
+		if(context instanceof MessageContext) {
+			return (MessageContext)context;
+		}
+		return (context == null) ? new MessageContext() : new MessageContext(context);
+	}
+
 	private PartMessage(MessageContext context, Part part) throws MessagingException {
 		super(part::getInputStream, context.withName(part.getFileName()), part.getClass());
 		this.part = part;
@@ -66,6 +74,7 @@ public class PartMessage extends Message {
 				return -1;
 			}
 		}
+
 		return super.size();
 	}
 

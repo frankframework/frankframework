@@ -134,7 +134,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		  * messages when message processing is complete. */
 		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
 
-		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
+		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session.
+		 * The Frank application will acknowledge all messages processed correctly. The skipping of the acknowledgement of messages
+		 * processed in error will cause them to be redelivered, thus providing an automatic retry. */
 		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
 
 		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the
@@ -822,13 +824,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * should be <code>QUEUE</code> or <code>TOPIC</code><br/>
+	 * Type of the messageing destination.
 	 * This function also sets the <code>useTopicFunctions</code> field,
-	 * that controls wether Topic functions are used or Queue functions.
-	 */
-
-	/**
-	 * Type of the messageing destination
+	 * that controls whether Topic functions are used or Queue functions.
 	 * @ff.default QUEUE
 	 */
 	public void setDestinationType(DestinationType destinationType) {
@@ -882,7 +880,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * Used when {@link #setDestinationType DestinationType} = {@link DestinationType#QUEUE QUEUE}.
+	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#QUEUE QUEUE}.
 	 * The JNDI-name of the queueConnectionFactory to use to connect to a <code>queue</code> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
@@ -891,7 +889,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * Used when {@link #setDestinationType DestinationType} = {@link DestinationType#TOPIC TOPIC}.
+	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#TOPIC TOPIC}.
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */

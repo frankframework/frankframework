@@ -26,7 +26,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * SAX2 event handler to compact XML messages.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends DefaultHandler {
@@ -136,7 +136,7 @@ public class CompactSaxHandler extends DefaultHandler {
 				context.put(elementToMoveSK, before + charBuffer.toString() + after);
 				messageBuffer.append(VALUE_MOVE_START + elementToMoveSK + VALUE_MOVE_END);
 			} else {
-				messageBuffer.append(before + XmlUtils.encodeChars(charBuffer.toString()) + after);
+				messageBuffer.append(before + XmlEncodingUtils.encodeChars(charBuffer.toString()) + after);
 			}
 
 			charBuffer.setLength(0);

@@ -1,25 +1,25 @@
 /*
-Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.configuration;
 
 import lombok.Getter;
 
 /**
  * Enumeration class for suppressing configuration warnings.
- * 
+ *
  * @author alisihab
  *
  */
@@ -34,7 +34,10 @@ public enum SuppressKeys {
 	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation"),
 	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true),
 	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true),
-	XSLT_STREAMING_SUPRESS_KEY("warnings.suppress.xslt.streaming", true);
+	XSLT_STREAMING_SUPRESS_KEY("warnings.suppress.xslt.streaming", true),
+	XSD_VALIDATION_WARNINGS_SUPPRESS_KEY("warnings.suppress.xsd.warning", true),
+	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true),
+	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true);
 
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;

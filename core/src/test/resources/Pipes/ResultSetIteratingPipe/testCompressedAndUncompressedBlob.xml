@@ -1,0 +1,20 @@
+<results>
+	<result item="1">
+		<row number="0">
+			<field name="TKEY">1</field>
+			<field name="TBLOB">&lt;file&gt;in root of classpath&lt;/file&gt;</field>
+		</row>
+	</result>
+	<result item="2">
+		<row number="1">
+			<field name="TKEY">2</field>
+			<field name="TBLOB">&lt;file&gt;in root of classpath&lt;/file&gt;</field>
+		</row>
+	</result>
+	<result item="3">
+		<row number="2">
+			<field name="TKEY">3</field>
+			<field name="TBLOB">&lt;file&gt;in root of classpath&lt;/file&gt;</field>
+		</row>
+	</result>
+</results>

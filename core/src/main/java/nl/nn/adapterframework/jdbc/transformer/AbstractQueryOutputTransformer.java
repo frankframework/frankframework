@@ -23,6 +23,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
@@ -81,7 +82,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (localName.equalsIgnoreCase("field")) {
 			if (currentBuilder != null)
-				addField(currentField, XmlUtils.decodeChars(currentBuilder.toString()));
+				addField(currentField, XmlEncodingUtils.decodeChars(currentBuilder.toString()));
 			currentBuilder = null;
 			currentField = null;
 		} else if (localName.equalsIgnoreCase("fielddefinition")) {

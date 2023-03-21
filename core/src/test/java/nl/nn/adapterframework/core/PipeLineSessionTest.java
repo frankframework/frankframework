@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
 
@@ -23,7 +23,7 @@ public class PipeLineSessionTest {
 
 	private PipeLineSession session;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		session = new PipeLineSession();
 

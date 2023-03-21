@@ -37,12 +37,13 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
@@ -160,7 +161,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if (sElem) {
-				elementBuffer.append(XmlUtils.encodeChars(ch, start, length));
+				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length));
 			}
 		}
 

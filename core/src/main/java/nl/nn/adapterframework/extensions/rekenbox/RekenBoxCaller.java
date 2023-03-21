@@ -30,7 +30,8 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+
 /**
  * Perform a call to a RekenBox.
  *
@@ -170,7 +171,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 
 		try {
 			// put input in a file
-			Misc.stringToFile(rekenboxInput, inputFileName);
+			StreamUtil.stringToFile(rekenboxInput, inputFileName);
 
 			// precreating outputfile is necessary for L76HB000
 			log.debug("precreating outputfile [{}]", outputFileName);
@@ -185,13 +186,13 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			String result;
 
 			if(callType.equals("redirected")) {
-				result = Misc.streamToString(child.getInputStream(), "\n", true);
+				result = StreamUtil.streamToString(child.getInputStream(), "\n", true);
 
 			} else {
 				child.waitFor();
 
 				// read output
-				result = Misc.fileToString(outputFileName, "\n", true);
+				result = StreamUtil.fileToString(outputFileName, "\n", true);
 			}
 			log.debug("completed call. Process exit code is: {}", child.exitValue());
 

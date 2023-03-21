@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
@@ -37,12 +36,14 @@ public class WildFlyCredentialFactoryTest {
 	private WildFlyCredentialFactory credentialFactory;
 	private Set<String> aliases;
 
+	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void setUp() throws Exception {
 		credentialFactory = spy(new WildFlyCredentialFactory());
 		ServiceContainer serviceContainer = mock(ServiceContainer.class);
 		when(credentialFactory.getServiceContainer()).thenReturn(serviceContainer);
 
+		@SuppressWarnings("rawtypes")
 		ServiceController credStoreService = mock(ServiceController.class);
 		when(serviceContainer.getService(any(ServiceName.class))).thenReturn(credStoreService);
 
@@ -51,7 +52,7 @@ public class WildFlyCredentialFactoryTest {
 		Provider.Service service = mock(Provider.Service.class);
 		CredentialStoreSpi spi = mock(CredentialStoreSpi.class);
 		doReturn(spi).when(service).newInstance(null);
-		doReturn(service).when(provider).getService(eq(CredentialStore.CREDENTIAL_STORE_TYPE), eq(algorithm));
+		doReturn(service).when(provider).getService(CredentialStore.CREDENTIAL_STORE_TYPE, algorithm);
 		CredentialStore credentialStore = CredentialStore.getInstance(algorithm, provider);
 
 		doReturn(credentialStore).when(credStoreService).getValue();

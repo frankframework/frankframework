@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.testtool;
 
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 public class Util {
 
 	public static String throwableToXml(Throwable throwable) {
 		String xml = "<throwable>";
 		xml = xml + "<class>" + throwable.getClass().getName() + "</class>";
-		xml = xml + "<message>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters((throwable.getMessage()))) + "</message>";
+		xml = xml + "<message>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters((throwable.getMessage()))) + "</message>";
 		Throwable cause = throwable.getCause();
 		if (cause != null) {
 			xml = xml + "<cause>" + throwableToXml(cause) + "</cause>";

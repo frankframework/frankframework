@@ -11,7 +11,7 @@
 	<name>Ibis AdapterFramework Ladybug</name>
 
 	<properties>
-		<ladybug.version>2.3-20230217.183249</ladybug.version>
+		<ladybug.version>2.3-20230310.190611</ladybug.version>
 	</properties>
 
 	<dependencies>

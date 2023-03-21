@@ -45,7 +45,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -256,7 +255,7 @@ public class ZipWriter implements ICollector<IZipWritingElement> {
 		openEntry(filename);
 		if (contents!=null) {
 			try (InputStream is = contents.asInputStream( charset)) {
-				Misc.streamToStream(is,getZipoutput());
+				StreamUtil.streamToStream(is,getZipoutput());
 			}
 		} else {
 			log.warn("contents of zip entry ["+filename+"] is null");

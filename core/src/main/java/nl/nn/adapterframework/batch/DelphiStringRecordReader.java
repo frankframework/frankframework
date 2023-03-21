@@ -21,13 +21,13 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.10
  */
@@ -59,7 +59,7 @@ public class DelphiStringRecordReader extends Reader {
 	}
 
 	/*
-	 * Fill buffer if empty, then copy characters as required.  
+	 * Fill buffer if empty, then copy characters as required.
 	 */
 	public int read(char[] cbuf, int off, int len) throws IOException {
 		if (buffer==null || bufferPos>=bufferLen) {
@@ -113,7 +113,7 @@ public class DelphiStringRecordReader extends Reader {
 		}
 		String result=new String(buf,charsetName);
 		if (StringUtils.isNotEmpty(separatorReplacement)) {
-			result=Misc.replace(result,separator,separatorReplacement);
+			result= StringUtil.replace(result,separator,separatorReplacement);
 		}
 		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
 		return result;

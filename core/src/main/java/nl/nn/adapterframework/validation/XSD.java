@@ -53,7 +53,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
@@ -243,7 +243,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				return 0;
 			}
 			// TODO: check necessity of this compare. If Diff says they are different, is it useful to check again for the plain contents?
-			return Misc.readerToString(getReader(), "\n", false).compareTo(Misc.readerToString(x.getReader(), "\n", false));
+			return StreamUtil.readerToString(getReader(), "\n", false).compareTo(StreamUtil.readerToString(x.getReader(), "\n", false));
 		} catch (Exception e) {
 			LOG.warn("Exception during XSD compare", e);
 			return 1;

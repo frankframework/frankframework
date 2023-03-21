@@ -47,8 +47,6 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	private final @Getter(onMethod = @__(@Override)) String domain = "JDBC";
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
-	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
-
 	protected class MixedQuerySender extends DirectQuerySender {
 
 		private String query;
@@ -79,6 +77,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
@@ -91,6 +90,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		} catch (SenderException e) {
 			throw new PipeStartException(e);
 		}
+
 		super.start();
 	}
 
@@ -189,5 +189,21 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	@Deprecated //BLOBs are binary, they should not contain character data
+	public void setBlobCharset(String charset) {
+		querySender.setBlobCharset(charset);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	public void setBlobSmartGet(boolean isSmartBlob) {
+		querySender.setBlobSmartGet(isSmartBlob);
+	}
+
+	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	public void setBlobsCompressed(boolean compressed) {
+		querySender.setBlobsCompressed(compressed);
 	}
 }

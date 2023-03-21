@@ -57,7 +57,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -1128,13 +1128,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			XmlBuilder attributeElem = new XmlBuilder("attribute");
 			attributeElem.addAttribute("name", attribute.getID());
 			if (attribute.size() == 1 && attribute.get() != null) {
-				attributeElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(attribute.get().toString()));
+				attributeElem.addAttribute("value", XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(attribute.get().toString()));
 			} else {
 				NamingEnumeration<?> values = attribute.getAll();
 				while (values.hasMore()) {
 					Object value = values.next();
 					XmlBuilder itemElem = new XmlBuilder("item");
-					itemElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(value.toString()));
+					itemElem.addAttribute("value", XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(value.toString()));
 					attributeElem.addSubElement(itemElem);
 				}
 			}

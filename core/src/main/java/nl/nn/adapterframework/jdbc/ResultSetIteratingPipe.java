@@ -20,6 +20,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.SuppressKeys;
@@ -27,6 +29,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that iterates over rows in in ResultSet.
@@ -39,6 +42,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
 	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
+	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -58,12 +62,16 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 		} catch (JdbcException | SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
 		}
+
+		if(StringUtils.isNotBlank(querySender.getBlobCharset())) {
+			blobCharset = querySender.getBlobCharset();
+		}
 	}
 
 	@Override
 	protected IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException {
 		try {
-			return new ResultSetIterator(dbmsSupport, conn, rs);
+			return new ResultSetIterator(dbmsSupport, conn, rs, blobCharset, querySender.isBlobsCompressed(), querySender.isBlobSmartGet());
 		} catch (SQLException e) {
 			throw new SenderException(e);
 		}
