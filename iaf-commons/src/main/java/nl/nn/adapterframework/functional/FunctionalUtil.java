@@ -103,4 +103,9 @@ public class FunctionalUtil {
 	public static <T,R> Function<T,R> function(Function<T, R> f) {
 		return f;
 	}
+
+
+	private FunctionalUtil() {
+		// No-op
+	}
 }
