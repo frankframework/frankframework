@@ -14,6 +14,8 @@ import java.nio.file.Paths;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,6 +31,7 @@ import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public class BtmJtaTransactionManagerTest {
+	private Logger log = LogManager.getLogger(this);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
@@ -56,6 +59,7 @@ public class BtmJtaTransactionManagerTest {
 	@After
 	public void tearDown() {
 		if (delegateTransactionManager != null) {
+			log.info("TearDown class, shutting down TX Manager");
 			delegateTransactionManager.shutdownTransactionManager();
 			delegateTransactionManager = null;
 		}
@@ -67,6 +71,8 @@ public class BtmJtaTransactionManagerTest {
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
 		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm-1.tlog");
 		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm-2.tlog");
+		TransactionManagerServices.getConfiguration().setJournal(BtmDiskJournal.class.getCanonicalName());
+
 		delegateTransactionManager = result;
 		return result;
 	}

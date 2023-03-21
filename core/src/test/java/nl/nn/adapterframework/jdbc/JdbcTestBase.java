@@ -58,7 +58,7 @@ public abstract class JdbcTestBase {
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
 
-	/** NON-Transactional Connection. Only to be used for set-up and tear-down like actions! */
+	/** NON-Transactional global Connection. Only to be used for set-up and tear-down like actions! */
 	protected Connection connection;
 
 	@Parameterized.Parameter(0)
@@ -106,8 +106,7 @@ public abstract class JdbcTestBase {
 		configuration = transactionManagerType.getConfigurationContext(productKey);
 		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
 
-		connection = new DelegatingDataSource(dataSource).getConnection();
-		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+		connection = createNonTransactionalConnection();
 
 		prepareDatabase();
 	}
@@ -132,7 +131,7 @@ public abstract class JdbcTestBase {
 			try {
 				liquibase.dropAll();
 			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
+				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
 				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
 			}
 			liquibase.close();
@@ -146,6 +145,12 @@ public abstract class JdbcTestBase {
 				connection.close();
 			}
 		}
+	}
+
+	protected Connection createNonTransactionalConnection() throws SQLException {
+		Connection connection = new DelegatingDataSource(dataSource).getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+		return connection;
 	}
 
 	//IBISSTORE_CHANGESET_PATH
