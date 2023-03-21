@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Iterator over ResultSet.
@@ -41,21 +40,26 @@ import nl.nn.adapterframework.util.StreamUtil;
 class ResultSetIterator implements IDataIterator<String> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private IDbmsSupport dbmsSupport;
-	private Connection conn;
-	private ResultSet rs;
+	private final IDbmsSupport dbmsSupport;
+	private final Connection conn;
+	private final ResultSet rs;
+	private final boolean decompressBlobs;
+	private final boolean blobSmartGet;
+	private final ResultSetMetaData rsmeta;
+	private final String blobCharset;
 
-	private ResultSetMetaData rsmeta;
 	private boolean lineChecked=true; // assumes at least one line is present, and cursor is on it!
 	private boolean lineAvailable=true;
+	private int rowNumber=0;
 
-	int rowNumber=0;
-
-	public ResultSetIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SQLException {
+	public ResultSetIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs, String blobCharset, boolean decompressBlobs, boolean blobSmartGet) throws SQLException {
 		super();
-		this.dbmsSupport=dbmsSupport;
-		this.conn=conn;
-		this.rs=rs;
+		this.dbmsSupport = dbmsSupport;
+		this.conn = conn;
+		this.rs = rs;
+		this.decompressBlobs = decompressBlobs;
+		this.blobSmartGet = blobSmartGet;
+		this.blobCharset = blobCharset;
 		rsmeta=rs.getMetaData();
 	}
 
@@ -76,7 +80,7 @@ class ResultSetIterator implements IDataIterator<String> {
 	public String next() throws SenderException {
 		try {
 			lineChecked=false;
-			return DB2XMLWriter.getRowXml(dbmsSupport, rs, rowNumber++, rsmeta, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toString();
+			return DB2XMLWriter.getRowXml(dbmsSupport, rs, rowNumber++, rsmeta, blobCharset, decompressBlobs, "", true, blobSmartGet);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

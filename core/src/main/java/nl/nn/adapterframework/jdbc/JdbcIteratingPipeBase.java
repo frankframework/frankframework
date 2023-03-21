@@ -102,7 +102,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException;
 
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -177,7 +177,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
-	
+
 	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
@@ -193,4 +193,19 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setAvoidLocking(avoidLocking);
 	}
 
+	@IbisDocRef({"9", FIXEDQUERYSENDER})
+	@Deprecated //BLOBs are binary, they should not contain character data
+	public void setBlobCharset(String charset) {
+		querySender.setBlobCharset(charset);
+	}
+
+	@IbisDocRef({"10", FIXEDQUERYSENDER})
+	public void setBlobSmartGet(boolean isSmartBlob) {
+		querySender.setBlobSmartGet(isSmartBlob);
+	}
+
+	@IbisDocRef({"11", FIXEDQUERYSENDER})
+	public void setBlobsCompressed(boolean compressed) {
+		querySender.setBlobsCompressed(compressed);
+	}
 }
