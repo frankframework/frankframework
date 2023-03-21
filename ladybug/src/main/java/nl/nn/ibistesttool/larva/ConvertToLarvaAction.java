@@ -224,12 +224,13 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			for (Checkpoint checkpoint : checkpoints) {
 				if (skipUntilEndOfSender) {
 					//If we're currently stubbing a sender, and we haven't reached the end of it yet
-					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpoint.getName().equals(skipUntilEndOfSenderName)) {
-						createInputOutputFile(scenarioDir, current_step_nr, "stub", checkpoint.getName().substring(7), false, checkpoint.getMessage());
+					String checkpointName = checkpoint.getName().substring(7);
+					if (checkpoint.getLevel() == skipUntilEndOfSenderLevel && checkpoint.getType() == Checkpoint.TYPE_ENDPOINT && checkpointName.equals(skipUntilEndOfSenderName)) {
+						createInputOutputFile(scenarioDir, current_step_nr, "stub", checkpointName, false, checkpoint.getMessage());
 						skipUntilEndOfSender = false;
 					}
-				} else if (checkpoint.getType() < 3 && checkpoint.getName().startsWith("Sender ")) {
-					if (allowedSenders.contains(checkpoint.getSourceClassName())) {
+				} else if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT && checkpoint.getName().startsWith("Sender ")) {
+					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7);
 						String senderProperty = "stub." + senderName;
@@ -257,7 +258,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 						skipUntilEndOfSender = true;
 						skipUntilEndOfSenderName = senderName;
-						skipUntilEndOfSenderLevel = checkpoint.getLevel();
+						skipUntilEndOfSenderLevel = checkpoint.getLevel() + 1;
 					}
 				} else if (checkpoint.getLevel() == 1 && checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT) {
 					//SessionKey for listener found
@@ -272,18 +273,14 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-adapter-" + adapterName + "-out.xml");
 			createInputOutputFile(scenarioDir, current_step_nr, "adapter", adapterName, false, checkpoints.get(checkpoints.size() - 1).getMessage());
 
-			System.out.println("Scenario file: " + scenario.toAbsolutePath());
-			System.out.println("Common file: " + common.toAbsolutePath());
-			System.out.println("Scenario dir: " + scenarioDir.toAbsolutePath());
-
 			try {
-				scenarioWriter = new OutputStreamWriter(Files.newOutputStream(scenarioFile.toPath()), StandardCharsets.UTF_8);;
+				scenarioWriter = new OutputStreamWriter(Files.newOutputStream(scenarioFile.toPath()), StandardCharsets.UTF_8);
 				scenarioProperties.store(scenarioWriter, null);
 			} catch (IOException e) {
 				errors.add("Could not write properties to file [" + scenarioFile + "]");
 			}
 			try {
-				commonWriter = new OutputStreamWriter(Files.newOutputStream(commonFile.toPath()), StandardCharsets.UTF_8);;
+				commonWriter = new OutputStreamWriter(Files.newOutputStream(commonFile.toPath()), StandardCharsets.UTF_8);
 				commonProperties.store(commonWriter, null);
 			} catch (IOException e) {
 				errors.add("Could not write properties to file [" + commonFile + "]");
