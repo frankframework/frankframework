@@ -211,7 +211,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 			int paramI = 1;
 			int current_step_nr = 0;
 			List<Checkpoint> checkpoints = report.getCheckpoints();
-			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".write", scenarioDirPrefix + stepPadding(current_step_nr) + "-" + adapterName + "-in.xml");
+			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".write", scenarioDirPrefix + stepPadding(current_step_nr) + "-adapter-" + adapterName + "-in.xml");
 			createInputOutputFile(scenarioDir, current_step_nr, "adapter", adapterName, true, checkpoints.get(0).getMessage());
 			commonProperties.setProperty(adapterProperty + ".className", "nl.nn.adapterframework.senders.IbisJavaSender");
 			commonProperties.setProperty(adapterProperty + ".serviceName", "testtool-" + adapterName);
@@ -233,9 +233,9 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7);
 						String senderProperty = "stub." + senderName;
-						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-" + senderName + "-in.xml");
+						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-stub-" + senderName + "-in.xml");
 						createInputOutputFile(scenarioDir, current_step_nr, "stub", senderName, true, checkpoint.getMessage());
-						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".write", scenarioDirPrefix + stepPadding(current_step_nr) + "-" + senderName + "-out.xml");
+						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".write", scenarioDirPrefix + stepPadding(current_step_nr) + "-stub-" + senderName + "-out.xml");
 
 						String serviceName = "testtool-Call" + senderName;
 						String existingStubName = existingStubs.get(serviceName.toLowerCase());
@@ -269,7 +269,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					}
 				}
 			}
-			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-" + adapterName + "-out.xml");
+			scenarioProperties.setProperty("step" + ++current_step_nr + "." + adapterProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-adapter-" + adapterName + "-out.xml");
 			createInputOutputFile(scenarioDir, current_step_nr, "adapter", adapterName, false, checkpoints.get(checkpoints.size() - 1).getMessage());
 
 			System.out.println("Scenario file: " + scenario.toAbsolutePath());
