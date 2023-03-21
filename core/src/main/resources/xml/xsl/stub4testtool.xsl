@@ -335,6 +335,7 @@
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' 
 							or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' 
 							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' 
+						 	or @className='nl.nn.adapterframework.pipes.Samba2Pipe' 
 							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
