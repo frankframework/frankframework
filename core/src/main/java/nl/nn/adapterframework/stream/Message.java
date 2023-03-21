@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -443,16 +444,7 @@ public class Message implements Serializable {
 		}
 
 		if (request instanceof InputStream) {
-			if (!((InputStream) request).markSupported()) {
-				request = new BufferedInputStream((InputStream) request, readLimit);
-			}
-			InputStream stream = (InputStream) request;
-			stream.mark(readLimit);
-			try {
-				return readBytesFromInputStream(stream, readLimit);
-			} finally {
-				stream.reset();
-			}
+			return readBytesFromInputStream(readLimit);
 		}
 		if (request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
 			return Arrays.copyOf((byte[]) request, readLimit);
@@ -467,12 +459,56 @@ public class Message implements Serializable {
 	}
 
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
-		String characterData = asString();
-		if (characterData.isEmpty()) {
+		if (request instanceof Reader) {
+			if (!((Reader) request).markSupported()) {
+				request = new BufferedReader((Reader)request, readLimit);
+			}
+			Reader reader = (Reader) request;
+			reader.mark(readLimit);
+			try {
+				return readBytesFromReader(reader, readLimit);
+			} finally {
+				reader.reset();
+			}
+		}
+
+		if (request instanceof String) {
+			if (((String) request).isEmpty()) {
+				return new byte[0];
+			}
+			byte[] data = ((String) request).getBytes(StreamUtil.DEFAULT_CHARSET);
+			return Arrays.copyOf(data, readLimit);
+		}
+
+		if (isRepeatable()) {
+			try (Reader reader = asReader()) {
+				return readBytesFromReader(reader, readLimit);
+			}
+		}
+		return new byte[0];
+	}
+
+	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
+		char[] chars = new char[readLimit];
+		int charsRead = reader.read(chars);
+		if (charsRead <= 0) {
 			return new byte[0];
 		}
-		byte[] data = characterData.getBytes(StreamUtil.DEFAULT_CHARSET);
-		return Arrays.copyOf(data, readLimit);
+		return new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
+	}
+
+	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
+		if (!((InputStream) request).markSupported()) {
+			request = new BufferedInputStream((InputStream) request, readLimit);
+		}
+		InputStream stream = (InputStream) request;
+		stream.mark(readLimit);
+
+		try {
+			return readBytesFromInputStream(stream, readLimit);
+		} finally {
+			stream.reset();
+		}
 	}
 
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
@@ -850,11 +886,26 @@ public class Message implements Serializable {
 	}
 
 	/**
+	 * Note that the size may not be an exact measure of the content size and may or may not account for any encoding of the content.
+	 * The size is appropriate for display in a user interface to give the user a rough idea of the size of this part.
+	 * 
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
 		if (request == null) {
 			return 0L;
+		}
+
+		if (context.containsKey(MessageContext.METADATA_SIZE)) {
+			return (long) context.get(MessageContext.METADATA_SIZE);
+		}
+
+		if (request instanceof String) {
+			return ((String) request).length();
+		}
+
+		if (request instanceof byte[]) {
+			return ((byte[]) request).length;
 		}
 
 		if (request instanceof FileInputStream) {
@@ -864,17 +915,6 @@ public class Message implements Serializable {
 			} catch (IOException e) {
 				log.debug("unable to determine size of stream [{}]", ClassUtils.nameOf(request), e);
 			}
-		}
-
-		if (request instanceof String) {
-			return ((String) request).length();
-		}
-		if (request instanceof byte[]) {
-			return ((byte[]) request).length;
-		}
-
-		if (context.containsKey(MessageContext.METADATA_SIZE)) {
-			return (long) context.get(MessageContext.METADATA_SIZE);
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {

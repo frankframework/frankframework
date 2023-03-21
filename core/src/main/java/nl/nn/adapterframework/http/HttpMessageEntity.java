@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,7 +80,10 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
-		return message.size();
+		if(message.isBinary()) {
+			return message.size();
+		}
+		return Message.MESSAGE_SIZE_UNKNOWN;
 	}
 
 	@Override
