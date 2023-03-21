@@ -19,6 +19,7 @@ import nl.nn.adapterframework.senders.BlockEnabledSenderBase;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
@@ -46,7 +47,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 	public P createPipe() {
 		return (P)new TestIteratingPipe();
 	}
-	
+
 	protected ISender getElementRenderer(boolean blockEnabled) {
 		resultLog = new StringBuffer();
 		if (blockEnabled) {
@@ -78,9 +79,8 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 				throw new SenderException(e);
 			}
 		}
-		
 	}
-	
+
 	protected ISender getElementRenderer(final Exception e) {
 		EchoSender sender = new EchoSender() {
 
@@ -101,10 +101,9 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		};
 		return sender;
 	}
-	
 
 	public void testTenLines(String expectedFile) throws Exception {
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile(expectedFile);
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -119,7 +118,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 	public void testTenLinesToSeven() throws Exception {
 		testTenLines("/IteratingPipe/SevenLinesResult.xml");
 	}
-	
+
 	public void testBasic(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		configurePipe();
@@ -148,7 +147,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		pipe.start();
 		testTenLinesToSeven();
 	}
-	
+
 	@Test
 	public void testBasicMaxItems() throws Exception {
 		testBasicMaxItems(false);
@@ -185,8 +184,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
-	
-	
+
 	public void testPartialFinalBlock(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(4);
@@ -207,7 +205,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogBlocksOfFour.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
-	
+
 	public void testPartialFinalBlockMaxItems(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(4);
@@ -235,9 +233,9 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		pipe.setSender(getElementRenderer(false));
 		configurePipe();
 		pipe.start();
-		
+
 		String expected = "<results/>";
-		
+
 		PipeRunResult prr = doPipe(new Message(""));
 		MatchUtils.assertXmlEquals("null iterator", expected, prr.getResult().asString(), true);
 	}

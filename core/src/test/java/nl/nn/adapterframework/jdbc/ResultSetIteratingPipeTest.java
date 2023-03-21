@@ -29,6 +29,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -154,8 +155,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	@Test
 	public void testWithCompressedAndDecompressedBlob() throws Exception {
 		// Arrange
-		Message xmlMessage = TestFileUtils.getTestFileMessage("/file.xml");
-		xmlMessage.preserve();
+		Message xmlMessage = MessageTestUtils.getMessage("/file.xml");
 		insertBlob(1, xmlMessage.asInputStream(), false);
 		insertBlob(2, xmlMessage.asInputStream(), true);
 		insertBlob(3, xmlMessage.asInputStream(), false);
