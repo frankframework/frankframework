@@ -101,6 +101,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
 			toString =  toString + "!" + resourceInternalReference;
 		}
+		resourceTarget = FilenameUtils.normalize(resourceTarget);
 		if (parentLocation == null) {
 			this.parentLocation = "";
 		}
@@ -110,10 +111,12 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<IXSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
 		this.scopeProvider=scopeProvider;
-		this.resourceTarget = sourceXsds.stream()
+		this.resourceTarget = FilenameUtils.normalize(
+			sourceXsds.stream()
 			.map(IXSD::getResourceTarget)
 			.map(xsd -> xsd.replace("/", "_"))
-			.collect(Collectors.joining(", ", "[", "].xsd"));
+			.collect(Collectors.joining(", ", "[", "].xsd"))
+		);
 		this.toString = sourceXsds.stream()
 			.map(Objects::toString)
 			.collect(Collectors.joining(", ", "[", "]"));
@@ -251,21 +254,21 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
-		// turn Map values into Set, as required for the return type.
-		// TODO: Update callers to use Map instead of Set, to benefit from the knowledge of the SystemId.
-		return new LinkedHashSet<>(loadReferencedXsdsRecursive(xsds, supportRedefine).values());
-	}
-
-	public static Map<String, IXSD> loadReferencedXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		Map<String, IXSD> xsdsRecursive = new LinkedHashMap<>();
-		int i = 0;
+		// First add all XSDs to a map and ensure the keys used are unique, before recursively loading more.
+		// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId,
+		// so we use (normalized!) resourceTarget which appears to be unique and stable.
+		for (IXSD xsd: xsds) {
+			String resourceTarget = xsd.getResourceTarget();
+			if (xsdsRecursive.containsKey(resourceTarget)) {
+				throw new IllegalStateException("Resource Target key [" + resourceTarget + "] already in map which is supposed to be unique, input XSDs: [" + xsds + "]");
+			}
+			xsdsRecursive.put(resourceTarget, xsd);
+		}
 		for (IXSD xsd : xsds) {
-			// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId.
-			String normalizedSystemId = FilenameUtils.normalize(xsd.getSystemId()) + "[" + (++i) + "]";
-			xsdsRecursive.put(normalizedSystemId, xsd);
 			loadXsdsRecursive(xsd, xsdsRecursive, supportRedefine);
 		}
-		return xsdsRecursive;
+		return new LinkedHashSet<>(xsdsRecursive.values());
 	}
 
 	private static void loadXsdsRecursive(IXSD xsd, Map<String, IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
@@ -347,13 +350,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				x.setRootXsd(false);
 				x.initNamespace(namespace, xsd.getScopeProvider(), xsd.getResourceBase() + schemaLocationAttribute.getValue());
 
-				String normalizedSystemId = FilenameUtils.normalize(x.getSystemId());
-				if (!xsds.containsKey(normalizedSystemId)) {
-					LOG.trace("Adding xsd [{}] to set ", normalizedSystemId);
-					xsds.put(normalizedSystemId, x);
+				String resourceTarget = x.getResourceTarget();
+				if (!xsds.containsKey(resourceTarget)) {
+					LOG.trace("Adding xsd [{}] to set ", resourceTarget);
+					xsds.put(resourceTarget, x);
 					loadXsdsRecursive(x, xsds, supportRedefine);
 				} else {
-					LOG.trace("xsd [{}] already in set ", normalizedSystemId);
+					LOG.trace("xsd [{}] already in set ", resourceTarget);
 				}
 			}
 			er.close();
