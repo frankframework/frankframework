@@ -272,8 +272,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	private static void loadXsdsRecursive(IXSD xsd, Map<String, IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
-		try {
-			Reader reader = xsd.getReader();
+		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
 				return;
 			}
