@@ -60,12 +60,12 @@ public class FunctionalUtil {
 	 *     This can also be useful when for instance a no-arguments function should be passed to a JUnit arguments
 	 *     supplier for a parameterized unit test:
 	 *     <code>
-	 *	public static Stream<Arguments> transactionManagers() {
-	 * 		return Stream.of(
-	 * 			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManager)),
-	 * 			Arguments.of(supplier(ReceiverTest::buildBtmTransactionManager))
-	 * 		);
-	 *        }
+	 *	    public static Stream&lt;Arguments&gt; transactionManagers() {
+	 * 		    return Stream.of(
+	 * 			    Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManager)),
+	 * 			    Arguments.of(supplier(ReceiverTest::buildBtmTransactionManager))
+	 * 		    );
+	 *      }
 	 *     </code>
 	 * </p>
 	 *
@@ -87,7 +87,7 @@ public class FunctionalUtil {
 	 * </p>
 	 * <p>For Example:</p>
 	 * <code>
-	 *  public static Stream<Arguments> transactionManagers() {
+	 *  public static Stream&lt;Arguments&gt; transactionManagers() {
 	 * 		return Stream.of(
 	 * 			Arguments.of(function(ReceiverTest::buildNarayanaTransactionManager)),
 	 * 			Arguments.of(function(ReceiverTest::buildBtmTransactionManager))
