@@ -135,8 +135,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	 *  - list of potential root elements
 	 */
 	private void init() throws ConfigurationException {
-		try {
-			Reader reader = getReader();
+		try (Reader reader = getReader()) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			int elementDepth = 0;
 			while (er.hasNext()) {
@@ -180,6 +179,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
 				}
 			}
+			er.close();
 			this.targetNamespace = xsdTargetNamespace;
 			if (namespace == null) {
 				// In case WsdlXmlValidator doesn't have schemaLocation
@@ -279,6 +279,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private static void loadXsdsRecursive(IXSD xsd, Map<String, IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
 		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
+				// NB: Perhaps this should just throw an IllegalStateException. But I'm afraid to break some unforeseen edge case that's not covered by any of the tests.
+				LOG.warn("<*> XSD without Reader; skipping: [{}]/[{}]", xsd::getResourceTarget, xsd::getTargetNamespace);
 				return;
 			}
 			List<IXSD> schemasToLoad = new ArrayList<>();
