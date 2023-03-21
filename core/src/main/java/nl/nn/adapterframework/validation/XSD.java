@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -265,10 +266,14 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			}
 			xsdsRecursive.put(resourceTarget, xsd);
 		}
+		loadAllXsdsRecursive(xsds, xsdsRecursive, supportRedefine);
+		return new LinkedHashSet<>(xsdsRecursive.values());
+	}
+
+	private static void loadAllXsdsRecursive(Collection<IXSD> xsds, Map<String, IXSD> xsdsRecursive, boolean supportRedefine) throws ConfigurationException {
 		for (IXSD xsd : xsds) {
 			loadXsdsRecursive(xsd, xsdsRecursive, supportRedefine);
 		}
-		return new LinkedHashSet<>(xsdsRecursive.values());
 	}
 
 	private static void loadXsdsRecursive(IXSD xsd, Map<String, IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
@@ -276,6 +281,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			if (reader == null) {
 				return;
 			}
+			List<IXSD> schemasToLoad = new ArrayList<>();
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -353,12 +359,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				if (!xsds.containsKey(resourceTarget)) {
 					LOG.trace("Adding xsd [{}] to set ", resourceTarget);
 					xsds.put(resourceTarget, x);
-					loadXsdsRecursive(x, xsds, supportRedefine);
+					schemasToLoad.add(x);
 				} else {
 					LOG.trace("xsd [{}] already in set ", resourceTarget);
 				}
 			}
 			er.close();
+			loadAllXsdsRecursive(schemasToLoad, xsds, supportRedefine);
 		} catch (IOException e) {
 			String message = "IOException reading XSD";
 			LOG.error(message, e);
