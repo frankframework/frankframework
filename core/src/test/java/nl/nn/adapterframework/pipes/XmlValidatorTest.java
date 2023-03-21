@@ -126,9 +126,9 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws Exception,
-			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
-		XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
+			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws
+		IllegalAccessException, XmlValidatorException, PipeRunException, IOException, ConfigurationException, PipeStartException {
+		XmlValidator validator = getValidator(schemaLocation, addNamespaceToSchema, implementation);
 		if (rootelement!=null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure();
@@ -150,7 +150,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	 * <td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 	 *
 	 */
-	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeStartException {
 		XmlValidator validator = new XmlValidator();
 		try {
 			validator.setImplementation(implementation);

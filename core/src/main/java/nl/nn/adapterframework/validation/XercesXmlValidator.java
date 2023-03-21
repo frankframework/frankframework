@@ -184,7 +184,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		SymbolTable symbolTable = getSymbolTable();
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
-		Set<String> namespaceSet = new HashSet<String>();
+		Set<String> namespaceSet = new HashSet<>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
 		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(this, schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);

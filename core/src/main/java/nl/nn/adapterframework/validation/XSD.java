@@ -27,7 +27,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
@@ -38,7 +40,6 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +50,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -108,21 +110,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<IXSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
 		this.scopeProvider=scopeProvider;
-		resourceTarget = "[";
-		toString = "[";
-		boolean first = true;
-		for (IXSD xsd : sourceXsds) {
-			if (first) {
-				first = false;
-			} else {
-				resourceTarget = resourceTarget + ", ";
-				toString = toString + ", ";
-			}
-			resourceTarget = resourceTarget + xsd.getResourceTarget().replaceAll("/", "_");
-			toString = toString + xsd.toString();
-		}
-		resourceTarget = resourceTarget + "].xsd";
-		toString = toString + "]";
+		this.resourceTarget = sourceXsds.stream()
+			.map(IXSD::getResourceTarget)
+			.map(xsd -> xsd.replace("/", "_"))
+			.collect(Collectors.joining(", ", "[", "].xsd"));
+		this.toString = sourceXsds.stream()
+			.map(Objects::toString)
+			.collect(Collectors.joining(", ", "[", "]"));
 		if (parentLocation == null) {
 			this.parentLocation = "";
 		}
@@ -158,6 +152,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					if (a != null) {
 						xsdTargetNamespace = a.getValue();
 					}
+					@SuppressWarnings("unchecked")
 					Iterator<Namespace> nsIterator = el.getNamespaces();
 					// search for default namespace of the schema, i.e. a namespace definition without a prefix
 					while (nsIterator.hasNext() && StringUtils.isEmpty(xsdDefaultNamespace)) {
@@ -169,19 +164,14 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				} else if (el.getName().equals(SchemaUtils.IMPORT)) {
 					// find imported namespaces
 					Attribute a = el.getAttributeByName(SchemaUtils.NAMESPACE);
-					if (a != null) {
-						boolean skip = false;
-						List<String> ans = null;
-						if (StringUtils.isNotEmpty(getImportedNamespacesToIgnore())) {
-							ans = listOf(getImportedNamespacesToIgnore());
-						}
-						if (StringUtils.isNotEmpty(a.getValue()) && ans != null && (ans.contains(a.getValue()))) {
-							skip = true;
-						}
-						if (!skip) {
-							importedNamespaces.add(a.getValue());
-						}
+					if (a == null) {
+						continue;
 					}
+					List<String> ans = listOf(getImportedNamespacesToIgnore());
+					if (StringUtils.isNotEmpty(a.getValue()) && ans.contains(a.getValue())) {
+						continue;
+					}
+					importedNamespaces.add(a.getValue());
 				} else if (el.getName().equals(SchemaUtils.ELEMENT) && (elementDepth == 2)) {
 					rootTags.add(el.getAttributeByName(SchemaUtils.NAME).getValue());
 				}
@@ -366,6 +356,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					LOG.trace("xsd [{}] already in set ", normalizedSystemId);
 				}
 			}
+			er.close();
 		} catch (IOException e) {
 			String message = "IOException reading XSD";
 			LOG.error(message, e);
@@ -378,7 +369,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	private static List<String> listOf(String commaSeparatedItems) {
-		if (commaSeparatedItems.isEmpty()) {
+		if (commaSeparatedItems == null || commaSeparatedItems.isEmpty()) {
 			return Collections.emptyList();
 		}
 		return Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1));
