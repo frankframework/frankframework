@@ -86,8 +86,6 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			closeDiskJournal();
 
 			txManager.commit(txStatus);
-//			TransactionSystemException e = assertThrows(TransactionSystemException.class, ()-> txManager.commit(txStatus));
-//			assertThat(e.getMessage(), Matchers.endsWith("error logging status"));
 
 			// Assert if old transaction has been completed.
 			// These values don't change regardless of the journal state.
