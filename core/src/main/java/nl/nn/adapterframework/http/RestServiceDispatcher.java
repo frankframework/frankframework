@@ -239,7 +239,7 @@ public class RestServiceDispatcher {
 
 			//Caching: check for etags
 			if(uri.startsWith("/")) uri = uri.substring(1);
-			if(uri.indexOf("?") > -1) {
+			if(uri.contains("?")) {
 				uri = uri.split("\\?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
