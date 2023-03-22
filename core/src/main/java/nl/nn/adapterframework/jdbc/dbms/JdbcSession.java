@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.SQLException;
+import nl.nn.adapterframework.jdbc.JdbcException;
 
 public abstract class JdbcSession implements AutoCloseable {
 
 	@Override
-	public abstract void close() throws SQLException;
+	public abstract void close() throws JdbcException;
 
 }
