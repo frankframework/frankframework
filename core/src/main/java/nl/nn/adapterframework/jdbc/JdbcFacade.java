@@ -291,14 +291,14 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	}
 
 	/**
-	 * informs the sender that the obtained connection is from a pool
+	 * informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed)
 	 * @ff.default true
 	 */
-	public boolean isConnectionsArePooled() {
-		return connectionsArePooled || isTransacted();
-	}
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
+	}
+	public boolean isConnectionsArePooled() {
+		return connectionsArePooled || isTransacted();
 	}
 
 }
