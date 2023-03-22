@@ -72,14 +72,14 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private String toString;
 	private @Getter String namespace;
 	private @Getter @Setter boolean addNamespaceToSchema = false;
-	private @Getter @Setter String importedSchemaLocationsToIgnore;
+	private @Getter Set<String> importedSchemaLocationsToIgnore = Collections.emptySet();
 	protected @Getter @Setter boolean useBaseImportedSchemaLocationsToIgnore = false;
-	private @Getter @Setter String importedNamespacesToIgnore;
+	private @Getter Set<String> importedNamespacesToIgnore = Collections.emptySet();
 	private @Getter @Setter String parentLocation;
 	private @Getter @Setter boolean rootXsd = true;
 	private @Getter @Setter String targetNamespace;
-	private @Getter List<String> rootTags = new ArrayList<>();
-	private @Getter Set<String> importedNamespaces = new HashSet<>();
+	private final @Getter List<String> rootTags = new ArrayList<>();
+	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
 
@@ -87,7 +87,21 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		super();
 	}
 
+	public void setImportedNamespacesToIgnore(Set<String> toIgnore) {
+		this.importedNamespacesToIgnore = toIgnore;
+	}
 
+	public void setImportedNamespacesToIgnore(String toIgnore) {
+		this.importedNamespacesToIgnore = setOf(toIgnore);
+	}
+
+	public void setImportedSchemaLocationsToIgnore(Set<String> toIgnore) {
+		this.importedSchemaLocationsToIgnore = toIgnore;
+	}
+
+	public void setImportedSchemaLocationsToIgnore(String toIgnore) {
+		this.importedSchemaLocationsToIgnore = setOf(toIgnore);
+	}
 
 	protected void initNoNamespace(IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
 		initNamespace(null, scopeProvider, resourceRef);
@@ -170,8 +184,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					if (a == null) {
 						continue;
 					}
-					List<String> ans = listOf(getImportedNamespacesToIgnore());
-					if (StringUtils.isNotEmpty(a.getValue()) && ans.contains(a.getValue())) {
+					if (StringUtils.isNotEmpty(a.getValue()) && getImportedNamespacesToIgnore().contains(a.getValue())) {
 						continue;
 					}
 					importedNamespaces.add(a.getValue());
@@ -336,14 +349,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 					if (xsd.isUseBaseImportedSchemaLocationsToIgnore()) {
 						sl = FilenameUtils.getName(sl);
 					}
-					List<String> aslti = listOf(xsd.getImportedSchemaLocationsToIgnore());
-					if (aslti.contains(sl)) {
+					if (xsd.getImportedSchemaLocationsToIgnore().contains(sl)) {
 						// Skip
 						continue;
 					}
 				}
 				if (StringUtils.isNotEmpty(namespace)
-					&& listOf(xsd.getImportedNamespacesToIgnore()).contains(namespace)) {
+					&& xsd.getImportedNamespacesToIgnore().contains(namespace)) {
 					// Skip
 					continue;
 				}
@@ -379,11 +391,11 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		}
 	}
 
-	private static List<String> listOf(String commaSeparatedItems) {
+	private static Set<String> setOf(String commaSeparatedItems) {
 		if (commaSeparatedItems == null || commaSeparatedItems.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
-		return Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1));
+		return new HashSet<>(Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1)));
 	}
 
 	@Override
@@ -396,9 +408,9 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	 */
 	public String addTargetNamespace() throws ConfigurationException {
 		try {
-			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
-			List<XMLEvent> imports = new ArrayList<XMLEvent>();
+			List<Attribute> rootAttributes = new ArrayList<>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
+			List<XMLEvent> imports = new ArrayList<>();
 			StringWriter writer = new StringWriter();
 			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(writer);
 			SchemaUtils.xsdToXmlStreamWriter(this, w, true, false, false, false, rootAttributes, rootNamespaceAttributes, imports, true);

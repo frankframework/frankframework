@@ -41,9 +41,9 @@ public interface IXSD extends Schema {
 		return false;
 	}
 
-	String getImportedSchemaLocationsToIgnore();
+	Set<String> getImportedSchemaLocationsToIgnore();
 	boolean isUseBaseImportedSchemaLocationsToIgnore();
-	String getImportedNamespacesToIgnore();
+	Set<String> getImportedNamespacesToIgnore();
 	String getParentLocation();
 
 	String getXsdDefaultNamespace();
