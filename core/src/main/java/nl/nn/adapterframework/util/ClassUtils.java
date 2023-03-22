@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -293,29 +293,70 @@ public abstract class ClassUtils {
 		return simpleName;
 	}
 
+	/**
+	 * Throws IllegalArgumentException if the argument type is incompatible
+	 * Throws IllegalStateException if the argument cannot be set on the target bean
+	 */
 	public static void invokeSetter(Object bean, Method method, String valueToSet) {
 		if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
 			throw new IllegalArgumentException("method must start with [set] and may only contain [1] parameter");
 		}
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-			Object castValue = castAsType(method.getParameterTypes()[0], valueToSet);
+			Object castValue = parseValueToSet(method, valueToSet);
 			if(log.isDebugEnabled()) log.debug("trying to set method ["+method.getName()+"] with value ["+valueToSet+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(bean)+"]");
 
 			method.invoke(bean, castValue);
-		} catch (Exception e) {
-			throw new IllegalArgumentException("error while calling method ["+method.getName()+"] on ["+ClassUtils.nameOf(bean)+"]", e);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new IllegalStateException("error while calling method ["+method.getName()+"] on ["+ClassUtils.nameOf(bean)+"]", e);
 		}
 	}
 
-	private static Object castAsType(Class<?> type, String value) {
+	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
+		Class<?> setterArgumentClass = m.getParameters()[0].getType();
+		char[] c = m.getName().substring(3).toCharArray();
+		c[0] = Character.toLowerCase(c[0]);
+		String fieldName = new String(c);
+
+		//Try to parse the value as an Enum
+		if(setterArgumentClass.isEnum()) {
+			return parseAsEnum(setterArgumentClass, fieldName, value);
+		}
+
+		//Try to parse as primitive
+		return convertToType(setterArgumentClass, fieldName, value);
+	}
+
+	private static Object convertToType(Class<?> type, String fieldName, String value) throws IllegalArgumentException {
 		String className = type.getName().toLowerCase();
-		if("boolean".equals(className))
-			return Boolean.parseBoolean(value);
-		else if("int".equals(className) || "integer".equals(className))
-			return Integer.parseInt(value);
-		else
-			return value;
+		try {
+			switch (type.getTypeName()) {
+			case "int":
+			case "java.lang.Integer":
+				return Integer.parseInt(value);
+			case "long":
+				return Long.parseLong(value);
+			case "boolean":
+			case "java.lang.Boolean":
+				return Boolean.parseBoolean(value);
+			default:
+				return value;
+			}
+		} catch(NumberFormatException e) {
+			throw new IllegalArgumentException("cannot set field ["+fieldName+"] of type ["+className+"] with value ["+value+"] cannot be converted to a number");
+		}
+	}
+
+	/**
+	 * Attempt to parse the attributes value as an Enum.
+	 * @param enumClass The Enum class used to parse the value
+	 * @param fieldName The setter name (fieldName) to set
+	 * @param value The value to be parsed
+	 * @return The Enum constant or <code>NULL</code>
+	 */
+	@SuppressWarnings("unchecked")
+	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String fieldName, String value) throws IllegalArgumentException {
+		return EnumUtils.parse((Class<E>) enumClass, fieldName, value);
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

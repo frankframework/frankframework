@@ -115,6 +115,17 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
+	public void testAttributeFromInterfaceDefaultMethod() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("naam", "Pietje Puk");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("Pietje Puk", bean.getName());
+		assertEquals("Pietje Puk", bean.getNaam());
+	}
+
+	@Test
 	public void testAttributeThatDoesntExist() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("do-not-exist", "string value here");
@@ -228,7 +239,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testInteger] with value [a String] cannot be converted to a number: For input string: \"a String\"", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testInteger] of type [int] with value [a String] cannot be converted to a number", configWarnings.get(0));
 	}
 
 	@Test
@@ -242,7 +253,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testIntegerWithoutGetter] with value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter] of type [int] with value [a String] cannot be converted to a number", configWarnings.get(0));
 	}
 
 	@Test
@@ -408,11 +419,22 @@ public class ValidateAttributeRuleTest extends Mockito {
 		return appConstants;
 	}
 
-	public enum TestEnum {
+	public static enum TestEnum {
 		ONE, TWO;
 	}
 
-	public static class ClassWithEnum implements INamedObject {
+	public static interface InterfaceWithDefaultMethod extends INamedObject {
+
+		default void setNaam(String naam) {
+			setName(naam);
+		}
+
+		default String getNaam() {
+			return getName();
+		}
+	}
+
+	public static class ClassWithEnum implements INamedObject, InterfaceWithDefaultMethod {
 
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
