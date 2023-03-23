@@ -5,6 +5,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -310,4 +311,19 @@ public class ClassUtilsTest {
 		return TestScopeProvider.wrap(cl);
 	}
 
+	@Test
+	public void testConvertToType() {
+		String fieldName = "<fieldName>";
+
+		assertEquals(7, ClassUtils.convertToType(int.class, fieldName, "7"));
+		assertEquals(7, ClassUtils.convertToType(Integer.class, fieldName, "7"));
+		assertEquals(7L, ClassUtils.convertToType(long.class, fieldName, "7"));
+		assertEquals(7L, ClassUtils.convertToType(Long.class, fieldName, "7"));
+		assertEquals("7", ClassUtils.convertToType(String.class, fieldName, "7"));
+		assertEquals(true, ClassUtils.convertToType(boolean.class, fieldName, "true"));
+		assertEquals(true, ClassUtils.convertToType(Boolean.class, fieldName, "true"));
+		assertEquals(false, ClassUtils.convertToType(Boolean.class, fieldName, "niet true"));
+		assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, fieldName, "dummy"));
+		assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, fieldName, "dummy"));
+	}
 }
