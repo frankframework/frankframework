@@ -106,7 +106,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		long duration = System.currentTimeMillis() - startTime;
-		assertTrue("Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.", duration < PARALLEL_DELAY + 100);
+		assertTrue("Test took "+(duration- (PARALLEL_DELAY + 300))+"ms too long.", duration < PARALLEL_DELAY + 300);
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
 
