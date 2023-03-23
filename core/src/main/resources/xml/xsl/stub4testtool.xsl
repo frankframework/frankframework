@@ -332,10 +332,20 @@
 		</xsl:element>
 	</xsl:template>
 	
+	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.Samba2Pipe' ]">
+		<xsl:element name="pipe">
+			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
+			<xsl:attribute name="className">nl.nn.adapterframework.pipes.LocalFileSystemPipe</xsl:attribute>
+			<xsl:attribute name="action">
+				<xsl:value-of select="@action" />
+			</xsl:attribute>
+			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+		</xsl:element>
+	</xsl:template>
+	
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' 
 							or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' 
 							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' 
-						 	or @className='nl.nn.adapterframework.pipes.Samba2Pipe' 
 							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
