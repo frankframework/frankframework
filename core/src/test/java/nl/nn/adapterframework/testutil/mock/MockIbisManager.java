@@ -34,8 +34,4 @@ public class MockIbisManager extends DefaultIbisManager implements ApplicationCo
 		unload((String) null);
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		// Don't initialize a TransactionManager
-	}
 }
