@@ -29,7 +29,6 @@
 		class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
 		autowire="byName"
 		>
-		<property name="transactionManager" ref="txManager"/>
 	</bean>
 
 	<bean
