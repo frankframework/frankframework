@@ -28,7 +28,6 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -131,22 +130,15 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 
 	/** Fancy equals that type-checks the attribute value against the defaultValue. */
 	private boolean equals(Object defaultValue, String value) {
+		if(defaultValue == null) {
+			return false;
+		}
+
 		try {
-			return	(defaultValue instanceof String && value.equals(defaultValue)) ||
-					(defaultValue instanceof Boolean && Boolean.valueOf(value).equals(defaultValue)) ||
-					(defaultValue instanceof Integer && Integer.valueOf(value).equals(defaultValue)) ||
-					(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue)) ||
-					(defaultValue instanceof Enum && enumEquals(defaultValue, value));
+			return ClassUtils.convertToType(defaultValue.getClass(), "", value).equals(defaultValue);
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
-	}
-
-	/** Attempt to parse the attribute value as an Enum and compare it to the defaultValue. */
-	@SuppressWarnings("unchecked")
-	private <E extends Enum<E>> boolean enumEquals(Object defaultValue, String value) {
-		Class<?> enumClass = defaultValue.getClass();
-		return EnumUtils.parse((Class<E>) enumClass, value) == defaultValue;
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, Method m) {

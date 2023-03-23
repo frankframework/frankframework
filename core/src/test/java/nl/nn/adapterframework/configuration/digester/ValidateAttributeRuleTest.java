@@ -98,6 +98,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		attr.put("testString", "testStringValue");
 		attr.put("deprecatedString", "deprecatedValue");
 		attr.put("testInteger", "3");
+		attr.put("testLong", "3");
 		attr.put("testBoolean", "true");
 		attr.put("testEnum", "two");
 
@@ -107,6 +108,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("testStringValue", bean.getTestString());
 		assertEquals("deprecatedValue", bean.getDeprecatedString());
 		assertEquals(3, bean.getTestInteger());
+		assertEquals(3L, bean.getTestLong());
 		assertEquals(true, bean.isTestBoolean());
 		assertEquals(TestEnum.TWO, bean.getTestEnum());
 
@@ -190,6 +192,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
 		attr.put("testInteger", "0");
+		attr.put("testLong", "0");
 		attr.put("testBoolean", "false");
 		attr.put("testEnum", "one");
 
@@ -198,11 +201,12 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		// Assert
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(4, configWarnings.size());
+		assertEquals(5, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
 		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [0]", configWarnings.get(1));
-		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(2));
-		assertEquals("ClassWithEnum attribute [testEnum] already has a default value [one]", configWarnings.get(3));
+		assertEquals("ClassWithEnum attribute [testLong] already has a default value [0]", configWarnings.get(2));
+		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(3));
+		assertEquals("ClassWithEnum attribute [testEnum] already has a default value [one]", configWarnings.get(4));
 	}
 
 	@Test
@@ -215,6 +219,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
 		attr.put("testInteger", "0");
+		attr.put("testLong", "0");
 		attr.put("testBoolean", "false");
 		attr.put("testEnum", "one");
 
@@ -239,7 +244,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testInteger] of type [int] with value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testInteger] of type [int]: value [a String] cannot be converted to a number", configWarnings.get(0));
 	}
 
 	@Test
@@ -253,7 +258,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter] of type [int] with value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter] of type [int]: value [a String] cannot be converted to a number", configWarnings.get(0));
 	}
 
 	@Test
@@ -443,6 +448,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Getter String configWarningString;
 		private @Getter String deprecatedConfigWarningString;
 		private @Getter @Setter int testInteger = 0;
+		private @Getter @Setter long testLong = 0L;
 		private @Getter @Setter boolean testBoolean = false;
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;

@@ -318,32 +318,34 @@ public abstract class ClassUtils {
 		c[0] = Character.toLowerCase(c[0]);
 		String fieldName = new String(c);
 
-		//Try to parse the value as an Enum
-		if(setterArgumentClass.isEnum()) {
-			return parseAsEnum(setterArgumentClass, fieldName, value);
-		}
-
 		//Try to parse as primitive
 		return convertToType(setterArgumentClass, fieldName, value);
 	}
 
-	private static Object convertToType(Class<?> type, String fieldName, String value) throws IllegalArgumentException {
-		String className = type.getName().toLowerCase();
+	public static Object convertToType(Class<?> type, String fieldName, String value) throws IllegalArgumentException {
+		//Try to parse the value as an Enum
+		if(type.isEnum()) {
+			return parseAsEnum(type, fieldName, value);
+		}
+
 		try {
 			switch (type.getTypeName()) {
 			case "int":
 			case "java.lang.Integer":
 				return Integer.parseInt(value);
 			case "long":
+			case "java.lang.Long":
 				return Long.parseLong(value);
 			case "boolean":
 			case "java.lang.Boolean":
 				return Boolean.parseBoolean(value);
-			default:
+			case "java.lang.String":
 				return value;
+			default:
+				throw new IllegalArgumentException("cannot set field ["+fieldName+"]: type ["+type.getName()+"] not implemented");
 			}
 		} catch(NumberFormatException e) {
-			throw new IllegalArgumentException("cannot set field ["+fieldName+"] of type ["+className+"] with value ["+value+"] cannot be converted to a number");
+			throw new IllegalArgumentException("cannot set field ["+fieldName+"] of type ["+type.getName()+"]: value ["+value+"] cannot be converted to a number");
 		}
 	}
 
