@@ -1755,11 +1755,6 @@ public class ApiListenerServletTest extends Mockito {
 			fail("method should not be called");
 		}
 
-		@Override
-		public void processRawMessage(IListener<Message> origin, Message message) throws ListenerException {
-			fail("method should not be called");
-		}
-
 
 		@Override
 		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {

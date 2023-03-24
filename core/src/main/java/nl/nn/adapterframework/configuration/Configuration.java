@@ -205,12 +205,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.refresh();
 
-		if(adapterManager == null) { //Manually set the AdapterManager bean
-			setAdapterManager(getBean("adapterManager", AdapterManager.class));
-		}
-		if(scheduleManager == null) { //Manually set the ScheduleManager bean
-			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
-		}
+		setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].

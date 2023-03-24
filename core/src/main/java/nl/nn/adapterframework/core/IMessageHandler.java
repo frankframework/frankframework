@@ -38,12 +38,6 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, M message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,PipeLineSession, boolean)}, but now without context, for convenience
-	 */
-	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
-
-
-	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
 	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException;
