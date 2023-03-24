@@ -1818,7 +1818,19 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	public boolean isStopped() {
 		RunState currentRunState = runState.getRunState();
-		return currentRunState == RunState.STOPPED || currentRunState == RunState.EXCEPTION_STOPPING;
+		switch (currentRunState) {
+			case STARTING:
+			case EXCEPTION_STARTING:
+			case STARTED:
+			case STOPPING:
+				return false;
+			case STOPPED:
+			case EXCEPTION_STOPPING:
+			case ERROR:
+				return true;
+			default:
+				throw new IllegalStateException("Unhandled receiver run-state [" + currentRunState + "]");
+		}
 	}
 
 	private String sendResultToSender(Message result) {
