@@ -758,6 +758,16 @@
 										</excludes>
 										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
 									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+						<execution>
+							<id>enforce-classpath-lib-ban</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
 									<bannedDependencies>
 										<excludes>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>

@@ -895,7 +895,7 @@ angular.module('iaf.beheerconsole')
 				return output;
 			}
 		};
-	}).service('Misc', ['appConstants', function(appConstants) {
+	}).service('Misc', ['appConstants', 'Base64', function(appConstants, Base64) {
 		this.getServerPath = function() {
 			var absolutePath = appConstants.server;
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
@@ -913,6 +913,20 @@ angular.module('iaf.beheerconsole')
 				|| navigator.userAgent.match(/BlackBerry/i)
 				|| navigator.userAgent.match(/Windows Phone/i)
 			) ? true : false;
+		};
+		this.getUID = function(serverInfo) {
+			let queryObj = {
+				"v": serverInfo.framework.version,
+				"n": serverInfo.instance.name,
+				"s": serverInfo["dtap.stage"],
+			};
+			let b = Base64.encode(JSON.stringify(queryObj));
+			const chunks = [];
+			let pos = 0
+			while (pos < b.length) {
+				chunks.push(b.slice(pos, pos += 5));
+			}
+			return chunks.reverse().join("");
 		};
 		this.compare_version = function(v1, v2, operator) {
 			// See for more info: http://locutus.io/php/info/version_compare/
