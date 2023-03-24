@@ -719,6 +719,7 @@ public final class ShowConfigurationStatus extends Base {
 				try {
 					errorStoreMessageCount += esmb.getMessageCount();
 				} catch (ListenerException e) {
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
 					if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
 					else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 				}
@@ -728,6 +729,7 @@ public final class ShowConfigurationStatus extends Base {
 				try {
 					messageLogMessageCount += mlmb.getMessageCount();
 				} catch (ListenerException e) {
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
 					if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
 					else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 				}
