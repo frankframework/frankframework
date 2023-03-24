@@ -86,6 +86,12 @@ public enum TransactionManagerType {
 		}
 	}
 
+	public static synchronized void closeAllConfigurationContexts() {
+		for (TransactionManagerType tmt : values()) {
+			tmt.closeConfigurationContext();
+		}
+	}
+
 	public List<String> getAvailableDataSources() throws NamingException {
 		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
 		return dataSourceFactory.getDataSourceNames();

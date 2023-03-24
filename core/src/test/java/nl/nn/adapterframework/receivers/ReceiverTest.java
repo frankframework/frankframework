@@ -42,7 +42,7 @@ import javax.jms.TextMessage;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -84,15 +84,19 @@ public class ReceiverTest {
 	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
 
-	@BeforeEach
-	public void setUp() throws Exception {
-		configuration = buildBtmTransactionManagerConfiguration();
+	@BeforeAll
+	static void beforeAll() {
+		// Ensure all lingering contexts from previous tests are closed.
+		TransactionManagerType.closeAllConfigurationContexts();
 	}
 
 	@AfterEach
 	void tearDown() {
-		configuration.stop();
-		configuration.close();
+		if (configuration != null) {
+			configuration.stop();
+			configuration.close();
+			configuration = null;
+		}
 		if (TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();
 		}
@@ -475,6 +479,7 @@ public class ReceiverTest {
 	@Test
 	void testGetDeliveryCountWithJmsListener() throws Exception {
 		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
@@ -561,11 +566,13 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartBasic() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStartNoTimeout(setupSlowStartPullingListener(0));
 	}
 
 	@Test
 	public void testPushingReceiverStartBasic() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStartNoTimeout(setupSlowStartPushingListener(0));
 	}
 
@@ -597,11 +604,13 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStartWithTimeout() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStartTimeout(setupSlowStartPullingListener(10000));
 	}
 
 	@Test
 	public void testPushingReceiverStartWithTimeout() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStartTimeout(setupSlowStartPushingListener(10000));
 	}
 
@@ -646,11 +655,13 @@ public class ReceiverTest {
 
 	@Test
 	public void testPullingReceiverStopWithTimeout() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStopTimeout(setupSlowStopPullingListener(100_000));
 	}
 
 	@Test
 	public void testPushingReceiverStopWithTimeout() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		testStopTimeout(setupSlowStopPushingListener(100_000));
 	}
 
@@ -724,6 +735,9 @@ public class ReceiverTest {
 
 	@Test
 	public void testPollGuardStartTimeout() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+
 		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
 		listener.setPollGuardInterval(1_000);
@@ -748,6 +762,7 @@ public class ReceiverTest {
 
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
+		// Act
 		// From here the PollGuard should be triggering startup-delay timeout-guard
 		listener.setStartupDelay(100_000);
 
@@ -755,6 +770,7 @@ public class ReceiverTest {
 		await().atMost(5, TimeUnit.SECONDS)
 				.until(receiver::getRunState, equalTo(RunState.EXCEPTION_STARTING));
 
+		// Assert
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
 		List<String> errors = adapter.getMessageKeeper()
@@ -765,6 +781,7 @@ public class ReceiverTest {
 
 		assertThat(errors, hasItem(containsString("Failed to restart receiver")));
 
+		// After
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
@@ -776,6 +793,7 @@ public class ReceiverTest {
 
 	@Test
 	public void testPollGuardStopTimeout() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
 		listener.setPollGuardInterval(1_000);
@@ -828,6 +846,7 @@ public class ReceiverTest {
 
 	@Test
 	public void startReceiver() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
 		Receiver<javax.jms.Message> receiver = setupReceiver(setupSlowStartPullingListener(10000));
 		Adapter adapter = setupAdapter(receiver);
 
