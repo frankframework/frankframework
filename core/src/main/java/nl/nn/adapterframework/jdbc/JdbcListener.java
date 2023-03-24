@@ -183,19 +183,19 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
-				return getRawMessage(c,threadContext);
+				return getRawMessage(c, threadContext);
 			} catch (JdbcException | SQLException e) {
 				throw new ListenerException(e);
 			}
 		}
 		synchronized (connection) {
-			return getRawMessage(connection,threadContext);
+			return getRawMessage(connection, threadContext);
 		}
 	}
 
 	protected M getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
-		String query=preparedSelectQuery;
-		try (Statement stmt= conn.createStatement()) {
+		String query = preparedSelectQuery;
+		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
 			if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
 			try (ResultSet rs=stmt.executeQuery(query)) {
