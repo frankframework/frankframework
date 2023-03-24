@@ -116,7 +116,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			resourceTarget = resourceTarget + "-" + resourceInternalReference + ".xsd";
 			toString =  toString + "!" + resourceInternalReference;
 		}
-		resourceTarget = FilenameUtils.normalize(resourceTarget);
+		resourceTarget = FilenameUtils.normalize(resourceTarget, true);
 		if (parentLocation == null) {
 			this.parentLocation = "";
 		}
