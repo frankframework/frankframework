@@ -192,7 +192,7 @@
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-		 </dependencies>
+			</dependencies>
 		</profile>
 		<profile>
 			<id>database-drivers</id>

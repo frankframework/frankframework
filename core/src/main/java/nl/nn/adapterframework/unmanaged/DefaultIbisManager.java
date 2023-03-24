@@ -21,11 +21,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -34,7 +31,6 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
 
@@ -45,7 +41,7 @@ import nl.nn.adapterframework.util.RunState;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class DefaultIbisManager implements IbisManager, InitializingBean {
+public class DefaultIbisManager implements IbisManager {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
@@ -322,21 +318,5 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	@Override
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return applicationEventPublisher;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
-		if(requiresDatabase) {
-			if(transactionManager == null) {
-				throw new IllegalStateException("no TransactionManager found or configured");
-			}
-
-			//Try to create a new transaction to check if there is a connection to the database
-			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
-			if(status != null) { //If there is a transaction (read connection) close it!
-				this.transactionManager.commit(status);
-			}
-		}
 	}
 }
