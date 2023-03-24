@@ -836,23 +836,32 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		log.trace("{} Receiver StopRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 		synchronized (runState) {
 			RunState currentRunState = getRunState();
-			if (currentRunState==RunState.STARTING) {
-				log.warn("receiver currently in state [{}], ignoring stop() command", currentRunState);
-				return;
-			} else if (currentRunState==RunState.STOPPING || currentRunState==RunState.STOPPED) {
-				log.info("receiver already in state [{}]", currentRunState);
-				return;
-			}
-
-			if(currentRunState == RunState.EXCEPTION_STARTING && getListener() instanceof IPullingListener) {
-				runState.setRunState(RunState.STOPPING); //Nothing ever started, directly go to stopped
-				closeAllResources();
-				ThreadContext.clearAll(); //Clean up receiver ThreadContext
-				return; //Prevent tellResourcesToStop from being called
-			}
-
-			if (currentRunState!=RunState.ERROR) {
-				runState.setRunState(RunState.STOPPING); //Don't change the runstate when in ERROR
+			switch (currentRunState) {
+				case STARTING:
+					log.warn("receiver currently in state [{}], ignoring stop() command", currentRunState);
+					return;
+				case STOPPED:
+				case STOPPING:
+				case EXCEPTION_STOPPING:
+					log.info("receiver already in state [{}]", currentRunState);
+					return;
+				case EXCEPTION_STARTING:
+					if (getListener() instanceof IPullingListener) {
+						runState.setRunState(RunState.STOPPING); //Nothing ever started, directly go to stopped
+						closeAllResources();
+						ThreadContext.clearAll(); //Clean up receiver ThreadContext
+						return; //Prevent tellResourcesToStop from being called
+					}
+					runState.setRunState(RunState.STOPPING);
+					break;
+				case STARTED:
+					runState.setRunState(RunState.STOPPING);
+					break;
+				case ERROR:
+					//Don't change the runstate when in ERROR
+					break;
+				default:
+					throw new IllegalStateException("Runstate [" + currentRunState + "] not handled in Stopping Receiver");
 			}
 		}
 		log.trace("{} Receiver StopRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
@@ -1815,22 +1824,34 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Override
 	public RunState getRunState() {
-		try {
-			log.trace("Receiver get runState - synchronize (lock) on Receiver runState[{}]", runState);
-			return runState.getRunState();
-		} finally {
-			log.trace("Receiver get runState - lock on Receiver runState[{}] released", runState);
-		}
+		RunState currentRunState = runState.getRunState();
+		log.trace("Receiver [{}] runstate: [{}]", name, currentRunState);
+		return currentRunState;
 	}
 
 	public boolean isInRunState(RunState someRunState) {
-		try {
-			log.trace("Receiver check runState={} - synchronize (lock) on Receiver runState {}", someRunState, runState);
-			return runState.getRunState()==someRunState;
-		} finally {
-			log.trace("Receiver check runState={} - lock on Receiver runState {} released", someRunState, runState);
+		RunState currentRunState = runState.getRunState();
+		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, currentRunState);
+		return currentRunState==someRunState;
+	}
+
+	public boolean isStopped() {
+		RunState currentRunState = runState.getRunState();
+		switch (currentRunState) {
+			case STARTING:
+			case EXCEPTION_STARTING:
+			case STARTED:
+			case STOPPING:
+				return false;
+			case STOPPED:
+			case EXCEPTION_STOPPING:
+			case ERROR:
+				return true;
+			default:
+				throw new IllegalStateException("Unhandled receiver run-state [" + currentRunState + "]");
 		}
 	}
+
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
 		try {

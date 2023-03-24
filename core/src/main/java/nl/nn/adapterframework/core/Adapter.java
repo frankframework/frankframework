@@ -887,7 +887,7 @@ public class Adapter implements IAdapter, NamedBean {
 						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
-						while (receiver.getRunState() != RunState.STOPPED) {
+						while (!receiver.isStopped()) {
 							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
 							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
 							try {
@@ -896,7 +896,7 @@ public class Adapter implements IAdapter, NamedBean {
 								if (log.isWarnEnabled()) log.warn("Interrupted waiting for threads of receiver [{}] to end", receiver.getName(), e);
 							}
 						}
-						log.info("Adapter [{}] successfully stopped receiver [{}]", name, receiver.getName());
+						log.info("Adapter [{}] stopped receiver [{}] {}.", name, receiver.getName(), receiver.isInRunState(RunState.EXCEPTION_STOPPING) ? "with error" : "successfully");
 					}
 					int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
 					if (currentNumOfMessagesInProcess > 0) {
