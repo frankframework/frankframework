@@ -8,6 +8,7 @@ angular.module('iaf.beheerconsole')
 	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
 	$scope.loading = true;
 	$rootScope.adapters = {};
+	$scope.serverInfo = {};
 	function initializeFrankConsole () {
 		if(appConstants.init === -1) {
 			appConstants.init = 0;
@@ -23,6 +24,8 @@ angular.module('iaf.beheerconsole')
 		if(appConstants.init === 0) { //Only continue if the init state was -1
 			appConstants.init = 1;
 			Api.Get("server/info", function(data) {
+				$scope.serverInfo = data;
+
 				appConstants.init = 2;
 				if(!($location.path().indexOf("login") >= 0)) {
 					Idle.watch();
@@ -185,7 +188,7 @@ angular.module('iaf.beheerconsole')
 	Hooks.register("init:once", function() {
 		/* Check IAF version */
 		console.log("Checking IAF version with remote...");
-		$http.get("https://ibissource.org/iaf/releases/").then(function(response) {
+		$http.get("https://ibissource.org/iaf/releases/?q="+Misc.getUID($scope.serverInfo)).then(function(response) {
 			if(!response  || !response.data) return false;
 			var release = response.data[0]; //Not sure what ID to pick, smallest or latest?
 
@@ -201,8 +204,10 @@ angular.module('iaf.beheerconsole')
 					$location.path("iaf-update");
 				});
 			}
+			$scope.serverInfo = null;
 		}).catch(function(error) {
 			Debug.error("An error occured while comparing IAF versions", error);
+			$scope.serverInfo = null;
 		});
 
 		Poller.add("server/warnings", function(configurations) {
