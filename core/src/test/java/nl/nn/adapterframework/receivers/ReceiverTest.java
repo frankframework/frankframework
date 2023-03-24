@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -49,8 +48,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -75,27 +72,30 @@ import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
-import nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager;
-import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
 
 public class ReceiverTest {
 	public static final DefaultTransactionDefinition TRANSACTION_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	protected Logger log = LogUtil.getLogger(this);
+	protected static final Logger LOG = LogUtil.getLogger(ReceiverTest.class);
 	private TestConfiguration configuration;
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		configuration = buildConfiguration("TEST_TXM");
+		configuration = buildBtmTransactionManagerConfiguration();
 	}
 
 	@AfterEach
 	void tearDown() {
 		configuration.stop();
+		configuration.close();
+		if (TransactionManagerServices.isTransactionManagerRunning()) {
+			TransactionManagerServices.getTransactionManager().shutdown();
+		}
 	}
 
 	public SlowListenerBase setupSlowStartPullingListener(int startupDelay) {
@@ -171,7 +171,7 @@ public class ReceiverTest {
 		Set<RunState> states = new HashSet<>();
 		Collections.addAll(states, state);
 
-		log.debug("Wait while runstate of [{}] (currently in [{}]) to change to any of [{}]", object.getName(), object.getRunState(), states);
+		LOG.debug("Wait while runstate of [{}] (currently in [{}]) to change to not any of [{}]", object.getName(), object.getRunState(), states);
 		await()
 				.atMost(60, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
@@ -182,7 +182,7 @@ public class ReceiverTest {
 		Set<RunState> states = new HashSet<>();
 		Collections.addAll(states, state);
 
-		log.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
+		LOG.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
 		await()
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
@@ -197,32 +197,24 @@ public class ReceiverTest {
 	}
 
 	private static TestConfiguration buildBtmTransactionManagerConfiguration() {
-		TestConfiguration configuration = buildConfiguration("BTM");
 		if (TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();
 		}
-		configuration.getBeanFactory().registerSingleton("txManager", configuration.getBean(BtmJtaTransactionManager.class));
+		TestConfiguration configuration = buildConfiguration(TransactionManagerType.BTM);
 		return configuration;
 	}
 
 	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
-		TestConfiguration configuration = buildConfiguration("NARAYANA");
-		configuration.getBeanFactory().registerSingleton("txManager", configuration.getBean(NarayanaJtaTransactionManager.class));
+		TestConfiguration configuration =  buildConfiguration(TransactionManagerType.NARAYANA);
 		return configuration;
 	}
 
-	private static TestConfiguration buildConfiguration(String txManagerName) {
-		TestConfiguration configuration = new TestConfiguration("testConfigurationContextWithTxManagers.xml");
-		MutablePropertySources propertySources = configuration.getEnvironment().getPropertySources();
-		propertySources.remove("testProperties");
-		Properties properties = new Properties();
-		properties.setProperty("DataSourceName", txManagerName);
-		properties.setProperty("TransactionManagerType", txManagerName);
-		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
+	private static TestConfiguration buildConfiguration(TransactionManagerType txManagerType) {
+		TestConfiguration configuration = txManagerType.create();
 
-		configuration.refresh();
 		configuration.stop();
 		configuration.getBean("adapterManager", AdapterManager.class).close();
+		LOG.info("!Configuration Context for [{}] has been created.", txManagerType);
 		return configuration;
 	}
 
@@ -249,7 +241,7 @@ public class ReceiverTest {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		receiver.setErrorStorage(errorStorage);
 
-		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
+		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -309,13 +301,13 @@ public class ReceiverTest {
 							receiver.processRawMessage(listener, jmsMessage, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
-							log.warn("Caught exception in Receiver:", e);
+							LOG.warn("Caught exception in Receiver:", e);
 							exceptionsFromReceiver.incrementAndGet();
 						} finally {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								log.warn("I had expected TX to be marked for rollback-only by now?");
+								LOG.warn("I had expected TX to be marked for rollback-only by now?");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -375,7 +367,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
+		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 
 		receiver.setTxManager(txManager);
@@ -440,13 +432,13 @@ public class ReceiverTest {
 							receiver.processRawMessage(listener, jmsMessage, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
-							log.warn("Caught exception in Receiver:", e);
+							LOG.warn("Caught exception in Receiver:", e);
 							exceptionsFromReceiver.incrementAndGet();
 						} finally {
 							if (tx.isRollbackOnly()) {
 								rolledBackTXCounter.incrementAndGet();
 							} else {
-								log.warn("I had expected TX to be marked for rollback-only by now?");
+								LOG.warn("I had expected TX to be marked for rollback-only by now?");
 							}
 							if (!tx.isCompleted()) {
 								// We do rollback inside the Receiver already but if the TX is aborted
@@ -533,7 +525,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
-		final JtaTransactionManager txManager = configuration.getBean("txManager", JtaTransactionManager.class);
+		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
@@ -591,12 +583,12 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 
 		assertFalse(listener.isClosed()); // Not closed, thus open
 		assertFalse(receiver.getSender().isSynchronous()); // Not closed, thus open
@@ -627,13 +619,13 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
 		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
 
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		await().atMost(500, TimeUnit.MILLISECONDS)
 						.until(()-> receiver.getSender().isSynchronous());
@@ -676,15 +668,15 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 	}
@@ -709,8 +701,8 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
@@ -718,7 +710,7 @@ public class ReceiverTest {
 		// From here the PollGuard should be triggering startup-delay timeout-guard
 		listener.setStartupDelay(100_000);
 
-		log.warn("Test sleeping to let poll guard timer run and do its work for a while");
+		LOG.warn("Test sleeping to let poll guard timer run and do its work for a while");
 		await().atMost(5, TimeUnit.SECONDS)
 				.until(receiver::getRunState, equalTo(RunState.EXCEPTION_STARTING));
 
@@ -736,7 +728,7 @@ public class ReceiverTest {
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 	}
@@ -761,8 +753,8 @@ public class ReceiverTest {
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
@@ -781,7 +773,7 @@ public class ReceiverTest {
 
 		waitWhileInState(receiver, RunState.STARTED);
 		waitWhileInState(receiver, RunState.STOPPING);
-		log.info("Receiver RunState "+receiver.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
@@ -810,23 +802,23 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 
-		log.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Adapter RunState "+adapter.getRunState());
 
 		// stop receiver then start
 		Semaphore semaphore = new Semaphore(0);
 		SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
 		taskExecutor.execute(()-> {
 			try {
-				log.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
+				LOG.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
 				configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STOPPED, RunState.STOPPING);
 
 				if (receiver.getRunState() != RunState.STOPPED) {
-					log.error("Receiver should be in state STOPPED, instead is in state [{}]", receiver.getRunState());
+					LOG.error("Receiver should be in state STOPPED, instead is in state [{}]", receiver.getRunState());
 					return;
 				}
 
-				log.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
+				LOG.debug("Restarting receiver [{}] from executor-thread.", receiver.getName());
 				configuration.getIbisManager().handleAction(IbisAction.STARTRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 				waitForState(receiver, RunState.STARTING, RunState.EXCEPTION_STARTING);
 				waitWhileInState(receiver, RunState.STARTING);

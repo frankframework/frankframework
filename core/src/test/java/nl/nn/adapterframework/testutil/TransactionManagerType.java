@@ -40,7 +40,7 @@ public enum TransactionManagerType {
 		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
 	}
 
-	private TestConfiguration create() {
+	public TestConfiguration create() {
 		return create("H2"); //only used to satisfy Spring startup
 	}
 
