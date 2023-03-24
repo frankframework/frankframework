@@ -334,12 +334,10 @@
 	
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.Samba2Pipe' ]">
 		<xsl:element name="pipe">
-			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
+			<xsl:apply-templates select="@name|@action|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
 			<xsl:attribute name="className">nl.nn.adapterframework.pipes.LocalFileSystemPipe</xsl:attribute>
-			<xsl:attribute name="action">
-				<xsl:value-of select="@action" />
-			</xsl:attribute>
-			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+			<xsl:apply-templates
+				select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
 	
