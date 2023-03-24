@@ -100,12 +100,12 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
 //	@Override
 //	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
-//		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
 //		JdbcUtil.executeStatement(conn, "START TRANSACTION");
 //		return new JdbcSession() {
 //
 //			@Override
-//			public void close() throws Exception {
+//			public void close() throws JdbcException {
 //				JdbcUtil.executeStatement(conn, "COMMIT");
 //			}
 //
