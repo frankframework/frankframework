@@ -27,6 +27,7 @@ import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class FileHandlerTestBase {
@@ -103,7 +104,6 @@ public abstract class FileHandlerTestBase {
 	}
 
 	public void testWrite(String directory, String filename, String suffix, boolean suffixViaParam, String contentFile, String charset, boolean decode, boolean encode, String baseAction, String fileContentsAtStart, boolean truncate, boolean write, boolean writeSeparator) throws Exception {
-
 		ParameterList paramList = null;
 		String compareFile = directory == null ? contentFile : directory + "/" + contentFile;
 		String filepath = null;
@@ -150,8 +150,9 @@ public abstract class FileHandlerTestBase {
 		handler.setWriteLineSeparator(writeSeparator);
 		handler.configure();
 
-		Message contents = TestFileUtils.getTestFileMessage(BASEDIR + contentFile, charset);
-		String actFilename = (String) handler.handle(contents, session, paramList);
+		Message contents = MessageTestUtils.getMessage(BASEDIR + contentFile);
+		String stringContent = contents.asString().replace("\r", ""); //Remove carriage return
+		String actFilename = (String) handler.handle(Message.asMessage(stringContent), session, paramList);
 		if(filename == null) {
 			assertNotNull(actFilename);
 		} else {

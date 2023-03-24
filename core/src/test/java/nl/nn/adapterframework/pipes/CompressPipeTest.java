@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.CompressPipe.FileFormat;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -66,7 +67,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(pipe, dummyStringSemiColon, session);
-		
+
 		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 	@Test
@@ -77,7 +78,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.ZIP);
 
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getNonRepeatableTestFileMessage("/Unzip/ab.zip"));
+		PipeRunResult prr = doPipe(MessageTestUtils.getBinaryMessage("/Unzip/ab.zip", false));
 
 		assertEquals("bbb", prr.getResult().asString());
 	}

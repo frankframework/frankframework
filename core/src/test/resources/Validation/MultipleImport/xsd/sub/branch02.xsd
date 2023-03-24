@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:frank/branch02"
+	targetNamespace="urn:frank/branch02" elementFormDefault="qualified"
+	attributeFormDefault="unqualified" 
+	xmlns:l01="urn:frank/leaf01"
+	xmlns:l02="urn:frank/leaf02">
+	<xs:import namespace="urn:frank/leaf01" schemaLocation="../leaf01.xsd" />
+	<xs:import namespace="urn:frank/leaf02" schemaLocation="leaf02.xsd" />
+	<xs:element name="branch02">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="l01:leaf01" />
+				<xs:element ref="l02:leaf02" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

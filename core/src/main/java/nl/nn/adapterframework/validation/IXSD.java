@@ -18,7 +18,7 @@ package nl.nn.adapterframework.validation;
 import java.util.List;
 import java.util.Set;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
  * The representation of a XSD.
@@ -41,11 +41,16 @@ public interface IXSD extends Schema {
 		return false;
 	}
 
-	Set<IXSD> getXsdsRecursive(boolean supportRedefine) throws ConfigurationException;
-
-	String getImportedSchemaLocationsToIgnore();
+	Set<String> getImportedSchemaLocationsToIgnore();
 	boolean isUseBaseImportedSchemaLocationsToIgnore();
-	String getImportedNamespacesToIgnore();
+	Set<String> getImportedNamespacesToIgnore();
 	String getParentLocation();
 
+	String getXsdDefaultNamespace();
+
+	String getXsdTargetNamespace();
+
+	String getResourceBase();
+
+	IScopeProvider getScopeProvider();
 }

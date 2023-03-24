@@ -48,6 +48,7 @@ import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -324,7 +325,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		for(int i = 0; i<5; i++) {
 			inputs.add(new UrlMessage(url));
 		}
-		String expected = TestFileUtils.getTestFileMessage("/PdfPipe/xml-results/mailWithWordAttachment.xml").asString();
+		String expected = MessageTestUtils.getMessage("/PdfPipe/xml-results/mailWithWordAttachment.xml").asString();
 		inputs.parallelStream().forEach(item -> {
 			try {
 				PipeRunResult prr = pipe.doPipe(item, session);
@@ -372,13 +373,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.setMainDocumentSessionKey("mainDoc");
 		pipe.setFilenameToAttachSessionKey("attachedFilename");
 
-		Message mainDoc = TestFileUtils.getNonRepeatableTestFileMessage("/PdfPipe/combine/maindoc.pdf");
+		Message mainDoc = MessageTestUtils.getBinaryMessage("/PdfPipe/combine/maindoc.pdf", false);
 
 		session.put(pipe.getMainDocumentSessionKey(), mainDoc);
 
 		session.put(pipe.getFilenameToAttachSessionKey(), "attachedFile");
 
-		Message fileToAttachMainDoc = TestFileUtils.getNonRepeatableTestFileMessage("/PdfPipe/combine/filetobeattached.pdf");
+		Message fileToAttachMainDoc = MessageTestUtils.getBinaryMessage("/PdfPipe/combine/filetobeattached.pdf", false);
 		PipeRunResult prr = doPipe(pipe, fileToAttachMainDoc, session);
 
 		Message result = prr.getResult();

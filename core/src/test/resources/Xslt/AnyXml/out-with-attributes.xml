@@ -1,0 +1,5 @@
+<request>
+	<a aa="xx" bb="yy" xmlns="urn:a" xmlns:a="urn:q" xmlns:b="urn:p" xmlns:c="urn:r">
+		<c:b/>
+	</a>
+</request>

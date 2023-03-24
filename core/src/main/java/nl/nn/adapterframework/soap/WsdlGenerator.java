@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.SchemaUtils;
+import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
 /**
@@ -365,13 +366,13 @@ public class WsdlGenerator {
 		Set<IXSD> inputRootXsds = new HashSet<IXSD>();
 		inputRootXsds.addAll(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
-		inputXsds.addAll(SchemaUtils.getXsdsRecursive(inputRootXsds));
+		inputXsds.addAll(XSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
 			Set<IXSD> outputRootXsds = new HashSet<IXSD>();
 			outputRootXsds.addAll(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
-			outputXsds.addAll(SchemaUtils.getXsdsRecursive(outputRootXsds));
+			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
 		prefixByXsd = new LinkedHashMap<IXSD, String>();

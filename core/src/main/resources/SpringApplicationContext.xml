@@ -39,6 +39,8 @@
 
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
+	<bean id="VerifyDatabaseConnectionBean" class="nl.nn.adapterframework.lifecycle.VerifyDatabaseConnectionBean" />
+
 	<bean
 		name="hostnamePropertySourcePostProcessor"
 		class="nl.nn.adapterframework.configuration.HostnamePropertySourcePostProcessor"
