@@ -55,7 +55,7 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 
 			try (Connection connection = getDefaultDataSource().getConnection()) {
 				int isolationLevel = connection.getTransactionIsolation();
-				if(isolationLevel != Connection.TRANSACTION_NONE) {
+				if(isolationLevel == Connection.TRANSACTION_NONE) {
 					log.info("expected a transacted connection got isolation level [{}]", isolationLevel);
 				}
 			}
