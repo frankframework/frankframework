@@ -236,8 +236,11 @@ public class IbisApplicationContext implements Closeable {
 	 * TODO: retrieve this (automatically/) through Spring
 	 */
 	private void lookupApplicationModules() {
-		List<String> modulesToScanFor = new ArrayList<String>();
+		if(!iafModules.isEmpty()) {
+			return;
+		}
 
+		List<String> modulesToScanFor = new ArrayList<>();
 		modulesToScanFor.add("ibis-adapterframework-akamai");
 		modulesToScanFor.add("ibis-adapterframework-cmis");
 		modulesToScanFor.add("ibis-adapterframework-coolgen");
