@@ -30,6 +30,7 @@
 			<property name="logPart1Filename" value="${transactionmanager.log.dir}/1.tlog" />
 			<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog" />
 			<property name="defaultTransactionTimeout" value="${transactionmanager.defaultTransactionTimeout}" />
+			<property name="journal" value="nl.nn.adapterframework.jta.btm.BtmDiskJournal" />
 	</bean>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />
