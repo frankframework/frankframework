@@ -462,7 +462,9 @@ public class AdapterStatus extends BusEndpointBase {
 					try {
 						errorStoreMessageCount += esmb.getMessageCount();
 					} catch (ListenerException e) {
-						log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
+						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 				IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
@@ -470,7 +472,9 @@ public class AdapterStatus extends BusEndpointBase {
 					try {
 						messageLogMessageCount += mlmb.getMessageCount();
 					} catch (ListenerException e) {
-						log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
+						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 			}
