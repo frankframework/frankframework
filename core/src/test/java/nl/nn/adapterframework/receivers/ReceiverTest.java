@@ -654,6 +654,47 @@ public class ReceiverTest {
 		testStopTimeout(setupSlowStopPushingListener(100_000));
 	}
 
+	@Test
+	public void testStopAdapterAfterStopReceiverWithException() throws Exception {
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		Receiver<javax.jms.Message> receiver = setupReceiver(setupSlowStopPushingListener(100_000));
+		Adapter adapter = setupAdapter(receiver);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+
+		LOG.info("Adapter RunState "+adapter.getRunState());
+		LOG.info("Receiver RunState "+receiver.getRunState());
+		waitForState(receiver, RunState.STARTED); //Don't continue until the receiver has been started.
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+
+		waitWhileInState(receiver, RunState.STARTED);
+		waitWhileInState(receiver, RunState.STOPPING);
+		LOG.info("Receiver RunState "+receiver.getRunState());
+
+		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+
+		new Thread(
+				()-> configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true),
+				"Stopping Adapter Async")
+				.start();
+		await()
+				.atMost(10, TimeUnit.SECONDS)
+				.until(()-> adapter.getRunState() == RunState.STOPPED);
+
+		assertEquals(RunState.STOPPED, adapter.getRunState());
+		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
+	}
+
 	public void testStopTimeout(SlowListenerBase listener) throws Exception {
 		Receiver<javax.jms.Message> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
