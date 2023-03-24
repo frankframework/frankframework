@@ -24,6 +24,27 @@ import java.util.function.Supplier;
 public class FunctionalUtil {
 
 	/**
+	 * Helper function to create a {@link Supplier} to supply the single constant argument value.
+	 * <p>
+	 *     This function is useful to disambiguate method-overloads when an array of mixed arguments should be passed all as type {@link Supplier}
+	 *     to a function that takes a number of {@link Object} parameters, such as Log4J log methods (in particular the
+	 *     methods where an exception is passed as last argument).
+	 *     For example:
+	 *     <code>
+	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), supply(messageId), e);
+	 *     </code>
+	 * </p>
+	 *
+	 * @param value Value to be supplied. NB: This should be a constant, otherwise its value is instantly
+	 *              computed instead of being delayed on-demand!
+	 * @return {@link Supplier} that will return the {@code value} parameter.
+	 * @param <T> Type of the value to be supplied.
+	 */
+	public static <T> Supplier<T> supply(T value) {
+		return () -> value;
+	}
+
+	/**
 	 * Helper function to cast parameter as a {@link Supplier} when the compiler cannot work it
 	 * out by itself.
 	 * <p>
@@ -34,7 +55,7 @@ public class FunctionalUtil {
 	 * <p>
 	 *     For example:
 	 *     <code>
-	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), ()->messageId, e);
+	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), supply(messageId), e);
 	 *     </code>
 	 *     This can also be useful when for instance a no-arguments function should be passed to a JUnit arguments
 	 *     supplier for a parameterized unit test:
