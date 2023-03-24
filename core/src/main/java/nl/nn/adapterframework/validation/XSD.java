@@ -132,7 +132,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			.map(xsd -> xsd.replace("/", "_"))
 			.collect(Collectors.joining(", ", "[", "].xsd"))
 		);
-		this.toString = sourceXsds.stream()
+		this.toString = namespace + ":" + sourceXsds.stream()
 			.map(Objects::toString)
 			.collect(Collectors.joining(", ", "[", "]"));
 		if (parentLocation == null) {
@@ -273,11 +273,11 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		// All top level XSDs need to be added, with a unique systemId. If they come from a WSDL, they all have the same systemId,
 		// so we use (normalized!) resourceTarget which appears to be unique and stable.
 		for (IXSD xsd: xsds) {
-			String resourceTarget = xsd.getResourceTarget();
-			if (xsdsRecursive.containsKey(resourceTarget)) {
-				throw new IllegalStateException("Resource Target key [" + resourceTarget + "] already in map which is supposed to be unique, input XSDs: [" + xsds + "]");
+			String xsdKey = getXsdLoadingMapKey(xsd);
+			if (xsdsRecursive.containsKey(xsdKey)) {
+				throw new IllegalStateException("XSD key [" + xsdKey + "] already in map which is supposed to be unique, input XSDs: [" + xsds + "]");
 			}
-			xsdsRecursive.put(resourceTarget, xsd);
+			xsdsRecursive.put(xsdKey, xsd);
 		}
 		loadAllXsdsRecursive(xsds, xsdsRecursive, supportRedefine);
 		return new LinkedHashSet<>(xsdsRecursive.values());
@@ -369,13 +369,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				x.setRootXsd(false);
 				x.initNamespace(namespace, xsd.getScopeProvider(), xsd.getResourceBase() + schemaLocationAttribute.getValue());
 
-				String resourceTarget = x.getResourceTarget();
-				if (!xsds.containsKey(resourceTarget)) {
-					LOG.trace("Adding xsd [{}] to set ", resourceTarget);
-					xsds.put(resourceTarget, x);
+				String xsdKey = getXsdLoadingMapKey(x);
+				if (!xsds.containsKey(xsdKey)) {
+					LOG.trace("Adding xsd [{}] to set ", xsdKey);
+					xsds.put(xsdKey, x);
 					schemasToLoad.add(x);
 				} else {
-					LOG.trace("xsd [{}] already in set ", resourceTarget);
+					LOG.trace("xsd [{}] already in set ", xsdKey);
 				}
 			}
 			er.close();
@@ -396,6 +396,10 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			return Collections.emptySet();
 		}
 		return new HashSet<>(Arrays.asList(commaSeparatedItems.trim().split("\\s*\\,\\s*", -1)));
+	}
+
+	private static String getXsdLoadingMapKey(IXSD xsd) {
+		return xsd.getResourceTarget();
 	}
 
 	@Override

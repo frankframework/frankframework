@@ -417,7 +417,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
-		List<Schema> schemas = new ArrayList<Schema>();
+		List<Schema> schemas = new ArrayList<>();
 		SchemaUtils.sortByDependencies(xsds, schemas);
 		return schemas;
 	}
