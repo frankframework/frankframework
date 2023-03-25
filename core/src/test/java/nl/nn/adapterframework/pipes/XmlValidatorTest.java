@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -125,9 +126,9 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws Exception,
-			IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
-		XmlValidator validator =getValidator(schemaLocation, addNamespaceToSchema, implementation);
+			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws
+		IllegalAccessException, XmlValidatorException, PipeRunException, IOException, ConfigurationException, PipeStartException {
+		XmlValidator validator = getValidator(schemaLocation, addNamespaceToSchema, implementation);
 		if (rootelement!=null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure();
@@ -149,7 +150,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	 * <td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
 	 *
 	 */
-	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeRunException, XmlValidatorException, PipeStartException {
+	public void testSoapNamespaceFeature(String schema, String root, String inputFile) throws ConfigurationException, IOException, PipeStartException {
 		XmlValidator validator = new XmlValidator();
 		try {
 			validator.setImplementation(implementation);
@@ -340,6 +341,29 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		String testXml = getTestXml("/Validation/Circular/zds/ontvangAsynchroon_CreeerZaak_input_example.xml");
 		PipeLineSession session = new PipeLineSession();
 		PipeRunResult result = validator.validate(new Message(testXml), session, "zakLk01");
+		PipeForward forward = result.getPipeForward();
+
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testMultipleImport() throws Exception {
+		ApplicationWarnings.removeInstance();
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("urn:frank/root /Validation/MultipleImport/xsd/root.xsd");
+		validator.setThrowException(true);
+		validator.configure();
+		validator.start();
+
+		// assert the absence of the message: "sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'urn:frank/leaf01,leaf01'."
+		assertEquals(0, ApplicationWarnings.getSize());
+
+		String testXml = getTestXml("/Validation/MultipleImport/root-ok.xml");
+		PipeLineSession session = new PipeLineSession();
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
 		PipeForward forward = result.getPipeForward();
 
 		assertEquals("success", forward.getName());

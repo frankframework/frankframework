@@ -30,14 +30,14 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class ReaderLineIterator implements IDataIterator<String> {
 
-	BufferedReader reader;
-	String line;
+	private BufferedReader reader;
+	private String line;
 
 	public ReaderLineIterator(Reader inputreader) throws SenderException {
 		super();
 		reader = new BufferedReader(inputreader);
 		try {
-			line=reader.readLine();
+			line = reader.readLine();
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
@@ -45,12 +45,12 @@ public class ReaderLineIterator implements IDataIterator<String> {
 
 	@Override
 	public boolean hasNext() {
-		return line!=null;
+		return line != null;
 	}
 
 	@Override
 	public String next() throws SenderException {
-		String result=line;
+		String result = line;
 		try {
 			line = reader.readLine();
 		} catch (IOException e) {

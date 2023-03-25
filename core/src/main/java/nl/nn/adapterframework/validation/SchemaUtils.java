@@ -79,18 +79,6 @@ public class SchemaUtils {
 
 	public static final QName WSDL_SCHEMA = new QName(XSD, "schema", "");
 
-	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds) throws ConfigurationException {
-		return getXsdsRecursive(xsds, false);
-	}
-
-	public static Set<IXSD> getXsdsRecursive(Set<IXSD> xsds, boolean supportRedefine) throws ConfigurationException {
-		Set<IXSD> xsdsRecursive = new LinkedHashSet<IXSD>();
-		xsdsRecursive.addAll(xsds);
-		for (IXSD xsd : xsds) {
-			xsdsRecursive.addAll(xsd.getXsdsRecursive(supportRedefine));
-		}
-		return xsdsRecursive;
-	}
 
 	public static Map<String, Set<IXSD>> getXsdsGroupedByNamespace(Set<IXSD> xsds, boolean sort) {
 		Map<String, Set<IXSD>> result;

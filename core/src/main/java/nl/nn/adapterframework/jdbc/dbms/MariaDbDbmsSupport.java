@@ -84,13 +84,21 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
 	}
 
+	/*
+	 * See: https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
+	 * 
+	 * Consistent read is the default mode in which InnoDB processes SELECT statements in
+	 * READ COMMITTED and REPEATABLE READ isolation levels. A consistent read does not set
+	 * any locks on the tables it accesses, and therefore other sessions are free to modify
+	 * those tables at the same time a consistent read is being performed on the table.
+	 */
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:""); // Mariadb has no 'skip locked'
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"");
 		}
 		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 	}

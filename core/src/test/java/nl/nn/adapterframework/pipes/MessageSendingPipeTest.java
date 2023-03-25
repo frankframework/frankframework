@@ -18,6 +18,7 @@ import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSendingPipe> {
@@ -35,11 +36,10 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 					throw new SenderException(e);
 				}
 			}
-			
 		});
 		return result;
 	}
-	
+
 	@Test
 	public void testConfigure() throws Exception {
 		pipe.configure();
@@ -53,18 +53,18 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 	@Test
 	public void testBasic() throws Exception {
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe("testMessage");
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("{ \"input\": \"testMessage\"}", prr.getResult().asString());
 	}
-	
+
 	@Test
 	public void testInputWrapped() throws Exception {
 		pipe.setInputWrapper(new SoapWrapperPipe());
 		pipe.setPipeProcessor(new CorePipeProcessor());
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe("testMessage");
 		assertEquals("success", prr.getPipeForward().getName());
 		String expected = "{ \"input\": \"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>testMessage</soapenv:Body></soapenv:Envelope>\"}";
@@ -76,7 +76,7 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		pipe.setOutputWrapper(new SoapWrapperPipe());
 		pipe.setPipeProcessor(new CorePipeProcessor());
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe("testMessage");
 		assertEquals("success", prr.getPipeForward().getName());
 		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>{ \"input\": \"testMessage\"}</soapenv:Body></soapenv:Envelope>";
@@ -92,8 +92,8 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		pipe.setInputValidator(validator);
 		pipe.setPipeProcessor(new CorePipeProcessor());
 		configureAndStartPipe();
-		
-		Message input = TestFileUtils.getTestFileMessage("/Align/Abc/abc.xml");
+
+		Message input = MessageTestUtils.getMessage("/Align/Abc/abc.xml");
 		String expected =  "{ \"input\": \""+ TestFileUtils.getTestFile("/Align/Abc/abc-compact.json")+"\"}";
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
@@ -111,8 +111,8 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		pipe.setSender(new EchoSender());
 		pipe.setPipeProcessor(new CorePipeProcessor());
 		configureAndStartPipe();
-		
-		Message input = TestFileUtils.getTestFileMessage("/Align/Abc/abc-compact.json");
+
+		Message input = MessageTestUtils.getMessage("/Align/Abc/abc-compact.json");
 		String expected =  TestFileUtils.getTestFile("/Align/Abc/abc.xml");
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());

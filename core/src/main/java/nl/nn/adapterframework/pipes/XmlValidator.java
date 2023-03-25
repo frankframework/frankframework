@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
-import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -66,8 +65,10 @@ import nl.nn.adapterframework.validation.Schema;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
 import nl.nn.adapterframework.validation.ValidationContext;
+import nl.nn.adapterframework.validation.XSD;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
@@ -398,13 +399,13 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<IXSD> xsds_temp = SchemaUtils.getXsdsRecursive(xsds, true);
+			Set<IXSD> xsds_temp = XSD.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds_temp);
 				checkOutputRootValidations(xsds_temp);
 			}
 		} else {
-			xsds = SchemaUtils.getXsdsRecursive(xsds);
+			xsds = XSD.getXsdsRecursive(xsds);
 			if (checkRootValidations) {
 				checkInputRootValidations(xsds);
 				checkOutputRootValidations(xsds);
@@ -416,7 +417,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				throw new ConfigurationException("could not merge schema's", e);
 			}
 		}
-		List<Schema> schemas = new ArrayList<Schema>();
+		List<Schema> schemas = new ArrayList<>();
 		SchemaUtils.sortByDependencies(xsds, schemas);
 		return schemas;
 	}
@@ -804,7 +805,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	/**
 	 * The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
 	 * the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
-	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP 
+	 * Please note that this functionality is deprecated, using {@link SoapValidator} is now the preferred solution in case a SOAP
 	 * message needs to be validated, in other cases give this property an empty value.
 	 * @ff.default http://schemas.xmlsoap.org/soap/envelope/
 	 */

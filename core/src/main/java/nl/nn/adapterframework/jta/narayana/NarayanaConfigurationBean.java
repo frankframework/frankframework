@@ -70,5 +70,4 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	public void afterPropertiesSet() {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
 	}
-
 }

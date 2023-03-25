@@ -3,25 +3,16 @@ package nl.nn.adapterframework.testutil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestFileUtils {
 	private static Logger LOG = LogUtil.getLogger(TestFileUtils.class);
-
-	public static Message getTestFileMessage(String file) throws IOException {
-		return new Message(new StringReader(getTestFile(file)));
-	}
-	public static Message getTestFileMessage(String file, String charset) throws IOException {
-		return new Message(new StringReader(getTestFile(file, charset)));
-	}
 
 	public static String getTestFile(String file) throws IOException {
 		return getTestFile(file, "UTF-8");
@@ -36,15 +27,11 @@ public class TestFileUtils {
 		return getTestFile(url, charset);
 	}
 
-	public static URL getTestFileURL(String file) throws IOException {
+	public static URL getTestFileURL(String file) {
 		String normalizedFilename = FilenameUtils.normalize(file, true);
 		URL url = TestFileUtils.class.getResource(normalizedFilename);
 		if(url == null) LOG.warn("unable to find testfile [{}]", normalizedFilename);
 		return url;
-	}
-
-	public static Message getNonRepeatableTestFileMessage(String file) throws IOException {
-		return new Message(getTestFileURL(file).openStream());
 	}
 
 	public static String getTestFile(URL url, String charset) throws IOException {

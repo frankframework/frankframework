@@ -37,20 +37,4 @@ public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 			throw new SenderException(e);
 		}
 	}
-
-	/**
-	 * charset used to read and write blobs
-	 * @ff.default utf-8
-	 */
-	public void setBlobCharset(String charset) {
-		querySender.setBlobCharset(charset);
-	}
-
-	/**
-	 * controls whether blobdata is stored compressed in the database
-	 * @ff.default true
-	 */
-	public void setBlobsCompressed(boolean compressed) {
-		querySender.setBlobsCompressed(compressed);
-	}
 }
