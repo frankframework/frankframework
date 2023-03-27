@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -290,21 +289,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
 		return uri.build();
-	}
-
-	protected int getPort(URI uri) {
-		int port = uri.getPort();
-		if (port<1) {
-			try {
-				URL url = uri.toURL();
-				port = url.getDefaultPort();
-				log.debug(getLogPrefix()+"looked up protocol for scheme ["+uri.getScheme()+"] to be port ["+port+"]");
-			} catch (Exception e) {
-				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
-				port=80;
-			}
-		}
-		return port;
 	}
 
 	@Override
@@ -716,7 +700,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		int statusCode = -1;
 		boolean success;
 		String reasonPhrase = null;
-		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
+		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
 
