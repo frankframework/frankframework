@@ -42,7 +42,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -140,7 +140,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -154,7 +154,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -196,7 +196,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test

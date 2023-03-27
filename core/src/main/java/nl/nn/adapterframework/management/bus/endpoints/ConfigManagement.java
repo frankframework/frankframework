@@ -36,12 +36,15 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dto.ConfigurationDTO;
 
@@ -57,7 +60,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * @return Configuration XML
 	 */
 	@ActionSelector(BusAction.GET)
-	public Message<Object> getXMLConfiguration(Message<?> message) {
+	public Message<String> getXMLConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		boolean loadedConfiguration = BusMessageUtils.getBooleanHeader(message, "loaded", false);
 		StringBuilder result = new StringBuilder();
@@ -71,7 +74,7 @@ public class ConfigManagement extends BusEndpointBase {
 			}
 		}
 
-		return ResponseMessage.Builder.create().withPayload(result.toString()).withMimeType(MediaType.APPLICATION_XML).raw();
+		return new StringResponseMessage(result.toString(), MediaType.APPLICATION_XML);
 	}
 
 	/**
@@ -93,10 +96,10 @@ public class ConfigManagement extends BusEndpointBase {
 					config.setLoaded(config.getVersion().equals(configuration.getVersion()));
 				}
 
-				return ResponseMessage.ok(configs);
+				return new JsonResponseMessage(configs);
 			}
 
-			return ResponseMessage.ok(Collections.singletonList(new ConfigurationDTO(configuration)));
+			return new JsonResponseMessage(Collections.singletonList(new ConfigurationDTO(configuration)));
 		}
 
 		List<ConfigurationDTO> configs = new LinkedList<>();
@@ -104,7 +107,7 @@ public class ConfigManagement extends BusEndpointBase {
 			configs.add(new ConfigurationDTO(configuration));
 		}
 		configs.sort(new ConfigurationDTO.NameComparator());
-		return ResponseMessage.ok(configs);
+		return new JsonResponseMessage(configs);
 	}
 
 	/**
@@ -128,11 +131,11 @@ public class ConfigManagement extends BusEndpointBase {
 		try {
 			if(activate != null) {
 				if(ConfigurationUtils.activateConfig(getApplicationContext(), configurationName, version, datasourceName)) {
-					return ResponseMessage.accepted();
+					return EmptyResponseMessage.accepted();
 				}
 			}
 			else if(autoreload != null && ConfigurationUtils.autoReloadConfig(getApplicationContext(), configurationName, version, autoreload, datasourceName)) {
-				return ResponseMessage.accepted();
+				return EmptyResponseMessage.accepted();
 			}
 		} catch(Exception e) {
 			throw new BusException("unable to update configuration settings in database", e);
@@ -162,7 +165,7 @@ public class ConfigManagement extends BusEndpointBase {
 				}
 			}
 
-			return ResponseMessage.ok(result);
+			return new JsonResponseMessage(result);
 		} catch (Exception e) {
 			throw new BusException("failed to upload Configuration", e);
 		}
@@ -174,7 +177,7 @@ public class ConfigManagement extends BusEndpointBase {
 	 * header datasourceName The name of the datasource where the configurations are located.
 	 */
 	@ActionSelector(BusAction.DOWNLOAD)
-	public Message<?> downloadConfiguration(Message<?> message) {
+	public BinaryResponseMessage downloadConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
@@ -188,7 +191,9 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 		byte[] config = (byte[]) configuration.get("CONFIG");
 
-		return ResponseMessage.Builder.create().withPayload(config).withMimeType(MediaType.APPLICATION_OCTET_STREAM).withFilename(""+configuration.get("FILENAME")).raw();
+		BinaryResponseMessage response = new BinaryResponseMessage(config);
+		response.setFilename(""+configuration.get("FILENAME"));
+		return response;
 	}
 
 	/**

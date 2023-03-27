@@ -31,7 +31,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
@@ -46,7 +46,7 @@ public class ServiceListener extends BusEndpointBase {
 		Set<String> services = ServiceDispatcher.getInstance().getRegisteredListenerNames();
 		returnData.put("services", services);
 
-		return ResponseMessage.ok(returnData);
+		return new JsonResponseMessage(returnData);
 	}
 
 	@TopicSelector(BusTopic.SERVICE_LISTENER)
@@ -73,6 +73,6 @@ public class ServiceListener extends BusEndpointBase {
 		result.put("state", ExitState.SUCCESS.name());
 		result.put("result", dispatchResult);
 
-		return ResponseMessage.ok(result);
+		return new JsonResponseMessage(result);
 	}
 }

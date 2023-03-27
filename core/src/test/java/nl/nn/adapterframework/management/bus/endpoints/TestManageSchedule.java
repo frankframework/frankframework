@@ -16,7 +16,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -91,7 +91,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
 		assertEquals("no-content", result);
 	}
 
@@ -113,7 +113,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
 		assertEquals("no-content", result);
 	}
 
@@ -124,7 +124,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessage.STATUS_KEY));
+		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
 		assertEquals("no-content", result);
 	}
 }

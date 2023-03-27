@@ -28,7 +28,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -40,7 +40,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 		InputStream resource = (InputStream) response.getPayload();
 		String payload = StreamUtil.streamToString(resource);
 
@@ -52,12 +52,11 @@ public class TestDatabaseMigrator extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/octet-stream", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
-		Object cdk = response.getHeaders().get(ResponseMessage.CONTENT_DISPOSITION_KEY);
+		assertEquals("application/octet-stream", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		Object cdk = response.getHeaders().get(ResponseMessageBase.CONTENT_DISPOSITION_KEY);
 		assertNotNull(cdk);
 		assertThat(""+cdk, Matchers.containsString("DatabaseChangelog.zip"));
-		byte[] zipArchive = (byte[]) response.getPayload();
-		ByteArrayInputStream bais = new ByteArrayInputStream(zipArchive);
+		ByteArrayInputStream bais = (ByteArrayInputStream) response.getPayload();
 		List<Resource> changelogs = new ArrayList<>();
 		try (ZipInputStream is = new ZipInputStream(bais)) {
 			ZipEntry entry;
@@ -79,7 +78,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", "DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
-		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("text/plain", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 		String payload = (String) response.getPayload();
 
 		assertEquals(script, payload);
@@ -92,7 +91,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", getConfiguration().getName()+"-DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
-		assertEquals("text/plain", response.getHeaders().get(ResponseMessage.MIMETYPE_KEY));
+		assertEquals("text/plain", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 		String payload = (String) response.getPayload();
 
 		assertEquals(script, payload);

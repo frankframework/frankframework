@@ -17,9 +17,8 @@
 		</integration:interceptors>
 	</integration:publish-subscribe-channel>
 
-	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
-		<property name="requestChannel" ref="frank-management-bus" />
-	</bean>
+	<!-- Messaging Gateway -->
+	<bean id="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton" />
 
 	<context:property-placeholder />
 

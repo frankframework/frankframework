@@ -41,7 +41,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
@@ -128,7 +128,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 
 	public Message<String> handleJob(JobAction action, JobKey jobKey, String issuedBy) {
@@ -167,7 +167,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 
 	private IbisJobDetail getJobDetail(Scheduler scheduler, JobKey jobKey) {
@@ -233,6 +233,6 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("failed to delete job", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 }

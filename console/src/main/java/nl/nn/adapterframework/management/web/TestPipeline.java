@@ -38,6 +38,7 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -50,7 +51,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @Path("/")
 public class TestPipeline extends FrankApiBase {
-	public static final String RESULT_STATE_HEADER = "state";
 
 	@POST
 	@RolesAllowed("IbisTester")
@@ -107,7 +107,7 @@ public class TestPipeline extends FrankApiBase {
 
 		builder.setPayload(message);
 		Message<?> response = sendSyncMessage(builder);
-		String state = (String) response.getHeaders().get(RESULT_STATE_HEADER);
+		String state = (String) response.getHeaders().get(ResponseMessageBase.STATE_KEY);
 		return testPipelineResponse(response.getPayload(), state, message);
 	}
 
@@ -149,7 +149,7 @@ public class TestPipeline extends FrankApiBase {
 				Message<?> response = sendSyncMessage(builder);
 				result.append(name);
 				result.append(": ");
-				result.append(response.getHeaders().get(RESULT_STATE_HEADER));
+				result.append(response.getHeaders().get(ResponseMessageBase.STATE_KEY));
 				result.append("\n");
 			}
 			archive.closeEntry();

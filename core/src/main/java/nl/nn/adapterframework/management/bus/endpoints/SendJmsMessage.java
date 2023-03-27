@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class SendJmsMessage extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<Object> putMessageOnQueue(Message<?> message) {
+	public Message<?> putMessageOnQueue(Message<?> message) {
 		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
@@ -95,11 +96,18 @@ public class SendJmsMessage extends BusEndpointBase {
 		return qms;
 	}
 
-	private Message<Object> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
+	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try {
 			qms.open();
 			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessageOrThrow(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
-			return expectsReply ? ResponseMessage.Builder.create().withPayload(responseMessage).raw() : null;
+			if(!expectsReply) {
+				return null;
+			}
+
+			if(responseMessage.isBinary()) {
+				return new BinaryResponseMessage(responseMessage.asInputStream());
+			}
+			return new StringResponseMessage(responseMessage.asString());
 		} catch (Exception e) {
 			throw new BusException("error occured sending message", e);
 		} finally {

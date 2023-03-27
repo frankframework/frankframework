@@ -26,7 +26,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -48,7 +48,7 @@ public class DebugInformation extends BusEndpointBase {
 
 	private Message<String> getClassInfo(String baseClassName, String className) {
 		try {
-			Class baseClass;
+			Class<?> baseClass;
 			if (StringUtils.isNotEmpty(baseClassName)) {
 				baseClass = Class.forName(baseClassName, false, this.getClass().getClassLoader());
 			} else {
@@ -56,11 +56,11 @@ public class DebugInformation extends BusEndpointBase {
 			}
 			ClassLoader classLoader = baseClass.getClassLoader();
 
-			Class clazz = classLoader.loadClass(className);
+			Class<?> clazz = classLoader.loadClass(className);
 
 			List<?> result = ClassUtils.getClassInfoList(clazz);
 
-			return ResponseMessage.ok(result);
+			return new JsonResponseMessage(result);
 		} catch (Exception e) {
 			throw new BusException("Could not determine classInfo for class ["+className+"]", e);
 		}

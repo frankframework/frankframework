@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,7 +46,8 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.management.bus.dto.StorageItemDTO;
@@ -104,11 +105,11 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			throw new BusException("no StorageSource provided");
 		}
 
-		return ResponseMessage.ok(storageItem);
+		return new JsonResponseMessage(storageItem);
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
-	public Message<Object> downloadMessageById(Message<?> message) {
+	public StringResponseMessage downloadMessageById(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -133,7 +134,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		MediaType mediaType = getMediaType(storageItem);
 		String filename = getFilename(mediaType, messageId);
 
-		return ResponseMessage.Builder.create().withPayload(storageItem).withMimeType(mediaType).withFilename(filename).raw();
+		StringResponseMessage response = new StringResponseMessage(storageItem, mediaType);
+		response.setFilename(filename);
+		return response;
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -194,7 +197,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			dto.setTargetStates(targetPSInfo);
 		}
 
-		return ResponseMessage.ok(dto);
+		return new JsonResponseMessage(dto);
 	}
 
 	@ActionSelector(BusAction.STATUS)

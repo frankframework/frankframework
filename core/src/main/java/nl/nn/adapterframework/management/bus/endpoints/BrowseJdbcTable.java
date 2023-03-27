@@ -42,7 +42,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -153,7 +153,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		resultObject.put("fielddefinition", fieldDef);
 		resultObject.put("result", resultMap);
 
-		return ResponseMessage.ok(resultObject);
+		return new JsonResponseMessage(resultObject);
 	}
 
 	private String browseJdbcTableExecuteREQ(Dbms dbms, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow, String fieldDefinition) {
