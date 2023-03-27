@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -273,11 +273,10 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				IPortConnectedListener<Message> listener = getListener();
 				listener.checkTransactionManagerValidity();
 				pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY, session);
-				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: "+JtaUtil.displayTransactionStatus(txStatus));
+				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 				getReceiver().processRawMessage(listener, message, pipeLineSession, false);
-				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: "+JtaUtil.displayTransactionStatus(txStatus));
+				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 			} catch (ListenerException e) {
-				getReceiver().increaseRetryIntervalAndWait(e, logPrefix);
 				if (txStatus != null) {
 					txStatus.setRollbackOnly();
 				}
@@ -288,9 +287,14 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				}
 			}
 		} finally {
-			if (txStatus!=null) {
-				log.debug("{} committing transaction {}", logPrefix, txStatus);
-				txManager.commit(txStatus);
+			if (txStatus!=null && !txStatus.isCompleted()) {
+				if (!txStatus.isRollbackOnly()) {
+					log.debug("{} committing transaction {}", logPrefix, txStatus);
+					txManager.commit(txStatus);
+				} else {
+					log.debug("{} rolling back transaction {}", logPrefix, txStatus);
+					txManager.rollback(txStatus);
+				}
 			}
 			threadsProcessing.decrease();
 			if (log.isInfoEnabled()) {

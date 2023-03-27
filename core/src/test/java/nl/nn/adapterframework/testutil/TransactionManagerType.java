@@ -27,11 +27,7 @@ public enum TransactionManagerType {
 	private Class<? extends URLDataSourceFactory> factory;
 	private String[] springConfigurationFiles;
 
-	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
-		this(clazz, null);
-	}
-
-	private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
+	TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
 			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
 		} else {
@@ -44,7 +40,7 @@ public enum TransactionManagerType {
 		return ac.getBean(URLDataSourceFactory.class, "dataSourceFactory");
 	}
 
-	private TestConfiguration create() {
+	public TestConfiguration create() {
 		return create("H2"); //only used to satisfy Spring startup
 	}
 
@@ -67,7 +63,7 @@ public enum TransactionManagerType {
 
 	public TestConfiguration getConfigurationContext(String productKey) {
 		if(this == TransactionManagerType.DATASOURCE) {
-			return datasourceConfigurations.computeIfAbsent(productKey, key -> create(key));
+			return datasourceConfigurations.computeIfAbsent(productKey, this::create);
 		}
 		return transactionManagerConfigurations.computeIfAbsent(this, TransactionManagerType::create);
 	}
@@ -87,6 +83,12 @@ public enum TransactionManagerType {
 			if(ac != null) {
 				ac.close();
 			}
+		}
+	}
+
+	public static synchronized void closeAllConfigurationContexts() {
+		for (TransactionManagerType tmt : values()) {
+			tmt.closeConfigurationContext();
 		}
 	}
 

@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -328,14 +328,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								}
 							} else {
 								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
-								Date receivedDate = new Date();
+								Instant receivedDate = Instant.now();
 								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
-								log.trace("Run PullingListenerContainer - CacheProcessResult - synchronize (lock) on Receiver[{}]", receiver);
 								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
-								log.trace("Run PullingListenerContainer - CacheProcessResult - lock on Receiver[{}] released", receiver);
 							}
 							messageHandled = true;
 							if (txStatus != null) {

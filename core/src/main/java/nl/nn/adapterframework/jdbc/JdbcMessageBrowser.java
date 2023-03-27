@@ -317,7 +317,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 				}
 			}
 		} catch (Exception e) {
-			throw new ListenerException("cannot determine message count",e);
+			throw new ListenerException("cannot determine message count", e);
 		}
 	}
 

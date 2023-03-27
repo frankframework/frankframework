@@ -248,6 +248,10 @@ public class IbisApplicationContext implements Closeable {
 	 * TODO: retrieve this (automatically/) through Spring
 	 */
 	private void lookupApplicationModules() {
+		if(!iafModules.isEmpty()) {
+			return;
+		}
+
 		List<String> modulesToScanFor = new ArrayList<>();
 
 		modulesToScanFor.add("ibis-adapterframework-akamai");
@@ -262,6 +266,8 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("ibis-adapterframework-sap");
 		modulesToScanFor.add("ibis-adapterframework-tibco");
 		modulesToScanFor.add("ibis-adapterframework-webapp");
+		modulesToScanFor.add("ibis-adapterframework-console");
+		modulesToScanFor.add("ibis-adapterframework-aws");
 
 		registerApplicationModules(modulesToScanFor);
 	}
