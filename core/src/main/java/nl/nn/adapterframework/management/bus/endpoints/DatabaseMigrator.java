@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -37,12 +36,13 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
-	public Message<Object> downloadMigrationScript(Message<?> message) {
+	public BinaryResponseMessage downloadMigrationScript(Message<?> message) throws IOException {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -71,7 +71,9 @@ public class DatabaseMigrator extends BusEndpointBase {
 			} catch (IOException e) {
 				throw new BusException("unable to create ZIP archive", e);
 			}
-			return ResponseMessage.Builder.create().withPayload(out.toByteArray()).withMimeType(MediaType.APPLICATION_OCTET_STREAM).withFilename("DatabaseChangelog.zip").raw();
+			BinaryResponseMessage response = new BinaryResponseMessage(out.toByteArray());
+			response.setFilename("DatabaseChangelog.zip");
+			return response;
 		}
 
 		Configuration configuration = getConfigurationByName(configurationName);
@@ -79,7 +81,8 @@ public class DatabaseMigrator extends BusEndpointBase {
 		if(changelog == null) {
 			throw new BusException("unable to generate migration script, database migrations are not enabled for this configuration");
 		}
-		return ResponseMessage.Builder.create().withPayload(changelog).withMimeType(getMediaTypeFromName(changelog.getName())).raw();
+
+		return new BinaryResponseMessage(changelog.openStream(), getMediaTypeFromName(changelog.getName()));
 	}
 
 	@Nonnull
@@ -105,7 +108,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<Object> getMigrationChanges(Message<?> message) {
+	public StringResponseMessage getMigrationChanges(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);
 
@@ -139,6 +142,6 @@ public class DatabaseMigrator extends BusEndpointBase {
 		} catch (JdbcException e) {
 			throw new BusException("unable to generate database changes", e);
 		}
-		return ResponseMessage.Builder.create().withPayload(writer.toString()).withMimeType(MediaType.TEXT_PLAIN).raw();
+		return new StringResponseMessage(writer.toString());
 	}
 }

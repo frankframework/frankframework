@@ -99,9 +99,8 @@ public class BusMessageUtils {
 	}
 
 	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
-		MessageHeaders headers = response.getHeaders();
-		int status = (int) headers.get(ResponseMessage.STATUS_KEY);
-		String mimeType = (String) headers.get(ResponseMessage.MIMETYPE_KEY);
+		int status = getIntHeader(response, ResponseMessageBase.STATUS_KEY, 200);
+		String mimeType = getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
 		ResponseBuilder builder = Response.status(status);
 
 		if(mimeType != null) {
@@ -112,7 +111,7 @@ public class BusMessageUtils {
 			builder.entity(response.getPayload());
 		}
 
-		String contentDisposition = (String) headers.get(ResponseMessage.CONTENT_DISPOSITION_KEY);
+		String contentDisposition = getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
 		if(contentDisposition != null) {
 			builder.header("Content-Disposition", contentDisposition);
 		}
@@ -123,7 +122,7 @@ public class BusMessageUtils {
 	/** Shallow eTag generation, saves bandwidth but not computing power */
 	public static EntityTag generateETagHeaderValue(Message<?> response) {
 		MessageHeaders headers = response.getHeaders();
-		String mime = headers.get(ResponseMessage.MIMETYPE_KEY, String.class);
+		String mime = headers.get(ResponseMessageBase.MIMETYPE_KEY, String.class);
 		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
 			String json = (String) response.getPayload();
 			return generateETagHeaderValue(json, true);

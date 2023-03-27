@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.hamcrest.MatcherAssert;
@@ -25,6 +26,7 @@ import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestPipelineTest extends BusTestBase {
 	private static final String TEST_PIPELINE_ADAPER_NAME = "TestPipelineAdapter";
@@ -137,7 +139,7 @@ public class TestPipelineTest extends BusTestBase {
 		request.setHeader("configuration", getConfiguration().getName());
 		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("normal payload", (String) response.getPayload());
+		assertEquals("normal payload", responseToString(response.getPayload()));
 	}
 
 	@Test
@@ -147,7 +149,7 @@ public class TestPipelineTest extends BusTestBase {
 		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
 		request.setHeader("sessionKeys", "[{\"index\":0,\"key\":\"sessionKeyName\",\"value\":\"sessionKeyValue\"}]");
 		Message<?> response = callSyncGateway(request);
-		assertEquals("sessionKey", (String) response.getPayload());
+		assertEquals("sessionKey", responseToString(response.getPayload()));
 	}
 
 	@Test
@@ -156,6 +158,14 @@ public class TestPipelineTest extends BusTestBase {
 		request.setHeader("configuration", getConfiguration().getName());
 		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("<?ibiscontext piName=piValue ?>\n<dummy/>", (String) response.getPayload());
+		assertEquals("<?ibiscontext piName=piValue ?>\n<dummy/>", responseToString(response.getPayload()));
+	}
+
+	private String responseToString(Object payload) throws IOException {
+		if(payload instanceof String) {
+			return (String) payload;
+		}
+
+		return StreamUtil.streamToString((InputStream) payload);
 	}
 }

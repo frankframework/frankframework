@@ -15,7 +15,8 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
@@ -25,7 +26,9 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 		return new TestPipeline() {
 			@Override
 			protected org.springframework.messaging.Message<?> sendSyncMessage(RequestMessageBuilder input) {
-				return ResponseMessage.Builder.create().withPayload(input).setHeader(TestPipeline.RESULT_STATE_HEADER, "SUCCESS").toJson();
+				JsonResponseMessage response = new JsonResponseMessage(input);
+				response.setHeader(ResponseMessageBase.STATE_KEY, "SUCCESS");
+				return response;
 			}
 		};
 	}

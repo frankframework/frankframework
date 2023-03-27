@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,25 +13,33 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.lifecycle;
+package nl.nn.adapterframework.management.bus;
 
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 
-/**
- * A Spring Integration Gateway in it's most simplistic form.
- * Put's messages on their respective Channels.
- */
-public class Gateway<T> extends MessagingGatewaySupport {
+public class LocalGateway<T> extends MessagingGatewaySupport implements IntegrationGateway<T> {
 
-	// T in T out.
+	@Override
+	protected void onInit() {
+		if(getRequestChannel() == null) {
+			MessageChannel requestChannel = getApplicationContext().getBean("frank-management-bus", MessageChannel.class);
+			setRequestChannel(requestChannel);
+		}
+
+		super.onInit();
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public Message<T> sendSyncMessage(Message<T> in) {
 		return (Message<T>) super.sendAndReceiveMessage(in);
 	}
 
-	// T in, no reply
+	@Override
 	public void sendAsyncMessage(Message<T> in) {
 		super.send(in);
 	}
+
 }

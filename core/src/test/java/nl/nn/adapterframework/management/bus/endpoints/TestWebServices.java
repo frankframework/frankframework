@@ -5,8 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,12 +31,14 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestWebServices extends BusTestBase {
 	private static final String API_LISTENER_ENDPOINT = "/api-uri-pattern";
@@ -200,9 +203,13 @@ public class TestWebServices extends BusTestBase {
 		assertEquals("unable to create WSDL generator: (IllegalStateException) No inputvalidator provided", e.getCause().getMessage());
 	}
 
-	private String convertPayloadAndApplyIgnores(byte[] payload) {// 2023-01-19 15:54:27
-		String result = new String(payload).replaceFirst("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", "-timestamp-");
-		return result;
+	private String convertPayloadAndApplyIgnores(Message<?> message) throws IOException {
+		String string = StreamUtil.streamToString((InputStream) message.getPayload());
+		return convertPayloadAndApplyIgnores(string);
+	}
+
+	private String convertPayloadAndApplyIgnores(String string) throws IOException {// 2023-01-19 15:54:27
+		return string.replaceFirst("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", "-timestamp-");
 	}
 
 	@Test
@@ -213,11 +220,10 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("configuration", getConfiguration().getName());
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get("meta:type"));
-		byte[] payload = (byte[]) response.getPayload();
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
-		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(payload));
+		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
 	}
 
 	@Test
@@ -229,11 +235,10 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("useIncludes", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get("meta:type"));
-		byte[] payload = (byte[]) response.getPayload();
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-with-includes.wsdl");
-		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(payload));
+		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
 	}
 
 	@Test
@@ -245,11 +250,10 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("indent", false);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get("meta:type"));
-		byte[] payload = (byte[]) response.getPayload();
+		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
-		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(payload));
+		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
 	}
 
 	@Test
@@ -261,11 +265,11 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("zip", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/octet-stream", response.getHeaders().get("meta:type"));
-		byte[] payload = (byte[]) response.getPayload();
+		assertEquals("application/octet-stream", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		InputStream payload = (InputStream) response.getPayload();
 
 		String wsdl = null;
-		try(ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(payload))) {
+		try(ZipInputStream archive = new ZipInputStream(payload)) {
 			byte[] buffer = new byte[2048];
 			for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 				String name = entry.getName();
@@ -283,6 +287,6 @@ public class TestWebServices extends BusTestBase {
 		assertNotNull(wsdl, "wsdl file not found in zip archive");
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-with-includes.wsdl");
-		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(wsdl.getBytes()));
+		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(wsdl));
 	}
 }

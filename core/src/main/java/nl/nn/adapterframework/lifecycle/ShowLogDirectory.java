@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.MessageDispatcher;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Map;
 import nl.nn.adapterframework.util.FileUtils;
@@ -89,6 +89,6 @@ public class ShowLogDirectory {
 		returnMap.put("sizeFormat", sizeFormat);
 		returnMap.put("wildcard", wildcard);
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 }

@@ -51,7 +51,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -72,7 +72,7 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("serverProps", addServerProps());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	private Map<String, Object> getApplicationDeploymentDescriptor() {

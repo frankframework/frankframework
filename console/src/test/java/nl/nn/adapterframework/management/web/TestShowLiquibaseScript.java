@@ -18,7 +18,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 
 public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
 
@@ -31,7 +31,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	public void downloadSingleScript() throws Exception {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessage.STATUS_KEY, 200);
+			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -48,7 +48,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	public void downloadAllScripts() throws Exception {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessage.STATUS_KEY, 200);
+			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
@@ -69,7 +69,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
-			inputMessage.addHeader(ResponseMessage.STATUS_KEY, 200);
+			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
 			Message<?> msg = inputMessage.build();
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
