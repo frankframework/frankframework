@@ -14,8 +14,8 @@
 	</parent>
 
 	<properties>
-		<config.image.repository>nexus.frankframework.org/private</config.image.repository>
-		<config.image.name>iaf-test</config.image.name>
+		<config.image.repository>private.docker.nexus.frankframework.org</config.image.repository>
+		<config.image.name>ff-test</config.image.name>
 		<config.image.tag>${config.image.name}:${revision}-websphere</config.image.tag>
 		<jms.hostname>host.docker.internal</jms.hostname>
 		<jdbc.hostname>host.docker.internal</jdbc.hostname>

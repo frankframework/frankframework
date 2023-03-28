@@ -47,9 +47,6 @@
 		<property name="web.protocol" value="http"/>
 		<property name="web.port" value="8080"/>
 		<property name="web.contextpath" value="/iaf-test"/>
-		<property name="active.tibco" value="false"/>
-		<property name="active.jms" value="false"/>
-		<property name="active.ifsa" value="false"/>
 		<property name="credentialFactory.filesystem.root" value="/opt/frank/secrets"/>
 		<property name="credentialFactory.class" value="nl.nn.credentialprovider.WildFlyCredentialFactory"/>
 		<property name="authAliases.expansion.allowed" value="testalias"/>
