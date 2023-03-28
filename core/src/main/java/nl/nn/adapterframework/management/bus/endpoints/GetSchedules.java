@@ -43,7 +43,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -78,7 +78,7 @@ public class GetSchedules extends BusEndpointBase {
 			throw new BusException("Failed to parse schedules", e);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -95,7 +95,7 @@ public class GetSchedules extends BusEndpointBase {
 			throw new BusException("unable to retrieve jobdata", e);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	private Map<String, Object> getSchedulerMetaData(Scheduler scheduler) {

@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.xml.transform.Transformer;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.Message;
@@ -37,15 +36,17 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -54,8 +55,6 @@ public class TestPipeline extends BusEndpointBase {
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean writeSecurityLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
-
-	public static final String RESULT_STATE_HEADER="state";
 
 	private static AtomicInteger requestCount = new AtomicInteger();
 
@@ -67,7 +66,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<Object> runTestPipeline(Message<?> message) {
+	public BinaryResponseMessage runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		IAdapter adapter = getAdapterByName(configurationName, adapterName);
@@ -92,7 +91,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	//Does not support async requests because receiver requests are synchronous
-	private Message<Object> processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	private BinaryResponseMessage processMessage(IAdapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
 		String correlationId = "Test a Pipeline " + requestCount.incrementAndGet();
 		try (PipeLineSession pls = new PipeLineSession()) {
@@ -113,7 +112,9 @@ public class TestPipeline extends BusEndpointBase {
 				}
 
 				plr.getResult().unscheduleFromCloseOnExitOf(pls);
-				return ResponseMessage.Builder.create().withPayload(plr.getResult()).setHeader(RESULT_STATE_HEADER, plr.getState().name()).raw();
+				BinaryResponseMessage response = new BinaryResponseMessage(plr.getResult().asInputStream());
+				response.setHeader(ResponseMessageBase.STATE_KEY, plr.getState().name());
+				return response;
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);
 			}

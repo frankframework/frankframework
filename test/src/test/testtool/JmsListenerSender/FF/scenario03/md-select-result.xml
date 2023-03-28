@@ -42,7 +42,7 @@
             <field name="MESSAGEID">ID:LPZWNL000040524-59209-1669911298180-1:30:4:1:1</field>
             <field name="CORRELATIONID">Test Tool correlation id(94)</field>
             <field name="MESSAGEDATE">2022-12-01 17:49:08</field>
-            <field name="COMMENTS">too many retries; Pipe [listenerException] ERROR</field>
+            <field name="COMMENTS">too many redeliveries or retries; Pipe [listenerException] ERROR</field>
             <field name="MESSAGE">&lt;request action="listenerException"&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>

@@ -39,7 +39,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -96,7 +96,7 @@ public class ServerStatistics extends BusEndpointBase {
 			LogUtil.getLogger(this).info("unable to determine application uptime", e);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.WARNINGS)
@@ -177,7 +177,7 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put("messages", messages);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {

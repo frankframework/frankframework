@@ -32,7 +32,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -79,7 +79,7 @@ public class ConnectionOverview extends BusEndpointBase {
 		Map<String, List<Object>> allConnections = new LinkedHashMap<>();
 		allConnections.put("data", connectionsIncoming);
 
-		return ResponseMessage.ok(allConnections);
+		return new JsonResponseMessage(allConnections);
 	}
 
 	private Map<String, Object> addToMap(String adapterName, String destination, String name, String direction, String domain) {

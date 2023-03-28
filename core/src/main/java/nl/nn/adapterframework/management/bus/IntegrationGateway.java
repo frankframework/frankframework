@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,23 +15,20 @@
 */
 package nl.nn.adapterframework.management.bus;
 
-import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 
-/**
- * A Spring Integration Gateway in it's most simplistic form.
- * Put's messages on their respective Channels.
- */
-public class BusTestGateway<T> extends MessagingGatewaySupport {
+public interface IntegrationGateway<T> {
 
-	// T in T out.
-	@SuppressWarnings("unchecked")
-	public Message<T> sendSyncMessage(Message<T> in) {
-		return (Message<T>) super.sendAndReceiveMessage(in);
-	}
+	/**
+	 * T in T out.
+	 * @param in Message to send
+	 * @return Response message
+	 */
+	public Message<T> sendSyncMessage(Message<T> in);
 
-	// T in, no reply
-	public void sendAsyncMessage(Message<T> in) {
-		super.send(in);
-	}
+	/**
+	 * T in, no reply
+	 * @param in Message to send
+	 */
+	public void sendAsyncMessage(Message<T> in);
 }

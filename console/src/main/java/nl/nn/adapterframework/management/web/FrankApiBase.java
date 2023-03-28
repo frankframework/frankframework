@@ -114,7 +114,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		return BusMessageUtils.convertToJaxRsResponse(response).tag(eTag).build();
 	}
 
-	public Response callAsyncGateway(RequestMessageBuilder input) throws ApiException {
+	public Response callAsyncGateway(RequestMessageBuilder input) {
 		IntegrationGateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
 		return Response.ok().build();

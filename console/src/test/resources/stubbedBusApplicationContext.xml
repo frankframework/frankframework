@@ -13,7 +13,7 @@
 <!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="stubbed-frank-management-bus" />
 
-	<bean name="gateway" class="nl.nn.adapterframework.management.gateway.LocalGateway" scope="singleton">
+	<bean name="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton">
 		<property name="requestChannel" ref="stubbed-frank-management-bus" />
 	</bean>
 

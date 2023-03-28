@@ -93,8 +93,7 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		BusTestGateway gateway = getParentContext().getBean("gateway", BusTestGateway.class);
-		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
+		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
@@ -105,8 +104,7 @@ public class BusTestBase {
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		BusTestGateway gateway = getParentContext().getBean("gateway", BusTestGateway.class);
-		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
+		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		gateway.sendAsyncMessage(input.build());
 	}
 

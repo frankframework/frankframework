@@ -44,7 +44,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 
 @BusAware("frank-management-bus")
@@ -63,7 +63,7 @@ public class BrowseQueue extends BusEndpointBase {
 		if (connectionFactories.isEmpty()) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -109,7 +109,7 @@ public class BrowseQueue extends BusEndpointBase {
 				returnMap.put("messages", messages);
 			}
 
-			return ResponseMessage.ok(returnMap);
+			return new JsonResponseMessage(returnMap);
 		}
 		catch (Exception e) {
 			throw new BusException("Error occured browsing messages", e);

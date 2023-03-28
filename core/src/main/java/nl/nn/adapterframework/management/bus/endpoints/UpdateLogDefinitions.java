@@ -44,7 +44,8 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -87,7 +88,7 @@ public class UpdateLogDefinitions {
 		}
 		result.put("loggers", registeredLoggers);
 
-		return ResponseMessage.ok(result);
+		return new JsonResponseMessage(result);
 	}
 
 	public List<LogDefinitionDAO> getLogDefinitions(LoggerContext logContext) {
@@ -132,16 +133,16 @@ public class UpdateLogDefinitions {
 				LoggerContext logContext = LoggerContext.getContext(false);
 				logContext.reconfigure();
 				log2SecurityLog("reconfigured logdefinitions");
-				return ResponseMessage.accepted();
+				return EmptyResponseMessage.accepted();
 			}
 
-			return ResponseMessage.noContent();
+			return EmptyResponseMessage.noContent();
 		}
 
 		if(StringUtils.isNotEmpty(logPackage) && level != null) {
 			Configurator.setLevel(logPackage, level);
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return ResponseMessage.accepted();
+			return EmptyResponseMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
 	}
