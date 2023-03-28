@@ -232,7 +232,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				} else if (checkpoint.getType() == Checkpoint.TYPE_STARTPOINT && checkpoint.getName().startsWith("Sender ")) {
 					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
-						String senderName = checkpoint.getName().substring(7);
+						String senderName = checkpoint.getName().substring(7, checkpoint.getName().length() - 7);
 						String senderProperty = "stub." + senderName;
 						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-stub-" + senderName + "-in.xml");
 						createInputOutputFile(scenarioDir, current_step_nr, "stub", senderName, true, checkpoint.getMessage());
