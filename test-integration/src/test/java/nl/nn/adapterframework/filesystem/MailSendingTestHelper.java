@@ -8,7 +8,7 @@ import org.junit.Before;
 
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class MailSendingTestHelper implements IFileSystemTestHelper {
@@ -135,7 +135,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 
 		XmlBuilder message=new XmlBuilder("message");
 		email.addSubElement(message);
-		message.setValue(Misc.streamToString(currentFile.getInputStream()));
+		message.setValue(StreamUtil.streamToString(currentFile.getInputStream()));
 
 		Message msg=new Message(email.toXML());
 		System.out.println("email: ["+msg+"]");

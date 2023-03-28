@@ -26,7 +26,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
@@ -138,7 +138,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
-		String path = Misc.concatStrings(folder, "/", filename);
+		String path = StringUtil.concatStrings(folder, "/", filename);
 		final S3Object file = s3Client.getObject(bucketName, path);
 		InputStream is = file.getObjectContent();
 		FilterInputStream fos = new FilterInputStream(is) {

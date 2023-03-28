@@ -8,6 +8,7 @@ import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
@@ -106,7 +107,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		TestAssertions.assertXpathValueEquals(errorCode, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Code");
 		TestAssertions.assertXpathValueEquals(errorReason, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Reason");
 		TestAssertions.assertXpathValueEquals(errorDetailCode, 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Code");
-		TestAssertions.assertXpathValueEquals(XmlUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
+		TestAssertions.assertXpathValueEquals(XmlEncodingUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
 	}
 
 	@Test
@@ -161,7 +162,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		TestAssertions.assertXpathValueEquals(errorCode, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Code");
 		TestAssertions.assertXpathValueEquals(errorReason, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Reason");
 		TestAssertions.assertXpathValueEquals(errorDetailCode, 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Code");
-		TestAssertions.assertXpathValueEquals(XmlUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
+		TestAssertions.assertXpathValueEquals(XmlEncodingUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
 	}
 
 	@Test

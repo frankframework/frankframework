@@ -12,8 +12,6 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<jackson.version>2.14.2</jackson.version>
-		<jackson-databind.version>2.14.2</jackson-databind.version>
 		<saxon.version>10.9</saxon.version>
 	</properties>
 
@@ -176,12 +174,6 @@
 			<groupId>commons-digester</groupId>
 			<artifactId>commons-digester</artifactId>
 			<version>2.1</version>
-		</dependency>
-<!--	explicit to avoid a CVE -->
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.4</version>
 		</dependency>
 		<!-- Requirement for Jboss 7.5 -->
 		<dependency>
@@ -459,11 +451,6 @@
 			<version>4.9.3</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-cbor</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>smbj</artifactId>
 			<version>0.11.5</version>
@@ -502,11 +489,6 @@
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.27</version>
-		</dependency>
-		<dependency> <!-- Fixes CVE-2021-33813 -->
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom2</artifactId>
-			<version>2.0.6.1</version>
 		</dependency>
 
 		<!-- oidc and oauth library -->
@@ -662,28 +644,18 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>${jackson.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
@@ -949,4 +921,25 @@
 			</dependencies>
 		</profile>
 	</profiles>
+
+	<!-- Lock transient dependency versions to fix CVE's -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>2.4.10</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom2</artifactId>
+				<version>2.0.6.1</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.4</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
