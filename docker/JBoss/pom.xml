@@ -14,9 +14,7 @@
 	</parent>
 
 	<properties>
-		<config.image.repository>private.docker.nexus.frankframework.org</config.image.repository>
-		<config.image.name>ff-test</config.image.name>
-		<config.image.tag>${config.image.name}:${revision}-jboss</config.image.tag>
+		<config.image.variation>jboss</config.image.variation>
 	</properties>
 
 	<dependencies>
