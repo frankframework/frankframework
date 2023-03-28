@@ -15,7 +15,12 @@
 */
 package nl.nn.adapterframework.management.gateway;
 
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
+import org.springframework.expression.Expression;
+import org.springframework.http.HttpMethod;
 import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.http.outbound.HttpRequestExecutingMessageHandler;
 import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
@@ -49,6 +54,23 @@ public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler i
 		headerMapper.setOutboundHeaderNames("topic", "action");
 		headerMapper.setInboundHeaderNames("meta-*");
 		setHeaderMapper(headerMapper);
+
+		setHttpMethodExpression(new HttpMethodExpression());
+	}
+
+	private static class HttpMethodExpression extends ValueExpression<HttpMethod> {
+
+		public HttpMethodExpression() {
+			super(HttpMethod.POST);
+		}
+
+		@Override
+		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
+			if(rootObject instanceof Message<?> && ((Message<?>) rootObject).getPayload() == "NONE") {
+				return HttpMethod.GET;
+			}
+			return super.getValue(context, rootObject);
+		}
 	}
 
 	@Override //Is dit handig?
@@ -78,6 +100,16 @@ public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler i
 	}
 
 	@Override
+	protected Object evaluateTypeFromExpression(Message<?> requestMessage, Expression expression, String property) {
+		System.out.println("expression: " + expression);
+		if("expectedResponseType".equals(property)) {
+			return String.class;
+		}
+
+		return super.evaluateTypeFromExpression(requestMessage, expression, property);
+	}
+
+	@Override
 	public void onComplete() {
 		System.err.println("wat doet dit");
 		super.onComplete();
@@ -85,7 +117,7 @@ public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler i
 
 	@Override
 	protected void sendOutputs(Object result, Message<?> requestMessage) {
-		System.out.println(result);
+		System.out.println("send output" + result);
 		super.sendOutputs(result, requestMessage);
 	}
 

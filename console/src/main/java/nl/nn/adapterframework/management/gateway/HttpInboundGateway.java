@@ -16,7 +16,11 @@
 package nl.nn.adapterframework.management.gateway;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -32,11 +36,21 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.http.inbound.HttpRequestHandlingMessagingGateway;
 import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
@@ -45,6 +59,7 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 @IbisInitializer
 public class HttpInboundGateway extends HttpServlet implements DynamicRegistration.Servlet, InitializingBean, ApplicationContextAware {
@@ -73,7 +88,39 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 			gateway.setHeaderMapper(headerMapper);
 			gateway.setErrorOnTimeout(true);
 
+
+			List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+
+			StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
+			stringHttpMessageConverter.setWriteAcceptCharset(false);
+			messageConverters.add(stringHttpMessageConverter);
+			messageConverters.add(new InputStreamHttpMessageConverter());
+			messageConverters.add(new ByteArrayHttpMessageConverter());
+			gateway.setMessageConverters(messageConverters);
+
 			gateway.start();
+		}
+	}
+
+	private static class InputStreamHttpMessageConverter extends AbstractHttpMessageConverter<InputStream> {
+
+		public InputStreamHttpMessageConverter() {
+			super(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL);
+		}
+
+		@Override
+		protected boolean supports(Class<?> clazz) {
+			return InputStream.class.isAssignableFrom(clazz);
+		}
+
+		@Override
+		protected InputStream readInternal(Class<? extends InputStream> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+			return inputMessage.getBody();
+		}
+
+		@Override
+		protected void writeInternal(InputStream is, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+			StreamUtils.copy(is, outputMessage.getBody());
 		}
 	}
 
