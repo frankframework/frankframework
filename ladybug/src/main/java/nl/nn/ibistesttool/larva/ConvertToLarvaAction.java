@@ -207,7 +207,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 			scenarioProperties.setProperty("scenario.description", "Test scenario for adapter " + adapterName + ", automatically generated based on a ladybug report");
 			scenarioProperties.setProperty("include", "common.properties");
-			String adapterProperty = "adapter." + adapterName;
+			String adapterProperty = "adapter." + adapterName.replaceAll("\\s","-");
 			int paramI = 1;
 			int current_step_nr = 0;
 			List<Checkpoint> checkpoints = report.getCheckpoints();
@@ -233,12 +233,12 @@ public class ConvertToLarvaAction implements CustomReportAction {
 					if (!allowedSenders.contains(checkpoint.getSourceClassName())) {
 						//If sender should be stubbed:
 						String senderName = checkpoint.getName().substring(7, checkpoint.getName().length() - 7);
-						String senderProperty = "stub." + senderName;
+						String senderProperty = "stub." + senderName.replaceAll("\\s","-");
 						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".read", scenarioDirPrefix + stepPadding(current_step_nr) + "-stub-" + senderName + "-in.xml");
 						createInputOutputFile(scenarioDir, current_step_nr, "stub", senderName, true, checkpoint.getMessage());
 						scenarioProperties.setProperty("step" + ++current_step_nr + "." + senderProperty + ".write", scenarioDirPrefix + stepPadding(current_step_nr) + "-stub-" + senderName + "-out.xml");
 
-						String serviceName = "testtool-Call" + senderName;
+						String serviceName = "testtool-" + senderName;
 						String existingStubName = existingStubs.get(serviceName.toLowerCase());
 						if (!senderProperty.equals(existingStubName)) {
 							existingStubs.put(serviceName.toLowerCase(), senderProperty);
