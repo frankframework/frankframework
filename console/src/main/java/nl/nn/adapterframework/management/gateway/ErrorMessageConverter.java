@@ -23,8 +23,13 @@ import org.springframework.integration.MessageTimeoutException;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 
+/**
+ * Converter which (when used in combination with a PublishSubscribeChannel) retrieves
+ * the payload from the response message, logs the exception, and returns a sanitized
+ * exception message with status code 400.
+ */
 public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler {
-	private final Logger log = LogManager.getLogger(HttpInboundGateway.class);
+	private final Logger log = LogManager.getLogger(ErrorMessageConverter.class);
 	private static final HttpStatus ERROR_STATUS = HttpStatus.BAD_REQUEST;
 
 	public ErrorMessageConverter() {
@@ -33,13 +38,12 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 
 	@Override
 	protected Object handleRequestMessage(Message<?> requestMessage) {
-		String body = ERROR_STATUS.getReasonPhrase();
+		String body = null;
 		if(requestMessage.getPayload() instanceof Exception) {
 			Exception e = (Exception) requestMessage.getPayload();
 			if(!(e instanceof MessageTimeoutException)) {
 				body = e.getMessage();
 			}
-			e.printStackTrace();
 			log.error("an error occurred while handling frank-management-bus request", e);
 		}
 		return new ResponseEntity<String>(body, ERROR_STATUS);

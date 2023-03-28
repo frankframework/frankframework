@@ -25,16 +25,6 @@ import nl.nn.adapterframework.testutil.SpringRootInitializer;
 public class TestSpringBusExceptionHandler extends BusTestBase {
 	private SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
 
-	@Override
-	public void setUp() throws Exception {
-		// Don't setup TestConfiguration
-	}
-
-	@Override
-	public void tearDown() throws Exception {
-		// Don't tear down TestConfiguration
-	}
-
 	@Test
 	public void testEndpointMessageException() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);

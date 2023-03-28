@@ -17,6 +17,8 @@ package nl.nn.adapterframework.webcontrol.runner;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,7 @@ import nl.nn.adapterframework.management.web.ServletDispatcher;
 
 @Configuration
 public class CreateApiEndpointBean {
+	private final Logger log = LogManager.getLogger(CreateApiEndpointBean.class);
 
 	@Bean
 	public ServletRegistrationBean<ServletDispatcher> createBean() {
@@ -37,8 +40,9 @@ public class CreateApiEndpointBean {
 			bean.addInitParameter(key, val);
 		}
 		bean.setName(servlet.getName());
+		bean.addUrlMappings("/iaf/api/*");
 
-		System.err.println("creating IAF API servlet endpoint " + bean.getUrlMappings());
+		log.info("creating IAF API servlet endpoint {}", bean::getUrlMappings);
 
 		return bean;
 	}

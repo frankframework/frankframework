@@ -48,7 +48,7 @@ import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
-import nl.nn.adapterframework.management.gateway.IntegrationGateway;
+import nl.nn.adapterframework.management.bus.IntegrationGateway;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**

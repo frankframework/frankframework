@@ -17,7 +17,6 @@ package nl.nn.adapterframework.management.gateway;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

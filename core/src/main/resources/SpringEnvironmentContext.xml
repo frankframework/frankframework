@@ -19,10 +19,8 @@
 
 	<!-- Messaging Gateway -->
 	<bean id="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton" />
-<!--
-	<bean id="LocalGateway" class="nl.nn.adapterframework.management.bus.LocalGateway" lazy-init="true" />
-	<bean id="HttpOutboundGateway" class="nl.nn.adapterframework.management.gateway.HttpOutboundGateway" lazy-init="true" />
--->
+	<!-- TODO create a factory bean that can return either the LocalGateway or a HttpOutboundGateway. -->
+
 	<context:property-placeholder />
 
 	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 
 	static {
-		System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
 	}
 
 	/**
@@ -145,7 +145,6 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 	private @Nullable Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
-		System.err.println(url);
 		if(url != null) {
 			Properties properties = new Properties();
 			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {

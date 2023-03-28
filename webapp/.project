@@ -3,6 +3,7 @@
 	<name>iaf-webapp</name>
 	<comment></comment>
 	<projects>
+		<project>iaf-console</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

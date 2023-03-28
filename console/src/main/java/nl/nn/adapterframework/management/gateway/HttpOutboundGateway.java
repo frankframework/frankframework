@@ -31,6 +31,7 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.util.Assert;
 
+import nl.nn.adapterframework.management.bus.IntegrationGateway;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 

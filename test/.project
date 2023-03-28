@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>iaf-core</project>
+		<project>iaf-console</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

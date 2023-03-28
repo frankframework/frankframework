@@ -12,9 +12,9 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<apache.tomcat.version>9.0.71</apache.tomcat.version>
 		<spring-security.version>5.8.2</spring-security.version>
 		<jackson.version>2.14.2</jackson.version>
+		<spring.boot.version>2.7.8</spring.boot.version>
 	</properties>
 
 	<dependencies>
@@ -76,11 +76,11 @@
 			<artifactId>spring-integration-security</artifactId>
 			<version>${spring-integration.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-http</artifactId>
 			<version>${spring-integration.version}</version>
-			<!--<scope>provided</scope> temp commented to test locally on tomcat -->
 		</dependency>
 
 
@@ -181,12 +181,6 @@
 			<type>test-jar</type>
 			<version>${project.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-slf4j-impl</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -216,82 +210,51 @@
 			<scope>provided</scope>
 		</dependency>
 
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot</artifactId>
-				<version>2.7.8</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter</artifactId>
-				<version>2.7.8</version>
-				<scope>provided</scope>
+		<!-- provided dependencies will be added to the executable (Spring) WAR -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
 <!--
-				<scope>provided</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>
-							spring-boot-starter-logging
-						</artifactId>
-					</exclusion>
-				</exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 -->
-				<exclusions>
-					<exclusion>
-						<groupId>org.apache.logging.log4j</groupId>
-						<artifactId>log4j-to-slf4j</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-tomcat</artifactId>
-				<version>2.7.8</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-loader</artifactId>
-				<version>2.7.8</version>
-				<scope>provided</scope>
-			</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-loader</artifactId>
+			<version>${spring.boot.version}</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<defaultGoal>package spring-boot:repackage</defaultGoal>
 		<plugins>
-		<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assembly/fat-jar.xml</descriptor>
-					</descriptors>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>nl.nn.adapterframework.webcontrol.TomcatInitializer</mainClass>
-						</manifest>
-						<manifestEntries>
-							<Implementation-Version>${project.version}</Implementation-Version>
-						</manifestEntries>
-					</archive>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		-->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
