@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class AmazonSqsFactoryTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected String PROPERTY_FILE = "AmazonS3.properties";
+	protected String PROPERTY_FILE = "amazonS3.properties";
 
 	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
 	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
