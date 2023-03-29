@@ -1,3 +1,4 @@
+HOST 127.0.0.1
 GET / HTTP/1.1
 Content-Type: application/json; charset=ISO-8859-1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
