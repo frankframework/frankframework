@@ -1,2 +1,3 @@
+HOST dummy.url.com
 GET https://dummy.url.com/ HTTP/1.1
 User-Agent: Mockito mock-agent
