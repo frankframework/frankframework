@@ -9,4 +9,4 @@ services:
         ports:
             - "80:8080"
         environment:
-            active.authentication: false
+            larva.adapter.active: false
