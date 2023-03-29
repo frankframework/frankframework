@@ -366,22 +366,63 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
 		PipeForward forward = result.getPipeForward();
 
+		// Assert 2
 		assertEquals("success", forward.getName());
 	}
 
 	@Test //copied from iaf-test /XmlValidator/scenario07a
 	public void testImportIncludeOK() throws Exception {
+		// Arrange
+		ApplicationWarnings.removeInstance();
 		XmlValidator validator = new XmlValidator();
 		validator.registerForward(createSuccessForward());
 		validator.registerForward(createFailureForward());
 		validator.setRoot("root");
 		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportInclude/xsd/root.xsd");
 		validator.setThrowException(true);
+
+		// Act
 		validator.configure();
 		validator.start();
 
+		// Assert
+		assertEquals(0, ApplicationWarnings.getSize());
+
+		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
 		PipeLineSession session = new PipeLineSession();
+
+		// Act 2
+		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
+		PipeForward forward = result.getPipeForward();
+
+		// Assert 2
+		assertEquals("success", forward.getName());
+	}
+
+	@Test
+	public void testImportNestedIncludeOK() throws Exception {
+		// Arrange
+		ApplicationWarnings.removeInstance();
+		XmlValidator validator = new XmlValidator();
+		validator.registerForward(createSuccessForward());
+		validator.registerForward(createFailureForward());
+		validator.setRoot("root");
+		validator.setSchemaLocation("http://nn.nl/root /Validation/ImportNestedInclude/xsd/root.xsd");
+		validator.setThrowException(true);
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		assertEquals("No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList(), 0, ApplicationWarnings.getSize());
+
+		// Arrange 2
+		String testXml = getTestXml("/Validation/ImportNestedInclude/root-ok.xml");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act 2
 		PipeRunResult result = validator.validate(new Message(testXml), session, "root");
 		PipeForward forward = result.getPipeForward();
 
