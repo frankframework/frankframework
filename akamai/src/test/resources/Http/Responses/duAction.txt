@@ -1,3 +1,4 @@
+HOST 127.0.0.1
 GET http://127.0.0.1/cpCode123/my/special/path HTTP/1.1
 X-Akamai-ACS-Action: action=du&format=xml&version=1
 X-Akamai-ACS-Auth-Data: 5, 0.0.0.0, 0.0.0.0, timestamp, timestamp, myNonce

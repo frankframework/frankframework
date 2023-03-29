@@ -76,6 +76,34 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void testWithDefaultPort() throws Throwable {
+		sender = getSender(false);
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.setUrl("http://127.0.0.1:80/path/here");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(Message.asMessage("dummy"), session).asString();
+		assertEqualsIgnoreCRLF(getFile("testWithDefaultPort.txt"), result.trim());
+	}
+
+	@Test
+	public void testWithRandomPort() throws Throwable {
+		sender = getSender(false);
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.setUrl("http://127.0.0.1:1337/path/here");
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessageOrThrow(Message.asMessage("dummy"), session).asString();
+		assertEqualsIgnoreCRLF(getFile("testWithRandomPort.txt"), result.trim());
+	}
+
+	@Test
 	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
