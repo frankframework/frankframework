@@ -1,4 +1,3 @@
-/*
    Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,15 +38,22 @@ import bitronix.tm.utils.Uid;
  */
 public class BtmDiskJournal extends DiskJournal {
 	private Logger log = LogManager.getLogger(BtmDiskJournal.class);
+	private static final String LOG_ERR_MSG = "cannot write log, disk logger is not open";
+	private static final String FORCE_ERR_MSG = "cannot force log writing, disk logger is not open";
+	private static final String COLLECT_ERR_MSG = "cannot collect dangling records, disk logger is not open";
 
 	@Override
 	public void log(int status, Uid gtrid, Set<String> uniqueNames) throws IOException {
 		try {
 			super.log(status, gtrid, uniqueNames);
-		} catch (ClosedChannelException e) {
-			recover(e);
+		} catch (IOException e) {
+			if(e instanceof ClosedChannelException || LOG_ERR_MSG.equals(e.getMessage())) {
+				recover(e);
 
-			super.log(status, gtrid, uniqueNames);
+				super.log(status, gtrid, uniqueNames);
+			} else {
+				throw e;
+			}
 		}
 	}
 
@@ -55,10 +61,14 @@ public class BtmDiskJournal extends DiskJournal {
 	public void force() throws IOException {
 		try {
 			super.force();
-		} catch (ClosedChannelException e) {
-			recover(e);
+		} catch (IOException e) {
+			if(e instanceof ClosedChannelException || FORCE_ERR_MSG.equals(e.getMessage())) {
+				recover(e);
 
-			super.force();
+				super.force();
+			} else {
+				throw e;
+			}
 		}
 	}
 
@@ -66,15 +76,19 @@ public class BtmDiskJournal extends DiskJournal {
 	public Map<Uid, JournalRecord> collectDanglingRecords() throws IOException {
 		try {
 			return super.collectDanglingRecords();
-		} catch (ClosedChannelException e) {
-			recover(e);
+		} catch (IOException e) {
+			if(e instanceof ClosedChannelException || COLLECT_ERR_MSG.equals(e.getMessage())) {
+				recover(e);
 
-			return super.collectDanglingRecords();
+				return super.collectDanglingRecords();
+			} else {
+				throw e;
+			}
 		}
 	}
 
-	private void recover(ClosedChannelException e) throws IOException {
-		log.error("FileChannel unexpectectly closed, attempting to recover DiskJournal", e);
+	private void recover(IOException e) throws IOException {
+		log.error("FileChannel exception, attempting to recover DiskJournal", e);
 
 		close();
 		open();
