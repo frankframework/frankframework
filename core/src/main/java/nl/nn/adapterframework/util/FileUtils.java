@@ -262,10 +262,17 @@ public class FileUtils {
 		return createTempFile(null);
 	}
 	public static File createTempFile(String suffix) throws IOException {
-		return createTempFile(null,null);
+		return createTempFile(null,suffix);
 	}
 	public static File createTempFile(String prefix, String suffix) throws IOException {
-		String directory=AppConstants.getInstance().getResolvedProperty("upload.dir");
+		String directoryName=AppConstants.getInstance().getResolvedProperty("upload.dir");
+		if (directoryName == null) {
+			throw new IOException("Property [upload.dir] is not specified");
+		}
+		File directory = new File(directoryName);
+		if (!directory.exists() && (!directory.mkdirs())) {
+			throw new IOException("Unable to create [upload.dir] at location [" + directoryName + "]");
+		}
 		if (StringUtils.isEmpty(prefix)) {
 			prefix="ibis";
 		}
@@ -273,9 +280,7 @@ public class FileUtils {
 			suffix=".tmp";
 		}
 		if (log.isDebugEnabled()) log.debug("creating tempfile prefix ["+prefix+"] suffix ["+suffix+"] directory ["+directory+"]");
-		File tmpFile = File.createTempFile(prefix, suffix, new File(directory));
-		tmpFile.deleteOnExit();
-		return tmpFile;
+		return File.createTempFile(prefix, suffix, directory);
 	}
 
 	public static File createTempDir() throws IOException {

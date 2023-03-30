@@ -19,10 +19,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.AmazonServiceException;
@@ -44,7 +43,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -55,6 +53,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
 
@@ -218,18 +217,13 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "tempFile";
-
-		final File file = new File(fileName);
+		final File file = FileUtils.createTempFile("-s3-upload-data");
 		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
+		return new BufferedOutputStream(fos) {
 			boolean isClosed = false;
 			@Override
 			public void close() throws IOException {
 				super.close();
-				bos.close();
 				if(!isClosed) {
 					try (FileInputStream fis = new FileInputStream(file)) {
 						ObjectMetadata metaData = new ObjectMetadata();
@@ -237,13 +231,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 					} finally {
-						file.delete();
 						isClosed = true;
+						Files.delete(file.toPath());
 					}
 				}
 			}
 		};
-		return filterOutputStream;
 	}
 
 	@Override
