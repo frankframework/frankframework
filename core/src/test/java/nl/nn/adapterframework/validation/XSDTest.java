@@ -46,10 +46,10 @@ public class XSDTest {
 		XMLStreamWriter writer = WsdlGeneratorUtils.getWriter(out, false);
 		SchemaUtils.xsdToXmlStreamWriter(xsd, writer);
 
-		String result = new String(out.toByteArray());
+		String result = out.toString();
 		String expected = TestFileUtils.getTestFile("/XSDTest/test.xsd");
 
-		MatchUtils.assertXmlEquals("expected xml (XSDTest/test_expected.xsd) not similar to result xml:\n" + new String(out.toByteArray()), expected, result);
+		MatchUtils.assertXmlEquals("expected xml (XSDTest/test_expected.xsd) not similar to result xml:\n" + out, expected, result);
 	}
 
 	@ParameterizedTest

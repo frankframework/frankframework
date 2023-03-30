@@ -83,20 +83,18 @@ public class SchemaUtils {
 	public static Map<String, Set<IXSD>> getXsdsGroupedByNamespace(Set<IXSD> xsds, boolean sort) {
 		Map<String, Set<IXSD>> result;
 		if (sort) {
-			result = new TreeMap<String, Set<IXSD>>();
+			result = new TreeMap<>();
 		} else {
-			result = new LinkedHashMap<String, Set<IXSD>>();
+			result = new LinkedHashMap<>();
 		}
 		for (IXSD xsd : xsds) {
-			Set<IXSD> set = result.get(xsd.getNamespace());
-			if (set == null) {
+			Set<IXSD> set = result.computeIfAbsent(xsd.getNamespace(), key -> {
 				if (sort) {
-					set = new TreeSet<IXSD>();
+					return new TreeSet<>();
 				} else {
-					set = new LinkedHashSet<IXSD>();
+					return new LinkedHashSet<>();
 				}
-				result.put(xsd.getNamespace(), set);
-			}
+			});
 			set.add(xsd);
 		}
 		return result;
@@ -120,14 +118,14 @@ public class SchemaUtils {
 	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
-		Set<IXSD> resultXsds = new LinkedHashSet<IXSD>();
+		Set<IXSD> resultXsds = new LinkedHashSet<>();
 		// iterate over the namespaces
 		for (String namespace: xsdsGroupedByNamespace.keySet()) {
 			Set<IXSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
-			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
-			List<XMLEvent> imports = new ArrayList<XMLEvent>();
+			List<Attribute> rootAttributes = new ArrayList<>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
+			List<XMLEvent> imports = new ArrayList<>();
 			for (IXSD xsd: xsds) {
 				StringWriter dummySchemaContentsWriter = new StringWriter();
 				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
@@ -189,13 +187,13 @@ public class SchemaUtils {
 	 *        The XSD might have an import with schemaLocation to make it valid on it's own, when stripSchemaLocationFromImport is true it will be removed.
 	 */
 	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
-		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
+		Map<String, String> namespacesToCorrect = new HashMap<>();
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
 		XMLEvent event = null;
 		try (Reader reader = xsd.getReader()) {
 			if (reader == null) {
-				throw new IllegalStateException("" + xsd + " not found");
+				throw new IllegalStateException(xsd + " not found");
 			}
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
 			while (er.hasNext()) {
@@ -308,7 +306,7 @@ public class SchemaUtils {
 								if (schemaLocation != null) {
 									String location = schemaLocation.getValue();
 									if (stripSchemaLocationFromImport) {
-										List<Attribute> attributes = new ArrayList<Attribute>();
+										List<Attribute> attributes = new ArrayList<>();
 										Iterator<Attribute> iterator = startElement.getAttributes();
 										while (iterator.hasNext()) {
 											Attribute a = iterator.next();
@@ -371,7 +369,7 @@ public class SchemaUtils {
 			}
 			streamEventWriter.flush();
 		} catch (XMLStreamException e) {
-			throw new ConfigurationException(xsd.toString() + " (" + event.getLocation() + ")", e);
+			throw new ConfigurationException(xsd + " (" + event.getLocation() + ")", e);
 		}
 	}
 

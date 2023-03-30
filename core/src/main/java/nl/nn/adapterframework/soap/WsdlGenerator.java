@@ -359,24 +359,24 @@ public class WsdlGenerator {
 	}
 
 	public void init() throws ConfigurationException {
-		Set<IXSD> inputXsds = new HashSet<IXSD>();
-		Set<IXSD> outputXsds = new HashSet<IXSD>();
-		xsds = new HashSet<IXSD>();
-		rootXsds = new HashSet<IXSD>();
-		Set<IXSD> inputRootXsds = new HashSet<IXSD>();
+		Set<IXSD> inputXsds = new HashSet<>();
+		Set<IXSD> outputXsds = new HashSet<>();
+		xsds = new HashSet<>();
+		rootXsds = new HashSet<>();
+		Set<IXSD> inputRootXsds = new HashSet<>();
 		inputRootXsds.addAll(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
 		inputXsds.addAll(XSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
-			Set<IXSD> outputRootXsds = new HashSet<IXSD>();
+			Set<IXSD> outputRootXsds = new HashSet<>();
 			outputRootXsds.addAll(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
 			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
-		prefixByXsd = new LinkedHashMap<IXSD, String>();
-		namespaceByPrefix = new LinkedHashMap<String, String>();
+		prefixByXsd = new LinkedHashMap<>();
+		namespaceByPrefix = new LinkedHashMap<>();
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
 				SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
@@ -417,8 +417,7 @@ public class WsdlGenerator {
 				jmsActive = true;
 			} else if (listener instanceof JavaListener) {
 				JavaListener jl = (JavaListener) listener;
-				if (jl.isHttpWsdl())
-				httpActive = true;
+				if (jl.isHttpWsdl()) httpActive = true;
 			}
 		}
 	}
@@ -455,7 +454,7 @@ public class WsdlGenerator {
 			xsds.add(xsd);
 		} else {
 			xsds = xmlValidator.getXsds();
-			Set<IXSD> remove = new HashSet<IXSD>();
+			Set<IXSD> remove = new HashSet<>();
 			for (IXSD xsd : xsds) {
 				if (excludeXsds.contains(xsd.getNamespace())) {
 					remove.add(xsd);
@@ -482,7 +481,7 @@ public class WsdlGenerator {
 			out.closeEntry();
 
 			// And then all XSD's
-			Set<String> entries = new HashSet<String>();
+			Set<String> entries = new HashSet<>();
 			for (IXSD xsd : xsds) {
 				String zipName = xsd.getResourceTarget();
 				if (entries.add(zipName)) {
@@ -581,7 +580,7 @@ public class WsdlGenerator {
 	 * @throws ConfigurationException
 	 */
 	protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
-		List<QName> parts = new ArrayList<QName>();
+		List<QName> parts = new ArrayList<>();
 		if (inputHeaderElement != null && !inputHeaderIsOptional) {
 			parts.add(inputHeaderElement);
 		}
@@ -633,7 +632,7 @@ public class WsdlGenerator {
 
 	protected void portType(XMLStreamWriter w) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "portType");
-		w.writeAttribute("name", "PortType_" + getName()); {
+		w.writeAttribute("name", "PortType_" + getName());{
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
 				if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
 					w.writeStartElement(WSDL_NAMESPACE, "operation");

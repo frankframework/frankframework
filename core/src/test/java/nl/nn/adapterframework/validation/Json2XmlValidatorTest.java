@@ -245,7 +245,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 			// Should pass because the ScopeProvider is set during class initialization
 			ConfigurationException thrown = assertThrows(ConfigurationException.class, json2xml::configure);
-			assertThat(thrown.getMessage(), startsWith("Cannot find ["));
+			assertThat(thrown.getMessage(), startsWith("Cannot find resource ["));
 
 			assertEquals(0, config.getConfigurationWarnings().size(), "no config warning thrown by XercesValidationErrorHandler");
 		} finally {

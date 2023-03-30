@@ -156,20 +156,14 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
 
-			if (!isForwardFailureToSuccess() && !isThrowException()){
-				if (findForward("failure")==null) {
-					throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
-				}
+			if (!isForwardFailureToSuccess() && !isThrowException() && findForward("failure") == null) {
+				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
 			}
 
 			// Different default value for ignoreUnknownNamespaces when using
 			// noNamespaceSchemaLocation.
 			if (validator.getIgnoreUnknownNamespaces() == null) {
-				if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-					validator.setIgnoreUnknownNamespaces(true);
-				} else {
-					validator.setIgnoreUnknownNamespaces(false);
-				}
+				validator.setIgnoreUnknownNamespaces(StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()));
 			}
 			validator.setSchemasProvider(this);
 
@@ -355,7 +349,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	public Set<IXSD> getXsds() throws ConfigurationException {
-		Set<IXSD> xsds = new LinkedHashSet<IXSD>();
+		Set<IXSD> xsds = new LinkedHashSet<>();
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			ResourceXsd xsd = new ResourceXsd();
 			xsd.initNoNamespace(this, getNoNamespaceSchemaLocation());
@@ -434,7 +428,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 		private @Getter @Setter String name;
 
-		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
+		private final Map<String, PipeForward> forwards=new HashMap<>();
 
 		protected XmlValidator owner;
 		public ResponseValidatorWrapper(XmlValidator owner) {
@@ -531,10 +525,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 	}
 
-//	public boolean isMixedValidator(Object outputValidator) {
-//		return outputValidator==null && isConfiguredForMixedValidation();
-//	}
-//
 	public RootValidations getRootValidations(boolean responseMode) {
 		return responseMode ? responseRootValidations : requestRootValidations;
 	}
@@ -569,7 +559,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
-		List<Schema> xsds = new ArrayList<Schema>();
+		List<Schema> xsds = new ArrayList<>();
 		String schemaLocation = getSchemasId(session);
 		if (getSchemaSessionKey() != null) {
 			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
@@ -602,10 +592,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 		return defaultValue;
 	}
-	@Deprecated
-	protected void addRootValidation(RootValidation path) {
-		addRequestRootValidation(path);
-	}
 
 	protected void addRequestRootValidation(RootValidation path) {
 		if (requestRootValidations == null) {
@@ -633,7 +619,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
 		if (this.invalidRootNamespaces == null) {
-			this.invalidRootNamespaces = new LinkedHashMap<List<String>, List<String>>();
+			this.invalidRootNamespaces = new LinkedHashMap<>();
 		}
 		this.invalidRootNamespaces.put(path, invalidRootNamespaces);
 	}
