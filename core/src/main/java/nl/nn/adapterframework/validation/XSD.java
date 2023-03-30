@@ -399,7 +399,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	private static String getXsdLoadingMapKey(IXSD xsd) {
-		return xsd.getResourceTarget();
+		return xsd.getNamespace() + "|" + xsd.getResourceTarget();
 	}
 
 	@Override
