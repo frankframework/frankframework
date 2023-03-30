@@ -393,10 +393,10 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes, in case of
 			// noNamespaceSchemaLocation the WSDL generator doesn't use
 			// XmlValidator.getXsds(). See comment in Wsdl.getXsds() too.
-			Set<IXSD> xsds_temp = XSD.getXsdsRecursive(xsds, true);
+			Set<IXSD> tempXsds = XSD.getXsdsRecursive(xsds, true);
 			if (checkRootValidations) {
-				checkInputRootValidations(xsds_temp);
-				checkOutputRootValidations(xsds_temp);
+				checkInputRootValidations(tempXsds);
+				checkOutputRootValidations(tempXsds);
 			}
 		} else {
 			xsds = XSD.getXsdsRecursive(xsds);
@@ -424,7 +424,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return null;
 	}
 
-	public class ResponseValidatorWrapper implements IXmlValidator {
+	public static class ResponseValidatorWrapper implements IXmlValidator {
 
 		private @Getter @Setter String name;
 
@@ -636,7 +636,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
 		validator = clazz.newInstance();
 	}
-
 
 	/**
 	 * The filename of the schema on the classpath. It is not possible to specify a namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
