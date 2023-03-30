@@ -516,8 +516,8 @@ public class WsdlGenerator {
 			}
 		}
 		w.setPrefix(getTargetNamespacePrefix(), getTargetNamespace());
-		for (String prefix: namespaceByPrefix.keySet()) {
-			w.setPrefix(prefix, namespaceByPrefix.get(prefix));
+		for (Map.Entry<String, String> entry : namespaceByPrefix.entrySet()) {
+			w.setPrefix(entry.getKey(), entry.getValue());
 		}
 		w.writeStartElement(WSDL_NAMESPACE, "definitions"); {
 			w.writeNamespace(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
@@ -527,8 +527,8 @@ public class WsdlGenerator {
 				w.writeNamespace(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
 			}
 			w.writeNamespace(getTargetNamespacePrefix(), getTargetNamespace());
-			for (String prefix: namespaceByPrefix.keySet()) {
-				w.writeNamespace(prefix, namespaceByPrefix.get(prefix));
+			for (Map.Entry<String, String> entry: namespaceByPrefix.entrySet()) {
+				w.writeNamespace(entry.getKey(), entry.getValue());
 			}
 			w.writeAttribute("targetNamespace", getTargetNamespace());
 
@@ -557,9 +557,10 @@ public class WsdlGenerator {
 
 	/**
 	 * Output the 'types' section of the WSDL
-	 * @param w
-	 * @throws XMLStreamException
-	 * @throws IOException
+	 * @param w Writer to which XML is written.
+	 * @throws XMLStreamException Thrown is there is an exception writing to stream.
+	 * @throws IOException Thrown if there's an IOException during writing.
+	 * @throws ConfigurationException Thrown if there's an error during configuration.
 	 */
 	protected void types(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
 		w.writeStartElement(WSDL_NAMESPACE, "types");
@@ -574,10 +575,9 @@ public class WsdlGenerator {
 
 	/**
 	 * Outputs the 'messages' section.
-	 * @param w
-	 * @throws XMLStreamException
-	 * @throws IOException
-	 * @throws ConfigurationException
+	 * @param w Writer to which XML is written.
+	 * @throws XMLStreamException Thrown is there is an exception writing to stream.
+	 *
 	 */
 	protected void messages(XMLStreamWriter w) throws XMLStreamException {
 		List<QName> parts = new ArrayList<>();
