@@ -232,14 +232,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertEquals(contentsBase64.trim(), result.asString().trim(), "result should be base64 of file content");
 	}
 
-	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
+	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderShouldExist, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
+		if (folder2!=null) {
+			_deleteFolder(folder2);
+		}
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folderExists && folder2!=null) {
+		if (folderShouldExist && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -432,7 +435,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	public void fileSystemSenderListActionTest(String inputFolder, int numberOfFiles) throws Exception {
-
+		_deleteFolder(inputFolder);
+		if(inputFolder != null) {
+			_createFolder("folder");
+		}
 
 		for (int i=0; i<numberOfFiles; i++) {
 			String filename = "tobelisted"+i + FILE1;
@@ -454,15 +460,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		log.debug(result);
-
-		// TODO test that the fileSystemSender has returned the an XML with the details of the file
-//		Iterator<F> it = result;
-//		int count = 0;
-//		while (it.hasNext()) {
-//			it.next();
-//			count++;
-//		}
-
 		assertFileCountEquals(result, numberOfFiles);
 	}
 
@@ -477,13 +474,11 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
-		_createFolder("folder");
 		fileSystemSenderListActionTest("folder",0);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
-		_createFolder("folder");
 		fileSystemSenderListActionTest("folder",2);
 	}
 

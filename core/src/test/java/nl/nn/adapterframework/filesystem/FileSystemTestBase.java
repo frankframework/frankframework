@@ -16,10 +16,10 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	protected boolean doTimingTests=false;
 
-	public String FILE1 = "file1.txt";
-	public String FILE2 = "file2.txt";
-	public String DIR1 = "testDirectory";
-	public String DIR2 = "testDirectory2";
+	public static final String FILE1 = "file1.txt";
+	public static final String FILE2 = "file2.txt";
+	public static final String DIR1 = "testDirectory";
+	public static final String DIR2 = "testDirectory2";
 
 	private long waitMillis = 0;
 

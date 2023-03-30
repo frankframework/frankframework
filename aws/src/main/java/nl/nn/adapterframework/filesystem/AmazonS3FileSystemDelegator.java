@@ -66,4 +66,8 @@ public interface AmazonS3FileSystemDelegator {
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
+	@ReferTo(AmazonS3FileSystem.class)
+	default void setServiceEndpoint(String serviceEndpoint) {
+		getFileSystem().setServiceEndpoint(serviceEndpoint);
+	}
 }

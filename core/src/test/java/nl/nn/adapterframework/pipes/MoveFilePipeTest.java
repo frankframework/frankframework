@@ -7,7 +7,9 @@ import java.io.IOException;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.core.annotation.Order;
 
@@ -24,6 +26,8 @@ import nl.nn.adapterframework.core.PipeStartException;
  */
 public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
     private String pipeForwardThen = "success";
 
 

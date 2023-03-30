@@ -1,11 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -47,23 +49,21 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
 	@Test
 	public void testFailAsWrongDirectory() throws Exception {
-		exception.expectMessage("cannot find resource [/Pipes/2.txt/something]");
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setFilename(sourceFolderPath + "/something");
 		pipe.setReplaceFrom("param1");
 		pipe.setReplaceTo("kar");
 		pipe.setReturnString("${param1}andandandparam2");
-		pipe.configure();
-		doPipe(pipe, "whatisthis", session);
-		fail("this is expected to fail");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("cannot find resource [/Pipes/2.txt/something]"));
 	}
 
 	@Test
 	public void testEmptyFileName() throws Exception{
-		exception.expectMessage("has neither filename nor filenameSessionKey nor returnString specified");
-		pipe.configure();
-		fail("this should fail");
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThat(e.getMessage(), Matchers.endsWith("has neither filename nor filenameSessionKey nor returnString specified"));
 	}
 
 	@Test
@@ -82,7 +82,6 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
 	@Test
 	public void xsltFailForTransformation() throws Exception{
-		exception.expect(PipeRunException.class);
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setStyleSheetName("/Xslt/importNotFound/name2.xsl");
@@ -90,8 +89,9 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setReplaceTo("kar");
 		pipe.setReturnString("${param1}andandandparam2");
 		pipe.configure();
-		doPipe(pipe, "whatisthis", session);
-		fail("this is expected to fail");
+
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "whatisthis", session));
+		assertThat(e.getMessage(), Matchers.containsString("error transforming message"));
 	}
 
 	@Test
