@@ -579,37 +579,28 @@ public class WsdlGenerator {
 	 * @throws IOException
 	 * @throws ConfigurationException
 	 */
-	protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
+	protected void messages(XMLStreamWriter w) throws XMLStreamException {
 		List<QName> parts = new ArrayList<>();
-		if (inputHeaderElement != null && !inputHeaderIsOptional) {
-			parts.add(inputHeaderElement);
-		}
-		if (inputBodyElement != null) {
-			parts.add(inputBodyElement);
-		}
-		message(w, inputRoot, parts);
-		if (inputHeaderIsOptional) {
-			parts.clear();
-			if (inputHeaderElement != null) {
-				parts.add(inputHeaderElement);
-			}
-			message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
-		}
+		addHeaderElement(w, parts, inputHeaderElement, inputHeaderIsOptional, inputBodyElement, inputRoot);
 		if (outputValidator != null) {
 			parts.clear();
-			if (outputHeaderElement != null && !outputHeaderIsOptional) {
-				parts.add(outputHeaderElement);
-			}
-			if (outputBodyElement != null) {
-				parts.add(outputBodyElement);
-			}
-			message(w, outputRoot, parts);
-			if (outputHeaderIsOptional) {
-				parts.clear();
-				if (outputHeaderElement != null) {
-					parts.add(outputHeaderElement);
-				}
-				message(w, outputRoot + "_"+ outputHeaderElement.getLocalPart(), parts);
+			addHeaderElement(w, parts, outputHeaderElement, outputHeaderIsOptional, outputBodyElement, outputRoot);
+		}
+	}
+
+	private void addHeaderElement(XMLStreamWriter w, List<QName> parts, QName headerElement, boolean headerIsOptional, QName bodyElement, String root) throws XMLStreamException {
+		if (headerElement != null && !headerIsOptional) {
+			parts.add(headerElement);
+		}
+		if (bodyElement != null) {
+			parts.add(bodyElement);
+		}
+		message(w, root, parts);
+		if (headerIsOptional) {
+			parts.clear();
+			if (headerElement != null) {
+				parts.add(headerElement);
+				message(w, root + "_" + headerElement.getLocalPart(), parts);
 			}
 		}
 	}
@@ -617,8 +608,7 @@ public class WsdlGenerator {
 	protected void message(XMLStreamWriter w, String root, Collection<QName> parts) throws XMLStreamException {
 		if (!parts.isEmpty()) {
 			w.writeStartElement(WSDL_NAMESPACE, "message");
-			w.writeAttribute("name", "Message_" + root);
-			{
+			w.writeAttribute("name", "Message_" + root); {
 				for (QName part : parts) {
 					w.writeEmptyElement(WSDL_NAMESPACE, "part");
 					w.writeAttribute("name", "Part_" + part.getLocalPart());

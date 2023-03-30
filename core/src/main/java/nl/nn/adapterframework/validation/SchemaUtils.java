@@ -102,10 +102,12 @@ public class SchemaUtils {
 
 	public static void mergeRootXsdsGroupedByNamespaceToSchemasWithIncludes(Map<String, Set<IXSD>> rootXsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException {
 		// As the root XSD's are written as includes there's no need to change the imports and includes in the root XSD's.
-		for (String namespace: rootXsdsGroupedByNamespace.keySet()) {
+		for (Map.Entry<String, Set<IXSD>> entry: rootXsdsGroupedByNamespace.entrySet()) {
+			String namespace = entry.getKey();
+			Set<IXSD> xsds = entry.getValue();
 			xmlStreamWriter.writeStartElement(XSD, "schema");
 			xmlStreamWriter.writeAttribute("targetNamespace", namespace);
-			for (IXSD xsd : rootXsdsGroupedByNamespace.get(namespace)) {
+			for (IXSD xsd : xsds) {
 				xmlStreamWriter.writeEmptyElement(XSD, "include");
 				xmlStreamWriter.writeAttribute("schemaLocation", xsd.getResourceTarget());
 			}
@@ -115,14 +117,17 @@ public class SchemaUtils {
 
 
 	/**
-	 * @return XSD's when xmlStreamWriter is null, otherwise write to xmlStreamWriter
+	 * Returns XSDs when xmlStreamWriter is null, otherwise write to xmlStreamWriter.
+	 *
+	 * @return XSDs when xmlStreamWriter is null, otherwise write to xmlStreamWriter
 	 */
 	public static Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace, XMLStreamWriter xmlStreamWriter) throws XMLStreamException, IOException, ConfigurationException {
 		Set<IXSD> resultXsds = new LinkedHashSet<>();
 		// iterate over the namespaces
-		for (String namespace: xsdsGroupedByNamespace.keySet()) {
-			Set<IXSD> xsds = xsdsGroupedByNamespace.get(namespace);
-			// Get attributes of root elements and get import elements from all XSD's
+		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
+			String namespace = entry.getKey();
+			Set<IXSD> xsds = entry.getValue();
+			// Get attributes of root elements and get import elements from all XSDs
 			List<Attribute> rootAttributes = new ArrayList<>();
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
 			List<XMLEvent> imports = new ArrayList<>();
@@ -178,7 +183,7 @@ public class SchemaUtils {
 
 	/**
 	 * Including a {@link IXSD} into an {@link XMLStreamWriter} while parsing it. It is parsed
-	 * (using a low level {@link XMLEventReader} so that certain things can be corrected on the fly.
+	 * (using a low level {@link XMLEventReader}) so that certain things can be corrected on the fly.
 	 *
 	 * @param xsd
 	 * @param xmlStreamWriter
@@ -393,10 +398,8 @@ public class SchemaUtils {
 	}
 
 	public static void sortByDependencies(Set<IXSD> xsds, List<Schema> schemas) throws ConfigurationException {
-		Set<IXSD> xsdsWithDependencies = new LinkedHashSet<IXSD>();
-		Iterator<IXSD> iterator = xsds.iterator();
-		while (iterator.hasNext()) {
-			IXSD xsd = iterator.next();
+		Set<IXSD> xsdsWithDependencies = new LinkedHashSet<>();
+		for (IXSD xsd : xsds) {
 			if (xsd.hasDependency(xsds)) {
 				xsdsWithDependencies.add(xsd);
 			} else {
@@ -405,16 +408,16 @@ public class SchemaUtils {
 		}
 		if (xsds.size() == xsdsWithDependencies.size()) {
 			if (LOG.isDebugEnabled()) {
-				String message = "Circular dependencies between schemas:";
+				StringBuilder message = new StringBuilder("Circular dependencies between schemas:");
 				for (IXSD xsd : xsdsWithDependencies) {
-					message = message + " [" + xsd.toString() + " with target namespace " + xsd.getTargetNamespace() + " and imported namespaces " + xsd.getImportedNamespaces() + "]";
+					message.append(" [").append(xsd.toString()).append(" with target namespace ").append(xsd.getTargetNamespace()).append(" and imported namespaces ").append(xsd.getImportedNamespaces()).append("]");
 				}
-				LOG.debug(message);
+				LOG.debug(message.toString());
 			}
 			schemas.addAll(xsds);
 			return;
 		}
-		if (xsdsWithDependencies.size() > 0) {
+		if (!xsdsWithDependencies.isEmpty()) {
 			sortByDependencies(xsdsWithDependencies, schemas);
 		}
 	}
