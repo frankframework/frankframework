@@ -49,6 +49,7 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomproxy.active", false);
 	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "webServices11");
 	private Servlet cmisWebServiceServlet = null;
+	private transient boolean hasProxyServletBeenInitialized = false;
 
 	@Override
 	public String getUrlMapping() {
@@ -61,6 +62,15 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 		MtomRequestWrapper requestWrapper = new MtomRequestWrapper(request); //Turn every request into an MTOM request
 		MtomResponseWrapper responseWrapper = new MtomResponseWrapper(response); //Check amount of parts, return either a SWA, MTOM or soap message
 
+		if(!hasProxyServletBeenInitialized) {
+			if(cmisWebServiceServlet.getServletConfig() == null) { // check if the proxy servlet has been initialized
+				response.sendError(500, "proxied servlet ["+PROXY_SERVLET+"] must be loaded first!");
+				return;
+			} else {
+				hasProxyServletBeenInitialized = true;
+			}
+		}
+
 		cmisWebServiceServlet.service(requestWrapper, responseWrapper);
 	}
 
@@ -69,9 +79,6 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 		if(ACTIVE && cmisWebServiceServlet == null) {
 			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
-		}
-		if(ACTIVE && cmisWebServiceServlet.loadOnStartUp() < 0) {
-			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] must have load on startup enabled!");
 		}
 	}
 
