@@ -67,6 +67,12 @@
 			<artifactId>s3mock_2.13</artifactId>
 			<version>0.2.6</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

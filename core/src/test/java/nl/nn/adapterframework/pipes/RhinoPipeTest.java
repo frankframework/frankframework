@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 
 /**
  * RhinoPipe Tester.
@@ -59,7 +58,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 		pipe.setFileName(fileName);
 		pipe.setjsfunctionArguments("2");
 
-		PipeStartException e = assertThrows(PipeStartException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.containsString("JavaScript functionname not specified!"));
 	}
 
@@ -69,7 +68,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 		pipe.setjsfunctionName("giveNumber");
 		pipe.setjsfunctionArguments("3");
 
-		PipeStartException e = assertThrows(PipeStartException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.containsString("cannot find resource [random]"));
 	}
 
