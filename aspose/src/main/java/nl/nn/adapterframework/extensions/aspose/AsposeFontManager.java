@@ -57,7 +57,7 @@ public class AsposeFontManager {
 	private File fontDirectory = null;
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-	public AsposeFontManager() throws IOException {
+	public AsposeFontManager() {
 		this(null);
 	}
 
