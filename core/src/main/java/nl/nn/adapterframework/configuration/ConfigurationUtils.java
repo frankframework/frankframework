@@ -65,7 +65,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Functions to manipulate the configuration. 
+ * Functions to manipulate the configuration.
  *
  * @author  Peter Leeuwenburgh
  * @author  Jaco de Groot
@@ -112,7 +112,7 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * Get the version (configuration.version + configuration.timestmap) 
+	 * Get the version (configuration.version + configuration.timestmap)
 	 * from the configuration's AppConstants
 	 */
 	public static String getConfigurationVersion(ClassLoader classLoader) {
@@ -292,7 +292,7 @@ public class ConfigurationUtils {
 			itx.setRollbackOnly();
 			throw new ConfigurationException(e);
 		} finally {
-			itx.commit();
+			itx.complete();
 			JdbcUtil.fullClose(conn, rs);
 			qs.close();
 		}
@@ -415,7 +415,7 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {

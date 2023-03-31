@@ -83,7 +83,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
 			}
 		} finally {
-			itx.commit();
+			itx.complete();
 		}
 		return pipeRunResult;
 	}
