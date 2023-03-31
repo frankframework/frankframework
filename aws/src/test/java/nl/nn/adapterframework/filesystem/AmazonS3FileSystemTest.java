@@ -12,9 +12,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.amazonaws.services.s3.model.S3Object;
 
+import nl.nn.adapterframework.testutil.PropertyUtil;
+
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
 
-	private int waitMilis = 1000;
+	private int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMilis);

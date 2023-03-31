@@ -41,8 +41,8 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -57,7 +57,7 @@ public class AsposeFontManager {
 	private File fontDirectory = null;
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-	public AsposeFontManager() {
+	public AsposeFontManager() throws IOException {
 		this(null);
 	}
 
@@ -75,7 +75,7 @@ public class AsposeFontManager {
 
 		// If an invalid directory was provided, fall back to the ibis default temp directory
 		if (fontDirectory == null) {
-			String tmpdir = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+			String tmpdir = FileUtils.getTempDirectory();
 			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
 		}
 

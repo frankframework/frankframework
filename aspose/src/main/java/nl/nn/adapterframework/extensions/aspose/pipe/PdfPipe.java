@@ -21,7 +21,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -34,6 +33,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
 import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
@@ -43,6 +43,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 
@@ -91,7 +92,7 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir=AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+				String ibisTempDir = FileUtils.getTempDirectory();
 				if(StringUtils.isNotEmpty(ibisTempDir)) {
 					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
 				} else {

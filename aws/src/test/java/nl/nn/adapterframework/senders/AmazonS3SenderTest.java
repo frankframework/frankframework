@@ -13,6 +13,7 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import nl.nn.adapterframework.testutil.PropertyUtil;
 
 
 /**
@@ -23,7 +24,7 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	private int waitMilis = 1000;
+	private int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMilis);

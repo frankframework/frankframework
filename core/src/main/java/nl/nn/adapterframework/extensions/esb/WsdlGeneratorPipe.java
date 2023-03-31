@@ -64,16 +64,16 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
 		}
 
-		File tempDir;
+		File tempDirectoryBase;
 		String fileName;
 
 		try (InputStream inputStream = fileInSession.asInputStream()){
-			tempDir = FileUtils.createTempDir(null, "WEB-INF" + File.separator + "classes");
+			tempDirectoryBase = FileUtils.getTempDirectory("WsdlGeneratorPipe");
 			fileName = session.getMessage(getFilenameSessionKey()).asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
-				FileUtils.unzipStream(inputStream, tempDir);
+				FileUtils.unzipStream(inputStream, tempDirectoryBase);
 			} else {
-				File file = new File(tempDir, fileName);
+				File file = new File(tempDirectoryBase, fileName);
 				StreamUtil.streamToFile(inputStream, file);
 				file.deleteOnExit();
 			}
@@ -81,7 +81,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
 		}
 
-		File propertiesFile = new File(tempDir, getPropertiesFileName());
+		File propertiesFile = new File(tempDirectoryBase, getPropertiesFileName());
 		PipeLine pipeLine;
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
@@ -90,7 +90,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			// The pipeline will then be used to generate a new WSDL file.
 
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-			directoryClassLoader.setDirectory(tempDir.getPath());
+			directoryClassLoader.setDirectory(tempDirectoryBase.getPath());
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(getAdapter().getConfiguration().getIbisManager().getIbisContext(), "dummy");
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
@@ -98,7 +98,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (propertiesFile.exists()) {
 				pipeLine = createPipeLineFromPropertiesFile(propertiesFile);
 			} else {
-				File xsdFile = FileUtils.getFirstFile(tempDir);
+				File xsdFile = FileUtils.getFirstFile(tempDirectoryBase);
 				pipeLine = createPipeLineFromXsdFile(xsdFile);
 			}
 		} catch (Exception e) {
@@ -131,7 +131,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
-			File wsdlDir = FileUtils.createTempDir(tempDir);
+			File wsdlDir = FileUtils.createTempDirectory(tempDirectoryBase);
 			// zip (with includes)
 			File zipOutFile = new File(wsdlDir, wsdl.getFilename() + ".zip");
 			zipOutFile.deleteOnExit();

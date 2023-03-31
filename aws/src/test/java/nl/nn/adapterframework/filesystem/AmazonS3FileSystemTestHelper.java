@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,15 +34,15 @@ import nl.nn.adapterframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
-	protected String accessKey    = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
-	protected String secretKey    = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
+	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
+	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
 
 	protected @Getter String bucketName   = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private Regions clientRegion = Regions.EU_WEST_1;
 	public static final int S3_PORT = 19090;
 	private String serviceEndpoint = "http://localhost:"+S3_PORT;
-//	private String serviceEndpoint = null;
+	private boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
 	private @Getter AmazonS3 s3Client;
 
@@ -57,7 +56,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void setUp() throws Exception {
-		if(serviceEndpoint != null) {
+		if(runLocalStub) {
 			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
 			s3Mock.start();
 		}
@@ -79,10 +78,10 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
 				.enablePathStyleAccess();
 
-		if(StringUtils.isBlank(serviceEndpoint)) {
-			s3ClientBuilder.withRegion(clientRegion);
-		} else {
+		if(runLocalStub) {
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
+		} else {
+			s3ClientBuilder.withRegion(clientRegion);
 		}
 
 		return s3ClientBuilder.build();
@@ -123,13 +122,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
+		return new BufferedOutputStream(fos) {
 
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				bos.close();
 
 				FileInputStream fis = new FileInputStream(file);
 				ObjectMetadata metaData = new ObjectMetadata();
@@ -141,7 +138,6 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 				file.delete();
 			}
 		};
-		return filterOutputStream;
 	}
 
 	@Override

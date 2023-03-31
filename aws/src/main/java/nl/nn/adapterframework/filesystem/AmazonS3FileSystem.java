@@ -217,7 +217,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		final File file = FileUtils.createTempFile("-s3-upload-data");
+		final File file = FileUtils.createTempFile(".s3-upload");
 		final FileOutputStream fos = new FileOutputStream(file);
 		return new BufferedOutputStream(fos) {
 			boolean isClosed = false;
