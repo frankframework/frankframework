@@ -98,7 +98,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;
 	private @Getter String directorySessionKey;
-	private @Getter boolean deleteOnExit=true;
+	private @Getter @Deprecated boolean deleteOnExit=true;
 	private @Getter boolean collectResults=true;
 	private @Getter boolean collectFileContents=false;
 	private @Getter String collectFileContentsBase64Encoded;
@@ -239,9 +239,6 @@ public class UnzipPipe extends FixedForwardPipe {
 									if(entryNameWithoutExtension.length() < 3) entryNameWithoutExtension += ".tmp.";
 									tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 								}
-							}
-							if (isDeleteOnExit()) {
-								tmpFile.deleteOnExit();
 							}
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());

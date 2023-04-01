@@ -17,10 +17,10 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,7 +75,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			} else {
 				File file = new File(tempDirectoryBase, fileName);
 				StreamUtil.streamToFile(inputStream, file);
-				file.deleteOnExit();
+				Files.delete(file.toPath());
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
@@ -109,9 +109,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			}
 		}
 
-		Object result = null;
-		OutputStream zipOut = null;
-		OutputStream fullWsdlOut = null;
+		Object result;
 		try {
 			Adapter adapter = new Adapter();
 			Configuration configuration = new Configuration();
@@ -126,40 +124,27 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			receiver.setListener(esbJmsListener);
 			adapter.registerReceiver(receiver);
 			adapter.setPipeLine(pipeLine);
-			WsdlGenerator wsdl = null;
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
-			wsdl = new WsdlGenerator(pipeLine, generationInfo);
+			WsdlGenerator wsdl = new WsdlGenerator(pipeLine, generationInfo);
 			wsdl.setIndent(true);
 			wsdl.init();
 			File wsdlDir = FileUtils.createTempDirectory(tempDirectoryBase);
 			// zip (with includes)
 			File zipOutFile = new File(wsdlDir, wsdl.getFilename() + ".zip");
-			zipOutFile.deleteOnExit();
-			zipOut = new FileOutputStream(zipOutFile);
-			wsdl.setUseIncludes(true);
-			wsdl.zip(zipOut, null);
-			// full wsdl (without includes)
 			File fullWsdlOutFile = new File(wsdlDir, wsdl.getFilename() + ".wsdl");
-			fullWsdlOutFile.deleteOnExit();
-			fullWsdlOut = new FileOutputStream(fullWsdlOutFile);
-			wsdl.setUseIncludes(false);
-			wsdl.wsdl(fullWsdlOut, null);
-			Dir2Xml dx = new Dir2Xml();
-			dx.setPath(wsdlDir.getPath());
-			result = dx.getDirList();
+			try (OutputStream zipOut = Files.newOutputStream(zipOutFile.toPath());
+					OutputStream fullWsdlOut = Files.newOutputStream(fullWsdlOutFile.toPath())) {
+				wsdl.setUseIncludes(true);
+				wsdl.zip(zipOut, null);
+				// full wsdl (without includes)
+				wsdl.setUseIncludes(false);
+				wsdl.wsdl(fullWsdlOut, null);
+				Dir2Xml dx = new Dir2Xml();
+				dx.setPath(wsdlDir.getPath());
+				result = dx.getDirList();
+			}
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on generating wsdl", e);
-		} finally {
-			try {
-				if (zipOut != null) {
-					zipOut.close();
-				}
-				if (fullWsdlOut != null) {
-					fullWsdlOut.close();
-				}
-			} catch (IOException e1) {
-				log.warn("exception closing outputstream", e1);
-			}
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
