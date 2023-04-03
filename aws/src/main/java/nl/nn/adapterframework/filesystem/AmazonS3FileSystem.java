@@ -35,8 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -49,6 +48,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.Getter;
+import nl.nn.adapterframework.aws.AwsUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
@@ -87,15 +87,21 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 
-	private CredentialFactory cf;
 	private AmazonS3 s3Client;
+	private AWSCredentialsProvider credentialProvider;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getAuthAlias()) && (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))) {
-			throw new ConfigurationException("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
+		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			throw new ConfigurationException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
 		}
-		cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
+
+		CredentialFactory cf = null;
+		if (StringUtils.isNotEmpty(getAuthAlias()) || (StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
+		}
+		credentialProvider = AwsUtil.createCredentialProviderChain(cf);
+
 
 		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
 			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
@@ -114,12 +120,16 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	//For testing purposes
+	protected AWSCredentialsProvider getCredentialProvider() {
+		return credentialProvider;
+	}
+
+	//For testing purposes
 	public AmazonS3 createS3Client() {
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
 				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+				.withCredentials(credentialProvider)
 				.withClientConfiguration(this.getProxyConfig())
 				.enablePathStyleAccess();
 

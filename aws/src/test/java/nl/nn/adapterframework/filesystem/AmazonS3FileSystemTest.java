@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -39,7 +40,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		AmazonS3FileSystem s3 = spy(AmazonS3FileSystem.class);
 		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
 		doReturn(awsHelper.getS3Client()).when(s3).createS3Client();
-		s3.setAuthAlias("dummy");
 		s3.setBucketName(awsHelper.getBucketName());
 		return s3;
 	}
@@ -51,7 +51,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)", e.getMessage());
+		assertEquals("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)", e.getMessage());
 	}
 
 	@Test
@@ -61,7 +61,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey("123");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
-		assertEquals("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)", e.getMessage());
+		assertEquals("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)", e.getMessage());
 	}
 
 	@Test
@@ -71,15 +71,18 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		fileSystem.setSecretKey("456");
 
 		fileSystem.configure();
-		assertEquals("123", fileSystem.getAccessKey());
+		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
+		assertEquals("123", credentials.getAWSAccessKeyId());
+		assertEquals("456", credentials.getAWSSecretKey());
 	}
 
 	@Test
 	public void testConfigureAuthAlias() throws Exception {
-		fileSystem.setAuthAlias("123");
+		fileSystem.setAuthAlias("alias1");
 
 		fileSystem.configure();
-		assertEquals("123", fileSystem.getAuthAlias());
+		AWSCredentials credentials = fileSystem.getCredentialProvider().getCredentials();
+		assertEquals("username1", credentials.getAWSAccessKeyId());
 	}
 
 	@Test

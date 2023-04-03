@@ -15,9 +15,18 @@
 */
 package nl.nn.adapterframework.aws;
 
-import com.amazonaws.auth.AWSCredentials;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 
 import nl.nn.adapterframework.util.CredentialFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -26,33 +35,23 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
 public class AwsUtil {
 
-	public static AWSCredentials getAWSCredentials(String authAlias, String defaultUsername, String defaultPassword) {
-		return getAWSCredentials(new CredentialFactory(authAlias, defaultUsername, defaultPassword));
+	// S3
+
+	public static @Nonnull AWSCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
+		List<AWSCredentialsProvider> chain = new ArrayList<>();
+
+		if(cf != null) {
+			BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
+			chain.add(new AWSStaticCredentialsProvider(awsCreds));
+		}
+
+		chain.add(new ProfileCredentialsProvider());
+		chain.add(new EC2ContainerCredentialsProviderWrapper());
+
+		return new AWSCredentialsProviderChain(chain);
 	}
 
-	public static AWSCredentials getAWSCredentials(CredentialFactory cf) {
-		return new AWSCredentials() {
-
-			@Override
-			public String getAWSAccessKeyId() {
-				return cf.getUsername();
-			}
-
-			@Override
-			public String getAWSSecretKey() {
-				return cf.getPassword();
-			}
-		};
-	}
-
-	public static AWSCredentialsProvider getAWSCredentialsProvider(String authAlias, String defaultUsername, String defaultPassword) {
-		return new AWSStaticCredentialsProvider(getAWSCredentials(authAlias, defaultUsername, defaultPassword));
-	}
-
-	public static AWSCredentialsProvider getAWSCredentialsProvider(CredentialFactory cf) {
-		return new AWSStaticCredentialsProvider(getAWSCredentials(cf));
-	}
-
+	// SQS
 
 	public static AwsCredentials getAwsCredentials(String authAlias, String defaultUsername, String defaultPassword) {
 		return getAwsCredentials(new CredentialFactory(authAlias, defaultUsername, defaultPassword));

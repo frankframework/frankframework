@@ -50,13 +50,13 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		AmazonS3Sender sender = new AmazonS3Sender();
 		sender.setFileSystem(s3);
-		sender.setAuthAlias("dummy");
 		sender.setBucketName(awsHelper.getBucketName());
 		return sender;
 	}
 
 	@Test
 	public void testS3FileSystemDelegator() {
+		fileSystemSender.setAuthAlias("dummy");
 		assertEquals("dummy", fileSystemSender.getFileSystem().getAuthAlias());
 
 		fileSystemSender.setAccessKey("123");
