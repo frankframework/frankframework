@@ -14,7 +14,7 @@ RUN /home/createCS.sh
 
 FROM wildfly-iaf-test-base
 
-ENV JBOSS_JAVA_SIZING="-Xms64m -Xmx4096m -XX:MetaspaceSize=512M -XX:MaxMetaspaceSize=1024m" \
+ENV JBOSS_JAVA_SIZING="-Xms64m -Xmx${JAVA_MAX_MEM:-512M} -XX:MetaspaceSize=512M -XX:MaxMetaspaceSize=1024m" \
 	JAVA_TOOL_OPTIONS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/jboss/wildfly/standalone/log/"
 
 # Copy dependencies
