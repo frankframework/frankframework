@@ -37,6 +37,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -107,7 +108,7 @@ public class TestPipeline extends FrankApiBase {
 
 		builder.setPayload(message);
 		Message<?> response = sendSyncMessage(builder);
-		String state = (String) response.getHeaders().get(ResponseMessageBase.STATE_KEY);
+		String state = BusMessageUtils.getHeader(response, ResponseMessageBase.STATE_KEY);
 		return testPipelineResponse(getPayload(response), state, message);
 	}
 
@@ -115,11 +116,7 @@ public class TestPipeline extends FrankApiBase {
 		Object payload = response.getPayload();
 		if(payload instanceof String) {
 			return (String) payload;
-		}
-		if(payload instanceof byte[]) {
-			return new String((byte[])payload, StreamUtil.DEFAULT_CHARSET);
-		}
-		if(payload instanceof InputStream) {
+		} else if(payload instanceof InputStream) {
 			try {
 				return StreamUtil.streamToString((InputStream) payload);
 			} catch (IOException e) {
