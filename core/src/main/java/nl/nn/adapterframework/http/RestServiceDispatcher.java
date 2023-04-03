@@ -57,15 +57,15 @@ public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
-	private final String WILDCARD="*";
-	private final String KEY_LISTENER="listener";
-	private final String KEY_ETAG_KEY="etagKey";
-	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
+	private static final String WILDCARD="*";
+	private static final String KEY_LISTENER="listener";
+	private static final String KEY_ETAG_KEY="etagKey";
+	private static final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
+	private final Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
-	private static IApiCache cache = ApiCacheManager.getInstance();
+	private static final IApiCache cache = ApiCacheManager.getInstance();
 
 	public static synchronized RestServiceDispatcher getInstance() {
 		if( self == null ) {
@@ -88,11 +88,10 @@ public class RestServiceDispatcher {
 		}
 
 		String matchingPattern=null;
-		for (Iterator<String> it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=it.next();
-			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
+		for (String uriPattern : patternClients.keySet()) {
+			log.trace("comparing uri to pattern [{}] ", uriPattern);
 			if (lookupUriPattern.equals(uriPattern)) {
-				matchingPattern=uriPattern;
+				matchingPattern = uriPattern;
 				break;
 			}
 		}
