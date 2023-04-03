@@ -622,7 +622,7 @@ public class WsdlGenerator {
 
 	protected void portType(XMLStreamWriter w) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "portType");
-		w.writeAttribute("name", "PortType_" + getName());{
+		w.writeAttribute("name", "PortType_" + getName()); {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
 				if (listener instanceof WebServiceListener || listener instanceof JmsListener) {
 					w.writeStartElement(WSDL_NAMESPACE, "operation");
