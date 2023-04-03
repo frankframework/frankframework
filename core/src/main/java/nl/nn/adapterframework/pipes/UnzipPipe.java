@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -288,7 +288,10 @@ public class UnzipPipe extends FixedForwardPipe {
 	/**
 	 * If true, file is automatically deleted upon normal JVM termination
 	 * @ff.default true
+	 * @deprecated
 	 */
+	@Deprecated
+	@ConfigurationWarning("This flag is no longer supported as it leaks server memory. Temporary files should be removed by other means.")
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}
