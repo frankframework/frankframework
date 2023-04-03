@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jta;
 
+import javax.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -30,7 +32,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * proxy class for transaction manager.
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
@@ -56,24 +58,27 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	}
 
 	@Override
+	@Nonnull
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
-		if (trace && log.isDebugEnabled()) log.debug("getting transaction definition ["+txDef+"]");
+		if (trace && log.isDebugEnabled()) log.debug("getting transaction definition [{}]", txDef);
 		return getRealTxManager().getTransaction(txDef);
 	}
 
 	@Override
 	public void commit(TransactionStatus txStatus) throws TransactionException {
 		if (txStatus.isRollbackOnly()) {
+			Exception e = new Exception("<TX> Warning - Silent rollback from commit");
+			log.warn("<TX> Executing silent rollback without exception from tx.commit! TransactionStatus: [{}], Stacktrace:", txStatus, e);
 			rollback(txStatus);
 		} else {
-			if (trace && log.isDebugEnabled()) log.debug("commiting transaction ["+txStatus+"]");
+			if (trace && log.isDebugEnabled()) log.debug("committing transaction [{}]", txStatus);
 			getRealTxManager().commit(txStatus);
 		}
 	}
 
 	@Override
-	public void rollback(TransactionStatus txStatus) throws TransactionException {
-		if (trace && log.isDebugEnabled()) log.debug("rolling back transaction ["+txStatus+"]");
+	public void rollback(@Nonnull TransactionStatus txStatus) throws TransactionException {
+		if (trace && log.isDebugEnabled()) log.debug("rolling back transaction [{}]", txStatus);
 		getRealTxManager().rollback(txStatus);
 	}
 
@@ -81,6 +86,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		if (threadConnectableProxy==null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
 			if (realTxManager instanceof IThreadConnectableTransactionManager) {
+				//noinspection rawtypes
 				threadConnectableProxy = (IThreadConnectableTransactionManager)realTxManager;
 			} else if (realTxManager instanceof JtaTransactionManager) {
 				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager)realTxManager);

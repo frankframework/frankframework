@@ -337,7 +337,7 @@ public class LockerTest extends TransactionManagerTestBase {
 				log.warn("exception for second insert: "+e.getMessage(), e);
 			} finally {
 				if(mainItx != null) {
-					mainItx.commit();
+					mainItx.complete();
 				}
 			}
 
