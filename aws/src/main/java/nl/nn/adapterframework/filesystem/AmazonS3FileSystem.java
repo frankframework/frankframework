@@ -87,21 +87,22 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 
+	private CredentialFactory cf;
 	private AmazonS3 s3Client;
 
 	@Override
 	public void configure() throws ConfigurationException {
-
-		if (StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) {
-			throw new ConfigurationException(" empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
+		if (StringUtils.isEmpty(getAuthAlias()) && (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))) {
+			throw new ConfigurationException("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
 		}
+		cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 
 		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
-			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
 		}
 
 		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName())) {
-			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
+			throw new ConfigurationException("invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
 		}
 	}
 
@@ -114,7 +115,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	//For testing purposes
 	public AmazonS3 createS3Client() {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())

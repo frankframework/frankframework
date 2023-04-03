@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.senders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.amazonaws.services.s3.model.S3Object;
@@ -50,6 +53,26 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		sender.setAuthAlias("dummy");
 		sender.setBucketName(awsHelper.getBucketName());
 		return sender;
+	}
+
+	@Test
+	public void testS3FileSystemDelegator() {
+		assertEquals("dummy", fileSystemSender.getFileSystem().getAuthAlias());
+
+		fileSystemSender.setAccessKey("123");
+		assertEquals("123", fileSystemSender.getFileSystem().getAccessKey());
+
+		fileSystemSender.setSecretKey("456");
+		assertEquals("456", fileSystemSender.getFileSystem().getSecretKey());
+
+		fileSystemSender.setClientRegion("dummy-region");
+		assertEquals("dummy-region", fileSystemSender.getFileSystem().getClientRegion());
+
+		fileSystemSender.setChunkedEncodingDisabled(true);
+		assertTrue(fileSystemSender.getFileSystem().isChunkedEncodingDisabled());
+
+		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
+		assertTrue(fileSystemSender.getFileSystem().isForceGlobalBucketAccessEnabled());
 	}
 
 //	@Test

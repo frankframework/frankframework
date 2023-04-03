@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.amazonaws.services.s3.model.S3Object;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
@@ -38,6 +42,60 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		s3.setAuthAlias("dummy");
 		s3.setBucketName(awsHelper.getBucketName());
 		return s3;
+	}
+
+	@Test
+	public void testConfigureAccessKey() throws Exception {
+		fileSystem.setAuthAlias(null);
+		fileSystem.setAccessKey("123");
+		fileSystem.setSecretKey(null);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
+		assertEquals("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)", e.getMessage());
+	}
+
+	@Test
+	public void testConfigureSecretKey() throws Exception {
+		fileSystem.setAuthAlias(null);
+		fileSystem.setAccessKey(null);
+		fileSystem.setSecretKey("123");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
+		assertEquals("empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)", e.getMessage());
+	}
+
+	@Test
+	public void testConfigureAccessAndSecretKey() throws Exception {
+		fileSystem.setAuthAlias(null);
+		fileSystem.setAccessKey("123");
+		fileSystem.setSecretKey("456");
+
+		fileSystem.configure();
+		assertEquals("123", fileSystem.getAccessKey());
+	}
+
+	@Test
+	public void testConfigureAuthAlias() throws Exception {
+		fileSystem.setAuthAlias("123");
+
+		fileSystem.configure();
+		assertEquals("123", fileSystem.getAuthAlias());
+	}
+
+	@Test
+	public void testInvalidRegion() throws Exception {
+		fileSystem.setClientRegion("tralala");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
+		assertThat(e.getMessage(), startsWith("invalid region [tralala] please use"));
+	}
+
+	@Test
+	public void testInvalidBucketName() throws Exception {
+		fileSystem.setBucketName("tr/89/**-alala");
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
+		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS to see correct bucket naming", e.getMessage());
 	}
 
 	@Disabled

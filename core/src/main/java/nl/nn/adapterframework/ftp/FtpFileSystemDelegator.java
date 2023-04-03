@@ -31,7 +31,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	FtpFileSystem getFileSystem();
-	
+
 	@ReferTo(FtpFileSystem.class)
 	default void setRemoteDirectory(String remoteDirectory) {
 		getFileSystem().setRemoteDirectory(remoteDirectory);
