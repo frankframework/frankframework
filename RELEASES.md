@@ -24,7 +24,8 @@ Upcoming (7.8)
 - MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained
   by setting defaultValueMethod="input".
-- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
+- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'.
+- XsltPipe and XsltSender 'handleLexicalEvents' attribute default value has been changed to 'false'.
 
 7.7
 ---
