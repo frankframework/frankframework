@@ -19,6 +19,7 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
@@ -34,6 +35,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	private @Getter @Setter int maxPoolSize=20;
 	private @Getter @Setter int maxIdleTime=60;
 	private @Getter @Setter int maxLifeTime=0;
+	private @Getter @Setter String testQuery = null;
 
 	public BtmDataSourceFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
@@ -41,6 +43,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		maxPoolSize = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxIdleTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxIdleTime", maxIdleTime);
 		maxLifeTime = appConstants.getInt("transactionmanager.btm.jdbc.connection.maxLifeTime", maxLifeTime);
+		testQuery = appConstants.getString("transactionmanager.btm.jdbc.connection.testQuery", testQuery);
 	}
 
 	@Override
@@ -52,6 +55,13 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 			result.setMaxPoolSize(getMaxPoolSize());
 			result.setMaxIdleTime(getMaxIdleTime());
 			result.setMaxLifeTime(getMaxLifeTime());
+
+			if(StringUtils.isNotBlank(testQuery)) {
+				result.setTestQuery(testQuery);
+			}
+			result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
+			result.setIsolationLevel("READ_COMMITTED");
+
 			result.setAllowLocalTransactions(true);
 			result.setXaDataSource((XADataSource)dataSource);
 			result.init();
