@@ -17,16 +17,16 @@ package nl.nn.adapterframework.core;
 
 import javax.transaction.TransactionManager;
 
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
-
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * Class which generates extra logging when starting and committing transactions.
@@ -122,7 +122,13 @@ public class IbisTransaction {
 		return txStatus.isCompleted();
 	}
 
-	public void commit() {
+	/**
+	 * Complete this transaction by either committing it or rolling it back, depending on the
+	 * transaction status.
+	 *
+	 * In case a rollback is performed, a successful rollback will not raise an exception.
+	 */
+	public void complete() {
 		boolean mustRollback = txStatus.isRollbackOnly();
 		if (txIsNew) {
 			if (mustRollback) {
