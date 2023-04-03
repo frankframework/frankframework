@@ -14,6 +14,9 @@
 	</parent>
 
 	<properties>
+		<config.image.repository>private.docker.nexus.frankframework.org</config.image.repository>
+		<config.image.name>ff-test</config.image.name>
+		<config.image.tag>${config.image.name}:${revision}-${config.image.variation}</config.image.tag>
 		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid><!-- explicitly defined because of the legacy profile -->
 	</properties>
 
