@@ -1,16 +1,21 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 import java.net.URL;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.UrlMessage;
@@ -36,8 +41,9 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 
 	@Test
-	public void testConfigureAndStart() throws ConfigurationException, PipeStartException {
+	public void testConfigureAndStartWithDefaultAttributes() throws ConfigurationException, PipeStartException {
 		configureAndStartPipe();
+		assertFalse(pipe.isSkipOnEmptyInput());
 	}
 
 	@Test
@@ -196,22 +202,22 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	@Test
 	public void testNullDirectory() throws Exception {
-		exception.expectMessage("directory or directorySessionKey must be specified");
-
 		pipe.setDirectory(null);
 		pipe.setDirectorySessionKey(null);
-		configureAndStartPipe();
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.containsString("directory or directorySessionKey must be specified"));
 	}
 
 	@Test
 	public void testNullDirectoryFakeSessionKey() throws Exception {
-		exception.expectMessage("directorySessionKey is empty");
-
 		pipe.setDirectory(null);
 		pipe.setDirectorySessionKey("dummy");
 		configureAndStartPipe();
 
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
-		doPipe(new UrlMessage(zip));
+
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(new UrlMessage(zip)));
+		assertThat(e.getMessage(), Matchers.containsString("directorySessionKey is empty"));
 	}
 }

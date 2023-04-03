@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 
@@ -203,9 +204,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 	@Test
 	public void testEmptyXmlTag() throws Exception {
-		exception.expect(ConfigurationException.class);
-		exception.expectMessage("Attribute [xmlTag] must be specified");
-		configureAndStartPipe();
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.containsString("Attribute [xmlTag] must be specified"));
 	}
 
 	@Test

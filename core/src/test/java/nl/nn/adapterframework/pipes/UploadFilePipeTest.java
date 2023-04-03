@@ -1,13 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.zip.ZipInputStream;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -62,22 +64,19 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	 */
 	@Test
 	public void testNullSessionKey() throws Exception {
-		exception.expect(PipeRunException.class);
 		configureAndStartPipe();
-		doPipe(pipe, "das", session);
-		fail("this is expected to fail");
 
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "das", session));
+		assertThat(e.getMessage(), Matchers.endsWith("got null value from session under key [file]"));
 	}
 
 	@Test
 	public void testNullInputStream() throws Exception {
-		// exception.expect(PipeRunException.class);
-		exception.expectMessage("got null value from session under key [fdsf123]");
 		pipe.setSessionKey("fdsf123");
 		configureAndStartPipe();
-		doPipe(pipe, "das", session);
-		fail("this is expected to fail");
 
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "das", session));
+		assertThat(e.getMessage(), Matchers.containsString("got null value from session under key [fdsf123]"));
 	}
 
 	/**
@@ -100,17 +99,15 @@ public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 	 */
 	@Test
 	public void testDoPipeFailWrongExtension() throws Exception {
-		exception.expect(PipeRunException.class);
-		exception.expectMessage("file extension [txt] should be 'zip'");
 		String key = "key";
 		pipe.setSessionKey(key);
 		pipe.setDirectory(sourceFolderPath);
 		session.put("key", zis);
 		session.put("fileName", "1.txt");
 		configureAndStartPipe();
-		doPipe(pipe, "dsfdf", session);
-		fail("this is expected to fail");
 
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "dsfdf", session));
+		assertThat(e.getMessage(), Matchers.containsString("file extension [txt] should be 'zip'"));
 	}
 
 	/**

@@ -63,6 +63,19 @@
 
 		<!-- Test scoped and provided dependencies -->
 		<dependency>
+			<groupId>io.findify</groupId>
+			<artifactId>s3mock_2.13</artifactId>
+			<version>0.2.6</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
@@ -84,4 +97,13 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

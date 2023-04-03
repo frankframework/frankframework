@@ -1,14 +1,18 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.DateUtils;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
@@ -20,27 +24,30 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testConfigureNullDateFormat() throws Exception {
-		exception.expectMessage("has a null value for dateFormat");
 		pipe.setDateFormat(null);
-		configureAndStartPipe();
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.endsWith("has a null value for dateFormat"));
 	}
 
 	@Test
 	public void testConfigureNullSessionKey() throws Exception {
-		exception.expectMessage("has a null value for sessionKey");
 		pipe.setSessionKey(null);
-		configureAndStartPipe();
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.endsWith("has a null value for sessionKey"));
 	}
 
 	@Test
 	public void testFixedDateTimeFormatInvalid() throws Exception {
-		exception.expectMessage("cannot parse fixed date");
 		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
 		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
-		doPipe(pipe, "dummy", session);
+
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "dummy", session));
+		assertThat(e.getMessage(), Matchers.containsString("cannot parse fixed date"));
 	}
 
 	@Test
@@ -72,7 +79,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		Date second = formatter.parse(secondResult);
 
 		long timeDifference = second.getTime()-first.getTime();
-		assertEquals(timeDifference, 0);
+		assertEquals(0, timeDifference);
 	}
 
 	@Test
@@ -97,16 +104,17 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		Date second = formatter.parse(secondResult);
 
 		long timeDifference = second.getTime()-first.getTime();
-		assertEquals(result, PutSystemDateInSession.FIXEDDATETIME);
-		assertEquals(timeDifference, 0);
+		assertEquals(PutSystemDateInSession.FIXEDDATETIME, result);
+		assertEquals(0, timeDifference);
 	}
 
 	@Test
 	public void testConfigureIsReturnFixedDatewithoutStub() throws Exception {
-		exception.expectMessage("returnFixedDate only allowed in stub mode");
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
-		configureAndStartPipe();
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.endsWith("returnFixedDate only allowed in stub mode"));
 	}
 
 	@Test
@@ -123,10 +131,11 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testConfigureInvalidDateFormat() throws Exception {
-		exception.expectMessage("has an illegal value for dateFormat");
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
-		configureAndStartPipe();
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.containsString("has an illegal value for dateFormat"));
 	}
 
 	@Test
@@ -149,7 +158,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 		long timeDifference = second.getTime()-first.getTime();
 
-		assertTrue("Timestamps should be different", timeDifference != 0);
+		assertEquals("Timestamps should be different", 1000L, timeDifference);
 	}
 
 }

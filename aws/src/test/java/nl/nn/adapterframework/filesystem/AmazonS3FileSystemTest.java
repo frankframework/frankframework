@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.nio.file.Path;
 
@@ -8,26 +10,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3FileSystem> {
-	protected String PROPERTY_FILE = "AmazonS3.properties";
 
-	private boolean chunkedEncodingDisabled = false;
-	private boolean accelerateModeEnabled = false; // this may involve some extra costs
-	private boolean forceGlobalBucketAccessEnabled = false;
-
-	private Regions clientRegion = Regions.EU_WEST_1;
-
-
-	protected String accessKey    = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
-	protected String secretKey    = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
-	protected String bucketName    = PropertyUtil.getProperty(PROPERTY_FILE, "bucketName");
-
-	private int waitMilis = 1000;
+	private int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMilis);
@@ -38,15 +27,16 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir, accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
+		return new AmazonS3FileSystemTestHelper(tempdir);
 	}
 
 	@Override
-	public AmazonS3FileSystem createFileSystem(){
-		AmazonS3FileSystem s3 = new AmazonS3FileSystem();
-		s3.setAccessKey(accessKey);
-		s3.setSecretKey(secretKey);
-		s3.setBucketName(bucketName);
+	public AmazonS3FileSystem createFileSystem() {
+		AmazonS3FileSystem s3 = spy(AmazonS3FileSystem.class);
+		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
+		doReturn(awsHelper.getS3Client()).when(s3).createS3Client();
+		s3.setAuthAlias("dummy");
+		s3.setBucketName(awsHelper.getBucketName());
 		return s3;
 	}
 
@@ -77,18 +67,18 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
 		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
 	}
-	
+
 	@Test
 	public void testToFileWithBucketnameInFilename() throws FileSystemException {
 		// arrange
 		String filename="fakeFile";
 		String bucketname="fakeBucket";
-		
+
 		String combinedFilename = bucketname +"|" + filename;
-		
+
 		// act
 		S3Object ref = fileSystem.toFile(combinedFilename);
-		
+
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(filename, ref.getKey());
@@ -100,12 +90,12 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 		String foldername="fakeFolder";
 		String filename="fakeFile";
 		String bucketname="fakeBucket";
-		
+
 		String combinedFilename = bucketname +"|" + foldername +"/"+ filename;
-		
+
 		// act
 		S3Object ref = fileSystem.toFile(combinedFilename);
-		
+
 		// assert
 		assertEquals(bucketname, ref.getBucketName());
 		assertEquals(foldername +"/"+ filename, ref.getKey());

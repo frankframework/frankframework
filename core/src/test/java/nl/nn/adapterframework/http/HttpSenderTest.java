@@ -16,13 +16,16 @@
 package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -47,22 +50,17 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void relativeUrl() throws Throwable {
-		exception.expect(ConfigurationException.class);
-		exception.expectMessage("must use an absolute url starting with http(s)://");
-
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl("relative/path");
 
-		sender.configure();
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertThat(e.getMessage(), Matchers.endsWith("must use an absolute url starting with http(s)://"));
 	}
 
 	@Test
 	public void relativeUrlParameter() throws Throwable {
-		exception.expect(SenderException.class);
-		exception.expectMessage("must use an absolute url starting with http(s)://");
-
 		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
 		sender.setMethodType(HttpMethod.GET);
@@ -72,7 +70,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessageOrThrow(null, null);
+		SenderException e = assertThrows(SenderException.class, ()->sender.sendMessageOrThrow(null, null));
+		assertThat(e.getMessage(), Matchers.endsWith("must use an absolute url starting with http(s)://"));
 	}
 
 	@Test
@@ -1117,11 +1116,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setKeystoreType(KeystoreType.JKS);
 
 		sender.setMethodType(HttpMethod.GET);
-		exception.expect(SenderException.class);
-		exception.expectMessage("cannot create or initialize SocketFactory");
 		sender.configure();
-		sender.open();
 
+		SenderException e = assertThrows(SenderException.class, sender::open);
+		assertThat(e.getMessage(), Matchers.containsString("cannot create or initialize SocketFactory"));
 	}
 
 	@Test
@@ -1154,10 +1152,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
-		exception.expect(SenderException.class);
-		exception.expectMessage("cannot create or initialize SocketFactory");
 		sender.configure();
-		sender.open();
+
+		SenderException e = assertThrows(SenderException.class, sender::open);
+		assertThat(e.getMessage(), Matchers.containsString("cannot create or initialize SocketFactory"));
 	}
 
 	@Test

@@ -19,10 +19,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.AmazonServiceException;
@@ -38,6 +37,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -50,8 +50,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
 
@@ -64,6 +66,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter String accessKey;
 	private @Getter String secretKey;
 	private @Getter String authAlias;
+
+	private String serviceEndpoint = null;
 
 	private @Getter boolean chunkedEncodingDisabled = false;
 	private @Getter boolean forceGlobalBucketAccessEnabled = false;
@@ -103,15 +107,29 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public void open() throws FileSystemException {
+		s3Client = createS3Client();
+
+		super.open();
+	}
+
+	//For testing purposes
+	public AmazonS3 createS3Client() {
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
-				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled()).withRegion(getClientRegion())
+				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-				.withClientConfiguration(this.getProxyConfig());
-		s3Client = s3ClientBuilder.build();
-		super.open();
+				.withClientConfiguration(this.getProxyConfig())
+				.enablePathStyleAccess();
+
+		if(StringUtils.isBlank(serviceEndpoint)) {
+			s3ClientBuilder.withRegion(getClientRegion());
+		} else {
+			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, getClientRegion()));
+		}
+
+		return s3ClientBuilder.build();
 	}
 
 	@Override
@@ -163,9 +181,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
-		String prefix = folder != null ? folder + "/" : "";
+		String prefix = folder != null ? folder + "/" : null;
 		try {
-			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
+			ObjectListing listing = (prefix == null) ? s3Client.listObjects(bucketName) : s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
 			while (listing.isTruncated()) {
 				listing = s3Client.listNextBatchOfObjects(listing);
@@ -184,7 +202,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			object.setBucketName(summary.getBucketName());
 			object.setKey(summary.getKey());
 			object.setObjectMetadata(metadata);
-			if(!object.getKey().endsWith("/") && !(prefix.isEmpty() && object.getKey().contains("/"))) {
+			if(!object.getKey().endsWith("/") && !(StringUtils.isEmpty(prefix) && object.getKey().contains("/"))) {
 				list.add(object);
 			}
 		}
@@ -199,18 +217,13 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "tempFile";
-
-		final File file = new File(fileName);
+		final File file = FileUtils.createTempFile(".s3-upload");
 		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
+		return new BufferedOutputStream(fos) {
 			boolean isClosed = false;
 			@Override
 			public void close() throws IOException {
 				super.close();
-				bos.close();
 				if(!isClosed) {
 					try (FileInputStream fis = new FileInputStream(file)) {
 						ObjectMetadata metaData = new ObjectMetadata();
@@ -218,13 +231,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 					} finally {
-						file.delete();
 						isClosed = true;
+						Files.delete(file.toPath());
 					}
 				}
 			}
 		};
-		return filterOutputStream;
 	}
 
 	@Override
@@ -542,9 +554,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	/**
+	 * The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)
+	 */
+	public void setServiceEndpoint(String serviceEndpoint) {
+		this.serviceEndpoint = serviceEndpoint;
+	}
+
+	/**
 	 * Name of the region that the client will be created from
 	 * @ff.default eu-west-1
 	 */
+	@Mandatory
 	public void setClientRegion(String clientRegion) {
 		this.clientRegion = clientRegion;
 	}
