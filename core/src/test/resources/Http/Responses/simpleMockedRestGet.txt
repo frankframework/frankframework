@@ -4,7 +4,8 @@
 		<header name="connection" value="Keep-Alive"/>
 		<header name="content-type" value="text/plain"/>
 	</headers>
-	<message>GET / HTTP/1.1
+	<message>HOST 127.0.0.1
+GET / HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
 Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 </message>

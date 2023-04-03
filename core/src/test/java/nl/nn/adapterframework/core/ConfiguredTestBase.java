@@ -3,8 +3,6 @@ package nl.nn.adapterframework.core;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -23,17 +21,12 @@ public abstract class ConfiguredTestBase {
 	protected Adapter adapter;
 	private static  TestConfiguration configuration;
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	protected TestConfiguration getConfiguration() {
 		if(configuration == null) {
 			configuration = new TestConfiguration();
 		}
 		return configuration;
 	}
-
-
 
 	@Before
 	public void setUp() throws Exception {

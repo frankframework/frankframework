@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
 
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -16,12 +18,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.CompressPipe.FileFormat;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private String dummyString = "dummyString";
 	private String dummyStringSemiColon = dummyString + ";";
+
+	@ClassRule
+	public static TemporaryFolder tempFolder = new TemporaryFolder();
 
 	@Override
 	public CompressPipe createPipe() {
@@ -85,7 +89,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testMessageIsNotContent() throws Exception {
-		String outputDir = FileUtils.createTempDir().getPath();
+		String outputDir = tempFolder.getRoot().getPath();
 		pipe.setFilenamePattern("file.txt");
 		pipe.setZipEntryPattern("fileaa.txt");
 		pipe.setFileFormat(FileFormat.ZIP);
@@ -98,7 +102,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testMessageIsNotContentAndResultString() throws Exception {
-		String outputDir = FileUtils.createTempDir().getPath();
+		String outputDir = tempFolder.getRoot().getPath();
 		pipe.setFilenamePattern("file.txt");
 		pipe.setZipEntryPattern("fileaa.txt");
 		pipe.setConvert2String(true);

@@ -1,14 +1,18 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.senders;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.nn.adapterframework.senders.AmazonS3Sender;
+import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.AmazonS3FileSystemTestHelper;
+import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 
@@ -20,27 +24,10 @@ import nl.nn.adapterframework.testutil.PropertyUtil;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	protected String PROPERTY_FILE = "AmazonS3.properties";
-
-	private boolean chunkedEncodingDisabled = false;
-	private boolean accelerateModeEnabled = false; // this may involve some extra costs
-	private boolean forceGlobalBucketAccessEnabled = false;
-
-	protected String accessKey    = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
-	protected String secretKey    = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
-	protected String bucketName   = PropertyUtil.getProperty(PROPERTY_FILE, "bucketName");
-	protected String proxyHost    = PropertyUtil.getProperty(PROPERTY_FILE, "proxyHost");
-	protected int proxyPort;
-
-	private Regions clientRegion = Regions.EU_WEST_1;
-
-	private int waitMilis = 1000;
+	private int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMilis);
-		if (StringUtils.isNotEmpty(PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort"))) {
-			proxyPort = Integer.parseInt(PropertyUtil.getProperty(PROPERTY_FILE, "proxyPort"));
-		}
 	}
 
 	@TempDir
@@ -49,19 +36,20 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(tempdir, accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
-				forceGlobalBucketAccessEnabled, bucketName, clientRegion);
+		return new AmazonS3FileSystemTestHelper(tempdir);
 	}
 
 	@Override
-	public AmazonS3Sender createFileSystemSender(){
-		AmazonS3Sender s3 = new AmazonS3Sender();
-		s3.setAccessKey(accessKey);
-		s3.setSecretKey(secretKey);
-		s3.setBucketName(bucketName);
-		s3.setProxyHost(proxyHost);
-		s3.setProxyPort(proxyPort);
-		return s3;
+	public AmazonS3Sender createFileSystemSender() {
+		AmazonS3FileSystem s3 = spy(AmazonS3FileSystem.class);
+		AmazonS3FileSystemTestHelper awsHelper = (AmazonS3FileSystemTestHelper) this.helper;
+		doReturn(awsHelper.getS3Client()).when(s3).createS3Client();
+
+		AmazonS3Sender sender = new AmazonS3Sender();
+		sender.setFileSystem(s3);
+		sender.setAuthAlias("dummy");
+		sender.setBucketName(awsHelper.getBucketName());
+		return sender;
 	}
 
 //	@Test

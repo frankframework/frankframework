@@ -34,7 +34,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -61,7 +61,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 
 		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true));
 
-		return ResponseMessage.ok(logSettings);
+		return new JsonResponseMessage(logSettings);
 	}
 
 	@ActionSelector(BusAction.MANAGE)

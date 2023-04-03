@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;
 	private @Getter String directorySessionKey;
-	private @Getter boolean deleteOnExit=true;
+	private @Getter @Deprecated boolean deleteOnExit=true;
 	private @Getter boolean collectResults=true;
 	private @Getter boolean collectFileContents=false;
 	private @Getter String collectFileContentsBase64Encoded;
@@ -240,9 +240,6 @@ public class UnzipPipe extends FixedForwardPipe {
 									tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 								}
 							}
-							if (isDeleteOnExit()) {
-								tmpFile.deleteOnExit();
-							}
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
@@ -291,7 +288,10 @@ public class UnzipPipe extends FixedForwardPipe {
 	/**
 	 * If true, file is automatically deleted upon normal JVM termination
 	 * @ff.default true
+	 * @deprecated
 	 */
+	@Deprecated
+	@ConfigurationWarning("This flag is no longer supported as it leaks server memory. Temporary files should be removed by other means.")
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}

@@ -101,4 +101,8 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	public static int getSize() {
 		return getInstance().getWarnings().size();
 	}
+
+	public static List<String> getWarningsList() {
+		return getInstance().getWarnings();
+	}
 }

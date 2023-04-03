@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
@@ -63,7 +66,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 					alias = aliases[0];
 				}
 			} catch (Exception e) {
-				System.out.println("unable to retreive alias from PFX file");
+				fail("unable to retreive alias from PFX file");
 			}
 		}
 		assertNotNull((aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file", privateKey);
@@ -79,7 +82,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
-	
+
 	@Test
 	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
 		pipe.setKeystore("/Signature/ks_multipassword.jks");
@@ -103,10 +106,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystoreType(KeystoreType.JKS);
 		pipe.setKeystoreAlias("1");
 
-		exception.expect(PipeStartException.class);
-		exception.expectMessage("Cannot obtain Private Key in alias [1]");
-		configureAndStartPipe();
-
+		PipeStartException e = assertThrows(PipeStartException.class, this::configureAndStartPipe);
+		assertThat(e.getMessage(), Matchers.containsString("Cannot obtain Private Key in alias [1]"));
 	}
 
 	@Test
@@ -148,9 +149,9 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystore("/Signature/privateKey.key");
 		pipe.setKeystoreType(KeystoreType.PEM);
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe(new Message(testMessage));
-		
+
 		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
@@ -162,14 +163,14 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
-		
+
 		pipe.addParameter(new Parameter("signature", testSignature));
-		
+
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
 		pipe.registerForward(failure);
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
 		assertEquals(testMessage, prr.getResult().asString());
@@ -182,14 +183,14 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
-		
+
 		pipe.addParameter(new Parameter("signature", testSignature));
-		
+
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
 		pipe.registerForward(failure);
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe(new Message("otherMessage"));
 
 		assertEquals("failure", prr.getPipeForward().getName());
@@ -200,14 +201,14 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.crt");
 		pipe.setKeystoreType(KeystoreType.PEM);
-		
+
 		pipe.addParameter(new Parameter("signature", testSignature));
-		
+
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
 		pipe.registerForward(failure);
 		configureAndStartPipe();
-		
+
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
 		assertEquals(testMessage, prr.getResult().asString());

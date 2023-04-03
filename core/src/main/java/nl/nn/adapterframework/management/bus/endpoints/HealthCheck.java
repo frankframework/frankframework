@@ -35,7 +35,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.RunState;
@@ -93,7 +93,9 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 
 	private Message<String> getIbisHealth() {
@@ -150,7 +152,9 @@ public class HealthCheck extends BusEndpointBase {
 		}
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 
 	/**
@@ -201,6 +205,8 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 }

@@ -6,89 +6,92 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.Misc;
+import io.findify.s3mock.S3Mock;
+import lombok.Getter;
+import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
-public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
+public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
-	private String accessKey;
-	private String secretKey;
-	private String proxyHost = null;
-	private Integer proxyPort = null;
-	private boolean chunkedEncodingDisabled;
-	private boolean accelerateModeEnabled; // this may involve some extra costs
-	private boolean forceGlobalBucketAccessEnabled;
-	private String bucketName;
-	private Regions clientRegion;
-	private AmazonS3 s3Client;
+	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
+	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
+
+	protected @Getter String bucketName   = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
+
+	private Regions clientRegion = Regions.EU_WEST_1;
+	public static final int S3_PORT = 19090;
+	private String serviceEndpoint = "http://localhost:"+S3_PORT;
+	private boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
+
+	private @Getter AmazonS3 s3Client;
 
 	public Path tempFolder;
 
-	public AmazonS3FileSystemTestHelper(Path tempFolder, String accessKey, String secretKey, boolean chunkedEncodingDisabled,
-			boolean accelerateModeEnabled, boolean forceGlobalBucketAccessEnabled, String bucketName,
-			Regions clientRegion) {
+	private S3Mock s3Mock;
+
+	public AmazonS3FileSystemTestHelper(Path tempFolder) {
 		this.tempFolder = tempFolder;
-		this.accessKey = accessKey;
-		this.secretKey = secretKey;
-		this.chunkedEncodingDisabled = chunkedEncodingDisabled;
-		this.accelerateModeEnabled = accelerateModeEnabled;
-		this.forceGlobalBucketAccessEnabled = forceGlobalBucketAccessEnabled;
-		this.bucketName = bucketName;
-		this.clientRegion = clientRegion;
 	}
 
 	@Override
-	public void setUp() throws ConfigurationException, IOException, FileSystemException {
-		open();
-		if (!s3Client.doesBucketExist(bucketName)) {
+	public void setUp() throws Exception {
+		if(runLocalStub) {
+			s3Mock = new S3Mock.Builder().withPort(S3_PORT).withInMemoryBackend().build();
+			s3Mock.start();
+		}
+
+		s3Client = createS3Client();
+
+		if (!s3Client.doesBucketExistV2(bucketName)) {
 			s3Client.createBucket(bucketName);
 		}
 	}
 
-	@Override
-	public void tearDown() throws Exception {
-		cleanUpBucketAndShutDown(s3Client);
-	}
-
-	public void cleanUpBucketAndShutDown(AmazonS3 s3Client) {
-		if(s3Client.doesBucketExistV2(bucketName)) {
-			cleanUpFolder(null);
-			//s3Client.deleteBucket(bucketName);
-		}
-		if(s3Client != null) {
-			s3Client.shutdown();
-		}
-	}
-
-	private void open() {
+	//For testing purposes
+	private AmazonS3 createS3Client() {
 		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
-				.withChunkedEncodingDisabled(chunkedEncodingDisabled)
-				.withAccelerateModeEnabled(accelerateModeEnabled)
-				.withForceGlobalBucketAccessEnabled(forceGlobalBucketAccessEnabled)
-				.withRegion(clientRegion.getName())
+				.withChunkedEncodingDisabled(false)
+				.withForceGlobalBucketAccessEnabled(false)
 				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-				.withClientConfiguration(this.getProxyConfig());
-		s3Client = s3ClientBuilder.build();
+				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
+				.enablePathStyleAccess();
+
+		if(runLocalStub) {
+			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
+		} else {
+			s3ClientBuilder.withRegion(clientRegion);
+		}
+
+		return s3ClientBuilder.build();
+	}
+
+	@Override
+	public void tearDown() throws Exception {
+		if(s3Mock != null) {
+			s3Mock.shutdown();
+		}
 	}
 
 	@Override
@@ -99,7 +102,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 		}else {
 			objectName = folder == null ? filename : folder +"/"+ filename;
 		}
-		return s3Client.doesObjectExist(bucketName, objectName);
+		try {
+			return s3Client.doesObjectExist(bucketName, objectName);
+		} catch(AmazonS3Exception e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -115,13 +122,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 		final File file = new File(fileName);
 		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
+		return new BufferedOutputStream(fos) {
 
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				bos.close();
 
 				FileInputStream fis = new FileInputStream(file);
 				ObjectMetadata metaData = new ObjectMetadata();
@@ -133,12 +138,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 				file.delete();
 			}
 		};
-		return filterOutputStream;
 	}
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
-		String path = Misc.concatStrings(folder, "/", filename);
+		String path = StringUtil.concatStrings(folder, "/", filename);
 		final S3Object file = s3Client.getObject(bucketName, path);
 		InputStream is = file.getObjectContent();
 		FilterInputStream fos = new FilterInputStream(is) {
@@ -166,8 +170,11 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		String foldername = folderName.endsWith("/") ? folderName : folderName + "/";
-		cleanUpFolder(foldername);
+		String folder = null;
+		if(folderName != null) {
+			folder = folderName.endsWith("/") ? folderName : folderName + "/";
+		}
+		cleanUpFolder(folder);
 	}
 
 	private void cleanUpFolder(String foldername) {
@@ -189,38 +196,4 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper{
 			}
 		}
 	}
-
-
-	public AmazonS3 getS3Client() {
-		return s3Client;
-	}
-
-	public String getProxyHost() {
-		return proxyHost;
-	}
-
-	public void setProxyHost(String proxyHost) {
-		this.proxyHost = proxyHost;
-	}
-
-	public Integer getProxyPort() {
-		return proxyPort;
-	}
-
-	public void setProxyPort(Integer proxyPort) {
-		this.proxyPort = proxyPort;
-	}
-
-	public ClientConfiguration getProxyConfig() {
-		ClientConfiguration proxyConfig = null;
-		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(this.getProxyHost());
-			proxyConfig.setProxyPort(this.getProxyPort());
-		}
-		return proxyConfig;
-	}
-
-
 }

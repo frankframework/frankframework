@@ -57,6 +57,8 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapter);
+		} else {
+			ApplicationWarnings.add(log, message);
 		}
 	}
 

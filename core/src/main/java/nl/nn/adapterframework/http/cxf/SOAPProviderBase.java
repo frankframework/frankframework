@@ -222,7 +222,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 								String mimeType = partElement.getAttribute("mimeType");
 								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-								attachmentPart.setContentId(partSessionKey);
+								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 								soapMessage.addAttachmentPart(attachmentPart);
 
 								log.debug(getLogPrefix(messageId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");

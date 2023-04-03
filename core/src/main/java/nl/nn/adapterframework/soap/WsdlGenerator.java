@@ -359,24 +359,24 @@ public class WsdlGenerator {
 	}
 
 	public void init() throws ConfigurationException {
-		Set<IXSD> inputXsds = new HashSet<IXSD>();
-		Set<IXSD> outputXsds = new HashSet<IXSD>();
-		xsds = new HashSet<IXSD>();
-		rootXsds = new HashSet<IXSD>();
-		Set<IXSD> inputRootXsds = new HashSet<IXSD>();
+		Set<IXSD> inputXsds = new HashSet<>();
+		Set<IXSD> outputXsds = new HashSet<>();
+		xsds = new HashSet<>();
+		rootXsds = new HashSet<>();
+		Set<IXSD> inputRootXsds = new HashSet<>();
 		inputRootXsds.addAll(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
 		inputXsds.addAll(XSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
-			Set<IXSD> outputRootXsds = new HashSet<IXSD>();
+			Set<IXSD> outputRootXsds = new HashSet<>();
 			outputRootXsds.addAll(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
 			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
 		}
-		prefixByXsd = new LinkedHashMap<IXSD, String>();
-		namespaceByPrefix = new LinkedHashMap<String, String>();
+		prefixByXsd = new LinkedHashMap<>();
+		namespaceByPrefix = new LinkedHashMap<>();
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
 				SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
@@ -417,8 +417,7 @@ public class WsdlGenerator {
 				jmsActive = true;
 			} else if (listener instanceof JavaListener) {
 				JavaListener jl = (JavaListener) listener;
-				if (jl.isHttpWsdl())
-				httpActive = true;
+				if (jl.isHttpWsdl()) httpActive = true;
 			}
 		}
 	}
@@ -455,7 +454,7 @@ public class WsdlGenerator {
 			xsds.add(xsd);
 		} else {
 			xsds = xmlValidator.getXsds();
-			Set<IXSD> remove = new HashSet<IXSD>();
+			Set<IXSD> remove = new HashSet<>();
 			for (IXSD xsd : xsds) {
 				if (excludeXsds.contains(xsd.getNamespace())) {
 					remove.add(xsd);
@@ -482,7 +481,7 @@ public class WsdlGenerator {
 			out.closeEntry();
 
 			// And then all XSD's
-			Set<String> entries = new HashSet<String>();
+			Set<String> entries = new HashSet<>();
 			for (IXSD xsd : xsds) {
 				String zipName = xsd.getResourceTarget();
 				if (entries.add(zipName)) {
@@ -517,8 +516,8 @@ public class WsdlGenerator {
 			}
 		}
 		w.setPrefix(getTargetNamespacePrefix(), getTargetNamespace());
-		for (String prefix: namespaceByPrefix.keySet()) {
-			w.setPrefix(prefix, namespaceByPrefix.get(prefix));
+		for (Map.Entry<String, String> entry : namespaceByPrefix.entrySet()) {
+			w.setPrefix(entry.getKey(), entry.getValue());
 		}
 		w.writeStartElement(WSDL_NAMESPACE, "definitions"); {
 			w.writeNamespace(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
@@ -528,8 +527,8 @@ public class WsdlGenerator {
 				w.writeNamespace(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
 			}
 			w.writeNamespace(getTargetNamespacePrefix(), getTargetNamespace());
-			for (String prefix: namespaceByPrefix.keySet()) {
-				w.writeNamespace(prefix, namespaceByPrefix.get(prefix));
+			for (Map.Entry<String, String> entry: namespaceByPrefix.entrySet()) {
+				w.writeNamespace(entry.getKey(), entry.getValue());
 			}
 			w.writeAttribute("targetNamespace", getTargetNamespace());
 
@@ -558,9 +557,10 @@ public class WsdlGenerator {
 
 	/**
 	 * Output the 'types' section of the WSDL
-	 * @param w
-	 * @throws XMLStreamException
-	 * @throws IOException
+	 * @param w Writer to which XML is written.
+	 * @throws XMLStreamException Thrown is there is an exception writing to stream.
+	 * @throws IOException Thrown if there's an IOException during writing.
+	 * @throws ConfigurationException Thrown if there's an error during configuration.
 	 */
 	protected void types(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
 		w.writeStartElement(WSDL_NAMESPACE, "types");
@@ -575,42 +575,32 @@ public class WsdlGenerator {
 
 	/**
 	 * Outputs the 'messages' section.
-	 * @param w
-	 * @throws XMLStreamException
-	 * @throws IOException
-	 * @throws ConfigurationException
+	 * @param w Writer to which XML is written.
+	 * @throws XMLStreamException Thrown is there is an exception writing to stream.
+	 *
 	 */
-	protected void messages(XMLStreamWriter w) throws XMLStreamException, IOException, ConfigurationException {
-		List<QName> parts = new ArrayList<QName>();
-		if (inputHeaderElement != null && !inputHeaderIsOptional) {
-			parts.add(inputHeaderElement);
-		}
-		if (inputBodyElement != null) {
-			parts.add(inputBodyElement);
-		}
-		message(w, inputRoot, parts);
-		if (inputHeaderIsOptional) {
-			parts.clear();
-			if (inputHeaderElement != null) {
-				parts.add(inputHeaderElement);
-			}
-			message(w, inputRoot + "_" + inputHeaderElement.getLocalPart(), parts);
-		}
+	protected void messages(XMLStreamWriter w) throws XMLStreamException {
+		List<QName> parts = new ArrayList<>();
+		addHeaderElement(w, parts, inputHeaderElement, inputHeaderIsOptional, inputBodyElement, inputRoot);
 		if (outputValidator != null) {
 			parts.clear();
-			if (outputHeaderElement != null && !outputHeaderIsOptional) {
-				parts.add(outputHeaderElement);
-			}
-			if (outputBodyElement != null) {
-				parts.add(outputBodyElement);
-			}
-			message(w, outputRoot, parts);
-			if (outputHeaderIsOptional) {
-				parts.clear();
-				if (outputHeaderElement != null) {
-					parts.add(outputHeaderElement);
-				}
-				message(w, outputRoot + "_"+ outputHeaderElement.getLocalPart(), parts);
+			addHeaderElement(w, parts, outputHeaderElement, outputHeaderIsOptional, outputBodyElement, outputRoot);
+		}
+	}
+
+	private void addHeaderElement(XMLStreamWriter w, List<QName> parts, QName headerElement, boolean headerIsOptional, QName bodyElement, String root) throws XMLStreamException {
+		if (headerElement != null && !headerIsOptional) {
+			parts.add(headerElement);
+		}
+		if (bodyElement != null) {
+			parts.add(bodyElement);
+		}
+		message(w, root, parts);
+		if (headerIsOptional) {
+			parts.clear();
+			if (headerElement != null) {
+				parts.add(headerElement);
+				message(w, root + "_" + headerElement.getLocalPart(), parts);
 			}
 		}
 	}
@@ -618,8 +608,7 @@ public class WsdlGenerator {
 	protected void message(XMLStreamWriter w, String root, Collection<QName> parts) throws XMLStreamException {
 		if (!parts.isEmpty()) {
 			w.writeStartElement(WSDL_NAMESPACE, "message");
-			w.writeAttribute("name", "Message_" + root);
-			{
+			w.writeAttribute("name", "Message_" + root); {
 				for (QName part : parts) {
 					w.writeEmptyElement(WSDL_NAMESPACE, "part");
 					w.writeAttribute("name", "Part_" + part.getLocalPart());

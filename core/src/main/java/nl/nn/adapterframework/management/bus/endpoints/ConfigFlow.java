@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import org.springframework.messaging.Message;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
@@ -40,10 +41,10 @@ public class ConfigFlow extends BusEndpointBase {
 	public Message<?> getFlowDiagram(Message<?> message) throws IOException {
 		InputStream flow = getFlow(message);
 		if(flow != null) {
-			return ResponseMessage.Builder.create().withPayload(flow).withMimeType(flowDiagramManager.getMediaType()).raw();
+			return new BinaryResponseMessage(flow, flowDiagramManager.getMediaType());
 		}
 
-		return ResponseMessage.noContent(); //No flow file present
+		return EmptyResponseMessage.noContent(); //No flow file present
 	}
 
 	private InputStream getFlow(Message<?> message) throws IOException {

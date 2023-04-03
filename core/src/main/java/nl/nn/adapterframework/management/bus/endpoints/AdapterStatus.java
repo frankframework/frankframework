@@ -62,7 +62,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -100,7 +100,7 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 		}
 
-		return ResponseMessage.ok(adapterList);
+		return new JsonResponseMessage(adapterList);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -113,7 +113,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
-		return ResponseMessage.ok(adapterInfo);
+		return new JsonResponseMessage(adapterInfo);
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {

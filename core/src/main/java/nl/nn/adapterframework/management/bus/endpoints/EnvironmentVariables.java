@@ -28,12 +28,12 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.Environment;
+import nl.nn.adapterframework.util.StringUtil;
 
 @BusAware("frank-management-bus")
 public class EnvironmentVariables extends BusEndpointBase {
@@ -64,7 +64,7 @@ public class EnvironmentVariables extends BusEndpointBase {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
 
-		return ResponseMessage.ok(envVars);
+		return new JsonResponseMessage(envVars);
 	}
 
 	private Map<String, Object> convertPropertiesToMap(Properties props) {

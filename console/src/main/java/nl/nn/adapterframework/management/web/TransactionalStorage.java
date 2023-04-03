@@ -43,8 +43,9 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
@@ -157,7 +158,7 @@ public class TransactionalStorage extends FrankApiBase {
 
 						builder.addHeader("messageId", messageId);
 						Message<?> message = sendSyncMessage(builder);
-						String mimeType = (String) message.getHeaders().get(ResponseMessage.MIMETYPE_KEY);
+						String mimeType = BusMessageUtils.getHeader(message, ResponseMessageBase.MIMETYPE_KEY);
 
 						String filenameExtension = ".txt";
 						if(MediaType.APPLICATION_JSON.equals(mimeType)) {

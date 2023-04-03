@@ -38,7 +38,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
@@ -189,7 +189,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 				throw new BusException("An error occurred while storing the job in the database");
 		}
 
-		return ResponseMessage.created();
+		return EmptyResponseMessage.created();
 	}
 
 	private IAdapter getAdapter(String configurationName, String adapterName) {

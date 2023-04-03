@@ -2567,7 +2567,7 @@ angular.module('iaf.beheerconsole')
 	});
 
 	function getUrl(monitor, trigger) {
-		var url = "/configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name;
+		var url = "configurations/"+$scope.selectedConfiguration+"/monitors/"+monitor.name;
 		if(trigger != undefined && trigger != "") url += "/triggers/"+trigger.id;
 		return url;
 	}

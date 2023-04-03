@@ -54,13 +54,14 @@ import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
-import nl.nn.adapterframework.management.bus.ResponseMessage.Builder;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
@@ -81,7 +82,7 @@ public class WebServices extends BusEndpointBase {
 		returnMap.put("wsdls", getWsdls());
 		returnMap.put("apiListeners", getApiListeners());
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.DOWNLOAD)
@@ -94,7 +95,7 @@ public class WebServices extends BusEndpointBase {
 		}
 	}
 
-	public Message<?> getOpenApiSpec(Message<?> message) {
+	public StringResponseMessage getOpenApiSpec(Message<?> message) {
 		String uri = BusMessageUtils.getHeader(message, "uri", null);
 
 		JsonObject jsonSchema = null;
@@ -117,10 +118,10 @@ public class WebServices extends BusEndpointBase {
 			jsonWriter.write(jsonSchema);
 		}
 
-		return ResponseMessage.Builder.create().withPayload(writer.toString()).withMimeType(MediaType.APPLICATION_JSON).raw();
+		return new StringResponseMessage(writer.toString(), MediaType.APPLICATION_JSON);
 	}
 
-	public Message<?> getWSDL(Message<?> message) {
+	public BinaryResponseMessage getWSDL(Message<?> message) {
 		boolean indent = BusMessageUtils.getBooleanHeader(message, "indent", true);
 		boolean useIncludes = BusMessageUtils.getBooleanHeader(message, "useIncludes", false);
 		boolean zip = BusMessageUtils.getBooleanHeader(message, "zip", false);
@@ -140,25 +141,24 @@ public class WebServices extends BusEndpointBase {
 			throw new BusException("unable to create WSDL generator", e);
 		}
 
-		Builder response = ResponseMessage.Builder.create();
-
 		try {
 			String servletName = getServiceEndpoint(adapter);
 			ByteArrayOutputStream boas = new ByteArrayOutputStream();
 			if (zip) {
 				wsdl.zip(boas, servletName);
-				response.withMimeType(MediaType.APPLICATION_OCTET_STREAM);
-				response.withFilename(adapterName+".zip");
+
+				BinaryResponseMessage response = new BinaryResponseMessage(boas.toByteArray(), MediaType.APPLICATION_OCTET_STREAM);
+				response.setFilename(adapterName+".zip");
+				return response;
+
 			} else {
 				wsdl.wsdl(boas, servletName);
-				response.withMimeType(MediaType.APPLICATION_XML);
+
+				return new BinaryResponseMessage(boas.toByteArray(), MediaType.APPLICATION_XML);
 			}
-			response.withPayload(boas.toByteArray());
 		} catch (IOException | ConfigurationException | XMLStreamException e) {
 			throw new BusException("unable to generate WSDL", e);
 		}
-
-		return response.raw();
 	}
 
 	private String getServiceEndpoint(IAdapter adapter) {
@@ -227,8 +227,8 @@ public class WebServices extends BusEndpointBase {
 
 		for (Configuration config : getIbisManager().getConfigurations()) {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
-				for (Receiver receiver: adapter.getReceivers()) {
-					IListener listener = receiver.getListener();
+				for (Receiver<?> receiver: adapter.getReceivers()) {
+					IListener<?> listener = receiver.getListener();
 					if (listener instanceof RestListener) {
 						ListenerDAO dao = new ListenerDAO((RestListener) listener);
 						dao.setAdapter(adapter);

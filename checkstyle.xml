@@ -19,8 +19,19 @@
 			<property name="processJavadoc" value="true" /> <!-- allow imports from javadoc comments -->
 		</module>
 		<module name="IllegalImport">
-			<property name="illegalPkgs" value="junit.framework, org.apache.commons.lang, software.amazon.awssdk.utils" />
-			<property name="illegalClasses" value="org.apache.commons.codec.Charsets"/>
+			<property name="illegalPkgs" value="
+			junit.framework,
+			org.apache.commons.lang,
+			software.amazon.awssdk.utils,
+			" />
+			<property name="illegalClasses" value="
+			org.apache.commons.codec.Charsets,
+			org.apache.cxf.helpers.FileUtils"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="\.deleteOnExit()" />
+			<property name="message" value="You shouldn't use file.deleteOnExit()!" />
+			<property name="ignoreComments" value="true" />
 		</module>
 	</module>
 

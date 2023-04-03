@@ -234,7 +234,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 				}
 			} finally {
 				if(itx != null) {
-					itx.commit();
+					itx.complete();
 				}
 			}
 		}
@@ -261,7 +261,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					throw e;
 				} finally {
 					if(itx != null) {
-						itx.commit();
+						itx.complete();
 					}
 				}
 			}

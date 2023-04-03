@@ -1156,7 +1156,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
 				} finally {
-					itx.commit();
+					itx.complete();
 				}
 			} catch (ListenerException e) {
 				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
@@ -1174,7 +1174,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					itxErrorStorage.setRollbackOnly();
 					log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
 				} finally {
-					itxErrorStorage.commit();
+					itxErrorStorage.complete();
 				}
 				throw e;
 			}
@@ -1332,7 +1332,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 							// NB: Spring will take care of executing a commit or a rollback;
 							// Spring will also ONLY commit the transaction if it was newly created
 							// by the above call to txManager.getTransaction().
-							itx.commit();
+							itx.complete();
 						} else {
 							String msg="Transaction already completed; we didn't expect this";
 							warn(msg);

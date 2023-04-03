@@ -10,6 +10,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -287,7 +288,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	public void sendMessage(String filePath) throws Exception {
 		sender.configure();
 		sender.open();
-		Message sampleMailXML = TestFileUtils.getTestFileMessage(filePath);
+		Message sampleMailXML = MessageTestUtils.getMessage(filePath);
 		String result = sender.sendMessageOrThrow(sampleMailXML, session).asString();
 		assertEquals(correlationID, result);
 	}
