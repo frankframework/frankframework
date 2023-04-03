@@ -90,11 +90,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void open() throws ListenerException {
 		super.open();
-		try {
-			RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
-		} catch (ConfigurationException e) {
-			throw new ListenerException(e);
-		}
+		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
 
 	@Override

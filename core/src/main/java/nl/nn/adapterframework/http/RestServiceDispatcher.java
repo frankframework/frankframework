@@ -87,15 +87,7 @@ public class RestServiceDispatcher {
 			lookupUriPattern = uri;
 		}
 
-		String matchingPattern=null;
-		for (String uriPattern : patternClients.keySet()) {
-			log.trace("comparing uri to pattern [{}] ", uriPattern);
-			if (lookupUriPattern.equals(uriPattern)) {
-				matchingPattern = uriPattern;
-				break;
-			}
-		}
-		return matchingPattern;
+		return patternClients.containsKey(lookupUriPattern) ? lookupUriPattern : null;
 	}
 
 	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
