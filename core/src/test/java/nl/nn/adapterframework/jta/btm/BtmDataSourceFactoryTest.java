@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jta.btm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -32,5 +33,7 @@ public class BtmDataSourceFactoryTest {
 		assertEquals(2, factory.getMaxPoolSize());
 		assertEquals(3, factory.getMaxIdleTime());
 		assertEquals(4, factory.getMaxLifeTime());
+
+		assertNull(factory.getTestQuery());
 	}
 }
