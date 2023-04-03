@@ -234,20 +234,20 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	@Override
-	public int compareTo(XSD x) { // CompareTo is required for WSDL generation
-		if (x == null) return 1;
-		if (namespace != null && x.namespace != null) {
-			int c = namespace.compareTo(x.namespace);
+	public int compareTo(XSD other) { // CompareTo is required for WSDL generation
+		if (other == null) return 1;
+		if (namespace != null && other.namespace != null) {
+			int c = namespace.compareTo(other.namespace);
 			if (c != 0) return c;
 		}
-		return compareToByReferenceOrContents(x);
+		return compareToByReferenceOrContents(other);
 	}
 
-	public int compareToByReferenceOrContents(XSD x) {
+	protected int compareToByReferenceOrContents(XSD x) {
 		return compareToByContents(x);
 	}
 
-	public int compareToByContents(XSD x) {
+	protected int compareToByContents(XSD x) {
 		try {
 			InputSource control = new InputSource(getReader());
 			InputSource test = new InputSource(x.getReader());
@@ -399,7 +399,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	}
 
 	private static String getXsdLoadingMapKey(IXSD xsd) {
-		return xsd.getResourceTarget();
+		return xsd.getNamespace() + "|" + xsd.getResourceTarget();
 	}
 
 	@Override
