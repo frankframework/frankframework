@@ -51,8 +51,8 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		try {
 			tempDirectory = FileUtils.getTempDirectory("cmis");
 		} catch (IOException e) {
-			LOG.warn("unable to use [ibis.tmpdir], falling back to [java.io.tmpdir]", e);
-			tempDirectory = super.getTempDirectory(); 
+			LOG.warn("unable to use [ibis.tmpdir], falling back to OpenCMIS default [java.io.tmpdir]", e);
+			tempDirectory = super.getTempDirectory();
 		}
 	}
 

@@ -264,14 +264,15 @@ public class FileUtils {
 	/**
 	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
 	 */
-	public static File createTempFile(String extension) throws IOException {
+	public static File createTempFile(final String extension) throws IOException {
 		File directory = new File( getTempDirectory() );
-		String prefix = "frank";
-		if (StringUtils.isEmpty(extension)) {
-			extension=".tmp";
+		String suffix = ".tmp";
+		if (StringUtils.isNotEmpty(extension)) {
+			suffix = extension;
 		}
-		if (log.isDebugEnabled()) log.debug("creating tempfile prefix ["+prefix+"] suffix ["+extension+"] directory ["+directory+"]");
-		return File.createTempFile(prefix, extension, directory);
+		String prefix = "frank";
+		if (log.isDebugEnabled()) log.debug("creating tempfile prefix ["+prefix+"] suffix ["+suffix+"] directory ["+directory+"]");
+		return File.createTempFile(prefix, suffix, directory);
 	}
 
 	/**

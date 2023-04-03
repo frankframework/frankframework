@@ -39,7 +39,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 	}
 
 	@Test
-	public void EmptySpaceInputOnValidThenPipeTest() throws Exception {
+	public void emptySpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.registerForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
@@ -50,7 +50,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 	}
 
 	@Test
-	public void EmptySpaceInputOnInvalidThenPipeTest() throws Exception {
+	public void emptySpaceInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -60,7 +60,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 	}
 
 	@Test
-	public void TabSpaceInputOnValidThenPipeTest() throws Exception {
+	public void tabSpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.registerForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
@@ -71,7 +71,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
 	}
 
 	@Test
-	public void TabSpaceInputOnInvalidThenPipeTest() throws Exception {
+	public void tabSpaceInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
