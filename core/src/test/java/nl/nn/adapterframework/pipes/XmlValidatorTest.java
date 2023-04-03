@@ -155,7 +155,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws
 		IllegalAccessException, XmlValidatorException, PipeRunException, IOException, ConfigurationException, PipeStartException {
-		XmlValidator validator = getValidator(schemaLocation, addNamespaceToSchema, implementation);
+		XmlValidator validator = getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
 		if (rootelement!=null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 		validator.configure();
