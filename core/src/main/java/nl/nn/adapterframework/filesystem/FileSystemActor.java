@@ -374,7 +374,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							} catch (NoSuchFileException e) {
 								log.debug("ignore", e);
 							} catch (FileSystemException e) {
-								throw new IOException("Could not delete file [" + fileSystem.getName(file) + "]", e);
+								throw new IOException("Could not delete file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
 							}
 						}
 
@@ -383,7 +383,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 							try {
 								close();
 							} catch (Exception e) {
-								log.warn("Could not close file [" + fileSystem.getName(file) + "]", e);
+								log.warn("Could not close file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
 							}
 							super.finalize();
 						}
