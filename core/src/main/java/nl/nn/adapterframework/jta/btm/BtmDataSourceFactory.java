@@ -60,7 +60,6 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 				result.setTestQuery(testQuery);
 			}
 			result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
-			result.setIsolationLevel("READ_COMMITTED");
 
 			result.setAllowLocalTransactions(true);
 			result.setXaDataSource((XADataSource)dataSource);
