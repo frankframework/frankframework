@@ -28,6 +28,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -293,6 +294,42 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 //	public void fileSystemSenderMoveActionTestFolderToFolder() throws Exception {
 //		fileSystemSenderMoveActionTest("folder1","folder2");
 //	}
+
+	@Test
+	public void moveFileParamPrefixedWithFolderToAnotherFolder() throws Exception {
+		// Arrange
+		String testFileContents = UUIDUtil.createRandomUUID();
+		String inputFolder = "tests";
+		String outputFolder = "tests/processed";
+
+		_deleteFolder(inputFolder); // ensure all test folders are empty
+		_createFolder(inputFolder);
+		createFile(inputFolder, FILE1, testFileContents);
+
+		waitForActionToFinish();
+
+		fileSystemSender.setAction(FileSystemAction.MOVE);
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+FILE1));
+		fileSystemSender.addParameter(ParameterBuilder.create("destination", outputFolder));
+		fileSystemSender.setCreateFolder(true);
+
+		// Act
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		Message message = new Message("is-not-relevant");
+		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+
+		// Assert
+		assertNotNull(result);
+		String newFilename = result.asString();
+		assertEquals(FILE1, newFilename);
+
+		assertTrue(_fileExists(outputFolder, newFilename), "file should exist in destination folder ["+outputFolder+"]");
+		assertFalse(_fileExists(inputFolder, FILE1), "file should not exist anymore in original folder ["+outputFolder+"]");
+		String newFileContents = readFile(outputFolder, newFilename);
+		assertEquals(testFileContents, newFileContents);
+	}
 
 	@Test
 	public void fileSystemSenderMkdirActionTest() throws Exception {
