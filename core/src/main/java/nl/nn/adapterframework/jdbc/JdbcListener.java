@@ -235,7 +235,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	protected M extractRawMessage(ResultSet rs) throws JdbcException {
 		try {
-			M result;
+			M result; // Type M for Mystery (see casts below when assigning a value to result)
 			String key=rs.getString(getKeyField());
 
 			if (StringUtils.isNotEmpty(getMessageField()) || StringUtils.isNotEmpty(getMessageIdField()) || StringUtils.isNotEmpty(getCorrelationIdField())) {

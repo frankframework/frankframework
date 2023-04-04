@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +58,12 @@ public class ReceiverTest {
 
 	@Before
 	public void setUp() throws Exception {
+		configuration.stop();
+		configuration.getBean("adapterManager", AdapterManager.class).close();
+	}
+
+	@After
+	public void tearDown() throws Exception {
 		configuration.stop();
 		configuration.getBean("adapterManager", AdapterManager.class).close();
 	}
@@ -187,8 +194,8 @@ public class ReceiverTest {
 		configuration.configure();
 		configuration.start();
 
-//		waitForState(adapter, RunState.STARTED);
-//		waitForState(receiver, RunState.STARTED);
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
 
 		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
 		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
@@ -207,6 +214,8 @@ public class ReceiverTest {
 		assertEquals("<msg/>", message.asString());
 		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
 		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
 
 	@Test
