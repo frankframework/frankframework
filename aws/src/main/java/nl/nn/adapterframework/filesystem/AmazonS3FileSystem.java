@@ -306,8 +306,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		
 	}
 
+	/** 
+	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
+	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
+	 * Further, failure to close this stream can cause the request pool to become blocked. 
+	 */
 	private static class S3Message extends Message {
-
 		public S3Message(S3Object file, Map<String,Object> context) {
 			super(file.getObjectContent(), context);
 		}

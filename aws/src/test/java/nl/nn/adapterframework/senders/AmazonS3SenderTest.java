@@ -1,10 +1,12 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +18,11 @@ import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 
 /**
@@ -73,6 +79,40 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
 		assertTrue(fileSystemSender.getFileSystem().isForceGlobalBucketAccessEnabled());
+	}
+
+	@Test
+	public void fileSystemSenderTestReadMultipleTimes() throws Exception {
+		// Arrange
+		String filename = FILE1;
+		String inputFolder = "read";
+
+		if(_folderExists(inputFolder)) {
+			_deleteFolder(inputFolder);
+		}
+		_createFolder(inputFolder);
+
+		createFile(inputFolder, filename, "some content");
+
+		waitForActionToFinish();
+
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
+		fileSystemSender.setAction(FileSystemAction.READ);
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		// Act
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+
+		Message message = new Message("not-used");
+		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		waitForActionToFinish();
+
+		// Assert
+		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
+		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
+		IOException e = assertThrows(IOException.class, ()-> result.preserve()); // read binary stream twice
+		assertEquals("Attempted read on closed stream.", e.getMessage());
 	}
 
 //	@Test

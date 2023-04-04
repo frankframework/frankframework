@@ -581,4 +581,37 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		// Assert
 		assertFileCountEquals(result, 2); //2 files and 1 folder (which should be omitted from the result)
 	}
+
+	@Test
+	public void fileSystemSenderTestReadDelete() throws Exception {
+		// Arrange
+		String filename = FILE1;
+		String inputFolder = "read-delete";
+
+		if(_folderExists(inputFolder)) {
+			_deleteFolder(inputFolder);
+		}
+		_createFolder(inputFolder);
+
+		createFile(inputFolder, filename, "some content");
+
+		waitForActionToFinish();
+
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
+		fileSystemSender.setAction(FileSystemAction.READDELETE);
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		// Act
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+
+		Message message = new Message("not-used");
+		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		waitForActionToFinish();
+
+		// Assert
+		result.preserve(); //read the stream else close wont be called... sigh
+		assertFalse(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should have been deleted after READ action");
+		assertEquals("some content", result.asString());
+	}
 }
