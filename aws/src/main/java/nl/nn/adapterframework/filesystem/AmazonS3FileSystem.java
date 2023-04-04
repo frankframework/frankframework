@@ -153,9 +153,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 	}
 
+	/**
+	 * Creates a local S3Object pointer, not representative with what is stored in the S3 Bucket.
+	 * This method may be used to upload a file to S3.
+	 * See {@link #resolve(S3Object) resolve}.
+	 */
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
-		S3Object object = new S3Object();
+		S3Object object = new LocalS3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos<0) {
 			object.setBucketName(bucketName);
@@ -229,7 +234,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
-		S3Object object = new S3Object();
+		S3Object object = new LocalS3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(summary.getSize());
 		metadata.setLastModified(summary.getLastModified());
@@ -278,26 +283,34 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
-			return new S3Message(s3Client.getObject(bucketName, f.getKey()), FileSystemUtils.getContext(this, f, charset));
+			S3Object file = resolve(f);
+			return new S3Message(file, FileSystemUtils.getContext(this, file, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	private class S3Message extends Message {
+	/**
+	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * Or returns directly when the provided S3Object is an actual representation of the S3 bucket
+	 */
+	private S3Object resolve(S3Object f) {
+		if(f instanceof LocalS3Object) {
+			return s3Client.getObject(bucketName, f.getKey());
+		}
+		return f;
+	}
 
-		private S3Object file;
+	/** Local S3 Pointer for files that are not yet resolved. */
+	private static class LocalS3Object extends S3Object {
+		
+	}
+
+	private static class S3Message extends Message {
 
 		public S3Message(S3Object file, Map<String,Object> context) {
 			super(file.getObjectContent(), context);
-			this.file = file;
 		}
-
-		@Override
-		public long size() {
-			return file.getObjectMetadata().getContentLength();
-		}
-
 	}
 
 	@Override
@@ -377,11 +390,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public long getFileSize(S3Object f) throws FileSystemException {
-		return f.getObjectMetadata().getContentLength();
-	}
-
-	@Override
 	public String getName(S3Object f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
 		return f.getKey().substring(lastSlashPos+1);
@@ -399,13 +407,16 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
+	public long getFileSize(S3Object f) throws FileSystemException {
+		return resolve(f).getObjectMetadata().getContentLength();
+	}
+
+	@Override
 	public Date getModificationTime(S3Object f) throws FileSystemException {
-		S3Object file;
 		if(f.getKey().isEmpty()) {
 			return null;
 		}
-		file = s3Client.getObject(bucketName, f.getKey()); // why is this done?
-		return file.getObjectMetadata().getLastModified();
+		return resolve(f).getObjectMetadata().getLastModified();
 	}
 
 //	/**
