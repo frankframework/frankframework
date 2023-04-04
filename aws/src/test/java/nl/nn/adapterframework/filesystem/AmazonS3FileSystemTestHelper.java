@@ -30,6 +30,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.findify.s3mock.S3Mock;
 import lombok.Getter;
 import nl.nn.adapterframework.testutil.PropertyUtil;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
@@ -37,7 +38,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
 	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
 
-	protected @Getter String bucketName   = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
+	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private Regions clientRegion = Regions.EU_WEST_1;
 	public static final int S3_PORT = 19090;
@@ -70,19 +71,21 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	//For testing purposes
 	private AmazonS3 createS3Client() {
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(false)
 				.withForceGlobalBucketAccessEnabled(false)
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
 				.withClientConfiguration(new ClientConfiguration().withSocketTimeout(1000).withConnectionTimeout(1000))
 				.enablePathStyleAccess();
 
+		BasicAWSCredentials awsCreds;
 		if(runLocalStub) {
+			awsCreds = new BasicAWSCredentials("user", "pass");
 			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, clientRegion.getName()));
 		} else {
+			awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 			s3ClientBuilder.withRegion(clientRegion);
 		}
+		s3ClientBuilder.withCredentials(new AWSStaticCredentialsProvider(awsCreds));
 
 		return s3ClientBuilder.build();
 	}

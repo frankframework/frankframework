@@ -42,6 +42,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -61,7 +63,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
-	private static final String BUCKET_OBJECT_SEPARATOR="|";
+	private static final String BUCKET_OBJECT_SEPARATOR = "|";
+	private static final String FILE_DELIMITER = "/";
 
 	private @Getter String accessKey;
 	private @Getter String secretKey;
@@ -166,14 +169,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(StringUtil.concatStrings(folder, "/", filename));
+		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
 
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
-		String prefix = folder != null ? folder + "/" : "";
+		String prefix = folder != null ? folder + FILE_DELIMITER : "";
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
@@ -190,34 +193,51 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
-		List<S3ObjectSummary> summaries = null;
-		String prefix = folder != null ? folder + "/" : null;
+		List<S3ObjectSummary> summaries = new ArrayList<>();
+		String prefix = folder != null ? folder + FILE_DELIMITER : null;
 		try {
-			ObjectListing listing = (prefix == null) ? s3Client.listObjects(bucketName) : s3Client.listObjects(bucketName, prefix);
-			summaries = listing.getObjectSummaries();
-			while (listing.isTruncated()) {
-				listing = s3Client.listNextBatchOfObjects(listing);
+			ListObjectsV2Request request = new ListObjectsV2Request()
+					.withBucketName(bucketName)
+					.withDelimiter(FILE_DELIMITER)
+					.withPrefix(prefix);
+
+			ListObjectsV2Result listing;
+			int iterations = 0;
+			do {
+				if(iterations > 20) {
+					log.warn("unable to list all files in folder [{}]", folder);
+					break;
+				}
+				listing = s3Client.listObjectsV2(request);
 				summaries.addAll(listing.getObjectSummaries());
-			}
+				request.setContinuationToken(listing.getNextContinuationToken());
+				iterations++;
+			} while(listing.isTruncated());
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
 
 		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
-			S3Object object = new S3Object();
-			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(summary.getSize());
-
-			object.setBucketName(summary.getBucketName());
-			object.setKey(summary.getKey());
-			object.setObjectMetadata(metadata);
-			if(!object.getKey().endsWith("/") && !(StringUtils.isEmpty(prefix) && object.getKey().contains("/"))) {
+			S3Object object = extractS3ObjectFromSummary(summary);
+			if(!object.getKey().endsWith("/")) { //Root folder is also included
 				list.add(object);
 			}
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
+	}
+
+	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
+		S3Object object = new S3Object();
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(summary.getSize());
+		metadata.setLastModified(summary.getLastModified());
+
+		object.setBucketName(summary.getBucketName());
+		object.setKey(summary.getKey());
+		object.setObjectMetadata(metadata);
+		return object;
 	}
 
 	@Override
@@ -384,7 +404,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if(f.getKey().isEmpty()) {
 			return null;
 		}
-		file = s3Client.getObject(bucketName, f.getKey());
+		file = s3Client.getObject(bucketName, f.getKey()); // why is this done?
 		return file.getObjectMetadata().getLastModified();
 	}
 

@@ -1,17 +1,16 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.startsWith;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
 
 import org.apache.commons.codec.binary.Base64;
@@ -547,19 +546,23 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestWithInputFolderAsParameter() throws Exception {
+		// Arrange
 		String filename = FILE1;
 		String filename2 = FILE2;
 		String inputFolder = "directory";
 
-		if (_fileExists(inputFolder, filename)) {
-			_deleteFile(inputFolder, filename);
+		if(_folderExists(inputFolder)) {
+			_deleteFolder(inputFolder);
 		}
+		_createFolder(inputFolder);
 
-		if (_fileExists(inputFolder, filename2)) {
-			_deleteFile(inputFolder, filename2);
-		}
+		createFile(inputFolder, filename, "some content");
+		createFile(inputFolder, filename2, "some content of the second file");
 
-		PipeLineSession session = new PipeLineSession();
+		_createFolder(inputFolder + "/subfolder");
+		createFile(inputFolder + "/subfolder", "dont-list-me.txt", "content of the third file");
+
+		waitForActionToFinish();
 		session.put("listWithInputFolderAsParameter", inputFolder);
 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("inputFolder").withSessionKey("listWithInputFolderAsParameter"));
@@ -567,23 +570,15 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		_createFolder(inputFolder);
-		OutputStream out = _createFile(inputFolder, filename);
-		out.write("some content".getBytes());
-		out.close();
-		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"]expected to be present");
+		// Act
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 
-		OutputStream out2 = _createFile(inputFolder, filename2);
-		out2.write("some content of second file".getBytes());
-		out2.close();
-		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"]expected to be present");
-
-		Message message=new Message(filename);
+		Message message = new Message(filename);
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
-		assertFileCountEquals(result, 2);
+		// Assert
+		assertFileCountEquals(result, 2); //2 files and 1 folder (which should be omitted from the result)
 	}
 }
