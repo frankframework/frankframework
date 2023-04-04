@@ -8,23 +8,44 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
+import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import nl.nn.adapterframework.configuration.AdapterManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IManagable;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jdbc.MessageStoreListener;
+import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -76,9 +97,39 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public Adapter setupAdapter(Receiver<javax.jms.Message> receiver) throws Exception {
+	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) throws ConfigurationException {
+		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		receiver.setListener(listener);
+		receiver.setName("receiver");
+		DummySender sender = configuration.createBean(DummySender.class);
+		receiver.setSender(sender);
+		receiver.setErrorStorage(errorStorage);
 
-		Adapter adapter = configuration.createBean(Adapter.class);
+		return receiver;
+	}
+
+	public MessageStoreListener<String> setupMessageStoreListener(String testMessage) throws Exception {
+		Connection connection = mock(Connection.class);
+		MessageStoreListener<String> listener = spy(new TestMessageStoreListener<>(testMessage));
+		listener.setConnectionsArePooled(true);
+		doReturn(connection).when(listener).getConnection();
+		listener.setSessionKeys("ANY-KEY");
+		listener.extractSessionKeyList();
+		doReturn(false).when(listener).hasRawMessageAvailable();
+
+		doNothing().when(listener).configure();
+		doNothing().when(listener).open();
+
+		return listener;
+	}
+
+	public ITransactionalStorage<Serializable> setupErrorStorage() {
+		return mock(JdbcTransactionalStorage.class);
+	}
+
+	public <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
+
+		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
 		PipeLine pl = new PipeLine();
@@ -116,6 +167,46 @@ public class ReceiverTest {
 				fail("test interrupted");
 			}
 		}
+	}
+
+	@Test
+	public void testManualRetryWithMessageStoreListener() throws Exception {
+		// Arrange
+		String testMessage = "\"<msg/>\",\"ANY-KEY-VALUE\"";
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener(testMessage);
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		when(errorStorage.getMessage(any())).thenReturn(testMessage);
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+//		waitForState(adapter, RunState.STARTED);
+//		waitForState(receiver, RunState.STARTED);
+
+		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
+
+		PipeLineResult plr = new PipeLineResult();
+		plr.setState(ExitState.SUCCESS);
+		plr.setResult(Message.asMessage(testMessage));
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+
+		// Act
+		receiver.retryMessage("1");
+
+		// Assert
+		Message message = messageCaptor.getValue();
+		PipeLineSession pipeLineSession = sessionCaptor.getValue();
+		assertEquals("<msg/>", message.asString());
+		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
+		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
 	}
 
 	@Test
@@ -422,5 +513,21 @@ public class ReceiverTest {
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 		assertEquals(RunState.STOPPED, adapter.getRunState());
+	}
+
+	private static class TestMessageStoreListener<M> extends MessageStoreListener<M> {
+		private final String testMessage;
+
+		public TestMessageStoreListener(String testMessage) {
+			this.testMessage = testMessage;
+		}
+
+		@Override
+		protected M getRawMessage(Connection conn, Map<String, Object> threadContext) throws ListenerException {
+			MessageWrapper<String> mw = new MessageWrapper<>();
+			mw.setMessage(Message.asMessage(testMessage));
+			// :-( Have to do it this way, ugly cast of the MessageWrapper to M which is definitely NOT right type.
+			return (M)mw;
+		}
 	}
 }

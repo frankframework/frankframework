@@ -101,11 +101,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sessionKeys != null) {
-			sessionKeysList = new ArrayList<>();
-			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
-			while (stringTokenizer.hasMoreElements()) {
-				sessionKeysList.add(stringTokenizer.nextToken());
-			}
+			extractSessionKeyList();
 		}
 		if (isMoveToMessageLog()) {
 			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
@@ -114,6 +110,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			String query = "DELETE FROM "+getTableName()+" WHERE "+getKeyField()+" = ?";
 			setUpdateStatusQuery(ProcessState.DONE, query);
 			setUpdateStatusQuery(ProcessState.ERROR, query);
+		}
+	}
+
+	public void extractSessionKeyList() {
+		if (sessionKeys != null) {
+			sessionKeysList = new ArrayList<>();
+			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
+			while (stringTokenizer.hasMoreElements()) {
+				sessionKeysList.add(stringTokenizer.nextToken());
+			}
 		}
 	}
 

@@ -87,6 +87,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
@@ -1097,10 +1098,19 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 				}
 
-				Message message = null;
-				String technicalCorrelationId = null;
+				Message message;
+				String technicalCorrelationId;
 				try {
-					message = getListener().extractMessage((M)rawMessageOrWrapper, session);
+					if (getListener() instanceof MessageStoreListener && manualRetry) {
+						M rawOrWrapper = ((MessageStoreListener<M>) getListener()).getRawMessage(session);
+						if (rawOrWrapper instanceof MessageWrapper) {
+							message = ((MessageWrapper<?>)rawOrWrapper).getMessage();
+						} else {
+							message = Message.asMessage(rawOrWrapper);
+						}
+					} else {
+						message = getListener().extractMessage((M) rawMessageOrWrapper, session);
+					}
 				} catch (Exception e) {
 					if(rawMessageOrWrapper instanceof MessageWrapper) {
 						//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
