@@ -1103,6 +1103,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					if (getListener() instanceof MessageStoreListener && manualRetry) {
 						M rawOrWrapper = ((MessageStoreListener<M>) getListener()).getRawMessage(session);
+						// Regardless of method signature, the result-value of this method is generally NOT <M>.
+						// Consider <M> a <Mystery>.
 						if (rawOrWrapper instanceof MessageWrapper) {
 							message = ((MessageWrapper<?>)rawOrWrapper).getMessage();
 						} else {
