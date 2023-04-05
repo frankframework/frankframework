@@ -4,20 +4,20 @@ Code Style Guidelines
 I want to suggest a few additional code style guidelines.
 
 Aim of these code style guidelines is to promote code that is:
-  - Readable
-  - Testable
-  - Maintainable
-  - Has fewer bugs
-  - Make it easier to reason about what the code does
+- Readable
+- Testable
+- Maintainable
+- Has fewer bugs
+- Make it easier to reason about what the code does
 
 Guidelines
 ----------
 
- 1. Use `final` parameters and variables where possible.
-    - Avoids bugs through accidental re-assignment,
-    - Allows more compiler optimisations.
+1. Use `final` parameters and variables where possible.
+   - Avoids bugs through accidental re-assignment,
+   - Allows more compiler optimisations.
    
-    For instance, instead of writing:
+   For instance, instead of writing:
 ```java
 	String x = null;
 	if (condition) {
@@ -30,84 +30,84 @@ Write:
 ```
 
 
- 2. Function names that describe _what_ the code accomplishes, rather than _how_ it
-   does so.
+2. Function names that describe _what_ the code accomplishes, rather than _how_ it
+	does so.
 
-    For instance: 
+	For instance: 
 
-    `public StringTokenizer AppConstants.getTokenizedProperty() {...}` 
+	`public StringTokenizer AppConstants.getTokenizedProperty() {...}` 
 
-    describes _how_ the code accomplishes something (using a StringTokenizer, but not clear for what
-    purpose until you read the docs).
-
-    `public List AppConstants.getMultiValuedProperty() {...}` (or `getListProperty()`)
-
-    would tell you _what_ the code accomplishes without you having to look at the JavaDoc,
-    and without bothering you with the how.
+	describes _how_ the code accomplishes something (using a StringTokenizer, but not clear for what
+	purpose until you read the docs).
+	
+	`public List AppConstants.getMultiValuedProperty() {...}` (or `getListProperty()`)
+	
+	would tell you _what_ the code accomplishes without you having to look at the JavaDoc,
+	and without bothering you with the how.
 	
 
- 3. Delegate subtasks of your function to other functions
-      - Keeps your code shorter
-	    Thus it reduces complexity, makes code more readable
-	  - Name of function tells the intention of the code instead of just the actions
-	  - Helps writing code that doesn't need to modify state variables
-	  - Increases code testability because the helper function can be tested independently
+3. Delegate subtasks of your function to other functions
+     - Keeps your code shorter
+       Thus it reduces complexity, makes code more readable
+     - Name of function tells the intention of the code instead of just the actions
+     - Helps writing code that doesn't need to modify state variables
+     - Increases code testability because the helper function can be tested independently
 
 
- 4. Early Returns from functions
-	  - Don't embed the main code of a function inside an `if` condition, but instead
-	    invert that `if` condition and if condition is not met, immediately exit the
-	    function.
+4. Early Returns from functions
+     - Don't embed the main code of a function inside an `if` condition, but instead
+       invert that `if` condition and if condition is not met, immediately exit the
+       function.
 	    
-        This reduces nesting in the code and keeps it clearer to the reader what the main
-	    body of the function is, what the preconditions are, and that there is no `else`
-	    following the `if` with an alternative path.
+       This reduces nesting in the code and keeps it clearer to the reader what the main
+       body of the function is, what the preconditions are, and that there is no `else`
+       following the `if` with an alternative path.
 
 
- 5. Functions without side-effects:
-	  - Don't modify global state from you functions
-	  - Whenever possible, don't modify input arguments either
-	  - Compute something from the arguments, and return that
-	    Makes it easy to test, makes it easier to ensure your code is overall correct, makes
-	    it easier to read and understand the code calling the function.
+5. Functions without side-effects:
+     - Don't modify global state from you functions
+     - Whenever possible, don't modify input arguments either
+     - Compute something from the arguments, and return that
+       Makes it easy to test, makes it easier to ensure your code is overall correct, makes
+       it easier to read and understand the code calling the function.
 
 
- 6. "Triple-A Testing":
+6. "Triple-A Testing":
 
-      Insert the comments `// Arrange`, `// Act` and `// Assert` in your unit tests in the
-      places where you start doing test setup, where you perform the actual action to be tested,
-      and where you start doing asserts to verify the results.
+     Insert the comments `// Arrange`, `// Act` and `// Assert` in your unit tests in the
+     places where you start doing test setup, where you perform the actual action to be tested,
+     and where you start doing asserts to verify the results.
 
-      This helps to make tests more readable, by making it clear what is being tested.
+     This helps to make tests more readable, by making it clear what is being tested.
 
-	  Sometimes no setup is needed so it can be skipped, and sometimes (when using `assertThrows()`
-      for instance) there is no separation between Act and Assert so you can add a comment like `// Act / Assert`
-      to indicate these steps are performed together.
-
-
- 7. Java Streams with `.map()` and related functions
-
-    The below is a suggestion and explanation, but not necessarily something I would like to see
-    promoted to a new coding standard right away.
-
-	  - Replace `for` loops with stream operations
-	  - For readability put each stream operation on a separate line!
-	  - The idea is to put focus the actual operations your code does instead of burying that
-	    in the ceremony around it.
+     Sometimes no setup is needed so it can be skipped, and sometimes (when using `assertThrows()`
+     for instance) there is no separation between Act and Assert so you can add a comment like `// Act / Assert`
+     to indicate these steps are performed together.
 
 
- 8. Java Optionals.
+7. Java Streams with `.map()` and related functions
 
-    You can use Java `Optional` to indicate that the return value of a method can be `null`.
-    It is not custom to use this for parameters, only for return-values.
-    However I find that code is not necessarily more readable when using `Optional` so use
-    them at your own discretion, and see if you find the code calling your methods becomes
-    either more readable, or safer (as in, less likely to do the wrong thing when a value
-    could be null).
-    If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
-    and companions.
-    One good scenario for using `Optional` is for avoiding re-assigning variables which could
-    otherwise be `final` in a scenario like this:
+   The below is a suggestion and explanation, but not necessarily something I would like to see
+   promoted to a new coding standard right away.
+
+     - Replace `for` loops with stream operations
+     - For readability put each stream operation on a separate line!
+     - The idea is to put focus the actual operations your code does instead of burying that
+       in the ceremony around it.
+
+
+8. Java Optionals.
+
+   You can use Java `Optional` to indicate that the return value of a method can be `null`.
+   It is not custom to use this for parameters, only for return-values.
+   However I find that code is not necessarily more readable when using `Optional` so use
+   them at your own discretion, and see if you find the code calling your methods becomes
+   either more readable, or safer (as in, less likely to do the wrong thing when a value
+   could be null).
+   If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
+   and companions.
+   One good scenario for using `Optional` is for avoiding re-assigning variables which could
+   otherwise be `final` in a scenario like this:
    ```java
    MyClass value = getSomeValue(key);
    if (value == null) {
