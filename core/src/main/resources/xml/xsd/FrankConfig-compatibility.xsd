@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8-RC3">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -12269,25 +12269,9 @@
         <xs:group ref="IteratingPipeCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="BlobLineIteratingPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BlobLineIteratingPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="BlobLineIteratingPipeDeclaredAttributeGroup">
-    <xs:attribute name="blobCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>charset used to read and write blobs Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BlobLineIteratingPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BlobLineIteratingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:group name="IteratingPipeDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="1" maxOccurs="1" />
@@ -12581,6 +12565,21 @@
     <xs:attribute name="avoidLocking" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobCharset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data. If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobSmartGet" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
