@@ -27,7 +27,7 @@ Guidelines
 ```
 Write:
 ```java
-	String x = (condition) ? "value" : null;
+	final String x = (condition) ? "value" : null;
 ```
 
 2. Function names that describe _what_ the code accomplishes, rather than _how_ it
