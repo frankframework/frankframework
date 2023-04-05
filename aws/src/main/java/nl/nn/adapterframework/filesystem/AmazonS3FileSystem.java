@@ -224,10 +224,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
-			S3Object object = extractS3ObjectFromSummary(summary);
-			if(!object.getKey().endsWith("/")) { //Root folder is also included
-				list.add(object);
+			if(summary.getKey().endsWith("/")) { //Omit the root folder
+				continue;
 			}
+			S3Object object = extractS3ObjectFromSummary(summary);
+			list.add(object);
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
