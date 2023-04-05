@@ -5,6 +5,9 @@
 # or to provide custom queries or build logic.
 name: "CodeQL"
 
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
 on:
   push:
     branches: [master]
@@ -53,11 +56,9 @@ jobs:
 
     - name: Cache local Maven repository
       uses: actions/cache@v3
-      env:
-        cache-name: cache-maven-dependencies
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        key: maven-dependencies
         restore-keys: |
           ${{ runner.os }}-maven-
 
