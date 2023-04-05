@@ -6,6 +6,8 @@ name: Java CI with Maven
 env:
   PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
 on:
   push:
     branches:
@@ -53,11 +55,9 @@ jobs:
 
     - name: Cache local Maven repository
       uses: actions/cache@v3
-      env:
-        cache-name: cache-maven-dependencies
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        key: maven-dependencies
         restore-keys: |
           ${{ runner.os }}-maven-
 

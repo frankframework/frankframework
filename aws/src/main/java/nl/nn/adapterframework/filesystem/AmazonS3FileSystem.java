@@ -303,7 +303,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	/** Local S3 Pointer for files that are not yet resolved. */
 	private static class LocalS3Object extends S3Object {
-		
+		// no extra or overridden methods, this class purely exists to differentiate
+		// between locally created S3Objects and actual S3 representative objects.
 	}
 
 	/** 

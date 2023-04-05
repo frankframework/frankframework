@@ -30,7 +30,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.findify.s3mock.S3Mock;
 import lombok.Getter;
 import nl.nn.adapterframework.testutil.PropertyUtil;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
