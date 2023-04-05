@@ -10,12 +10,15 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.containsString;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Date;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
@@ -44,6 +47,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	protected FS fileSystem;
 	protected IConfigurable owner;
 	private PipeLineSession session;
+	protected Message result;
 
 	private final String lineSeparator = System.getProperty("line.separator");
 
@@ -53,13 +57,21 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		owner= adapter;
+		owner = adapter;
 		adapter.setName("fake owner of FileSystemActor");
 		fileSystem = createFileSystem();
 		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
-		actor=new FileSystemActor<F, FS>();
+		actor = new FileSystemActor<F, FS>();
+		result = null;
+	}
+
+	@AfterEach
+	public void tearDown() throws Exception {
+		if (result != null) {
+			result.close();
+		}
 	}
 
 //	@Override
@@ -124,7 +136,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
-		Message result = (Message)actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
+
 		assertEquals(contents, result.asString());
 	}
 
@@ -149,7 +162,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(null, session);
 
-		Message result = (Message)actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 		assertEquals(contents, result.asString());
 	}
 
@@ -231,7 +244,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message("");
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		log.debug(result);
 
@@ -307,8 +320,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message("");
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
+
+		result = actor.doAction(message, pvl, session);
+
+		String stringResult = result.asString();
 		assertTrue(stringResult.contains(filename2));
 		assertFalse(stringResult.contains(filename1));
 	}
@@ -332,8 +347,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message("");
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
+
+		result = actor.doAction(message, pvl, session);
+
+		String stringResult = result.asString();
 
 		assertTrue(stringResult.contains(filename2));
 		assertFalse(stringResult.contains(filename1));
@@ -361,8 +378,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message = new Message("");
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
-		String stringResult=(String)result;
+
+		result = actor.doAction(message, pvl, session);
+
+		String stringResult = result.asString();
 
 		assertTrue(stringResult.contains(filename2));
 		assertFalse(stringResult.contains(filename1));
@@ -407,7 +426,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+
+		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		assertFileCountEquals(result, 2);
@@ -429,12 +449,16 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl = null;
-		String result = (String)actor.doAction(message, pvl, session);
-		assertThat(result, containsString("<file name=\"senderfile1.txt\""));
-		assertThat(result, containsString("size=\"17\""));
-		assertThat(result, containsString("canonicalName="));
-		assertThat(result, containsString("modificationDate="));
-		assertThat(result, containsString("modificationTime="));
+
+		// Act
+		result = actor.doAction(message, pvl, session);
+		String resultStr = result.asString();
+
+		assertThat(resultStr, containsString("<file name=\"senderfile1.txt\""));
+		assertThat(resultStr, containsString("size=\"17\""));
+		assertThat(resultStr, containsString("canonicalName="));
+		assertThat(resultStr, containsString("modificationDate="));
+		assertThat(resultStr, containsString("modificationTime="));
 	}
 
 	@Test
@@ -465,7 +489,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
 
-		Message result = (Message)actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
+
 		assertEquals(contents, result.asString());
 		assertTrue(_fileExists(filename));
 	}
@@ -487,7 +512,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(fileViaAttribute?null:filename);
 		ParameterValueList pvl = null;
 
-		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = Message.asMessage(actor.doAction(message, pvl, session));
+
 		assertEquals(contents, result.asString());
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(filename));
 	}
@@ -530,7 +556,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(folder+"/"+filename);
 		ParameterValueList pvl = null;
 
-		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = Message.asMessage(actor.doAction(message, pvl, session));
+
 		assertEquals(contents, result.asString());
 		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
 		assertFalse(_fileExists(filename), "Expected file ["+filename+"] not to be present");
@@ -554,7 +581,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		Message message= new Message(filename);
 		ParameterValueList pvl = null;
 
-		Message result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = Message.asMessage(actor.doAction(message, pvl, session));
 		assertEquals(contents, result.asString());
 	}
 
@@ -630,10 +657,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
-		String stringResult=(String)result;
+		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
 		String actualContents = readFile(null, filename);
@@ -643,7 +670,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents.trim(), actualContents.trim());
 	}
 
-	protected Object doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
+	protected Message doAction(Message message, ParameterValueList pvl, PipeLineSession session, boolean viaOutputStream, boolean expectStreamable) throws Exception {
 		boolean streamable = actor.canProvideOutputStream();
 		assertEquals(expectStreamable, streamable, "streamability");
 		if (viaOutputStream && streamable) {
@@ -680,7 +707,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message("fakeInputMessage");
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -727,7 +754,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(contents);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -772,7 +799,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(contents);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -815,7 +842,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(contents);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
+		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
 		waitForActionToFinish();
 
 		String stringResult=Message.asString(result);
@@ -858,9 +885,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl= params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
-		String stringResult=(String)result;
+		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		waitForActionToFinish();
 
@@ -895,9 +922,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
-		String stringResult=(String)result;
+		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
 		waitForActionToFinish();
@@ -974,10 +1001,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for (int i=0;i<numOfWrites;i++) {
 			session.put("fileSystemActorWriteActionWithBackupKey", contents+i);
 			ParameterValueList pvl= params.getValues(message, session);
-			Object result = actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, null);
 
-			String stringResult=(String)result;
+			String stringResult = result.asString();
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+			result.close();
 		}
 		waitForActionToFinish();
 
@@ -1038,9 +1066,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendWriteLineSeparatorTest", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			String result = (String)actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, null);
+			String resultStr = result.asString();
 
-			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
+			result.close();
 		}
 		String actualContents = readFile(null, filename);
 
@@ -1075,9 +1105,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			String result = (String)actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, null);
+			String resultStr = result.asString();
 
-			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
+			result.close();
 		}
 
 		int lastSavedBackup=numOfWrites<numOfBackups ? numOfWrites : numOfBackups;
@@ -1122,7 +1154,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
-		Object result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tobemoved"+i + FILE1;
@@ -1165,7 +1197,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
-		Object result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tostay"+i + FILE1;
@@ -1209,7 +1241,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		// test
 		// result should be name of the moved file
@@ -1265,7 +1297,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message("innerFolder/"+filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		assertNotNull(result);
 		assertFalse(_fileExists(filename), "file should not exist anymore in original folder");
@@ -1318,7 +1350,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
-		Object result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tobemoved"+i + FILE1;
@@ -1363,7 +1395,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message m = new Message("");
 		ParameterValueList pvl = params.getValues(m, session);
-		Object result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tostay"+i + FILE1;
@@ -1398,7 +1430,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		// test
 		// result should be name of the moved file
@@ -1431,14 +1463,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 		waitForActionToFinish();
 
 		// test
 
 		boolean actual = _folderExists(folder);
 		// test
-		assertEquals(folder,result, "result of actor should be name of created folder");
+		assertEquals(folder, result.asString(), "result of actor should be name of created folder");
 		assertTrue(actual, "Expected folder [" + folder + "] to be present");
 	}
 
@@ -1456,10 +1488,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals(folder,result,"result of actor should be name of removed folder");
+		assertEquals(folder, result.asString(), "result of actor should be name of removed folder");
 		waitForActionToFinish();
 
 		boolean actual = _folderExists(folder);
@@ -1489,10 +1521,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals(folder,result,"result of actor should be name of removed folder");
+		assertEquals(folder, result.asString(), "result of actor should be name of removed folder");
 		waitForActionToFinish();
 
 		boolean actual = _folderExists(folder);
@@ -1540,13 +1572,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		waitForActionToFinish();
 
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals(filename,result,"result of sender should be name of deleted file");
+		assertEquals(filename, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 	}
 
@@ -1565,13 +1597,13 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(folder+"/"+filename);
 		ParameterValueList pvl = null;
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		waitForActionToFinish();
 
 		boolean actual = _fileExists(filename);
 		// test
-		assertEquals(filename, result,"result of sender should be name of deleted file");
+		assertEquals(filename, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
 	}
@@ -1631,7 +1663,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message m = new Message("");
-		Object result = actor.doAction(m, null, session);
+		result = actor.doAction(m, null, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tobemoved"+i + FILE1;
@@ -1669,7 +1701,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.open();
 
 		Message m = new Message("");
-		Object result = actor.doAction(m, null, session);
+		result = actor.doAction(m, null, session);
 
 		for (int i=0; i < 3; i++) {
 			String filename = "tobemoved"+i + FILE1;
@@ -1703,10 +1735,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		Message message = new Message(filename);
 		ParameterValueList pvl= params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl, session);
 
 		// test
-		assertEquals(dest,result,"result of actor should be name of new file");
+		assertEquals(dest, result.asString(), "result of actor should be name of new file");
 
 		boolean actual = _fileExists(filename);
 		// test
