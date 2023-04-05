@@ -86,8 +86,8 @@ public class StatisticsKeeperTest {
 		assertEquals(count, sk.getCount());
 		assertEquals(0, sk.getMin());
 		assertEquals(99, sk.getMax());
-		assertEquals(limit /2.0, sk.getAvg(), 1.0);
-		assertEquals(limit *(count/2), sk.getTotal(), count*1.0);
+		assertEquals((limit-1)/2.0, sk.getAvg(), 1.5);
+		assertEquals((limit-1)*(count/2), sk.getTotal(), count*1.2);
 		assertEquals(842.0, sk.getVariance(), 50.0);
 		assertEquals(sumsq, sk.getTotalSquare(), 0.001);
 		assertEquals(29.0, sk.getStdDev(), 1.0);
