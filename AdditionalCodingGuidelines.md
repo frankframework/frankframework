@@ -60,6 +60,7 @@ Write:
 	  This reduces nesting in the code and keeps it clearer to the reader what the main
 	  body of the function is, what the preconditions are, and that there is no `else`
 	  following the `if` with an alternative path.
+      You will also have to remember fewer things while trying to read and understand the function.
 
 5. Functions without side-effects:
 	- Don't modify global state from you functions
@@ -68,7 +69,18 @@ Write:
 	  Makes it easy to test, makes it easier to ensure your code is overall correct, makes
 	  it easier to read and understand the code calling the function.
 
-6. Java Streams with `.map()` and related functions
+6. "Triple-A Testing":
+    Insert the comments `// Arrange`, `// Act` and `// Assert` in your unit tests in the
+    places where you start doing test setup, where you perform the actual action to be tested,
+    and where you start doing asserts to verify the results.
+
+    This helps to make tests more readable, by making it clear what is being tested.
+
+	Sometimes no setup is needed so it can be skipped, and sometimes (when using `assertThrows()`
+    for instance) there is no separation between Act and Assert so you can add a comment like `// Act / Assert`
+    to indicate these steps are performed together.
+
+7. Java Streams with `.map()` and related functions
    The below is a suggestion and explanation, but not necessarily something I would like to see
    promoted to a new coding standard right away.
 
@@ -77,7 +89,7 @@ Write:
 	- The idea is to put focus the actual operations your code does instead of burying that
 	  in the ceremony around it.
 
-7. Java Optionals.
+8. Java Optionals.
    You can use Java `Optional` to indicate that the return value of a method can be `null`.
    It is not custom to use this for parameters, only for return-values.
    However I find that code is not necessarily more readable when using `Optional` so use

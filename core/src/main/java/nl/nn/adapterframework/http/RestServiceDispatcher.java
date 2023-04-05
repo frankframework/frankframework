@@ -154,8 +154,7 @@ public class RestServiceDispatcher {
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
-		Principal principal = null;
-		principal = httpServletRequest.getUserPrincipal();
+		final Principal principal = httpServletRequest.getUserPrincipal();
 		if (principal != null) {
 			context.put("principal", principal.getName());
 		}
