@@ -175,7 +175,7 @@ public class ReceiverTest {
 	@Test
 	public void testManualRetryWithMessageStoreListener() throws Exception {
 		// Arrange
-		String testMessage = "\"<msg/>\",\"ANY-KEY-VALUE\"";
+		String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener<String> listener = setupMessageStoreListener();
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
@@ -207,7 +207,7 @@ public class ReceiverTest {
 		// Assert
 		Message message = messageCaptor.getValue();
 		PipeLineSession pipeLineSession = sessionCaptor.getValue();
-		assertEquals("<msg/>", message.asString());
+		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
 		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
 		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
 
