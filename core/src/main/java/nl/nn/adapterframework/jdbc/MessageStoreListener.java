@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -101,11 +101,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sessionKeys != null) {
-			sessionKeysList = new ArrayList<>();
-			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
-			while (stringTokenizer.hasMoreElements()) {
-				sessionKeysList.add(stringTokenizer.nextToken());
-			}
+			extractSessionKeyList();
 		}
 		if (isMoveToMessageLog()) {
 			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
@@ -117,25 +113,56 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		}
 	}
 
+	public void extractSessionKeyList() {
+		if (sessionKeys != null) {
+			sessionKeysList = new ArrayList<>();
+			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
+			while (stringTokenizer.hasMoreElements()) {
+				sessionKeysList.add(stringTokenizer.nextToken());
+			}
+		}
+	}
+
 	@Override
 	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		M rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
+			Message message = convertToMessage(rawMessage, threadContext);
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
-			try {
-				CSVParser parser = CSVParser.parse(messageWrapper.getMessage().asString(), CSVFormat.DEFAULT);
-				CSVRecord record = parser.getRecords().get(0);
-				messageWrapper.setMessage(new Message(record.get(0)));
-				for (int i=1; i<record.size();i++) {
-					if (sessionKeysList.size()>=i) {
-						threadContext.put(sessionKeysList.get(i-1), record.get(i));
-					}
-				}
-			} catch (IOException e) {
-				throw new ListenerException("cannot convert message",e);
-			}
+			messageWrapper.setMessage(message);
 		}
 		return rawMessage;
+	}
+
+	public Message convertToMessage(Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+		Message message;
+		String messageData = extractStringData(rawMessageOrWrapper);
+		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
+			CSVRecord csvRecord = parser.getRecords().get(0);
+			message = new Message(csvRecord.get(0));
+			for (int i=1; i<csvRecord.size();i++) {
+				if (sessionKeysList.size()>=i) {
+					threadContext.put(sessionKeysList.get(i-1), csvRecord.get(i));
+				}
+			}
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert message",e);
+		}
+		return message;
+	}
+
+	private static String extractStringData(Object rawMessageOrWrapper) throws ListenerException {
+		if (rawMessageOrWrapper == null) {
+			throw new ListenerException("Raw message data is null");
+		} else if (rawMessageOrWrapper instanceof MessageWrapper) {
+			try {
+				return ((MessageWrapper<?>) rawMessageOrWrapper).getMessage().asString();
+			} catch (IOException e) {
+				throw new ListenerException("Exception extracting string data from message", e);
+			}
+		} else {
+			return rawMessageOrWrapper.toString();
+		}
 	}
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
