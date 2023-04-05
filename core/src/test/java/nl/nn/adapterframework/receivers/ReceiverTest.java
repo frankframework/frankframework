@@ -9,8 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -20,7 +18,6 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -36,7 +33,6 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -115,9 +111,9 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public MessageStoreListener<String> setupMessageStoreListener(String testMessage) throws Exception {
+	public MessageStoreListener<String> setupMessageStoreListener() throws Exception {
 		Connection connection = mock(Connection.class);
-		MessageStoreListener<String> listener = spy(new TestMessageStoreListener<>(testMessage));
+		MessageStoreListener<String> listener = spy(new MessageStoreListener<>());
 		listener.setConnectionsArePooled(true);
 		doReturn(connection).when(listener).getConnection();
 		listener.setSessionKeys("ANY-KEY");
@@ -181,7 +177,7 @@ public class ReceiverTest {
 		// Arrange
 		String testMessage = "\"<msg/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener<String> listener = setupMessageStoreListener(testMessage);
+		MessageStoreListener<String> listener = setupMessageStoreListener();
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
@@ -522,21 +518,5 @@ public class ReceiverTest {
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 		assertEquals(RunState.STOPPED, adapter.getRunState());
-	}
-
-	private static class TestMessageStoreListener<M> extends MessageStoreListener<M> {
-		private final String testMessage;
-
-		public TestMessageStoreListener(String testMessage) {
-			this.testMessage = testMessage;
-		}
-
-		@Override
-		protected M getRawMessage(Connection conn, Map<String, Object> threadContext) throws ListenerException {
-			MessageWrapper<String> mw = new MessageWrapper<>();
-			mw.setMessage(Message.asMessage(testMessage));
-			// :-( Have to do it this way, ugly cast of the MessageWrapper to M which is definitely NOT right type.
-			return (M)mw;
-		}
 	}
 }
