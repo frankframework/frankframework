@@ -60,7 +60,6 @@ Write:
 	  This reduces nesting in the code and keeps it clearer to the reader what the main
 	  body of the function is, what the preconditions are, and that there is no `else`
 	  following the `if` with an alternative path.
-      You will also have to remember fewer things while trying to read and understand the function.
 
 5. Functions without side-effects:
 	- Don't modify global state from you functions
