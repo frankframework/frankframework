@@ -19,24 +19,24 @@ Guidelines
    
    For instance, instead of writing:
 ```java
-	String x = null;
-	if (condition) {
-		x = "value";
-	}
+String x = null;
+if (condition) {
+	x = "value";
+}
 ```
 Write:
 ```java
-	final String x = (condition) ? "value" : null;
+final String x = (condition) ? "value" : null;
 ```
 
 
 2. Function names that describe _what_ the code accomplishes, rather than _how_ it
 	does so.
-
+	
 	For instance: 
-
+	
 	`public StringTokenizer AppConstants.getTokenizedProperty() {...}` 
-
+	
 	describes _how_ the code accomplishes something (using a StringTokenizer, but not clear for what
 	purpose until you read the docs).
 	
@@ -44,108 +44,108 @@ Write:
 	
 	would tell you _what_ the code accomplishes without you having to look at the JavaDoc,
 	and without bothering you with the how.
-	
+
 
 3. Delegate subtasks of your function to other functions
-     - Keeps your code shorter
-       Thus it reduces complexity, makes code more readable
-     - Name of function tells the intention of the code instead of just the actions
-     - Helps writing code that doesn't need to modify state variables
-     - Increases code testability because the helper function can be tested independently
+   - Keeps your code shorter
+     Thus it reduces complexity, makes code more readable
+   - Name of function tells the intention of the code instead of just the actions
+   - Helps writing code that doesn't need to modify state variables
+   - Increases code testability because the helper function can be tested independently
 
 
 4. Early Returns from functions
-     - Don't embed the main code of a function inside an `if` condition, but instead
-       invert that `if` condition and if condition is not met, immediately exit the
-       function.
-	    
-       This reduces nesting in the code and keeps it clearer to the reader what the main
-       body of the function is, what the preconditions are, and that there is no `else`
-       following the `if` with an alternative path.
+   - Don't embed the main code of a function inside an `if` condition, but instead
+     invert that `if` condition and if condition is not met, immediately exit the
+     function.
+
+     This reduces nesting in the code and keeps it clearer to the reader what the main
+     body of the function is, what the preconditions are, and that there is no `else`
+     following the `if` with an alternative path.
 
 
-5. Functions without side-effects:
-     - Don't modify global state from you functions
-     - Whenever possible, don't modify input arguments either
-     - Compute something from the arguments, and return that
-       Makes it easy to test, makes it easier to ensure your code is overall correct, makes
-       it easier to read and understand the code calling the function.
+5. Functions without side effects:
+   - Don't modify global state from you functions
+   - Whenever possible, don't modify input arguments either
+   - Compute something from the arguments, and return that
+     Makes it easy to test, makes it easier to ensure your code is overall correct, makes
+     it easier to read and understand the code calling the function.
 
 
 6. "Triple-A Testing":
 
-     Insert the comments `// Arrange`, `// Act` and `// Assert` in your unit tests in the
-     places where you start doing test setup, where you perform the actual action to be tested,
-     and where you start doing asserts to verify the results.
-
-     This helps to make tests more readable, by making it clear what is being tested.
-
-     Sometimes no setup is needed so it can be skipped, and sometimes (when using `assertThrows()`
-     for instance) there is no separation between Act and Assert so you can add a comment like `// Act / Assert`
-     to indicate these steps are performed together.
+	 Insert the comments `// Arrange`, `// Act` and `// Assert` in your unit tests in the
+	 places where you start doing test setup, where you perform the actual action to be tested,
+	 and where you start doing asserts to verify the results.
+	
+	 This helps to make tests more readable, by making it clear what is being tested.
+	
+	 Sometimes no setup is needed so it can be skipped, and sometimes (when using `assertThrows()`
+	 for instance) there is no separation between Act and Assert so you can add a comment like `// Act / Assert`
+	 to indicate these steps are performed together.
 
 
 7. Java Streams with `.map()` and related functions
 
-   The below is a suggestion and explanation, but not necessarily something I would like to see
-   promoted to a new coding standard right away.
-
-     - Replace `for` loops with stream operations
-     - For readability put each stream operation on a separate line!
-     - The idea is to put focus the actual operations your code does instead of burying that
-       in the ceremony around it.
+	The below is a suggestion and explanation, but not necessarily something I would like to see
+	promoted to a new coding standard right away.
+	
+	 - Replace `for` loops with stream operations
+	 - For readability put each stream operation on a separate line!
+	 - The idea is to put focus the actual operations your code does instead of burying that
+		in the ceremony around it.
 
 
 8. Java Optionals.
 
-   You can use Java `Optional` to indicate that the return value of a method can be `null`.
-   It is not custom to use this for parameters, only for return-values.
-   However I find that code is not necessarily more readable when using `Optional` so use
-   them at your own discretion, and see if you find the code calling your methods becomes
-   either more readable, or safer (as in, less likely to do the wrong thing when a value
-   could be null).
-   If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
-   and companions.
-   One good scenario for using `Optional` is for avoiding re-assigning variables which could
-   otherwise be `final` in a scenario like this:
-   ```java
-   MyClass value = getSomeValue(key);
-   if (value == null) {
-       value = new MyClass(a, b, c);
-   }
-   ```
+	You can use Java `Optional` to indicate that the return value of a method can be `null`.
+	It is not custom to use this for parameters, only for return-values.
+	However I find that code is not necessarily more readable when using `Optional` so use
+	them at your own discretion, and see if you find the code calling your methods becomes
+	either more readable, or safer (as in, less likely to do the wrong thing when a value
+	could be null).
+	If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
+	and companions.
+	One good scenario for using `Optional` is for avoiding re-assigning variables which could
+	otherwise be `final` in a scenario like this:
+```java
+MyClass value = getSomeValue(key);
+if (value == null) {
+   value = new MyClass(a, b, c);
+}
+```
 
-   If `getSomeValue()` would return `Optional<MyClass>` then we could rewrite this as:
-   ```java
-   final MyClass value = getSomeValue(key).orElseGet(() -> new MyClass(a, b, c));
-   ```
+If `getSomeValue()` would return `Optional<MyClass>` then we could rewrite this as:
+```java
+final MyClass value = getSomeValue(key).orElseGet(() -> new MyClass(a, b, c));
+```
 
-   For larger numbers of alternative choices, when using Java9 or higher a number of `Optional`s can
-   be chained using `or`:
-   ```java
-   Optional<String> getValue(String key, Collection<String> source) { ... }
-   Optional<String> alternativeProvider(String key) { ... }
-   
-   final String value = getValue(key, source1)
-                           .or(()-> getValue(key, soure2))
-                           .or(()-> alternativeProvider(key))
-                           .orElse("default");
-   ```
+For larger numbers of alternative choices, when using Java9 or higher a number of `Optional`s can
+be chained using `or`:
+```java
+Optional<String> getValue(String key, Collection<String> source) { ... }
+Optional<String> alternativeProvider(String key) { ... }
 
-   With Java8 this can be written as:
-   ```java
-   Optional<String> getValue(String key, Collection<String> source) { ... }
-   Optional<String> alternativeProvider(String key) { ... }
-   
-   final String value = getValue(key, source1)
-                           .map(Optional::of)
-                           .orElseGet(()-> getValue(key, soure2))
-                           .map(Optional::of)
-                           .orElseGet(()-> alternativeProvider(key))
-                           .orElse("default");
-   ```
-   Which to me doesn't have the same readability, because it is not as compact and you have
-   to mentally skip over the lines `.map(Optional::of)` every time.
+final String value = getValue(key, source1)
+					   .or(()-> getValue(key, soure2))
+					   .or(()-> alternativeProvider(key))
+					   .orElse("default");
+```
+
+With Java8 this can be written as:
+```java
+Optional<String> getValue(String key, Collection<String> source) { ... }
+Optional<String> alternativeProvider(String key) { ... }
+
+final String value = getValue(key, source1)
+					.map(Optional::of)
+					.orElseGet(()-> getValue(key, soure2))
+					.map(Optional::of)
+					.orElseGet(()-> alternativeProvider(key))
+					.orElse("default");
+```
+Which to me doesn't have the same readability, because it is not as compact and you have
+to mentally skip over the lines `.map(Optional::of)` every time.
 
 
 __NOTE:__   
@@ -159,63 +159,62 @@ Which version makes its intent clearer?
 Before:
 
 ```java
-	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
-		List<String> springConfigurationFiles = new ArrayList<>();
-		
-		// Some lines of code omitted b/c they're not relevant to this refactoring
-		
-		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
-		while (locationTokenizer.hasMoreTokens()) {
-			String file = locationTokenizer.nextToken();
-			log.debug("found spring configuration file to load [{}]", file);
+protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	List<String> springConfigurationFiles = new ArrayList<>();
+	
+	// Some lines of code omitted b/c they're not relevant to this refactoring
+	
+	StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
+	while (locationTokenizer.hasMoreTokens()) {
+		String file = locationTokenizer.nextToken();
+		log.debug("found spring configuration file to load [{}]", file);
 
-			URL fileURL = classLoader.getResource(file);
-			if (fileURL == null) {
-				log.error("unable to locate Spring configuration file [{}]", file);
-			} else {
-				if (!file.contains(":")) {
-					file = ResourceUtils.CLASSPATH_URL_PREFIX + "/" + file;
-				}
-
-				springConfigurationFiles.add(file);
+		URL fileURL = classLoader.getResource(file);
+		if (fileURL == null) {
+			log.error("unable to locate Spring configuration file [{}]", file);
+		} else {
+			if (!file.contains(":")) {
+				file = ResourceUtils.CLASSPATH_URL_PREFIX + "/" + file;
 			}
-		}
-		
-		// More code omitted
-		
-		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
-	}
 
+			springConfigurationFiles.add(file);
+		}
+	}
+	
+	// More code omitted
+	
+	return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+}
 ```
 
 After:
 
 ```java
-		Arrays
-			.stream(AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS")
-				.split(","))
-			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
-			.map(this::addClasspathPrefix)
-			.forEach(springConfigurationFiles::add);
+Arrays
+	.stream(AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS")
+		.split(","))
+	.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
+	.map(this::addClasspathPrefix)
+	.forEach(springConfigurationFiles::add);
 ```
 
 To help making the code readable, this refactoring extracts some logic in two short helper functions:
 
 ```java
-	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
-		URL fileURL = classLoader.getResource(filename);
-		if (fileURL == null) {
-			log.error("unable to locate Spring configuration file [{}]", filename);
-		}
-		return fileURL != null;
+private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
+	URL fileURL = classLoader.getResource(filename);
+	if (fileURL == null) {
+		log.error("unable to locate Spring configuration file [{}]", filename);
 	}
+	return fileURL != null;
+}
 
-	private String addClasspathPrefix(String filename) {
-		if (filename.contains(":")) {
-			return filename;
-		}
-		return ResourceUtils.CLASSPATH_URL_PREFIX + "/" + filename;
+private String addClasspathPrefix(String filename) {
+	if (filename.contains(":")) {
+		return filename;
 	}
+	return ResourceUtils.CLASSPATH_URL_PREFIX + "/" + filename;
+}
 ```
 
 I do that instead of putting more logic inside the lambda functions inside the `map` and `filter`
@@ -233,14 +232,14 @@ simple input. However this code is part of a larger function.
 So ideally, I would extract the entire loop into a new function:
 
 ```java
-	private List<String> splitIntoConfigFiles(ClassLoader classLoader, String fileList) {
-		return Arrays
-			.stream(fileList.split(","))
-			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
-			.map(this::addClasspathPrefix)
-			.collect(Collectors.toList());
-		
-	}
+private List<String> splitIntoConfigFiles(ClassLoader classLoader, String fileList) {
+	return Arrays
+		.stream(fileList.split(","))
+		.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
+		.map(this::addClasspathPrefix)
+		.collect(Collectors.toList());
+	
+}
 ```
 
 This is testable with any input, and to me is more readable. Individual subtasks can be tested
@@ -254,18 +253,18 @@ explicitly instead of other unit-tests just happening to cover these code-paths:
 The entire original function now reads like this:
 
 ```java
-	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
-		List<String> springConfigurationFiles = new ArrayList<>();
-		if (parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
-			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
-		}
-		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
-		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS")));
-		addJmxConfigurationIfEnabled(springConfigurationFiles);
-
-		log.info("loading Spring configuration files {}", springConfigurationFiles);
-		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	List<String> springConfigurationFiles = new ArrayList<>();
+	if (parentContext == null) { //When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
+		springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
 	}
+	springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
+	springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS")));
+	addJmxConfigurationIfEnabled(springConfigurationFiles);
+
+	log.info("loading Spring configuration files {}", springConfigurationFiles);
+	return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+}
 ```
 
 Which again is more to the point and delegates subtasks.
@@ -277,47 +276,47 @@ at least Java8. (I'm not sure about Java 17).
 For instance:
 
 ```java
-	private void registerApplicationModules(List<String> modules) {
-		for (String module : modules) {
-			String version = getModuleVersion(module);
+private void registerApplicationModules(List<String> modules) {
+	for (String module : modules) {
+		String version = getModuleVersion(module);
 
-			if (version != null) {
-				iafModules.put(module, version);
-				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [{}] version [{}]", module, version);
-			}
+		if (version != null) {
+			iafModules.put(module, version);
+			APP_CONSTANTS.put(module + ".version", version);
+			log.info("Loading IAF module [{}] version [{}]", module, version);
 		}
 	}
+}
 ```
 
 Probably is still more readable than the Streams API alternative that I could come up with,
 because 2 pieces of information need to be passed on which is clumsy in Java:
 
 ```java
-	private void registerApplicationModules(List<String> modules) {
-		modules.stream()
-			.map(module -> Pair.of(module, getModuleVersion(module)))
-			.filter(pair -> pair.getRight() != null)
-			.forEach(pair -> {
-				String module = pair.getLeft();
-				String version = pair.getRight();
-				iafModules.put(module, version);
-				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [{}] version [{}]", module, version);
-			});
-	}
+private void registerApplicationModules(List<String> modules) {
+	modules.stream()
+		.map(module -> Pair.of(module, getModuleVersion(module)))
+		.filter(pair -> pair.getRight() != null)
+		.forEach(pair -> {
+			String module = pair.getLeft();
+			String version = pair.getRight();
+			iafModules.put(module, version);
+			APP_CONSTANTS.put(module + ".version", version);
+			log.info("Loading IAF module [{}] version [{}]", module, version);
+		});
+}
 ```
 
 It requires the use of a `Pair` class and although in Kotlin you would also need that, in
 Kotlin you at least have a neat way to unpack the information:
 
 ```kotlin
-  fun registerApplicationModules(modules: List<String>) =
-      modules.map { module -> Pair(module, getModuleVersion(module)) }
-             .filter { pair -> pair.second != null }
-             .forEach { (module, version) ->
-                 iafModules.put(module, version)
-                 APP_CONSTANTS.put(module + ".version", version)
-                 log.info { "Loading IAF module [$version] version [$module]", module, version }
-             }
+fun registerApplicationModules(modules: List<String>) =
+  modules.map { module -> Pair(module, getModuleVersion(module)) }
+		 .filter { pair -> pair.second != null }
+		 .forEach { (module, version) ->
+			 iafModules.put(module, version)
+			 APP_CONSTANTS.put(module + ".version", version)
+			 log.info { "Loading IAF module [$version] version [$module]", module, version }
+		 }
 ```
