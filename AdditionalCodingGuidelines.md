@@ -317,6 +317,6 @@ fun registerApplicationModules(modules: List<String>) =
 		 .forEach { (module, version) ->
 			 iafModules.put(module, version)
 			 APP_CONSTANTS.put(module + ".version", version)
-			 log.info { "Loading IAF module [$version] version [$module]", module, version }
+			 log.info { "Loading IAF module [$version] version [$module]" }
 		 }
 ```
