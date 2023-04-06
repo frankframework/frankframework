@@ -221,8 +221,6 @@ public class StringUtil {
 		return count;
 	}
 
-	// Not sure what's better here...
-	// return input.substring(0, 1).toLowerCase() + input.substring(1);
 	/**
 	 * Turns the first Char into lower case.
 	 */
