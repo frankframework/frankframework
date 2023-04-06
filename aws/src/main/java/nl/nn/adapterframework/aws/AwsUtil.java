@@ -25,18 +25,20 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 
 import nl.nn.adapterframework.util.CredentialFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain.Builder;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
 public class AwsUtil {
 
-	// S3
+	private static final boolean REUSE_LAST_PROVIDER = true;
 
+	// S3
+	/** com.amazonaws.auth based CredentialProvider */
 	public static @Nonnull AWSCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
 		List<AWSCredentialsProvider> chain = new ArrayList<>();
 
@@ -45,19 +47,18 @@ public class AwsUtil {
 			chain.add(new AWSStaticCredentialsProvider(awsCreds));
 		}
 
-		chain.add(new ProfileCredentialsProvider());
-		chain.add(new EC2ContainerCredentialsProviderWrapper());
+		chain.add(new com.amazonaws.auth.profile.ProfileCredentialsProvider());
+		chain.add(new com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper());
+		chain.add(new com.amazonaws.auth.InstanceProfileCredentialsProvider(false));
 
-		return new AWSCredentialsProviderChain(chain);
+		AWSCredentialsProviderChain cfc = new AWSCredentialsProviderChain(chain);
+		cfc.setReuseLastProvider(REUSE_LAST_PROVIDER);
+		return cfc;
 	}
 
 	// SQS
-
-	public static AwsCredentials getAwsCredentials(String authAlias, String defaultUsername, String defaultPassword) {
-		return getAwsCredentials(new CredentialFactory(authAlias, defaultUsername, defaultPassword));
-	}
-
-	public static AwsCredentials getAwsCredentials(CredentialFactory cf) {
+	/** software.amazon.awssdk.auth.credentials based CredentialProvider */
+	private static AwsCredentials getAwsCredentials(CredentialFactory cf) {
 		return new AwsCredentials() {
 
 			@Override
@@ -72,12 +73,19 @@ public class AwsUtil {
 		};
 	}
 
-	public static AwsCredentialsProvider getAwsCredentialsProvider(String authAlias, String defaultUsername, String defaultPassword) {
-		return StaticCredentialsProvider.create(getAwsCredentials(authAlias, defaultUsername, defaultPassword));
-	}
+	public static @Nonnull AwsCredentialsProvider getAwsCredentialsProvider(@Nullable CredentialFactory cf) {
+		Builder chain = AwsCredentialsProviderChain.builder();
 
-	public static AwsCredentialsProvider getAwsCredentialsProvider(CredentialFactory cf) {
-		return StaticCredentialsProvider.create(getAwsCredentials(cf));
+		if(cf != null) {
+			chain.addCredentialsProvider(StaticCredentialsProvider.create(getAwsCredentials(cf)));
+		}
+
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider.create());
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider.builder().build());
+		chain.addCredentialsProvider(software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider.create());
+
+		chain.reuseLastProviderEnabled(REUSE_LAST_PROVIDER);
+		return chain.build();
 	}
 
 }

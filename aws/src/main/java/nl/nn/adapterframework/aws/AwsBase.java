@@ -23,17 +23,15 @@ import org.apache.logging.log4j.Logger;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
-public class AwsClient {
+public class AwsBase {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
@@ -47,19 +45,26 @@ public class AwsClient {
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 
-	public void configure() throws ConfigurationException {
+	private void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getAuthAlias()) && (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))) {
-			throw new ConfigurationException(" empty credential fields, please provide aws credentials");
+			throw new ConfigurationException("empty credential fields, please provide aws credentials");
 		}
 
 		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
-			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
 		}
 	}
 
-	protected AWSCredentialsProvider getCredentialsProvider() {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
-		return new AWSStaticCredentialsProvider(new BasicAWSCredentials(cf.getUsername(), cf.getPassword()));
+	public AwsCredentialsProvider getAwsCredentialsProvider() {
+		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			throw new IllegalStateException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
+		}
+
+		CredentialFactory cf = null;
+		if (StringUtils.isNotEmpty(getAuthAlias()) || (StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
+		}
+		return AwsUtil.getAwsCredentialsProvider(cf);
 	}
 
 	public static List<String> getAvailableRegions() {
