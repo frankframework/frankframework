@@ -39,6 +39,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
@@ -145,10 +146,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 
 		String uri = request.getPathInfo();
-		if(log.isInfoEnabled()) {
-			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
-			log.info(infoMessage);
-		}
+		log.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
 
 		if (uri==null) {
 			response.setStatus(400);
