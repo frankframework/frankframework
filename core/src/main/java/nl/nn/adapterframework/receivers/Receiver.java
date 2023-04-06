@@ -94,7 +94,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
@@ -1087,11 +1086,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message message;
 			String messageId;
 			try {
-				if (getListener() instanceof MessageStoreListener && manualRetry) {
-					message = ((MessageStoreListener<M>) getListener()).convertToMessage(rawMessageOrWrapper, session);
-				} else {
-					message = getListener().extractMessage((M) rawMessageOrWrapper, session);
-				}
+				message = getListener().extractMessage((M) rawMessageOrWrapper, session);
 			} catch (Exception e) {
 				if(rawMessageOrWrapper instanceof MessageWrapper) {
 					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage

@@ -124,14 +124,11 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		M rawMessage = super.getRawMessage(threadContext);
+	public Message extractMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		if (rawMessage != null && sessionKeys != null) {
-			Message message = convertToMessage(rawMessage, threadContext);
-			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
-			messageWrapper.setMessage(message);
+			return convertToMessage(rawMessage, threadContext);
 		}
-		return rawMessage;
+		return super.extractMessage(rawMessage, threadContext);
 	}
 
 	public Message convertToMessage(Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
@@ -166,7 +163,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
-		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
+		if (browser instanceof JdbcTableMessageBrowser) {
 			JdbcTableMessageBrowser<?> jtmb = (JdbcTableMessageBrowser<?>)browser;
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
