@@ -95,4 +95,19 @@ class StringUtilTest {
 		assertEquals(4, regexCount);
 	}
 
+	@Test
+	public void testUcFirst() {
+		assertEquals("Test123", StringUtil.ucFirst("test123"));
+		assertEquals("TEST123", StringUtil.ucFirst("tEST123"));
+		assertEquals("TEST123", StringUtil.ucFirst("TEST123"));
+		assertEquals("123test", StringUtil.ucFirst("123test"));
+	}
+
+	@Test
+	public void testLcFirst() {
+		assertEquals("test123", StringUtil.lcFirst("Test123"));
+		assertEquals("tEST123", StringUtil.lcFirst("TEST123"));
+		assertEquals("tEST123", StringUtil.lcFirst("TEST123"));
+		assertEquals("123test", StringUtil.lcFirst("123test"));
+	}
 }
