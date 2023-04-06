@@ -26,7 +26,6 @@ import com.amazonaws.Protocol;
 import com.amazonaws.regions.Regions;
 
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -40,19 +39,16 @@ public class AwsBase {
 	private @Getter String secretKey;
 	private @Getter String authAlias;
 
-	private @Getter String clientRegion = Regions.EU_WEST_1.getName();
+	private String clientRegion = Regions.EU_WEST_1.getName();
 
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 
-	private void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getAuthAlias()) && (StringUtils.isEmpty(getAccessKey()) || StringUtils.isEmpty(getSecretKey()))) {
-			throw new ConfigurationException("empty credential fields, please provide aws credentials");
+	public String getClientRegion() {
+		if (StringUtils.isEmpty(clientRegion) || !AVAILABLE_REGIONS.contains(clientRegion)) {
+			throw new IllegalStateException("invalid region [" + clientRegion + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
 		}
-
-		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
-			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
-		}
+		return clientRegion;
 	}
 
 	public AwsCredentialsProvider getAwsCredentialsProvider() {
