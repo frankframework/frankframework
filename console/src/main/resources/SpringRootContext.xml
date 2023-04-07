@@ -7,14 +7,10 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
-	<context:property-placeholder />
+	<context:property-placeholder location="classpath:application.properties"/>
 
-<!-- 	<context:component-scan base-package="nl.nn.adapterframework.webcontrol"> -->
+<!-- 	<context:component-scan use-default-filters="true" base-package="nl.nn.adapterframework.webcontrol"> -->
 <!-- 		<context:exclude-filter type="annotation" expression="nl.nn.adapterframework.lifecycle.IbisInitializer"/> -->
-
-<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/> -->
-<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/> -->
-<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/> -->
 <!-- 	</context:component-scan> -->
 
 	<bean class="nl.nn.adapterframework.webcontrol.runner.CreateApiEndpointBean"/>

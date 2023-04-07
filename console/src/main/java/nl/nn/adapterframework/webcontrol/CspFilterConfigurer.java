@@ -24,13 +24,31 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import nl.nn.adapterframework.util.SpringUtils;
+
 @WebListener
 public class CspFilterConfigurer implements ServletContextListener {
+	private Logger log = LogManager.getLogger(this);
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		ServletContext context = sce.getServletContext();
-		Dynamic filter = context.addFilter("CspFilter", CspFilter.class);
+		Dynamic filter;
+
+		WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(context);
+		if(wac != null) {
+			log.info("creating CspFilter through Application Context [{}]", wac::getDisplayName);
+			CspFilter filterInstance = SpringUtils.createBean(wac, CspFilter.class);
+			filter = context.addFilter("CspFilter", filterInstance);
+		} else {
+			log.info("creating CspFilter without Application Context");
+			filter = context.addFilter("CspFilter", CspFilter.class);
+		}
 
 		String[] urlMapping = new String[] {"/iaf/gui/*"};
 		filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, urlMapping);
