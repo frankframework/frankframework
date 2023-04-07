@@ -53,6 +53,11 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 			}
 
 			@Override
+			public void configure() throws ConfigurationException {
+				// configure is not required for this test
+			}
+
+			@Override
 			protected MessagingSource getMessagingSource() throws JmsException {
 				return mock(JmsMessagingSource.class);
 			}
