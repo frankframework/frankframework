@@ -220,4 +220,22 @@ public class StringUtil {
 			count++;
 		return count;
 	}
+
+	/**
+	 * Turns the first Char into lower case.
+	 */
+	public static String lcFirst(String input) {
+		char[] c = input.toCharArray();
+		c[0] = Character.toLowerCase(c[0]);
+		return new String(c);
+	}
+
+	/**
+	 * Turns the first Char into upper case.
+	 */
+	public static String ucFirst(String input) {
+		char[] c = input.toCharArray();
+		c[0] = Character.toUpperCase(c[0]);
+		return new String(c);
+	}
 }
