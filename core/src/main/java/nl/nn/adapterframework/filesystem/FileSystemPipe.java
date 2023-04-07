@@ -117,7 +117,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}
 
-		Object result;
+		Message result;
 		try {
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeoutException e) {
@@ -127,7 +127,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
-		if (result!=null) {
+		if (!Message.isNull(result)) {
 			return new PipeRunResult(getSuccessForward(), result);
 		}
 		return new PipeRunResult(getSuccessForward(), message);

@@ -315,8 +315,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
-		FileSystemAction action=null;
+	public Message doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
+		FileSystemAction action = null;
 		try {
 			if(input != null) {
 				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
@@ -324,7 +324,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {
-					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(getAction()+""));
+					action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
 				} catch(IllegalArgumentException e) {
 					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 				}
@@ -340,50 +340,62 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
-					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
+					//noinspection EmptyTryBlock
+					try (OutputStream ignored = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						// nothing to write
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case DELETE: {
-					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
+					return Message.asMessage(processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; }));
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case READ: {
 					F file=getFile(input, pvl);
 					Message in = fileSystem.readFile(file, getCharset());
 					if (getBase64()!=null) {
-						return new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE);
+						return Message.asMessage(new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE));
 					}
 					return in;
 				}
 				case READDELETE: {
 					final F file=getFile(input, pvl);
 					InputStream in = new FilterInputStream(fileSystem.readFile(file, getCharset()).asInputStream()) {
+						boolean isClosed = false;
 
 						@Override
 						public void close() throws IOException {
+							if (isClosed) {
+								return;
+							}
 							super.close();
+							isClosed = true;
 							try {
 								fileSystem.deleteFile(file);
 								deleteEmptyFolder(file);
 							} catch (NoSuchFileException e) {
 								log.debug("ignore", e);
 							} catch (FileSystemException e) {
+								if (e.getCause() instanceof NoSuchFileException) {
+									log.debug("ignore", e);
+									return;
+								}
 								throw new IOException("Could not delete file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
 							}
 						}
 
 						@Override
 						protected void finalize() throws Throwable {
-							try {
-								close();
-							} catch (Exception e) {
-								log.warn("Could not close file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
+							if (!isClosed) {
+								try {
+									close();
+								} catch (Exception e) {
+									log.warn("Could not close file [" + fileSystem.getName(file) + "]: " + e.getMessage(), e);
+								}
 							}
 							super.finalize();
 						}
@@ -392,7 +404,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					if (getBase64()!=null) {
 						in = new Base64InputStream(in, getBase64()==Base64Pipe.Direction.ENCODE);
 					}
-					return in;
+					return Message.asMessage(in);
 				}
 				case LIST: {
 					String folder = arrangeFolder(determineInputFoldername(input, pvl));
@@ -408,7 +420,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					} finally {
 						directoryBuilder.close();
 					}
-					return directoryBuilder.toString();
+					return Message.asMessage(directoryBuilder.toString());
 				}
 				case WRITE: {
 					F file=getFile(input, pvl);
@@ -419,7 +431,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -434,17 +446,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat());
+					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case MKDIR: {
 					String folder = determineInputFoldername(input, pvl);
 					fileSystem.createFolder(folder);
-					return folder;
+					return Message.asMessage(folder);
 				}
 				case RMDIR: {
 					String folder = determineInputFoldername(input, pvl);
 					fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
-					return folder;
+					return Message.asMessage(folder);
 				}
 				case RENAME: {
 					F source=getFile(input, pvl);
@@ -457,15 +469,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						destination = fileSystem.toFile(folderPath,destinationName);
 					}
 					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
-					return fileSystem.getName(renamed);
+					return Message.asMessage(fileSystem.getName(renamed));
 				}
 				case MOVE: {
 					String destinationFolder = determineDestination(pvl);
-					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
+					return Message.asMessage(processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
 				}
 				case COPY: {
 					String destinationFolder = determineDestination(pvl);
-					return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
+					return Message.asMessage(processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false)));
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);

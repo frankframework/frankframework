@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.extensions.aws;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class AmazonSqsFactoryTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected String PROPERTY_FILE = "amazonS3.properties";
+	protected String PROPERTY_FILE = "AmazonS3.properties";
 
 	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
 	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
@@ -171,7 +171,7 @@ public class AmazonSqsFactoryTest {
 		Thread.sleep(30000);
 
 		log.debug("rereading message");
-		// we did not acknowledge the message, it should be visibile again after the visibility timeout expires
+		// we did not acknowledge the message, it should be visible again after the visibility timeout expires
 		received = (TextMessage)consumer.receive(1000);
 		assertNotNull(received);
 		assertEquals(sent.getJMSMessageID(), received.getJMSMessageID());
