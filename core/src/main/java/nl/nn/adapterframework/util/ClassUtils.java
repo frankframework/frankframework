@@ -314,9 +314,7 @@ public abstract class ClassUtils {
 
 	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
-		char[] c = m.getName().substring(3).toCharArray();
-		c[0] = Character.toLowerCase(c[0]);
-		String fieldName = new String(c);
+		String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 
 		//Try to parse as primitive
 		return convertToType(setterArgumentClass, fieldName, value);

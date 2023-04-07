@@ -37,6 +37,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -107,14 +108,28 @@ public class TestPipeline extends FrankApiBase {
 
 		builder.setPayload(message);
 		Message<?> response = sendSyncMessage(builder);
-		String state = (String) response.getHeaders().get(ResponseMessageBase.STATE_KEY);
-		return testPipelineResponse(response.getPayload(), state, message);
+		String state = BusMessageUtils.getHeader(response, ResponseMessageBase.STATE_KEY);
+		return testPipelineResponse(getPayload(response), state, message);
+	}
+
+	private String getPayload(Message<?> response) {
+		Object payload = response.getPayload();
+		if(payload instanceof String) {
+			return (String) payload;
+		} else if(payload instanceof InputStream) {
+			try {
+				return StreamUtil.streamToString((InputStream) payload);
+			} catch (IOException e) {
+				throw new ApiException("unable to read response payload", e);
+			}
+		}
+		throw new ApiException("unexpected response payload type ["+payload.getClass().getCanonicalName()+"]");
 	}
 
 	private Response testPipelineResponse(String payload) {
 		return testPipelineResponse(payload, "SUCCESS", null);
 	}
-	private Response testPipelineResponse(Object payload, String state, String message) {
+	private Response testPipelineResponse(String payload, String state, String message) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("state", state);
 		result.put("result", payload);

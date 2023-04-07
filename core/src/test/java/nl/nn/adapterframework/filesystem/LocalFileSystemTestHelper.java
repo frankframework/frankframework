@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -75,6 +76,12 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		_deleteFile(null, folderName);
+		if (folderName != null) {
+			try {
+				_deleteFile(null, folderName);
+			} catch (NoSuchFileException e) {
+				// nothing to delete if the folder doesn't exist.
+			}
+		}
 	}
 }

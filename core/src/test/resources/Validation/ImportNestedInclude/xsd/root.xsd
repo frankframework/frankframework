@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://nn.nl/root"
+	targetNamespace="http://nn.nl/root" elementFormDefault="qualified"
+	attributeFormDefault="unqualified"
+   	xmlns:s02="http://nn.nl/s02"
+	>
+	<!--
+		#################################################
+		|	xsd		|	namespace	|	targetNamespace	|
+		#################################################
+		|	sub01	|	-			|	-				|
+		|	sub02	|	s02  		|	s02 			|
+		|	sub03	|	-			|	-				|
+		#################################################
+
+		Structure of includes and imports:
+		root
+		|
+		+-incl sub01
+		| |
+		| +-incl sub03
+		|
+		+-imp sub02
+		  |
+		  +-incl sub03
+	-->
+	<xs:include schemaLocation="sub01.xsd" />
+	<xs:import namespace="http://nn.nl/s02" schemaLocation="sub02.xsd" />
+	<xs:element name="root">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="string" type="xs:string" />
+				<xs:element ref="sub01" />
+				<xs:element ref="s02:sub02" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

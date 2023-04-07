@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:root xmlns:p="http://nn.nl/root" xmlns:s02="http://nn.nl/s02">
+<p:string>p:string</p:string>
+<p:sub01>
+<p:string>p:sub03</p:string>
+</p:sub01>
+<s02:sub02>
+<s02:string>p:string</s02:string>
+</s02:sub02>
+</p:root>

@@ -22,7 +22,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.validation.XSD;
 
 /**
@@ -42,11 +41,11 @@ public class ResourceXsd extends XSD {
 
 	@Override
 	public void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
-		this.resourceRef = StringUtil.replace(resourceRef, "%20", " ");
+		this.resourceRef = resourceRef.replace("%20", " ");
 
 		resource = Resource.getResource(scopeProvider, resourceRef);
 		if (resource == null) {
-			throw new ConfigurationException("Cannot find [" + resource + "]");
+			throw new ConfigurationException("Cannot find resource [" + resourceRef + "] in scope [" + scopeProvider + "]");
 		}
 
 		super.initNamespace(namespace, scopeProvider, resourceRef);
@@ -70,9 +69,8 @@ public class ResourceXsd extends XSD {
 	@Override
 	public int compareToByReferenceOrContents(XSD x) {
 		if (x instanceof ResourceXsd) {
-			return getSystemId().compareTo(((ResourceXsd)x).getSystemId());
+			return getSystemId().compareTo(x.getSystemId());
 		}
 		return compareToByContents(x);
 	}
-
 }

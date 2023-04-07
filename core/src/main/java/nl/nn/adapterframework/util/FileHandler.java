@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -828,9 +829,9 @@ public class FileHandler implements IScopeProvider {
 	}
 
 	private class SkipBomAndDeleteFileAfterReadInputStream extends BufferedInputStream {
-		private File file;
-		private boolean deleteAfterRead;
-		private PipeLineSession session;
+		private final File file;
+		private final boolean deleteAfterRead;
+		private final PipeLineSession session;
 		private boolean firstByteRead = false;
 
 		public SkipBomAndDeleteFileAfterReadInputStream(InputStream inputStream,
@@ -840,15 +841,11 @@ public class FileHandler implements IScopeProvider {
 			this.file = file;
 			this.deleteAfterRead = deleteAfterRead;
 			this.session = session;
-			if (deleteAfterRead) {
-				if (file == null) {
-					// This should not happen. A configuration warning for
-					// read_delete in combination with classpath should have
-					// occurred already.
-					throw new FileNotFoundException("No file object provided");
-				} else {
-					file.deleteOnExit();
-				}
+			if (deleteAfterRead && (file == null)) {
+				// This should not happen. A configuration warning for
+				// read_delete in combination with classpath should have
+				// occurred already.
+				throw new FileNotFoundException("No file object provided");
 			}
 		}
 
@@ -857,7 +854,7 @@ public class FileHandler implements IScopeProvider {
 			skipBOM();
 			int i = super.read();
 			if (i == -1 && deleteAfterRead) {
-				file.delete();
+				Files.delete(file.toPath());
 			}
 			return i;
 		}
@@ -867,7 +864,7 @@ public class FileHandler implements IScopeProvider {
 			skipBOM();
 			int i = super.read(b);
 			if (i == -1 && deleteAfterRead) {
-				file.delete();
+				Files.delete(file.toPath());
 			}
 			return i;
 		}
@@ -877,7 +874,7 @@ public class FileHandler implements IScopeProvider {
 			skipBOM();
 			int i = super.read(b, off, len);
 			if (i == -1 && deleteAfterRead) {
-				file.delete();
+				Files.delete(file.toPath());
 			}
 			return i;
 		}
@@ -886,7 +883,7 @@ public class FileHandler implements IScopeProvider {
 		public void close() throws IOException {
 			super.close();
 			if (deleteAfterRead) {
-				file.delete();
+				Files.delete(file.toPath());
 			}
 		}
 
@@ -900,7 +897,7 @@ public class FileHandler implements IScopeProvider {
 					if (i == BOM_UTF_8[1]) {
 						i = (byte)super.read();
 						if (i == BOM_UTF_8[2]) {
-							log.debug(getLogPrefix(session) + "removed UTF-8 BOM");
+							log.debug("{} removed UTF-8 BOM", ()->getLogPrefix(session));
 							return;
 						}
 					}

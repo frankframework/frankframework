@@ -1,17 +1,16 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.startsWith;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
 
 import org.apache.commons.codec.binary.Base64;
@@ -28,6 +27,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -232,14 +232,17 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertEquals(contentsBase64.trim(), result.asString().trim(), "result should be base64 of file content");
 	}
 
-	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderExists, boolean setCreateFolderAttribute) throws Exception {
+	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderShouldExist, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
+		if (folder2!=null) {
+			_deleteFolder(folder2);
+		}
 		if (folder1!=null) {
 			_createFolder(folder1);
 		}
-		if (folderExists && folder2!=null) {
+		if (folderShouldExist && folder2!=null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -290,6 +293,42 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 //	public void fileSystemSenderMoveActionTestFolderToFolder() throws Exception {
 //		fileSystemSenderMoveActionTest("folder1","folder2");
 //	}
+
+	@Test
+	public void moveFileParamPrefixedWithFolderToAnotherFolder() throws Exception {
+		// Arrange
+		String testFileContents = UUIDUtil.createRandomUUID();
+		String inputFolder = "tests";
+		String outputFolder = "tests/processed";
+
+		_deleteFolder(inputFolder); // ensure all test folders are empty
+		_createFolder(inputFolder);
+		createFile(inputFolder, FILE1, testFileContents);
+
+		waitForActionToFinish();
+
+		fileSystemSender.setAction(FileSystemAction.MOVE);
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+FILE1));
+		fileSystemSender.addParameter(ParameterBuilder.create("destination", outputFolder));
+		fileSystemSender.setCreateFolder(true);
+
+		// Act
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		Message message = new Message("is-not-relevant");
+		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+
+		// Assert
+		assertNotNull(result);
+		String newFilename = result.asString();
+		assertEquals(FILE1, newFilename);
+
+		assertTrue(_fileExists(outputFolder, newFilename), "file should exist in destination folder ["+outputFolder+"]");
+		assertFalse(_fileExists(inputFolder, FILE1), "file should not exist anymore in original folder ["+outputFolder+"]");
+		String newFileContents = readFile(outputFolder, newFilename);
+		assertEquals(testFileContents, newFileContents);
+	}
 
 	@Test
 	public void fileSystemSenderMkdirActionTest() throws Exception {
@@ -432,7 +471,10 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 
 	public void fileSystemSenderListActionTest(String inputFolder, int numberOfFiles) throws Exception {
-
+		_deleteFolder(inputFolder);
+		if(inputFolder != null) {
+			_createFolder("folder");
+		}
 
 		for (int i=0; i<numberOfFiles; i++) {
 			String filename = "tobelisted"+i + FILE1;
@@ -454,15 +496,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 
 		log.debug(result);
-
-		// TODO test that the fileSystemSender has returned the an XML with the details of the file
-//		Iterator<F> it = result;
-//		int count = 0;
-//		while (it.hasNext()) {
-//			it.next();
-//			count++;
-//		}
-
 		assertFileCountEquals(result, numberOfFiles);
 	}
 
@@ -477,13 +510,11 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestInFolderNoFiles() throws Exception {
-		_createFolder("folder");
 		fileSystemSenderListActionTest("folder",0);
 	}
 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
-		_createFolder("folder");
 		fileSystemSenderListActionTest("folder",2);
 	}
 
@@ -515,19 +546,23 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderListActionTestWithInputFolderAsParameter() throws Exception {
+		// Arrange
 		String filename = FILE1;
 		String filename2 = FILE2;
 		String inputFolder = "directory";
 
-		if (_fileExists(inputFolder, filename)) {
-			_deleteFile(inputFolder, filename);
+		if(_folderExists(inputFolder)) {
+			_deleteFolder(inputFolder);
 		}
+		_createFolder(inputFolder);
 
-		if (_fileExists(inputFolder, filename2)) {
-			_deleteFile(inputFolder, filename2);
-		}
+		createFile(inputFolder, filename, "some content");
+		createFile(inputFolder, filename2, "some content of the second file");
 
-		PipeLineSession session = new PipeLineSession();
+		_createFolder(inputFolder + "/subfolder");
+		createFile(inputFolder + "/subfolder", "dont-list-me.txt", "content of the third file");
+
+		waitForActionToFinish();
 		session.put("listWithInputFolderAsParameter", inputFolder);
 
 		fileSystemSender.addParameter(ParameterBuilder.create().withName("inputFolder").withSessionKey("listWithInputFolderAsParameter"));
@@ -535,23 +570,48 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
-		_createFolder(inputFolder);
-		OutputStream out = _createFile(inputFolder, filename);
-		out.write("some content".getBytes());
-		out.close();
-		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"]expected to be present");
+		// Act
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"] expected to be present");
 
-		OutputStream out2 = _createFile(inputFolder, filename2);
-		out2.write("some content of second file".getBytes());
-		out2.close();
-		waitForActionToFinish();
-		assertTrue(_fileExists(inputFolder, filename2), "File ["+filename2+"]expected to be present");
-
-		Message message=new Message(filename);
+		Message message = new Message(filename);
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 		waitForActionToFinish();
 
-		assertFileCountEquals(result, 2);
+		// Assert
+		assertFileCountEquals(result, 2); //2 files and 1 folder (which should be omitted from the result)
+	}
+
+	@Test
+	public void fileSystemSenderTestReadDelete() throws Exception {
+		// Arrange
+		String filename = FILE1;
+		String inputFolder = "read-delete";
+
+		if(_folderExists(inputFolder)) {
+			_deleteFolder(inputFolder);
+		}
+		_createFolder(inputFolder);
+
+		createFile(inputFolder, filename, "some content");
+
+		waitForActionToFinish();
+
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", inputFolder +"/"+ filename));
+		fileSystemSender.setAction(FileSystemAction.READDELETE);
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		// Act
+		assertTrue(_fileExists(inputFolder, filename), "File ["+filename+"] expected to be present");
+
+		Message message = new Message("not-used");
+		Message result = fileSystemSender.sendMessageOrThrow(message, session);
+		waitForActionToFinish();
+
+		// Assert
+		result.preserve(); //read the stream else close wont be called... sigh
+		assertFalse(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should have been deleted after READ action");
+		assertEquals("some content", result.asString());
 	}
 }

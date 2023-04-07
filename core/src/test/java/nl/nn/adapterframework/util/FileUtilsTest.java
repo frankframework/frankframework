@@ -97,9 +97,9 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testCreateTempDirBaseDir() throws Exception {
+	public void createTempDirectoryTest() throws Exception {
 		File f = new File(testFolderPath);
-		File file = FileUtils.createTempDir(f);
+		File file = FileUtils.createTempDirectory(f);
 		boolean b = file.exists();
 		file.delete();
 		assertTrue(b);

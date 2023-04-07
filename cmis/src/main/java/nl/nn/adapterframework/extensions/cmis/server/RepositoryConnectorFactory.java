@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.cmis.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
@@ -24,10 +25,10 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmisService;
 import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 
@@ -47,16 +48,11 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 	public void init(Map<String, String> parameters) {
 		LOG.info("initialized proxy repository service");
 
-		String ibisTempDir = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
-		File baseDir = null;
-		if(StringUtils.isNotEmpty(ibisTempDir)) {
-			baseDir = new File(ibisTempDir);
-		} else {
-			baseDir = super.getTempDirectory();
-		}
-		tempDirectory = new File(baseDir, "cmis");
-		if(!tempDirectory.mkdir()) {
-			tempDirectory = super.getTempDirectory(); //fall back to default java.io.tmpdir
+		try {
+			tempDirectory = FileUtils.getTempDirectory("cmis");
+		} catch (IOException e) {
+			LOG.warn("unable to use [ibis.tmpdir], falling back to OpenCMIS default [java.io.tmpdir]", e);
+			tempDirectory = super.getTempDirectory();
 		}
 	}
 

@@ -93,7 +93,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				}
 			} finally {
 				//txManager.commit(txStatus);
-				itx.commit();
+				itx.complete();
 			}
 		} catch (RuntimeException e) {
 			throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["

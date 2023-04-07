@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
@@ -57,6 +59,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
@@ -70,9 +73,12 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.pipes.EchoPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.LogUtil;
@@ -144,7 +150,7 @@ public class ReceiverTest {
 
 	public <M> Adapter setupAdapter(Receiver<M> receiver, ExitState exitState) throws Exception {
 
-		Adapter adapter = configuration.createBean(Adapter.class);
+		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
 		PipeLine pl = spy(new PipeLine());
@@ -169,6 +175,36 @@ public class ReceiverTest {
 		adapter.registerReceiver(receiver);
 		configuration.registerAdapter(adapter);
 		return adapter;
+	}
+
+	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) throws ConfigurationException {
+		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		receiver.setListener(listener);
+		receiver.setName("receiver");
+		DummySender sender = configuration.createBean(DummySender.class);
+		receiver.setSender(sender);
+		receiver.setErrorStorage(errorStorage);
+
+		return receiver;
+	}
+
+	public MessageStoreListener<String> setupMessageStoreListener() throws Exception {
+		Connection connection = mock(Connection.class);
+		MessageStoreListener<String> listener = spy(new MessageStoreListener<>());
+		listener.setConnectionsArePooled(true);
+		doReturn(connection).when(listener).getConnection();
+		listener.setSessionKeys("ANY-KEY");
+		listener.extractSessionKeyList();
+		doReturn(false).when(listener).hasRawMessageAvailable();
+
+		doNothing().when(listener).configure();
+		doNothing().when(listener).open();
+
+		return listener;
+	}
+
+	public ITransactionalStorage<Serializable> setupErrorStorage() {
+		return mock(JdbcTransactionalStorage.class);
 	}
 
 	public void waitWhileInState(IManagable object, RunState... state) {
@@ -230,6 +266,7 @@ public class ReceiverTest {
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
+		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
@@ -353,6 +390,7 @@ public class ReceiverTest {
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
+		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
@@ -562,6 +600,46 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(2, result2);
+	}
+
+	@Test
+	public void testManualRetryWithMessageStoreListener() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		when(errorStorage.getMessage(any())).thenReturn(testMessage);
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
+
+		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
+
+		PipeLineResult plr = new PipeLineResult();
+		plr.setState(ExitState.SUCCESS);
+		plr.setResult(Message.asMessage(testMessage));
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+
+		// Act
+		receiver.retryMessage("1");
+
+		// Assert
+		Message message = messageCaptor.getValue();
+		PipeLineSession pipeLineSession = sessionCaptor.getValue();
+		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
+		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
+		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
 
 	@Test

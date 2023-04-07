@@ -463,22 +463,26 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileFromRoot() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		basicFileSystemTestListFile(null, 2);
 	}
 	@Test
 	public void basicFileSystemTestListFileFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		basicFileSystemTestListFile("folder", 2);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileFromEmptyFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder2");
 		basicFileSystemTestListFile("folder2", 0);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromRoot() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -487,6 +491,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -495,12 +500,15 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromRootWhenReadingFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		createFile(null, "otherfile", "maakt niet uit");
 		basicFileSystemTestListFile("folder", 2);
 	}
+
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFolders() throws Exception {
+		_deleteFolder(null);
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
 		String folderName = "subfolder";
@@ -536,7 +544,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
 		String folderName = "folder_for_counting";
-		
+
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
 		};
@@ -548,7 +556,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// act
 		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
-		
+
 		// assert
 		assertEquals(0, fileCount);
 
@@ -559,7 +567,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// act 2
 		fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
-		
+
 		// assert 2
 		assertEquals(2, fileCount);
 	}

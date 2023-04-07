@@ -14,8 +14,7 @@
 	</parent>
 
 	<properties>
-		<config.image.repository>nexus.frankframework.org/private</config.image.repository>
-		<config.image.name>iaf-test</config.image.name>
+		<config.image.variation>wildfly</config.image.variation>
 		<config.image.tag>${config.image.name}:${revision}-wildfly</config.image.tag>
 	</properties>
 

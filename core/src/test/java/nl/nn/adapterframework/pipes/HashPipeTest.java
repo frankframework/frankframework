@@ -1,7 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
@@ -19,18 +22,15 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 
 	@Test
 	public void noSecret() throws Exception {
-		exception.expect(PipeRunException.class);
-
-		pipe.configure();
-		pipe.start();
-		doPipe(pipe, "I will fail!", session);
+		configureAndStartPipe();
+		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(""));
+		assertThat(e.getMessage(), Matchers.endsWith("empty secret, unable to hash"));
 	}
 
 	@Test
 	public void basic() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -41,8 +41,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void md5() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -53,8 +52,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void sha512() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -65,8 +63,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void hex() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -78,8 +75,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -91,8 +87,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -104,8 +99,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setBinaryToTextEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new Parameter("secret", "Potato"));
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash=prr.getResult().asString();
@@ -118,8 +112,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new Parameter("secret", null));
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, "Potato", session);
 		String hash=prr.getResult().asString();
@@ -129,8 +122,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void largeMessage() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
 		String hash=prr.getResult().asString();
@@ -141,8 +133,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void largeMessageHex() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
-		pipe.configure();
-		pipe.start();
+		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
 		String hash=prr.getResult().asString();

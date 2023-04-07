@@ -1,4 +1,4 @@
-ARG WAS_VERSION=9.0.5.11
+ARG WAS_VERSION=9.0.5.14
 FROM ibmcom/websphere-traditional:${WAS_VERSION}
 #COPY --chown=was:root 001-was-config.props /work/config/
 COPY --chown=was:root src/configuration/PASSWORD /tmp/

@@ -729,7 +729,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			}
 		} finally {
 			if (itx!=null) {
-				itx.commit();
+				itx.complete();
 			}
 		}
 

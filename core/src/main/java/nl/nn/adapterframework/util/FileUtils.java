@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -116,8 +119,6 @@ public class FileUtils {
 		if (delete) {
 			if (orgFile.exists()) {
 				orgFile.delete();
-//			} else {
-//				log.warn("file ["+orgFile.getParent()+"] does not exist anymore, cannot delete");
 			}
 		} else {
 			if (StringUtils.isNotEmpty(destDir)) {
@@ -126,17 +127,12 @@ public class FileUtils {
 		}
 	}
 
-	public static String moveFile(String filename, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
-		File srcFile = new File(filename);
-		return moveFile(srcFile, destDir, overwrite, numBackups);
-	}
-
-	public static String moveFile(File orgFile, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+	protected static String moveFile(File orgFile, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
 		File dstFile = new File(destDir, orgFile.getName());
 		return moveFile(orgFile, dstFile, overwrite, numBackups);
 	}
 
-	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+	private static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups) throws InterruptedException, IOException {
 		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
 	}
 
@@ -258,73 +254,81 @@ public class FileUtils {
 		return true;
 	}
 
+	/**
+	 * Creates a temporary file inside the ${ibis.tmpdir} using the default '.tmp' extension.
+	 */
 	public static File createTempFile() throws IOException {
 		return createTempFile(null);
 	}
-	public static File createTempFile(String suffix) throws IOException {
-		return createTempFile(null,null);
-	}
-	public static File createTempFile(String prefix, String suffix) throws IOException {
-		String directory=AppConstants.getInstance().getResolvedProperty("upload.dir");
-		if (StringUtils.isEmpty(prefix)) {
-			prefix="ibis";
-		}
-		if (StringUtils.isEmpty(suffix)) {
-			suffix=".tmp";
-		}
-		if (log.isDebugEnabled()) log.debug("creating tempfile prefix ["+prefix+"] suffix ["+suffix+"] directory ["+directory+"]");
-		File tmpFile = File.createTempFile(prefix, suffix, new File(directory));
-		tmpFile.deleteOnExit();
-		return tmpFile;
+
+	/**
+	 * Creates a temporary file inside the ${ibis.tmpdir} using the specified extension.
+	 */
+	public static File createTempFile(final String extension) throws IOException {
+		final File directory = new File( getTempDirectory() );
+		final String suffix = StringUtils.isNotEmpty(extension) ? extension : ".tmp";
+		final String prefix = "frank";
+		log.debug("creating tempfile prefix [{}] suffix [{}] directory [{}]", prefix, suffix, directory);
+		return File.createTempFile(prefix, suffix, directory);
 	}
 
-	public static File createTempDir() throws IOException {
-		return createTempDir(null, null, null, null);
-	}
+	/**
+	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
+	 */
+	public static @Nonnull String getTempDirectory() {
+		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 
-	public static File createTempDir(File baseDir) throws IOException {
-		return createTempDir(baseDir, null);
-	}
-
-	public static File createTempDir(File baseDir, String subDir) throws IOException {
-		return createTempDir(baseDir, subDir, null, null);
-	}
-
-	private static File createTempDir(File baseDir, String subDir, String prefix, String suffix) throws IOException {
-		if (baseDir == null) {
-			String baseDirStr = AppConstants.getInstance().getString("ibis.tmpdir", null);
-			if (baseDirStr == null) {
-				throw new IOException("Property [ibis.tmpdir] is not specified");
+		if (StringUtils.isNotEmpty(directory)) {
+			File file = new File(directory);
+			if (!file.isAbsolute()) {
+				String absPath = new File("").getAbsolutePath();
+				if(absPath != null) {
+					file = new File(absPath, directory);
+				}
 			}
-			baseDir = new File(baseDirStr);
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			String fileDir = file.getPath();
+			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
+				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"]");
+			}
+			directory = file.getAbsolutePath();
+		}
+		log.info("resolved temp directory to [{}]", directory);
 
+		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
+		if(StringUtils.isEmpty(directory)) {
+			log.error("unable to determine ibis temp directory, falling back to [java.io.tmpdir]");
+			return System.getProperty("java.io.tmpdir");
 		}
-		if (!baseDir.exists()) {
-			if (!baseDir.mkdirs()) {
-				throw new IOException("Unable to create temp directory ["
-						+ baseDir.getPath() + "]");
-			}
+		return directory;
+	}
+
+	/**
+	 * @return the ${ibis.tmpdir}/folder or IOException if it cannot be resolved.
+	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 */
+	public static File getTempDirectory(String folder) throws IOException {
+		String tempDir = getTempDirectory();
+		File newDir = new File(tempDir, folder);
+		if (!newDir.exists() && !newDir.mkdirs()) {
+			throw new IOException("unable to create temp directory [" + newDir.getPath() + "]");
 		}
-		// TODO: Shouldn't this use Java method to create temp-dir inside base dir?
-		String baseName = System.currentTimeMillis() + "-";
-		int tempDirAttempts = 50;
-		File tempDir = null;
-		for (int counter = 0; counter < tempDirAttempts; counter++) {
-			String tempSubDir = (prefix != null ? prefix : "") + baseName
-					+ counter + (suffix != null ? suffix : "")
-					+ (subDir != null ? File.separator + subDir : "");
-			tempDir = new File(baseDir, tempSubDir);
-			if (tempDir.mkdirs()) {
-				// Do not use deleteOnExit() even if you explicitly delete it later.
-				// Google 'deleteonexit is evil' for more info, but the gist of the problem is:
-				// 1.deleteOnExit() only deletes for normal JVM shutdowns, not crashes or killing the JVM process.
-				// 2.deleteOnExit() only deletes on JVM shutdown - not good for long running server processes because:
-				// 3.The most evil of all - deleteOnExit() consumes memory for each temp file entry. If your process is running for months, or creates a lot of temp files in a short time, you consume memory and never release it until the JVM shuts down
-				return tempDir;
-			}
+		return newDir;
+	}
+
+	/**
+	 * Creates a new temporary directory in the specified 'fromDirectory'.
+	 */
+	public static File createTempDirectory(File fromDirectory) throws IOException {
+		if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
+			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and mist exist");
 		}
-		throw new IOException("Failed to create temp directory within ["
-				+ tempDirAttempts + "] attempts (last attempt is [" + tempDir.getPath() + "])");
+
+		Path path = Files.createTempDirectory(fromDirectory.toPath(), "tmp");
+		return path.toFile();
 	}
 
 	public static void makeBackups(File targetFile, int numBackups)  {

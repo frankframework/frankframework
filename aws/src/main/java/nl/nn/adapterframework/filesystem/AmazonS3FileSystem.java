@@ -19,10 +19,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,28 +30,32 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import lombok.Getter;
+import nl.nn.adapterframework.aws.AwsUtil;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
 
@@ -59,11 +63,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private final @Getter(onMethod = @__(@Override)) String domain = "Amazon";
 	private static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
 
-	private static final String BUCKET_OBJECT_SEPARATOR="|";
+	private static final String BUCKET_OBJECT_SEPARATOR = "|";
+	private static final String FILE_DELIMITER = "/";
 
 	private @Getter String accessKey;
 	private @Getter String secretKey;
 	private @Getter String authAlias;
+
+	private String serviceEndpoint = null;
 
 	private @Getter boolean chunkedEncodingDisabled = false;
 	private @Getter boolean forceGlobalBucketAccessEnabled = false;
@@ -84,34 +91,58 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter Integer proxyPort = null;
 
 	private AmazonS3 s3Client;
+	private AWSCredentialsProvider credentialProvider;
 
 	@Override
 	public void configure() throws ConfigurationException {
-
-		if (StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) {
-			throw new ConfigurationException(" empty credential fields, please prodive aws credentials (accessKey and secretKey / authAlias)");
+		if((StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isEmpty(getSecretKey())) || (StringUtils.isEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			throw new ConfigurationException("invalid credential fields, please prodive AWS credentials (accessKey and secretKey)");
 		}
 
+		CredentialFactory cf = null;
+		if (StringUtils.isNotEmpty(getAuthAlias()) || (StringUtils.isNotEmpty(getAccessKey()) && StringUtils.isNotEmpty(getSecretKey()))) {
+			cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
+		}
+		credentialProvider = AwsUtil.createCredentialProviderChain(cf);
+
+
 		if (StringUtils.isEmpty(getClientRegion()) || !AVAILABLE_REGIONS.contains(getClientRegion())) {
-			throw new ConfigurationException(" invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
+			throw new ConfigurationException("invalid region [" + getClientRegion() + "] please use one of the following supported regions " + AVAILABLE_REGIONS.toString());
 		}
 
 		if (StringUtils.isEmpty(getBucketName()) || !BucketNameUtils.isValidV2BucketName(getBucketName())) {
-			throw new ConfigurationException(" invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
+			throw new ConfigurationException("invalid or empty bucketName [" + getBucketName() + "] please visit AWS to see correct bucket naming");
 		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getAccessKey(), getSecretKey());
-		BasicAWSCredentials awsCreds = new BasicAWSCredentials(cf.getUsername(), cf.getPassword());
+		s3Client = createS3Client();
+
+		super.open();
+	}
+
+	//For testing purposes
+	protected AWSCredentialsProvider getCredentialProvider() {
+		return credentialProvider;
+	}
+
+	//For testing purposes
+	public AmazonS3 createS3Client() {
 		AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
-				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled()).withRegion(getClientRegion())
-				.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-				.withClientConfiguration(this.getProxyConfig());
-		s3Client = s3ClientBuilder.build();
-		super.open();
+				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
+				.withCredentials(credentialProvider)
+				.withClientConfiguration(this.getProxyConfig())
+				.enablePathStyleAccess();
+
+		if(StringUtils.isBlank(serviceEndpoint)) {
+			s3ClientBuilder.withRegion(getClientRegion());
+		} else {
+			s3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, getClientRegion()));
+		}
+
+		return s3ClientBuilder.build();
 	}
 
 	@Override
@@ -122,9 +153,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 	}
 
+	/**
+	 * Creates a local S3Object pointer, not representative with what is stored in the S3 Bucket.
+	 * This method may be used to upload a file to S3.
+	 * See {@link #resolve(S3Object) resolve}.
+	 */
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
-		S3Object object = new S3Object();
+		S3Object object = new LocalS3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos<0) {
 			object.setBucketName(bucketName);
@@ -138,14 +174,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public S3Object toFile(String folder, String filename) throws FileSystemException {
-		return toFile(StringUtil.concatStrings(folder, "/", filename));
+		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
 
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = null;
-		String prefix = folder != null ? folder + "/" : "";
+		String prefix = folder != null ? folder + FILE_DELIMITER : "";
 		try {
 			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
 			summaries = listing.getObjectSummaries();
@@ -162,34 +198,52 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
-		List<S3ObjectSummary> summaries = null;
-		String prefix = folder != null ? folder + "/" : "";
+		List<S3ObjectSummary> summaries = new ArrayList<>();
+		String prefix = folder != null ? folder + FILE_DELIMITER : null;
 		try {
-			ObjectListing listing = s3Client.listObjects(bucketName, prefix);
-			summaries = listing.getObjectSummaries();
-			while (listing.isTruncated()) {
-				listing = s3Client.listNextBatchOfObjects(listing);
+			ListObjectsV2Request request = new ListObjectsV2Request()
+					.withBucketName(bucketName)
+					.withDelimiter(FILE_DELIMITER)
+					.withPrefix(prefix);
+
+			ListObjectsV2Result listing;
+			int iterations = 0;
+			do {
+				if(iterations > 20) {
+					log.warn("unable to list all files in folder [{}]", folder);
+					break;
+				}
+				listing = s3Client.listObjectsV2(request);
 				summaries.addAll(listing.getObjectSummaries());
-			}
+				request.setContinuationToken(listing.getNextContinuationToken());
+				iterations++;
+			} while(listing.isTruncated());
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
 
 		List<S3Object> list = new ArrayList<>();
 		for (S3ObjectSummary summary : summaries) {
-			S3Object object = new S3Object();
-			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(summary.getSize());
-
-			object.setBucketName(summary.getBucketName());
-			object.setKey(summary.getKey());
-			object.setObjectMetadata(metadata);
-			if(!object.getKey().endsWith("/") && !(prefix.isEmpty() && object.getKey().contains("/"))) {
-				list.add(object);
+			if(summary.getKey().endsWith("/")) { //Omit the root folder
+				continue;
 			}
+			S3Object object = extractS3ObjectFromSummary(summary);
+			list.add(object);
 		}
 
 		return FileSystemUtils.getDirectoryStream(list.iterator());
+	}
+
+	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
+		S3Object object = new LocalS3Object();
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(summary.getSize());
+		metadata.setLastModified(summary.getLastModified());
+
+		object.setBucketName(summary.getBucketName());
+		object.setKey(summary.getKey());
+		object.setObjectMetadata(metadata);
+		return object;
 	}
 
 	@Override
@@ -199,18 +253,13 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
-		String fileName = FileUtils.getTempDirectory().getAbsolutePath() + "tempFile";
-
-		final File file = new File(fileName);
+		final File file = FileUtils.createTempFile(".s3-upload");
 		final FileOutputStream fos = new FileOutputStream(file);
-		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-
-		FilterOutputStream filterOutputStream = new FilterOutputStream(bos) {
+		return new BufferedOutputStream(fos) {
 			boolean isClosed = false;
 			@Override
 			public void close() throws IOException {
 				super.close();
-				bos.close();
 				if(!isClosed) {
 					try (FileInputStream fis = new FileInputStream(file)) {
 						ObjectMetadata metaData = new ObjectMetadata();
@@ -218,13 +267,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 					} finally {
-						file.delete();
 						isClosed = true;
+						Files.delete(file.toPath());
 					}
 				}
 			}
 		};
-		return filterOutputStream;
 	}
 
 	@Override
@@ -236,26 +284,39 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
-			return new S3Message(s3Client.getObject(bucketName, f.getKey()), FileSystemUtils.getContext(this, f, charset));
+			S3Object file = resolve(f);
+			return new S3Message(file, FileSystemUtils.getContext(this, file, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
-	private class S3Message extends Message {
+	/**
+	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * Or returns directly when the provided S3Object is an actual representation of the S3 bucket
+	 */
+	private S3Object resolve(S3Object f) {
+		if(f instanceof LocalS3Object) {
+			return s3Client.getObject(bucketName, f.getKey());
+		}
+		return f;
+	}
 
-		private S3Object file;
+	/** Local S3 Pointer for files that are not yet resolved. */
+	private static class LocalS3Object extends S3Object {
+		// no extra or overridden methods, this class purely exists to differentiate
+		// between locally created S3Objects and actual S3 representative objects.
+	}
 
+	/** 
+	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
+	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
+	 * Further, failure to close this stream can cause the request pool to become blocked. 
+	 */
+	private static class S3Message extends Message {
 		public S3Message(S3Object file, Map<String,Object> context) {
 			super(file.getObjectContent(), context);
-			this.file = file;
 		}
-
-		@Override
-		public long size() {
-			return file.getObjectMetadata().getContentLength();
-		}
-
 	}
 
 	@Override
@@ -335,11 +396,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public long getFileSize(S3Object f) throws FileSystemException {
-		return f.getObjectMetadata().getContentLength();
-	}
-
-	@Override
 	public String getName(S3Object f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
 		return f.getKey().substring(lastSlashPos+1);
@@ -357,13 +413,16 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
+	public long getFileSize(S3Object f) throws FileSystemException {
+		return resolve(f).getObjectMetadata().getContentLength();
+	}
+
+	@Override
 	public Date getModificationTime(S3Object f) throws FileSystemException {
-		S3Object file;
 		if(f.getKey().isEmpty()) {
 			return null;
 		}
-		file = s3Client.getObject(bucketName, f.getKey());
-		return file.getObjectMetadata().getLastModified();
+		return resolve(f).getObjectMetadata().getLastModified();
 	}
 
 //	/**
@@ -542,9 +601,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	/**
+	 * The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)
+	 */
+	public void setServiceEndpoint(String serviceEndpoint) {
+		this.serviceEndpoint = serviceEndpoint;
+	}
+
+	/**
 	 * Name of the region that the client will be created from
 	 * @ff.default eu-west-1
 	 */
+	@Mandatory
 	public void setClientRegion(String clientRegion) {
 		this.clientRegion = clientRegion;
 	}
