@@ -232,9 +232,22 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		return null; // do not return defaultValue, as the column probably exists, but not in this result set
 	}
 
+	/**
+	 * This wonderful little method returns either a {@link String} or a {@link MessageWrapper} (but never an instance
+	 * of type {@code <M>}.
+	 *
+	 * @param rs JDBC {@link ResultSet} from which to extract message data.
+	 * @return Either a {@link String} being the message key, or a {@link MessageWrapper}.
+	 * The message key as {@link String} is returned if {@link #messageField}, {@link #messageIdField} and {@link #correlationIdField} all are not
+	 * set.
+	 * If {@link #messageIdField} and / or {@link  #correlationIdField} are set but {@link #messageField} is not, then the
+	 * message key is returned as value of a {@link Message} wrapped in a {@link MessageWrapper}.
+	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
+	 * @throws JdbcException If loading the message resulted in a database exception.
+	 */
 	protected M extractRawMessage(ResultSet rs) throws JdbcException {
 		try {
-			M result;
+			M result; // Type M for Mystery (see casts below when assigning a value to result)
 			String key=rs.getString(getKeyField());
 
 			if (StringUtils.isNotEmpty(getMessageField()) || StringUtils.isNotEmpty(getMessageIdField()) || StringUtils.isNotEmpty(getCorrelationIdField())) {

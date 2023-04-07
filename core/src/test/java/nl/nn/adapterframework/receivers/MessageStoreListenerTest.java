@@ -11,8 +11,8 @@ import javax.sql.DataSource;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -28,7 +28,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 			protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				MessageWrapper<Object> mw = new MessageWrapper<>(); //super class JdbcListener always wraps this in a MessageWrapper
 				mw.setMessage(Message.asMessage(threadContext.get(STUB_RESULT_KEY)));
-				mw.setId(""+threadContext.get(PipeLineSession.messageIdKey));
+				mw.setId(String.valueOf(threadContext.get(PipeLineSession.messageIdKey)));
 				return mw;
 			}
 		});
@@ -69,8 +69,8 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		String input = "test-message,\"value1\",value2,value3";
 		Object rawMessage = getRawMessage(input);
 		assertTrue(rawMessage instanceof MessageWrapper);
-		MessageWrapper<Object> mw = (MessageWrapper<Object>) rawMessage;
-		assertEquals("test-message", mw.getMessage().asString());
+		Message message = listener.extractMessage((M)rawMessage, threadContext);
+		assertEquals("test-message", message.asString());
 
 		assertEquals("value1", threadContext.get("sessionKey1"));
 		assertEquals("value2", threadContext.get("sessionKey2"));

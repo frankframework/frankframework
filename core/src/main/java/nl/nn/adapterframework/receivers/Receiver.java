@@ -1086,7 +1086,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message message;
 			String messageId;
 			try {
-				message = getListener().extractMessage((M)rawMessageOrWrapper, session);
+				message = getListener().extractMessage((M) rawMessageOrWrapper, session);
 			} catch (Exception e) {
 				if(rawMessageOrWrapper instanceof MessageWrapper) {
 					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
