@@ -19,7 +19,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 
 	@Override
 	protected abstract IFileSystemTestHelperFullControl getFileSystemTestHelper();
-	
+
 	private void setFileDate(String folder, String filename, Date date) throws Exception {
 		((IFileSystemTestHelperFullControl)helper).setFileDate(folder, filename, date);
 	}
@@ -33,19 +33,19 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		Date currentDate = new Date();
 		Date firstDate;
 		long millisPerDay = 1000L * 60L * 60L * 24L;
-		
+
 		if(_fileExists(filename)) {
 			_deleteFile(null, filename);
 		}
 		createFile(null, filename, "thanos car ");
 		setFileDate(null, filename, firstDate = new Date(currentDate.getTime() - (millisPerDay * numOfWrites)));
-		
+
 		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
-		
+
 		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendActionwString"));
 		params.configure();
-		
+
 		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateDays(numOfBackups);
 		actor.configure(fileSystem,params,owner);
@@ -54,17 +54,21 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		Message message = new Message(filename);
 		for(int i=0; i<numOfWrites; i++) {
 			setFileDate(null, filename, new Date(firstDate.getTime() + (millisPerDay * i)));
-			
+
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			String result = (String)actor.doAction(message, pvl, null);
-			
-			TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
+
+			Message result = actor.doAction(message, pvl, null);
+			String stringResult = result.asString();
+
+			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
+
+			result.close();
 		}
-		
+
 		for (int i=1; i<=numOfWrites-1; i++) {
 			String formattedDate = DateUtils.format(new Date(firstDate.getTime() + (millisPerDay * i)), DateUtils.shortIsoFormat);
-			
+
 			String actualContentsi = readFile(null, filename+"."+formattedDate);
 			assertEquals((contents+(i-1)).trim(), actualContentsi.trim());
 		}

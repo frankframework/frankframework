@@ -25,7 +25,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -83,9 +85,9 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
-	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
-	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
-	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
+	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private final String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	private static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private ApiServiceDispatcher dispatcher = null;
@@ -132,26 +134,23 @@ public class ApiListenerServlet extends HttpServletBase {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		String uri = request.getPathInfo();
-		String remoteUser = request.getRemoteUser();
+		final String remoteUser = request.getRemoteUser();
 
-		HttpMethod method;
+		final HttpMethod method;
 		try {
 			method = EnumUtils.parse(HttpMethod.class, request.getMethod());
 		} catch (IllegalArgumentException e) {
 			response.setStatus(405);
-			log.warn(createAbortMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
+			log.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, 405), request::getMethod);
 			return;
 		}
 
-		if(log.isInfoEnabled()) {
-			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
-			log.info(infoMessage);
-		}
+		String uri = request.getPathInfo();
+		log.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
 
 		if (uri==null) {
 			response.setStatus(400);
-			log.warn(createAbortMessage(remoteUser, 400) + "empty uri");
+			log.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
 		}
 		if(uri.endsWith("/")) {
@@ -221,7 +220,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
 					response.setStatus(404);
-					log.warn(createAbortMessage(remoteUser, 404) + "no ApiListener configured for ["+uri+"]");
+					log.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
 					return;
 				}
 
@@ -247,7 +246,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					//Only cut off OPTIONS (aka preflight) requests
 					if(method == HttpMethod.OPTIONS) {
 						response.setStatus(200);
-						if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method ["+method+"]");
+						if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method [{}]", method);
 						return;
 					}
 				}
@@ -258,11 +257,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiListener listener = config.getApiListener(method);
 				if(listener == null) {
 					response.setStatus(405);
-					log.warn(createAbortMessage(remoteUser, 405) + "method ["+method+"] not allowed");
+					log.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
 					return;
 				}
 
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
+				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service [{}]", listener.getName());
 
 				/*
 				 * Check authentication
@@ -351,7 +350,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 
 						response.setStatus(401);
-						log.warn(createAbortMessage(remoteUser, 401) + "no (valid) credentials supplied");
+						log.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
 						return;
 					}
 
@@ -377,28 +376,28 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				final String acceptHeader = request.getHeader("Accept");
 				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					log.warn(createAbortMessage(request.getRemoteUser(), 406) + "client expects Accept [{}] but listener can only provide [{}]", acceptHeader, listener.getContentType());
+					log.warn("{} client expects Accept [{}] but listener can only provide [{}]", ()->createAbortMessage(request.getRemoteUser(), 406), ()-> acceptHeader, listener::getContentType);
 					response.sendError(406, "endpoint cannot provide the supplied MimeType");
 					return;
 				}
 
 				if(!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+					log.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
 					return;
 				}
 
 				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
-				log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
+				log.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
 				if(cache.containsKey(etagCacheKey)) {
 					String cachedEtag = (String) cache.get(etagCacheKey);
-					log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
+					log.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
 
 					if(method == HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if (log.isDebugEnabled()) log.debug(createAbortMessage(remoteUser, 304) + "matched if-none-match ["+ifNoneMatch+"]");
+							if (log.isDebugEnabled()) log.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
 							return;
 						}
 					}
@@ -406,7 +405,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifMatch = request.getHeader("If-Match");
 						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							log.warn(createAbortMessage(remoteUser, 412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
+							log.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()->method);
 							return;
 						}
 					}
@@ -425,8 +424,8 @@ public class ApiListenerServlet extends HttpServletBase {
 				String[] uriSegments = uri.split("/");
 				int uriIdentifier = 0;
 				for (int i = 0; i < patternSegments.length; i++) {
-					String segment = patternSegments[i];
-					String name = null;
+					final String segment = patternSegments[i];
+					final String name;
 
 					if("*".equals(segment)) {
 						name = "uriIdentifier_"+uriIdentifier;
@@ -434,10 +433,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					else if(segment.startsWith("{") && segment.endsWith("}")) {
 						name = segment.substring(1, segment.length()-1);
 					}
+					else {
+						name = null;
+					}
 
 					if(name != null) {
 						uriIdentifier++;
-						if(log.isTraceEnabled()) log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
+						if(log.isTraceEnabled()) log.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
 						messageContext.put(name, uriSegments[i]);
 					}
 				}
@@ -445,44 +447,13 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Map queryParameters into messageContext
 				 */
-				Enumeration<String> paramnames = request.getParameterNames();
-				while (paramnames.hasMoreElements()) {
-					String paramname = paramnames.nextElement();
-					String[] paramList = request.getParameterValues(paramname);
-					if(paramList.length > 1) { // contains multiple items
-						List<String> valueList = Arrays.asList(paramList);
-						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
-						messageContext.put(paramname, valueList);
-					}
-					else {
-						String paramvalue = request.getParameter(paramname);
-						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-						messageContext.put(paramname, paramvalue);
-					}
-				}
+				messageContext.putAll(extractRequestParams(request));
 
 				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-					XmlBuilder headersXml = new XmlBuilder("headers");
-					String[] params = listener.getHeaderParams().split(",");
-					for (String headerParam : params) {
-						if(IGNORE_HEADERS.contains(headerParam)) {
-							continue;
-						}
-						String headerValue = request.getHeader(headerParam);
-						try {
-							XmlBuilder headerXml = new XmlBuilder("header");
-							headerXml.addAttribute("name", headerParam);
-							headerXml.setValue(headerValue);
-							headersXml.addSubElement(headerXml);
-						}
-						catch (Throwable t) {
-							log.info("unable to convert header to xml name["+headerParam+"] value["+headerValue+"]");
-						}
-					}
-					messageContext.put("headers", headersXml.toXML());
+					messageContext.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
 				/*
@@ -492,56 +463,49 @@ public class ApiListenerServlet extends HttpServletBase {
 				Message body = null;
 				//TODO fix HttpSender#handleMultipartResponse(..)
 				if(MultipartUtils.isMultipart(request)) {
-					String multipartBodyName = listener.getMultipartBodyName();
+					final String multipartBodyName = listener.getMultipartBodyName();
 					try {
-						InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
-						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-						XmlBuilder attachments = new XmlBuilder("parts");
+						final InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
+						final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+						final XmlBuilder attachments = new XmlBuilder("parts");
 
 						for (int i = 0; i < mimeMultipart.getCount(); i++) {
-							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-							String fieldName = MultipartUtils.getFieldName(bodyPart);
+							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+							final String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
 								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
 							}
 
-							XmlBuilder attachment = new XmlBuilder("part");
+							final XmlBuilder attachment = new XmlBuilder("part");
 							attachment.addAttribute("name", fieldName);
 							PartMessage message = new PartMessage(bodyPart);
 							if (!MultipartUtils.isBinary(bodyPart)) {
 								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-								if(log.isTraceEnabled()) log.trace("setting multipart formField ["+fieldName+"] to ["+message+"]");
+								log.trace("setting multipart formField [{}] to [{}]", fieldName, message);
 								messageContext.put(fieldName, message.asString());
 								attachment.addAttribute("type", "text");
 								attachment.addAttribute("value", message.asString());
 							} else {
 								// Process form file field (input type="file").
-								String fieldNameName = fieldName + "Name";
-								String fileName = MultipartUtils.getFileName(bodyPart);
-								if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+								final String fieldNameName = fieldName + "Name";
+								final String fileName = MultipartUtils.getFileName(bodyPart);
+								log.trace("setting multipart formFile [{}] to [{}]", fieldNameName, fileName);
 								messageContext.put(fieldNameName, fileName);
-								if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+								log.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
 								messageContext.put(fieldName, message);
 
 								attachment.addAttribute("type", "file");
 								attachment.addAttribute("filename", fileName);
 								attachment.addAttribute("size", message.size());
 								attachment.addAttribute("sessionKey", fieldName);
-								String contentType = bodyPart.getContentType();
-								String mimeType = contentType;
-								int semicolon = contentType.indexOf(";");
-								if(semicolon >= 0) {
-									mimeType = contentType.substring(0, semicolon);
-								}
-
-								attachment.addAttribute("mimeType", mimeType);
+								attachment.addAttribute("mimeType", extractMimeType(bodyPart.getContentType()));
 							}
 							attachments.addSubElement(attachment);
 						}
 						messageContext.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
 						response.sendError(400, "Could not read mime multipart response");
-						log.warn(createAbortMessage(remoteUser, 400) + "Could not read mime multipart response");
+						log.warn("{} Could not read mime multipart response", () -> createAbortMessage(remoteUser, 400));
 						return;
 					}
 				} else {
@@ -551,17 +515,15 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Compile Allow header
 				 */
-				StringBuilder methods = new StringBuilder();
-				methods.append("OPTIONS, ");
-				for (HttpMethod mtd : config.getMethods()) {
-					methods.append(mtd).append(", ");
-				}
-				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
+				messageContext.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
 				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
 				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
 
+				/*
+				 * Do the actual request processing by the ApiListener
+				 */
 				Message result = listener.processRequest(body, messageContext);
 
 				/*
@@ -632,13 +594,13 @@ public class ApiListenerServlet extends HttpServletBase {
 				if (!Message.isEmpty(result)) {
 					MimeType contentType = determineContentType(messageContext, listener, result);
 					response.setContentType(contentType.toString());
+				}
 
-					if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-						String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
-						if(StringUtils.isNotEmpty(contentDisposition)) {
-							log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
-							response.setHeader("Content-Disposition", contentDisposition);
-						}
+				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+					if(StringUtils.isNotEmpty(contentDisposition)) {
+						log.debug("Setting Content-Disposition header to [{}]", contentDisposition);
+						response.setHeader("Content-Disposition", contentDisposition);
 					}
 				}
 
@@ -675,6 +637,48 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	@Nonnull
+	private Map<String, Object> extractRequestParams(HttpServletRequest request) {
+		Map<String, Object> params = new HashMap<>();
+		Enumeration<String> paramNames = request.getParameterNames();
+		while (paramNames.hasMoreElements()) {
+			String paramName = paramNames.nextElement();
+			String[] paramList = request.getParameterValues(paramName);
+			if(paramList.length > 1) { // contains multiple items
+				List<String> valueList = Arrays.asList(paramList);
+				if(log.isTraceEnabled()) log.trace("setting queryParameter [{}] to {}", paramName, valueList);
+				params.put(paramName, valueList);
+			}
+			else {
+				String paramValue = request.getParameter(paramName);
+				if(log.isTraceEnabled()) log.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
+				params.put(paramName, paramValue);
+			}
+		}
+		return params;
+	}
+
+	private String extractHeaderParamsAsXml(HttpServletRequest request, ApiListener listener) {
+		XmlBuilder headersXml = new XmlBuilder("headers");
+		String[] params = listener.getHeaderParams().split(",");
+		for (String headerParam : params) {
+			if(IGNORE_HEADERS.contains(headerParam)) {
+				continue;
+			}
+			String headerValue = request.getHeader(headerParam);
+			try {
+				XmlBuilder headerXml = new XmlBuilder("header");
+				headerXml.addAttribute("name", headerParam);
+				headerXml.setValue(headerValue);
+				headersXml.addSubElement(headerXml);
+			}
+			catch (Exception e) {
+				log.info("unable to convert header to xml name[{}] value[{}], exception message: {}", headerParam, headerValue, e.getMessage());
+			}
+		}
+		return headersXml.toXML();
 	}
 
 	private static MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
@@ -736,18 +740,45 @@ public class ApiListenerServlet extends HttpServletBase {
 		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
+	private String extractMimeType(String contentType) {
+		final int semicolon = contentType.indexOf(";");
+		if(semicolon >= 0) {
+			return contentType.substring(0, semicolon);
+		} else {
+			return contentType;
+		}
+	}
+
+	private String buildAllowedMethodsHeader(Set<HttpMethod> methods) {
+		StringBuilder methodsBuilder = new StringBuilder();
+		methodsBuilder.append("OPTIONS");
+		for (HttpMethod mtd : methods) {
+			if (mtd != HttpMethod.OPTIONS) {
+				methodsBuilder
+					.append(", ")
+					.append(mtd);
+			}
+		}
+		return methodsBuilder.toString();
+	}
+
 	@Override
 	public String getUrlMapping() {
 		return "/api/*";
 	}
 
 	private String createAbortMessage(String remoteUser, int statusCode) {
-		StringBuilder message = new StringBuilder("");
-		message.append("Aborting request ");
+		StringBuilder message = new StringBuilder("Aborting request ");
 		if(StringUtils.isNotEmpty(remoteUser)) {
-			message.append("issued by ["+remoteUser+"] ");
+			message
+				.append("issued by [")
+				.append(remoteUser)
+				.append("] ");
 		}
-		message.append("with status code ["+statusCode+"], ");
+		message
+			.append("with status code [")
+			.append(statusCode)
+			.append("], ");
 		return message.toString();
 	}
 }
