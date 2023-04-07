@@ -6198,31 +6198,31 @@ case 7:
  yy.setDirection('LR');
 break;
 case 11:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 12:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 13:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 14:
- yy.parseDirective('}%%', 'close_directive', 'class'); 
+ yy.parseDirective('}%%', 'close_directive', 'class');
 break;
 case 19: case 20:
- this.$=$$[$0]; 
+ this.$=$$[$0];
 break;
 case 21:
- this.$=$$[$0-1]+$$[$0]; 
+ this.$=$$[$0-1]+$$[$0];
 break;
 case 22: case 23:
- this.$=$$[$0-1]+'~'+$$[$0]; 
+ this.$=$$[$0-1]+'~'+$$[$0];
 break;
 case 24:
- yy.addRelation($$[$0]); 
+ yy.addRelation($$[$0]);
 break;
 case 25:
- $$[$0-1].title =  yy.cleanupLabel($$[$0]); yy.addRelation($$[$0-1]);        
+ $$[$0-1].title =  yy.cleanupLabel($$[$0]); yy.addRelation($$[$0-1]);
 break;
 case 33:
 yy.addClass($$[$0]);
@@ -6237,10 +6237,10 @@ case 36:
 yy.addClass($$[$0-5]);yy.setCssClass($$[$0-5], $$[$0-3]);yy.addMembers($$[$0-5],$$[$0-1]);
 break;
 case 37:
- yy.addAnnotation($$[$0],$$[$0-2]); 
+ yy.addAnnotation($$[$0],$$[$0-2]);
 break;
 case 38:
- this.$ = [$$[$0]]; 
+ this.$ = [$$[$0]];
 break;
 case 39:
  $$[$0].push($$[$0-1]);this.$=$$[$0];
@@ -6258,28 +6258,28 @@ case 43:
 /*console.log('sep found',$$[$0]);*/
 break;
 case 44:
- this.$ = {'id1':$$[$0-2],'id2':$$[$0], relation:$$[$0-1], relationTitle1:'none', relationTitle2:'none'}; 
+ this.$ = {'id1':$$[$0-2],'id2':$$[$0], relation:$$[$0-1], relationTitle1:'none', relationTitle2:'none'};
 break;
 case 45:
  this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-1], relationTitle1:$$[$0-2], relationTitle2:'none'}
 break;
 case 46:
- this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-2], relationTitle1:'none', relationTitle2:$$[$0-1]}; 
+ this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-2], relationTitle1:'none', relationTitle2:$$[$0-1]};
 break;
 case 47:
- this.$ = {id1:$$[$0-4], id2:$$[$0], relation:$$[$0-2], relationTitle1:$$[$0-3], relationTitle2:$$[$0-1]} 
+ this.$ = {id1:$$[$0-4], id2:$$[$0], relation:$$[$0-2], relationTitle1:$$[$0-3], relationTitle2:$$[$0-1]}
 break;
 case 48:
- this.$={type1:$$[$0-2],type2:$$[$0],lineType:$$[$0-1]}; 
+ this.$={type1:$$[$0-2],type2:$$[$0],lineType:$$[$0-1]};
 break;
 case 49:
- this.$={type1:'none',type2:$$[$0],lineType:$$[$0-1]}; 
+ this.$={type1:'none',type2:$$[$0],lineType:$$[$0-1]};
 break;
 case 50:
- this.$={type1:$$[$0-1],type2:'none',lineType:$$[$0]}; 
+ this.$={type1:$$[$0-1],type2:'none',lineType:$$[$0]};
 break;
 case 51:
- this.$={type1:'none',type2:'none',lineType:$$[$0]}; 
+ this.$={type1:'none',type2:'none',lineType:$$[$0]};
 break;
 case 52:
  this.$=yy.relationType.AGGREGATION;
@@ -6811,7 +6811,7 @@ options: {},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 18; 
+case 0: this.begin('open_directive'); return 18;
 break;
 case 1:return 7;
 break;
@@ -6821,11 +6821,11 @@ case 3:return 9;
 break;
 case 4:return 10;
 break;
-case 5: this.begin('type_directive'); return 19; 
+case 5: this.begin('type_directive'); return 19;
 break;
-case 6: this.popState(); this.begin('arg_directive'); return 16; 
+case 6: this.popState(); this.begin('arg_directive'); return 16;
 break;
-case 7: this.popState(); this.popState(); return 21; 
+case 7: this.popState(); this.popState(); return 21;
 break;
 case 8:return 20;
 break;
@@ -8115,16 +8115,16 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- /*console.log('finished parsing');*/ 
+ /*console.log('finished parsing');*/
 break;
 case 3:
- this.$ = [] 
+ this.$ = []
 break;
 case 4:
 $$[$0-1].push($$[$0]);this.$ = $$[$0-1]
 break;
 case 5: case 6:
- this.$ = $$[$0] 
+ this.$ = $$[$0]
 break;
 case 7: case 8:
  this.$=[];
@@ -8135,7 +8135,7 @@ case 12:
           yy.addEntity($$[$0-2]);
           yy.addRelationship($$[$0-4], $$[$0], $$[$0-2], $$[$0-3]);
           /*console.log($$[$0-4] + $$[$0-3] + $$[$0-2] + ':' + $$[$0]);*/
-      
+
 break;
 case 13:
 
@@ -8143,70 +8143,70 @@ case 13:
           yy.addEntity($$[$0-3]);
           yy.addAttributes($$[$0-3], $$[$0-1]);
           /* console.log('handled block'); */
-      
+
 break;
 case 14:
- yy.addEntity($$[$0-2]); 
+ yy.addEntity($$[$0-2]);
 break;
 case 15:
- yy.addEntity($$[$0]); 
+ yy.addEntity($$[$0]);
 break;
 case 16:
- this.$ = $$[$0]; /*console.log('Entity: ' + $$[$0]);*/ 
+ this.$ = $$[$0]; /*console.log('Entity: ' + $$[$0]);*/
 break;
 case 17:
- this.$ = [$$[$0]]; 
+ this.$ = [$$[$0]];
 break;
 case 18:
- $$[$0].push($$[$0-1]); this.$=$$[$0]; 
+ $$[$0].push($$[$0-1]); this.$=$$[$0];
 break;
 case 19:
- this.$ = { attributeType: $$[$0-1], attributeName: $$[$0] }; 
+ this.$ = { attributeType: $$[$0-1], attributeName: $$[$0] };
 break;
 case 20: case 21:
- this.$=$$[$0]; 
+ this.$=$$[$0];
 break;
 case 22:
 
         this.$ = { cardA: $$[$0], relType: $$[$0-1], cardB: $$[$0-2] };
         /*console.log('relSpec: ' + $$[$0] + $$[$0-1] + $$[$0-2]);*/
-      
+
 break;
 case 23:
- this.$ = yy.Cardinality.ZERO_OR_ONE; 
+ this.$ = yy.Cardinality.ZERO_OR_ONE;
 break;
 case 24:
- this.$ = yy.Cardinality.ZERO_OR_MORE; 
+ this.$ = yy.Cardinality.ZERO_OR_MORE;
 break;
 case 25:
- this.$ = yy.Cardinality.ONE_OR_MORE; 
+ this.$ = yy.Cardinality.ONE_OR_MORE;
 break;
 case 26:
- this.$ = yy.Cardinality.ONLY_ONE; 
+ this.$ = yy.Cardinality.ONLY_ONE;
 break;
 case 27:
- this.$ = yy.Identification.NON_IDENTIFYING;  
+ this.$ = yy.Identification.NON_IDENTIFYING;
 break;
 case 28:
- this.$ = yy.Identification.IDENTIFYING; 
+ this.$ = yy.Identification.IDENTIFYING;
 break;
 case 29:
- this.$ = $$[$0].replace(/"/g, ''); 
+ this.$ = $$[$0].replace(/"/g, '');
 break;
 case 30:
- this.$ = $$[$0]; 
+ this.$ = $$[$0];
 break;
 case 31:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 32:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 33:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 34:
- yy.parseDirective('}%%', 'close_directive', 'er'); 
+ yy.parseDirective('}%%', 'close_directive', 'er');
 break;
 }
 },
@@ -8690,13 +8690,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 37; 
+case 0: this.begin('open_directive'); return 37;
 break;
-case 1: this.begin('type_directive'); return 38; 
+case 1: this.begin('type_directive'); return 38;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 15; 
+case 2: this.popState(); this.begin('arg_directive'); return 15;
 break;
-case 3: this.popState(); this.popState(); return 40; 
+case 3: this.popState(); this.popState(); return 40;
 break;
 case 4:return 39;
 break;
@@ -8714,15 +8714,15 @@ case 10:return 36;
 break;
 case 11:return 4;
 break;
-case 12: this.begin("block"); return 20; 
+case 12: this.begin("block"); return 20;
 break;
 case 13:/* skip whitespace in block */
 break;
-case 14: return 27; 
+case 14: return 27;
 break;
 case 15:/* nothing */
 break;
-case 16: this.popState(); return 22; 
+case 16: this.popState(); return 22;
 break;
 case 17:return yy_.yytext[0];
 break;
@@ -11233,16 +11233,16 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 5:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 6:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 7:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 8:
- yy.parseDirective('}%%', 'close_directive', 'flowchart'); 
+ yy.parseDirective('}%%', 'close_directive', 'flowchart');
 break;
 case 10:
  this.$ = [];
@@ -11279,10 +11279,10 @@ case 43:
 this.$=yy.addSubGraph(undefined,$$[$0-1],undefined);
 break;
 case 48:
- /* console.warn('vs',$$[$0-2].stmt,$$[$0]); */ yy.addLink($$[$0-2].stmt,$$[$0],$$[$0-1]); this.$ = { stmt: $$[$0], nodes: $$[$0].concat($$[$0-2].nodes) } 
+ /* console.warn('vs',$$[$0-2].stmt,$$[$0]); */ yy.addLink($$[$0-2].stmt,$$[$0],$$[$0-1]); this.$ = { stmt: $$[$0], nodes: $$[$0].concat($$[$0-2].nodes) }
 break;
 case 49:
- /* console.warn('vs',$$[$0-3].stmt,$$[$0-1]); */ yy.addLink($$[$0-3].stmt,$$[$0-1],$$[$0-2]); this.$ = { stmt: $$[$0-1], nodes: $$[$0-1].concat($$[$0-3].nodes) } 
+ /* console.warn('vs',$$[$0-3].stmt,$$[$0-1]); */ yy.addLink($$[$0-3].stmt,$$[$0-1],$$[$0-2]); this.$ = { stmt: $$[$0-1], nodes: $$[$0-1].concat($$[$0-3].nodes) }
 break;
 case 50:
 /*console.warn('noda', $$[$0-1]);*/ this.$ = {stmt: $$[$0-1], nodes:$$[$0-1] }
@@ -11294,7 +11294,7 @@ case 52:
  /* console.warn('nod', $$[$0]); */ this.$ = [$$[$0]];
 break;
 case 53:
- this.$ = $$[$0-4].concat($$[$0]); /* console.warn('pip', $$[$0-4][0], $$[$0], this.$); */ 
+ this.$ = $$[$0-4].concat($$[$0]); /* console.warn('pip', $$[$0-4][0], $$[$0], this.$); */
 break;
 case 54:
 this.$ = [$$[$0-2]];yy.setClass($$[$0-2],$$[$0])
@@ -11931,13 +11931,13 @@ options: {},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 12; 
+case 0: this.begin('open_directive'); return 12;
 break;
-case 1: this.begin('type_directive'); return 13; 
+case 1: this.begin('type_directive'); return 13;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 10; 
+case 2: this.popState(); this.begin('arg_directive'); return 10;
 break;
-case 3: this.popState(); this.popState(); return 15; 
+case 3: this.popState(); this.popState(); return 15;
 break;
 case 4:return 14;
 break;
@@ -12003,27 +12003,27 @@ case 34:return 91;
 break;
 case 35:return 91;
 break;
-case 36:   this.popState();  return 25; 
+case 36:   this.popState();  return 25;
 break;
-case 37:   this.popState();  return 26; 
+case 37:   this.popState();  return 26;
 break;
-case 38:   this.popState();  return 26; 
+case 38:   this.popState();  return 26;
 break;
-case 39:   this.popState();  return 26; 
+case 39:   this.popState();  return 26;
 break;
-case 40:   this.popState();  return 26; 
+case 40:   this.popState();  return 26;
 break;
-case 41:   this.popState();  return 26; 
+case 41:   this.popState();  return 26;
 break;
-case 42:   this.popState();  return 26; 
+case 42:   this.popState();  return 26;
 break;
-case 43:   this.popState();  return 26; 
+case 43:   this.popState();  return 26;
 break;
-case 44:   this.popState();  return 26; 
+case 44:   this.popState();  return 26;
 break;
-case 45:   this.popState();  return 26; 
+case 45:   this.popState();  return 26;
 break;
-case 46:   this.popState();  return 26; 
+case 46:   this.popState();  return 26;
 break;
 case 47:return 110;
 break;
@@ -13397,16 +13397,16 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 2:
- return $$[$0-1]; 
+ return $$[$0-1];
 break;
 case 3:
- this.$ = [] 
+ this.$ = []
 break;
 case 4:
 $$[$0-1].push($$[$0]);this.$ = $$[$0-1]
 break;
 case 5: case 6:
- this.$ = $$[$0] 
+ this.$ = $$[$0]
 break;
 case 7: case 8:
  this.$=[];
@@ -13469,16 +13469,16 @@ case 32: case 34:
 this.$=$$[$0-3] + ' ' + $$[$0-2] + ' ' + $$[$0-1] + ' ' + $$[$0];
 break;
 case 36:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 37:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 38:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 39:
- yy.parseDirective('}%%', 'close_directive', 'gantt'); 
+ yy.parseDirective('}%%', 'close_directive', 'gantt');
 break;
 }
 },
@@ -13962,13 +13962,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 33; 
+case 0: this.begin('open_directive'); return 33;
 break;
-case 1: this.begin('type_directive'); return 34; 
+case 1: this.begin('type_directive'); return 34;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 26; 
+case 2: this.popState(); this.begin('arg_directive'); return 26;
 break;
-case 3: this.popState(); this.popState(); return 36; 
+case 3: this.popState(); this.popState(); return 36;
 break;
 case 4:return 35;
 break;
@@ -14783,7 +14783,7 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return $$[$0-1]; 
+ return $$[$0-1];
 break;
 case 2:
 yy.setDirection($$[$0-3]); return $$[$0-1];
@@ -14825,7 +14825,7 @@ case 17:
 this.$=$$[$0]
 break;
 case 18:
-this.$ = $$[$0-1]+ ":" + $$[$0] 
+this.$ = $$[$0-1]+ ":" + $$[$0]
 break;
 case 19:
 this.$ = $$[$0-1]+ ":"  + yy.count; yy.count = 0
@@ -14834,7 +14834,7 @@ case 20:
 yy.count = 0
 break;
 case 21:
- yy.count += 1 
+ yy.count += 1
 break;
 }
 },
@@ -15617,13 +15617,13 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return yy; 
+ return yy;
 break;
 case 4:
- 
+
 break;
 case 6:
- yy.setInfo(true);  
+ yy.setInfo(true);
 break;
 }
 },
@@ -16270,25 +16270,25 @@ case 4:
 yy.setShowData(true);
 break;
 case 7:
- this.$ = $$[$0-1] 
+ this.$ = $$[$0-1]
 break;
 case 9:
- yy.addSection($$[$0-1],yy.cleanupValue($$[$0])); 
+ yy.addSection($$[$0-1],yy.cleanupValue($$[$0]));
 break;
 case 10:
- this.$=$$[$0].trim();yy.setTitle(this.$); 
+ this.$=$$[$0].trim();yy.setTitle(this.$);
 break;
 case 17:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 18:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 19:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 20:
- yy.parseDirective('}%%', 'close_directive', 'pie'); 
+ yy.parseDirective('}%%', 'close_directive', 'pie');
 break;
 }
 },
@@ -16772,13 +16772,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 23; 
+case 0: this.begin('open_directive'); return 23;
 break;
-case 1: this.begin('type_directive'); return 24; 
+case 1: this.begin('type_directive'); return 24;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 18; 
+case 2: this.popState(); this.begin('arg_directive'); return 18;
 break;
-case 3: this.popState(); this.popState(); return 26; 
+case 3: this.popState(); this.popState(); return 26;
 break;
 case 4:return 25;
 break;
@@ -16792,15 +16792,15 @@ case 8:/* do nothing */
 break;
 case 9:/* ignore */
 break;
-case 10: this.begin("title");return 13; 
+case 10: this.begin("title");return 13;
 break;
-case 11: this.popState(); return "title_value"; 
+case 11: this.popState(); return "title_value";
 break;
-case 12: this.begin("string"); 
+case 12: this.begin("string");
 break;
-case 13: this.popState(); 
+case 13: this.popState();
 break;
-case 14: return "txt"; 
+case 14: return "txt";
 break;
 case 15:return 6;
 break;
@@ -17171,34 +17171,34 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 6:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 7:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 8:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 9:
- yy.parseDirective('}%%', 'close_directive', 'pie'); 
+ yy.parseDirective('}%%', 'close_directive', 'pie');
 break;
 case 10:
- this.$ = [] 
+ this.$ = []
 break;
 case 16:
- yy.addRequirement($$[$0-3], $$[$0-4]) 
+ yy.addRequirement($$[$0-3], $$[$0-4])
 break;
 case 17:
- yy.setNewReqId($$[$0-2]); 
+ yy.setNewReqId($$[$0-2]);
 break;
 case 18:
- yy.setNewReqText($$[$0-2]); 
+ yy.setNewReqText($$[$0-2]);
 break;
 case 19:
- yy.setNewReqRisk($$[$0-2]); 
+ yy.setNewReqRisk($$[$0-2]);
 break;
 case 20:
- yy.setNewReqVerifyMethod($$[$0-2]); 
+ yy.setNewReqVerifyMethod($$[$0-2]);
 break;
 case 23:
  this.$=yy.RequirementType.REQUIREMENT;
@@ -17240,19 +17240,19 @@ case 35:
  this.$=yy.VerifyType.VERIFY_TEST;
 break;
 case 36:
- yy.addElement($$[$0-3]) 
+ yy.addElement($$[$0-3])
 break;
 case 37:
- yy.setNewElementType($$[$0-2]); 
+ yy.setNewElementType($$[$0-2]);
 break;
 case 38:
- yy.setNewElementDocRef($$[$0-2]); 
+ yy.setNewElementDocRef($$[$0-2]);
 break;
 case 41:
-  yy.addRelationship($$[$0-2], $$[$0], $$[$0-4]) 
+  yy.addRelationship($$[$0-2], $$[$0], $$[$0-4])
 break;
 case 42:
- yy.addRelationship($$[$0-2], $$[$0-4], $$[$0]) 
+ yy.addRelationship($$[$0-2], $$[$0-4], $$[$0])
 break;
 case 43:
  this.$=yy.Relationships.CONTAINS;
@@ -17757,13 +17757,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 14; 
+case 0: this.begin('open_directive'); return 14;
 break;
-case 1: this.begin('type_directive'); return 15; 
+case 1: this.begin('type_directive'); return 15;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 12; 
+case 2: this.popState(); this.begin('arg_directive'); return 12;
 break;
-case 3: this.popState(); this.popState(); return 17; 
+case 3: this.popState(); this.popState(); return 17;
 break;
 case 4:return 16;
 break;
@@ -17845,11 +17845,11 @@ case 42:return 58;
 break;
 case 43:return 57;
 break;
-case 44: this.begin("string"); 
+case 44: this.begin("string");
 break;
-case 45: this.popState(); 
+case 45: this.popState();
 break;
-case 46: return "qString"; 
+case 46: return "qString";
 break;
 case 47: yy_.yytext = yy_.yytext.trim(); return 66;
 break;
@@ -18477,19 +18477,19 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 4:
- yy.apply($$[$0]);return $$[$0]; 
+ yy.apply($$[$0]);return $$[$0];
 break;
 case 5:
- this.$ = [] 
+ this.$ = []
 break;
 case 6:
 $$[$0-1].push($$[$0]);this.$ = $$[$0-1]
 break;
 case 7: case 8:
- this.$ = $$[$0] 
+ this.$ = $$[$0]
 break;
 case 9:
- this.$=[]; 
+ this.$=[];
 break;
 case 12:
 $$[$0-3].description=yy.parseMessage($$[$0-1]); this.$=$$[$0-3];
@@ -18546,10 +18546,10 @@ case 24:
 		this.$=$$[$0-1];
 break;
 case 27:
- this.$ = $$[$0-3].concat([{type: 'and', parText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.PAR_AND}, $$[$0]]); 
+ this.$ = $$[$0-3].concat([{type: 'and', parText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.PAR_AND}, $$[$0]]);
 break;
 case 29:
- this.$ = $$[$0-3].concat([{type: 'else', altText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.ALT_ELSE}, $$[$0]]); 
+ this.$ = $$[$0-3].concat([{type: 'else', altText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.ALT_ELSE}, $$[$0]]);
 break;
 case 30:
 
@@ -18564,16 +18564,16 @@ case 31:
 		this.$ = [$$[$0-1], {type:'addNote', placement:yy.PLACEMENT.OVER, actor:$$[$0-2].slice(0, 2), text:$$[$0]}];
 break;
 case 34:
- this.$ = [$$[$0-2], $$[$0]]; 
+ this.$ = [$$[$0-2], $$[$0]];
 break;
 case 35:
- this.$ = $$[$0]; 
+ this.$ = $$[$0];
 break;
 case 36:
- this.$ = yy.PLACEMENT.LEFTOF; 
+ this.$ = yy.PLACEMENT.LEFTOF;
 break;
 case 37:
- this.$ = yy.PLACEMENT.RIGHTOF; 
+ this.$ = yy.PLACEMENT.RIGHTOF;
 break;
 case 38:
  this.$ = [$$[$0-4],$$[$0-1],{type: 'addMessage', from:$$[$0-4].actor, to:$$[$0-1].actor, signalType:$$[$0-3], msg:$$[$0]},
@@ -18592,43 +18592,43 @@ case 41:
 this.$={type: 'addActor', actor:$$[$0]}
 break;
 case 42:
- this.$ = yy.LINETYPE.SOLID_OPEN; 
+ this.$ = yy.LINETYPE.SOLID_OPEN;
 break;
 case 43:
- this.$ = yy.LINETYPE.DOTTED_OPEN; 
+ this.$ = yy.LINETYPE.DOTTED_OPEN;
 break;
 case 44:
- this.$ = yy.LINETYPE.SOLID; 
+ this.$ = yy.LINETYPE.SOLID;
 break;
 case 45:
- this.$ = yy.LINETYPE.DOTTED; 
+ this.$ = yy.LINETYPE.DOTTED;
 break;
 case 46:
- this.$ = yy.LINETYPE.SOLID_CROSS; 
+ this.$ = yy.LINETYPE.SOLID_CROSS;
 break;
 case 47:
- this.$ = yy.LINETYPE.DOTTED_CROSS; 
+ this.$ = yy.LINETYPE.DOTTED_CROSS;
 break;
 case 48:
- this.$ = yy.LINETYPE.SOLID_POINT; 
+ this.$ = yy.LINETYPE.SOLID_POINT;
 break;
 case 49:
- this.$ = yy.LINETYPE.DOTTED_POINT; 
+ this.$ = yy.LINETYPE.DOTTED_POINT;
 break;
 case 50:
-this.$ = yy.parseMessage($$[$0].trim().substring(1)) 
+this.$ = yy.parseMessage($$[$0].trim().substring(1))
 break;
 case 51:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 52:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 53:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 54:
- yy.parseDirective('}%%', 'close_directive', 'sequence'); 
+ yy.parseDirective('}%%', 'close_directive', 'sequence');
 break;
 }
 },
@@ -19112,13 +19112,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 58; 
+case 0: this.begin('open_directive'); return 58;
 break;
-case 1: this.begin('type_directive'); return 59; 
+case 1: this.begin('type_directive'); return 59;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 14; 
+case 2: this.popState(); this.begin('arg_directive'); return 14;
 break;
-case 3: this.popState(); this.popState(); return 61; 
+case 3: this.popState(); this.popState(); return 61;
 break;
 case 4:return 60;
 break;
@@ -19134,29 +19134,29 @@ case 9:/* skip comments */
 break;
 case 10:/* skip comments */
 break;
-case 11: this.begin('ID'); return 16; 
+case 11: this.begin('ID'); return 16;
 break;
-case 12: yy_.yytext = yy_.yytext.trim(); this.begin('ALIAS'); return 48; 
+case 12: yy_.yytext = yy_.yytext.trim(); this.begin('ALIAS'); return 48;
 break;
-case 13: this.popState(); this.popState(); this.begin('LINE'); return 18; 
+case 13: this.popState(); this.popState(); this.begin('LINE'); return 18;
 break;
-case 14: this.popState(); this.popState(); return 5; 
+case 14: this.popState(); this.popState(); return 5;
 break;
-case 15: this.begin('LINE'); return 27; 
+case 15: this.begin('LINE'); return 27;
 break;
-case 16: this.begin('LINE'); return 29; 
+case 16: this.begin('LINE'); return 29;
 break;
-case 17: this.begin('LINE'); return 30; 
+case 17: this.begin('LINE'); return 30;
 break;
-case 18: this.begin('LINE'); return 31; 
+case 18: this.begin('LINE'); return 31;
 break;
-case 19: this.begin('LINE'); return 36; 
+case 19: this.begin('LINE'); return 36;
 break;
-case 20: this.begin('LINE'); return 33; 
+case 20: this.begin('LINE'); return 33;
 break;
-case 21: this.begin('LINE'); return 35; 
+case 21: this.begin('LINE'); return 35;
 break;
-case 22: this.popState(); return 19; 
+case 22: this.popState(); return 19;
 break;
 case 23:return 28;
 break;
@@ -19168,9 +19168,9 @@ case 26:return 39;
 break;
 case 27:return 37;
 break;
-case 28: this.begin('ID'); return 22; 
+case 28: this.begin('ID'); return 22;
 break;
-case 29: this.begin('ID'); return 23; 
+case 29: this.begin('ID'); return 23;
 break;
 case 30:return 25;
 break;
@@ -19182,7 +19182,7 @@ case 33:return 42;
 break;
 case 34:return 5;
 break;
-case 35: yy_.yytext = yy_.yytext.trim(); return 48; 
+case 35: yy_.yytext = yy_.yytext.trim(); return 48;
 break;
 case 36:return 51;
 break;
@@ -21220,10 +21220,10 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 4:
- /*console.warn('Root document', $$[$0]);*/ yy.setRootDoc($$[$0]);return $$[$0]; 
+ /*console.warn('Root document', $$[$0]);*/ yy.setRootDoc($$[$0]);return $$[$0];
 break;
 case 5:
- this.$ = [] 
+ this.$ = []
 break;
 case 6:
 
@@ -21231,10 +21231,10 @@ case 6:
             $$[$0-1].push($$[$0]);this.$ = $$[$0-1]
         }
         // console.warn('Got document',$$[$0-1], $$[$0]);
-    
+
 break;
 case 7: case 8:
- this.$ = $$[$0] 
+ this.$ = $$[$0]
 break;
 case 9:
  this.$='nl';
@@ -21249,19 +21249,19 @@ case 12:
 
         /*console.warn('got id', $$[$0-2]);yy.addRelation($$[$0-2], $$[$0]);*/
         this.$={ stmt: 'relation', state1: { stmt: 'state', id: $$[$0-2], type: 'default', description: '' }, state2:{ stmt: 'state', id: $$[$0] ,type: 'default', description: ''}};
-    
+
 break;
 case 13:
 
         /*yy.addRelation($$[$0-3], $$[$0-1], $$[$0].substr(1).trim());*/
         this.$={ stmt: 'relation', state1: { stmt: 'state', id: $$[$0-3], type: 'default', description: '' }, state2:{ stmt: 'state', id: $$[$0-1] ,type: 'default', description: ''}, description: $$[$0].substr(1).trim()};
-    
+
 break;
 case 17:
 
         /* console.warn('Adding document for state without id ', $$[$0-3]);*/
         this.$={ stmt: 'state', id: $$[$0-3], type: 'default', description: '', doc: $$[$0-1] }
-    
+
 break;
 case 18:
 
@@ -21274,39 +21274,39 @@ case 18:
         }
         this.$={stmt: 'state', id: id, type: 'default', description: description};
 
-    
+
 break;
 case 19:
 
          // console.warn('Adding document for state with id zxzx', $$[$0-3], $$[$0-2], yy.getDirection()); yy.addDocument($$[$0-3]);
          this.$={ stmt: 'state', id: $$[$0-3], type: 'default', description: $$[$0-5], doc: $$[$0-1] }
-    
+
 break;
 case 20:
 
         this.$={ stmt: 'state', id: $$[$0], type: 'fork' }
-    
+
 break;
 case 21:
 
         this.$={ stmt: 'state', id: $$[$0], type: 'join' }
-    
+
 break;
 case 22:
 
         this.$={ stmt: 'state', id: $$[$0], type: 'choice' }
-    
+
 break;
 case 23:
 
         this.$={ stmt: 'state', id: yy.getDividerId(), type: 'divider' }
-    
+
 break;
 case 24:
 
         /* console.warn('got NOTE, position: ', $$[$0-2].trim(), 'id = ', $$[$0-1].trim(), 'note: ', $$[$0]);*/
         this.$={ stmt: 'state', id: $$[$0-1].trim(), note:{position: $$[$0-2].trim(), text: $$[$0].trim()}};
-    
+
 break;
 case 30:
  yy.setDirection('TB');this.$={stmt:'dir', value:'TB'};
@@ -21324,16 +21324,16 @@ case 36: case 37:
 this.$=$$[$0];
 break;
 case 40:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 41:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 42:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 43:
- yy.parseDirective('}%%', 'close_directive', 'state'); 
+ yy.parseDirective('}%%', 'close_directive', 'state');
 break;
 }
 },
@@ -21825,13 +21825,13 @@ case 2:return 38;
 break;
 case 3:return 39;
 break;
-case 4: this.begin('open_directive'); return 45; 
+case 4: this.begin('open_directive'); return 45;
 break;
-case 5: this.begin('type_directive'); return 46; 
+case 5: this.begin('type_directive'); return 46;
 break;
-case 6: this.popState(); this.begin('arg_directive'); return 34; 
+case 6: this.popState(); this.begin('arg_directive'); return 34;
 break;
-case 7: this.popState(); this.popState(); return 48; 
+case 7: this.popState(); this.popState(); return 48;
 break;
 case 8:return 47;
 break;
@@ -21849,13 +21849,13 @@ case 14:/* skip comments */
 break;
 case 15:/* skip comments */
 break;
-case 16: this.pushState('SCALE'); /* console.log('Got scale', yy_.yytext);*/ return 15; 
+case 16: this.pushState('SCALE'); /* console.log('Got scale', yy_.yytext);*/ return 15;
 break;
 case 17:return 16;
 break;
 case 18:this.popState();
 break;
-case 19: /*console.log('Starting STATE zxzx'+yy.getDirection());*/this.pushState('STATE'); 
+case 19: /*console.log('Starting STATE zxzx'+yy.getDirection());*/this.pushState('STATE');
 break;
 case 20:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim(); /*console.warn('Fork Fork: ',yy_.yytext);*/return 23;
 break;
@@ -21897,7 +21897,7 @@ case 38: /*console.log('Ending struct');*/ this.popState(); return 19;
 break;
 case 39:/* nothing */
 break;
-case 40: this.begin('NOTE'); return 27; 
+case 40: this.begin('NOTE'); return 27;
 break;
 case 41: this.popState();this.pushState('NOTE_ID');return 43;
 break;
@@ -21919,17 +21919,17 @@ case 49: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy
 break;
 case 50: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy_.yytext = yy_.yytext.slice(0,-8).trim();return 29;
 break;
-case 51: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
+case 51: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7;
 break;
-case 52: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
+case 52: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7;
 break;
-case 53: /*console.log('HIDE_EMPTY', yy_.yytext,'#');*/return 14; 
+case 53: /*console.log('HIDE_EMPTY', yy_.yytext,'#');*/return 14;
 break;
 case 54: /*console.log('EDGE_STATE=',yy_.yytext);*/ return 42;
 break;
 case 55: /*console.log('=>ID=',yy_.yytext);*/ return 22;
 break;
-case 56: yy_.yytext = yy_.yytext.trim(); /*console.log('Descr = ', yy_.yytext);*/ return 12; 
+case 56: yy_.yytext = yy_.yytext.trim(); /*console.log('Descr = ', yy_.yytext);*/ return 12;
 break;
 case 57:return 13;
 break;
@@ -23873,16 +23873,16 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- return $$[$0-1]; 
+ return $$[$0-1];
 break;
 case 3:
- this.$ = [] 
+ this.$ = []
 break;
 case 4:
 $$[$0-1].push($$[$0]);this.$ = $$[$0-1]
 break;
 case 5: case 6:
- this.$ = $$[$0] 
+ this.$ = $$[$0]
 break;
 case 7: case 8:
  this.$=[];
@@ -23897,16 +23897,16 @@ case 13:
 yy.addTask($$[$0-1], $$[$0]);this.$='task';
 break;
 case 15:
- yy.parseDirective('%%{', 'open_directive'); 
+ yy.parseDirective('%%{', 'open_directive');
 break;
 case 16:
- yy.parseDirective($$[$0], 'type_directive'); 
+ yy.parseDirective($$[$0], 'type_directive');
 break;
 case 17:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive');
 break;
 case 18:
- yy.parseDirective('}%%', 'close_directive', 'journey'); 
+ yy.parseDirective('}%%', 'close_directive', 'journey');
 break;
 }
 },
@@ -24390,13 +24390,13 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 21; 
+case 0: this.begin('open_directive'); return 21;
 break;
-case 1: this.begin('type_directive'); return 22; 
+case 1: this.begin('type_directive'); return 22;
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 15; 
+case 2: this.popState(); this.begin('arg_directive'); return 15;
 break;
-case 3: this.popState(); this.popState(); return 24; 
+case 3: this.popState(); this.popState(); return 24;
 break;
 case 4:return 23;
 break;
