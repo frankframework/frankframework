@@ -19,6 +19,10 @@ import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
+/**
+ * A Spring Integration Gateway in it's most simplistic form.
+ * Put's messages on their respective Channels.
+ */
 public class LocalGateway<T> extends MessagingGatewaySupport implements IntegrationGateway<T> {
 
 	@Override

@@ -18,7 +18,7 @@
 	</integration:publish-subscribe-channel>
 
 	<!-- Messaging Gateway -->
-	<bean id="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton" />
+	<bean id="gateway" class="nl.nn.adapterframework.management.bus.GatewayFactoryBean" />
 
 	<context:property-placeholder />
 
