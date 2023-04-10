@@ -128,6 +128,23 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@Test
+	public void testEmptyAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testString", "");
+		attr.put("testInteger", "");
+		attr.put("testBoolean", "");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("", bean.getTestString(), "empty string value should be empty string");
+		assertEquals(1234, bean.getTestInteger(), "empty int value should be ingored"); //may trigger cannot be converted to int exception
+		assertEquals(false, bean.isTestBoolean(), "empty bool value should be ingored"); //may trigger a default warning exception
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: "+configWarnings.getWarnings());
+	}
+
+	@Test
 	public void testAttributeThatDoesntExist() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("do-not-exist", "string value here");
@@ -191,7 +208,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		// Arrange
 		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
-		attr.put("testInteger", "0");
+		attr.put("testInteger", "1234");
 		attr.put("testLong", "0");
 		attr.put("testBoolean", "false");
 		attr.put("testEnum", "one");
@@ -203,7 +220,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(5, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
-		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [0]", configWarnings.get(1));
+		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [1234]", configWarnings.get(1));
 		assertEquals("ClassWithEnum attribute [testLong] already has a default value [0]", configWarnings.get(2));
 		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(3));
 		assertEquals("ClassWithEnum attribute [testEnum] already has a default value [one]", configWarnings.get(4));
@@ -244,7 +261,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testInteger] of type [int]: value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testInteger]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
 	}
 
 	@Test
@@ -258,31 +275,31 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter] of type [int]: value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
 	}
 
 	@Test
 	public void testUnparsableEnum() throws Exception {
 		Map<String, String> attr = new HashMap<>();
-		attr.put("testEnum", "unparsable");
+		attr.put("testEnum", "notEnumValue");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testEnum] to unparsable value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testEnum]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
 	}
 
 	@Test
 	public void testUnparsableEnumWithDifferentFieldName() throws Exception {
 		Map<String, String> attr = new HashMap<>();
-		attr.put("enumWithDifferentName", "unparsable");
+		attr.put("enumWithDifferentName", "notEnumValue");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [enumWithDifferentName] to unparsable value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [enumWithDifferentName]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
 	}
 
 	@Test
@@ -447,7 +464,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Deprecated @Getter @Setter String deprecatedString;
 		private @Getter String configWarningString;
 		private @Getter String deprecatedConfigWarningString;
-		private @Getter @Setter int testInteger = 0;
+		private @Getter @Setter int testInteger = 1234;
 		private @Getter @Setter long testLong = 0L;
 		private @Getter @Setter boolean testBoolean = false;
 		private @Setter String testStringWithoutGetter = "string";
