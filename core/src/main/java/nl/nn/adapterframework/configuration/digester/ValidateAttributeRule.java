@@ -98,8 +98,13 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				log.warn("error while invoking method [{}] with value [{}] on bean [{}]", m, value, getBean(), e);
 				addLocalWarning(e.getCause().getMessage());
 			} catch (IllegalArgumentException e) {
-				log.warn("unable to populate attribute [{}] on method [{}] with value [{}] on bean [{}]", name, m, value, getBean(), e);
-				addLocalWarning(e.getMessage());
+				log.debug("unable to set attribute [{}] on method [{}] with value [{}]", name, m, value, e);
+				// When it's unable to convert to the provided type and:
+				// The type is not a String AND The value is empty
+				// Do not create a warning.
+				if(!"".equals(value)) {
+					addLocalWarning(e.getMessage());
+				}
 			}
 		}
 	}
@@ -135,7 +140,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		}
 
 		try {
-			return ClassUtils.convertToType(defaultValue.getClass(), "", value).equals(defaultValue);
+			return ClassUtils.convertToType(defaultValue.getClass(), value).equals(defaultValue);
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
