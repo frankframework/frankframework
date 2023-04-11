@@ -27,14 +27,14 @@ best practices and perform security testing before releasing your application.
 | Version | Supported          | Security Fixes*  | Released         |
 | ------- | ------------------ |----------------- |------------------|
 | latest  | :white_check_mark: |:white_check_mark:|                  |
-| 7.8.x   | :white_check_mark: |:white_check_mark:|                  |
-| 7.7.x   | :white_check_mark: |:white_check_mark:| Mar 29, 2022     |
-| 7.6.x   | :x:                |:white_check_mark:| Aug 3, 2021      |
+| 7.8.x   | :white_check_mark: |:white_check_mark:| Apr 5, 2023      |
+| 7.7.x   | :x:                |:white_check_mark:| Mar 29, 2022     |
+| 7.6.x   | :x:                |:x:               | Aug 3, 2021      |
 | 7.5.x   | :x:                |:x:               | Nov 16, 2020     |
 | 7.0.x   | :x:                |:x:               | Jun 1, 2018      |
 | < 6.1   | :x:                |:x:               | Dec 13, 2016     |
 
-*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above).
+*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/ibissource/iaf/wiki/Security-monitoring-procedure).
 
 ## Reporting a Vulnerability
 
