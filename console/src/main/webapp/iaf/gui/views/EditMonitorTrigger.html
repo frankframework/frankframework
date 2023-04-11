@@ -40,12 +40,12 @@
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Filtering</label>
 							<div class="col-sm-9">
-								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="none" ng-model="trigger.filter" /> None</span>
-								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="adapter" ng-model="trigger.filter" /> By Adapter</span>
-								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="source" ng-model="trigger.filter" /> By Source</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="NONE" ng-model="trigger.filter" /> None</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="ADAPTER" ng-model="trigger.filter" /> By Adapter</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="SOURCE" ng-model="trigger.filter" /> By Source</span>
 							</div>
 						</div>
-						<div class="form-group" ng-if="trigger.filter == 'adapter'">
+						<div class="form-group" ng-if="trigger.filter == 'ADAPTER'">
 							<label class="col-sm-3 control-label">Adapters</label>
 							<div class="col-sm-9">
 								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.adapters">
@@ -53,7 +53,7 @@
 								</select>
 							</div>
 						</div>
-						<div class="form-group" ng-if="trigger.filter == 'source'">
+						<div class="form-group" ng-if="trigger.filter == 'SOURCE'">
 							<label class="col-sm-3 control-label">Sources</label>
 							<div class="col-sm-9">
 								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.sources">

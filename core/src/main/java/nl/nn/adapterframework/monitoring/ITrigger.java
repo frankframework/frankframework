@@ -39,9 +39,8 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	void setMonitor(Monitor monitor);
 	void toXml(XmlBuilder monitor);
 
-	void setSourceFilteringEnum(SourceFiltering filtering);
-	SourceFiltering getSourceFilteringEnum();
-	String getSourceFiltering();
+	void setSourceFiltering(SourceFiltering filtering);
+	SourceFiltering getSourceFiltering();
 
 	void setEventCodes(String[] arr);
 	String[] getEventCodes();

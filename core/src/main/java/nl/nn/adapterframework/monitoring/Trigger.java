@@ -46,13 +46,9 @@ public class Trigger implements ITrigger {
 	private static final String CLASS_NAME_ALARM = Alarm.class.getName();
 	private static final String CLASS_NAME_CLEARING = Clearing.class.getName();
 
-	public static final int SOURCE_FILTERING_NONE=0;
-	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
-	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
-
 	private Monitor monitor;
 	private @Getter @Setter Severity severity;
-	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
+	private @Getter @Setter SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
 	private List<String> eventCodes = new ArrayList<>();
@@ -164,7 +160,7 @@ public class Trigger implements ITrigger {
 			event.setValue(eventCodes.get(i));
 		}
 		if (getAdapterFilters()!=null) {
-			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
+			if (getSourceFiltering() != SourceFiltering.NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 					String adapterName = it.next();
 					AdapterFilter af = getAdapterFilters().get(adapterName);
@@ -246,16 +242,16 @@ public class Trigger implements ITrigger {
 	@Override
 	public void clearAdapterFilters() {
 		adapterFilters.clear();
-		setSourceFilteringEnum(SourceFiltering.NONE);
+		setSourceFiltering(SourceFiltering.NONE);
 	}
 
 	@Override
 	public void registerAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
-			setSourceFilteringEnum(SourceFiltering.SOURCE);
-		} else if (getSourceFilteringEnum() == SourceFiltering.NONE) {
-			setSourceFilteringEnum(SourceFiltering.ADAPTER);
+			setSourceFiltering(SourceFiltering.SOURCE);
+		} else if (getSourceFiltering() == SourceFiltering.NONE) {
+			setSourceFiltering(SourceFiltering.ADAPTER);
 		}
 	}
 
@@ -264,21 +260,6 @@ public class Trigger implements ITrigger {
 	}
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;
-	}
-
-	@Override
-	public void setSourceFilteringEnum(SourceFiltering filtering) {
-		this.sourceFiltering = filtering;
-	}
-
-	@Override
-	public String getSourceFiltering() {
-		return sourceFiltering.name().toLowerCase();
-	}
-
-	@Override
-	public SourceFiltering getSourceFilteringEnum() {
-		return sourceFiltering;
 	}
 
 	@Override

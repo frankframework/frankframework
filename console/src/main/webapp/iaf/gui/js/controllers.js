@@ -2643,11 +2643,11 @@ angular.module('iaf.beheerconsole')
 			$.extend($scope, data);
 			calculateEventSources();
 			if(data.trigger && data.trigger.sources) {
-			var sources = data.trigger.sources;
+				var sources = data.trigger.sources;
 				$scope.trigger.sources = [];
 				$scope.trigger.adapters = [];
 				for(adapter in sources) {
-					if(data.trigger.filter == "source") {
+					if(data.trigger.filter == "SOURCE") {
 						for(i in sources[adapter]) {
 							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
 						}
@@ -2696,9 +2696,9 @@ angular.module('iaf.beheerconsole')
 	}
 
 	$scope.submit = function(trigger) {
-		if(trigger.filter == "adapter") {
+		if(trigger.filter == "ADAPTER") {
 			delete trigger.sources;
-		} else if(trigger.filter == "source") {
+		} else if(trigger.filter == "SOURCE") {
 			delete trigger.adapters;
 			var sources = trigger.sources;
 			trigger.sources = {};

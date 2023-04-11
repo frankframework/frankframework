@@ -173,7 +173,7 @@ public final class ShowMonitors extends Base {
 
 		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFilteringEnum() != SourceFiltering.NONE) {
+			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
 				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
 					String adapterName = it1.next();
 
@@ -410,7 +410,7 @@ public final class ShowMonitors extends Base {
 		Severity severity = null;
 		int threshold = 0;
 		int period = 0;
-		String filter = null;
+		SourceFiltering filter = null;
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
 
@@ -433,7 +433,7 @@ public final class ShowMonitors extends Base {
 					throw new ApiException("period must be a positive number");
 				}
 			} else if(key.equalsIgnoreCase("filter")) {
-				filter = entry.getValue().toString();
+				filter = EnumUtils.parse(SourceFiltering.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
 				adapters = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
@@ -447,19 +447,16 @@ public final class ShowMonitors extends Base {
 		trigger.setSeverity(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
+		trigger.setSourceFiltering(filter);
 
 		trigger.clearAdapterFilters();
-		if("adapter".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.ADAPTER);
-
+		if(SourceFiltering.ADAPTER.equals(filter)) {
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else if("source".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.SOURCE);
-
+		} else if(SourceFiltering.SOURCE.equals(filter)) {
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
@@ -468,8 +465,6 @@ public final class ShowMonitors extends Base {
 				}
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else {
-			trigger.setSourceFilteringEnum(SourceFiltering.NONE);
 		}
 	}
 
