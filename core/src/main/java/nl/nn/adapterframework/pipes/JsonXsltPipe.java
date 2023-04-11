@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.senders.JsonXsltSender;
 import nl.nn.adapterframework.senders.XsltSender;
 
@@ -30,20 +31,18 @@ import nl.nn.adapterframework.senders.XsltSender;
 
 public class JsonXsltPipe extends XsltPipe {
 
-	private final String JSONXSLTSENDER = "nl.nn.adapterframework.senders.JsonXsltSender";
-
 	@Override
 	protected XsltSender createXsltSender() {
 		return new JsonXsltSender();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.JsonXsltSender */
+	@ReferTo(JsonXsltSender.class)
 	public void setJsonResult(boolean jsonResult) {
 		((JsonXsltSender)getSender()).setJsonResult(jsonResult);
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.senders.JsonXsltSender */
+	@ReferTo(JsonXsltSender.class)
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

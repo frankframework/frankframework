@@ -40,10 +40,10 @@ import com.sendgrid.helpers.mail.objects.Personalization;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
@@ -59,8 +59,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author alisihab
  */
 public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
-
-	private static final String HTTPSENDERBASE = "nl.nn.adapterframework.http.HttpSenderBase";
 
 	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
@@ -263,39 +261,39 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	//Properties inherited from HttpSenderBase
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTimeout(int i) {
 		super.setTimeout(i);
 		httpSender.setTimeout(i);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setMaxConnections(int i) {
 		httpSender.setMaxConnections(i);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setMaxExecuteRetries(int i) {
 		httpSender.setMaxExecuteRetries(i);
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyHost(String string) {
 		httpSender.setProxyHost(string);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyPort(int i) {
 		httpSender.setProxyPort(i);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyAuthAlias(String string) {
 		httpSender.setProxyAuthAlias(string);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyUsername(String string) {
 		httpSender.setProxyUsername(string);
 	}
@@ -305,12 +303,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyPassword(String string) {
 		httpSender.setProxyPassword(string);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProxyRealm(String string) {
 		httpSender.setProxyRealm(string);
 	}
@@ -340,7 +338,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystore(String keystore) {
 		httpSender.setKeystore(keystore);
 	}
@@ -350,7 +348,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSender.setKeystoreType(keystoreType);
 	}
@@ -360,7 +358,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSender.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -370,7 +368,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystorePassword(String keystorePassword) {
 		httpSender.setKeystorePassword(keystorePassword);
 	}
@@ -380,7 +378,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSender.setKeystoreAlias(keystoreAlias);
 	}
@@ -390,7 +388,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSender.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -400,7 +398,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSender.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -410,7 +408,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSender.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
@@ -420,7 +418,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTruststore(String truststore) {
 		httpSender.setTruststore(truststore);
 	}
@@ -430,7 +428,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
 		httpSender.setTruststoreType(truststoreType);
 	}
@@ -441,7 +439,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		httpSender.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
@@ -451,7 +449,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTruststorePassword(String truststorePassword) {
 		httpSender.setTruststorePassword(truststorePassword);
 	}
@@ -461,7 +459,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		httpSender.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
@@ -471,7 +469,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setVerifyHostname(boolean verifyHostname) {
 		httpSender.setVerifyHostname(verifyHostname);
 	}
@@ -481,7 +479,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
 		httpSender.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
@@ -491,7 +489,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSender.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
@@ -500,23 +498,23 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.isIgnoreCertificateExpiredException();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setFollowRedirects(boolean b) {
 		httpSender.setFollowRedirects(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setStaleChecking(boolean b) {
 		httpSender.setStaleChecking(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setStaleTimeout(int timeout) {
 		httpSender.setStaleTimeout(timeout);
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.http.HttpSenderBase */
+	@ReferTo(HttpSenderBase.class)
 	public void setProtocol(String protocol) {
 		httpSender.setProtocol(protocol);
 	}

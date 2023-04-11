@@ -28,10 +28,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -58,8 +59,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	private String sessionKey=null;
 
 	private @Getter XsltSender sender = createXsltSender();
-
-	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
@@ -176,22 +175,22 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.addParameter(rhs);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -199,17 +198,17 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getXpathExpression();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setDisableOutputEscaping(boolean b) {
 		sender.setDisableOutputEscaping(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -217,36 +216,36 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getNamespaceDefs();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setOutputType(OutputType outputType) {
 		sender.setOutputType(outputType);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setHandleLexicalEvents(boolean b) {
 		sender.setHandleLexicalEvents(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -256,7 +255,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setXslt2(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.senders.XsltSender */
+	@ReferTo(XsltSender.class)
 	@Deprecated
 	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
 	public void setNamespaceAware(boolean b) {
