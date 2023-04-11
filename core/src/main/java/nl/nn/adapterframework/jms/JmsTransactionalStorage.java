@@ -29,7 +29,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
- * JMS implementation of <code>ITransactionalStorage</code>.
+ * Implements a message log (<code>JmsMessageLog</code>) or error store (<code>JmsErrorStorage</code>) that uses JMS technology. See the
+ * Frank!Manual.
  * 
  * @author  Gerrit van Brakel
  * @since   4.1

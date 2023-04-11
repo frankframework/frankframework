@@ -38,26 +38,38 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StringUtil;
 
 /**
- * Read messages from the ibisstore previously stored by a
+ * Read messages from the IBISSTORE database table previously stored by a
  * {@link MessageStoreSender}.
  *
  * Example configuration:
  * <code><pre>
-		&lt;listener
-			name="MyListener"
-			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-		/>
-		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
-		&lt;errorStorage
-			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-		/>
+	&lt;Receiver
+		name="03 MessageStoreReceiver"
+		numThreads="4"
+		transactionAttribute="Required"
+		pollInterval="1"
+		&gt;
+		&lt;MessageStoreListener
+			name="03 MessageStoreListener"
+			slotId="${instance.name}/TestMessageStore"
+			statusValueInProcess="I"
+		/&gt;
+	&lt;/Receiver&gt;
+
  * </pre></code>
  *
+ * If you have a <code>MessageStoreListener</code>, failed messages are automatically kept in database
+ * table IBISSTORE. Messages are also kept after successful processing. The state of a message
+ * is distinguished by the <code>TYPE</code> field, as follows:
+ * <ul>
+ * <li> <code>M</code>: The message is new. From a functional perspective, it is in the message store.
+ * <li> <code>E</code>: There was an error processing the message. From a functional perspective, it is in the error store.
+ * <li> <code>A</code>: The message was successfully processed. From a functional perspective, it is in the message log.
+ * </ul>
+ * As a consequence, you do not need a <code>JdbcErrorStorage</code> or <code>JdbcMessageLog</code> when you have a <code>MessageStoreListener</code>.
+ * <br/><br/>
+ * See /IAF_util/IAF_DatabaseChangelog.xml for the structure of table IBISSTORE.
+ * 
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {

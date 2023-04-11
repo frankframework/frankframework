@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021, 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Send messages to the ibisstore to have them processed exactly-once by another
+ * Send messages to the IBISSTORE database table to have them processed exactly-once by another
  * adapter which will read the messages using a {@link MessageStoreListener}.
  * This other adapter will process the messages asynchronously and (optionally)
  * under transaction control. Duplicate messages are ignored based on the
@@ -46,17 +46,18 @@ import nl.nn.adapterframework.stream.Message;
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
  * ibisstore.
- *
+ * <br/><br/>
+ * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> because
+ * that would duplicate adding messages to the IBISSTORE database table.
+ * <br/><br/>
  * Example configuration:
  * <code><pre>
-		&lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			>
-			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
-		&lt;/sender>
+	&lt;SenderPipe name="Send"&gt;
+		&lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&gt;
+	&lt;/SenderPipe&gt;
 </pre></code>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId

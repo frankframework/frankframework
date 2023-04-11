@@ -56,11 +56,13 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * JDBC implementation of {@link ITransactionalStorage}.
- *
- * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml
- *
- * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
+ * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
+ * table IBISSTORE. See the Frank!Manual. These elements are not needed in combination with a <code>MessageStoreSender</code> and
+ * <code>MessageStoreListener</code> pair because these already have messages stored in table
+ * IBISSTORE.
+ * <br/><br/>
+ * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these objects do not exist,
+ * the Frank!Framework will try to create them if the attribute <code>createTable="true"</code>.
  *
  * <br/>
  * N.B. Note on using XA transactions:
