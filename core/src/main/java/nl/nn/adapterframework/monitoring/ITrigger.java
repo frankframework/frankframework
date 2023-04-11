@@ -46,9 +46,8 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	void setEventCodes(String[] arr);
 	String[] getEventCodes();
 
-	void setSeverityEnum(SeverityEnum enumeration);
-	String getSeverity();
-	SeverityEnum getSeverityEnum();
+	void setSeverity(Severity severity);
+	Severity getSeverity();
 
 	void setThreshold(int i);
 	int getThreshold();

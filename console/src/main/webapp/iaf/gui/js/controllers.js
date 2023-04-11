@@ -2667,8 +2667,8 @@ angular.module('iaf.beheerconsole')
 		var adapters = [];
 		for(eventName in $scope.events) {
 			if(events.indexOf(eventName) > -1) {
-				var arr = $scope.events[eventName].adapters;
-				adapters = adapters.concat(arr);
+				let sourceList = $scope.events[eventName].sources;
+				adapters = adapters.concat(Object.keys(sourceList));
 			}
 		}
 		return Array.from(new Set(adapters));

@@ -30,7 +30,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -52,7 +51,7 @@ public class Trigger implements ITrigger {
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
 
 	private Monitor monitor;
-	private SeverityEnum severity;
+	private @Getter @Setter Severity severity;
 	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
@@ -119,10 +118,10 @@ public class Trigger implements ITrigger {
 			cleanUpEvents(now);
 			eventDates.add(now);
 			if (eventDates.size() >= getThreshold()) {
-				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+				getMonitor().changeState(now, alarm, getSeverity(), source, eventCode, null);
 			}
 		} else {
-			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+			getMonitor().changeState(now, alarm, getSeverity(), source, eventCode, null);
 		}
 	}
 
@@ -151,7 +150,7 @@ public class Trigger implements ITrigger {
 		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
-			trigger.addAttribute("severity",getSeverity());
+			trigger.addAttribute("severity", getSeverity().name());
 		}
 		if (getThreshold()>0) {
 			trigger.addAttribute("threshold",getThreshold());
@@ -227,25 +226,6 @@ public class Trigger implements ITrigger {
 
 	public List<String> getEventCodeList() {
 		return eventCodes;
-	}
-
-	public void setSeverity(String severity) {
-		setSeverityEnum(EnumUtils.parse(SeverityEnum.class, severity));
-	}
-
-	@Override
-	public void setSeverityEnum(SeverityEnum enumeration) {
-		severity = enumeration;
-	}
-
-	@Override
-	public SeverityEnum getSeverityEnum() {
-		return severity;
-	}
-
-	@Override
-	public String getSeverity() {
-		return severity==null?null:severity.name();
 	}
 
 	@Override
