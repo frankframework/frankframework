@@ -145,22 +145,34 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		public void register(M jaxRsResource) {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
 			Path basePathAnnotation = AnnotationUtils.findAnnotation(jaxRsResource.getClass(), Path.class);
-			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
 			for(Method classMethod : classMethods) {
 				int modifiers = classMethod.getModifiers();
 				if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
 					Path path = AnnotationUtils.findAnnotation(classMethod, Path.class);
 					HttpMethod httpMethod = AnnotationUtils.findAnnotation(classMethod, HttpMethod.class);
 					if(path != null && httpMethod != null) {
-						String pathValue = basePath + path.value();
-						String rsResourceKey = compileKey(httpMethod.value(), pathValue);
+						String compiledPath = getPath(basePath, path.value());
+						String rsResourceKey = compileKey(httpMethod.value(), compiledPath);
 
-						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", ()->rsResourceKey, classMethod::getName, ()->pathValue);
+						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", ()->rsResourceKey, classMethod::getName, ()->compiledPath);
 						rsRequests.put(rsResourceKey, classMethod);
 					}
 					//Ignore security for now
 				}
 			}
+		}
+
+		// The basepath is usually a '/', but path may also start with a slash.
+		// Ensure a valid path is returned.
+		private String getPath(String basePath, String path) {
+			StringBuilder pathToUse = new StringBuilder();
+			if(!basePath.startsWith("/")) {
+				pathToUse.append("/");
+			}
+			pathToUse.append(basePath);
+			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			return pathToUse.toString();
 		}
 
 		/**

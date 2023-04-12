@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -53,7 +52,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
-	private EventType type = EventType.TECHNICAL;
+	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
 	private Date stateChangeDt = null;
 
@@ -98,7 +97,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		}
 		if (up) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be raised to ["+severity+"]");
-			changeMonitorState(date, source, getTypeEnum(), severity, details, t);
+			changeMonitorState(date, source, getType(), severity, details, t);
 			setAlarmSource(source);
 			setAlarmSeverityEnum(severity);
 			setLastHit(date);
@@ -165,7 +164,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	public XmlBuilder toXml() {
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		monitor.addAttribute("name",getName());
-		monitor.addAttribute("type",getType());
+		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());
 		for (Iterator<ITrigger> it=triggers.iterator();it.hasNext();) {
 			ITrigger trigger=it.next();
@@ -254,19 +253,6 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	@Override
 	public void setName(String string) {
 		name = string;
-	}
-
-	public void setType(String eventType) {
-		setTypeEnum(EnumUtils.parse(EventType.class, eventType));
-	}
-	public String getType() {
-		return type==null?null:type.name();
-	}
-	public void setTypeEnum(EventType enumeration) {
-		type = enumeration;
-	}
-	public EventType getTypeEnum() {
-		return type;
 	}
 
 	public void setRaised(boolean b) {

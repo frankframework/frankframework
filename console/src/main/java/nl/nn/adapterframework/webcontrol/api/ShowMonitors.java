@@ -147,7 +147,8 @@ public class ShowMonitors extends Base {
 				if(key.equalsIgnoreCase("name")) {
 					monitor.setName(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("type")) {
-					monitor.setType(entry.getValue().toString());
+					EventType type = EnumUtils.parse(EventType.class, entry.getValue().toString());
+					monitor.setType(type);
 				} else if(key.equalsIgnoreCase("destinations")) {
 					monitor.setDestinationSet(parseDestinations(entry.getValue()));
 				}
@@ -372,7 +373,7 @@ public class ShowMonitors extends Base {
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
-		monitor.setTypeEnum(type);
+		monitor.setType(type);
 		monitor.setDestinationSet(destinations);
 
 		mm.addMonitor(monitor);

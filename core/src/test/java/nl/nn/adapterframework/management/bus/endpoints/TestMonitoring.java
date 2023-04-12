@@ -37,7 +37,7 @@ public class TestMonitoring extends BusTestBase {
 		MonitorManager manager = getMonitorManager();
 		Monitor monitor = SpringUtils.createBean(getConfiguration(), Monitor.class);
 		monitor.setName(TEST_MONITOR_NAME);
-		monitor.setTypeEnum(EventType.FUNCTIONAL);
+		monitor.setType(EventType.FUNCTIONAL);
 		Trigger trigger = new Trigger();
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
 		monitor.registerTrigger(trigger);
