@@ -88,7 +88,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 
 	public void changeState(Date date, boolean alarm, Severity severity, EventThrowing source, String details, Throwable t) throws MonitorException {
 		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
-		boolean clear=raised && (!alarm || up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity);
+		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be cleared");
 			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
