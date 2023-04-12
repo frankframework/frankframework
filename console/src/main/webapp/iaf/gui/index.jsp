@@ -1,12 +1,98 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="utf-8">
-  <title>Beheerconsole</title>
-  <base href="<%=application.getContextPath()%>/iaf/gui/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="stylesheet" href="styles.ef46db3751d8e999.css"></head>
-<body>
-  <app-root></app-root>
-<script src="runtime.24b404460159d5d8.js" type="module"></script><script src="polyfills.0d9e74b38e6f4fc1.js" type="module"></script><script src="main.257523996dcf56ea.js" type="module"></script>
+<%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%
+// Calculate an unique hash (per framework version) to disable caching
+String time = ""+System.currentTimeMillis();
+String version = AppConstants.getInstance().getString("application.version", "");
+if(version.isEmpty()) {
+	version = time;
+} else if(version.contains("SNAPSHOT")) {
+	version = version + "-" + time; //Append time to disable cache
+}
+%>
+<!DOCTYPE html>
+<html ng-app="iaf.beheerconsole">
 
-</body></html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="pragma" content="no-cache">
+	<base href="">
+
+	<title page-title></title>
+
+	<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="node_modules/font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="css/animate.css" rel="stylesheet">
+
+	<link href="node_modules/sweetalert/lib/sweet-alert.css" rel="stylesheet">
+	<link href="css/plugins/iCheck/custom.css" rel="stylesheet">
+	<link href="node_modules/ladda/dist/ladda-themeless.min.css" rel="stylesheet">
+	<link href="node_modules/prismjs/themes/prism.css" rel="stylesheet">
+	<link href="node_modules/angularjs-toaster/toaster.min.css" rel="stylesheet">
+	<link id="loadBefore" href="css/style.css?v=<%=version%>" rel="stylesheet">
+	<link rel="shortcut icon" href="favicon.ico">
+</head>
+
+<body ng-class="{'gray-bg': ($state.current.name.indexOf('pages.')===1) }" id="page-top">
+
+<div class="loading" style="z-index: 999; position: fixed; top: 0; bottom: 0; left: 0; background: #f8f8f8; right: 0; padding-top: 100px;">
+	<div class="middle-box text-center loginscreen  animated fadeInDown">
+		<div>
+			<div>
+				<h2>Loading</h2>
+			</div>
+			<div class="sk-spinner sk-spinner-wave">
+				<div class="sk-rect1"></div>
+				<div class="sk-rect2"></div>
+				<div class="sk-rect3"></div>
+				<div class="sk-rect4"></div>
+				<div class="sk-rect5"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container>
+
+<div ui-view style="display:none;" class="main"></div>
+
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/jquery-ui/jquery-ui.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<script src="node_modules/metismenu/dist/metisMenu.min.js"></script>
+<script src="node_modules/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<script data-pace-options='{ "ajax": false }' src="node_modules/pace-js/pace.min.js"></script>
+
+<script src="js/main.js"></script>
+
+<!-- Main Angular scripts-->
+<script src="node_modules/angular/angular.min.js"></script>
+<script src="node_modules/angular-sanitize/angular-sanitize.js"></script>
+<script src="node_modules/angular-cookies/angular-cookies.js"></script>
+<script src="node_modules/oclazyload/dist/ocLazyLoad.min.js"></script>
+<script src="node_modules/ui-router/angular-ui-router.min.js"></script>
+<script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+<script src="node_modules/ng-idle/angular-idle.js"></script>
+<script src="node_modules/sweetalert/lib/sweet-alert.min.js"></script>
+<script src="node_modules/tinycon/tinycon.min.js"></script>
+<script src="node_modules/spin.js/spin.js"></script>
+<script src="node_modules/ladda/js/ladda.js"></script>
+<script src="node_modules/angular-ladda/dist/angular-ladda.min.js"></script>
+<script src="node_modules/angularjs-toaster/toaster.min.js"></script>
+<script src="node_modules/prismjs/prism.js"></script>
+<script src="js/plugins/iCheck/icheck.min.js"></script>
+
+<script type="text/javascript" nonce="ffVersion">var ff_version="<%=version%>"</script>
+
+<script src="js/app.js?v=<%=version%>"></script>
+<script src="js/config.js?v=<%=version%>"></script>
+<script src="js/services.js?v=<%=version%>"></script>
+<script src="js/directives.js?v=<%=version%>"></script>
+<script src="js/controllers.js?v=<%=version%>"></script>
+
+</body>
+</html>
