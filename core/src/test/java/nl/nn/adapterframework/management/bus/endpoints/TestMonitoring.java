@@ -78,7 +78,7 @@ public class TestMonitoring extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		// Assert
-		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitorsXML.json");
+		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitors.xml");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertXmlEquals(expectedXML, payload);
 	}
@@ -111,7 +111,7 @@ public class TestMonitoring extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		// Assert
-		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitorXML.json");
+		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitor.xml");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertXmlEquals(expectedXML, payload);
 	}
