@@ -159,22 +159,20 @@ public class Trigger implements ITrigger {
 			trigger.addSubElement(event);
 			event.setValue(eventCodes.get(i));
 		}
-		if (getAdapterFilters()!=null) {
-			if (getSourceFiltering() != SourceFiltering.NONE) {
-				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
-					String adapterName = it.next();
-					AdapterFilter af = getAdapterFilters().get(adapterName);
-					XmlBuilder adapter = new XmlBuilder("adapterfilter");
-					trigger.addSubElement(adapter);
-					adapter.addAttribute("adapter",adapterName);
-					if (isFilterOnLowerLevelObjects()) {
-						List<String> subobjectList=af.getSubObjectList();
-						if (subobjectList!=null) {
-							for(String subObjectName : subobjectList) {
-								XmlBuilder sourceXml=new XmlBuilder("source");
-								adapter.addSubElement(sourceXml);
-								sourceXml.setValue(subObjectName);
-							}
+		if (getAdapterFilters()!=null && getSourceFiltering() != SourceFiltering.NONE) {
+			for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
+				String adapterName = it.next();
+				AdapterFilter af = getAdapterFilters().get(adapterName);
+				XmlBuilder adapter = new XmlBuilder("adapterfilter");
+				trigger.addSubElement(adapter);
+				adapter.addAttribute("adapter",adapterName);
+				if (isFilterOnLowerLevelObjects()) {
+					List<String> subobjectList=af.getSubObjectList();
+					if (subobjectList!=null) {
+						for(String subObjectName : subobjectList) {
+							XmlBuilder sourceXml=new XmlBuilder("source");
+							adapter.addSubElement(sourceXml);
+							sourceXml.setValue(subObjectName);
 						}
 					}
 				}

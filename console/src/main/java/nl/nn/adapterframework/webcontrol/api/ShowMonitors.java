@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -46,7 +47,10 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.web.ApiException;
+import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
@@ -69,7 +73,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 
 @Path("/configurations/{configuration}/monitors")
-public final class ShowMonitors extends Base {
+public class ShowMonitors extends Base {
 	private @Context Request request;
 
 	private MonitorManager getMonitorManager(String configurationName) {
@@ -86,31 +90,13 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
-	public Response getMonitors(@PathParam("configuration") String configurationName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
-
-		Map<String, Object> returnMap = new HashMap<>();
-		MonitorManager mm = getMonitorManager(configurationName);
-
-		if(showConfigXml) {
-			String xml = mm.toXml().toXML();
-			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
-		}
-
-		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
-		for(int i = 0; i < mm.getMonitors().size(); i++) {
-			Monitor monitor = mm.getMonitor(i);
-
-			monitors.add(mapMonitor(monitor));
-		}
-
-		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
-		returnMap.put("destinations", mm.getDestinations().keySet());
-
-		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(returnMap).build();
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	public Response getMonitors(@PathParam("configuration") String configurationName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("xml", showConfigXml);
+		return callSyncGateway(builder);
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {

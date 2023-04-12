@@ -1,0 +1,13 @@
+{
+    "destinations": [
+    ],
+    "eventTypes": [
+        "TECHNICAL",
+        "FUNCTIONAL",
+        "HEARTBEAT",
+        "CLEARING"
+    ],
+    "enabled": false,
+    "monitors": [
+    ]
+}

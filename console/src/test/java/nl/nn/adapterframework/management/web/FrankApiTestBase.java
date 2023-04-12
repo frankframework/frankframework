@@ -145,15 +145,18 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 */
 		public void register(M jaxRsResource) {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
+			Path basePathAnnotation = AnnotationUtils.findAnnotation(jaxRsResource.getClass(), Path.class);
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
 			for(Method classMethod : classMethods) {
 				int modifiers = classMethod.getModifiers();
 				if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
 					Path path = AnnotationUtils.findAnnotation(classMethod, Path.class);
 					HttpMethod httpMethod = AnnotationUtils.findAnnotation(classMethod, HttpMethod.class);
 					if(path != null && httpMethod != null) {
-						String rsResourceKey = compileKey(httpMethod.value(), path.value());
+						String pathValue = basePath + path.value();
+						String rsResourceKey = compileKey(httpMethod.value(), pathValue);
 
-						log.info("adding new JAX-RS resource key [{}] method [{}]", ()->rsResourceKey, classMethod::getName);
+						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", ()->rsResourceKey, classMethod::getName, ()->pathValue);
 						rsRequests.put(rsResourceKey, classMethod);
 					}
 					//Ignore security for now
@@ -244,7 +247,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			if(method == null) {
 				fail("can't find resource ["+url+"] method ["+httpMethod+"]");
 			}
-			String methodPath = method.getAnnotation(Path.class).value();
+
+			Path basePathAnnotation = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Path.class);
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
+			final String methodPath = basePath + method.getAnnotation(Path.class).value();
+
 			log.debug("found JAX-RS resource [{}]", ()->compileKey(httpMethod, methodPath));
 
 			try {
@@ -297,7 +304,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				validateIfAllArgumentsArePresent(methodArguments, parameters);
 
 				ResponseImpl response = (ResponseImpl) method.invoke(jaxRsResource, methodArguments);
-				MultivaluedMap<String, Object> meta = new MetadataMap<>();
+				MultivaluedMap<String, Object> meta = response.getMetadata();
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);
 				if(produces != null) {
