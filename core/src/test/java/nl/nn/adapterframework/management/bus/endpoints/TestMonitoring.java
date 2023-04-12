@@ -8,9 +8,11 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -39,6 +41,11 @@ public class TestMonitoring extends BusTestBase {
 		monitor.setName(TEST_MONITOR_NAME);
 		monitor.setType(EventType.FUNCTIONAL);
 		Trigger trigger = new Trigger();
+		AdapterFilter filter = new AdapterFilter();
+		filter.setAdapter("dummyAdapterName");
+		filter.registerSubObject("dummySubObjectName");
+		trigger.registerAdapterFilter(filter);
+		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
 		monitor.registerTrigger(trigger);
 		manager.addMonitor(monitor);
@@ -61,6 +68,22 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
+	public void getMonitorsXML() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.GET);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("xml", true);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitorsXML.json");
+		String payload = (String) response.getPayload();
+		MatchUtils.assertXmlEquals(expectedXML, payload);
+	}
+
+	@Test
 	public void getMonitor() throws Exception {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.GET);
@@ -74,6 +97,23 @@ public class TestMonitoring extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getMonitor.json");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertJsonEquals(expectedJson, payload);
+	}
+
+	@Test
+	public void getMonitorXML() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.GET);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("xml", true);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		String expectedXML = TestFileUtils.getTestFile("/Management/Monitoring/getMonitorXML.json");
+		String payload = (String) response.getPayload();
+		MatchUtils.assertXmlEquals(expectedXML, payload);
 	}
 
 	@Test

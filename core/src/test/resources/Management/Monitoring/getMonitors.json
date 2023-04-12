@@ -20,9 +20,12 @@
             "triggers": [
                 {
                     "severity": null,
-                    "filter": "NONE",
+                    "filter": "ADAPTER",
                     "period": 0,
                     "sources": {
+                        "dummyAdapterName": [
+                            "dummySubObjectName"
+                        ]
                     },
                     "threshold": 0,
                     "id": 0,
