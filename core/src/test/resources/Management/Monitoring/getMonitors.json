@@ -1,0 +1,38 @@
+{
+    "destinations": [
+    ],
+    "eventTypes": [
+        "TECHNICAL",
+        "FUNCTIONAL",
+        "HEARTBEAT",
+        "CLEARING"
+    ],
+    "enabled": false,
+    "monitors": [
+        {
+            "hits": 0,
+            "destinations": [
+            ],
+            "name": "TestMonitor",
+            "raised": false,
+            "type": "FUNCTIONAL",
+            "lastHit": null,
+            "triggers": [
+                {
+                    "severity": null,
+                    "filter": "NONE",
+                    "period": 0,
+                    "sources": {
+                    },
+                    "threshold": 0,
+                    "id": 0,
+                    "type": "ALARM",
+                    "events": [
+                        "testEvent1"
+                    ]
+                }
+            ],
+            "changed": null
+        }
+    ]
+}

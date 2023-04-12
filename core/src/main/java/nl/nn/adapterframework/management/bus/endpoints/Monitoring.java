@@ -29,6 +29,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
@@ -54,13 +55,24 @@ public class Monitoring extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMonitors(Message<?> message) {
-		boolean showConfigXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
+		boolean showConfigAsXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
 
-		Map<String, Object> returnMap = new HashMap<>();
 		MonitorManager mm = getMonitorManager(configurationName);
 
-		if(showConfigXml) {
+		if(monitorName == null) {
+			return getMonitors(mm, showConfigAsXml);
+		}
+		Monitor monitor = mm.findMonitor(monitorName);
+		if(monitor == null) {
+			throw new BusException("monitor not found");
+		}
+		return getMonitor(monitor, showConfigAsXml);
+	}
+
+	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
+		if(showConfigAsXml) {
 			String xml = mm.toXml().toXML();
 			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
 		}
@@ -72,12 +84,23 @@ public class Monitoring extends BusEndpointBase {
 			monitors.add(mapMonitor(monitor));
 		}
 
+		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("monitors", monitors);
 		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
 		return new JsonResponseMessage(returnMap);
+	}
+
+	private Message<String> getMonitor(Monitor monitor, boolean showConfigAsXml) {
+		if(showConfigAsXml) {
+			String xml = monitor.toXml().toXML();
+			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
+		}
+
+		Map<String, Object> monitorInfo = mapMonitor(monitor);
+		return new JsonResponseMessage(monitorInfo);
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {

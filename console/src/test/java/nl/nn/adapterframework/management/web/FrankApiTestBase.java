@@ -48,7 +48,6 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;

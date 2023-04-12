@@ -52,7 +52,6 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.web.ApiException;
 import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
-import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
@@ -99,55 +98,6 @@ public class ShowMonitors extends Base {
 		return callSyncGateway(builder);
 	}
 
-	private Map<String, Object> mapMonitor(Monitor monitor) {
-		Map<String, Object> monitorMap = new HashMap<String, Object>();
-		monitorMap.put("name", monitor.getName());
-		monitorMap.put("type", monitor.getType());
-		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
-
-		boolean isRaised = monitor.isRaised();
-		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
-		monitorMap.put("hits", monitor.getAdditionalHitCount());
-
-		if(isRaised) {
-			Map<String, Object> alarm = new HashMap<>();
-			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
-			if(source != null) {
-				String name = "";
-				if(source.getAdapter() != null) {
-					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
-				} else {
-					name = source.getEventSourceName();
-				}
-				alarm.put("source", name);
-			}
-			monitorMap.put("alarm", alarm);
-		}
-
-		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-		List<ITrigger> listOfTriggers = monitor.getTriggers();
-		for(ITrigger trigger : listOfTriggers) {
-
-			Map<String, Object> map = mapTrigger(trigger);
-			map.put("id", listOfTriggers.indexOf(trigger));
-
-			triggers.add(map);
-		}
-		monitorMap.put("triggers", triggers);
-
-		List<String> destinations = new ArrayList<>();
-		Set<String> d = monitor.getDestinationSet();
-		for(Iterator<String> it = d.iterator(); it.hasNext();) {
-			destinations.add(it.next());
-		}
-		monitorMap.put("destinations", destinations);
-
-		return monitorMap;
-	}
-
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
@@ -177,33 +127,13 @@ public class ShowMonitors extends Base {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces()
-	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
+	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) throws ApiException {
 
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		if(showConfigXml) {
-			String xml = monitor.toXml().toXML();
-			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
-		}
-
-		Map<String, Object> monitorInfo = mapMonitor(monitor);// Calculate the ETag on last modified date of user resource
-		EntityTag etag = new EntityTag(monitorInfo.hashCode() + "");
-
-		Response.ResponseBuilder response = null;
-		// Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
-
-		// If ETag matches the response will be non-null;
-		if(response != null) {
-			return response.tag(etag).build();
-		}
-
-		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(monitorInfo).tag(etag).build();
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("xml", showConfigXml);
+		return callSyncGateway(builder, true);
 	}
 
 	@PUT
