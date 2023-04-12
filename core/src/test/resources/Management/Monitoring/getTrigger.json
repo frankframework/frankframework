@@ -1,0 +1,22 @@
+{
+    "trigger": {
+        "severity": null,
+        "filter": "NONE",
+        "period": 0,
+        "sources": {
+        },
+        "threshold": 0,
+        "type": "ALARM",
+        "events": [
+            "testEvent1"
+        ]
+    },
+    "events": {
+    },
+    "severities": [
+        "HARMLESS",
+        "WARNING",
+        "CRITICAL",
+        "FATAL"
+    ]
+}

@@ -41,6 +41,7 @@ import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.util.EnumUtils;
 
@@ -58,16 +59,27 @@ public class Monitoring extends BusEndpointBase {
 		boolean showConfigAsXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, "trigger", null);
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
 		if(monitorName == null) {
 			return getMonitors(mm, showConfigAsXml);
 		}
+
 		Monitor monitor = mm.findMonitor(monitorName);
 		if(monitor == null) {
 			throw new BusException("monitor not found");
 		}
+
+		if(triggerId != null) {
+			ITrigger trigger = monitor.getTrigger(triggerId);
+			if(trigger == null) {
+				throw new BusException("trigger not found");
+			}
+			return getTrigger(mm, trigger);
+		}
+
 		return getMonitor(monitor, showConfigAsXml);
 	}
 
@@ -89,6 +101,15 @@ public class Monitoring extends BusEndpointBase {
 		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
+
+		return new JsonResponseMessage(returnMap);
+	}
+
+	private Message<String> getTrigger(MonitorManager manager, ITrigger trigger) {
+		Map<String, Object> returnMap = new HashMap<>();
+		returnMap.put("trigger", mapTrigger(trigger));
+		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
+		returnMap.put("events", manager.getEvents());
 
 		return new JsonResponseMessage(returnMap);
 	}

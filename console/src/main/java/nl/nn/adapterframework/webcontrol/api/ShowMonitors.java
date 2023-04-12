@@ -17,9 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -73,7 +68,6 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 @Path("/configurations/{configuration}/monitors")
 public class ShowMonitors extends Base {
-	private @Context Request request;
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
@@ -98,37 +92,11 @@ public class ShowMonitors extends Base {
 		return callSyncGateway(builder);
 	}
 
-	private Map<String, Object> mapTrigger(ITrigger trigger) {
-		Map<String, Object> triggerMap = new HashMap<String, Object>();
-
-		triggerMap.put("type", trigger.getTriggerType().name());
-		triggerMap.put("events", trigger.getEventCodes());
-		triggerMap.put("severity", trigger.getSeverity());
-		triggerMap.put("threshold", trigger.getThreshold());
-		triggerMap.put("period", trigger.getPeriod());
-
-		if(trigger.getAdapterFilters() != null) {
-			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
-				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
-					String adapterName = it1.next();
-
-					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
-					sources.put(adapterName, af.getSubObjectList());
-				}
-			}
-			triggerMap.put("filter", trigger.getSourceFiltering());
-			triggerMap.put("sources", sources);
-		}
-		return triggerMap;
-	}
-
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces()
-	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) throws ApiException {
-
+	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("monitor", monitorName);
@@ -248,51 +216,14 @@ public class ShowMonitors extends Base {
 
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/{monitorName}/triggers")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
-		return getTriggers(configName, monitorName, null);
-	}
-
-	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{triggerId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) throws ApiException {
-
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		Map<String, Object> returnMap = new HashMap<>();
-
-		if(id != null) {
-			ITrigger trigger = monitor.getTrigger(id);
-			if(trigger == null) {
-				throw new ApiException("Trigger not found!", Status.NOT_FOUND);
-			} else {
-				returnMap.put("trigger", mapTrigger(trigger));
-			}
-		}
-
-		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
-		returnMap.put("events", mm.getEvents());
-
-		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
-
-		Response.ResponseBuilder response = null;
-		// Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
-
-		// If ETag matches the response will be non-null;
-		if(response != null) {
-			return response.tag(etag).build();
-		}
-
-		return Response.status(Status.OK).entity(returnMap).tag(etag).build();
+	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("trigger", id);
+		return callSyncGateway(builder, true);
 	}
 
 	@PUT

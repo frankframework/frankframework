@@ -20,6 +20,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class TestMonitoring extends BusTestBase {
 	private static final String TEST_MONITOR_NAME = "TestMonitor";
 	private static final String TEST_TRIGGER_EVENT_NAME = "testEvent1";
+	private static final int TEST_TRIGGER_ID = 0;
 
 	public MonitorManager getMonitorManager() {
 		return getConfiguration().getBean("monitorManager", MonitorManager.class);
@@ -71,6 +72,23 @@ public class TestMonitoring extends BusTestBase {
 
 		// Assert
 		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getMonitor.json");
+		String payload = (String) response.getPayload();
+		MatchUtils.assertJsonEquals(expectedJson, payload);
+	}
+
+	@Test
+	public void getTrigger() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.GET);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getTrigger.json");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertJsonEquals(expectedJson, payload);
 	}
