@@ -1,0 +1,25 @@
+{
+    "trigger": {
+        "severity": null,
+        "filter": "ADAPTER",
+        "period": 0,
+        "sources": {
+            "dummyAdapterName": [
+                "dummySubObjectName"
+            ]
+        },
+        "threshold": 0,
+        "type": "ALARM",
+        "events": [
+            "testEvent1"
+        ]
+    },
+    "events": {
+    },
+    "severities": [
+        "HARMLESS",
+        "WARNING",
+        "CRITICAL",
+        "FATAL"
+    ]
+}
