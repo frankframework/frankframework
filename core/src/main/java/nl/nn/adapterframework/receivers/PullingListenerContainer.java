@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -230,7 +230,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					if (threadContext == null) {
 						threadContext = new HashMap<>();
 					}
-					M rawMessage = null;
+					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
 					int deliveryCount=0;
 					boolean messageHandled = false;
@@ -319,7 +319,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						try {
 							if (receiver.getMaxRetries()>=0) {
 								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
-								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
+								deliveryCount = receiver.getDeliveryCount(rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
 								try (PipeLineSession session = new PipeLineSession()) {
@@ -330,7 +330,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Instant receivedDate = Instant.now();
 								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								final M rawMessageFinal = rawMessage;
+								final RawMessageWrapper<M> rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
 								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
 								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
@@ -412,7 +412,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, RawMessageWrapper<M> rawMessage, String reason) throws ListenerException {
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
 					.map(StackTraceElement::toString)

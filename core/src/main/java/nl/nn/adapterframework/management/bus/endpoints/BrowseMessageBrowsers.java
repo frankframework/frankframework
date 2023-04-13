@@ -53,6 +53,7 @@ import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.management.bus.dto.StorageItemDTO;
 import nl.nn.adapterframework.management.bus.dto.StorageItemsDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
 import nl.nn.adapterframework.util.MessageBrowsingUtil;
@@ -260,7 +261,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		if(availableTargetStates != null && availableTargetStates.contains(targetState)) {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(processState);
 			try {
-				if (receiver.changeProcessState(store.browseMessage(messageId), targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
+				if (receiver.changeProcessState(new RawMessageWrapper(store.browseMessage(messageId), messageId), targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
 					throw new BusException("could not move message ["+messageId+"]");
 				}
 			} catch (ListenerException e) {

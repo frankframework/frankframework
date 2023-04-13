@@ -1,3 +1,18 @@
+/*
+   Copyright 2022-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
@@ -308,6 +323,7 @@ public class ReceiverTest {
 		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id");
 
 
 		final int NR_TIMES_MESSAGE_OFFERED = 5;
@@ -338,7 +354,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -447,6 +463,7 @@ public class ReceiverTest {
 		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id");
 
 
 		final Semaphore semaphore = new Semaphore(0);
@@ -469,7 +486,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -544,7 +561,7 @@ public class ReceiverTest {
 		doReturn("message").when(jmsMessage).getText();
 
 		// Act
-		int result = receiver.getDeliveryCount("dummy-message-id", jmsMessage);
+		int result = receiver.getDeliveryCount(new RawMessageWrapper<>(jmsMessage, "dummy-message-id"));
 
 		// Assert
 		assertEquals(4, result);
@@ -580,7 +597,8 @@ public class ReceiverTest {
 		Path fileMessage = Paths.get(messageId);
 
 		// Act
-		int result1 = receiver.getDeliveryCount(messageId, fileMessage);
+		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId);
+		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(1, result1);
@@ -588,13 +606,13 @@ public class ReceiverTest {
 		// Arrange (for 2nd invocation)
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.messageIdKey, messageId);
-			receiver.processRawMessage(listener, fileMessage, session, false);
+			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// We expected an exception here...
 		}
 
 		// Act
-		int result2 = receiver.getDeliveryCount(messageId, fileMessage);
+		int result2 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(2, result2);

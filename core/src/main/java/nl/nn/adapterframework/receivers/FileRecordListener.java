@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class FileRecordListener implements IPullingListener {
 	private Iterator<String> recordIterator = null;
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper rawMessage, Map threadContext) throws ListenerException {
 		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		if (sender != null && processResult.isSuccessful()) {
 			try {
@@ -193,24 +193,25 @@ public class FileRecordListener implements IPullingListener {
 	 * Override this method for your specific needs!
 	 */
 	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	public String getIdFromRawMessage(RawMessageWrapper rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 
 	/**
-	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
-	 * is a new file to process and returns the first record.
-	 */
+     * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
+     * is a new file to process and returns the first record.
+     */
 	@Override
-	public synchronized Object getRawMessage(Map threadContext)
+	public synchronized RawMessageWrapper getRawMessage(Map threadContext)
 		throws ListenerException {
 		String fullInputFileName = null;
 		if (recordIterator != null) {
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				return recordIterator.next();
+				// TODO: Method to get the ID
+				return new RawMessageWrapper(recordIterator.next(), inputFileName + "-" + recordNo);
 			}
 		}
 		if (getFileToProcess() != null) {
@@ -237,7 +238,8 @@ public class FileRecordListener implements IPullingListener {
 			recordIterator = parseToRecords(fileContent);
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				return recordIterator.next();
+				// TODO: Method to get the ID
+				return new RawMessageWrapper(recordIterator.next(), inputFileName + "-" + recordNo);
 			}
 		}
 
@@ -252,19 +254,17 @@ public class FileRecordListener implements IPullingListener {
 	}
 
 	@Override
-	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(RawMessageWrapper rawMessage, Map threadContext) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
 	public void open() throws ListenerException {
 		try {
-			if (sender != null)
-				sender.open();
+			if (sender != null) sender.open();
 		} catch (SenderException e) {
 			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
 		}
-		return;
 	}
 
 	@Override

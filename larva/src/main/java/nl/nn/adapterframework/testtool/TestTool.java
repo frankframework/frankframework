@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.queues.Queue;
@@ -1340,8 +1341,8 @@ public class TestTool {
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
 		while (!empty) {
-			javax.jms.Message rawMessage = null;
-			Message message = null;
+			RawMessageWrapper<javax.jms.Message> rawMessage = null;
+			Message message;
 			Map<String, Object> threadContext = null;
 			try {
 				threadContext = pullingJmsListener.openThread();
@@ -1436,13 +1437,13 @@ public class TestTool {
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map jmsListenerInfo = (Map)queues.get(queueName);
+		Map jmsListenerInfo = queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
 		Map threadContext = null;
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			javax.jms.Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
 				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);

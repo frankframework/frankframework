@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import java.io.IOException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -103,12 +104,13 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			threadContext = getListener().openThread();
 			Object rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
 
-			if (rawMessage == null)
+			if (rawMessage == null) {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
-			Message result = getListener().extractMessage(rawMessage, threadContext);
+			}
+			RawMessageWrapper rawMessageWrapper = new RawMessageWrapper(rawMessage, null, threadContext);
+			Message result = getListener().extractMessage(rawMessageWrapper, threadContext);
 			return new PipeRunResult(getSuccessForward(), result);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new PipeRunException( this, "caught exception", e);
 		}
 		finally {

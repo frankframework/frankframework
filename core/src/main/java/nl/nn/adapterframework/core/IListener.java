@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -67,19 +68,19 @@ public interface IListener<M> extends IConfigurable {
 	 *
 	 * @return Correlation ID string.
 	 */
-	String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
+	String getIdFromRawMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 
 	/**
 	 * Extracts string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException;
+	Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the
 	 * Pipeline.
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,33 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPullingListener;
+import lombok.Getter;
 
-public class SlowPullingListener extends SlowListenerBase implements IPullingListener<javax.jms.Message> {
+public class RawMessageWrapper<M> implements Serializable {
 
-	@Override
-	public Map<String, Object> openThread() {
-		return new LinkedHashMap<>();
+	protected @Getter transient M rawMessage;
+	protected @Getter String id;
+	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
+
+	public RawMessageWrapper() {
+		this(null, null);
 	}
 
-	@Override
-	public void closeThread(Map<String, Object> threadContext) {
-		log.debug("closeThread called in slow pulling listener");
+	public RawMessageWrapper(M rawMessage) {
+		this(rawMessage, null);
 	}
 
-	@Override
-	public RawMessageWrapper<javax.jms.Message> getRawMessage(Map<String, Object> threadContext) {
-		return null;
+	public RawMessageWrapper(M rawMessage, String id) {
+		this.rawMessage = rawMessage;
+		this.id = id;
+	}
+
+	public RawMessageWrapper(M rawMessage, String id, Map<String, Object> context) {
+		this(rawMessage, id);
+		this.context.putAll(context);
 	}
 }

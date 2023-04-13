@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -764,20 +765,21 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 
-	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream==null) {
 				return null;
 			}
 			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
-				return (S)ois.readObject();
+				RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)ois.readObject());
+				return messageWrapper;
 			}
 		}
 	}
 
 
 	@Override
-	protected S retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
+	protected RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {

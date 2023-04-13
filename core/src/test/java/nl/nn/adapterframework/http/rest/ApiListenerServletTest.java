@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden
+Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -98,6 +98,7 @@ import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
@@ -1746,18 +1747,18 @@ public class ApiListenerServletTest extends Mockito {
 		private @Setter Object responseContent = null;
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			handlerInvoked = true;
 			if(session != null) {
 				context.putAll(session);

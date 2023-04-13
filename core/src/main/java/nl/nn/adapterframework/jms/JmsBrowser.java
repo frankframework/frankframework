@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M
 
 	@Override
 	public M browseMessage(String messageId) throws ListenerException {
+		// TODO: Need to sort out the return types of MessageBrowsers
 		return browseJmsMessage(messageId);
 	}
 
 }
-

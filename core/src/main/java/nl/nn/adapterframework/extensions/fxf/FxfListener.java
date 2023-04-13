@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
+import javax.jms.Message;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -26,6 +28,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -68,8 +71,8 @@ public class FxfListener extends EsbJmsListener {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, threadContext);
 
 		//TODO plr.getState() may return null when there is an error.
 		// The message will be placed in the errorstore due to this,

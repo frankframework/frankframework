@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 package nl.nn.adapterframework.core;
 
 import java.util.Map;
+
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 /**
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
- * @param <M> the raw message type 
- * 
+ * @param <M> the raw message type
+ *
  * @author  Gerrit van Brakel
  */
 public interface IPullingListener<M> extends IListener<M> {
@@ -30,7 +33,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Prepares a thread for receiving messages.
 	 * Called once for each thread that will listen for messages.
 	 * @return the threadContext for this thread. The threadContext is a Map in which
-	 * thread-specific data can be stored. 
+	 * thread-specific data can be stored.
 	 */
 	Map<String,Object> openThread() throws ListenerException;
 
@@ -43,10 +46,10 @@ public interface IPullingListener<M> extends IListener<M> {
 
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
-	 * Multiple objects may try to call this method at the same time, from different threads. 
+	 * Multiple objects may try to call this method at the same time, from different threads.
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
-	M getRawMessage(Map<String,Object> threadContext) throws ListenerException;
+	RawMessageWrapper<M> getRawMessage(Map<String,Object> threadContext) throws ListenerException;
 
 }

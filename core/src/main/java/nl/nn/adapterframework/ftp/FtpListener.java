@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,15 +28,16 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunState;
 
 /**
- * Listener that polls a directory via FTP for files according to a wildcard. 
- * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  
- * The name of the moved file is passed to the pipeline.  
+ * Listener that polls a directory via FTP for files according to a wildcard.
+ * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.
+ * The name of the moved file is passed to the pipeline.
  *
  *
  * @author  John Dekker
@@ -54,7 +55,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
 	}
 
 	@Override
@@ -89,21 +90,21 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * record number. As the 'archiveFile(File)' archivedFile method always renames to a
 	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
 	 * in the processing of the file.
-	 * Override this method for your specific needs! 
+	 * Override this method for your specific needs!
 	 */
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String correlationId = rawMessage;
+	public String getIdFromRawMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		String correlationId = rawMessage.getRawMessage();
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 
 	/**
-	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
-	 * is a new file to process and returns the first record.
-	 */
+     * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
+     * is a new file to process and returns the first record.
+     */
 	@Override
-	public synchronized String getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+	public synchronized RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
 		log.debug("FtpListener [" + getName() + "] in getRawMessage, retrieving contents of directory [" +remoteDirectory+ "]");
 		if (remoteFilenames.isEmpty()) {
 			try {
@@ -124,7 +125,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		if (! remoteFilenames.isEmpty()) {
 			String result = remoteFilenames.removeFirst();
 			log.debug("FtpListener " + getName() + " returns " + result);
-			return result;
+			return new RawMessageWrapper<>(result, result);
 		}
 		waitAWhile();
 		return null;
@@ -160,8 +161,8 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * Returns a string of the rawMessage
 	 */
 	@Override
-	public Message extractMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return new Message(rawMessage.getRawMessage());
 	}
 
 	protected boolean canGoOn() {

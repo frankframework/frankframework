@@ -1,40 +1,33 @@
-package nl.nn.adapterframework.receivers;
+/*
+   Copyright 2022-2023 WeAreFrank!
 
-import java.util.Map;
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.stream.Message;
 
 public class SlowPushingListener extends SlowListenerBase implements IPushingListener<javax.jms.Message> {
-
-
-	@Override
-	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
-		return null;
-	}
-
-	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
-		return Message.asMessage(rawMessage);
-	}
-
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
-	}
 
 	@Override
 	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// TODO Auto-generated method stub
-
 	}
 }

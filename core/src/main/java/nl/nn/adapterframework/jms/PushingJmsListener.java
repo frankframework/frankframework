@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jms;
 
 import javax.jms.Destination;
+import javax.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,8 +34,10 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
+
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
@@ -206,9 +209,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public int getDeliveryCount(javax.jms.Message rawMessage) {
+	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
 		try {
-			javax.jms.Message message=rawMessage;
+			javax.jms.Message message=rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not

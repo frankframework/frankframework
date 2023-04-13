@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -47,6 +46,7 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -87,7 +87,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		/** set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages */
 		CORRELATIONID,
 		/** do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages */
-		CORRELATIONID_FROM_MESSAGE;
+		CORRELATIONID_FROM_MESSAGE
 	}
 
 	/**
@@ -258,7 +258,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 							}
 						}
 					}
-					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					// TODO: I don't like wrapping message just to unwrap it right away again
+					return extractMessage(new RawMessageWrapper<>(rawReplyMsg, rawReplyMsg.getJMSMessageID()), session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
 					if(mc != null) {
 						try {
@@ -270,19 +271,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				}
 			}
 			return new Message(msg.getJMSMessageID());
-		} catch (JMSException e) {
+		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException e) {
 			throw new SenderException(e);
-		} catch (IOException e) {
-			throw new SenderException(e);
-		} catch (NamingException e) {
-			throw new SenderException(e);
-		} catch (SAXException e) {
-			throw new SenderException(e);
-		} catch (TransformerException e) {
-			throw new SenderException(e);
-		} catch (JmsException e) {
-			throw new SenderException(e);
-		} finally {
+		}  finally {
 			if(mp != null) {
 				try {
 					mp.close();
@@ -375,7 +366,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	/**
-	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout. 
+	 * (Only for <code>synchronous</code>=<code>true</code>). Maximum time in ms to wait for a reply. 0 means no timeout.
 	 * @ff.default 5000
 	 */
 	public void setReplyTimeout(int i) {

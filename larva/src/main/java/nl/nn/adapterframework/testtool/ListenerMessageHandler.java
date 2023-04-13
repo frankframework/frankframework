@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -45,7 +46,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private long defaultTimeout = TestTool.globalTimeout;
 
 	@Override
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
 		try {
 			ListenerMessage requestMessage = new ListenerMessage(message.asString(), session);
 			requestMessages.add(requestMessage);
@@ -120,19 +121,19 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
 		processRawMessage(origin, rawMessage, threadContext, -1, duplicatesAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 		Message message = origin.extractMessage(rawMessage, threadContext);
 		processRequest(origin, rawMessage, message, threadContext);
 	}
 
 
 	@Override
-	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
+	public Message formatException(String extraInfo, String arg1, Message arg2, Throwable arg3) {
 		NotImplementedException e = new NotImplementedException();
 		log.error("formatException not implemented", e);
 		return null;

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.naming.NamingException;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -170,8 +172,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, threadContext);
 		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
 			Session session = (Session)threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			if (session!=null) {
@@ -199,16 +201,16 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	/**
-	 * Retrieves messages from queue or other channel, but does no processing on it.
-	 */
+     * Retrieves messages from queue or other channel, but does no processing on it.
+     */
 	@Override
-	public javax.jms.Message getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 
 	@Override
-	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
-		javax.jms.Message msg = getRawMessageFromDestination(correlationId, threadContext);
+	public RawMessageWrapper<javax.jms.Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
+		RawMessageWrapper<javax.jms.Message> msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
 			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
@@ -229,9 +231,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private javax.jms.Message getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
+	private RawMessageWrapper<javax.jms.Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		javax.jms.Message msg = null;
+		String messageId = null;
 		checkTransactionManagerValidity();
 		try {
 			session = getSession(threadContext);
@@ -241,6 +244,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				msg = mc.receive(getTimeOut());
 				while (msg==null && correlationId==null && canGoOn() && !isTransacted()) {
 					msg = mc.receive(getTimeOut());
+				}
+				if (msg != null) {
+					messageId = msg.getJMSMessageID();
 				}
 			} catch (JMSException e) {
 				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
@@ -254,7 +260,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				releaseSession(session);
 			}
 		}
-		return msg;
+		if (msg == null) {
+			return null;
+		}
+		return new RawMessageWrapper<>(msg, messageId);
 	}
 
 	/**

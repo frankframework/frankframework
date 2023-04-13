@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +45,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
@@ -134,15 +134,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		TextMessage message = null;
-		try {
-			message = (TextMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-			return null;
-		}
-		return retrieveIdFromMessage(message, threadContext);
+	public String getIdFromRawMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return retrieveIdFromMessage(rawMessage.getRawMessage(), threadContext);
 	}
 
 	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
@@ -199,7 +192,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "] \n  JMSCorrelationID=[" + cid
 				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
-				+ "] \n Message=[" + message.toString()
+				+ "] \n Message=[" + message
 				+ "]");
 		}
 
@@ -215,7 +208,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			return extractMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
@@ -246,7 +239,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessage;
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
@@ -270,8 +263,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					if (rawMessageOrWrapper instanceof javax.jms.Message) {
-						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+					if (rawMessage instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message) rawMessage;
 						long expiration=messageReceived.getJMSExpiration();
 						if (expiration!=0) {
 							timeToLive=expiration-new Date().getTime();
@@ -284,7 +277,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 							}
 						}
 					} else {
-						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						log.warn(getLogPrefix()+"message with correlationID ["+replyCid+"] is not a JMS message, but ["+ rawMessage.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
 						timeToLive=1000;
 						ignoreInvalidDestinationException = true;
 					}
@@ -323,10 +316,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 						}
 					}
 				} else {
-					if (rawMessageOrWrapper instanceof javax.jms.Message && getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+					if (rawMessage instanceof javax.jms.Message && getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						if (plr.getState()!=ExitState.ERROR) { // SUCCESS and REJECTED will both be acknowledged
 							log.debug(getLogPrefix()+"acknowledgeing message");
-							((javax.jms.Message)rawMessageOrWrapper).acknowledge();
+							((javax.jms.Message) rawMessage).acknowledge();
 						} else {
 							log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], skipping acknowledge");
 						}
@@ -436,7 +429,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	/**
-	 * 
+	 *
 	 * @ff.default true
 	 */
 	public void setUseReplyTo(boolean newUseReplyTo) {
@@ -506,8 +499,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		replySoapAction = string;
 	}
 
-	/** 
-	 * sessionKey to store the SOAP header of the incoming message 
+	/**
+	 * sessionKey to store the SOAP header of the incoming message
 	 * @ff.default soapHeader
 	 */
 	public void setSoapHeaderSessionKey(String string) {

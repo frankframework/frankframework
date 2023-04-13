@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -142,17 +142,18 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			session.put(PipeLineSession.correlationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
+			Message message = new Message(rawMessage);
+			RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, correlationId, context);
 			try {
 				if (throwException) {
 					try {
-						return handler.processRequest(this, rawMessage, message, session).asString();
+						return handler.processRequest(this, rawMessageWrapper, message, session).asString();
 					} catch (IOException e) {
 						throw new ListenerException("cannot convert stream", e);
 					}
 				}
 				try {
-					return handler.processRequest(this, rawMessage, message, session).asString();
+					return handler.processRequest(this, rawMessageWrapper, message, session).asString();
 				} catch (ListenerException | IOException e) {
 					try {
 						return handler.formatException(null,correlationId, message, e).asString();
@@ -206,20 +207,20 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 	}
 
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessage(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+		return new Message(rawMessage.getRawMessage());
 	}
 
 	@Override
@@ -264,8 +265,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		synchronous = b;
 	}
 
-	/** 
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+	/**
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */
@@ -282,7 +283,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	/**
-	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download 
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download
 	 * @ff.default false
 	 */
 	public void setHttpWsdl(boolean httpWsdl) {

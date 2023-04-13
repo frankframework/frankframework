@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 		listener = createListener();
 	}
 
-	protected Object getRawMessage(String mockedResult) throws ListenerException {
+	protected RawMessageWrapper<M> getRawMessage(String mockedResult) throws ListenerException {
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
 		if(listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")

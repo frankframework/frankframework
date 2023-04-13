@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -39,6 +39,7 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -168,8 +169,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, threadContext);
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
 			if (replyTo == null) {

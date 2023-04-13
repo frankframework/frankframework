@@ -1,3 +1,18 @@
+/*
+   Copyright 2021-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.receivers;
 
 import static org.junit.Assert.assertEquals;
@@ -25,7 +40,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 	public MessageStoreListener<M> createListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
+			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				MessageWrapper<Object> mw = new MessageWrapper<>(); //super class JdbcListener always wraps this in a MessageWrapper
 				mw.setMessage(Message.asMessage(threadContext.get(STUB_RESULT_KEY)));
 				mw.setId(String.valueOf(threadContext.get(PipeLineSession.messageIdKey)));
@@ -55,7 +70,8 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		listener.open();
 
 		String input = "test-message";
-		Object rawMessage = getRawMessage(input);
+		RawMessageWrapper<M> rawMessage = getRawMessage(input);
+		// TODO: Fix this -- likely incorrect
 		assertTrue(rawMessage instanceof MessageWrapper);
 		assertEquals("MessageStoreListener should not manipulate the rawMessage", input, ((MessageWrapper<Object>)rawMessage).getMessage().asString());
 	}
@@ -67,9 +83,10 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		listener.open();
 
 		String input = "test-message,\"value1\",value2,value3";
-		Object rawMessage = getRawMessage(input);
+		RawMessageWrapper<M> rawMessage = getRawMessage(input);
+		// TODO: Fix the instanceof check, likely incorrect
 		assertTrue(rawMessage instanceof MessageWrapper);
-		Message message = listener.extractMessage((M)rawMessage, threadContext);
+		Message message = listener.extractMessage(rawMessage, threadContext);
 		assertEquals("test-message", message.asString());
 
 		assertEquals("value1", threadContext.get("sessionKey1"));

@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -124,14 +125,14 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	public Message extractMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		if (rawMessage != null && sessionKeys != null) {
 			return convertToMessage(rawMessage, threadContext);
 		}
 		return super.extractMessage(rawMessage, threadContext);
 	}
 
-	public Message convertToMessage(Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+	private Message convertToMessage(RawMessageWrapper<M> rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
 		String messageData = extractStringData(rawMessageOrWrapper);
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
@@ -148,7 +149,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return message;
 	}
 
-	private static String extractStringData(Object rawMessageOrWrapper) throws ListenerException {
+	private static String extractStringData(RawMessageWrapper<?> rawMessageOrWrapper) throws ListenerException {
 		if (rawMessageOrWrapper == null) {
 			throw new ListenerException("Raw message data is null");
 		} else if (rawMessageOrWrapper instanceof MessageWrapper) {
@@ -158,7 +159,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 				throw new ListenerException("Exception extracting string data from message", e);
 			}
 		} else {
-			return rawMessageOrWrapper.toString();
+			return rawMessageOrWrapper.getRawMessage().toString();
 		}
 	}
 

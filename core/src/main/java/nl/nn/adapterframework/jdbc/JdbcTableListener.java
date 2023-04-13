@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * Database Listener that operates on a table having at least a key and a status field.
@@ -100,7 +101,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	@Override
-	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
+	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();

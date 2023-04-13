@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,6 +59,8 @@ import lombok.Lombok;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
@@ -709,6 +711,12 @@ public class Message implements Serializable {
 		if (object instanceof Path) {
 			return new PathMessage((Path) object);
 		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>)object).getMessage();
+		}
+		if (object instanceof RawMessageWrapper) {
+			return new Message(null, ((RawMessageWrapper<?>)object).getRawMessage());
+		}
 		return new Message(null, object);
 	}
 
@@ -888,7 +896,7 @@ public class Message implements Serializable {
 	/**
 	 * Note that the size may not be an exact measure of the content size and may or may not account for any encoding of the content.
 	 * The size is appropriate for display in a user interface to give the user a rough idea of the size of this part.
-	 * 
+	 *
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
