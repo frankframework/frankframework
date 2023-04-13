@@ -1,0 +1,30 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="AdapterViewStorageIdCtrl">
+	<uib-alert ng-repeat="alert in notes | orderBy:'type'" type="{{alert.type}}" close="closeNote($index)">{{alert.message}}</uib-alert>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<div class="pull-right">
+						<button back-button class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+					</div>
+					<h4>View message: {{::message.id}}</h4>
+				</div>
+				<div class="ibox-content">
+					<span ng-if="metadata.comment">
+						<p>Comment:</p>
+						<pre>{{::metadata.comment}}</pre>
+					</span>
+					<p>Message <span ng-if="::metadata.correlationId">with correlationId: <strong>{{::metadata.correlationId}}</strong></span> <span ng-if="::metadata.insertDate"> issued at: <strong><span to-date time="{{::metadata.insertDate}}"></strong></span></span>
+						<button ng-if="::processState=='Error'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs m-r-xs pull-right" type="button"><i class="fa fa-repeat"></i> Resend</button>
+						<button ng-if="::processState=='Error'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs m-r-xs pull-right" type="button"><i class="fa fa-times"></i> Delete</button>
+						<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs m-r-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
+					</p>
+					<pre>{{::metadata.message}}</pre>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

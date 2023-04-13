@@ -1,0 +1,110 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="IBISstoreSummaryCtrl">
+    <div class="alert alert-warning" role="alert" type="warning" ng-if="error">
+        <span class="ng-binding ng-scope" ng-bind-html="error"></span>
+    </div>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>IbisStore Summary</h4>
+				</div>
+				<div class="ibox-content">
+					<form role="form">
+						<div class="row form-group">
+							<label class="col-sm-3 control-label label-height-30">Datasource</label>
+							<div class="col-sm-9">
+								<select class="form-control" name="datasource" ng-model="form.datasource">
+									<option ng-repeat="datasource in datasources">{{datasource}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="row form-group">
+							<div class="col-sm-3 m-t-md">
+								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+							</div>
+							<div class="col-sm-3 m-t-md">
+								<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-12" ng-if="result">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Result</h4>
+				</div>
+				<div class="ibox-content">
+					<div class="col-md-12 table-responsive">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Type</th>
+									<th title="number of messages in this type" >#</th>
+									<th>SlotID</th>
+									<th>Adapter</th>
+									<th>Receiver/Sender</th>
+									<th title="number of messages in this slot">#</th>
+									<th>Date</th>
+									<th title="number of messages in this slot on this date">#</th>
+								</tr>
+							</thead>
+							<tbody ng-repeat="t in result">
+								<tr ng-repeat="s in t.slots">
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}" title="{{t.name}}">{{t.type}}</td>
+									<td ng-if="$index===0" rowspan="{{t.slotcount}}">{{t.msgcount}}</td>
+									<td>{{s.id}}</td>
+									<td ng-if="::s.adapter">{{s.adapter}}</td>
+									<td ng-if="::!s.adapter">-</td>
+									<td ng-if="::s.receiver">
+										<span class="text-success" title="View Messages Processed by {{s.receiver}}">
+											<button ng-if="::t.type=='A'" ui-sref="pages.storage.list({adapter: s.adapter, storageSource: 'receivers', storageSourceName: s.receiver, processState: 'Done'})" class="btn btn-xs btn-default m-l-xs" type="button">
+												<i class="fa fa-sign-in"></i>
+											</button>
+										</span>
+										<span class="text-danger" title="View Messages in Error in {{s.receiver}}">
+											<button ng-if="::t.type=='E'" ui-sref="pages.storage.list({adapter: s.adapter, storageSource: 'receivers',storageSourceName: s.receiver, processState: 'Error'})" class="btn btn-xs btn-default m-l-xs" type="button">
+												<i class="fa fa-times-circle"></i>
+											</button>
+										</span>
+										{{s.receiver}}
+									</td>
+									<td ng-if="::s.pipe">
+										<span ng-class="(t.type=='M') ? 'text-primary' : 'text-success'" title="View Messages Processed by {{s.pipe}}">
+											<button ui-sref="pages.storage.list({ adapter: s.adapter, storageSource: 'pipes', storageSourceName: s.pipe, processState: 'Done' })" class="btn btn-xs btn-default m-l-xs" type="button">
+												<i ng-class="(t.type=='M') ? 'fa fa-sign-out' : 'fa fa-database'"></i>
+											</button>
+										</span>
+										{{s.pipe}}
+									</td>
+									<td ng-if="::!s.receiver && !s.pipe">
+										-
+									</td>
+									<td>{{s.msgcount}}</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.id}}</td>
+											</tr>
+										</table>
+									</td>
+									<td>
+										<table>
+											<tr ng-repeat="d in s.dates">
+												<td>{{d.count}}</td><!-- TODO: should have a link here to show browser of this storage pointing to this date -->
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

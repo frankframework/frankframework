@@ -1,0 +1,98 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="BrowseJmsQueueCtrl">
+	<div class="alert alert-warning" role="alert" type="warning" ng-if="error">
+		<span class="ng-binding ng-scope" ng-bind-html="error"></span>
+	</div>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Browse JMS Queue</h4>
+				</div>
+				<div class="ibox-content">
+					<form role="form">
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
+							<div class="col-sm-7 col-md-9">
+								<select class="form-control" name="connectionFactory" ng-model="form.connectionFactory">
+									<option ng-repeat="connectionFactory in connectionFactories">{{connectionFactory}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Destination Name</label>
+							<div class="col-sm-7 col-md-9">
+								<input class="form-control" name="destination" type="text" ng-model="form.destination"/>
+							</div>
+						</div>
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
+							<div class="col-sm-7 col-md-9">
+								<select class="form-control" name="type" ng-model="form.type">
+									<option ng-repeat="type in destinationTypes">{{type}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Number of messages only</label>
+							<div class="col-sm-7 col-md-9">
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.rowNumbersOnly" /></span>
+							</div>
+						</div>
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Show message payload</label>
+							<div class="col-sm-7 col-md-9">
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.payload" /></span>
+							</div>
+						</div>
+						<div class="row form-group">
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
+							<div class="col-sm-7 col-md-9">
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.lookupDestination" /></span>
+							</div>
+						</div>
+						<div class="row form-group">
+							<div class="col-xs-5 col-md-3 m-t-md">
+								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+							</div>
+							<div class="col-xs-5 col-md-3 m-t-md">
+								<button ladda="processing" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-12" ng-if="numberOfMessages > -1">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Queue '{{form.destination}}' contains {{numberOfMessages}} message(s)</h4>
+				</div>
+				<div class="ibox-content" ng-if="numberOfMessages > 0 && messages.length > 0">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Date/Time</th>
+								<th>MessageId</th>
+								<th>CorrelationID</th>
+								<th ng-if="messages[0] && messages[0].text">Payload</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="message in messages">
+								<td>{{::$index+1}}</td>
+								<td to-date time="{{::message.insertDate}}"></td>
+								<td>{{::message.id}}</td>
+								<td>{{::message.correlationId}}</td>
+								<td ng-if="::message.text">{{::message.text}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

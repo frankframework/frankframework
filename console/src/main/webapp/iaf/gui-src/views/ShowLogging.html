@@ -1,0 +1,61 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content" ng-controller="LoggingCtrl">
+	<uib-alert ng-if="alert" type="danger">{{alert}}</uib-alert>
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<div class="pull-right" ng-if="viewFile">
+						<button ng-click="closeFile()" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+					</div>
+					<h4>Logging <span class="m-l-md" clipboard>{{::path}}</span></h4>
+				</div>
+				<div class="ibox-content" ng-if="!viewFile">
+					<div class="col-md-12">
+						<div class="ibox-stretch">
+							<div class="input-group" id="searchbar">
+								<input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" ng-model="fileName" ng-model-options="{debounce: 500}" name="search" />
+								<i ng-show="fileName.length" ng-click="fileName = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+								<span class="input-group-addon">
+									<i class="fa fa-search" aria-hidden="true"></i>
+								</span>
+							</div>
+						</div>
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Size</th>
+									<th>Date</th>
+									<th>&nbsp;</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="file in list | filter:{name:fileName}">
+									<td class="pointer" ng-click="open(file)">{{::file.name}}</td>
+									<td><span ng-if="::file.type=='file'">{{::file.size}}</span></td>
+									<td to-date time="{{::file.lastModified}}"></td>
+									<td class="hideBtn1170" ng-if="::file.type=='file'">
+										<button ng-if="file.name.indexOf('-stats_') >= 0" ng-click="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>2HTML</span></button>
+										<button ng-if="file.name.indexOf('_xml.log') >= 0" ng-click="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>2HTML</span></button>
+										<button ng-if="file.name.indexOf('-stats_') >= 0 || file.name.indexOf('_xml.log') >= 0" ng-click="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-code-o" aria-hidden="true"></i> <span>XML</span></button>
+										<button ng-if="file.name.indexOf('-stats_') < 0 && file.name.indexOf('_xml.log') < 0" ng-click="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span>HTML</span></button>
+										<button ng-click="download(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span>Download</span></button>
+									</td>
+									<td class="loggingBtn" ng-if="::file.type=='directory'">
+										<button ng-click="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-folder-open-o" aria-hidden="true"></i> <span>Open</span></button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div ng-if="viewFile">
+					<iframe ng-src="{{viewFile}}" style="width:100%; min-height:650px; border:none; overflow:hidden;"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,147 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content" ng-controller="LogSettingsCtrl">
+	<uib-alert ng-if="alert" type="danger">{{alert}}</uib-alert>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Dynamic parameters</h4>
+				</div>
+				<div class="ibox-content" style="overflow: visible;">
+					<div class="row">
+						<div class="col-lg-5 col-md-12 col-md-12">
+							<div class="row">
+								<div class="col-md-8">
+									<strong class="lh32">RootLogger Level</strong>
+								</div>
+								<div class="col-md-4">
+									<div class="btn-group" uib-dropdown style="width: 100%;">
+										<button type="button" class="btn btn-default" uib-dropdown-toggle style="width: 100%;">
+											{{form.loglevel}} <span class="caret"></span>
+										</button>
+										<ul role="menu" uib-dropdown-menu="">
+											<li ng-repeat="loglevel in form.errorLevels">
+												<a ng-click="changeRootLoglevel(loglevel)">{{::loglevel}}</a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-9">
+									<strong class="lh32">Log Intermediary Results</strong>
+								</div>
+								<div class="col-md-3 col-xs-2">
+									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.logIntermediaryResults" /></span>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-8 col-xs-10">
+									<strong class="lh32">Maximum Log-message Length</strong>
+								</div>
+								<div class="col-md-4">
+									<input class="form-control m-b" name="maxMessageLength" type="text" ng-model="form.maxMessageLength"/>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-9 col-xs-10">
+									<strong class="lh32">Enable Ladybug Debugger</strong>
+								</div>
+								<div class="col-md-3 col-xs-2">
+									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.enableDebugger" /></span>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-offset-2 col-md-10">
+									<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+									<button ladda="updateDynamicParams" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<div class="pull-right">
+						<button ng-click="reconfigure()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button"><i class="fa fa-warning" aria-hidden="true"></i> <span>Reconfigure</span></button>
+					</div>
+					<h4>Log Definitions</h4>
+				</div>
+				<div class="ibox-content" ng-if="loggers">
+					<p>Log levels can be changed to control the amount of logging of the framework and the libraries it uses. Custom Log Definitions can be removed by reconfiguring Log4J2.</p>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th style="width: 50%;">Name</th>
+								<th style="width: 20%;">Level</th>
+								<th style="width: 30%;">Appenders</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="definition in definitions">
+								<td>{{definition.name}}</td>
+								<td uib-dropdown style="width: 180px;" ng-class="($index > 4 && $index >= (definitions.length - 5)) ? 'dropup' : ''">
+									<button type="button" class="btn-invisible" uib-dropdown-toggle>
+										{{definition.level}} <span class="caret"></span>
+									</button>
+									<ul role="menu" uib-dropdown-menu="">
+										<li ng-repeat="loglevel in errorLevels">
+											<a ng-click="changeLoglevel(definition.name, loglevel)">{{::loglevel}}</a>
+										</li>
+									</ul>
+								</td>
+								<td ng-if="definition.appenders"><span ng-repeat="name in definition.appenders">{{name}}<span ng-if="!$last">, </span></span></td>
+								<td ng-if="!definition.appenders">RootLogger</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h4>Framework Loggers</h4>
+				</div>
+				<div class="ibox-content" ng-if="loggers">
+					<p>Each logger in the Framework uses the log level from its Log Definition or from the RootLogger log level by default. Changing the log level creates a new Log Definition for the specified package.</p><p>New Log Definitions takes precedence over the RootLogger!</p>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th style="width: 50%;">Name</th>
+								<th style="width: 50%;">Level</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="(name, level) in loggers">
+								<td>{{name}}</td>
+								<td uib-dropdown style="width: 180px;" ng-class="($index > 4 && $index >= (loggersLength - 5)) ? 'dropup' : ''">
+									<button type="button" class="btn-invisible" uib-dropdown-toggle>
+										{{level}} <span class="caret"></span>
+									</button>
+									<ul role="menu" uib-dropdown-menu="">
+										<li ng-repeat="loglevel in errorLevels">
+											<a ng-click="changeLoglevel(name, loglevel)">{{::loglevel}}</a>
+										</li>
+									</ul>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

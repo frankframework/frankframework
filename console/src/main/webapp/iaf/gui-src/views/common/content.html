@@ -1,0 +1,29 @@
+<!-- Wrapper-->
+<div id="wrapper" ng-controller="MainCtrl as main" >
+    <!-- Navigation -->
+    <div ng-include="'views/common/navigation.html'"></div>
+
+    <!-- Page wraper -->
+    <!-- ng-class with current state name give you the ability to extended customization your view -->
+    <div id="page-wrapper" class="gray-bg {{$state.current.name}}">
+
+        <!-- Page wrapper -->
+        <div ng-include="'views/common/topnavbar.html'" class="topnavbar"></div>
+        <div ng-include="'views/common/topinfobar.html'" class="topinfobar"></div>
+
+
+        <div class="m-sm alert alert-danger pointer" role="alert" type="danger" ng-if="startupError" ui-sref="pages.errorpage">
+            <h4>Startup error:</h4> <span class="ng-binding ng-scope" ng-bind-html="startupError"></span>
+        </div>
+
+        <!-- Main view  -->
+        <div ui-view></div>
+
+        <!-- Footer -->
+        <div ng-show="!$state.current.data.iframe" ng-include="'views/common/footer.html'"></div>
+
+    </div>
+    <!-- End page wrapper-->
+
+</div>
+<!-- End wrapper-->
