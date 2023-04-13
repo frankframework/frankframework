@@ -1,0 +1,8 @@
+<monitoring enabled="false">
+	<monitor name="TestMonitor" type="FUNCTIONAL">
+		<trigger className="nl.nn.adapterframework.monitoring.Alarm">
+			<event>testEvent1</event>
+			<adapterfilter adapter="dummyAdapterName"/>
+		</trigger>
+	</monitor>
+</monitoring>

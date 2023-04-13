@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.StringIteratorPipe;
@@ -156,53 +157,53 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		querySender.setQuery(query);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setUseNamedParams(Boolean b) {
 		querySender.setUseNamedParams(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setTrimSpaces(boolean b) {
 		querySender.setTrimSpaces(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setSqlDialect(String string) {
 		querySender.setSqlDialect(string);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setAvoidLocking(boolean avoidLocking) {
 		querySender.setAvoidLocking(avoidLocking);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	@ReferTo(JdbcQuerySenderBase.class)
 	@Deprecated //BLOBs are binary, they should not contain character data
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	@ReferTo(JdbcQuerySenderBase.class)
 	public void setBlobSmartGet(boolean isSmartBlob) {
 		querySender.setBlobSmartGet(isSmartBlob);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.JdbcQuerySenderBase */
+	@ReferTo(JdbcQuerySenderBase.class)
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

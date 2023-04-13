@@ -17,9 +17,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +27,7 @@ import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -36,26 +35,25 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.web.ApiException;
+import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
-import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -69,8 +67,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 
 @Path("/configurations/{configuration}/monitors")
-public final class ShowMonitors extends Base {
-	private @Context Request request;
+public class ShowMonitors extends Base {
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
@@ -86,138 +83,25 @@ public final class ShowMonitors extends Base {
 	}
 
 	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/")
-	public Response getMonitors(@PathParam("configuration") String configurationName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
-
-		Map<String, Object> returnMap = new HashMap<>();
-		MonitorManager mm = getMonitorManager(configurationName);
-
-		if(showConfigXml) {
-			String xml = mm.toXml().toXML();
-			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
-		}
-
-		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
-		for(int i = 0; i < mm.getMonitors().size(); i++) {
-			Monitor monitor = mm.getMonitor(i);
-
-			monitors.add(mapMonitor(monitor));
-		}
-
-		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
-		returnMap.put("destinations", mm.getDestinations().keySet());
-
-		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(returnMap).build();
-	}
-
-	private Map<String, Object> mapMonitor(Monitor monitor) {
-		Map<String, Object> monitorMap = new HashMap<String, Object>();
-		monitorMap.put("name", monitor.getName());
-		monitorMap.put("type", monitor.getType());
-		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
-
-		boolean isRaised = monitor.isRaised();
-		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
-		monitorMap.put("hits", monitor.getAdditionalHitCount());
-
-		if(isRaised) {
-			Map<String, Object> alarm = new HashMap<>();
-			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
-			if(source != null) {
-				String name = "";
-				if(source.getAdapter() != null) {
-					name = String.format("%s / %s", source.getAdapter().getName(), source.getEventSourceName());
-				} else {
-					name = source.getEventSourceName();
-				}
-				alarm.put("source", name);
-			}
-			monitorMap.put("alarm", alarm);
-		}
-
-		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-		List<ITrigger> listOfTriggers = monitor.getTriggers();
-		for(ITrigger trigger : listOfTriggers) {
-
-			Map<String, Object> map = mapTrigger(trigger);
-			map.put("id", listOfTriggers.indexOf(trigger));
-
-			triggers.add(map);
-		}
-		monitorMap.put("triggers", triggers);
-
-		List<String> destinations = new ArrayList<>();
-		Set<String> d = monitor.getDestinationSet();
-		for(Iterator<String> it = d.iterator(); it.hasNext();) {
-			destinations.add(it.next());
-		}
-		monitorMap.put("destinations", destinations);
-
-		return monitorMap;
-	}
-
-	private Map<String, Object> mapTrigger(ITrigger trigger) {
-		Map<String, Object> triggerMap = new HashMap<String, Object>();
-
-		triggerMap.put("type", trigger.getTriggerType().name());
-		triggerMap.put("events", trigger.getEventCodes());
-		triggerMap.put("severity", trigger.getSeverity());
-		triggerMap.put("threshold", trigger.getThreshold());
-		triggerMap.put("period", trigger.getPeriod());
-
-		if(trigger.getAdapterFilters() != null) {
-			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFilteringEnum() != SourceFiltering.NONE) {
-				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
-					String adapterName = it1.next();
-
-					AdapterFilter af = trigger.getAdapterFilters().get(adapterName);
-					sources.put(adapterName, af.getSubObjectList());
-				}
-			}
-			triggerMap.put("filter", trigger.getSourceFiltering());
-			triggerMap.put("sources", sources);
-		}
-		return triggerMap;
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	public Response getMonitors(@PathParam("configuration") String configurationName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("xml", showConfigXml);
+		return callSyncGateway(builder);
 	}
 
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces()
-	public Response getMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @QueryParam("xml") boolean showConfigXml) throws ApiException {
-
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		if(showConfigXml) {
-			String xml = monitor.toXml().toXML();
-			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
-		}
-
-		Map<String, Object> monitorInfo = mapMonitor(monitor);// Calculate the ETag on last modified date of user resource
-		EntityTag etag = new EntityTag(monitorInfo.hashCode() + "");
-
-		Response.ResponseBuilder response = null;
-		// Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
-
-		// If ETag matches the response will be non-null;
-		if(response != null) {
-			return response.tag(etag).build();
-		}
-
-		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(monitorInfo).tag(etag).build();
+	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("xml", showConfigXml);
+		return callSyncGateway(builder, true);
 	}
 
 	@PUT
@@ -246,14 +130,14 @@ public final class ShowMonitors extends Base {
 		} else if(action.equals("clear")) {
 			try {
 				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, SeverityEnum.WARNING, null, null, null);
+				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		} else if(action.equals("raise")) {
 			try {
 				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
+				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
@@ -263,7 +147,8 @@ public final class ShowMonitors extends Base {
 				if(key.equalsIgnoreCase("name")) {
 					monitor.setName(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("type")) {
-					monitor.setType(entry.getValue().toString());
+					EventType type = EnumUtils.parse(EventType.class, entry.getValue().toString());
+					monitor.setType(type);
 				} else if(key.equalsIgnoreCase("destinations")) {
 					monitor.setDestinationSet(parseDestinations(entry.getValue()));
 				}
@@ -332,51 +217,14 @@ public final class ShowMonitors extends Base {
 
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/{monitorName}/triggers")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName) throws ApiException {
-		return getTriggers(configName, monitorName, null);
-	}
-
-	@GET
-	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{triggerId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getTriggers(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) throws ApiException {
-
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		Map<String, Object> returnMap = new HashMap<>();
-
-		if(id != null) {
-			ITrigger trigger = monitor.getTrigger(id);
-			if(trigger == null) {
-				throw new ApiException("Trigger not found!", Status.NOT_FOUND);
-			} else {
-				returnMap.put("trigger", mapTrigger(trigger));
-			}
-		}
-
-		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
-		returnMap.put("events", mm.getEvents());
-
-		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
-
-		Response.ResponseBuilder response = null;
-		// Verify if it matched with etag available in http request
-		response = request.evaluatePreconditions(etag);
-
-		// If ETag matches the response will be non-null;
-		if(response != null) {
-			return response.tag(etag).build();
-		}
-
-		return Response.status(Status.OK).entity(returnMap).tag(etag).build();
+	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("trigger", id);
+		return callSyncGateway(builder, true);
 	}
 
 	@PUT
@@ -407,10 +255,10 @@ public final class ShowMonitors extends Base {
 	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		TriggerType type = null;
-		SeverityEnum severity = null;
+		Severity severity = null;
 		int threshold = 0;
 		int period = 0;
-		String filter = null;
+		SourceFiltering filter = null;
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
 
@@ -421,7 +269,7 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("type")) {
 				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("severity")) {
-				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
+				severity = EnumUtils.parse(Severity.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
 				threshold = (Integer.parseInt("" + entry.getValue()));
 				if(threshold < 0) {
@@ -433,7 +281,7 @@ public final class ShowMonitors extends Base {
 					throw new ApiException("period must be a positive number");
 				}
 			} else if(key.equalsIgnoreCase("filter")) {
-				filter = entry.getValue().toString();
+				filter = EnumUtils.parse(SourceFiltering.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
 				adapters = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
@@ -444,22 +292,19 @@ public final class ShowMonitors extends Base {
 		// If no parse errors have occured we can continue!
 		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
 		trigger.setTriggerType(type);
-		trigger.setSeverityEnum(severity);
+		trigger.setSeverity(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
+		trigger.setSourceFiltering(filter);
 
 		trigger.clearAdapterFilters();
-		if("adapter".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.ADAPTER);
-
+		if(SourceFiltering.ADAPTER.equals(filter)) {
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else if("source".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.SOURCE);
-
+		} else if(SourceFiltering.SOURCE.equals(filter)) {
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
@@ -468,8 +313,6 @@ public final class ShowMonitors extends Base {
 				}
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else {
-			trigger.setSourceFilteringEnum(SourceFiltering.NONE);
 		}
 	}
 
@@ -506,7 +349,7 @@ public final class ShowMonitors extends Base {
 	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
 
 		String name = null;
-		EventTypeEnum type = null;
+		EventType type = null;
 		Set<String> destinations = null;
 
 		for(Entry<String, Object> entry : json.entrySet()) {
@@ -515,7 +358,7 @@ public final class ShowMonitors extends Base {
 				name = entry.getValue().toString();
 			}
 			else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(EventTypeEnum.class, entry.getValue().toString());
+				type = EnumUtils.parse(EventType.class, entry.getValue().toString());
 			}
 			else if(key.equalsIgnoreCase("destinations")) {
 				destinations = parseDestinations(entry);
@@ -530,7 +373,7 @@ public final class ShowMonitors extends Base {
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
-		monitor.setTypeEnum(type);
+		monitor.setType(type);
 		monitor.setDestinationSet(destinations);
 
 		mm.addMonitor(monitor);

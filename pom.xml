@@ -20,7 +20,7 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.5</micrometer.version>
+		<micrometer.version>1.10.6</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -34,7 +34,7 @@
 		<mysql.driver.version>8.0.32</mysql.driver.version>
 		<mariadb.driver.version>2.7.9</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.9.0</mongodb.driver.version>
+		<mongodb.driver.version>4.9.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
@@ -485,6 +485,10 @@
 			<plugin>
 				<groupId>org.glassfish.copyright</groupId>
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -1061,7 +1065,6 @@
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>
-				<module>ear</module>
 				<module>larva</module>
 				<module>ladybug</module>
 				<module>test</module>

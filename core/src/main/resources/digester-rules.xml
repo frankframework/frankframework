@@ -24,7 +24,6 @@
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender" beanClass="nl.nn.adapterframework.core.ISender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
-	<rule pattern="*/inProcessStorage" registerMethod="setInProcessStorage"/>
 	<rule pattern="*/errorStorage" registerMethod="setErrorStorage"/>
 	<rule pattern="*/inputValidator" registerMethod="setInputValidator"/>
 	<rule pattern="*/outputValidator" registerMethod="setOutputValidator"/>

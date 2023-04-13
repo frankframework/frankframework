@@ -40,7 +40,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversion
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;

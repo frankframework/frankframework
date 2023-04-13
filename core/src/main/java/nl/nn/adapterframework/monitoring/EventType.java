@@ -21,6 +21,6 @@ package nl.nn.adapterframework.monitoring;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public enum EventTypeEnum {
+public enum EventType {
 	TECHNICAL, FUNCTIONAL, HEARTBEAT, CLEARING;
 }
