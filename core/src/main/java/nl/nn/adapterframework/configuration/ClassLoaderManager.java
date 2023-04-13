@@ -30,6 +30,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make 
@@ -89,7 +90,7 @@ public class ClassLoaderManager {
 				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 					continue;
 
-				String setter = firstCharToLower(method.getName().substring(3));
+				String setter = StringUtil.lcFirst(method.getName().substring(3));
 				String value = APP_CONSTANTS.getProperty(parentProperty+setter);
 				if(value == null)
 					continue;
@@ -142,10 +143,6 @@ public class ClassLoaderManager {
 			return Integer.parseInt(value);
 		else
 			return value;
-	}
-
-	private String firstCharToLower(String input) {
-		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
 	private ClassLoader init(String configurationName, String classLoaderType) throws ClassLoaderException {

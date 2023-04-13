@@ -281,6 +281,7 @@ public class ReceiverTest {
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
+		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
@@ -405,6 +406,7 @@ public class ReceiverTest {
 		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
+		doNothing().when(listener).configure();
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);

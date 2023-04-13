@@ -34,18 +34,15 @@ import com.amazon.sqs.javamessaging.AmazonSQSMessagingClientWrapper;
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnection;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.aws.AwsClient;
-import nl.nn.adapterframework.aws.AwsUtil;
+import nl.nn.adapterframework.aws.AwsBase;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 
-public class AmazonSqsFactory extends AwsClient implements ObjectFactory {
+public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 
 	private @Getter @Setter String queues;
 
@@ -60,10 +57,11 @@ public class AmazonSqsFactory extends AwsClient implements ObjectFactory {
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
 
 			// fetch and set properties
-			for (Enumeration<RefAddr> refAddrEnum=ref.getAll(); refAddrEnum.hasMoreElements();) {
+			for (Enumeration<RefAddr> refAddrEnum = ref.getAll(); refAddrEnum.hasMoreElements();) {
 				RefAddr refAddr = refAddrEnum.nextElement();
 				String propertyName = refAddr.getType();
 				Object propertyValue = refAddr.getContent();
+
 				log.debug("setting delegate property [{}] to value [{}]", propertyName, propertyValue);
 				BeanUtils.setProperty(this, propertyName, propertyValue);
 			}
@@ -81,24 +79,14 @@ public class AmazonSqsFactory extends AwsClient implements ObjectFactory {
 	public ConnectionFactory createConnectionFactory() {
 		ProviderConfiguration providerConfiguration = new ProviderConfiguration();
 
-		SqsClientBuilder builder = SqsClient.builder();
-		builder.region(Region.of(getClientRegion()));
-		builder.credentialsProvider(AwsUtil.getAwsCredentialsProvider(getAuthAlias(), getAccessKey(), getSecretKey()));
-		//builder.endpointProvider(new SqsEndpointProvider())
-		//builder.httpClientBuilder(ApacheHttpClient.builder());
-		SqsClient client = builder.build();
+		SqsClient client = createSqsClient();
 
 		SQSConnectionFactory connectionFactory = new SQSConnectionFactory(providerConfiguration, client);
-
-		//SQSConnectionFactory sqsConnectionFactory = SQSConnectionFactory.builder()
-		//		 .withAWSCredentialsProvider(new DefaultAWSCredentialsProviderChain())
-		//		 .withEndpoint(endpoint)
-		//		 .withAWSCredentialsProvider(awsCredentialsProvider)
-		//		 .withNumberOfMessagesToPrefetch(10).build();
 
 		return connectionFactory;
 	}
 
+	// A dirty workaround to create queues, should use JmsMessagingSource#createDestination
 	public void createQueues(Connection connection, String queues) throws JMSException {
 		if (StringUtils.isNotEmpty(queues)) {
 			AmazonSQSMessagingClientWrapper client = ((SQSConnection) connection).getWrappedAmazonSQSClient();
@@ -112,12 +100,11 @@ public class AmazonSqsFactory extends AwsClient implements ObjectFactory {
 		}
 	}
 
-
-	public AmazonSQS createAmazonSQSClient() {
-		AmazonSQSClientBuilder sqsClientBuilder = AmazonSQSClientBuilder.standard()
-				.withRegion(getClientRegion())
-				.withCredentials(getCredentialsProvider())
-				.withClientConfiguration(getProxyConfig());
-		return sqsClientBuilder.build();
+	public SqsClient createSqsClient() {
+		SqsClientBuilder builder = SqsClient.builder();
+		builder.region(Region.of(getClientRegion()));
+		builder.credentialsProvider(getAwsCredentialsProvider());
+//		builder.endpointProvider(new SqsEndpointProvider()); // TODO allow the use of destinationName="https://sqs.eu-west-1.amazonaws.com/00123567890/dummy-ibis-test-queue"
+		return builder.build();
 	}
 }

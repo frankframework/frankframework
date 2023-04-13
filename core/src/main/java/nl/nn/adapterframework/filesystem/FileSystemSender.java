@@ -104,7 +104,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 
 		try {
 			if (paramList !=null) {
-				pvl=paramList.getValues(message, session);
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(
@@ -112,10 +112,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		}
 
 		try {
-			Object result=actor.doAction(message, pvl, session);
-			if (result instanceof PipeRunResult) {
-				return (PipeRunResult)result;
-			}
+			Message result = actor.doAction(message, pvl, session);
 			return new PipeRunResult(null, result);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);

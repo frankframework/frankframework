@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.BytesMessage;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -51,6 +52,7 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -185,6 +187,23 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return useJms102;
 	}
 
+	@Override
+	public void configure() throws ConfigurationException {
+		if(connectionFactoryFactory == null) {
+			throw new ConfigurationException("no connectionFactoryFactory set");
+		}
+
+		try {
+			ConnectionFactory cf = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
+			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(cf.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {
+				throw new ConfigurationException("Amazon SQS does not support MessageSelectors");
+			}
+		} catch (NamingException | JmsException e) {
+			throw new ConfigurationException("unable to use ConnectionFactory", e);
+		}
+
+		super.configure();
+	}
 
 	public String getConnectionFactoryName() throws JmsException {
 		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
@@ -345,7 +364,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public Destination getDestination(String destinationName) throws NamingException, JMSException, JmsException {
-		return destinations.computeIfAbsent(destinationName, name -> computeDestination(name));
+		return destinations.computeIfAbsent(destinationName, this::computeDestination);
 	}
 
 	@SneakyThrows
