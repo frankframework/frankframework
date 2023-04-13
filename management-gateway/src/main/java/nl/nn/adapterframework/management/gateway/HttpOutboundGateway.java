@@ -17,6 +17,7 @@ package nl.nn.adapterframework.management.gateway;
 
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
@@ -31,14 +32,15 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import nl.nn.adapterframework.management.bus.IntegrationGateway;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler implements IntegrationGateway<T> {
-	private static final String HTTP_ENDPOINT = AppConstants.getInstance().getString("management.http.endpoint", "http://localhost/iaf-test/iaf/management");
 
-	public HttpOutboundGateway() {
-		super(HTTP_ENDPOINT);
+	@Value("${management.http.endpoint}")
+	private String httpEndpoint = null;
+
+	public HttpOutboundGateway(String endpoint) {
+		super(endpoint);
 	}
 
 	@Override

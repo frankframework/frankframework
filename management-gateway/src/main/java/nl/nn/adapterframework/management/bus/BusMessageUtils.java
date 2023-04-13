@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -35,9 +36,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.DigestUtils;
 
-import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.LogUtil;
-
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
@@ -45,7 +43,7 @@ public class BusMessageUtils {
 	public static final String HEADER_ADAPTER_NAME_KEY = "adapter";
 	public static final String HEADER_RECEIVER_NAME_KEY = "receiver";
 
-	private static final Logger LOG = LogUtil.getLogger(BusMessageUtils.class);
+	private static final Logger LOG = LogManager.getLogger(BusMessageUtils.class);
 
 	public static String getHeader(Message<?> message, String headerName) {
 		MessageHeaders headers = message.getHeaders();
@@ -186,11 +184,23 @@ public class BusMessageUtils {
 		String value = getHeader(message, headerName);
 		if(StringUtils.isNotEmpty(value)) {
 			try {
-				return EnumUtils.parse(enumClazz, value);
+				return parseEnum(enumClazz, value);
 			} catch (IllegalArgumentException e) {
 				throw new BusException("unable to parse value ["+value+"]", e);
 			}
 		}
 		return defaultValue;
+	}
+
+	private static <E extends Enum<E>> E parseEnum(final Class<E> enumClass, final String enumName) {
+		if (enumName == null) {
+			return null;
+		}
+		for (final E each : enumClass.getEnumConstants()) {
+			if (each.name().equalsIgnoreCase(enumName)) {
+				return each;
+			}
+		}
+		return null;
 	}
 }

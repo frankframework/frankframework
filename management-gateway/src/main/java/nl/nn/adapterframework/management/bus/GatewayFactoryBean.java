@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -23,13 +24,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class GatewayFactoryBean<T> implements InitializingBean, DisposableBean, ApplicationContextAware, FactoryBean<IntegrationGateway<T>> {
 
-	private Logger log = LogUtil.getLogger(this);
+	private Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 	private IntegrationGateway<T> gateway;
 
@@ -39,7 +38,7 @@ public class GatewayFactoryBean<T> implements InitializingBean, DisposableBean, 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
-		Class<?> gatewayClass = ClassUtils.loadClass(gatewayType);
+		Class<?> gatewayClass = null;//ClassUtils.loadClass(gatewayType);
 		if(!IntegrationGateway.class.isAssignableFrom(gatewayClass)) {
 			throw new IllegalArgumentException("gateway does not implement type IntegrationGateway");
 		}

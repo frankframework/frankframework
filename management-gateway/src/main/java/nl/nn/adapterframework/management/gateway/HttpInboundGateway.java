@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -45,21 +45,19 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.DynamicRegistration;
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@IbisInitializer
-public class HttpInboundGateway extends HttpServlet implements DynamicRegistration.Servlet, InitializingBean, ApplicationContextAware {
+//@IbisInitializer
+public class HttpInboundGateway extends HttpServlet implements InitializingBean, ApplicationContextAware {
 
 	private static final long serialVersionUID = 1L;
 	private final transient Logger log = LogManager.getLogger(HttpInboundGateway.class);
 
-	private final String httpPath = AppConstants.getInstance().getString("management.http.path", "/iaf/management");
+	@Value("${httpPath}")
+	private final String httpPath = null;
 	private transient HttpRequestHandlingMessagingGateway gateway;
+
 	@Setter private transient ApplicationContext applicationContext;
 
 	@Override
@@ -96,7 +94,7 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		ServletContext context = applicationContext.getBean("servletContext", ServletContext.class);
 		FilterRegistration.Dynamic filter = context.addFilter("RequestContextFilter", RequestContextFilter.class);
 		EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
-		filter.addMappingForServletNames(dispatcherTypes, false, getName());
+		filter.addMappingForServletNames(dispatcherTypes, false, getServletName());
 	}
 
 	private SubscribableChannel createErrorChannel() {
@@ -127,23 +125,25 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		super.destroy();
 	}
 
+//	@Override
+//	public String getUrlMapping() {
+//		return httpPath;
+//	}
+//
+//	@Override
+//	public String[] getAccessGrantingRoles() {
+//		return DynamicRegistration.ALL_IBIS_USER_ROLES;
+//	}
+//
+//	@Override
 	@Override
-	public String getUrlMapping() {
-		return httpPath;
-	}
-
-	@Override
-	public String[] getAccessGrantingRoles() {
-		return DynamicRegistration.ALL_IBIS_USER_ROLES;
-	}
-
-	@Override
-	public String getName() {
+	public String getServletName() {
+		System.err.println(super.getServletName());
 		return this.getClass().getSimpleName();
 	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
-	}
+//
+//	@Autowired
+//	public void setServletManager(ServletManager servletManager) {
+//		servletManager.register(this);
+//	}
 }
