@@ -45,10 +45,12 @@ import nl.nn.adapterframework.stream.Message;
  * messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
- * ibisstore.
+ * database table IBISSTORE.
  * <br/><br/>
- * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> because
- * that would duplicate adding messages to the IBISSTORE database table.
+ * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> 
+ * or <code>JdbcErrorStorage</code> in the same sender pipe. A <code>MessageStoreSender</code>
+ * acts as a message log and an error store. It can be useful however to add a message log or error store
+ * to the adapter arount the sender pipe, because errors may occur before the message reaches the sender pipe.
  * <br/><br/>
  * Example configuration:
  * <code><pre>

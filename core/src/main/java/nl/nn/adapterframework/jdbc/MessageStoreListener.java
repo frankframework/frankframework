@@ -66,7 +66,9 @@ import nl.nn.adapterframework.util.StringUtil;
  * <li> <code>E</code>: There was an error processing the message. From a functional perspective, it is in the error store.
  * <li> <code>A</code>: The message was successfully processed. From a functional perspective, it is in the message log.
  * </ul>
- * As a consequence, you do not need a <code>JdbcErrorStorage</code> or <code>JdbcMessageLog</code> when you have a <code>MessageStoreListener</code>.
+ * Another way to say this is that a <code>MessageStoreListener</code> acts as a message log and as an error store.
+ * If you have it, you do not need to add
+ * a <code>JdbcErrorStorage</code> or <code>JdbcMessageLog</code> within the same receiver.
  * <br/><br/>
  * See /IAF_util/IAF_DatabaseChangelog.xml for the structure of table IBISSTORE.
  * 
