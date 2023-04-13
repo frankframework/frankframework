@@ -879,6 +879,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * If set to <code>true</code>, the table is created if it does not exist
 	 * @ff.default false
 	 */
+	@Deprecated
+	@ConfigurationWarning("if you want to create and maintain database tables, please enable Liquibase")
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}
