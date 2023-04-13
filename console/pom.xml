@@ -9,6 +9,7 @@
 
 	<artifactId>ibis-adapterframework-console</artifactId>
 	<name>Frank Console</name>
+	<packaging>war</packaging>
 
 	<properties>
 		<spring-security.version>5.8.2</spring-security.version>

@@ -48,7 +48,6 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,20 +144,35 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 		 */
 		public void register(M jaxRsResource) {
 			Method[] classMethods = jaxRsResource.getClass().getDeclaredMethods();
+			Path basePathAnnotation = AnnotationUtils.findAnnotation(jaxRsResource.getClass(), Path.class);
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "/";
 			for(Method classMethod : classMethods) {
 				int modifiers = classMethod.getModifiers();
 				if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
 					Path path = AnnotationUtils.findAnnotation(classMethod, Path.class);
 					HttpMethod httpMethod = AnnotationUtils.findAnnotation(classMethod, HttpMethod.class);
 					if(path != null && httpMethod != null) {
-						String rsResourceKey = compileKey(httpMethod.value(), path.value());
+						String compiledPath = getPath(basePath, path.value());
+						String rsResourceKey = compileKey(httpMethod.value(), compiledPath);
 
-						log.info("adding new JAX-RS resource key [{}] method [{}]", ()->rsResourceKey, classMethod::getName);
+						log.info("adding new JAX-RS resource key [{}] method [{}] path [{}]", ()->rsResourceKey, classMethod::getName, ()->compiledPath);
 						rsRequests.put(rsResourceKey, classMethod);
 					}
 					//Ignore security for now
 				}
 			}
+		}
+
+		// The basepath is usually a '/', but path may also start with a slash.
+		// Ensure a valid path is returned.
+		private String getPath(String basePath, String path) {
+			StringBuilder pathToUse = new StringBuilder();
+			if(!basePath.startsWith("/")) {
+				pathToUse.append("/");
+			}
+			pathToUse.append(basePath);
+			pathToUse.append( (basePath.endsWith("/") && path.startsWith("/")) ? path.substring(1) : path);
+			return pathToUse.toString();
 		}
 
 		/**
@@ -244,7 +258,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			if(method == null) {
 				fail("can't find resource ["+url+"] method ["+httpMethod+"]");
 			}
-			String methodPath = method.getAnnotation(Path.class).value();
+
+			Path basePathAnnotation = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Path.class);
+			final String basePath = (basePathAnnotation != null) ? basePathAnnotation.value() : "";
+			final String methodPath = basePath + method.getAnnotation(Path.class).value();
+
 			log.debug("found JAX-RS resource [{}]", ()->compileKey(httpMethod, methodPath));
 
 			try {
@@ -297,7 +315,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				validateIfAllArgumentsArePresent(methodArguments, parameters);
 
 				ResponseImpl response = (ResponseImpl) method.invoke(jaxRsResource, methodArguments);
-				MultivaluedMap<String, Object> meta = new MetadataMap<>();
+				MultivaluedMap<String, Object> meta = response.getMetadata();
 
 				Produces produces = AnnotationUtils.findAnnotation(method, Produces.class);
 				if(produces != null) {

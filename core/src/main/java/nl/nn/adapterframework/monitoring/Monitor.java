@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -53,15 +52,15 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
-	private EventTypeEnum type = EventTypeEnum.TECHNICAL;
+	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
 	private Date stateChangeDt = null;
 
-	private int additionalHitCount=0;
-	private Date lastHit=null;
+	private int additionalHitCount = 0;
+	private Date lastHit = null;
 
-	private SeverityEnum alarmSeverity=null;
-	private EventThrowing alarmSource=null;
+	private @Getter @Setter Severity alarmSeverity = null;
+	private EventThrowing alarmSource = null;
 
 
 	private MonitorManager manager = null;
@@ -87,25 +86,24 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		}
 	}
 
-	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
-		boolean hit=alarm && (getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<=0);
-		boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
-		boolean clear=raised && (!alarm || up && getAlarmSeverityEnum()!=null && getAlarmSeverityEnum()!=severity);
+	public void changeState(Date date, boolean alarm, Severity severity, EventThrowing source, String details, Throwable t) throws MonitorException {
+		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
+		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be cleared");
-			SeverityEnum clearSeverity=getAlarmSeverityEnum()!=null?getAlarmSeverityEnum():severity;
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be cleared");
+			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
 			EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
-			changeMonitorState(date, clearSource, EventTypeEnum.CLEARING, clearSeverity, details, t);
+			changeMonitorState(date, clearSource, EventType.CLEARING, clearSeverity, details, t);
 		}
 		if (up) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be raised to ["+severity+"]");
-			changeMonitorState(date, source, getTypeEnum(), severity, details, t);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be raised to ["+severity+"]");
+			changeMonitorState(date, source, getType(), severity, details, t);
 			setAlarmSource(source);
 			setAlarmSeverityEnum(severity);
 			setLastHit(date);
 			setAdditionalHitCount(0);
 		} else {
-			if (hit) {
+			if (alarm && isHit(severity)) {
 				setLastHit(date);
 				setAdditionalHitCount(getAdditionalHitCount()+1);
 			}
@@ -114,7 +112,11 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		clearEvents(alarm);
 	}
 
-	public void changeMonitorState(Date date, EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
+	private boolean isHit(Severity severity) {
+		return (getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0);
+	}
+
+	public void changeMonitorState(Date date, EventThrowing subSource, EventType eventType, Severity severity, String message, Throwable t) throws MonitorException {
 		String eventSource=subSource==null?"":subSource.getEventSourceName();
 		if (eventType==null) {
 			throw new MonitorException("eventType cannot be null");
@@ -151,7 +153,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 			monitor.addAttribute("changed",getStateChangeDtStr());
 		}
 		if (isRaised()) {
-			monitor.addAttribute("severity",getAlarmSeverity());
+			monitor.addAttribute("severity", getAlarmSeverity().name());
 			EventThrowing source = getAlarmSource();
 			if (source!=null) {
 				monitor.addAttribute("source",source.getEventSourceName());
@@ -162,7 +164,7 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	public XmlBuilder toXml() {
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		monitor.addAttribute("name",getName());
-		monitor.addAttribute("type",getType());
+		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());
 		for (Iterator<ITrigger> it=triggers.iterator();it.hasNext();) {
 			ITrigger trigger=it.next();
@@ -253,19 +255,6 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		name = string;
 	}
 
-	public void setType(String eventType) {
-		setTypeEnum(EnumUtils.parse(EventTypeEnum.class, eventType));
-	}
-	public String getType() {
-		return type==null?null:type.name();
-	}
-	public void setTypeEnum(EventTypeEnum enumeration) {
-		type = enumeration;
-	}
-	public EventTypeEnum getTypeEnum() {
-		return type;
-	}
-
 	public void setRaised(boolean b) {
 		raised = b;
 	}
@@ -273,14 +262,8 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		return raised;
 	}
 
-	public String getAlarmSeverity() {
-		return alarmSeverity==null?null:alarmSeverity.name();
-	}
-	public void setAlarmSeverityEnum(SeverityEnum enumeration) {
+	public void setAlarmSeverityEnum(Severity enumeration) {
 		alarmSeverity = enumeration;
-	}
-	public SeverityEnum getAlarmSeverityEnum() {
-		return alarmSeverity;
 	}
 
 	public EventThrowing getAlarmSource() {

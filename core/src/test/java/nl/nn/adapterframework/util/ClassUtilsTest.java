@@ -2,6 +2,7 @@ package nl.nn.adapterframework.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -311,19 +312,24 @@ public class ClassUtilsTest {
 		return TestScopeProvider.wrap(cl);
 	}
 
+	private static enum TestEnum {ONE,TWO};
+
 	@Test
 	public void testConvertToType() {
-		String fieldName = "<fieldName>";
+		assertAll(
+			() -> assertEquals(7, ClassUtils.convertToType(int.class, "7")),
+			() -> assertEquals(7, ClassUtils.convertToType(Integer.class, "7")),
+			() -> assertEquals(7L, ClassUtils.convertToType(long.class, "7")),
+			() -> assertEquals(7L, ClassUtils.convertToType(Long.class, "7")),
+			() -> assertEquals("7", ClassUtils.convertToType(String.class, "7")),
+			() -> assertEquals(true, ClassUtils.convertToType(boolean.class, "true")),
+			() -> assertEquals(true, ClassUtils.convertToType(Boolean.class, "true")),
+			() -> assertEquals(false, ClassUtils.convertToType(Boolean.class, "niet true")),
+			() -> assertEquals(TestEnum.ONE, ClassUtils.convertToType(TestEnum.class, "one")),
 
-		assertEquals(7, ClassUtils.convertToType(int.class, fieldName, "7"));
-		assertEquals(7, ClassUtils.convertToType(Integer.class, fieldName, "7"));
-		assertEquals(7L, ClassUtils.convertToType(long.class, fieldName, "7"));
-		assertEquals(7L, ClassUtils.convertToType(Long.class, fieldName, "7"));
-		assertEquals("7", ClassUtils.convertToType(String.class, fieldName, "7"));
-		assertEquals(true, ClassUtils.convertToType(boolean.class, fieldName, "true"));
-		assertEquals(true, ClassUtils.convertToType(Boolean.class, fieldName, "true"));
-		assertEquals(false, ClassUtils.convertToType(Boolean.class, fieldName, "niet true"));
-		assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, fieldName, "dummy"));
-		assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, fieldName, "dummy"));
+			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Object.class, "dummy")),
+			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, "dummy")),
+			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(int.class, "")) //Empty string
+		);
 	}
 }

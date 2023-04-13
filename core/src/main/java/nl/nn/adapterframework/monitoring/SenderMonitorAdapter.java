@@ -62,7 +62,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public void fireEvent(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public void fireEvent(String eventSource, EventType eventType, Severity severity, String message, Throwable t) {
 		try {
 			getSender().sendMessageOrThrow(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
 		} catch (Exception e) {

@@ -27,7 +27,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 
 	@Override
 	public TestPipeline createJaxRsResource() {
-		return spy(TestPipeline.class);
+		return new TestPipeline();
 	}
 
 	private static class DefaultSuccessAnswer implements Answer<Message<String>> {

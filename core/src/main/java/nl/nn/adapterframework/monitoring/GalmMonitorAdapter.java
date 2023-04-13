@@ -94,7 +94,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 		}
 	}
 
-	public String getGalmRecord(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message) {
+	public String getGalmRecord(String subSource, EventType eventType, Severity severity, String message) {
 		if (subSource.indexOf(' ')>=0) {
 			String replacement= StringUtil.replace(subSource," ","_");
 			if (log.isDebugEnabled()) log.debug("subSource ["+subSource+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
@@ -127,7 +127,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public String makeXml(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public String makeXml(String eventSource, EventType eventType, Severity severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("source",sourceId);
@@ -139,7 +139,7 @@ public class GalmMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t) {
 		if (t!=null) {
 			if (StringUtils.isEmpty(message)) {
 				message = ClassUtils.nameOf(t);

@@ -34,6 +34,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -299,7 +301,7 @@ public abstract class ClassUtils {
 	 */
 	public static void invokeSetter(Object bean, Method method, String valueToSet) {
 		if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
-			throw new IllegalArgumentException("method must start with [set] and may only contain [1] parameter");
+			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
@@ -317,13 +319,29 @@ public abstract class ClassUtils {
 		String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 
 		//Try to parse as primitive
-		return convertToType(setterArgumentClass, fieldName, value);
+		try {
+			return convertToType(setterArgumentClass, value);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
+		}
 	}
 
-	public static Object convertToType(Class<?> type, String fieldName, String value) throws IllegalArgumentException {
+	/**
+	 * Converts the String value to the supplied type.
+	 * @param type to convert the input value to
+	 * @return The converted value, of type {@literal <T>}.
+	 * @throws IllegalArgumentException (or NumberFormatException) when the value cannot be converted to the given type T.
+	 */
+	@SuppressWarnings("unchecked")
+	@Nonnull
+	public static <T> T convertToType(Class<T> type, String value) throws IllegalArgumentException {
+		return (T) convertToTypeRawTyped(type, value);
+	}
+
+	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
 		//Try to parse the value as an Enum
 		if(type.isEnum()) {
-			return parseAsEnum(type, fieldName, value);
+			return parseAsEnum(type, value);
 		}
 
 		try {
@@ -336,27 +354,29 @@ public abstract class ClassUtils {
 				return Long.parseLong(value);
 			case "boolean":
 			case "java.lang.Boolean":
+				if("".equals(value)) { //parseBoolean returns FALSE when it cannot parse the value
+					throw new IllegalArgumentException("cannot convert empty string to boolean");
+				}
 				return Boolean.parseBoolean(value);
 			case "java.lang.String":
 				return value;
 			default:
-				throw new IllegalArgumentException("cannot set field ["+fieldName+"]: type ["+type.getName()+"] not implemented");
+				throw new IllegalArgumentException("cannot convert to type ["+type.getName()+"], not implemented");
 			}
-		} catch(NumberFormatException e) {
-			throw new IllegalArgumentException("cannot set field ["+fieldName+"] of type ["+type.getName()+"]: value ["+value+"] cannot be converted to a number");
+		} catch(NumberFormatException e) { //Throw a -more descriptive- NumberFormatException instead of 'For input string'
+			throw new NumberFormatException("value ["+value+"] cannot be converted to a number ["+type.getName()+"]");
 		}
 	}
 
 	/**
 	 * Attempt to parse the attributes value as an Enum.
 	 * @param enumClass The Enum class used to parse the value
-	 * @param fieldName The setter name (fieldName) to set
 	 * @param value The value to be parsed
 	 * @return The Enum constant or <code>NULL</code>
 	 */
 	@SuppressWarnings("unchecked")
-	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String fieldName, String value) throws IllegalArgumentException {
-		return EnumUtils.parse((Class<E>) enumClass, fieldName, value);
+	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) throws IllegalArgumentException {
+		return EnumUtils.parse((Class<E>) enumClass, null, value);
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
