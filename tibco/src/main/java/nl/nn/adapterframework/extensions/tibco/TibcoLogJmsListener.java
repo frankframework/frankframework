@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.tibco.tibjms.TibjmsMapMessage;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
@@ -42,10 +43,10 @@ public class TibcoLogJmsListener extends JmsListener {
 	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
-	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
-			tjmMessage = (TibjmsMapMessage) rawMessage;
+			tjmMessage = (TibjmsMapMessage) rawMessage.getRawMessage();
 		} catch (ClassCastException e) {
 			log.error("message received by listener on [" + getDestinationName() + "] was not of type TibjmsMapMessage, but [" + rawMessage.getClass().getName() + "]", e);
 			return null;
@@ -110,15 +111,15 @@ public class TibcoLogJmsListener extends JmsListener {
 	}
 
 	@Override
-	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TibjmsMapMessage tjmMessage;
 		try {
-			tjmMessage = (TibjmsMapMessage) rawMessage;
+			tjmMessage = (TibjmsMapMessage) rawMessage.getRawMessage();
 		} catch (ClassCastException e) {
 			log.error("message received by listener on ["
 					+ getDestinationName()
 					+ "] was not of type TibjmsMapMessage, but ["
-					+ rawMessage.getClass().getName() + "]", e);
+					+ rawMessage.getRawMessage().getClass().getName() + "]", e);
 			return null;
 		}
 		return retrieveIdFromMessage(tjmMessage, threadContext);

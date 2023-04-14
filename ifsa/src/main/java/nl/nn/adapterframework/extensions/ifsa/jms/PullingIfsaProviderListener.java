@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,13 @@
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -40,7 +34,6 @@ import com.ing.ifsa.IFSAServicesProvided;
 import com.ing.ifsa.IFSATextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -48,15 +41,11 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Implementation of {@link IPullingListener} that acts as an IFSA-service.
@@ -88,20 +77,19 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
+public class PullingIfsaProviderListener extends IfsaListener implements IPullingListener<IFSAMessage>, INamedObject, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_SESSION_KEY = "session";
 	private static final String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
-	private static final String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	private RunStateEnquirer runStateEnquirer=null;
 
 	public PullingIfsaProviderListener() {
-		super(true); //instantiate as a provider
+		super(); //instantiate as a provider
 		setTimeOut(3000); // set default timeout, to be able to stop adapter!
 	}
 
 
-	protected QueueSession getSession(Map threadContext) throws ListenerException {
+	protected QueueSession getSession(Map<String, Object> threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
 				return createSession();
@@ -217,7 +205,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 
 		try {
 			if (isJmsTransacted() && !(getMessagingSource().isXaEnabledForSure() && JtaUtil.inTransaction())) {
@@ -270,203 +258,6 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 		}
 	}
 
-
-	protected String getIdFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
-		for (Iterator it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
-			String key = (String)it.next();
-			Object value = wrapper.getContext().get(key);
-			log.debug(getLogPrefix()+"setting variable ["+key+"] to ["+value+"]");
-			threadContext.put(key, value);
-		}
-		return wrapper.getId();
-	}
-	protected Message getMessageFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
-		return wrapper.getMessage();
-	}
-
-
-
-
-	/**
-	 * Extracts ID-string from message obtained from {@link #getRawMessage(Map)}.
-	 * Puts also the following parameters  in the threadContext:
-	 * <ul>
-	 *   <li>id</li>
-	 *   <li>cid</li>
-	 *   <li>timestamp</li>
-	 *   <li>replyTo</li>
-	 *   <li>messageText</li>
-	 *   <li>fullIfsaServiceName</li>
-	 *   <li>ifsaServiceName</li>
-	 *   <li>ifsaGroup</li>
-	 *   <li>ifsaOccurrence</li>
-	 *   <li>ifsaVersion</li>
-	 * </ul>
-	 * @return ID-string of message for adapter.
-	 */
-	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-
-		IFSAMessage message = null;
-
-	 	if (rawMessage instanceof IMessageWrapper) {
-	 		return getIdFromWrapper((IMessageWrapper)rawMessage,threadContext);
-	 	}
-
-		try {
-			message = (IFSAMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.error(getLogPrefix()+
-				"message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
-			return null;
-		}
-		String mode = "unknown";
-		String id = "unset";
-		String cid = "unset";
-		Date tsSent = null;
-		Destination replyTo = null;
-		String messageText = null;
-		String fullIfsaServiceName = null;
-		IFSAServiceName requestedService = null;
-		String ifsaServiceName=null, ifsaGroup=null, ifsaOccurrence=null, ifsaVersion=null;
-		try {
-			if (message.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT) {
-				mode = "NON_PERSISTENT";
-			} else
-				if (message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT) {
-					mode = "PERSISTENT";
-				}
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve MessageID
-		// --------------------------
-		try {
-			id = message.getJMSMessageID();
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve CorrelationID
-		// --------------------------
-		try {
-			cid = message.getJMSCorrelationID();
-			if (cid == null) {
-				cid = id;
-				log.debug("Setting correlation ID to MessageId");
-			}
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve TimeStamp
-		// --------------------------
-		try {
-			long lTimeStamp = message.getJMSTimestamp();
-			tsSent = new Date(lTimeStamp);
-
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve ReplyTo address
-		// --------------------------
-		try {
-			replyTo = message.getJMSReplyTo();
-
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve message text
-		// --------------------------
-		try {
-			messageText = ((TextMessage)message).getText();
-		} catch (Throwable ignore) {
-		}
-		// --------------------------
-		// retrieve ifsaServiceDestination
-		// --------------------------
-		try {
-			fullIfsaServiceName = message.getServiceString();
-			requestedService = message.getService();
-
-			ifsaServiceName = requestedService.getServiceName();
-			ifsaGroup = requestedService.getServiceGroup();
-			ifsaOccurrence = requestedService.getServiceOccurance();
-			ifsaVersion = requestedService.getServiceVersion();
-
-		} catch (JMSException e) {
-			log.error(getLogPrefix() + "got error getting serviceparameter", e);
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+ "got message for [" + fullIfsaServiceName
-					+ "] with JMSDeliveryMode=[" + mode
-					+ "] \n  JMSMessageID=[" + id
-					+ "] \n  JMSCorrelationID=["+ cid
-					+ "] \n  ifsaServiceName=["+ ifsaServiceName
-					+ "] \n  ifsaGroup=["+ ifsaGroup
-					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
-					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
-					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
-					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
-					+ "] \n  Message=[" + message.toString()+"\n]");
-
-		}
-
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
-		threadContext.put("timestamp", tsSent);
-		threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
-		threadContext.put("messageText", messageText);
-		threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
-		threadContext.put("ifsaServiceName", ifsaServiceName);
-		threadContext.put("ifsaGroup", ifsaGroup);
-		threadContext.put("ifsaOccurrence", ifsaOccurrence);
-		threadContext.put("ifsaVersion", ifsaVersion);
-
-		Map udz = (Map)message.getIncomingUDZObject();
-		if (udz!=null) {
-			String contextDump = "ifsaUDZ:";
-			for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
-				String key = (String)it.next();
-				String value = (String)udz.get(key);
-				contextDump = contextDump + "\n " + key + "=[" + value + "]";
-				threadContext.put(key, value);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+ contextDump);
-			}
-		}
-
-		return id;
-	}
-
-	private String displayHeaders(IFSAMessage message) {
-		StringBuffer result= new StringBuffer();
-		try {
-			for(Enumeration enumeration = message.getPropertyNames(); enumeration.hasMoreElements();) {
-				String tagName = (String)enumeration.nextElement();
-				Object value = message.getObjectProperty(tagName);
-				result.append("\n").append(tagName).append(": ");
-				if (value==null) {
-					result.append("null");
-				} else {
-					result.append("(").append(ClassUtils.nameOf(value)).append(") [").append(value).append("]");
-					if (tagName.startsWith("ifsa") &&
-						!tagName.equals("ifsa_unique_id") &&
-						!tagName.startsWith("ifsa_epz_") &&
-						!tagName.startsWith("ifsa_udz_")) {
-							result.append(" * copied when sending reply");
-							if (!(value instanceof String)) {
-								result.append(" THIS CAN CAUSE A PROBLEM AS "+ClassUtils.nameOf(value)+" IS NOT String!");
-							}
-						}
-				}
-			}
-		} catch(Throwable t) {
-			log.warn("exception parsing headers",t);
-		}
-		return result.toString();
-	}
-
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
 	{
 		try {
@@ -485,8 +276,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	 * Retrieves messages to be processed by the server, implementing an IFSA-service, but does no processing on it.
 	 */
 	@Override
-	public Object getRawMessage(Map threadContext) throws ListenerException {
-		Object result=null;
+	public RawMessageWrapper<IFSAMessage> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+		javax.jms.Message result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;
 
@@ -512,6 +303,10 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			}
 		}
 
+		if (result == null) {
+			return null;
+		}
+
 		if (result instanceof IFSAPoisonMessage) {
 			IFSAHeader header = ((IFSAPoisonMessage) result).getIFSAHeader();
 			String source;
@@ -522,58 +317,23 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			}
 			String msg=getLogPrefix()+ "received IFSAPoisonMessage "
 						+ "source [" + source + "]"
-						+ "content [" + ToStringBuilder.reflectionToString((IFSAPoisonMessage) result) + "]";
+						+ "content [" + ToStringBuilder.reflectionToString(result) + "]";
 			log.warn(msg);
 		}
+		RawMessageWrapper<IFSAMessage> rawMessageWrapper;
 		try {
 			if ((result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage) &&
 				 JtaUtil.inTransaction()
 				) {
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, result);
-				result = new MessageWrapper(result, this);
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, getIdFromIfsaMessage((IFSAMessage) result, threadContext));
+			} else {
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, result.getJMSMessageID());
 			}
 		} catch (Exception e) {
 			throw new ListenerException("cannot wrap non serialzable message in wrapper",e);
 		}
-		return result;
-	}
-	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the threadContext.
-	 * @return input message for adapter.
-	 */
-	@Override
-	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		if (rawMessage instanceof IMessageWrapper) {
-			return getMessageFromWrapper((IMessageWrapper)rawMessage,threadContext);
-		}
-		if (rawMessage instanceof IFSAPoisonMessage) {
-			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;
-			IFSAHeader header = pm.getIFSAHeader();
-			String source;
-			try {
-				source = header.getIFSA_Source();
-			} catch (Exception e) {
-				source = "unknown due to exeption:"+e.getMessage();
-			}
-			return  new Message("<poisonmessage>"+
-					"  <source>"+source+"</source>"+
-					"  <contents>"+ XmlEncodingUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
-					"</poisonmessage>");
-		}
-
-		TextMessage message = null;
-		try {
-			message = (TextMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.warn(getLogPrefix()+ "message received was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-			return null;
-		}
-		try {
-			return new Message(message.getText());
-		} catch (JMSException e) {
-			throw new ListenerException(getLogPrefix(),e);
-		}
+		return rawMessageWrapper;
 	}
 
 	protected boolean canGoOn() {
@@ -584,5 +344,4 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
-
 }

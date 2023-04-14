@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -146,20 +147,20 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 
 	@Override
-	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		return getCorrelationIdFromField(rawMessage);
+	public String getIdFromRawMessage(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		return getCorrelationIdFromField(rawMessage.getRawMessage());
 	}
 
 	@Override
-	public Message extractMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		return functionCall2message(rawMessage);
+	public Message extractMessage(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		return functionCall2message(rawMessage.getRawMessage());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<JCoFunction> rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (rawMessageOrWrapper instanceof JCoFunction) {
-				message2FunctionResult((JCoFunction)rawMessageOrWrapper, processResult.getResult().asString());
+			if (rawMessageOrWrapper.getRawMessage() != null) {
+				message2FunctionResult(rawMessageOrWrapper.getRawMessage(), processResult.getResult().asString());
 			}
 		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
@@ -169,7 +170,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
-			handler.processRawMessage(this, jcoFunction, null, false);
+			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField(jcoFunction)), null, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());

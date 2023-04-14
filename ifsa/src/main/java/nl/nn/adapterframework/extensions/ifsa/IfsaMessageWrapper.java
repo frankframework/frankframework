@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,26 +22,27 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper for messages that are not serializable.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  */
 public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = 6543734487515204545L;
-	
+
 	private HashMap context = new HashMap();
-	private Message message; 
-	private String id; 
-	
-	public IfsaMessageWrapper(Object message, IListener listener) throws ListenerException  {
+	private Message message;
+	private String id;
+
+	public IfsaMessageWrapper(RawMessageWrapper message, IListener listener) throws ListenerException  {
 		super();
-		message = listener.extractMessage(message, context);
-		id = listener.getIdFromRawMessage(message, context);
+		this.message = listener.extractMessage(message, context);
+		this.id = listener.getIdFromRawMessage(message, context);
 	}
 
 	public Map getContext() {
