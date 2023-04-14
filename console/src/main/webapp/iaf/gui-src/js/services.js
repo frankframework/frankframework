@@ -1,3 +1,5 @@
+import Tinycon from 'tinycon'
+
 angular.module('iaf.beheerconsole')
 	.service('Api', ['$http', 'appConstants', 'Misc', 'Session', 'Debug', function($http, appConstants, Misc, Session, Debug) {
 		var absolutePath = Misc.getServerPath();
@@ -210,7 +212,7 @@ angular.module('iaf.beheerconsole')
 					poller.addError();
 
 					var e = 0;
-					for(x in poller.errorList) {
+					for(const x in poller.errorList) {
 						var y = poller.errorList[x];
 						if(poller.fired == y.fired || poller.fired-1 == y.fired || poller.fired-2 == y.fired)
 							e++;
@@ -302,29 +304,29 @@ angular.module('iaf.beheerconsole')
 			var args = arguments || [];
 			if(args.length > 0 && typeof args[0] == "function") {
 				var callback = args[0];
-				for(x in data) {
+				for(const x in data) {
 					callback.apply(this, [data[x]]);
 				}
 			}
 			return {
 				changeInterval: function(interval) {
 					var i = interval || appConstants["console.pollerInterval"];
-					for(x in data)
+					for(const x in data)
 						data[x].setInterval(i, false);
 				},
 				start: function() {
 					Debug.info("starting all Pollers");
-					for(x in data)
+					for(const x in data)
 						data[x].fn();
 				},
 				stop: function() {
 					Debug.info("stopping all Pollers");
-					for(x in data)
+					for(const x in data)
 						data[x].stop();
 				},
 				remove: function() {
 					Debug.info("removing all Pollers");
-					for(x in data) {
+					for(const x in data) {
 						data[x].stop();
 						delete data[x];
 					}
@@ -332,7 +334,7 @@ angular.module('iaf.beheerconsole')
 				},
 				list: function () {
 					this.list = [];
-					for(uri in data) {
+					for(const uri in data) {
 						this.list.push(uri);
 					}
 					return this.list;
@@ -401,7 +403,7 @@ angular.module('iaf.beheerconsole')
 			Debug.info("trying to save cookies from cache", this.cache);
 
 			if(GDPR.allowFunctional() === true) { //Only run when explicitly set to true
-				for(c in this.cache) {
+				for(const c in this.cache) {
 					this.set(c, this.cache[c]);
 				}
 				this.cache = null; //Clear the cache, free up memory :)
@@ -438,7 +440,7 @@ angular.module('iaf.beheerconsole')
 			$cookies.remove(key, {path: '/'});
 		};
 		this.clear = function() {
-			for(key in $cookies.getAll()) {
+			for(const key in $cookies.getAll()) {
 				if(!key.startsWith("_"))
 					this.remove(key);
 			}
@@ -676,7 +678,7 @@ angular.module('iaf.beheerconsole')
 			$timeout( function () {
 				if($rootScope.hooks.hasOwnProperty(name)) {
 					var hooks = $rootScope.hooks[name];
-					for(id in hooks) {
+					for(const id in hooks) {
 						hooks[id].apply(this, args);
 						if(id == "once") {
 							$rootScope.removeHook(name, id);
@@ -741,9 +743,9 @@ angular.module('iaf.beheerconsole')
 		return function(adapters) {
 			if(!adapters) return;
 			let schedulerEligibleAdapters={};
-			for(adapter in adapters) {
+			for(const adapter in adapters) {
 				let receivers = adapters[adapter].receivers;
-				for(r in receivers) {
+				for(const r in receivers) {
 					let receiver=receivers[r];
 					if(receiver.listener.class.startsWith('JavaListener')){
 						schedulerEligibleAdapters[adapter] = adapters[adapter];
@@ -766,7 +768,7 @@ angular.module('iaf.beheerconsole')
 		return function(input, format) {
 			if(!input || !format) return; //skip when no input
 			var formatted = {};
-			for(key in format) {
+			for(const key in format) {
 				var value = input[key];
 				if(!value && value !== 0) { // if no value, return a dash
 					value = "-";
@@ -817,30 +819,30 @@ angular.module('iaf.beheerconsole')
 		};
 	}]).factory('Base64', function () {
 		var keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-	  
+
 		return {
 			encode: function (input) {
 				var output = "";
 				var chr1, chr2, chr3 = "";
 				var enc1, enc2, enc3, enc4 = "";
 				var i = 0;
-	  
+
 				do {
 					chr1 = input.charCodeAt(i++);
 					chr2 = input.charCodeAt(i++);
 					chr3 = input.charCodeAt(i++);
-	  
+
 					enc1 = chr1 >> 2;
 					enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
 					enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
 					enc4 = chr3 & 63;
-	  
+
 					if (isNaN(chr2)) {
 						enc3 = enc4 = 64;
 					} else if (isNaN(chr3)) {
 						enc4 = 64;
 					}
-	  
+
 					output = output +
 						keyStr.charAt(enc1) +
 						keyStr.charAt(enc2) +
@@ -849,16 +851,16 @@ angular.module('iaf.beheerconsole')
 					chr1 = chr2 = chr3 = "";
 					enc1 = enc2 = enc3 = enc4 = "";
 				} while (i < input.length);
-	  
+
 				return output;
 			},
-	  
+
 			decode: function (input) {
 				var output = "";
 				var chr1, chr2, chr3 = "";
 				var enc1, enc2, enc3, enc4 = "";
 				var i = 0;
-	  
+
 				// remove all characters that are not A-Z, a-z, 0-9, +, /, or =
 				var base64test = /[^A-Za-z0-9\+\/\=]/g;
 				if (base64test.exec(input)) {
@@ -867,31 +869,31 @@ angular.module('iaf.beheerconsole')
 						"Expect errors in decoding.");
 				}
 				input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-	  
+
 				do {
 					enc1 = keyStr.indexOf(input.charAt(i++));
 					enc2 = keyStr.indexOf(input.charAt(i++));
 					enc3 = keyStr.indexOf(input.charAt(i++));
 					enc4 = keyStr.indexOf(input.charAt(i++));
-	  
+
 					chr1 = (enc1 << 2) | (enc2 >> 4);
 					chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
 					chr3 = ((enc3 & 3) << 6) | enc4;
-	  
+
 					output = output + String.fromCharCode(chr1);
-	  
+
 					if (enc3 != 64) {
 						output = output + String.fromCharCode(chr2);
 					}
 					if (enc4 != 64) {
 						output = output + String.fromCharCode(chr3);
 					}
-	  
+
 					chr1 = chr2 = chr3 = "";
 					enc1 = enc2 = enc3 = enc4 = "";
-	  
+
 				} while (i < input.length);
-	  
+
 				return output;
 			}
 		};
@@ -1095,7 +1097,7 @@ angular.module('iaf.beheerconsole')
 										window.location.href = login_url;
 									}
 								});
-							
+
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");

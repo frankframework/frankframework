@@ -1,3 +1,6 @@
+import 'jquery';
+import 'metismenu';
+
 import 'angular';
 import 'angular-animate';
 import 'angular-aria';
@@ -19,6 +22,11 @@ import 'angularjs-toaster';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/scss/font-awesome.scss';
+import 'font-awesome/fonts/fontawesome-webfont.svg';
+import 'font-awesome/fonts/fontawesome-webfont.eot';
+import 'font-awesome/fonts/fontawesome-webfont.ttf';
+import 'font-awesome/fonts/fontawesome-webfont.woff';
+import 'font-awesome/fonts/fontawesome-webfont.woff2';
 import './css/animate.css';
 
 import 'sweetalert/lib/sweet-alert.css';

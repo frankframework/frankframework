@@ -1,26 +1,25 @@
 const path = require('path');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+const distDir = path.resolve(__dirname, '../gui/');
 
 module.exports = {
   mode: 'development',
   entry: './index.js',
   output: {
-    filename: 'js/main.[contenthash].js',
-    path: path.resolve(__dirname, '../gui/'),
+    // filename: 'js/main.[contenthash].js',
+    filename: 'js/bundle.js',
+    path: distDir,
   },
   plugins: [
     new CopyPlugin({
       patterns: [
-		{ from: "./css/patterns", to: "css/patterns" },
+        { from: "./css/patterns", to: "css/patterns" },
         { from: "./images", to: "images" },
         { from: "./views", to: "views" },
+        { from: "./index.jsp", to: "index.jsp" },
       ],
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: './index.html'
     }),
     new CleanWebpackPlugin(),
   ],
@@ -66,6 +65,13 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: require.resolve("jquery"),
+        loader: "expose-loader",
+        options: {
+          exposes: ["$", "jQuery"],
+        },
       },
     ]
   }

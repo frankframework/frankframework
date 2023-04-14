@@ -3,6 +3,8 @@
  * Used on all pages except login/logout
  *
  */
+import Pace from 'pace-js'
+
 angular.module('iaf.beheerconsole')
 .controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',
 	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
@@ -226,18 +228,18 @@ angular.module('iaf.beheerconsole')
 				$scope.addWarning('', configurations.warnings[x]);
 			}
 
-			for(i in configurations) {
+			for(const i in configurations) {
 				var configuration = configurations[i];
 				if(configuration.exception)
 					$scope.addException(i, configuration.exception);
 				if(configuration.warnings) {
-					for(x in configuration.warnings) {
+					for(const x in configuration.warnings) {
 						$scope.addWarning(i, configuration.warnings[x]);
 					}
 				}
 
 				configuration.messageLevel = "INFO";
-				for(x in configuration.messages) {
+				for(const x in configuration.messages) {
 					var level = configuration.messages[x].level;
 					if(level == "WARN" && configuration.messageLevel != "ERROR")
 						configuration.messageLevel = "WARN";
@@ -251,14 +253,14 @@ angular.module('iaf.beheerconsole')
 
 		var raw_adapter_data = {};
 		var pollerCallback = function(allAdapters) {
-			for(adapterName in raw_adapter_data) { //Check if any old adapters should be removed
+			for(const adapterName in raw_adapter_data) { //Check if any old adapters should be removed
 				if(!allAdapters[adapterName]) {
 					delete raw_adapter_data[adapterName];
 					delete $rootScope.adapters[adapterName];
 					Debug.log("removed adapter ["+adapterName+"]");
 				}
 			}
-			for(adapterName in allAdapters) { //Add new adapter information
+			for(const adapterName in allAdapters) { //Add new adapter information
 				var adapter = allAdapters[adapterName];
 
 				if(raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
@@ -266,7 +268,7 @@ angular.module('iaf.beheerconsole')
 
 					adapter.status = "started";
 
-					for(x in adapter.receivers) {
+					for(const x in adapter.receivers) {
 						var adapterReceiver = adapter.receivers[x];
 						if(adapterReceiver.state != 'started')
 							adapter.status = 'warning';
@@ -284,7 +286,7 @@ angular.module('iaf.beheerconsole')
 					adapter.hasSender = false;
 					adapter.sendersMessageLogCount=0;
 					adapter.senderTransactionalStorageMessageCount=0;
-					for(x in adapter.pipes) {
+					for(const x in adapter.pipes) {
 						let pipe = adapter.pipes[x];
 						if(pipe.sender) {
 							adapter.hasSender = true;
@@ -365,15 +367,15 @@ angular.module('iaf.beheerconsole')
 		};
 
 		var allAdapters = $rootScope.adapters;
-		for(adapterName in allAdapters) {
+		for(const adapterName in allAdapters) {
 			var adapter = allAdapters[adapterName];
 
 			if(adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
 				adapterSummary[adapter.state]++;
-				for(i in adapter.receivers) {
+				for(const i in adapter.receivers) {
 					receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
 				}
-				for(i in adapter.messages) {
+				for(const i in adapter.messages) {
 					var level = adapter.messages[i].level.toLowerCase();
 					messageSummary[level]++;
 				}
@@ -399,7 +401,7 @@ angular.module('iaf.beheerconsole')
 		if(name.length > 20)
 			name = name.substring(0, 17) + "...";
 		if(adapter.started == true) {
-			for(x in adapter.receivers) {
+			for(const x in adapter.receivers) {
 				if(adapter.receivers[x].started == false) {
 					Notification.add('fa-exclamation-circle', "Receiver '"+name+"' stopped!", false, function() {
 						$location.path("status");
@@ -672,7 +674,7 @@ angular.module('iaf.beheerconsole')
 	return function(adapters, $scope) {
 		if(!adapters || adapters.length < 1) return [];
 		var r = {};
-		for(adapterName in adapters) {
+		for(const adapterName in adapters) {
 			var adapter = adapters[adapterName];
 
 			if((adapter.configuration == $scope.selectedConfiguration || $scope.selectedConfiguration == "All") && ($scope.filter == undefined || $scope.filter[adapter.status]))
@@ -690,7 +692,7 @@ angular.module('iaf.beheerconsole')
 		var searchText = $scope.searchText.toLowerCase();
 
 		var r = {};
-		for(adapterName in adapters) {
+		for(const adapterName in adapters) {
 			var adapter = adapters[adapterName];
 
 			if(JSON.stringify(adapter).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1)
@@ -734,7 +736,7 @@ angular.module('iaf.beheerconsole')
 	};
 	if($state.params.filter != "") {
 		var filter = $state.params.filter.split("+");
-		for(f in $scope.filter) {
+		for(const f in $scope.filter) {
 			$scope.filter[f] = (filter.indexOf(f) > -1);
 		}
 	}
@@ -747,7 +749,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.updateQueryParams = function() {
 		var filterStr = [];
-		for(f in $scope.filter) {
+		for(const f in $scope.filter) {
 			if($scope.filter[f])
 				filterStr.push(f);
 		}
@@ -778,7 +780,7 @@ angular.module('iaf.beheerconsole')
 	$scope.stopAll = function() {
 		let compiledAdapterList = Array();
 		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
-		for(adapter in adapters) {
+		for(const adapter in adapters) {
 			let configuration = adapters[adapter].configuration;
 			compiledAdapterList.push(configuration+"/"+adapter);
 		}
@@ -787,7 +789,7 @@ angular.module('iaf.beheerconsole')
 	$scope.startAll = function() {
 		let compiledAdapterList = Array();
 		let adapters = $filter('configurationFilter')($scope.adapters, $scope);
-		for(adapter in adapters) {
+		for(const adapter in adapters) {
 			let configuration = adapters[adapter].configuration;
 			compiledAdapterList.push(configuration+"/"+adapter);
 		}
@@ -968,7 +970,7 @@ angular.module('iaf.beheerconsole')
 	function update() {
 		$scope.loading = true;
 		Api.Get("configurations/"+$state.params.name+"/versions", function(data) {
-			for(x in data) {
+			for(const x in data) {
 				var configs = data[x];
 				if(configs.active) {
 					configs.actived = true;
@@ -1001,7 +1003,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.activate = function(config) {
-		for(x in $scope.versions) {
+		for(const x in $scope.versions) {
 			var configs = $scope.versions[x];
 			if(configs.version != config.version)
 				configs.actived = false;
@@ -1063,7 +1065,7 @@ angular.module('iaf.beheerconsole')
 		Api.Post("configurations", fd, function(data) {
 			$scope.error = "";
 			$scope.result = "";
-			for(pair in data){
+			for(const pair in data){
 				if(data[pair] == "loaded"){
 					$scope.result += "Successfully uploaded configuration ["+pair+"]<br/>";
 				} else {
@@ -1165,7 +1167,7 @@ angular.module('iaf.beheerconsole')
 		var returnArray = new Array();
 
 		filterText = filterText.toLowerCase();
-		for(i in variables) {
+		for(const i in variables) {
 			var variable = variables[i];
 			if(JSON.stringify(variable).toLowerCase().indexOf(filterText) > -1) {
 				returnArray.push(variable);
@@ -1243,16 +1245,16 @@ angular.module('iaf.beheerconsole')
 
 		Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
 
-		for(i in timeBoundaries) {
+		for(const i in timeBoundaries) {
 			var j = timeBoundaries[i];
 			$scope.statisticsTimeBoundaries[j+"ms"] = "< " + j + "ms";
 		}
-		for(i in sizeBoundaries) {
+		for(const i in sizeBoundaries) {
 			var j = sizeBoundaries[i];
 			$scope.statisticsSizeBoundaries[j+"B"] = "< " + j + "B";
 		}
 		if (displayPercentiles) {
-			for(i in percBoundaries) {
+			for(const i in percBoundaries) {
 				var j = "p"+percBoundaries[i];
 				$scope.statisticsTimeBoundaries[j] = j;
 				$scope.statisticsSizeBoundaries[j] = j;
@@ -1274,7 +1276,7 @@ angular.module('iaf.beheerconsole')
 
 			var labels = [];
 			var chartData = [];
-			for(i in data["hourly"]) {
+			for(const i in data["hourly"]) {
 				var a = data["hourly"][i];
 				labels.push(a["time"]);
 				chartData.push(a["count"]);
@@ -1593,12 +1595,12 @@ angular.module('iaf.beheerconsole')
 	$scope.deleteMessage = $scope.doDeleteMessage;
 
 	$scope.selectAll = function() {
-		for(i in $scope.selectedMessages) {
+		for(const i in $scope.selectedMessages) {
 			$scope.selectedMessages[i] = true;
 		}
 	}
 	$scope.unselectAll = function() {
-		for(i in $scope.selectedMessages) {
+		for(const i in $scope.selectedMessages) {
 			$scope.selectedMessages[i] = false;
 		}
 	}
@@ -1607,7 +1609,7 @@ angular.module('iaf.beheerconsole')
 	$scope.messagesDeleting = false;
 	function getFormData() {
 		var messageIds = [];
-		for(i in $scope.selectedMessages) {
+		for(const i in $scope.selectedMessages) {
 			if($scope.selectedMessages[i]) {
 				messageIds.push(i);
 				$scope.selectedMessages[i] = false;//unset the messageId
@@ -1785,7 +1787,7 @@ angular.module('iaf.beheerconsole')
 	Api.Get("inlinestores/overview", function(data) {
 		$scope.result = data;
 	});
-	
+
 }])
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.rootURL = Misc.getServerPath();
@@ -1804,10 +1806,10 @@ angular.module('iaf.beheerconsole')
 	$scope.jmsRealms = [];
 	$scope.securityRoles = [];
 	$scope.certificates = [];
-	for(a in $rootScope.adapters) {
+	for(const a in $rootScope.adapters) {
 		var adapter = $rootScope.adapters[a];
 		if(adapter.pipes) {
-			for(p in adapter.pipes) {
+			for(const p in adapter.pipes) {
 				var pipe = adapter.pipes[p];
 				if(pipe.certificate)
 					$scope.certificates.push({
@@ -2484,7 +2486,7 @@ angular.module('iaf.beheerconsole')
 			$scope.query = returnData.query;
 
 			var i = 0;
-			for(x in returnData.fielddefinition) {
+			for(const x in returnData.fielddefinition) {
 				$scope.columnNames.push({
 					id: i++,
 					name: x,
@@ -2493,10 +2495,10 @@ angular.module('iaf.beheerconsole')
 				columnNameArray.push(x);
 			}
 
-			for(x in returnData.result) {
+			for(const x in returnData.result) {
 				var row = returnData.result[x];
 				var orderedRow = [];
-				for(columnName in row) {
+				for(const columnName in row) {
 					var index = columnNameArray.indexOf(columnName);
 					var value = row[columnName];
 
@@ -2545,11 +2547,11 @@ angular.module('iaf.beheerconsole')
 			$.extend($scope, data);
 
 			$scope.totalRaised = 0;
-			for(i in $scope.monitors) {
+			for(const i in $scope.monitors) {
 				if($scope.monitors[i].raised) $scope.totalRaised++;
 				var monitor = $scope.monitors[i];
 				monitor.activeDestinations = [];
-				for(j in $scope.destinations) {
+				for(const j in $scope.destinations) {
 					var destination = $scope.destinations[j];
 					monitor.activeDestinations[destination] = (monitor.destinations.indexOf(destination)>-1);
 				}
@@ -2584,7 +2586,7 @@ angular.module('iaf.beheerconsole')
 	}
 	$scope.edit = function(monitor) {
 		var destinations = [];
-		for(dest in monitor.activeDestinations) {
+		for(const dest in monitor.activeDestinations) {
 			if(monitor.activeDestinations[dest]) {
 				destinations.push(dest);
 			}
@@ -2646,9 +2648,9 @@ angular.module('iaf.beheerconsole')
 			var sources = data.trigger.sources;
 				$scope.trigger.sources = [];
 				$scope.trigger.adapters = [];
-				for(adapter in sources) {
+				for(const adapter in sources) {
 					if(data.trigger.filter == "source") {
-						for(i in sources[adapter]) {
+						for(const i in sources[adapter]) {
 							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
 						}
 					} else {
@@ -2665,7 +2667,7 @@ angular.module('iaf.beheerconsole')
 		if(!events) return [];
 
 		var adapters = [];
-		for(eventName in $scope.events) {
+		for(const eventName in $scope.events) {
 			if(events.indexOf(eventName) > -1) {
 				var arr = $scope.events[eventName].adapters;
 				adapters = adapters.concat(arr);
@@ -2675,11 +2677,11 @@ angular.module('iaf.beheerconsole')
 	}
 	$scope.eventSources = [];
 	function calculateEventSources() {
-		for(eventCode in $scope.events) {
+		for(const eventCode in $scope.events) {
 			var retVal = [];
 			var eventSources = $scope.events[eventCode].sources;
-			for(adapter in eventSources) {
-				for(i in eventSources[adapter]) {
+			for(const adapter in eventSources) {
+				for(const i in eventSources[adapter]) {
 					retVal.push({adapter:adapter, source: eventSources[adapter][i]});
 				}
 			}
@@ -2688,7 +2690,7 @@ angular.module('iaf.beheerconsole')
 	}
 	$scope.getSourceForEvents = function(events) {
 		var retval = [];
-		for(i in events) {
+		for(const i in events) {
 			var eventCode = events[i];
 			retval = retval.concat($scope.eventSources[eventCode]);
 		}
@@ -2702,7 +2704,7 @@ angular.module('iaf.beheerconsole')
 			delete trigger.adapters;
 			var sources = trigger.sources;
 			trigger.sources = {};
-			for(i in sources) {
+			for(const i in sources) {
 				var s = sources[i].split("$$");
 				var adapter = s[0];
 				var source = s[1];
@@ -2739,7 +2741,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.updateSessionKeys = function(sessionKey, index) {
 		let sessionKeyIndex = sessionKeys.findIndex(f => f.index===index);	// find by index
-		if(sessionKeyIndex >= 0) {	
+		if(sessionKeyIndex >= 0) {
 			if(sessionKey.name=="" && sessionKey.value=="") { // remove row if row is empty
 				sessionKeys.splice(sessionKeyIndex, 1);
 				$scope.sessionKeyIndices.splice(sessionKeyIndex, 1);
@@ -2761,7 +2763,7 @@ angular.module('iaf.beheerconsole')
 					$scope.addNote("warning", "Session keys cannot have the same name!");
 			}
 		}
-		
+
 	}
 
 	$scope.submit = function(formData) {
