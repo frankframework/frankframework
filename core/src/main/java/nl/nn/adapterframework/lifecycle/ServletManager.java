@@ -54,6 +54,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * <p>
@@ -160,7 +161,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
-			String setter = firstCharToLower(method.getName().substring(3));
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = appConstants.getProperty(properyPrefix+setter);
 			if(StringUtils.isEmpty(value))
 				continue;
@@ -169,10 +170,6 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 
 		authenticators.put(authenticatorName, authenticator);
-	}
-
-	private String firstCharToLower(String input) {
-		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
 	protected static void setupDefaultSecuritySettings(Properties properties) {
