@@ -154,14 +154,14 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 	public static MessageSelector topicSelector(BusTopic topic) {
 		return message -> {
-			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
+			String topicHeader = (String) message.getHeaders().get(BusTopic.TOPIC_HEADER_NAME);
 			return topic.name().equalsIgnoreCase(topicHeader);
 		};
 	}
 
 	public static MessageSelector actionSelector(BusAction action) {
 		return message -> {
-			String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
+			String actionHeader = (String) message.getHeaders().get(BusAction.ACTION_HEADER_NAME);
 			return action.name().equalsIgnoreCase(actionHeader);
 		};
 	}

@@ -1067,6 +1067,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>

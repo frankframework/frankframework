@@ -28,10 +28,8 @@ import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import nl.nn.adapterframework.http.HttpUtils;
-import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.TopicSelector;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
@@ -52,7 +50,7 @@ public class RequestMessageBuilder {
 	}
 
 	public RequestMessageBuilder addHeader(String key, Object value) {
-		if(TopicSelector.TOPIC_HEADER_NAME.equals(key)) {
+		if(BusTopic.TOPIC_HEADER_NAME.equals(key)) {
 			throw new IllegalStateException("unable to override topic header");
 		}
 		customHeaders.put(key, value);
@@ -75,9 +73,9 @@ public class RequestMessageBuilder {
 	public Message<?> build() {
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
-		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
+		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
-			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action.name());
+			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
 		UriInfo uriInfo = base.getUriInfo();

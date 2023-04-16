@@ -72,7 +72,7 @@ public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler i
 
 		@Override
 		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
-			if(rootObject instanceof Message<?> && ((Message<?>) rootObject).getPayload() == "NONE") {
+			if(rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
 				return HttpMethod.GET;
 			}
 			return super.getValue(context, rootObject);
