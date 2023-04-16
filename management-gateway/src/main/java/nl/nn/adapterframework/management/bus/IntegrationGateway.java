@@ -17,6 +17,9 @@ package nl.nn.adapterframework.management.bus;
 
 import org.springframework.messaging.Message;
 
+/**
+ * NB: Autowire by CONSTRUCTOR only!
+ */
 public interface IntegrationGateway<T> {
 
 	/**

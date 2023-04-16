@@ -37,6 +37,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.integration.IntegrationPattern;
+import org.springframework.integration.IntegrationPatternType;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.http.inbound.HttpRequestHandlingMessagingGateway;
 import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
@@ -45,59 +47,61 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
-//@IbisInitializer
-public class HttpInboundGateway extends HttpServlet implements InitializingBean, ApplicationContextAware {
+public class HttpInboundGateway extends HttpServlet implements DynamicRegistration.Servlet, IntegrationPattern, InitializingBean, ApplicationContextAware {
 
 	private static final long serialVersionUID = 1L;
+
 	private final transient Logger log = LogManager.getLogger(HttpInboundGateway.class);
 
-	@Value("${httpPath}")
-	private final String httpPath = null;
 	private transient HttpRequestHandlingMessagingGateway gateway;
+	private transient @Setter ApplicationContext applicationContext;
 
-	@Setter private transient ApplicationContext applicationContext;
+	@Value("${management.gateway.http.inbound.path:/iaf/management}")
+	private transient String httpPath;
 
 	@Override
 	public void afterPropertiesSet() {
+		if(applicationContext == null) {
+			throw new IllegalStateException("no ApplicationContext set");
+		}
+
 		if(gateway == null) {
 			addRequestContextFilter();
-
-			gateway = SpringUtils.createBean(applicationContext, HttpRequestHandlingMessagingGateway.class);
-			MessageChannel requestChannel = applicationContext.getBean("frank-management-bus", MessageChannel.class);
-			gateway.setRequestChannel(requestChannel);
-
-			gateway.setErrorChannel(createErrorChannel());
-
-			DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext, DefaultHttpHeaderMapper.class);
-			headerMapper.setInboundHeaderNames("topic", "action");
-			headerMapper.setOutboundHeaderNames("meta-*");
-			gateway.setHeaderMapper(headerMapper);
-			gateway.setErrorOnTimeout(true);
-
-
-			List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
-			StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
-			stringHttpMessageConverter.setWriteAcceptCharset(false);
-			messageConverters.add(stringHttpMessageConverter);
-			messageConverters.add(new InputStreamHttpMessageConverter());
-			messageConverters.add(new ByteArrayHttpMessageConverter());
-			gateway.setMessageConverters(messageConverters);
-
-			gateway.start();
+			createGateway();
 		}
+	}
+
+	private void createGateway() {
+		gateway = SpringUtils.createBean(applicationContext, HttpRequestHandlingMessagingGateway.class);
+		gateway.setRequestChannel(getRequestChannel(applicationContext));
+		gateway.setErrorChannel(getErrorChannel(applicationContext));
+		gateway.setMessageConverters(getMessageConverters());
+		gateway.setErrorOnTimeout(true);
+
+		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext, DefaultHttpHeaderMapper.class);
+		headerMapper.setInboundHeaderNames("topic", "action");
+		headerMapper.setOutboundHeaderNames("meta-*");
+		gateway.setHeaderMapper(headerMapper);
+
+		gateway.start();
 	}
 
 	private void addRequestContextFilter() {
 		ServletContext context = applicationContext.getBean("servletContext", ServletContext.class);
 		FilterRegistration.Dynamic filter = context.addFilter("RequestContextFilter", RequestContextFilter.class);
 		EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
-		filter.addMappingForServletNames(dispatcherTypes, false, getServletName());
+		filter.addMappingForServletNames(dispatcherTypes, false, getName());
 	}
 
-	private SubscribableChannel createErrorChannel() {
+	private MessageChannel getRequestChannel(ApplicationContext applicationContext) {
+		return applicationContext.getBean("frank-management-bus", MessageChannel.class);
+	}
+
+	private SubscribableChannel getErrorChannel(ApplicationContext applicationContext) {
 		PublishSubscribeChannel channel = SpringUtils.createBean(applicationContext, PublishSubscribeChannel.class);
 		channel.setBeanName("ErrorMessageConvertingChannel");
 		ErrorMessageConverter errorConverter = SpringUtils.createBean(applicationContext, ErrorMessageConverter.class);
@@ -108,6 +112,16 @@ public class HttpInboundGateway extends HttpServlet implements InitializingBean,
 			gateway.setErrorOnTimeout(false);
 		}
 		return channel;
+	}
+
+	private List<HttpMessageConverter<?>> getMessageConverters() {
+		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
+		stringHttpMessageConverter.setWriteAcceptCharset(false);
+		messageConverters.add(stringHttpMessageConverter);
+		messageConverters.add(new InputStreamHttpMessageConverter());
+		messageConverters.add(new ByteArrayHttpMessageConverter());
+		return messageConverters;
 	}
 
 	@Override
@@ -125,25 +139,23 @@ public class HttpInboundGateway extends HttpServlet implements InitializingBean,
 		super.destroy();
 	}
 
-//	@Override
-//	public String getUrlMapping() {
-//		return httpPath;
-//	}
-//
-//	@Override
-//	public String[] getAccessGrantingRoles() {
-//		return DynamicRegistration.ALL_IBIS_USER_ROLES;
-//	}
-//
-//	@Override
 	@Override
-	public String getServletName() {
-		System.err.println(super.getServletName());
+	public String getUrlMapping() {
+		return httpPath;
+	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return DynamicRegistration.ALL_IBIS_USER_ROLES;
+	}
+
+	@Override
+	public String getName() {
 		return this.getClass().getSimpleName();
 	}
-//
-//	@Autowired
-//	public void setServletManager(ServletManager servletManager) {
-//		servletManager.register(this);
-//	}
+
+	@Override
+	public IntegrationPatternType getIntegrationPatternType() {
+		return IntegrationPatternType.inbound_gateway;
+	}
 }

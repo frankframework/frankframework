@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:cxf="http://cxf.apache.org/core"
 	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xsi:schemaLocation="
-		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
 		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
 
 	<bean id="ff-api-bus" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
@@ -17,6 +19,11 @@
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
 -->
+
+	<!-- Messaging Gateway -->
+	<bean id="gateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
+		<property name="gatewayClassname" value="nl.nn.adapterframework.management.gateway.HttpOutboundGateway" />
+	</bean>
 
 	<jaxrs:server id="IAF-API" bus="ff-api-bus" address="/" basePackages="nl.nn.adapterframework.management.web, nl.nn.adapterframework.webcontrol.api">
 		<jaxrs:providers>

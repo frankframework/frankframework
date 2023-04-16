@@ -17,8 +17,10 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 /**
- * Interface to use in combination with the {@link IbisInitializer} annotation.
+ * Interface to use in combination with a Spring {@link Component} annotation.
  * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
  * <code>
  * public void setServletManager(ServletManager servletManager) {
@@ -46,7 +48,7 @@ public interface DynamicRegistration {
 		/**
 		 * The default authorization roles giving access to the {@link javax.servlet.http.HttpServlet Servlet}, or <code>null</code> to disable.
 		 * This value may be overridden by setting property <code>servlet.servlet-name.securityRoles</code> to the roles that should be granted access.
-		 * see {@link ServletManager} for more information.
+		 * see ServletManager for more information.
 		 */
 		public String[] getAccessGrantingRoles();
 	}

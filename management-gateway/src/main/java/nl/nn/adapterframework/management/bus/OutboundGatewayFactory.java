@@ -17,33 +17,35 @@ package nl.nn.adapterframework.management.bus;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
-import nl.nn.adapterframework.util.SpringUtils;
 
-public class GatewayFactoryBean<T> implements InitializingBean, DisposableBean, ApplicationContextAware, FactoryBean<IntegrationGateway<T>> {
+/**
+ * Allows the creation of outbound integration gateways.
+ */
+public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationContextAware, FactoryBean<IntegrationGateway<T>> {
 
 	private Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 	private IntegrationGateway<T> gateway;
 
-	//May be a nl.nn.adapterframework.management.gateway.HttpOutboundGateway
-	private String gatewayType = "nl.nn.adapterframework.management.bus.LocalGateway";
+	private @Setter String gatewayClassname = LocalGateway.class.getCanonicalName();
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
-		Class<?> gatewayClass = null;//ClassUtils.loadClass(gatewayType);
+		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 		if(!IntegrationGateway.class.isAssignableFrom(gatewayClass)) {
-			throw new IllegalArgumentException("gateway does not implement type IntegrationGateway");
+			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
 		}
 
-		gateway = (IntegrationGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
+		gateway = (IntegrationGateway<T>) applicationContext.getAutowireCapableBeanFactory().createBean(gatewayClass, AutowireCapableBeanFactory.AUTOWIRE_NO, false);
 		log.info("created gateway [{}]", gateway);
 	}
 
@@ -61,12 +63,5 @@ public class GatewayFactoryBean<T> implements InitializingBean, DisposableBean, 
 	@Override
 	public boolean isSingleton() {
 		return true;
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		if(gateway instanceof AutoCloseable) {
-			((AutoCloseable) gateway).close();
-		}
 	}
 }

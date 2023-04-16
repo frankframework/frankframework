@@ -25,6 +25,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -122,14 +123,21 @@ public class BusMessageUtils {
 		MessageHeaders headers = response.getHeaders();
 		String mime = headers.get(ResponseMessageBase.MIMETYPE_KEY, String.class);
 		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
-			String json = (String) response.getPayload();
-			return generateETagHeaderValue(json, true);
+			return generateETagHeaderValue(response.getPayload(), true);
 		}
 		return null;
 	}
 
-	private static EntityTag generateETagHeaderValue(String json, boolean isWeak) {
-		byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+	private static EntityTag generateETagHeaderValue(Object payload, boolean isWeak) {
+		byte[] bytes;
+		if(payload instanceof String) {
+			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
+		} else if (payload instanceof byte[]) {
+			bytes = (byte[]) payload;
+		} else {
+			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
+		}
+
 		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
 

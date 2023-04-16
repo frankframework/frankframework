@@ -36,13 +36,17 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler implements IntegrationGateway<T> {
 
-	@Value("${management.http.endpoint}")
-	private String httpEndpoint = null;
+	public HttpOutboundGateway() {
+		this("http://localhost/iaf-test/iaf/management");
+	}
 
-	public HttpOutboundGateway(String endpoint) {
+	public HttpOutboundGateway(@Value("${management.gateway.http.outbound.endpoint}") String endpoint) {
 		super(endpoint);
 	}
 
+	/**
+	 * Triggered by final AfterPropertiesSet()
+	 */
 	@Override
 	protected void doInit() {
 		super.doInit();
