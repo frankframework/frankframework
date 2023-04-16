@@ -223,6 +223,11 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
 		ServletConfiguration config = new ServletConfiguration(servlet);
 
+		if(!config.isEnabled()) {
+			log.info("skip instantiating servlet name [{}] not enabled", config::getName);
+			return;
+		}
+
 		registerServlet(servlet, config, parameters);
 
 		String authenticatorName = config.getAuthenticatorName();
@@ -238,15 +243,10 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	private void registerServlet(Servlet servlet, ServletConfiguration config, Map<String, String> initParameters) {
 		String servletName = config.getName();
 		if(servlets.containsKey(servletName)) {
-			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
+			throw new IllegalArgumentException("unable to instantiate servlet ["+servletName+"], servlet name must be unique");
 		}
 
 		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, servlet);
-
-		if(!config.isEnabled()) {
-			log.info("skip instantiating servlet name [{}] not enabled", servletName);
-			return;
-		}
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 
