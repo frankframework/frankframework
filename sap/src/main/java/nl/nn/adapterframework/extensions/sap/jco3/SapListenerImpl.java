@@ -157,10 +157,10 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<JCoFunction> rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<JCoFunction> rawMessageWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (rawMessageOrWrapper.getRawMessage() != null) {
-				message2FunctionResult(rawMessageOrWrapper.getRawMessage(), processResult.getResult().asString());
+			if (rawMessageWrapper.getRawMessage() != null) {
+				message2FunctionResult(rawMessageWrapper.getRawMessage(), processResult.getResult().asString());
 			}
 		} catch (SapException | IOException e) {
 			throw new ListenerException(e);

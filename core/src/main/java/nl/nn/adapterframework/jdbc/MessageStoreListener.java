@@ -132,9 +132,9 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return super.extractMessage(rawMessage, threadContext);
 	}
 
-	private Message convertToMessage(RawMessageWrapper<M> rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+	private Message convertToMessage(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
-		String messageData = extractStringData(rawMessageOrWrapper);
+		String messageData = extractStringData(rawMessageWrapper);
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().get(0);
 			message = new Message(csvRecord.get(0));
@@ -149,17 +149,17 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return message;
 	}
 
-	private static String extractStringData(RawMessageWrapper<?> rawMessageOrWrapper) throws ListenerException {
-		if (rawMessageOrWrapper == null) {
+	private static String extractStringData(RawMessageWrapper<?> rawMessageWrapper) throws ListenerException {
+		if (rawMessageWrapper == null) {
 			throw new ListenerException("Raw message data is null");
-		} else if (rawMessageOrWrapper instanceof MessageWrapper) {
+		} else if (rawMessageWrapper instanceof MessageWrapper) {
 			try {
-				return ((MessageWrapper<?>) rawMessageOrWrapper).getMessage().asString();
+				return ((MessageWrapper<?>) rawMessageWrapper).getMessage().asString();
 			} catch (IOException e) {
 				throw new ListenerException("Exception extracting string data from message", e);
 			}
 		} else {
-			return rawMessageOrWrapper.getRawMessage().toString();
+			return rawMessageWrapper.getRawMessage().toString();
 		}
 	}
 
