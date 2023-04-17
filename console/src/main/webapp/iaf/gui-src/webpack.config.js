@@ -9,8 +9,20 @@ module.exports = {
   entry: './index.js',
   output: {
     // filename: 'js/main.[contenthash].js',
-    filename: 'js/bundle.js',
+    filename: 'js/[name].bundle.js',
     path: distDir,
+  },
+  optimization: {
+    // runtimeChunk: 'single',
+    splitChunks: {
+	  cacheGroups: {
+	    vendor: {
+		  test: /[\\/]node_modules[\\/]/,
+		  name: 'vendors',
+		  chunks: 'all'
+		}
+	  }
+	}
   },
   plugins: [
     new CopyPlugin({

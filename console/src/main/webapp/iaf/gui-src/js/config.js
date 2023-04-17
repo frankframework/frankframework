@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider', 
-	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
+angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
+	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -13,8 +13,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$cookiesProvider.defaults.secure = (location.protocol == "https:");
 	$cookiesProvider.defaults.samesite = 'strict';
 
-	$ocLazyLoadProvider.config({
-		modules: [
+	/*$ocLazyLoadProvider.config({
+		/!*modules: [
 		{
 			name: 'datatables',
 			serie: true,
@@ -36,10 +36,10 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				'js/plugins/mermaid/mermaid.min.js',
 				'js/plugins/mermaid/ng-mermaid.js',
 			]
-		}],
+		}],*!/
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
-	});
+	});*/
 
 	laddaProvider.setOption({
 		style: 'expand-right'
@@ -106,8 +106,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			id: 0,
 		},
 		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('chartjs');
+			loadPlugin: function(lazyLoader) {
+				return lazyLoader.load('angular-chart.js');
 			},
 		},
 	})
@@ -134,8 +134,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		url: "stores/:processState",
 		templateUrl: "views/txstorage/adapter_storage_list.html",
 		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
+			loadPlugin: function(lazyLoader) {
+				return lazyLoader.load('angular-datatables');
 			},
 		},
 	})
@@ -333,8 +333,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		url: "/connections",
 		templateUrl: "views/ShowConnectionOverview.html",
 		resolve: {
-			loadPlugin: function($ocLazyLoad) {
-				return $ocLazyLoad.load('datatables');
+			loadPlugin: function(lazyLoader) {
+				return lazyLoader.load('angular-datatables');
 			},
 		},
 		data: {
