@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * Interface to use in combination with a Spring {@link Component} annotation.
- * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
- * <code>
- * public void setServletManager(ServletManager servletManager) {
- *  ServletManager.register(this);
- * }
- * </code>
+ * Classes that implement the annotation are automatically picked up by Spring,
+ * and in combination with the ServletRegisteringPostProcessor the servlets are
+ * automatically registered with the ServletManager
  *
  * @author Niels Meijer
- *
  */
 public interface DynamicRegistration {
 
@@ -51,6 +47,10 @@ public interface DynamicRegistration {
 		 * see ServletManager for more information.
 		 */
 		public String[] getAccessGrantingRoles();
+
+		public default boolean isEnabled() {
+			return true;
+		}
 	}
 
 	public interface ServletWithParameters extends Servlet {

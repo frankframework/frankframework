@@ -19,11 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
 @IbisInitializer
 public class BrowserBinding extends CmisBrowserBindingServlet implements DynamicRegistration.ServletWithParameters {
@@ -46,10 +44,5 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
-	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
 	}
 }

@@ -19,10 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
 /**
  * It is important that we register the correct (CMIS) CXF bus, or else 
@@ -47,10 +45,5 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
-	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
 	}
 }

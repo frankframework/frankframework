@@ -64,6 +64,7 @@ public class ServletConfiguration {
 		this.urlMapping = configureUrlMapping(servlet.getUrlMapping());
 		this.securityRoles = servlet.getAccessGrantingRoles() == null ? Collections.emptyList() : Arrays.asList(servlet.getAccessGrantingRoles());
 		this.loadOnStartup = servlet.loadOnStartUp();
+		this.enabled = servlet.isEnabled();
 
 		defaultSecuritySettings();
 		loadProperties();
