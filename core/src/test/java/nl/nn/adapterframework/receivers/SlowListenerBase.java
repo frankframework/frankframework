@@ -17,6 +17,8 @@ package nl.nn.adapterframework.receivers;
 
 import java.util.Map;
 
+import javax.jms.JMSException;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -53,8 +55,17 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) throws ListenerException {
 		return rawMessage.getId();
+	}
+
+	@Override
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		try {
+			return rawMessage.getJMSMessageID();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	@Override

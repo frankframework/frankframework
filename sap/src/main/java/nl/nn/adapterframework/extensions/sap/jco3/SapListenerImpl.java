@@ -147,8 +147,13 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		return getCorrelationIdFromField(rawMessage.getRawMessage());
+	}
+
+	@Override
+	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return getCorrelationIdFromField(rawMessage);
 	}
 
 	@Override

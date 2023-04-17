@@ -326,7 +326,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				 JtaUtil.inTransaction()
 				) {
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, result);
-				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, getIdFromIfsaMessage((IFSAMessage) result, threadContext));
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, getIdFromRawMessage((IFSAMessage) result, threadContext));
 			} else {
 				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, result.getJMSMessageID());
 			}

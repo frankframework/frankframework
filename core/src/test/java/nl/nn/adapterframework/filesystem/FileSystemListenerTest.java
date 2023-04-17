@@ -457,7 +457,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+		String id=fileSystemListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
 		assertThat(id,endsWith(filename));
 
 		String filenameAttribute = (String)threadContext.get("filename");
@@ -480,7 +480,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+		String id=fileSystemListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
 		assertThat(id,endsWith(filename));
 
 		String filepathAttribute = (String)threadContext.get("filepath");
@@ -502,7 +502,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+		String id=fileSystemListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
 		assertThat(id,endsWith(filename));
 
 		String metadataAttribute = (String)threadContext.get("metadata");
@@ -529,7 +529,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+		String id=fileSystemListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
 		assertThat(id, containsString(filename));
 		String currentDateFormatted=DateUtils.format(new Date());
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());

@@ -42,7 +42,7 @@ public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 	public IfsaMessageWrapper(RawMessageWrapper message, IListener listener) throws ListenerException  {
 		super();
 		this.message = listener.extractMessage(message, context);
-		this.id = listener.getIdFromRawMessage(message, context);
+		this.id = listener.getIdFromRawMessageWrapper(message, context);
 	}
 
 	public Map getContext() {

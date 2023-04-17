@@ -77,11 +77,17 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
 		// TODO: Check code coverage of this line
 		// TODO: Check why not return rawMessage.getId() now (which may still be NULL).
+		return getIdFromRawMessage(rawMessage.getRawMessage(), threadContext);
+	}
+
+	@Override
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) {
 		return null;
 	}
+
 	@Override
 	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
 		// TODO: Check what if RawMessageWrapper is instance of MessageWrapper.

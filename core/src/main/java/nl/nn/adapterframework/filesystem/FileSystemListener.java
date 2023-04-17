@@ -319,11 +319,12 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<F> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<F> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		return rawMessage.getId();
 	}
 
-	protected String getIdFromRawFile(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
@@ -419,7 +420,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrap(F file, Map<String, Object> context) throws ListenerException {
-		return new RawMessageWrapper<>(file, getIdFromRawFile(file, context), context);
+		return new RawMessageWrapper<>(file, getIdFromRawMessage(file, context), context);
 	}
 
 	public String getStateFolder(ProcessState state) {

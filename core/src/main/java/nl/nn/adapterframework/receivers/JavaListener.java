@@ -213,7 +213,13 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+		// do nothing
+		return null;
+	}
+
+	@Override
+	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		// do nothing
 		return null;
 	}

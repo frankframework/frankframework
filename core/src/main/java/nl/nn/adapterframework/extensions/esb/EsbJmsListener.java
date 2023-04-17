@@ -103,12 +103,12 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
-		String id = super.retrieveIdFromMessage(message, threadContext);
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		String id = super.getIdFromRawMessage(rawMessage, threadContext);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
-				propertyNames = message.getPropertyNames();
+				propertyNames = rawMessage.getPropertyNames();
 			} catch (JMSException e) {
 				log.debug("ignoring JMSException in getPropertyName()", e);
 			}
@@ -116,7 +116,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				String propertyName = (String) propertyNames.nextElement ();
 				if (propertyName.startsWith("ae_")) {
 					try {
-						Object object = message.getObjectProperty(propertyName);
+						Object object = rawMessage.getObjectProperty(propertyName);
 						threadContext.put(propertyName, object);
 					} catch (JMSException e) {
 						log.debug("ignoring JMSException in getObjectProperty()", e);
@@ -126,7 +126,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 
 		try {
-			TextMessage textMessage = (TextMessage) message;
+			TextMessage textMessage = (TextMessage) rawMessage;
 			String soapMessage = textMessage.getText();
 
 			if(getxPathLogMap().size() > 0) {

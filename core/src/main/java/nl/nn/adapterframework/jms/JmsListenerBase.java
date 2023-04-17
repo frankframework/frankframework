@@ -134,18 +134,19 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return retrieveIdFromMessage(rawMessage.getRawMessage(), threadContext);
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return getIdFromRawMessage(rawMessage.getRawMessage(), threadContext);
 	}
 
-	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String id = "unset";
 		String cid = "unset";
 		DeliveryMode mode = null;
 		Date tsSent = null;
 		Destination replyTo=null;
 		try {
-			mode = DeliveryMode.parse(message.getJMSDeliveryMode());
+			mode = DeliveryMode.parse(rawMessage.getJMSDeliveryMode());
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSDeliveryMode()", e);
 		}
@@ -153,7 +154,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		// retrieve MessageID
 		// --------------------------
 		try {
-			id = message.getJMSMessageID();
+			id = rawMessage.getJMSMessageID();
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSMessageID()", e);
 		}
@@ -161,7 +162,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		// retrieve CorrelationID
 		// --------------------------
 		try {
-			cid = message.getJMSCorrelationID();
+			cid = rawMessage.getJMSCorrelationID();
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSCorrelationID()", e);
 		}
@@ -169,7 +170,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		// retrieve TimeStamp
 		// --------------------------
 		try {
-			long lTimeStamp = message.getJMSTimestamp();
+			long lTimeStamp = rawMessage.getJMSTimestamp();
 			tsSent = new Date(lTimeStamp);
 
 		} catch (JMSException e) {
@@ -179,7 +180,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		// retrieve ReplyTo address
 		// --------------------------
 		try {
-			replyTo = message.getJMSReplyTo();
+			replyTo = rawMessage.getJMSReplyTo();
 
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSReplyTo()", e);
@@ -192,7 +193,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "] \n  JMSCorrelationID=[" + cid
 				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
-				+ "] \n Message=[" + message
+				+ "] \n Message=[" + rawMessage
 				+ "]");
 		}
 

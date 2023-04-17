@@ -847,7 +847,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> message, ProcessState toState, String reason) throws ListenerException {
 		if (toState==ProcessState.AVAILABLE) {
-			String id = getListener().getIdFromRawMessage(message, null);
+			String id = getListener().getIdFromRawMessageWrapper(message, null);
 			resetProblematicHistory(id);
 		}
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
@@ -1080,7 +1080,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				session.putAll(rawMessageWrapper.getContext());
 			} else {
 				try {
-					messageId = getListener().getIdFromRawMessage(rawMessageWrapper, session);
+					messageId = getListener().getIdFromRawMessageWrapper(rawMessageWrapper, session);
 				} catch (Exception e) {
 					log.warn("Error retrieving message ID from listener [{}]: [{}]", getListener().getName(), e.getMessage(), e);
 					messageId = null;

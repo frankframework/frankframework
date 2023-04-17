@@ -93,10 +93,14 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * Override this method for your specific needs!
 	 */
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String correlationId = rawMessage.getRawMessage();
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
-		return correlationId;
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return getIdFromRawMessage(rawMessage.getRawMessage(), threadContext);
+	}
+
+	@Override
+	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) {
+		PipeLineSession.setListenerParameters(threadContext, rawMessage, rawMessage, null, null);
+		return rawMessage;
 	}
 
 	/**

@@ -124,7 +124,12 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+		return null;
+	}
+
+	@Override
+	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		return null;
 	}
 

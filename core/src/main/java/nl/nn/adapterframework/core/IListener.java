@@ -68,7 +68,9 @@ public interface IListener<M> extends IConfigurable {
 	 *
 	 * @return Correlation ID string.
 	 */
-	String getIdFromRawMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
+	String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
+
+	String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 
 	/**
 	 * Extracts string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract

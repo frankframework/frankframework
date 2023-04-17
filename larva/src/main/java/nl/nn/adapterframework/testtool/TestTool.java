@@ -1446,7 +1446,7 @@ public class TestTool {
 			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
-				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
+				String correlationId = pullingJmsListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
 				jmsListenerInfo.put("correlationId", correlationId);
 			}
 		} catch(ListenerException e) {

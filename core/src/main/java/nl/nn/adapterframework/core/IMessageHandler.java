@@ -29,7 +29,7 @@ import nl.nn.adapterframework.stream.Message;
 public interface IMessageHandler<M> {
 
 	/**
-	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed
+	 * Will use listener to perform getIdFromRawMessageWrapper(), getStringFromRawMessage and afterMessageProcessed
 	 */
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
@@ -39,7 +39,7 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
+	 * Alternative to functions above, will NOT use getIdFromRawMessageWrapper() and getStringFromRawMessage(). Used by PushingListeners.
 	 */
 	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 

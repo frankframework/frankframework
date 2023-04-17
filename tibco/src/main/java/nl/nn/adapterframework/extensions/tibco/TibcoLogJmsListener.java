@@ -111,7 +111,7 @@ public class TibcoLogJmsListener extends JmsListener {
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage.getRawMessage();
@@ -122,7 +122,7 @@ public class TibcoLogJmsListener extends JmsListener {
 					+ rawMessage.getRawMessage().getClass().getName() + "]", e);
 			return null;
 		}
-		return retrieveIdFromMessage(tjmMessage, threadContext);
+		return getIdFromRawMessage(tjmMessage, threadContext);
 	}
 
 	private String logLevelToText(int logLevel) {

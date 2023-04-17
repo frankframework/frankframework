@@ -115,7 +115,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	 * @return ID-string of message for adapter.
 	 */
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 
 		if (rawMessage instanceof MessageWrapper) {
 			return getIdFromWrapper(rawMessage,threadContext);
@@ -129,10 +129,11 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 				"message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
 			return null;
 		}
-		return getIdFromIfsaMessage(message, threadContext);
+		return getIdFromRawMessage(message, threadContext);
 	}
 
-	protected String getIdFromIfsaMessage(IFSAMessage message, Map<String, Object> threadContext) {
+	@Override
+	public String getIdFromRawMessage(IFSAMessage message, Map<String, Object> threadContext) {
 		String mode = "unknown";
 		String id = "unset";
 		String cid = "unset";

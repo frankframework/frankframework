@@ -288,7 +288,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage == null) {
 			updateThreadContextWithIds(threadContext, null, null, null);
 			return null;
@@ -300,7 +300,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			mid = rawMessage.getId();
 		} else if (rawMessage instanceof MessageWrapper) {
 			try {
-				mid = ((MessageWrapper) rawMessage).getMessage().asString();
+				mid = ((MessageWrapper<M>) rawMessage).getMessage().asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			}
@@ -319,6 +319,13 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return mid;
 	}
 
+	@Override
+	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		String mid = rawMessage != null ? rawMessage.toString() : null;
+		updateThreadContextWithIds(threadContext, mid, mid, mid);
+		return mid;
+	}
+
 	private static void updateThreadContextWithIds(Map<String, Object> threadContext, String key, String cid, String mid) {
 		if (threadContext != null) {
 			PipeLineSession.setListenerParameters(threadContext, mid, cid, null, null);
@@ -328,7 +335,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
 		Map<String,Object> context = new HashMap<>();
-		getIdFromRawMessage(rawMessage, context); // populate context with storage key
+		getIdFromRawMessageWrapper(rawMessage, context); // populate context with storage key
 		return (String)context.get(STORAGE_KEY_KEY);
 	}
 

@@ -127,15 +127,20 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
 		try (PipeLineSession session = new PipeLineSession()) {
-			messageHandler.processRawMessage(this, new RawMessageWrapper<>(message, String.valueOf(message.getId())), session, false);
+			messageHandler.processRawMessage(this, new RawMessageWrapper<>(message, getIdFromRawMessage(message, session)), session, false);
 		} catch(Throwable t) {
 			log.error("Could not process raw message", t);
 		}
 	}
 
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
 		return rawMessage.getId();
+	}
+
+	@Override
+	public String getIdFromRawMessage(MqttMessage rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return String.valueOf(rawMessage.getId());
 	}
 
 	@Override

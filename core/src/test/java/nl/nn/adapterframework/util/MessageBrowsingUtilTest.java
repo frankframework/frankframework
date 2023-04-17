@@ -127,9 +127,14 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public String getIdFromRawMessage(RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context)
+		public String getIdFromRawMessageWrapper(RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context)
 				throws ListenerException {
 			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getIdFromRawMessage(TestListenerMessage rawMessage, Map<String, Object> threadContext) throws ListenerException {
 			return null;
 		}
 

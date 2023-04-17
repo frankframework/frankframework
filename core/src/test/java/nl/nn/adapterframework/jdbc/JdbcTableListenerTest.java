@@ -420,7 +420,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		RawMessageWrapper rawMessage = listener.getRawMessage(context);
 
-		String mid = listener.getIdFromRawMessage(rawMessage, context);
+		String mid = listener.getIdFromRawMessageWrapper(rawMessage, context);
 		String cid = (String)context.get(PipeLineSession.correlationIdKey);
 
 		assertEquals("fakeMid", mid);

@@ -193,8 +193,13 @@ public class FileRecordListener implements IPullingListener {
 	 * Override this method for your specific needs!
 	 */
 	@Override
-	public String getIdFromRawMessage(RawMessageWrapper rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = inputFileName + "-" + recordNo;
+	public String getIdFromRawMessageWrapper(RawMessageWrapper rawMessage, Map threadContext) throws ListenerException {
+		return getIdFromRawMessage(rawMessage.getRawMessage(), threadContext);
+	}
+
+	@Override
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+		String correlationId = rawMessage.toString();
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
