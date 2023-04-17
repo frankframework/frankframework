@@ -222,6 +222,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				serviceIndication="service ["+getServiceName()+"]";
 				try {
 					if (isIsolated()) {
+						message.preserve();
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), message, context, false, threadLifeCycleEventListener);
@@ -268,6 +269,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						return new SenderResult(new Message("<error>"+msg+"</error>"), msg);
 					}
 					if (isIsolated()) {
+						message.preserve();
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 							result = isolatedServiceCaller.callServiceIsolated(javaListener, message, context, true, threadLifeCycleEventListener);
