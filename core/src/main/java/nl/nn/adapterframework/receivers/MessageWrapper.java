@@ -33,6 +33,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
+@SuppressWarnings({"deprecation", "unchecked"})
 public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = -8251009650246241025L;
@@ -89,9 +90,9 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	}
 
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		//noinspection unchecked
 		context = (Map<String, Object>) stream.readObject();
 		id = (String) stream.readObject();
 		message = (Message) stream.readObject();
+		rawMessage = (M) message.asObject();
 	}
 }

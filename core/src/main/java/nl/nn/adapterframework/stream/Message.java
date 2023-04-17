@@ -685,7 +685,7 @@ public class Message implements Serializable {
 			if (request == null) {
 				result.write("null");
 			} else {
-				result.write(getRequestClass() + " " + getId() + ": " + request.toString());
+				result.write(getRequestClass() + " " + getId() + ": [" + request.toString() + "]");
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: " + e.getMessage());

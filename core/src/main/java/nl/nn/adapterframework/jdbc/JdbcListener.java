@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener<M extends Object> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
+public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
 
 	public static final String CORRELATION_ID_KEY="cid";
 	public static final String STORAGE_KEY_KEY="key";

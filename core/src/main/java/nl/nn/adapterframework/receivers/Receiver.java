@@ -94,6 +94,7 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
@@ -988,8 +989,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				sobj = message.asString();
 			}
 		} else {
-			if (rawMessage instanceof Serializable) {
-				sobj=(Serializable) rawMessage;
+			if (rawMessage.getRawMessage() instanceof Serializable) {
+				sobj=(Serializable) rawMessage.getRawMessage();
 			} else {
 				try {
 					sobj = new MessageWrapper(rawMessage, getListener());
@@ -1060,7 +1061,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message message;
 			String messageId;
 
-			if (rawMessageOrWrapper instanceof MessageWrapper) {
+			if (rawMessageOrWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
@@ -1073,12 +1074,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					throw new ListenerException(e);
 				}
 			}
-			try {
-				messageId = getListener().getIdFromRawMessage(rawMessageOrWrapper, session);
-			} catch (Exception e) {
-				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+
+			if (rawMessageOrWrapper.getId() != null) {
 				messageId = rawMessageOrWrapper.getId();
 				session.putAll(rawMessageOrWrapper.getContext());
+			} else {
+				try {
+					messageId = getListener().getIdFromRawMessage(rawMessageOrWrapper, session);
+				} catch (Exception e) {
+					log.warn("Error retrieving message ID from listener [{}]: [{}]", getListener().getName(), e.getMessage(), e);
+					messageId = null;
+				}
 			}
 			String correlationId = session.getCorrelationId();
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
