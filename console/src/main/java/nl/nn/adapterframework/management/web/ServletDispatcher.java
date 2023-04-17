@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,13 +30,11 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -181,11 +179,6 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return ALL_IBIS_USER_ROLES;
-	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
 	}
 
 	@Override
