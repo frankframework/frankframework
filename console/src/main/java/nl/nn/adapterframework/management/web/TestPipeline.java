@@ -91,7 +91,7 @@ public class TestPipeline extends FrankApiBase {
 			}
 			else {
 				try {
-					message = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding);
+					message = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 				} catch (IOException e) {
@@ -158,7 +158,7 @@ public class TestPipeline extends FrankApiBase {
 					}
 					rb+=chunk;
 				}
-				String currentMessage = XmlEncodingUtils.readXml(b, DEFAULT_CHARSET);
+				String currentMessage = XmlEncodingUtils.readXml(b, null);
 
 				builder.setPayload(currentMessage);
 				Message<?> response = sendSyncMessage(builder);

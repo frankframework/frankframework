@@ -34,7 +34,6 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
@@ -77,7 +76,7 @@ public final class TestServiceListener extends FrankApiBase {
 			InputStream file = filePart.getObject(InputStream.class);
 
 			try {
-				message = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding);
+				message = XmlEncodingUtils.readXml(file, fileEncoding);
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 			} catch (IOException e) {
