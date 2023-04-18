@@ -195,6 +195,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				serviceIndication="service ["+getServiceName()+"]";
 				try {
 					if (isIsolated()) {
+						message.preserve();
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 							result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, threadLifeCycleEventListener);
@@ -243,6 +244,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 						return new SenderResult("error", new Message("<error>"+msg+"</error>"));
 					}
 					if (isIsolated()) {
+						message.preserve();
 						if (isSynchronous()) {
 							log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 							result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true, threadLifeCycleEventListener);

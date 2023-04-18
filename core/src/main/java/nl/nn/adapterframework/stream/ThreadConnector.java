@@ -127,7 +127,9 @@ public class ThreadConnector<T> implements AutoCloseable {
 	public Throwable abortThread(Throwable t) {
 		Thread currentThread = Thread.currentThread();
 		if (currentThread != childThread) {
-			throw new IllegalStateException("abortThread() must be called from childThread");
+			Exception e = new IllegalStateException("abortThread() must be called from childThread");
+			e.addSuppressed(t);
+			return e;
 		}
 		Throwable result = t;
 		saveThreadContext();
