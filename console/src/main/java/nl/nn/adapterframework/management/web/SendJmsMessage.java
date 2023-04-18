@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Send a message with JMS.
@@ -97,7 +97,7 @@ public final class SendJmsMessage extends FrankApiBase {
 			}
 			else {
 				try {
-					message = XmlUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding, false);
+					message = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 				} catch (IOException e) {
@@ -132,7 +132,7 @@ public final class SendJmsMessage extends FrankApiBase {
 					}
 					rb+=chunk;
 				}
-				String currentMessage = XmlUtils.readXml(b,0,rb,DEFAULT_CHARSET,false);
+				String currentMessage = XmlEncodingUtils.readXml(b, DEFAULT_CHARSET);
 
 				builder.setPayload(currentMessage);
 				callAsyncGateway(builder);

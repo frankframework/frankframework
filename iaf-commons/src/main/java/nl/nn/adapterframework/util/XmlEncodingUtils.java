@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.UnsupportedEncodingException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -263,4 +266,58 @@ public class XmlEncodingUtils {
 			|| (c >= 0xE000 && c <= 0xFFFD)
 			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
+
+	public static String readXml(byte[] source, String defaultEncoding) throws UnsupportedEncodingException {
+		return readXml(source, defaultEncoding, false);
+	}
+
+	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
+		String charset=defaultEncoding;
+		if (StringUtils.isEmpty(charset)) {
+			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+
+		int length = source.length;
+
+		String firstPart = new String(source, 0, length<100?length:100, charset);
+		if (StringUtils.isEmpty(firstPart)) {
+			return null;
+		}
+		if (firstPart.startsWith("<?xml")) {
+			int endPos = firstPart.indexOf("?>")+2;
+			if (endPos>0) {
+				String declaration=firstPart.substring(6,endPos-2);
+				log.debug("parsed declaration [{}]", declaration);
+				final String encodingTarget= "encoding=\"";
+				int encodingStart=declaration.indexOf(encodingTarget);
+				if (encodingStart>0) {
+					encodingStart+=encodingTarget.length();
+					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
+					int encodingEnd=declaration.indexOf("\"",encodingStart);
+					if (encodingEnd>0) {
+						charset=declaration.substring(encodingStart,encodingEnd);
+						log.debug("parsed charset []", charset);
+					} else {
+						log.warn("no end in encoding attribute in declaration [{}]", declaration);
+					}
+				} else {
+					log.warn("no encoding attribute in declaration [{}]", declaration);
+				}
+				if (skipDeclaration) {
+					try {
+						while (Character.isWhitespace(firstPart.charAt(endPos))) {
+							endPos++;
+						}
+					} catch (IndexOutOfBoundsException e) {
+						log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
+					}
+					return new String(source, endPos, length-endPos, charset);
+				}
+			} else {
+				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
+			}
+		}
+		return new String(source, 0, length, charset);
+	}
+
 }

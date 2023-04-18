@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
- * Test Service Listners.
+ * Test Service Listeners.
  *
  * @since	7.0-B1
  * @author	Niels Meijer
@@ -77,7 +77,7 @@ public final class TestServiceListener extends FrankApiBase {
 			InputStream file = filePart.getObject(InputStream.class);
 
 			try {
-				message = XmlUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding, false);
+				message = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding);
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 			} catch (IOException e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Test a PipeLine.
@@ -91,7 +91,7 @@ public class TestPipeline extends FrankApiBase {
 			}
 			else {
 				try {
-					message = XmlUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding, false);
+					message = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(file), fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
 				} catch (IOException e) {
@@ -158,7 +158,7 @@ public class TestPipeline extends FrankApiBase {
 					}
 					rb+=chunk;
 				}
-				String currentMessage = XmlUtils.readXml(b,0,rb,DEFAULT_CHARSET,false);
+				String currentMessage = XmlEncodingUtils.readXml(b, DEFAULT_CHARSET);
 
 				builder.setPayload(currentMessage);
 				Message<?> response = sendSyncMessage(builder);
