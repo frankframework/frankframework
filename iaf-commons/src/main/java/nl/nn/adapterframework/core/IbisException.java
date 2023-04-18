@@ -176,13 +176,16 @@ public class IbisException extends Exception {
      *  <li>{@code getNestedException()}</li>
      *  <li>{@code getLinkedCause()}</li>
      *  <li>{@code getThrowable()}</li>
-     *  //TODO add suppressed
      * </ul>
      *
      * <p>If none of the above is found, returns {@code null}.</p>
 	 */
 	private static Throwable getCause(Throwable t) {
-		return ExceptionUtils.getCause(t);
+		Throwable cause = ExceptionUtils.getCause(t);
+		if(cause == null && t.getSuppressed().length > 0) {
+			return t.getSuppressed()[0];
+		}
+		return cause;
 	}
 
 	public static LinkedList<String> getMessages(Throwable t, String message) {

@@ -93,6 +93,7 @@ public class IbisExceptionTest {
 
 	private static Stream<Arguments> sqlExceptions() {
 		return Stream.of(
+			Arguments.of("text: (SQLException) sql reason: (SQLException) spice it up with a suppressed message", new SQLException("sql reason")),
 			Arguments.of("text: (SQLException) sql reason: rootException", new SQLException("sql reason", new IbisException("rootException"))),
 			Arguments.of("text: (SQLException) errorCode [1234]: sql reason: rootException", new SQLException("sql reason", null, 1234, new IbisException("rootException"))),
 			Arguments.of("text: (SQLException) SQLState [xyz]: sql reason: rootException", new SQLException("sql reason", "xyz", new IbisException("rootException"))),
@@ -104,7 +105,7 @@ public class IbisExceptionTest {
 	@MethodSource("sqlExceptions")
 	public void sqlExceptions(String expectedMessage, SQLException cause) {
 		SQLException nextException = new SQLException("spice it up with a suppressed message");
-		cause.setNextException(nextException); //This is unused still!
+		cause.setNextException(nextException); //This should be picked up by the 'ExceptionUtils.getCause(t)'
 		// Arrange
 		IbisException exception = new IbisException("text", cause);
 
@@ -209,7 +210,7 @@ public class IbisExceptionTest {
 		String result = ibisException.getMessage();
 
 		// Assert
-		assertEquals(expectedMessage, result);
+		assertEquals(expectedMessage + ": (IOException) spice it up with a suppressed message", result);
 	}
 
 	private static Stream<Arguments> differentSourceLocators() {
@@ -235,6 +236,6 @@ public class IbisExceptionTest {
 		String result = ibisException.getMessage();
 
 		// Assert
-		assertEquals(expectedMessage, result);
+		assertEquals(expectedMessage + ": (IOException) spice it up with a suppressed message", result);
 	}
 }
