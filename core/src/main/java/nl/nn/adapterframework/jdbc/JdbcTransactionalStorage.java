@@ -661,11 +661,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			try (ResultSet rs = stmt.executeQuery()) {
 				// if rs.next() needed as you can not simply call rs.
 				if (rs.next()) {
-					String dataBaseMessage = retrieveObject(rs, 1).toString();
+					String dataBaseMessage = retrieveObject(rs, 1).getRawMessage().toString();
 					String inputMessage = message.toString();
-					if (dataBaseMessage.equals(inputMessage)) {
-						return false;
-					}
+					return !dataBaseMessage.equals(inputMessage);
 				}
 				return true;
 			}
