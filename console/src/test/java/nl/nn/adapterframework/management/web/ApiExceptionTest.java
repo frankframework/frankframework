@@ -16,7 +16,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.management.web.ApiException.FormattedJsonEntity;
 
 public class ApiExceptionTest {
@@ -28,8 +28,8 @@ public class ApiExceptionTest {
 
 	public static List<?> data() {
 		return Arrays.asList(new Object[][] {
-			{"cannot configure", new ConfigurationException("cannot configure")},
-			{"cannot configure: (IllegalStateException) something is wrong", new ConfigurationException("cannot configure", new IllegalStateException("something is wrong"))},
+			{"cannot configure", new IbisException("cannot configure")},
+			{"cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
 		});
 	}
 
