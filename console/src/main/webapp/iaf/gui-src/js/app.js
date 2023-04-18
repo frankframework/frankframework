@@ -1,5 +1,3 @@
-import { loaderModule } from './loaderModule';
-
 (function () {
 	var server; //Try and see if serverurl has been defined, if not try to deduct from local url;
 	try {
@@ -18,8 +16,6 @@ import { loaderModule } from './loaderModule';
 	angular.module('iaf.beheerconsole', [
 		'ngCookies',                    // Angular Cookies
 		'ui.router',                    // Routing
-		'loaderModule',
-		// 'oc.lazyLoad',                  // ocLazyLoad
 		'ui.bootstrap',                 // Ui Bootstrap
 		'ngIdle',                       // Idle timer
 		'ngSanitize',                   // ngSanitize

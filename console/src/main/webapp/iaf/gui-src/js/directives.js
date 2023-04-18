@@ -200,10 +200,6 @@ angular.module('iaf.beheerconsole')
 					templateUrl: 'views/flow-modal.html',
 					windowClass: 'mermaidFlow',
 					resolve: {
-						loadPlugin: function(lazyLoader) {
-							lazyLoader.load('mermaid');
-							return lazyLoader.load('./js/plugins/mermaid/ng-mermaid.js');
-						},
 						xhr: function() {
 							return xhr;
 						}

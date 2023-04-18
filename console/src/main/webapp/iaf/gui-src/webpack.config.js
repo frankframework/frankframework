@@ -85,6 +85,13 @@ module.exports = {
           exposes: ["$", "jQuery"],
         },
       },
+	  {
+		test: require.resolve("mermaid"),
+		loader: "expose-loader",
+		options: {
+			exposes: ["mermaid"],
+		},
+	  },
     ]
   }
 };

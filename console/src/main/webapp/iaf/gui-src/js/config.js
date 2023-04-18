@@ -104,12 +104,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 		params: {
 			id: 0,
-		},
-		resolve: {
-			loadPlugin: function(lazyLoader) {
-				return lazyLoader.load('angular-chart.js');
-			},
-		},
+		}
 	})
 	.state('pages.storage', {
 		abstract: true,
@@ -133,11 +128,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	.state('pages.storage.list', {
 		url: "stores/:processState",
 		templateUrl: "views/txstorage/adapter_storage_list.html",
-		resolve: {
-			loadPlugin: function(lazyLoader) {
-				return lazyLoader.load('angular-datatables');
-			},
-		},
 	})
 	.state('pages.storage.view', {
 		url: "stores/:processState/messages/:messageId",
@@ -332,11 +322,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	.state('pages.connection_overview', {
 		url: "/connections",
 		templateUrl: "views/ShowConnectionOverview.html",
-		resolve: {
-			loadPlugin: function(lazyLoader) {
-				return lazyLoader.load('angular-datatables');
-			},
-		},
 		data: {
 			pageTitle: 'Connection Overview',
 			breadcrumbs: 'Connection Overview'

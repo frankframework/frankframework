@@ -1,5 +1,6 @@
 import 'jquery';
 import 'metismenu';
+import 'mermaid';
 
 import 'angular';
 import 'angular-animate';
@@ -15,10 +16,12 @@ import 'angular-sanitize';
 import 'angular-touch';
 import 'angular-ui-bootstrap';
 import 'angular-ui-router';
-import 'oclazyload';
 import 'ng-idle/angular-idle';
 import 'angular-ladda';
 import 'angularjs-toaster';
+import 'angular-datatables';
+import 'angular-chart.js';
+import 'ng-mermaid';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/scss/font-awesome.scss';
