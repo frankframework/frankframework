@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -237,5 +238,18 @@ public class StringUtil {
 		char[] c = input.toCharArray();
 		c[0] = Character.toUpperCase(c[0]);
 		return new String(c);
+	}
+
+	public static String safeCollectionToString(Collection<?> collection) {
+		StringBuilder sb = new StringBuilder();
+		try {
+			for(Object o: collection) {
+				if (sb.length() > 0) sb.append(", ");
+				sb.append(o);
+			}
+		} catch (ConcurrentModificationException e) {
+			sb.append(" ...more");
+		}
+		return sb.toString();
 	}
 }

@@ -31,6 +31,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -210,7 +211,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	private void doClose() {
 		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("waiting for start threads to end: {}", this::getStartAdapterThreads);
+			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(getStartAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -223,7 +224,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("waiting for stop threads to end: {}", this::getStopAdapterThreads);
+			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(getStopAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -240,11 +241,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+getState()+"]");
-		builder.append(" adapters ["+adapters.size()+"]");
+		builder.append(getClass().getSimpleName()).append("@").append(Integer.toHexString(hashCode()));
+		builder.append(" state [").append(getState()).append("]");
+		builder.append(" adapters [").append(adapters.size()).append("]");
 		if(applicationContext != null) {
-			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+			builder.append(" applicationContext [").append(applicationContext.getDisplayName()).append("]");
 		}
 		return builder.toString();
 	}

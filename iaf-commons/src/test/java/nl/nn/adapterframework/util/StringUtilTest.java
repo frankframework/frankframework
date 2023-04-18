@@ -2,6 +2,11 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+
 import org.junit.jupiter.api.Test;
 
 class StringUtilTest {
@@ -23,8 +28,8 @@ class StringUtilTest {
 	public void testConcatStrings() {
 		String a = "LeBron";
 		String b = "James";
-		String seperator = "//";
-		String res = StringUtil.concatStrings(a, seperator, b);
+		String separator = "//";
+		String res = StringUtil.concatStrings(a, separator, b);
 		assertEquals("LeBron//James", res);
 	}
 
@@ -109,5 +114,49 @@ class StringUtilTest {
 		assertEquals("tEST123", StringUtil.lcFirst("TEST123"));
 		assertEquals("tEST123", StringUtil.lcFirst("TEST123"));
 		assertEquals("123test", StringUtil.lcFirst("123test"));
+	}
+
+	@Test
+	public void testSafeCollectionToString() {
+		// Arrange
+		Collection<Object> c = new ArrayList<>();
+		c.add("A");
+		c.add("B");
+		c.add(3);
+		c.add(4);
+
+		// Act / Assert
+		assertEquals("A, B, 3, 4", StringUtil.safeCollectionToString(c));
+	}
+
+	@Test
+	public void testSafeCollectionToStringWithException() {
+		// Arrange
+		Collection<Object> c = new ArrayList<Object>() {
+			@Override
+			public Iterator<Object> iterator() {
+				final Iterator<Object> delegate = super.iterator();
+				return new Iterator<Object>() {
+					@Override
+					public boolean hasNext() {
+						return true;
+					}
+
+					@Override
+					public Object next() {
+						if (delegate.hasNext()) return delegate.next();
+						// For the test, after exhaustion throw exception
+						throw new ConcurrentModificationException();
+					}
+				};
+			}
+		};
+		c.add("A");
+		c.add("B");
+		c.add(3);
+		c.add(4);
+
+		// Act / Assert
+		assertEquals("A, B, 3, 4 ...more", StringUtil.safeCollectionToString(c));
 	}
 }
