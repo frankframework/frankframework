@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -38,9 +39,15 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 class IbisLocalSenderTest {
+	public static final String SERVICE_NAME = "TEST-SERVICE";
 	private Logger log = LogManager.getLogger(this);
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
+
+	@AfterEach
+	void tearDown() {
+		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+	}
 
 	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callSynchronous) {
 		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
@@ -127,7 +134,7 @@ class IbisLocalSenderTest {
 		Receiver<String> receiver = new Receiver<>();
 		JavaListener listener = configuration.createBean(JavaListener.class);
 		listener.setName("TEST");
-		listener.setServiceName("TEST-SERVICE");
+		listener.setServiceName(SERVICE_NAME);
 		receiver.setName("TEST");
 		adapter.setName("TEST");
 
