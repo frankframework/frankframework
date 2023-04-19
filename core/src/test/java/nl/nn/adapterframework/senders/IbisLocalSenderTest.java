@@ -2,10 +2,12 @@ package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
@@ -62,22 +65,26 @@ class IbisLocalSenderTest {
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
-		JavaListener listener = setupJavaListener(configuration, asyncCounterResult, asyncCompletionSemaphore);
+		PipeLine pipeline = createPipeLine(configuration, asyncCounterResult, asyncCompletionSemaphore);
+		JavaListener listener = setupJavaListener(configuration, pipeline);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener);
 
+		log.info("*>>> Starting Configuration");
 		configuration.configure();
 		configuration.start();
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
+		log.info("**>>> Calling Local Sender");
 		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
 
 		long localCounterResult = countStreamSize(result.getResult());
-
-		asyncCompletionSemaphore.acquire();
+		log.info("***>>> Done reading result message");
+		boolean completedSuccess = asyncCompletionSemaphore.tryAcquire(10, TimeUnit.SECONDS);
 
 		// Assert
 		assertAll(
+			() -> assertTrue(completedSuccess, "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get())
 		);
@@ -93,7 +100,7 @@ class IbisLocalSenderTest {
 		return ibisLocalSender;
 	}
 
-	private JavaListener setupJavaListener(TestConfiguration configuration, AtomicLong asyncCounterResult, Semaphore asyncCompletionSemaphore) throws Exception {
+	private JavaListener setupJavaListener(TestConfiguration configuration, PipeLine pipeline) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		Receiver<String> receiver = new Receiver<>();
 		JavaListener listener = configuration.createBean(JavaListener.class);
@@ -110,13 +117,25 @@ class IbisLocalSenderTest {
 
 		listener.setHandler(receiver);
 
+		adapter.setPipeLine(pipeline);
+
+		listener.open();
+		return listener;
+	}
+
+	private PipeLine createPipeLine(TestConfiguration configuration, AtomicLong asyncCounterResult, Semaphore asyncCompletionSemaphore) throws ConfigurationException {
 		IPipe testPipe = new EchoPipe() {
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
-				long counter = countStreamSize(message);
-				asyncCounterResult.set(counter);
-				asyncCompletionSemaphore.release();
-				return new PipeRunResult(getSuccessForward(), counter);
+				try {
+					log.info("{}: start reading virtual stream", Thread.currentThread().getName());
+					long counter = countStreamSize(message);
+					asyncCounterResult.set(counter);
+					return new PipeRunResult(getSuccessForward(), counter);
+				} finally {
+					asyncCompletionSemaphore.release();
+					log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());
+				}
 			}
 		};
 		testPipe.setName("read-stream");
@@ -131,10 +150,7 @@ class IbisLocalSenderTest {
 		plp.setAdapterManager(configuration.getAdapterManager());
 		plp.setPipeProcessor(new CorePipeProcessor());
 		pl.setPipeLineProcessor(plp);
-		adapter.setPipeLine(pl);
-
-		listener.open();
-		return listener;
+		return pl;
 	}
 
 	private static long countStreamSize(Message message) {
