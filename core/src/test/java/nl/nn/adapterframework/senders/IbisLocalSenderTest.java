@@ -2,10 +2,12 @@ package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -61,19 +63,22 @@ class IbisLocalSenderTest {
 		JavaListener listener = setupJavaListener(configuration, asyncCounterResult, asyncCompletionSemaphore);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener);
 
+		System.err.println("*>>> Starting Configuration");
 		configuration.configure();
 		configuration.start();
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
+		System.err.println("**>>> Calling Local Sender");
 		SenderResult result = ibisLocalSender.sendMessage(message, session);
 
 		long localCounterResult = countStreamSize(result.getResult());
-
-		asyncCompletionSemaphore.acquire();
+		System.err.println("***>>> Done reading result message");
+		boolean completedSuccess = asyncCompletionSemaphore.tryAcquire(10, TimeUnit.SECONDS);
 
 		// Assert
 		assertAll(
+			() -> assertTrue(completedSuccess, "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get())
 		);
@@ -109,10 +114,15 @@ class IbisLocalSenderTest {
 		IPipe testPipe = new EchoPipe() {
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
-				long counter = countStreamSize(message);
-				asyncCounterResult.set(counter);
-				asyncCompletionSemaphore.release();
-				return new PipeRunResult(getSuccessForward(), counter);
+				try {
+					System.err.println(Thread.currentThread().getName() + ": start reading virtual stream");
+					long counter = countStreamSize(message);
+					asyncCounterResult.set(counter);
+					return new PipeRunResult(getSuccessForward(), counter);
+				} finally {
+					asyncCompletionSemaphore.release();
+					System.err.println(Thread.currentThread().getName() + ": pipe done and semaphore released");
+				}
 			}
 		};
 		testPipe.setName("read-stream");
