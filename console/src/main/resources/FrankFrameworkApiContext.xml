@@ -22,7 +22,8 @@
 
 	<!-- Messaging Gateway -->
 	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
-		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
+<!-- 		<property name="gatewayClassname" value="${management.gateway.outbound.class}" /> -->
+		<property name="gatewayClassname" value="nl.nn.adapterframework.management.bus.LocalGateway" />
 	</bean>
 
 	<jaxrs:server id="IAF-API" bus="ff-api-bus" address="/" basePackages="nl.nn.adapterframework.management.web, nl.nn.adapterframework.webcontrol.api">
