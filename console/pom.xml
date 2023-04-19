@@ -165,6 +165,12 @@
 			<type>test-jar</type>
 			<version>${project.version}</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.mail</groupId>
+					<artifactId>jakarta.mail</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

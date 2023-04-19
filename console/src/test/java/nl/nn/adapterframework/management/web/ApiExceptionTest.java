@@ -13,23 +13,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.management.web.ApiException.FormattedJsonEntity;
 
 public class ApiExceptionTest {
 
 	private static final String API_EXCEPTION_MESSAGE = "api endpoint exception message";
 
-	public String expectedMessage;
-	public Exception causedByException;
-
 	public static List<?> data() {
 		return Arrays.asList(new Object[][] {
-			{"cannot configure", new ConfigurationException("cannot configure")},
-			{"cannot configure: (IllegalStateException) something is wrong", new ConfigurationException("cannot configure", new IllegalStateException("something is wrong"))},
+			{"cannot configure", new IbisException("cannot configure")},
+			{"cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong"))},
 		});
 	}
 
@@ -42,8 +40,7 @@ public class ApiExceptionTest {
 		return json.split("error\": \"")[1].replace("\"\n}", "");
 	}
 
-	@ParameterizedTest
-	@MethodSource("data")
+	@Test
 	public void message() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -65,8 +62,7 @@ public class ApiExceptionTest {
 		exception.printStackTrace();
 	}
 
-	@ParameterizedTest
-	@MethodSource("data")
+	@Test
 	public void messageWithStatusCode() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, 404);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -76,8 +72,7 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
 	}
 
-	@ParameterizedTest
-	@MethodSource("data")
+	@Test
 	public void messagetWithStatus() {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, Status.BAD_REQUEST);
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
@@ -101,8 +96,7 @@ public class ApiExceptionTest {
 		exception.printStackTrace();
 	}
 
-	@ParameterizedTest
-	@MethodSource("data")
+	@Test
 	public void noNestedException() {
 		ApiException exception = new ApiException((Throwable) null);
 		assertNull(exception.getMessage());
