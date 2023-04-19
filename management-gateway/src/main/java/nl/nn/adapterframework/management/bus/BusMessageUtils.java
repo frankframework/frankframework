@@ -15,27 +15,20 @@
 */
 package nl.nn.adapterframework.management.bus;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.DigestUtils;
 
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
@@ -95,50 +88,6 @@ public class BusMessageUtils {
 			}
 		}
 		return defaultValue;
-	}
-
-	public static ResponseBuilder convertToJaxRsResponse(Message<?> response) {
-		int status = getIntHeader(response, ResponseMessageBase.STATUS_KEY, 200);
-		String mimeType = getHeader(response, ResponseMessageBase.MIMETYPE_KEY, null);
-		ResponseBuilder builder = Response.status(status);
-
-		if(mimeType != null) {
-			builder.type(mimeType);
-		}
-
-		if(status == 200 || status > 204) {
-			builder.entity(response.getPayload());
-		}
-
-		String contentDisposition = getHeader(response, ResponseMessageBase.CONTENT_DISPOSITION_KEY, null);
-		if(contentDisposition != null) {
-			builder.header("Content-Disposition", contentDisposition);
-		}
-
-		return builder;
-	}
-
-	/** Shallow eTag generation, saves bandwidth but not computing power */
-	public static EntityTag generateETagHeaderValue(Message<?> response) {
-		MessageHeaders headers = response.getHeaders();
-		String mime = headers.get(ResponseMessageBase.MIMETYPE_KEY, String.class);
-		if(MediaType.APPLICATION_JSON_VALUE.equals(mime)) {
-			return generateETagHeaderValue(response.getPayload(), true);
-		}
-		return null;
-	}
-
-	private static EntityTag generateETagHeaderValue(Object payload, boolean isWeak) {
-		byte[] bytes;
-		if(payload instanceof String) {
-			bytes = ((String)payload).getBytes(StandardCharsets.UTF_8);
-		} else if (payload instanceof byte[]) {
-			bytes = (byte[]) payload;
-		} else {
-			throw new NotImplementedException("return type ["+payload.getClass()+"] not implemented");
-		}
-
-		return new EntityTag(DigestUtils.md5DigestAsHex(bytes), isWeak);
 	}
 
 	/** May be anonymousUser, or a string representation of the currently logged in user. */

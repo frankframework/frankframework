@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.management.bus;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -51,8 +52,10 @@ public class BusResponseTypesTest {
 	@Test
 	public void testInvalidStatusCode() {
 		StringResponseMessage message = new StringResponseMessage("dummy input");
-		assertThrows(IllegalArgumentException.class, ()->message.setStatus(600));
-		assertThrows(IllegalArgumentException.class, ()->message.setStatus(100));
+		assertAll(
+			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(600)),
+			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(100))
+		);
 	}
 
 	@Test
