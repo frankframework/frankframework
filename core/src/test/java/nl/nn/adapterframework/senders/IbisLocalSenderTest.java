@@ -9,6 +9,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.Adapter;
@@ -29,24 +31,18 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 class IbisLocalSenderTest {
+	private Logger log = LogManager.getLogger(this);
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
 
-	@Test
-	void sendMessage() throws Exception {
-		// Arrange
-
-		TestConfiguration configuration = new TestConfiguration();
-		configuration.stop();
-		configuration.getAdapterManager().close();
-
+	private Message createVirtualInputStream() {
 		InputStream virtualInputStream = new InputStream() {
 			LongAdder bytesRead = new LongAdder();
 
 			@Override
 			public int read() throws IOException {
 				if (bytesRead.longValue() >= EXPECTED_BYTE_COUNT) {
-					System.err.println(Thread.currentThread().getName() +": VirtualInputStream EOF after " + bytesRead.longValue() + " bytes");
+					log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
 					return -1;
 				}
 				bytesRead.increment();
@@ -54,7 +50,15 @@ class IbisLocalSenderTest {
 			}
 		};
 
-		Message message = new Message(virtualInputStream);
+		return new Message(virtualInputStream);
+	}
+
+	@Test
+	void sendMessage() throws Exception {
+		// Arrange
+		TestConfiguration configuration = new TestConfiguration();
+		configuration.stop();
+		configuration.getAdapterManager().close();
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
@@ -66,7 +70,7 @@ class IbisLocalSenderTest {
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
-		SenderResult result = ibisLocalSender.sendMessage(message, session);
+		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
 
 		long localCounterResult = countStreamSize(result.getResult());
 
