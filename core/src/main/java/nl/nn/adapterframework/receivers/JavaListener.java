@@ -191,7 +191,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
+			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}
 		return registeredListeners;
 	}
@@ -264,8 +264,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		synchronous = b;
 	}
 
-	/** 
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+	/**
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */
@@ -282,7 +282,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	/**
-	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download 
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download
 	 * @ff.default false
 	 */
 	public void setHttpWsdl(boolean httpWsdl) {
