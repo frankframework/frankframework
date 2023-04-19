@@ -14,6 +14,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
+			<artifactId>iaf-management-gateway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 			<exclusions>
 				<exclusion>
@@ -43,6 +47,14 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-ldap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<version>${spring-security.version}</version>
 			<scope>test</scope>
@@ -57,10 +69,13 @@
 			<artifactId>spring-integration-security</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>

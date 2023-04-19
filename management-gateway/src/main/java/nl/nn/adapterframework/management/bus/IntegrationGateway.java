@@ -15,9 +15,13 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import org.springframework.integration.IntegrationPattern;
 import org.springframework.messaging.Message;
 
-public interface IntegrationGateway<T> {
+/**
+ * NB: Autowire by CONSTRUCTOR only!
+ */
+public interface IntegrationGateway<T> extends IntegrationPattern {
 
 	/**
 	 * T in T out.

@@ -115,9 +115,9 @@ public class BusTestBase {
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
 		DefaultMessageBuilderFactory factory = getParentContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<T> builder = factory.withPayload(payload);
-		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
+		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
-			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action.name());
+			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 		return builder;
 	}

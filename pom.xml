@@ -96,6 +96,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>iaf-management-gateway</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -438,6 +443,12 @@
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
 				<version>[5.9.1,)</version>
 				<scope>test</scope>
 			</dependency>
@@ -1062,6 +1073,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>

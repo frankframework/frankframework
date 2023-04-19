@@ -17,9 +17,6 @@
 		</integration:interceptors>
 	</integration:publish-subscribe-channel>
 
-	<!-- Messaging Gateway -->
-	<bean id="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton" />
-
 	<context:property-placeholder />
 
 	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">
@@ -32,6 +29,10 @@
 
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
 		<property name="id" value="ff-soap-bus"/>
+	</bean>
+
+	<bean id="inboundGateway" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
+		<property name="gatewayClassname" value="${management.gateway.inbound.class}" />
 	</bean>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>

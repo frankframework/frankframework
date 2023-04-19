@@ -15,16 +15,16 @@
 */
 package nl.nn.adapterframework.management.bus;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Serialized and send as an ExceptionMessage over the Spring Bus
  */
 public class BusException extends RuntimeException {
-	private static final Logger LOG = LogUtil.getLogger(BusException.class);
+	private static final Logger LOG = LogManager.getLogger(BusException.class);
 
 	private static final long serialVersionUID = 1L;
 

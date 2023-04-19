@@ -47,8 +47,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.IntegrationGateway;
+import nl.nn.adapterframework.util.ResponseUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -77,7 +77,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected Logger log = LogManager.getLogger(this);
 
 	protected final IntegrationGateway getGateway() {
-		return getApplicationContext().getBean("gateway", IntegrationGateway.class);
+		return getApplicationContext().getBean("outboundGateway", IntegrationGateway.class);
 	}
 
 	@Nonnull
@@ -103,7 +103,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		Message<?> response = sendSyncMessage(input);
 		EntityTag eTag = null;
 		if(evaluateEtag) {
-			eTag = BusMessageUtils.generateETagHeaderValue(response);
+			eTag = ResponseUtils.generateETagHeaderValue(response);
 		}
 		if(eTag != null) {
 			ResponseBuilder builder = rsRequest.evaluatePreconditions(eTag);
@@ -111,7 +111,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 				return builder.tag(eTag).build(); //Append the tag and force a 304 (Not Modified) or 412 (Precondition Failed)
 			}
 		}
-		return BusMessageUtils.convertToJaxRsResponse(response).tag(eTag).build();
+		return ResponseUtils.convertToJaxRsResponse(response).tag(eTag).build();
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) {

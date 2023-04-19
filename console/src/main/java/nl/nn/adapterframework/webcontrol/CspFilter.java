@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,13 +29,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.header.writers.ContentSecurityPolicyHeaderWriter;
-
-import nl.nn.adapterframework.util.AppConstants;
 
 public class CspFilter implements Filter {
 	private ContentSecurityPolicyHeaderWriter cspWriter;
-	private static final boolean REPORT_ONLY = AppConstants.getInstance().getBoolean("cspheader.reportOnly", false);
+
+	@Value("${cspheader.reportOnly}")
+	private boolean reportOnly = false;
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -53,7 +54,7 @@ public class CspFilter implements Filter {
 		// 'sha256-nTT9HlzZYsLZk5BbdhMKiMCvEgbfaqTeueMbRW8r6Ak=' belongs to larva
 
 		cspWriter.setPolicyDirectives(StringUtils.join(policyDirectives, " "));
-		cspWriter.setReportOnly(REPORT_ONLY);
+		cspWriter.setReportOnly(reportOnly);
 	}
 
 	@Override
