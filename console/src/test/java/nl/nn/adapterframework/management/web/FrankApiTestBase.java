@@ -49,6 +49,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
@@ -61,12 +62,10 @@ import org.springframework.mock.web.MockServletContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";
 
-	private Logger log = LogUtil.getLogger(FrankApiTestBase.class);
+	private Logger log = LogManager.getLogger(FrankApiTestBase.class);
 	public enum IbisRole {
 		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
 	}

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,6 @@ import org.mockito.Mockito;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 
 public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
@@ -62,7 +60,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void uploadScript() throws ConfigurationException, IOException {
+	public void uploadScript() throws Exception {
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.xml"));
@@ -84,7 +82,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void uploadZipWithScripts() throws ConfigurationException, IOException {
+	public void uploadZipWithScripts() throws Exception {
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.zip"));

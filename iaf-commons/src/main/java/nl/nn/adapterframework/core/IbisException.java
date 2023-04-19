@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.mail.internet.AddressException;
+import javax.annotation.Nonnull;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
@@ -52,77 +52,73 @@ public class IbisException extends Exception {
 		super(cause);
 	}
 
-	public static String getExceptionSpecificDetails(Throwable t) {
-		String result=null;
-		if (t instanceof AddressException) {
-			AddressException ae = (AddressException)t;
-			String parsedString=ae.getRef();
-			if (StringUtils.isNotEmpty(parsedString)) {
-				result = StringUtil.concatStrings(result, " ", "["+parsedString+"]");
+	public static String getExceptionSpecificDetails(@Nonnull Throwable t) {
+		final String className = t.getClass().getCanonicalName();
+		switch (className) {
+			case "jakarta.mail.internet.AddressException": {
+				jakarta.mail.internet.AddressException ae = (jakarta.mail.internet.AddressException) t;
+				final String parsedString=ae.getRef();
+				final String errorMessage = StringUtils.isNotEmpty(parsedString) ? "["+parsedString+"]" : null;
+				final int column = ae.getPos()+1;
+				return (column>0) ? StringUtil.concatStrings(errorMessage, " ", "at column ["+column+"]") : errorMessage;
 			}
-			int column = ae.getPos()+1;
-			if (column>0) {
-				result = StringUtil.concatStrings(result, " ", "at column ["+column+"]");
-			}
-		}
-		if (t instanceof SAXParseException) {
-			SAXParseException spe = (SAXParseException)t;
-			int line = spe.getLineNumber();
-			int col = spe.getColumnNumber();
-			String sysid = spe.getSystemId();
 
-			String locationInfo=null;
-			if (StringUtils.isNotEmpty(sysid)) {
-				locationInfo = "SystemId ["+sysid+"]";
+			case "org.xml.sax.SAXParseException": {
+				return getSAXLocatorInformation((SAXParseException) t);
 			}
-			if (line>=0) {
-				locationInfo = StringUtil.concatStrings(locationInfo, " ", "line ["+line+"]");
+			case "javax.xml.transform.TransformerException": {
+				return getTransformerLocatorInformation((TransformerException) t);
 			}
-			if (col>=0) {
-				locationInfo = StringUtil.concatStrings(locationInfo, " ", "column ["+col+"]");
+			case "java.sql.SQLException": {
+				SQLException sqle = (SQLException)t;
+				int errorCode = sqle.getErrorCode();
+				String sqlState = sqle.getSQLState();
+				String result = null;
+				if (errorCode!=0) {
+					result = StringUtil.concatStrings("errorCode ["+errorCode+"]", ", ", result);
+				}
+				if (StringUtils.isNotEmpty(sqlState)) {
+					result = StringUtil.concatStrings("SQLState ["+sqlState+"]", ", ", result);
+				}
+				return result;
 			}
-			result = StringUtil.concatStrings(locationInfo, ": ", result);
-		}
-		if (t instanceof TransformerException) {
-			TransformerException te = (TransformerException)t;
-			SourceLocator locator = te.getLocator();
-			if (locator!=null) {
-				int line = locator.getLineNumber();
-				int col = locator.getColumnNumber();
-				String sysid = locator.getSystemId();
 
-				String locationInfo=null;
-				if (StringUtils.isNotEmpty(sysid)) {
-					locationInfo = "SystemId ["+sysid+"]";
-				}
-				if (line>=0) {
-					locationInfo = StringUtil.concatStrings(locationInfo, " ", "line ["+line+"]");
-				}
-				if (col>=0) {
-					locationInfo = StringUtil.concatStrings(locationInfo, " ", "column ["+col+"]");
-				}
-				result = StringUtil.concatStrings(locationInfo, ": ", result);
+			case "oracle.jdbc.xa.OracleXAException": {
+				oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
+				int xaError = oxae.getXAError();
+				return (xaError != 0) ? "xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]" : null;
 			}
+
+			default:
+				return null;
 		}
-		if (t instanceof SQLException) {
-			SQLException sqle = (SQLException)t;
-			int errorCode = sqle.getErrorCode();
-			String sqlState = sqle.getSQLState();
-			if (errorCode!=0) {
-				result = StringUtil.concatStrings("errorCode ["+errorCode+"]", ", ", result);
-			}
-			if (StringUtils.isNotEmpty(sqlState)) {
-				result = StringUtil.concatStrings("SQLState ["+sqlState+"]", ", ", result);
-			}
+	}
+
+	private static String getSAXLocatorInformation(SAXParseException spe) {
+		return compileLocatorInformation(spe.getSystemId(), spe.getLineNumber(), spe.getColumnNumber());
+	}
+
+	private static String getTransformerLocatorInformation(TransformerException te) {
+		SourceLocator locator = te.getLocator();
+		if(locator == null) {
+			return null;
 		}
-		if (t.getClass().getSimpleName().equals("OracleXAException")) { // do not use instanceof here, to avoid unnessecary dependency on Oracle class
-			oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException)t;
-			int xaError = oxae.getXAError();
-			if (xaError != 0) {
-				result = StringUtil.concatStrings("xaError ["+xaError +"] xaErrorMessage ["+oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError)+"]", ", ", result);
-			}
+
+		return compileLocatorInformation(locator.getSystemId(), locator.getLineNumber(), locator.getColumnNumber());
+	}
+
+	private static String compileLocatorInformation(String systemId, int line, int column) {
+		String locationInfo=null;
+		if (StringUtils.isNotEmpty(systemId)) {
+			locationInfo = "SystemId ["+systemId+"]";
 		}
-		return result;
+		if (line>=0) {
+			locationInfo = StringUtil.concatStrings(locationInfo, " ", "line ["+line+"]");
+		}
+		if (column>=0) {
+			locationInfo = StringUtil.concatStrings(locationInfo, " ", "column ["+column+"]");
+		}
+		return locationInfo;
 	}
 
 	@Override
@@ -185,7 +181,11 @@ public class IbisException extends Exception {
      * <p>If none of the above is found, returns {@code null}.</p>
 	 */
 	private static Throwable getCause(Throwable t) {
-		return ExceptionUtils.getCause(t);
+		Throwable cause = ExceptionUtils.getCause(t);
+		if(cause == null && t.getSuppressed().length > 0) {
+			return t.getSuppressed()[0];
+		}
+		return cause;
 	}
 
 	public static LinkedList<String> getMessages(Throwable t, String message) {
