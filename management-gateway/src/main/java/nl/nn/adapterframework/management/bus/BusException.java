@@ -18,6 +18,8 @@ package nl.nn.adapterframework.management.bus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.IbisException;
+
 /**
  * Serialized and send as an ExceptionMessage over the Spring Bus
  */
@@ -38,8 +40,7 @@ public class BusException extends RuntimeException {
 	 * Stacktrace information is logged but not passed to the parent to limit sensitive information being sent over the 'bus'.
 	 */
 	public BusException(String message, Throwable exception) {
-		super(message, exception);
-//		super(new IbisException(message, exception).getMessage());
+		super(new IbisException(message, exception).getMessage());
 		if(exception == null) {
 			LOG.warn(super.getMessage()); // expanded message is logged directly
 		} else {
