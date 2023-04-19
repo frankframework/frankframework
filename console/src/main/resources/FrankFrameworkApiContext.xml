@@ -21,7 +21,7 @@
 -->
 
 	<!-- Messaging Gateway -->
-	<bean id="gateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
+	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
 		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
 	</bean>
 
