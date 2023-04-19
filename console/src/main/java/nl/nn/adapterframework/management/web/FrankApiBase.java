@@ -77,7 +77,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected Logger log = LogManager.getLogger(this);
 
 	protected final IntegrationGateway getGateway() {
-		return getApplicationContext().getBean("gateway", IntegrationGateway.class);
+		return getApplicationContext().getBean("outboundGateway", IntegrationGateway.class);
 	}
 
 	@Nonnull

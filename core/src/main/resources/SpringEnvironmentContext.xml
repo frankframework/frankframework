@@ -32,7 +32,7 @@
 	</bean>
 
 	<bean id="inboundGateway" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
-		<property name="gatewayClassname" value="nl.nn.adapterframework.management.gateway.HttpInboundGateway" />
+		<property name="gatewayClassname" value="${management.gateway.inbound.class}" />
 	</bean>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
