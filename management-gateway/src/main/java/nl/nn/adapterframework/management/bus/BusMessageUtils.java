@@ -150,9 +150,6 @@ public class BusMessageUtils {
 	}
 
 	private static <E extends Enum<E>> E parseEnum(final Class<E> enumClass, final String enumName) {
-		if (enumName == null) {
-			return null;
-		}
 		for (final E each : enumClass.getEnumConstants()) {
 			if (each.name().equalsIgnoreCase(enumName)) {
 				return each;
