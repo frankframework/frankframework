@@ -15,18 +15,6 @@
 		<m2eclipse.wtp.contextRoot>iaf-webapp</m2eclipse.wtp.contextRoot>
 	</properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-console</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
