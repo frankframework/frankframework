@@ -50,7 +50,7 @@ import nl.nn.adapterframework.stream.Message;
  * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> 
  * or <code>JdbcErrorStorage</code> in the same sender pipe. A <code>MessageStoreSender</code>
  * acts as a message log and an error store. It can be useful however to add a message log or error store
- * to the adapter arount the sender pipe, because errors may occur before the message reaches the sender pipe.
+ * to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
  * <br/><br/>
  * Example configuration:
  * <code><pre>
