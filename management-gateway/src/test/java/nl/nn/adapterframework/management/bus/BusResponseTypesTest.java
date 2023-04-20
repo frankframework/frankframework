@@ -1,11 +1,13 @@
 package nl.nn.adapterframework.management.bus;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.util.StreamUtil;
@@ -47,6 +49,14 @@ public class BusResponseTypesTest {
 		assertEquals("\"json\"", message.getPayload());
 		assertEquals("application/json", message.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
 		assertEquals(200, message.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+	}
+
+	@Test
+	public void testUnableToConvertPayloadToJson() {
+		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
+
+		BusException e = assertThrows(BusException.class, () -> new JsonResponseMessage(stream));
+		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (InvalidDefinitionException) No serializer found for class java.io.ByteArrayInputStream"));
 	}
 
 	@Test
