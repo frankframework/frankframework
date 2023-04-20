@@ -1,8 +1,9 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,19 +14,18 @@ import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.After;
+import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
@@ -37,15 +37,16 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.RunState;
 
-class IbisLocalSenderTest {
+public class IbisLocalSenderTest {
 	public static final String SERVICE_NAME = "TEST-SERVICE";
 	private Logger log = LogManager.getLogger(this);
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
 
-	@AfterEach
-	void tearDown() {
+	@After
+	public void tearDown() {
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 	}
 
@@ -65,9 +66,9 @@ class IbisLocalSenderTest {
 	}
 
 	private static void registerWithServiceDispatcher(JavaListener listener) throws ListenerException {
-		ServiceClient serviceClient = (message, session) -> {
+		ServiceClient serviceClient = (correlationId, message, session) -> {
 			try {
-				return new Message(listener.processRequest(session.getCorrelationId(), message.asString(), session));
+				return new Message(listener.processRequest(correlationId, message.asString(), session));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -94,9 +95,16 @@ class IbisLocalSenderTest {
 		return new Message(virtualInputStream);
 	}
 
-	@ParameterizedTest
-	@CsvSource({"false", "true"})
-	void sendMessageAsync(boolean callByServiceName) throws Exception {
+	@Test
+	public void sendMessageAsyncByServiceName() throws Exception {
+		sendMessageAsync(true);
+	}
+	@Test
+	public void sendMessageAsync() throws Exception {
+		sendMessageAsync(false);
+	}
+
+	private void sendMessageAsync(boolean callByServiceName) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration();
 		configuration.stop();
@@ -112,21 +120,31 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
+		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+
 		// Act
 		PipeLineSession session = new PipeLineSession();
 		log.info("**>>> Calling Local Sender");
-		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
+		Message result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
 
-		long localCounterResult = countStreamSize(result.getResult());
+		long localCounterResult = countStreamSize(result);
 		log.info("***>>> Done reading result message");
 		boolean completedSuccess = asyncCompletionSemaphore.tryAcquire(10, TimeUnit.SECONDS);
 
 		// Assert
-		assertAll(
-			() -> assertTrue(completedSuccess, "Async local sender should complete w/o error within at most 10 seconds"),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get())
-		);
+		assertTrue("Async local sender should complete w/o error within at most 10 seconds", completedSuccess);
+		assertEquals(EXPECTED_BYTE_COUNT, localCounterResult);
+		assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get());
+	}
+
+	public void waitForState(IManagable object, RunState state) {
+		while(object.getRunState()!=state) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				fail("test interrupted");
+			}
+		}
 	}
 
 	private JavaListener setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
