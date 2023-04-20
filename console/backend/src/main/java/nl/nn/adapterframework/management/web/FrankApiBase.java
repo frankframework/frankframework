@@ -59,11 +59,11 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
-	public static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
-	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY;
-	public static final String HEADER_CONFIGURATION_NAME_KEY = BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY;
-	public static final String HEADER_ADAPTER_NAME_KEY = BusMessageUtils.HEADER_ADAPTER_NAME_KEY;
-	public static final String HEADER_RECEIVER_NAME_KEY = BusMessageUtils.HEADER_RECEIVER_NAME_KEY;
+	@Deprecated public static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
+	@Deprecated public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY;
+	@Deprecated public static final String HEADER_CONFIGURATION_NAME_KEY = BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY;
+	@Deprecated public static final String HEADER_ADAPTER_NAME_KEY = BusMessageUtils.HEADER_ADAPTER_NAME_KEY;
+	@Deprecated public static final String HEADER_RECEIVER_NAME_KEY = BusMessageUtils.HEADER_RECEIVER_NAME_KEY;
 
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
@@ -74,7 +74,6 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
-	public static final String DEFAULT_CHARSET = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected Logger log = LogManager.getLogger(this);
 
 	protected final IntegrationGateway getGateway() {
@@ -162,7 +161,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
 		Attachment msg = inputDataMap.getAttachment(key);
 		if(msg != null) {
-			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : DEFAULT_CHARSET;
+			String encoding = (StringUtils.isNotEmpty(defaultEncoding)) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			if(msg.getContentType().getParameters() != null) { //Encoding has explicitly been set on the multipart bodypart
 				String charset = msg.getContentType().getParameters().get("charset");
 				if(StringUtils.isNotEmpty(charset)) {
