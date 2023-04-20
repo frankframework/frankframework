@@ -27,9 +27,9 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.HttpUtils;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();

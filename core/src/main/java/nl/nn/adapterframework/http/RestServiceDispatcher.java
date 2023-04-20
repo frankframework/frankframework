@@ -44,6 +44,7 @@ import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
 /**
  * Singleton class that knows about the RestListeners that are active.

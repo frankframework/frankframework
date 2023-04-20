@@ -13,14 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Some utilities for working with HTTP.
@@ -28,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Peter Leeuwenburgh
  */
 public class HttpUtils {
+	private static Logger LOG = LogManager.getLogger(HttpUtils.class);
 
 	public static String getCommandIssuedBy(HttpServletRequest request) {
 		String commandIssuedBy = " remoteHost [" + request.getRemoteHost()
@@ -77,5 +82,15 @@ public class HttpUtils {
 			}
 		}
 		return result;
+	}
+
+	public static String urlDecode(String input) {
+		try {
+			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			// TODO: Should we perhaps just throw exception instead of swallowing and returning NULL? Most callers do not expect NULL and may throw NPE...
+			LOG.warn("unable to parse input using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
+			return null;
+		}
 	}
 }

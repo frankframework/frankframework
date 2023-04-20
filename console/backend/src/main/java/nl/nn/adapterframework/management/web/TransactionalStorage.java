@@ -46,7 +46,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.HttpUtils;
 
 @Path("/")
 public class TransactionalStorage extends FrankApiBase {
@@ -79,7 +79,7 @@ public class TransactionalStorage extends FrankApiBase {
 			) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
@@ -108,7 +108,7 @@ public class TransactionalStorage extends FrankApiBase {
 		) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
@@ -154,7 +154,7 @@ public class TransactionalStorage extends FrankApiBase {
 				try (ZipOutputStream zos = new ZipOutputStream(out)) {
 					for (String messageId : messageIdArray) {
 						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-						messageId = Misc.urlDecode(messageId);
+						messageId = HttpUtils.urlDecode(messageId);
 
 						builder.addHeader("messageId", messageId);
 						Message<?> message = sendSyncMessage(builder);
@@ -248,7 +248,7 @@ public class TransactionalStorage extends FrankApiBase {
 	public Response resendReceiverMessage(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @PathParam("messageId") String messageId) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
@@ -344,7 +344,7 @@ public class TransactionalStorage extends FrankApiBase {
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		builder.addHeader("messageId", messageId);
 		return callAsyncGateway(builder);
