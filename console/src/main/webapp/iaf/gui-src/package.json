@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "build:prod": "webpack --mode production",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "watch:prod": "webpack --mode production --watch"
   },
   "dependencies": {
     "@uirouter/angularjs": "0.2.18",
@@ -34,7 +35,7 @@
     "jquery": "2.1.1",
     "jquery-slimscroll": "1.3.6",
     "jquery-ui": "1.10.4",
-    "mermaid": "^0.5.8",
+    "mermaid": "^8.14.0",
     "metismenu": "2.0.2",
     "moment": "2.8.1",
     "ng-idle": "1.0.4",
@@ -43,6 +44,7 @@
     "tinycon": "0.6.8"
   },
   "devDependencies": {
+    "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.21.4",
     "babel-loader": "^9.1.2",
     "babel-plugin-angularjs-annotate": "^0.10.0",

@@ -1,4 +1,5 @@
 'use strict';
+import mermaid from 'mermaid';
 
 angular.module("angular-mermaid", [])
 .directive('ngMermaid', ['$timeout', function ($timeout) {
@@ -23,7 +24,7 @@ angular.module("angular-mermaid", [])
 		nmInitCallback: '&nmInitCallback'
 	},
 	compile: function(tElement, tAttrs, transclude){
-		// angularjs ng:xxx style escape 
+		// angularjs ng:xxx style escape
 		for(var styleidx in document.styleSheets){
 		for(var cssridx in document.styleSheets[styleidx].cssRules){
 			var cssroule = document.styleSheets[styleidx].cssRules[cssridx];
@@ -35,7 +36,7 @@ angular.module("angular-mermaid", [])
 		}
 
 		return function (scope, element, attrs, ctrl) {
-			
+
 		scope.model=scope.nmModel || element.text();
 		scope.interval = scope.nmRefreshinterval || interval;
 		scope.is_mermaid = 'mermaid';

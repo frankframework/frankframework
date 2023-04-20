@@ -1146,7 +1146,7 @@ angular.module('iaf.beheerconsole')
 		}
 	}
 
-	getConfiguration = function() {
+	const getConfiguration = function() {
 		$scope.updateQueryParams();
 		var uri = "configurations";
 		if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;

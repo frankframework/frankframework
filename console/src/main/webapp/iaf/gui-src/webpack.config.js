@@ -13,7 +13,7 @@ module.exports = {
     path: distDir,
   },
   optimization: {
-    // runtimeChunk: 'single',
+    runtimeChunk: 'single',
     splitChunks: {
 	  cacheGroups: {
 	    vendor: {
@@ -28,6 +28,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: "./css/patterns", to: "css/patterns" },
+        { from: "./css/plugins/iCheck/green.png", to: "css/green.png" },
         { from: "./images", to: "images" },
         { from: "./views", to: "views" },
         { from: "./index.jsp", to: "index.jsp" },
@@ -85,13 +86,13 @@ module.exports = {
           exposes: ["$", "jQuery"],
         },
       },
-	  {
+	  /*{
 		test: require.resolve("mermaid"),
 		loader: "expose-loader",
 		options: {
 			exposes: ["mermaid"],
 		},
-	  },
+	  },*/
     ]
   }
 };

@@ -47,6 +47,7 @@
   <div ui-view style="display:none;" class="main"></div>
 
   <script type="text/javascript" nonce="ffVersion">var ff_version = "<%=version%>"</script>
+  <script src="js/runtime.bundle.js?v=<%=version%>"></script>
   <script src="js/vendors.bundle.js?v=<%=version%>"></script>
   <script src="js/main.bundle.js?v=<%=version%>"></script>
 

@@ -1,5 +1,6 @@
 import 'jquery';
 import 'metismenu';
+import './js/plugins/iCheck/icheck.min';
 import 'mermaid';
 
 import 'angular';
@@ -21,7 +22,7 @@ import 'angular-ladda';
 import 'angularjs-toaster';
 import 'angular-datatables';
 import 'angular-chart.js';
-import 'ng-mermaid';
+import './js/plugins/mermaid/ng-mermaid';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/scss/font-awesome.scss';
@@ -38,6 +39,7 @@ import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
+import './css/plugins/iCheck/custom.css';
 
 import './js/main';
 
