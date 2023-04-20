@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  */
 
 @Path("/")
-public final class TestServiceListener extends FrankApiBase {
+public class TestServiceListener extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
