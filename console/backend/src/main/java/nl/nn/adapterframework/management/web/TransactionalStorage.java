@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,11 +67,11 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/configurations/{configuration}/adapters/{name}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessage(
 				@PathParam("configuration") String configuration,
-				@PathParam("name") String adapterName,
+				@PathParam("adapterName") String adapterName,
 				@PathParam("storageSource") StorageSource storageSource,
 				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,

@@ -35,8 +35,7 @@ public class HttpUtils {
 	private static Logger LOG = LogManager.getLogger(HttpUtils.class);
 
 	public static String getCommandIssuedBy(HttpServletRequest request) {
-		String commandIssuedBy = " remoteHost [" + request.getRemoteHost()
-				+ "]";
+		String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
 		commandIssuedBy += " remoteAddress [" + request.getRemoteAddr() + "]";
 		commandIssuedBy += " remoteUser [" + request.getRemoteUser() + "]";
 		return commandIssuedBy;
@@ -46,13 +45,11 @@ public class HttpUtils {
 		return getExtendedCommandIssuedBy(request, null);
 	}
 
-	public static String getExtendedCommandIssuedBy(HttpServletRequest request,
-			List<String> secLogParamNames) {
+	public static String getExtendedCommandIssuedBy(HttpServletRequest request, List<String> secLogParamNames) {
 		return getExtendedCommandIssuedBy(request, secLogParamNames, null);
 	}
 
-	public static String getExtendedCommandIssuedBy(HttpServletRequest request,
-			List<String> secLogParamNames, String message) {
+	public static String getExtendedCommandIssuedBy(HttpServletRequest request, List<String> secLogParamNames, String message) {
 		String contextPath = request.getContextPath();
 		String requestUri = request.getRequestURI();
 		String reqUri = StringUtils.substringAfter(requestUri, contextPath);
@@ -70,7 +67,7 @@ public class HttpUtils {
 		String result = "";
 		Enumeration<String> paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
-			String paramname = (String) paramnames.nextElement();
+			String paramname = paramnames.nextElement();
 			if (secLogParamNames == null || secLogParamNames.contains(paramname)) {
 				String paramvalue = request.getParameter(paramname);
 				if (StringUtils.isNotEmpty(paramvalue)) {
@@ -88,9 +85,8 @@ public class HttpUtils {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			// TODO: Should we perhaps just throw exception instead of swallowing and returning NULL? Most callers do not expect NULL and may throw NPE...
-			LOG.warn("unable to parse input using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
-			return null;
+			LOG.warn("unable to decode input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
+			throw new IllegalArgumentException(e);
 		}
 	}
 }
