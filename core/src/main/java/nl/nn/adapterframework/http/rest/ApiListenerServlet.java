@@ -65,6 +65,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -126,7 +127,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 	private static String createEndpointUrlFromRequest(HttpServletRequest request) {
 		String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
-		requestUrl = Misc.urlDecode(requestUrl);
+		requestUrl = HttpUtils.urlDecode(requestUrl);
 		String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
 		return requestUrl.substring(0, requestUrl.indexOf(requestPath));
 	}

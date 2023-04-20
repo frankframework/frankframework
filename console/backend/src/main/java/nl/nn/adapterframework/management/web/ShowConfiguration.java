@@ -39,7 +39,7 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.HttpUtils;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -150,7 +150,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, LinkedHashMap<String, Object> json) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
-		builder.addHeader("version", Misc.urlDecode(encodedVersion));
+		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
 		if(json.containsKey("activate")) {
 			builder.addHeader("activate", json.get("activate"));
 		} else if(json.containsKey("autoreload")) {
