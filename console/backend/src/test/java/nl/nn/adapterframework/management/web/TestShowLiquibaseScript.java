@@ -61,7 +61,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void downloadAllScriptsWihtConfig() throws Exception {
+	public void downloadAllScriptsWithConfig() throws Exception {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);

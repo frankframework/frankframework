@@ -21,7 +21,6 @@ import java.util.HashMap;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -47,11 +46,9 @@ public class ShowLiquibaseScript extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadScript(@QueryParam("configuration") @DefaultValue("") String configuration) {
+	public Response downloadScript(@QueryParam("configuration") String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
-		if(StringUtils.isNotEmpty(configuration)) {
-			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		}
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return callSyncGateway(builder);
 	}
 
