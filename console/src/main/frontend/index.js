@@ -47,7 +47,6 @@ import './css/style.css';
 import './css/plugins/iCheck/custom.css';
 
 import './js/main';
-
 import './js/app';
 import './js/config';
 import './js/services';
