@@ -192,7 +192,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
+			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}
 		return registeredListeners;
 	}
@@ -276,7 +276,10 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		this.throwException = throwException;
 	}
 
-	@IbisDoc({"If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
+	/**
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download
+	 * @ff.default false
+	 */
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}
