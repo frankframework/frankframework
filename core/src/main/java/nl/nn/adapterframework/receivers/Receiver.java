@@ -1020,7 +1020,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			Date tsReceived = PipeLineSession.getTsReceived(session);
 			Date tsSent = PipeLineSession.getTsSent(session);
-			PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
 			String messageId = session.getMessageId();
 			String correlationId = session.getCorrelationId();
 			Message result = processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);

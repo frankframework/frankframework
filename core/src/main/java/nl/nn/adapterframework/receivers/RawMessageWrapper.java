@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Getter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.ListenerException;
 
 public class RawMessageWrapper<M> implements Serializable {
 
@@ -38,6 +40,11 @@ public class RawMessageWrapper<M> implements Serializable {
 	public RawMessageWrapper(M rawMessage, String id) {
 		this.rawMessage = rawMessage;
 		this.id = id;
+	}
+
+	public RawMessageWrapper(M rawMessage, Map<String, Object> context, IListener<M> listener) throws ListenerException {
+		this(rawMessage, listener.getIdFromRawMessage(rawMessage, context));
+		this.context.putAll(context);
 	}
 
 	public RawMessageWrapper(M rawMessage, String id, Map<String, Object> context) {

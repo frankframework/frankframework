@@ -99,7 +99,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) {
-		PipeLineSession.setListenerParameters(threadContext, rawMessage, rawMessage, null, null);
+		PipeLineSession.updateListenerParameters(threadContext, rawMessage, rawMessage, null, null);
 		return rawMessage;
 	}
 
@@ -129,7 +129,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		if (! remoteFilenames.isEmpty()) {
 			String result = remoteFilenames.removeFirst();
 			log.debug("FtpListener " + getName() + " returns " + result);
-			return new RawMessageWrapper<>(result, result);
+			return new RawMessageWrapper<>(result, threadContext, this);
 		}
 		waitAWhile();
 		return null;
@@ -196,5 +196,4 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	public String getRemoteDirectory() {
 		return remoteDirectory;
 	}
-
 }

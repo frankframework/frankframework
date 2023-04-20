@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class TestPipeline extends BusEndpointBase {
 			}
 
 			Date now = new Date();
-			PipeLineSession.setListenerParameters(pls, messageId, correlationId, now, now);
+			PipeLineSession.updateListenerParameters(pls, messageId, correlationId, now, now);
 
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 

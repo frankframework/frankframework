@@ -328,7 +328,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	private static void updateThreadContextWithIds(Map<String, Object> threadContext, String key, String cid, String mid) {
 		if (threadContext != null) {
-			PipeLineSession.setListenerParameters(threadContext, mid, cid, null, null);
+			PipeLineSession.updateListenerParameters(threadContext, mid, cid, null, null);
 			threadContext.put(STORAGE_KEY_KEY, key);
 		}
 	}

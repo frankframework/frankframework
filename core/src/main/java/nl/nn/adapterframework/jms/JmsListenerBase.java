@@ -197,7 +197,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "]");
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.updateListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		return id;

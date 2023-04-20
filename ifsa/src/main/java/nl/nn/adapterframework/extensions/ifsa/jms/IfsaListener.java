@@ -251,7 +251,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 //			}
 //		}
 
-		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
+		PipeLineSession.updateListenerParameters(threadContext, id, BIFname, null, tsSent);
 		threadContext.put("timestamp", tsSent);
 		threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 		threadContext.put("messageText", messageText);

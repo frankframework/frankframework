@@ -199,8 +199,8 @@ public class FileRecordListener implements IPullingListener {
 
 	@Override
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = rawMessage.toString();
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		String correlationId = inputFileName + "-" + recordNo;
+		PipeLineSession.updateListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 
@@ -215,14 +215,12 @@ public class FileRecordListener implements IPullingListener {
 		if (recordIterator != null) {
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				// TODO: Method to get the ID
-				return new RawMessageWrapper(recordIterator.next(), inputFileName + "-" + recordNo);
+				return new RawMessageWrapper(recordIterator.next(), threadContext, this);
 			}
 		}
 		if (getFileToProcess() != null) {
 			File inputFile = getFileToProcess();
-			log.info(
-				" processing file [" + inputFile.getName() + "] size [" + inputFile.length() + "]");
+			log.info(" processing file [{}] size [{}]", inputFile::getName, inputFile::length);
 
 			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
 				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
