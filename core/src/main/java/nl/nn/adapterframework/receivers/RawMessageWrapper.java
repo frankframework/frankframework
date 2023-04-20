@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ListenerException;
 
-public class RawMessageWrapper<M> implements Serializable {
+public class RawMessageWrapper<M> {
 
 	protected @Getter transient M rawMessage;
 	protected @Getter String id;
@@ -50,5 +49,10 @@ public class RawMessageWrapper<M> implements Serializable {
 	public RawMessageWrapper(M rawMessage, String id, Map<String, Object> context) {
 		this(rawMessage, id);
 		this.context.putAll(context);
+	}
+
+	@Deprecated
+	public void setId(String string) {
+		id = string;
 	}
 }

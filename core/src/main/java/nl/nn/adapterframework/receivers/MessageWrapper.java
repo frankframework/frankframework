@@ -15,9 +15,11 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -36,9 +38,11 @@ import nl.nn.adapterframework.stream.Message;
 @SuppressWarnings({"deprecation", "unchecked"})
 public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable, IMessageWrapper {
 
-	static final long serialVersionUID = -8251009650246241025L;
+	private  static final long serialVersionUID = -8251009650246241025L;
 
 	private @Getter Message message;
+	// TODO: Move up to RawMessageWrapper
+	private @Getter String correlationId;
 
 	public MessageWrapper() {
 		super();
@@ -55,13 +59,17 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		super(rawMessage.getRawMessage(), rawMessage.getId(), rawMessage.getContext());
 		message = listener.extractMessage(rawMessage, getContext());
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		correlationId = (String) context.get("cid");
+		if (id == null) {
+			id = (String) context.get("mid");
+		}
 	}
 
-	// TODO: Add constructor that takes RawMessageWrapper + Message
-
-	@Deprecated
-	public void setId(String string) {
-		id = string;
+	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String correlationId) {
+		super(messageWrapper.getRawMessage(), messageWrapper.getId(), messageWrapper.getContext());
+		this.message = message;
+		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		this.correlationId = correlationId;
 	}
 
 	@Deprecated
@@ -69,6 +77,10 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		this.message = message;
 	}
 
+	@Deprecated
+	void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
+	}
 
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
@@ -87,6 +99,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		stream.writeObject(context);
 		stream.writeObject(id);
 		stream.writeObject(message);
+		stream.writeObject(correlationId);
 	}
 
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
@@ -94,5 +107,11 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		id = (String) stream.readObject();
 		message = (Message) stream.readObject();
 		rawMessage = (M) message.asObject();
+		try {
+			correlationId = (String) stream.readObject();
+		} catch (OptionalDataException | EOFException e) {
+			// Correlation ID was not written
+			correlationId = null;
+		}
 	}
 }

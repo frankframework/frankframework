@@ -3,17 +3,17 @@ package nl.nn.adapterframework.receivers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.PathMessage;
@@ -30,18 +30,23 @@ public class MessageWrapperTest {
 	private String characterWire78 = "aced00057372002f6e6c2e6e6e2e616461707465726672616d65776f726b2e7265636569766572732e4d657373616765577261707065728d7e867056c0b4ff0300034c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c000269647400124c6a6176612f6c616e672f537472696e673b4c00076d6573736167657400274c6e6c2f6e6e2f616461707465726672616d65776f726b2f73747265616d2f4d6573736167653b7870737200176a6176612e7574696c2e4c696e6b6564486173684d617034c04e5c106cc0fb0200015a000b6163636573734f72646572787200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017400196d65737361676557726170706572436f6e746578744974656d74000966616b6556616c7565780074000666616b654964737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787471007e00014c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c61737371007e00024c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707074001c746573746461746120766f6f72206d65737361676577726170706572740006537472696e677878";
 	private String binaryWire78 =    "aced00057372002f6e6c2e6e6e2e616461707465726672616d65776f726b2e7265636569766572732e4d657373616765577261707065728d7e867056c0b4ff0300034c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c000269647400124c6a6176612f6c616e672f537472696e673b4c00076d6573736167657400274c6e6c2f6e6e2f616461707465726672616d65776f726b2f73747265616d2f4d6573736167653b7870737200176a6176612e7574696c2e4c696e6b6564486173684d617034c04e5c106cc0fb0200015a000b6163636573734f72646572787200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017400196d65737361676557726170706572436f6e746578744974656d74000966616b6556616c7565780074000666616b654964737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787471007e00014c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c61737371007e00024c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b787070757200025b42acf317f8060854e002000078700000001c746573746461746120766f6f72206d65737361676577726170706572740006627974655b5d7878";
 
+	private String characterWire79 = "aced00057372002f6e6c2e6e6e2e616461707465726672616d65776f726b2e7265636569766572732e4d657373616765577261707065728d7e867056c0b4ff0300024c000d636f7272656c6174696f6e49647400124c6a6176612f6c616e672f537472696e673b4c00076d6573736167657400274c6e6c2f6e6e2f616461707465726672616d65776f726b2f73747265616d2f4d6573736167653b7870737200176a6176612e7574696c2e4c696e6b6564486173684d617034c04e5c106cc0fb0200015a000b6163636573734f72646572787200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017400196d65737361676557726170706572436f6e746578744974656d74000966616b6556616c7565780074000666616b654964737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c61737371007e00014c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707074001c746573746461746120766f6f72206d65737361676577726170706572740006537472696e677874001166616b65436f7272656c6174696f6e496478";
+	private String binaryWire79 =    "aced00057372002f6e6c2e6e6e2e616461707465726672616d65776f726b2e7265636569766572732e4d657373616765577261707065728d7e867056c0b4ff0300024c000d636f7272656c6174696f6e49647400124c6a6176612f6c616e672f537472696e673b4c00076d6573736167657400274c6e6c2f6e6e2f616461707465726672616d65776f726b2f73747265616d2f4d6573736167653b7870737200176a6176612e7574696c2e4c696e6b6564486173684d617034c04e5c106cc0fb0200015a000b6163636573734f72646572787200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017400196d65737361676557726170706572436f6e746578744974656d74000966616b6556616c7565780074000666616b654964737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c61737371007e00014c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b787070757200025b42acf317f8060854e002000078700000001c746573746461746120766f6f72206d65737361676577726170706572740006627974655b5d7874001166616b65436f7272656c6174696f6e496478";
+
 	private SerializationTester<MessageWrapper> serializationTester = new SerializationTester<>();
 
 	@Test
 	public void testSerializeDeserializeCharacters() throws Exception {
 		String data = "testdata voor messagewrapper";
 		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new Message(data));
 		in.setId(id);
+		in.setCorrelationId(correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
@@ -52,6 +57,29 @@ public class MessageWrapperTest {
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
+		assertEquals(contextValue, out.getContext().get(contextKey));
+	}
+
+	@Test
+	public void testSerializeDeserializeWithNullValues() throws Exception {
+		String data = "testdata voor messagewrapper";
+		String contextKey = "messageWrapperContextItem";
+		String contextValue = "fakeValue";
+
+		MessageWrapper in = new MessageWrapper();
+		in.setMessage(new Message(data));
+		in.getContext().put(contextKey, contextValue);
+
+		byte[] wire = serializationTester.serialize(in);
+
+		assertNotNull(wire);
+		MessageWrapper out = serializationTester.deserialize(wire);
+
+		assertFalse(out.getMessage().isBinary());
+		assertEquals(data, out.getMessage().asString());
+		assertNull(out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -60,12 +88,14 @@ public class MessageWrapperTest {
 	public void testSerializeDeserializeBinary() throws Exception {
 		byte[] data = "testdata voor messagewrapper".getBytes();
 		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new Message(data));
 		in.setId(id);
+		in.setCorrelationId(correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
@@ -76,6 +106,7 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -83,6 +114,7 @@ public class MessageWrapperTest {
 	public void testSerializeDeserializePath() throws Exception {
 		byte[] data = "testdata voor messagewrapper".getBytes();
 		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
@@ -93,6 +125,7 @@ public class MessageWrapperTest {
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new PathMessage(file));
 		in.setId(id);
+		in.setCorrelationId(correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
@@ -105,6 +138,7 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -112,6 +146,7 @@ public class MessageWrapperTest {
 	public void testSerializeDeserializeMimeBodyPart() throws Exception {
 		byte[] data = "testdata voor messagewrapper".getBytes();
 		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
@@ -121,6 +156,7 @@ public class MessageWrapperTest {
 		MessageWrapper in = new MessageWrapper();
 		in.setMessage(new PartMessage(bodyPart));
 		in.setId(id);
+		in.setCorrelationId(correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
@@ -131,6 +167,7 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -147,6 +184,7 @@ public class MessageWrapperTest {
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -164,6 +202,7 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -187,6 +226,7 @@ public class MessageWrapperTest {
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -211,6 +251,7 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -234,6 +275,7 @@ public class MessageWrapperTest {
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
@@ -258,7 +300,45 @@ public class MessageWrapperTest {
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
 		assertEquals(id, out.getId());
+		assertNull(out.getCorrelationId());
 		assertEquals(contextValue, out.getContext().get(contextKey));
 	}
 
+	@Test
+	public void testDeserialization79CompatibilityCharacters() throws Exception {
+		String data = "testdata voor messagewrapper";
+		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
+		String contextKey = "messageWrapperContextItem";
+		String contextValue = "fakeValue";
+
+		byte[] wire = Hex.decodeHex(characterWire79);
+		MessageWrapper out = serializationTester.deserialize(wire);
+
+		assertFalse(out.getMessage().isBinary());
+		assertEquals(data, out.getMessage().asString());
+		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
+		assertEquals(contextValue, out.getContext().get(contextKey));
+	}
+
+
+	@Test
+	public void testDeserialization79CompatibilityBinary() throws Exception {
+		byte[] data = "testdata voor messagewrapper".getBytes();
+		String id = "fakeId";
+		String correlationId = "fakeCorrelationId";
+		String contextKey = "messageWrapperContextItem";
+		String contextValue = "fakeValue";
+
+
+		byte[] wire = Hex.decodeHex(binaryWire79);
+		MessageWrapper out = serializationTester.deserialize(wire);
+
+		assertTrue(out.getMessage().isBinary());
+		assertEquals(new String(data), out.getMessage().asString());
+		assertEquals(id, out.getId());
+		assertEquals(correlationId, out.getCorrelationId());
+		assertEquals(contextValue, out.getContext().get(contextKey));
+	}
 }
