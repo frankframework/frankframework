@@ -20,7 +20,9 @@
 		'ngIdle',                       // Idle timer
 		'ngSanitize',                   // ngSanitize
 		'angular-ladda',                // Ladda
-		'toaster'                       // Toastr
+		'toaster',                       // Toastr
+		'datatables',
+		'chart.js'
 	]).constant("appConstants", {
 		//Configure these in the server AppConstants!!!
 		//The settings here are defaults and will be overwritten upon set in any .properties file.

@@ -1,6 +1,8 @@
 import 'jquery';
 import 'metismenu';
 import './js/plugins/iCheck/icheck.min';
+import 'datatables.net/js/jquery.dataTables.min';
+import 'chart.js';
 import 'mermaid';
 
 import 'angular';
@@ -21,6 +23,7 @@ import 'ng-idle/angular-idle';
 import 'angular-ladda';
 import 'angularjs-toaster';
 import 'angular-datatables';
+import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
 import 'angular-chart.js';
 import './js/plugins/mermaid/ng-mermaid';
 
@@ -31,6 +34,8 @@ import 'font-awesome/fonts/fontawesome-webfont.eot';
 import 'font-awesome/fonts/fontawesome-webfont.ttf';
 import 'font-awesome/fonts/fontawesome-webfont.woff';
 import 'font-awesome/fonts/fontawesome-webfont.woff2';
+import 'angular-datatables/dist/css/angular-datatables.css';
+import 'angular-datatables/dist/plugins/bootstrap/datatables.bootstrap.min.css';
 import './css/animate.css';
 
 import 'sweetalert/lib/sweet-alert.css';
