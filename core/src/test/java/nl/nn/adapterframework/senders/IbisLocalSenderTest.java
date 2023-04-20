@@ -1,11 +1,15 @@
 package nl.nn.adapterframework.senders;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,11 +18,13 @@ import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
@@ -37,6 +43,7 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.RunState;
 
 class IbisLocalSenderTest {
 	public static final String SERVICE_NAME = "TEST-SERVICE";
@@ -94,8 +101,9 @@ class IbisLocalSenderTest {
 		return new Message(virtualInputStream);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "Call via Dispatcher: {0}")
 	@CsvSource({"false", "true"})
+	@DisplayName("Test IbisLocalSender with Async and Isolated")
 	void sendMessageAsync(boolean callByServiceName) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration();
@@ -112,6 +120,8 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
+		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+
 		// Act
 		PipeLineSession session = new PipeLineSession();
 		log.info("**>>> Calling Local Sender");
@@ -122,10 +132,11 @@ class IbisLocalSenderTest {
 		boolean completedSuccess = asyncCompletionSemaphore.tryAcquire(10, TimeUnit.SECONDS);
 
 		// Assert
+		String msgPrefix = callByServiceName ? "Call via Dispatcher: " : "Call via JavaListener: ";
 		assertAll(
-			() -> assertTrue(completedSuccess, "Async local sender should complete w/o error within at most 10 seconds"),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get())
+			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
+			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes.")
 		);
 	}
 
@@ -201,4 +212,16 @@ class IbisLocalSenderTest {
 		}
 		return counter;
 	}
+
+	public void waitForState(IManagable object, RunState... state) {
+		Set<RunState> states = new HashSet<>();
+		Collections.addAll(states, state);
+
+		log.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
+		await()
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> states.contains(object.getRunState()));
+	}
+
 }
