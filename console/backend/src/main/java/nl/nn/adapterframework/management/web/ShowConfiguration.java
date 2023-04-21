@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,10 +36,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.HttpUtils;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -138,7 +138,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	public Response getConfigurationDetailsByName(@PathParam("configuration") String configurationName, @QueryParam("datasourceName") String datasourceName) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader("configuration", configurationName);
-		builder.addHeader("datasourceName", datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callSyncGateway(builder);
 	}
 
@@ -150,13 +150,13 @@ public final class ShowConfiguration extends FrankApiBase {
 	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, LinkedHashMap<String, Object> json) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
-		builder.addHeader("version", Misc.urlDecode(encodedVersion));
+		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
 		if(json.containsKey("activate")) {
 			builder.addHeader("activate", json.get("activate"));
 		} else if(json.containsKey("autoreload")) {
 			builder.addHeader("autoreload", json.get("autoreload"));
 		}
-		builder.addHeader("datasourceName", datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callSyncGateway(builder);
 	}
 
@@ -169,7 +169,7 @@ public final class ShowConfiguration extends FrankApiBase {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource", "");
 		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
 		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
 		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
@@ -189,7 +189,9 @@ public final class ShowConfiguration extends FrankApiBase {
 		builder.addHeader("activate_config", activateConfig);
 		builder.addHeader("automatic_reload", automaticReload);
 		builder.addHeader("user", user);
-		builder.addHeader("datasourceName", datasource);
+		if(StringUtils.isNotEmpty(datasource)) {
+			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
+		}
 		return callSyncGateway(builder);
 	}
 
@@ -201,7 +203,7 @@ public final class ShowConfiguration extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", version);
-		builder.addHeader("datasourceName", dataSourceName);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, dataSourceName);
 		return callSyncGateway(builder);
 	}
 
@@ -212,7 +214,7 @@ public final class ShowConfiguration extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", version);
-		builder.addHeader("datasourceName", datasourceName);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callAsyncGateway(builder);
 	}
 }

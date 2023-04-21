@@ -74,7 +74,7 @@ public class TestPipeline extends FrankApiBase {
 			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, DEFAULT_CHARSET);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {

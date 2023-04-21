@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2022 WeAreFrank!
+   Copyright 2018-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,12 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.messaging.Message;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.HttpUtils;
 
 @Path("/")
 public class TransactionalStorage extends FrankApiBase {
@@ -68,21 +67,21 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessage(
+				@PathParam("configuration") String configuration,
 				@PathParam("adapterName") String adapterName,
 				@PathParam("storageSource") StorageSource storageSource,
 				@PathParam("storageSourceName") String storageSourceName,
 				@PathParam("processState") String processState,
 				@PathParam("messageId") String messageId
 			) {
-
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
@@ -97,9 +96,10 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessage(
+			@PathParam("configuration") String configuration,
 			@PathParam("adapterName") String adapterName,
 			@PathParam("storageSource") StorageSource storageSource,
 			@PathParam("storageSourceName") String storageSourceName,
@@ -108,10 +108,10 @@ public class TransactionalStorage extends FrankApiBase {
 		) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
@@ -126,9 +126,10 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadMessages(
+			@PathParam("configuration") String configuration,
 			@PathParam("adapterName") String adapterName,
 			@PathParam("storageSource") StorageSource storageSource,
 			@PathParam("storageSourceName") String storageSourceName,
@@ -137,7 +138,7 @@ public class TransactionalStorage extends FrankApiBase {
 		) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
@@ -154,7 +155,7 @@ public class TransactionalStorage extends FrankApiBase {
 				try (ZipOutputStream zos = new ZipOutputStream(out)) {
 					for (String messageId : messageIdArray) {
 						// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-						messageId = Misc.urlDecode(messageId);
+						messageId = HttpUtils.urlDecode(messageId);
 
 						builder.addHeader("messageId", messageId);
 						Message<?> message = sendSyncMessage(builder);
@@ -187,9 +188,10 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseMessages(
+				@PathParam("configuration") String configuration,
 				@PathParam("adapterName") String adapterName,
 				@PathParam("storageSource") StorageSource storageSource,
 				@PathParam("storageSourceName") String storageSourceName,
@@ -212,7 +214,7 @@ public class TransactionalStorage extends FrankApiBase {
 
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
@@ -242,16 +244,21 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@PUT
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response resendReceiverMessage(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @PathParam("messageId") String messageId) {
+	public Response resendReceiverMessage(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			@PathParam("messageId") String messageId
+		) {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 		builder.addHeader("messageId", messageId);
@@ -260,14 +267,14 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response resendReceiverMessages(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
+	public Response resendReceiverMessages(@PathParam("configuration") String configuration, @PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
@@ -296,15 +303,20 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response changeProcessState(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver,
-			@PathParam("processState") String processState, @PathParam("targetState") String targetState, MultipartBody input) {
+	public Response changeProcessState(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			@PathParam("processState") String processState,
+			@PathParam("targetState") String targetState,
+			MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 		builder.addHeader("processState", processState);
@@ -333,18 +345,22 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteReceiverMessage(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, @PathParam("messageId") String messageId) {
+	public Response deleteReceiverMessage(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			@PathParam("messageId") String messageId) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+		messageId = HttpUtils.urlDecode(messageId);
 
 		builder.addHeader("messageId", messageId);
 		return callAsyncGateway(builder);
@@ -352,14 +368,18 @@ public class TransactionalStorage extends FrankApiBase {
 
 	@DELETE
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
+	@Path("/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response deleteReceiverMessages(@PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
+	public Response deleteReceiverMessages(
+			@PathParam("configuration") String configuration,
+			@PathParam("adapterName") String adapter,
+			@PathParam("receiverName") String receiver,
+			MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
 

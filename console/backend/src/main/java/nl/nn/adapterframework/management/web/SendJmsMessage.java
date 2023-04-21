@@ -35,7 +35,9 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
@@ -46,7 +48,7 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  */
 
 @Path("/")
-public final class SendJmsMessage extends FrankApiBase {
+public class SendJmsMessage extends FrankApiBase {
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -62,7 +64,7 @@ public final class SendJmsMessage extends FrankApiBase {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, DEFAULT_CHARSET);
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
 		String destinationName = resolveStringFromMap(inputDataMap, "destination");
 		String destinationType = resolveStringFromMap(inputDataMap, "type");
@@ -73,7 +75,7 @@ public final class SendJmsMessage extends FrankApiBase {
 		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
-		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
+		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destinationName);
 		builder.addHeader("type", destinationType);
 		builder.addHeader("replyTo", replyTo);

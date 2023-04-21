@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ import nl.nn.adapterframework.management.bus.dto.ConfigurationDTO;
 public class ConfigManagement extends BusEndpointBase {
 
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
-	private static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
 
 	/**
 	 * The header 'loaded' is used to differentiate between the loaded and original (raw) XML.
@@ -89,7 +88,7 @@ public class ConfigManagement extends BusEndpointBase {
 			Configuration configuration = getConfigurationByName(configurationName);
 
 			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-				String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+				String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 				List<ConfigurationDTO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
 				for(ConfigurationDTO config: configs) {
@@ -126,7 +125,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		Boolean activate = BusMessageUtils.getBooleanHeader(message, "activate", null);
 		Boolean autoreload = BusMessageUtils.getBooleanHeader(message, "autoreload", null);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 		try {
 			if(activate != null) {
@@ -149,7 +148,7 @@ public class ConfigManagement extends BusEndpointBase {
 		boolean multipleConfigs = BusMessageUtils.getBooleanHeader(message, "multiple_configs", false);
 		boolean activateConfig = BusMessageUtils.getBooleanHeader(message, "activate_config", true);
 		boolean automaticReload = BusMessageUtils.getBooleanHeader(message, "automatic_reload", false);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 		String user = BusMessageUtils.getHeader(message, "user");
 		InputStream file = message.getPayload();
 		String filename = BusMessageUtils.getHeader(message, "filename");
@@ -181,7 +180,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 		Map<String, Object> configuration;
 		try {
@@ -206,7 +205,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 		try {
 			ConfigurationUtils.removeConfigFromDatabase(getApplicationContext(), configurationName, datasourceName, version);

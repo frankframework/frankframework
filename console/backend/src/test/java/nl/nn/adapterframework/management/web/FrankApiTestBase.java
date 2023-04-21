@@ -62,6 +62,8 @@ import org.springframework.mock.web.MockServletContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nl.nn.adapterframework.util.ClassUtils;
+
 public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";
 
@@ -282,7 +284,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 					} else if(isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
 
-						log.debug("setting method argument [{}] to value [{}] with type [{}]", i, value, value.getClass().getSimpleName());
+						log.debug("setting method argument [{}] to value [{}]", i, value);
 						methodArguments[i] = value;
 					} else {
 						Consumes consumes = AnnotationUtils.findAnnotation(method, Consumes.class);
@@ -415,26 +417,10 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 				}
 			}
 			if(queryValue == null) {
-				fail("unable to populate query param ["+queryParameter.value()+"]");
+				return null;
 			}
 
-			Object value = null;
-			switch (parameter.getType().getTypeName()) {
-				case "boolean":
-				case "java.lang.Boolean":
-					value = Boolean.parseBoolean(queryValue);
-					break;
-				case "int":
-				case "java.lang.Integer":
-					value = Integer.parseInt(queryValue);
-					break;
-				case "java.lang.String":
-					value = queryValue;
-					break;
-
-				default:
-					fail("parameter type ["+parameter.getType().getTypeName()+"] not implemented");
-			}
+			Object value = ClassUtils.convertToType(parameter.getType(), queryValue);
 			log.info("resolved value [{}] to type [{}]", queryValue, value.getClass());
 			return value;
 		}
@@ -446,7 +432,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 			for (int j = 0; j < methodArguments.length; j++) {
 				Object object = methodArguments[j];
 				if(object == null) {
-					fail("missing argument ["+j+"] for method, expecting type ["+parameters[j]+"]");
+					log.warn("missing argument [{}] for method, expecting type [{}]", j, parameters[j]);
 				}
 			}
 		}

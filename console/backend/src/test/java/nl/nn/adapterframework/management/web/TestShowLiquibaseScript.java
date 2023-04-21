@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -51,12 +52,29 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
 			assertEquals("DOWNLOAD", headers.get("action"));
-			assertEquals("*ALL*", headers.get("configuration"));
+			assertNull(headers.get("configuration"));
 
 			return msg;
 		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		dispatcher.dispatchRequest(HttpMethod.GET, "/jdbc/liquibase");
+	}
+
+	@Test
+	public void downloadAllScriptsWithConfig() throws Exception {
+		Mockito.doAnswer((i) -> {
+			RequestMessageBuilder inputMessage = i.getArgument(0);
+			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
+			Message<?> msg = inputMessage.build();
+			MessageHeaders headers = msg.getHeaders();
+			assertEquals("JDBC_MIGRATION", headers.get("topic"));
+			assertEquals("DOWNLOAD", headers.get("action"));
+			assertEquals("test123", headers.get("configuration"));
+
+			return msg;
+		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+
+		dispatcher.dispatchRequest(HttpMethod.GET, "/jdbc/liquibase?configuration=test123");
 	}
 
 	@Test

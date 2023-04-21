@@ -32,10 +32,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import nl.nn.adapterframework.http.HttpUtils;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.HttpUtils;
 
 /**
  * Main dispatcher for all API resources.
