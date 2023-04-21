@@ -38,20 +38,16 @@ public class CspFilterConfigurer implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		ServletContext context = sce.getServletContext();
-		Dynamic filter;
 
-		WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(context);
-		if(wac != null) {
-			log.info("creating CspFilter through Application Context [{}]", wac::getDisplayName);
-			CspFilter filterInstance = SpringUtils.createBean(wac, CspFilter.class);
-			filter = context.addFilter("CspFilter", filterInstance);
-		} else {
-			log.info("creating CspFilter without Application Context");
-			filter = context.addFilter("CspFilter", CspFilter.class);
+		try {
+			Dynamic filter = createFilter(context);
+
+			String[] urlMapping = new String[] {"/iaf/gui/*"};
+			filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, urlMapping);
+		} catch (Exception e) {
+			log.fatal("unable to create CSP filter", e);
+			context.log("unable to create CSP filter", e);
 		}
-
-		String[] urlMapping = new String[] {"/iaf/gui/*"};
-		filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, urlMapping);
 	}
 
 	@Override
@@ -59,4 +55,15 @@ public class CspFilterConfigurer implements ServletContextListener {
 		// nothing to destroy
 	}
 
+	private Dynamic createFilter(ServletContext context) {
+		WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(context);
+		if(wac != null) {
+			log.info("creating CspFilter through Application Context [{}]", wac::getDisplayName);
+			CspFilter filterInstance = SpringUtils.createBean(wac, CspFilter.class);
+			return context.addFilter("CspFilter", filterInstance);
+		} else {
+			log.info("creating CspFilter without Application Context");
+			return context.addFilter("CspFilter", CspFilter.class);
+		}
+	}
 }
