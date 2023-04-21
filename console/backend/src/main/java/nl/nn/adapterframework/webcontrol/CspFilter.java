@@ -35,8 +35,8 @@ import org.springframework.security.web.header.writers.ContentSecurityPolicyHead
 public class CspFilter implements Filter {
 	private ContentSecurityPolicyHeaderWriter cspWriter;
 
-	@Value("${cspheader.reportOnly}")
-	private boolean reportOnly = false;
+	@Value("${cspheader.reportOnly:false}")
+	private boolean reportOnly;
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

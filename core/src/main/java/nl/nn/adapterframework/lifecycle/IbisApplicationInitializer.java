@@ -91,6 +91,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	public void closeWebApplicationContext(ServletContext servletContext) {
+		log.info("Stopping IBIS WebApplicationInitializer");
 		servletContext.log("Stopping IBIS WebApplicationInitializer");
 		super.closeWebApplicationContext(servletContext);
 	}
@@ -103,6 +104,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		try {
 			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
+			log.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
 			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
 			return wac;
 		} catch (Exception e) {
