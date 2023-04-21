@@ -81,9 +81,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 					throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
 				}
 				if (root.size()>1) {
-					List<String> gerritIsStom = new ArrayList<>(root.keySet());
-					gerritIsStom.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
-					if (gerritIsStom.size()>1) {
+					List<String> potentialRootElements = new ArrayList<>(root.keySet());
+					potentialRootElements.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
+					if (potentialRootElements.size()>1) {
 						String namesList=null;
 						int i=0;
 						for (String name: root.keySet()) {
@@ -99,7 +99,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 						}
 						throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
 					}
-					setRootElement((String)gerritIsStom.toArray()[0]);
+					setRootElement((String)potentialRootElements.toArray()[0]);
 				}
 				if (StringUtils.isEmpty(getRootElement())) {
 					setRootElement((String)root.keySet().toArray()[0]);
