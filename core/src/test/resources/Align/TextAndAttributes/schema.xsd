@@ -8,6 +8,7 @@
 				<xsd:element ref="intLabel" minOccurs="0"/>
 				<xsd:element ref="location" minOccurs="0"/>
 			</xsd:sequence>
+			<xsd:attribute name="key" type="xsd:string" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="MetaData">
