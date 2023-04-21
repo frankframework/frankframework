@@ -277,8 +277,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			}
 			// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 			String messageId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getMessageIdField(), key);
-			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId);
 			String correlationId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getCorrelationIdField(), messageId);
+			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
 			mw.getContext().put(CORRELATION_ID_KEY, correlationId);
 			mw.getContext().put(STORAGE_KEY_KEY, key);
 			return mw;
@@ -289,6 +289,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+		// TODO: See how to put all this into getIdFromRawMessage
 		if (rawMessage == null) {
 			updateThreadContextWithIds(threadContext, null, null, null);
 			return null;

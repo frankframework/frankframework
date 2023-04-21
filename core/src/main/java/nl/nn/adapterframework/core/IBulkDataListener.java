@@ -26,6 +26,8 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+// TODO: Delete. Unused, only cluttering up Receiver code.
+@Deprecated
 public interface IBulkDataListener<M> extends IListener<M> {
 
 	/**

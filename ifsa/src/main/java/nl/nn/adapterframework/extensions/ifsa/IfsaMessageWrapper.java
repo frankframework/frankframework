@@ -31,6 +31,8 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
+// TODO: Delete. Unused
+	@Deprecated
 public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 
 	static final long serialVersionUID = 6543734487515204545L;
@@ -42,7 +44,7 @@ public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 	public IfsaMessageWrapper(RawMessageWrapper message, IListener listener) throws ListenerException  {
 		super();
 		this.message = listener.extractMessage(message, context);
-		this.id = listener.getIdFromRawMessageWrapper(message, context);
+		this.id = listener.getIdFromRawMessage(message.getRawMessage(), context);
 	}
 
 	public Map getContext() {

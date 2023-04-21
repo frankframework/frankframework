@@ -510,7 +510,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try {
 			IDbmsSupport dbmsSupport=getDbmsSupport();
 			if (log.isDebugEnabled()) {
-				log.debug("preparing insert statement ["+insertQuery+"]");
+				log.debug("preparing insert statement [{}]", insertQuery);
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
@@ -579,9 +579,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
 				String resultString = createResultString(isMessageDifferent);
-				log.warn("MessageID [" + messageId + "] already exists");
+				log.warn("MessageID [{}] already exists", messageId);
 				if (isMessageDifferent) {
-					log.warn("Message with MessageID [" + messageId + "] is not equal");
+					log.warn("Message with MessageID [{}] is not equal", messageId);
 				}
 				return resultString;
 			}

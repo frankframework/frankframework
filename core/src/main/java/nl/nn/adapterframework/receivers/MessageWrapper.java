@@ -49,20 +49,28 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	}
 
 	public MessageWrapper(Message message, String messageId) {
-		// TODO: Ugly cast, but I don't think it is safe to leave it NULL
-		// TODO: Test and see if perhaps we should pass the message up as raw-message instance.
-		super((M)message.asObject(), messageId);
-		this.message = message;
+		this(message, messageId, null);
 	}
 
-	public MessageWrapper(RawMessageWrapper<M> rawMessage, IListener<M> listener) throws ListenerException {
-		super(rawMessage.getRawMessage(), rawMessage.getId(), rawMessage.getContext());
-		message = listener.extractMessage(rawMessage, getContext());
-		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		correlationId = (String) context.get("cid");
+	public MessageWrapper(Message message, String messageId, String correlationId) {
+		// Ugly cast, but I don't think it is safe to leave it NULL
+		super((M)message.asObject(), messageId);
+		this.message = message;
+		this.correlationId = correlationId;
+	}
+
+	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, IListener<M> listener) throws ListenerException {
+		super(rawMessageWrapper.getRawMessage(), rawMessageWrapper.getId(), rawMessageWrapper.getContext());
+		message = listener.extractMessage(rawMessageWrapper, getContext());
+		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
 		if (id == null) {
-			id = (String) context.get("mid");
+			if (context.containsKey("mid")) {
+				id = (String) context.get("mid");
+			} else {
+				id = listener.getIdFromRawMessage(rawMessage, context);
+			}
 		}
+		correlationId = (String) context.get("cid");
 	}
 
 	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String correlationId) {

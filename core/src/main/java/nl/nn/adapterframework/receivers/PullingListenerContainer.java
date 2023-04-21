@@ -318,7 +318,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 						try {
 							if (receiver.getMaxRetries()>=0) {
-								messageId = listener.getIdFromRawMessageWrapper(rawMessage, threadContext);
+								if (rawMessage.getId() == null) {
+									log.warn("<!> I don't wanna get into this branch <!>");
+									messageId = listener.getIdFromRawMessageWrapper(rawMessage, threadContext);
+								} else {
+									messageId = rawMessage.getId();
+								}
 								deliveryCount = receiver.getDeliveryCount(rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
@@ -327,12 +332,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								}
 							} else {
-								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Instant receivedDate = Instant.now();
 								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								final RawMessageWrapper<M> rawMessageFinal = rawMessage;
-								final Map<String,Object> threadContextFinal = threadContext;
-								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
+								receiver.moveInProcessToError(rawMessage, threadContext, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
 							messageHandled = true;
