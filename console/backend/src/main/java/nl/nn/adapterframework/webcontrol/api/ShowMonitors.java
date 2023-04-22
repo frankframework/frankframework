@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.web.ApiException;
 import nl.nn.adapterframework.management.web.RequestMessageBuilder;
@@ -87,7 +88,7 @@ public class ShowMonitors extends Base {
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Response getMonitors(@PathParam("configuration") String configurationName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("xml", showConfigXml);
 		return callSyncGateway(builder);
 	}
@@ -98,7 +99,7 @@ public class ShowMonitors extends Base {
 	@Produces()
 	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("monitor", monitorName);
 		builder.addHeader("xml", showConfigXml);
 		return callSyncGateway(builder, true);
@@ -178,19 +179,11 @@ public class ShowMonitors extends Base {
 	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) throws ApiException {
-
-		MonitorManager mm = getMonitorManager(configurationName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		log.info("removing monitor [" + monitor.getName() + "]");
-
-		mm.removeMonitor(monitor);
-		return Response.status(Status.OK).build();
+	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		return callSyncGateway(builder);
 	}
 
 	@POST
@@ -221,7 +214,7 @@ public class ShowMonitors extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader("monitor", monitorName);
 		builder.addHeader("trigger", id);
 		return callSyncGateway(builder, true);
@@ -320,25 +313,12 @@ public class ShowMonitors extends Base {
 	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index) throws ApiException {
-
-		MonitorManager mm = getMonitorManager(configurationName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		ITrigger trigger = monitor.getTrigger(index);
-
-		if(trigger == null) {
-			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
-		}
-
-		log.info("removing trigger [" + trigger + "]");
-		monitor.removeTrigger(trigger);
-
-		return Response.status(Status.OK).build();
+	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int id) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("trigger", id);
+		return callSyncGateway(builder);
 	}
 
 	@POST

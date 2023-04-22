@@ -32,6 +32,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -81,6 +82,34 @@ public class Monitoring extends BusEndpointBase {
 		}
 
 		return getMonitor(monitor, showConfigAsXml);
+	}
+
+	@ActionSelector(BusAction.DELETE)
+	public Message<String> deleteTrigger(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, "trigger", null);
+
+		MonitorManager mm = getMonitorManager(configurationName);
+		Monitor monitor = mm.findMonitor(monitorName);
+
+		if(monitor == null) {
+			throw new BusException("monitor not found");
+		}
+
+		if(triggerId != null) {
+			ITrigger trigger = monitor.getTrigger(triggerId);
+			if(trigger == null) {
+				throw new BusException("trigger not found");
+			}
+			log.info("removing trigger [{}]", trigger);
+			monitor.removeTrigger(trigger);
+		} else {
+			log.info("removing monitor [{}]", monitor);
+			mm.removeMonitor(monitor);
+		}
+
+		return EmptyResponseMessage.accepted();
 	}
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {

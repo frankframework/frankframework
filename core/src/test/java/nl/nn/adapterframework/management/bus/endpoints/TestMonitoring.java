@@ -1,11 +1,15 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
@@ -100,6 +104,24 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
+	public void deleteMonitor() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.DELETE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		assertAll(
+			() -> assertEquals(0, getMonitorManager().getMonitors().size()),
+			() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+			() -> assertEquals("no-content", response.getPayload())
+		);
+	}
+
+	@Test
 	public void getMonitorXML() throws Exception {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.GET);
@@ -131,5 +153,25 @@ public class TestMonitoring extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getTrigger.json");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertJsonEquals(expectedJson, payload);
+	}
+
+	@Test
+	public void deleteTrigger() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.DELETE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		assertAll(
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(0, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals("no-content", response.getPayload())
+			);
 	}
 }
