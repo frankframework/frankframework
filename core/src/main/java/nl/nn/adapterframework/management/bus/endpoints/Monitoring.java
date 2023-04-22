@@ -16,12 +16,16 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -41,6 +45,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.Monitor;
+import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
@@ -110,6 +115,62 @@ public class Monitoring extends BusEndpointBase {
 		}
 
 		return EmptyResponseMessage.accepted();
+	}
+
+	@ActionSelector(BusAction.MANAGE)
+	public Message<String> updateMonitor(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String monitorName = BusMessageUtils.getHeader(message, "monitor");
+
+		MonitorManager mm = getMonitorManager(configurationName);
+		Monitor monitor = mm.findMonitor(monitorName);
+		if(monitor == null) {
+			throw new BusException("monitor not found");
+		}
+
+		String action = BusMessageUtils.getHeader(message, "state", "edit");
+		switch (action) {
+		case "clear":
+			try {
+				log.info("clearing monitor [" + monitor.getName() + "]");
+				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
+			} catch (MonitorException e) {
+				throw new BusException("Failed to change monitor state", e);
+			}
+			break;
+		case "raise":
+			try {
+				log.info("raising monitor [" + monitor.getName() + "]");
+				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
+			} catch (MonitorException e) {
+				throw new BusException("Failed to change monitor state", e);
+			}
+			break;
+		case "edit":
+			String name = BusMessageUtils.getHeader(message, "name", null);
+			if(StringUtils.isNotBlank(name)) {
+				monitor.setName(name);
+			}
+			EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class, null);
+			if(type != null) {
+				monitor.setType(type);
+			}
+			String destinations = BusMessageUtils.getHeader(message, "destinations", null);
+			if(StringUtils.isNotBlank(destinations)) {
+				monitor.setDestinationSet(parseDestinations(destinations));
+			}
+			break;
+
+		default:
+			break;
+		}
+
+		return EmptyResponseMessage.accepted();
+	}
+
+	private Set<String> parseDestinations(String entry) {
+		String[] arr = entry.split(",");
+		return new HashSet<>(Arrays.asList(arr));
 	}
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {

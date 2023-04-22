@@ -1,4 +1,5 @@
 <monitoring enabled="false">
+	<destination/>
 	<monitor name="TestMonitor" type="FUNCTIONAL">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm">
 			<event>testEvent1</event>

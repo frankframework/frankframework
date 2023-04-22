@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -52,7 +50,6 @@ import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
-import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
@@ -109,54 +106,29 @@ public class ShowMonitors extends Base {
 	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, LinkedHashMap<String, Object> json) {
+	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader("monitor", monitorName);
 
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		String action = null;
 		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("action")) {
-				action = entry.getValue().toString();
-			}
-		}
-
-		if(StringUtils.isEmpty(action)) {
-			throw new ApiException("Missing query parameter [action]", Status.BAD_REQUEST);
-		} else if(action.equals("clear")) {
-			try {
-				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
-			} catch (MonitorException e) {
-				throw new ApiException("Failed to change monitor state", e);
-			}
-		} else if(action.equals("raise")) {
-			try {
-				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
-			} catch (MonitorException e) {
-				throw new ApiException("Failed to change monitor state", e);
-			}
-		} else if(action.equals("edit")) {
-			for(Entry<String, Object> entry : json.entrySet()) {
-				String key = entry.getKey();
-				if(key.equalsIgnoreCase("name")) {
-					monitor.setName(entry.getValue().toString());
-				} else if(key.equalsIgnoreCase("type")) {
-					EventType type = EnumUtils.parse(EventType.class, entry.getValue().toString());
-					monitor.setType(type);
-				} else if(key.equalsIgnoreCase("destinations")) {
-					monitor.setDestinationSet(parseDestinations(entry.getValue()));
+			if(key.equalsIgnoreCase("state")) {
+				builder.addHeader("state", String.valueOf(entry.getValue()));
+			} else if(key.equalsIgnoreCase("name")) {
+				builder.addHeader("name", String.valueOf(entry.getValue()));
+			} else if(key.equalsIgnoreCase("type")) {
+				builder.addHeader("type", String.valueOf(entry.getValue()));
+			} else if(key.equalsIgnoreCase("destinations")) {
+				if(entry.getValue() instanceof List<?>) {
+					String destinations = String.join(",", ((List<String>) entry.getValue()));
+					builder.addHeader("destinations", destinations);
 				}
+				throw new ApiException("cannot parse destinations");
 			}
 		}
 
-		return Response.status(Status.ACCEPTED).build();
+		return callSyncGateway(builder);
 	}
 
 	@SuppressWarnings("unchecked")
