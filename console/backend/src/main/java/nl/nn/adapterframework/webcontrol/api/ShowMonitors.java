@@ -15,13 +15,10 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -46,7 +43,6 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.web.ApiException;
 import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
-import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
@@ -105,9 +101,10 @@ public class ShowMonitors extends Base {
 	@PUT
 	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader("monitor", monitorName);
 
@@ -123,28 +120,11 @@ public class ShowMonitors extends Base {
 				if(entry.getValue() instanceof List<?>) {
 					String destinations = String.join(",", ((List<String>) entry.getValue()));
 					builder.addHeader("destinations", destinations);
-				}
-				throw new ApiException("cannot parse destinations");
+				} else throw new ApiException("cannot parse destinations");
 			}
 		}
 
 		return callSyncGateway(builder);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Set<String> parseDestinations(Object entry) {
-		List<String> destinations = new ArrayList<>();
-		try {
-			destinations.addAll((ArrayList<String>) entry);
-		} catch (Exception e) {
-			throw new ApiException("failed to parse destinations", e);
-		}
-
-		if(destinations.isEmpty()) {
-			return null;
-		}
-
-		return new HashSet<>(destinations);
 	}
 
 	@DELETE
@@ -299,37 +279,23 @@ public class ShowMonitors extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
-
-		String name = null;
-		EventType type = null;
-		Set<String> destinations = null;
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 
 		for(Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("name")) {
-				name = entry.getValue().toString();
-			}
-			else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(EventType.class, entry.getValue().toString());
-			}
-			else if(key.equalsIgnoreCase("destinations")) {
-				destinations = parseDestinations(entry);
+			if(key.equalsIgnoreCase("monitor")) {
+				builder.addHeader("monitor", String.valueOf(entry.getValue()));
+			} else if(key.equalsIgnoreCase("type")) {
+				builder.addHeader("type", String.valueOf(entry.getValue()));
+			} else if(key.equalsIgnoreCase("destinations")) {
+				if(entry.getValue() instanceof List<?>) {
+					String destinations = String.join(",", ((List<String>) entry.getValue()));
+					builder.addHeader("destinations", destinations);
+				} else throw new ApiException("cannot parse destinations");
 			}
 		}
-		if(name == null)
-			throw new ApiException("Name not set!", Status.BAD_REQUEST);
-		if(type == null)
-			throw new ApiException("Type not set!", Status.BAD_REQUEST);
 
-		MonitorManager mm = getMonitorManager(configurationName);
-
-		Monitor monitor = new Monitor();
-		monitor.setName(name);
-		monitor.setType(type);
-		monitor.setDestinationSet(destinations);
-
-		mm.addMonitor(monitor);
-
-		return Response.status(Response.Status.CREATED).build();
+		return callSyncGateway(builder);
 	}
 }

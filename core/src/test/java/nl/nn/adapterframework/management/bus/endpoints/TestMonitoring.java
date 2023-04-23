@@ -2,6 +2,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apache.commons.lang3.StringUtils;
@@ -129,6 +130,30 @@ public class TestMonitoring extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getMonitor.json");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertJsonEquals(expectedJson, payload);
+	}
+
+	@Test
+	public void addMonitor() throws Exception {
+		// Arrange
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.UPLOAD);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", "new"+TEST_MONITOR_NAME);
+		request.setHeader("type", EventType.TECHNICAL.name());
+		request.setHeader("destinations", "mockDestination");
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert
+		assertAll(
+				() -> assertEquals(2, getMonitorManager().getMonitors().size()),
+				() -> assertFalse(getMonitorManager().getMonitor(1).isRaised()),
+				() -> assertEquals("new"+TEST_MONITOR_NAME, getMonitorManager().getMonitor(1).getName()),
+				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(1).getType()),
+				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals("no-content", response.getPayload()),
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(1).getDestinationsAsString())
+			);
 	}
 
 	@ParameterizedTest

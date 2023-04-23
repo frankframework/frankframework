@@ -50,6 +50,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.SpringUtils;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)
@@ -89,8 +90,26 @@ public class Monitoring extends BusEndpointBase {
 		return getMonitor(monitor, showConfigAsXml);
 	}
 
+	@ActionSelector(BusAction.UPLOAD)
+	public Message<String> addMonitor(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String name = BusMessageUtils.getHeader(message, "monitor", null);
+		EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class);
+		String destinations = BusMessageUtils.getHeader(message, "destinations");
+
+		MonitorManager mm = getMonitorManager(configurationName);
+
+		Monitor monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+		monitor.setName(name);
+		monitor.setType(type);
+		monitor.setDestinations(destinations);
+		mm.addMonitor(monitor);
+
+		return EmptyResponseMessage.created();
+	}
+
 	@ActionSelector(BusAction.DELETE)
-	public Message<String> deleteTrigger(Message<?> message) {
+	public Message<String> deleteMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
 		Integer triggerId = BusMessageUtils.getIntHeader(message, "trigger", null);
