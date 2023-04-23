@@ -482,7 +482,7 @@ public class ReceiverTest {
 						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
-							.thenAnswer(invocation -> {
+								.thenAnswer(invocation -> {
 								if (tx.isRollbackOnly()) {
 									txRollbackOnlyInErrorStorage.incrementAndGet();
 									throw new SQLException("TX is rollback-only. Getting out!");
@@ -527,7 +527,7 @@ public class ReceiverTest {
 		assertAll(
 			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
 			() -> assertEquals("dummy-message-id", correlationIdCaptor.getValue(), "Correlation ID does not match"),
-			() -> assertEquals("message", ((MessageWrapper<?>) messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
+			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
 			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),

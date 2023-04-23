@@ -57,13 +57,31 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * JDBC implementation of {@link ITransactionalStorage}.
- *
- * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml
- *
- * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
- *
- * <br/>
+ * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
+ * table IBISSTORE. A <code>MessageStoreSender</code> and <code>MessageStoreListener</code>
+ * pair implicitly includes a message log and an error store.
+ * If you have a <code>MessageStoreSender</code> and <code>MessageStoreListener</code>
+ * pair it is superfluous to add a <code>JdbcMessageLog</code> or <code>JdbcErrorStorage</code>
+ * within the same sender pipe or the same receiver.
+ * <br/><br/>
+ * <b>Message log:</b> A message log writes messages in persistent storage for logging purposes.
+ * When a message log appears in a receiver, it also ensures that the same message is only processed
+ * once, even if a related pushing listener receives the same message multiple times.
+ * <br/><br/>
+ * <b>Error store:</b> Appears in a receiver or sender pipe to store messages that could not be processed.
+ * Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ * offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ * back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ * this is done, the message is processed in the same way as messages received from the original source.
+ * <br/><br/>
+ * How does a message log or error store see duplicate messages? The message log or error store
+ * always appears in combination with a sender or listener. This sender or listener determines
+ * a key based on the sent or received message. Messages with the same key are considered to
+ * be the same.
+ * <br/><br/>
+ * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
+ * the Frank!Framework will try to create them.
+ * <br/><br/>
  * N.B. Note on using XA transactions:
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
@@ -876,6 +894,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * If set to <code>true</code>, the table is created if it does not exist
 	 * @ff.default false
 	 */
+	@Deprecated
+	@ConfigurationWarning("if you want to create and maintain database tables, please enable Liquibase")
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}

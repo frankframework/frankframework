@@ -17,10 +17,7 @@ package nl.nn.adapterframework.http;
 
 import javax.servlet.http.HttpServlet;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
 /**
  * Base class for @IbisInitializer capable servlets
@@ -40,10 +37,5 @@ public abstract class HttpServletBase extends HttpServlet implements DynamicRegi
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return null;
-	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
 	}
 }

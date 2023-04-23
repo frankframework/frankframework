@@ -192,7 +192,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
+			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}
 		return registeredListeners;
 	}

@@ -25,6 +25,10 @@
 			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>iaf-management-gateway</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.29.2-GA</version>
@@ -508,7 +512,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.7</version>
+			<version>1.13.8</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -698,7 +702,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>6.5.0</version>
+			<version>6.5.1</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>

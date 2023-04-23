@@ -13,8 +13,8 @@
 
 		<jackson.version>2.14.2</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
-		<spring.version>5.3.26</spring.version>
-		<spring-security.version>5.8.2</spring-security.version>
+		<spring.version>5.3.27</spring.version>
+		<spring-security.version>5.8.3</spring-security.version>
 		<spring-integration.version>5.5.17</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
@@ -96,6 +96,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>iaf-management-gateway</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -148,7 +153,18 @@
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-console</artifactId>
 				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-frontend</artifactId>
+				<version>${project.version}</version>
 				<type>war</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-backend</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
@@ -438,6 +454,12 @@
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
 				<version>[5.9.1,)</version>
 				<scope>test</scope>
 			</dependency>
@@ -1062,6 +1084,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>

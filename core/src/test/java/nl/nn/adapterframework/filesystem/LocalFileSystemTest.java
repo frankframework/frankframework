@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assume.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -64,7 +65,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
 	@Test
 	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
-		assumeTrue("Test is for long and short filename compatibility, which is a Windows only thing", System.getProperty("os.name").startsWith("Windows"));
+		assumeTrue(TestAssertions.isTestRunningOnWindows(), "Test is for long and short filename compatibility, which is a Windows only thing");
 		String filename = "FileInLongRoot.txt";
 		String contents = "regeltje tekst";
 
