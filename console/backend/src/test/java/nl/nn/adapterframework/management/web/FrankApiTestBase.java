@@ -279,11 +279,11 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 					if(isPathParameter) {
 						String pathValue = findPathParameter(parameter, methodPath, url);
 
-						log.debug("setting method argument [{}] to value [{}]", i, pathValue);
-						methodArguments[i] = pathValue;
+						Object value = ClassUtils.convertToType(parameter.getType(), pathValue);
+						log.debug("setting method argument [{}] to value [{}]", i, value);
+						methodArguments[i] = value;
 					} else if(isQueryParameter) {
 						Object value = findQueryParameter(parameter, url);
-
 						log.debug("setting method argument [{}] to value [{}]", i, value);
 						methodArguments[i] = value;
 					} else {
