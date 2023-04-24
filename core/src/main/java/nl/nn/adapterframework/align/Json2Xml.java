@@ -75,11 +75,13 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	@Override
 	public void startParse(JsonValue node) throws SAXException {
-		if (node instanceof JsonObject && StringUtils.isEmpty(getRootElement())) {
+		if (node instanceof JsonObject) {
 			JsonObject root = (JsonObject)node;
 			List<String> potentialRootElements = new ArrayList<>(root.keySet());
 			potentialRootElements.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
-			determineRootElement(potentialRootElements);
+			if(StringUtils.isEmpty(getRootElement())) {
+				determineRootElement(potentialRootElements);
+			}
 
 			// determine somewhat heuristically whether the json contains a 'root' node:
 			// if the outermost JsonObject contains only one key, that has the name of the root element,
