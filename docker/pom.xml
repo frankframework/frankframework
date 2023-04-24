@@ -49,6 +49,8 @@
 										<arg value="${config.image.tag}"/>
 										<arg value="-t"/>
 										<arg value="${config.image.repository}/${config.image.tag}"/>
+										<arg value="--build-arg"/>
+										<arg value="FF_VERSION=${revision}"/>
 										<arg value="."/>
 									</exec>
 								</target>
