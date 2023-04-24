@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -74,48 +75,38 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 
 	@Override
 	public void startParse(JsonValue node) throws SAXException {
-		if (node instanceof JsonObject) {
+		if (node instanceof JsonObject && StringUtils.isEmpty(getRootElement())) {
 			JsonObject root = (JsonObject)node;
-			if (StringUtils.isEmpty(getRootElement())) {
-				if (root.isEmpty()) {
-					throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
-				}
-				if (root.size()>1) {
-					List<String> potentialRootElements = new ArrayList<>(root.keySet());
-					potentialRootElements.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
-					if (potentialRootElements.size()>1) {
-						String namesList=null;
-						int i=0;
-						for (String name: root.keySet()) {
-							if (namesList==null) {
-								namesList=name;
-							} else {
-								namesList+=","+name;
-							}
-							if (i++>5) {
-								namesList+=", ...";
-								break;
-							}
-						}
-						throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
-					}
-					setRootElement((String)potentialRootElements.toArray()[0]);
-				}
-				if (StringUtils.isEmpty(getRootElement())) {
-					setRootElement((String)root.keySet().toArray()[0]);
-				}
-			}
+			List<String> potentialRootElements = new ArrayList<>(root.keySet());
+			potentialRootElements.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
+			determineRootElement(potentialRootElements);
+
 			// determine somewhat heuristically whether the json contains a 'root' node:
 			// if the outermost JsonObject contains only one key, that has the name of the root element,
 			// then we'll assume that that is the root element...
-			if (root.size()==1 && getRootElement().equals(root.keySet().toArray()[0])) {
-				node=root.get(getRootElement());
+			if (potentialRootElements.size()==1 && getRootElement().equals(potentialRootElements.get(0))) {
+				node = root.get(getRootElement());
 			}
 		}
 		if (node instanceof JsonArray && !insertElementContainerElements && strictSyntax) {
 			throw new SAXException(MSG_EXPECTED_SINGLE_ELEMENT+" ["+getRootElement()+"] or array element container");
 		}
 		super.startParse(node);
+	}
+
+	private void determineRootElement(List<String> potentialRootElements) throws SAXException {
+		if (potentialRootElements.isEmpty()) {
+			throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
+		}
+		if(potentialRootElements.size() == 1) {
+			setRootElement(potentialRootElements.get(0));
+		} else {
+			String namesList = potentialRootElements.stream().limit(5).collect(Collectors.joining(","));
+			if(potentialRootElements.size() > 5) {
+				namesList+=", ...";
+			}
+			throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
+		}
 	}
 
 	@Override
