@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -33,25 +30,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.web.ApiException;
+import nl.nn.adapterframework.management.web.FrankApiBase;
 import nl.nn.adapterframework.management.web.RequestMessageBuilder;
-import nl.nn.adapterframework.monitoring.AdapterFilter;
-import nl.nn.adapterframework.monitoring.ITrigger;
-import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
-import nl.nn.adapterframework.monitoring.Monitor;
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.Severity;
-import nl.nn.adapterframework.monitoring.SourceFiltering;
-import nl.nn.adapterframework.monitoring.Trigger;
-import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Shows all monitors.
@@ -61,20 +45,9 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 
 @Path("/configurations/{configuration}/monitors")
-public class ShowMonitors extends Base {
-
-	private MonitorManager getMonitorManager(String configurationName) {
-		ApplicationContext applicationContext = getIbisManager().getConfiguration(configurationName);
-		if(applicationContext == null) {
-			throw new IllegalStateException("configuration [" + configurationName + "] not found");
-		}
-
-		return getMonitorManager(applicationContext);
-	}
-
-	private MonitorManager getMonitorManager(ApplicationContext applicationContext) {
-		return applicationContext.getBean("monitorManager", MonitorManager.class);
-	}
+public class ShowMonitors extends FrankApiBase {
+	private static final String MONITOR_HEADER = "monitor";
+	private static final String TRIGGER_HEADER = "trigger";
 
 	@GET
 	@Path("/")
@@ -93,7 +66,7 @@ public class ShowMonitors extends Base {
 	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader("monitor", monitorName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
 		builder.addHeader("xml", showConfigXml);
 		return callSyncGateway(builder, true);
 	}
@@ -106,22 +79,12 @@ public class ShowMonitors extends Base {
 	public Response updateMonitor(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.addHeader("monitor", monitorName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		builder.setJsonPayload(json);
 
-		for(Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if(key.equalsIgnoreCase("state")) {
-				builder.addHeader("state", String.valueOf(entry.getValue()));
-			} else if(key.equalsIgnoreCase("name")) {
-				builder.addHeader("name", String.valueOf(entry.getValue()));
-			} else if(key.equalsIgnoreCase("type")) {
-				builder.addHeader("type", String.valueOf(entry.getValue()));
-			} else if(key.equalsIgnoreCase("destinations")) {
-				if(entry.getValue() instanceof List<?>) {
-					String destinations = String.join(",", ((List<String>) entry.getValue()));
-					builder.addHeader("destinations", destinations);
-				} else throw new ApiException("cannot parse destinations");
-			}
+		String state = String.valueOf(json.remove("state"));
+		if(state != null) {
+			builder.addHeader("state", state);
 		}
 
 		return callSyncGateway(builder);
@@ -134,7 +97,7 @@ public class ShowMonitors extends Base {
 	public Response deleteMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader("monitor", monitorName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
 		return callSyncGateway(builder);
 	}
 
@@ -144,19 +107,12 @@ public class ShowMonitors extends Base {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		builder.setJsonPayload(json);
 
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
-		handleTrigger(trigger, json);
-		monitor.registerTrigger(trigger);
-		monitor.configure();
-
-		return Response.status(Status.OK).build();
+		return callSyncGateway(builder);
 	}
 
 	@GET
@@ -166,8 +122,8 @@ public class ShowMonitors extends Base {
 	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader("monitor", monitorName);
-		builder.addHeader("trigger", id);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		builder.addHeader(TRIGGER_HEADER, id);
 		return callSyncGateway(builder, true);
 	}
 
@@ -179,76 +135,11 @@ public class ShowMonitors extends Base {
 	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.addHeader("monitor", monitorName);
-		builder.addHeader("trigger", index);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		builder.addHeader(TRIGGER_HEADER, index);
 		builder.setJsonPayload(json);
 
 		return callSyncGateway(builder);
-	}
-
-	@SuppressWarnings("unchecked")
-	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
-		List<String> eventList = null;
-		TriggerType type = null;
-		Severity severity = null;
-		int threshold = 0;
-		int period = 0;
-		SourceFiltering filter = null;
-		List<String> adapters = null;
-		Map<String, List<String>> sources = null;
-
-		for(Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if(key.equalsIgnoreCase("events") && entry.getValue() instanceof List<?>) {
-				eventList = (List<String>) entry.getValue();
-			} else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
-			} else if(key.equalsIgnoreCase("severity")) {
-				severity = EnumUtils.parse(Severity.class, entry.getValue().toString());
-			} else if(key.equalsIgnoreCase("threshold")) {
-				threshold = (Integer.parseInt("" + entry.getValue()));
-				if(threshold < 0) {
-					throw new ApiException("threshold must be a positive number");
-				}
-			} else if(key.equalsIgnoreCase("period")) {
-				period = (Integer.parseInt("" + entry.getValue()));
-				if(period < 0) {
-					throw new ApiException("period must be a positive number");
-				}
-			} else if(key.equalsIgnoreCase("filter")) {
-				filter = EnumUtils.parse(SourceFiltering.class, entry.getValue().toString());
-			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
-				adapters = (List<String>) entry.getValue();
-			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
-				sources = (Map<String, List<String>>) entry.getValue();
-			}
-		}
-
-		// If no parse errors have occured we can continue!
-		trigger.setEventCodes(eventList);
-		trigger.setTriggerType(type);
-		trigger.setSeverity(severity);
-		trigger.setThreshold(threshold);
-		trigger.setPeriod(period);
-		trigger.setSourceFiltering(filter);
-
-		trigger.clearAdapterFilters();
-		if(SourceFiltering.ADAPTER.equals(filter)) {
-			for(String adapter : adapters) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(adapter);
-				trigger.registerAdapterFilter(adapterFilter);
-			}
-		} else if(SourceFiltering.SOURCE.equals(filter)) {
-			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
-				AdapterFilter adapterFilter = new AdapterFilter();
-				adapterFilter.setAdapter(entry.getKey());
-				for(String subObject : entry.getValue()) {
-					adapterFilter.registerSubObject(subObject);
-				}
-				trigger.registerAdapterFilter(adapterFilter);
-			}
-		}
 	}
 
 	@DELETE
@@ -258,8 +149,8 @@ public class ShowMonitors extends Base {
 	public Response deleteTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-		builder.addHeader("monitor", monitorName);
-		builder.addHeader("trigger", id);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		builder.addHeader(TRIGGER_HEADER, id);
 		return callSyncGateway(builder);
 	}
 
@@ -268,23 +159,14 @@ public class ShowMonitors extends Base {
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response addMonitor(@PathParam("configuration") String configurationName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.setJsonPayload(json);
 
-		for(Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if(key.equalsIgnoreCase("monitor")) {
-				builder.addHeader("monitor", String.valueOf(entry.getValue()));
-			} else if(key.equalsIgnoreCase("type")) {
-				builder.addHeader("type", String.valueOf(entry.getValue()));
-			} else if(key.equalsIgnoreCase("destinations")) {
-				if(entry.getValue() instanceof List<?>) {
-					String destinations = String.join(",", ((List<String>) entry.getValue()));
-					builder.addHeader("destinations", destinations);
-				} else throw new ApiException("cannot parse destinations");
-			}
-		}
+		// Map 'monitor' to 'name', so it matches the DTO.
+		String monitor = String.valueOf(json.remove("monitor"));
+		json.put("name", monitor);
 
 		return callSyncGateway(builder);
 	}

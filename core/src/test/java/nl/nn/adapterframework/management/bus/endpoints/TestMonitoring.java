@@ -5,16 +5,13 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
@@ -148,11 +145,9 @@ public class TestMonitoring extends BusTestBase {
 	@Test
 	public void addMonitor() throws Exception {
 		// Arrange
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.UPLOAD);
+		String requestJson = "{\"name\":\"newName\", \"type\":\"TECHNICAL\", \"destinations\":[\"mockDestination\"]}";
+		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.UPLOAD);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
-		request.setHeader("monitor", "new"+TEST_MONITOR_NAME);
-		request.setHeader("type", EventType.TECHNICAL.name());
-		request.setHeader("destinations", "mockDestination");
 
 		// Act
 		Message<?> response = callSyncGateway(request);
@@ -161,7 +156,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(2, getMonitorManager().getMonitors().size()),
 				() -> assertFalse(getMonitorManager().getMonitor(1).isRaised()),
-				() -> assertEquals("new"+TEST_MONITOR_NAME, getMonitorManager().getMonitor(1).getName()),
+				() -> assertEquals("newName", getMonitorManager().getMonitor(1).getName()),
 				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(1).getType()),
 				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
 				() -> assertEquals("no-content", response.getPayload()),
@@ -190,17 +185,15 @@ public class TestMonitoring extends BusTestBase {
 			);
 	}
 
+	// This also indirectly tests the use of EnumUtils to parse DTO enums
 	@ParameterizedTest
-	@NullAndEmptySource
-	@ValueSource(strings = "mockDestination")
-	public void updateMonitor(String destination) throws Exception {
+	@ValueSource(strings = {"TECHNICAL", "technical", "tEchNical"})
+	public void updateMonitor(String type) throws Exception {
 		// Arrange
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.MANAGE);
+		String requestJson = "{\"name\":\"newName\", \"type\":\""+type+"\", \"destinations\":[\"mockDestination\"]}";
+		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.MANAGE);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
 		request.setHeader("monitor", TEST_MONITOR_NAME);
-		request.setHeader("name", "new" + TEST_MONITOR_NAME);
-		request.setHeader("type", EventType.TECHNICAL.name());
-		request.setHeader("destinations", destination);
 
 		// Act
 		Message<?> response = callSyncGateway(request);
@@ -208,17 +201,12 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
-				() -> assertEquals("new"+ TEST_MONITOR_NAME, getMonitorManager().getMonitor(0).getName()),
+				() -> assertEquals("newName", getMonitorManager().getMonitor(0).getName()),
 				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(0).getType()),
 				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
-				() -> assertEquals("no-content", response.getPayload())
+				() -> assertEquals("no-content", response.getPayload()),
+				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
 			);
-		String destAsString = getMonitorManager().getMonitor(0).getDestinationsAsString();
-		if(StringUtils.isBlank(destination)) {
-			assertNull(destAsString);
-		} else {
-			assertEquals("mockDestination", destAsString);
-		}
 	}
 
 	@Test

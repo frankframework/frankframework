@@ -17,10 +17,8 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,8 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -44,6 +43,7 @@ import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.management.bus.dto.MonitorDTO;
 import nl.nn.adapterframework.management.bus.dto.TriggerDTO;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -54,6 +54,7 @@ import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
+import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -107,19 +108,24 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<String> addMonitor(Message<?> message) {
+	public Message<String> addMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
-		EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class);
-		String destinations = BusMessageUtils.getHeader(message, "destinations");
+		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null); //when present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
-		Monitor monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
-		monitor.setName(name);
-		monitor.setType(type);
-		monitor.setDestinations(destinations);
-		mm.addMonitor(monitor);
+		if(name != null) {
+			Monitor monitor = getMonitor(mm, name);
+			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+			updateTrigger(trigger, message);
+			monitor.registerTrigger(trigger);
+			monitor.configure();
+		} else {
+			Monitor monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			updateMonitor(monitor, message);
+			mm.addMonitor(monitor);
+			monitor.configure();
+		}
 
 		return EmptyResponseMessage.created();
 	}
@@ -146,10 +152,10 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.MANAGE)
-	public Message<String> updateMonitor(Message<?> message) {
+	public Message<String> updateMonitorOrTrigger(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);
-		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null); //when present update Trigger
 
 		MonitorManager mm = getMonitorManager(configurationName);
 		Monitor monitor = getMonitor(mm, monitorName);
@@ -213,7 +219,7 @@ public class Monitoring extends BusEndpointBase {
 	//TODO make this more generic
 	private static <T> T convertToDTO(Object payload, Class<T> dto) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
+			JsonMapper mapper = JsonMapper.builder().enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
@@ -240,23 +246,16 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	private void updateMonitor(Monitor monitor, Message<?> message) {
-		String name = BusMessageUtils.getHeader(message, "name", null);
-		if(StringUtils.isNotBlank(name)) {
-			monitor.setName(name);
+		MonitorDTO dto = convertToDTO(message.getPayload(), MonitorDTO.class);
+		if(StringUtils.isNotBlank(dto.getName())) {
+			monitor.setName(dto.getName());
 		}
-		EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class, null);
-		if(type != null) {
-			monitor.setType(type);
+		if(dto.getType() != null) {
+			monitor.setType(dto.getType());
 		}
-		String destinations = BusMessageUtils.getHeader(message, "destinations", null);
-		if(StringUtils.isNotBlank(destinations)) {
-			monitor.setDestinationSet(parseDestinations(destinations));
+		if(dto.getDestinations() != null) {
+			monitor.setDestinations(String.join(",", dto.getDestinations()));
 		}
-	}
-
-	private Set<String> parseDestinations(String entry) {
-		String[] arr = entry.split(",");
-		return new HashSet<>(Arrays.asList(arr));
 	}
 
 	private Message<String> getMonitors(MonitorManager mm, boolean showConfigAsXml) {
