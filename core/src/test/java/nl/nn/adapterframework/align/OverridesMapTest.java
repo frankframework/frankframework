@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 public class OverridesMapTest {
 
-	OverridesMap<String> map;
-	
+	private OverridesMap<String> map;
+
 	@BeforeEach
 	public void setUp() throws Exception {
 		map = new OverridesMap<String>();
@@ -17,22 +17,21 @@ public class OverridesMapTest {
 	AlignmentContext parse(String path) {
 		AlignmentContext result=null;
 		for (String element: path.split("/")) {
-			result = new AlignmentContext(result, null, element, null, null, null, 0, null, false);
+			result = new AlignmentContext(result, element, null);
 		}
 		return result;
 	}
-	
+
 	public void testSubst(String parsedPath, String child, String expectedValue) {
 		testSubst(parsedPath, child, expectedValue, expectedValue!=null);
 	}
-	
+
 	public void testSubst(String parsedPath, String child, String expectedValue, boolean expectsChild) {
 		AlignmentContext context=parsedPath==null?null:parse(parsedPath);
 		assertEquals(expectedValue, map.getMatchingValue(context, child), "value for '"+child+"' after '"+parsedPath+"'");
 		assertEquals(expectsChild, map.hasSubstitutionsFor(context, child), "has something for '"+child+"' after '"+parsedPath+"'");
 	}
-	
-	
+
 	@Test
 	public void test() {
 		map.registerSubstitute("Party/Id", "PartyId");
@@ -40,7 +39,7 @@ public class OverridesMapTest {
 		map.registerSubstitute("Id", "DefaultId");
 		map.registerSubstitute("Data", "Data");
 		map.registerSubstitute("Root/Sub", "SubValue");
-		
+
 		testSubst(null,"Id","DefaultId");
 		testSubst(null,"Party",null, true);
 		testSubst(null,"Data","Data");
