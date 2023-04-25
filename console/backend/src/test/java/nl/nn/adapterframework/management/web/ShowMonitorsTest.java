@@ -17,7 +17,6 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.webcontrol.api.ShowMonitors;
 
 public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 

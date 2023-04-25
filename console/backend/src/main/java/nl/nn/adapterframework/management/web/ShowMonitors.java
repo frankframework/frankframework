@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.api;
+package nl.nn.adapterframework.management.web;
 
 import java.util.Map;
 
@@ -34,8 +34,6 @@ import javax.ws.rs.core.Response;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.web.FrankApiBase;
-import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 
 /**
  * Shows all monitors.
