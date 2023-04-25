@@ -109,6 +109,9 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 
 	@Nonnull
 	protected Adapter getAdapterByName(String configurationName, String adapterName) {
+		if(StringUtils.isEmpty(adapterName)) {
+			throw new BusException("no adapter name specified");
+		}
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			return getIbisManager().getRegisteredAdapter(adapterName);
 		}
