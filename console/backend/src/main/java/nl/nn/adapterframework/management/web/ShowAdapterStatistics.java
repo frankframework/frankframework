@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.api;
+package nl.nn.adapterframework.management.web;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -29,9 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.web.FrankApiBase;
-import nl.nn.adapterframework.management.web.Relation;
-import nl.nn.adapterframework.management.web.RequestMessageBuilder;
 
 /**
  * Retrieves the statistics
