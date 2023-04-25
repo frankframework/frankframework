@@ -11,9 +11,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.management.bus.BusException;
-import nl.nn.adapterframework.stream.StreamingException;
 
 public class TestSpringBusExceptionHandler {
 	private SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
@@ -29,8 +28,8 @@ public class TestSpringBusExceptionHandler {
 	}
 
 	private Exception createExceptionCause(TestExceptionType type) {
-		Exception cause = new StreamingException("cannot stream",
-			new ConfigurationException("cannot configure",
+		Exception cause = new IbisException("cannot stream",
+			new IbisException("cannot configure",
 				new IllegalStateException("something is wrong")));
 
 		switch (type) {
