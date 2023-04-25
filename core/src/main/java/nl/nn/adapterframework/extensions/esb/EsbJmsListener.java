@@ -130,7 +130,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			String soapMessage = textMessage.getText();
 
 			if(getxPathLogMap().size() > 0) {
-				String xPathLogKeys = "";
+				StringBuilder xPathLogKeys = new StringBuilder();
 				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
 				while(it.hasNext()) {
 					Map.Entry<String, String> pair = it.next();
@@ -139,10 +139,10 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 					String result = getResultFromxPath(soapMessage, xPath);
 					if(result.length() > 0) {
 						threadContext.put(sessionKey, result);
-						xPathLogKeys = xPathLogKeys + "," + sessionKey; // Only pass items that have been found, otherwise logs will clutter with NULL.
+						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
 					}
 				}
-				threadContext.put("xPathLogKeys", xPathLogKeys);
+				threadContext.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);

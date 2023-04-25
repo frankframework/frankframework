@@ -58,7 +58,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, IListener<M> listener) throws ListenerException {
 		super(rawMessageWrapper.rawMessage, rawMessageWrapper.id, rawMessageWrapper.correlationId, rawMessageWrapper.context);
-		message = listener.extractMessage(rawMessageWrapper, getContext());
+		message = listener.extractMessage(rawMessageWrapper, context);
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
 		if (id == null) {
 			if (context.containsKey("mid")) {
