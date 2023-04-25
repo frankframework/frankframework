@@ -140,10 +140,9 @@
 			<version>2.0.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-core</artifactId>
-			<version>${micrometer.version}</version>
+		<dependency><!-- this dependency handles jakarta.activation.* imports -->
+			<groupId>com.sun.activation</groupId>
+			<artifactId>jakarta.activation</artifactId>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
