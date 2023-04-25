@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const distDir = path.resolve(__dirname, '../webapp/iaf/gui/');
@@ -31,8 +32,12 @@ module.exports = {
         { from: "./css/plugins/iCheck/green.png", to: "css/green.png" },
         { from: "./images", to: "images" },
         { from: "./views", to: "views" },
-        { from: "./index.jsp", to: "index.jsp" },
+        // { from: "./index.jsp", to: "index.jsp" },
       ],
+    }),
+    new HtmlWebpackPlugin({
+	  filename: 'index.html',
+	  template: './index.html'
     }),
     new CleanWebpackPlugin(),
   ],

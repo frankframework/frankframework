@@ -53,6 +53,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "expose-loader": "^4.1.0",
     "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.1",
     "sass": "^1.62.0",
     "sass-loader": "^13.2.2",
     "style-loader": "^3.3.2",
