@@ -52,7 +52,7 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 		hostname = Misc.getHostname();
 	}
 
-	public String makeXml(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public String makeXml(String eventSource, EventType eventType, Severity severity, String message, Throwable t) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("source", eventSource);

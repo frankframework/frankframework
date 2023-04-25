@@ -32,6 +32,7 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -54,8 +55,6 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
 
 	protected FixedQuerySender querySender;
-
-	protected final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -122,17 +121,17 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		querySender.setQuery(query);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

@@ -24,10 +24,12 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -42,8 +44,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	protected FixedQuerySender querySender;
-
-	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -119,7 +119,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -127,7 +127,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getQuery();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -135,7 +135,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getDatasourceName();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
+	@Deprecated
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

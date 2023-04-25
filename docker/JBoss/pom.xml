@@ -163,28 +163,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-package</id>
-						<phase>package</phase>
-						<inherited>false</inherited>
-						<configuration>
-							<target>
-								<exec executable="docker" failonerror="true">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="${config.image.tag}"/>
-									<arg value="-t"/>
-									<arg value="${config.image.repository}/${config.image.tag}"/>
-									<arg value="."/>
-								</exec>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

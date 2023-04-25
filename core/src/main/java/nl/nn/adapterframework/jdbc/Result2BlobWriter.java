@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -66,12 +67,12 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		querySender.setBlobColumn(column);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.jdbc.FixedQuerySender */
+	@ReferTo(FixedQuerySender.class)
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}

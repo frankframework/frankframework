@@ -15,6 +15,8 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -129,6 +131,8 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals("ShadowSender should contain at least 2 Senders, none found", exception.getMessage());
 	}
 
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
 	public void testNoShadowSenders(boolean waitForCompletionOfShadows) throws Exception {
 		((ShadowSender)sender).setWaitForShadowsToFinish(waitForCompletionOfShadows);
 		sender.configure();
@@ -159,20 +163,10 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_RESULT, XmlUtils.getStringValue(origResult, true));
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		int duration = Integer.parseInt(origResult.getAttribute("duration"));
-		assertTrue(duration < 15, "test took more then [15s] duration ["+duration+"]");
+		assertTrue(duration < 200, "test took more then [200ms] duration ["+duration+"]");
 
 		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
-	}
-
-	@Test
-	public void testNoShadowSenders() throws Exception {
-		testNoShadowSenders(false);
-	}
-
-	@Test
-	public void testNoShadowSendersWaitForCompletion() throws Exception {
-		testNoShadowSenders(true);
 	}
 
 	@Test

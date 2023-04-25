@@ -20,6 +20,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  */
 public abstract class CollectorPipe<E extends ICollectingElement<C>, C extends ICollector<E>> extends StreamingPipe implements ICollectingElement<C> {
 
-	private CollectionActor<E, C> actor = new CollectionActor<E, C>();
+	private CollectionActor<E, C> actor = new CollectionActor<>();
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -64,7 +65,7 @@ public abstract class CollectorPipe<E extends ICollectingElement<C>, C extends I
 		return actor.provideOutputStream(session, (E)this);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
+	@ReferTo(CollectionActor.class)
 	public void setAction(Action action) {
 		actor.setAction(action);
 	}
@@ -72,7 +73,7 @@ public abstract class CollectorPipe<E extends ICollectingElement<C>, C extends I
 		return actor.getAction();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
+	@ReferTo(CollectionActor.class)
 	public void setCollection(String collection) {
 		actor.setCollection(collection);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021, 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,25 +38,28 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Send messages to the ibisstore to have them processed exactly-once by another
+ * Send messages to the IBISSTORE database table to have them processed exactly-once by another
  * adapter which will read the messages using a {@link MessageStoreListener}.
  * This other adapter will process the messages asynchronously and (optionally)
  * under transaction control. Duplicate messages are ignored based on the
  * messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  * the sender of the message can retry sending the message until a valid reply
  * is received in which case it can be certain that the message is stored in the
- * ibisstore.
- *
+ * database table IBISSTORE.
+ * <br/><br/>
+ * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> 
+ * or <code>JdbcErrorStorage</code> in the same sender pipe. A <code>MessageStoreSender</code>
+ * acts as a message log and an error store. It can be useful however to add a message log or error store
+ * to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
+ * <br/><br/>
  * Example configuration:
  * <code><pre>
-		&lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			>
-			&lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
-		&lt;/sender>
+	&lt;SenderPipe name="Send"&gt;
+		&lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&gt;
+	&lt;/SenderPipe&gt;
 </pre></code>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId

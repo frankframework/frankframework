@@ -27,9 +27,25 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ReferTo;
 
 /**
- * JMS implementation of <code>ITransactionalStorage</code>.
+ * Implements a message log (<code>JmsMessageLog</code>) or error store (<code>JmsErrorStorage</code>) that uses JMS technology.
+ * <br/><br/>
+ * <b>Message log:</b> A message log writes messages in persistent storage for logging purposes.
+ * When a message log appears in a receiver, it also ensures that the same message is only processed
+ * once, even if a related pushing listener receives the same message multiple times.
+ * <br/><br/>
+ * <b>Error store:</b> Appears in a receiver or sender pipe to store messages that could not be processed.
+ * Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ * offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ * back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ * this is done, the message is processed in the same way as messages received from the original source.
+ * <br/><br/>
+ * How does a message log or error store see duplicate messages? The message log or error store
+ * always appears in combination with a sender or listener. This sender or listener determines
+ * a key based on the sent or received message. Messages with the same key are considered to
+ * be the same.
  * 
  * @author  Gerrit van Brakel
  * @since   4.1
@@ -46,8 +62,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 	private String slotId=null;
 	private String type=null;
-
-	private final String ITRANSACTIONALSTORAGE = "nl.nn.adapterframework.core.ITransactionalStorage";
 
 	public JmsTransactionalStorage() {
 		super();
@@ -118,7 +132,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.core.ITransactionalStorage */
+	@ReferTo(ITransactionalStorage.class)
 	public void setSlotId(String string) {
 		slotId = string;
 	}
@@ -128,7 +142,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	/** @ff.ref nl.nn.adapterframework.core.ITransactionalStorage */
+	@ReferTo(ITransactionalStorage.class)
 	public void setType(String string) {
 		type = string;
 	}

@@ -41,9 +41,9 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
@@ -122,7 +122,7 @@ public class OpenApiTestBase extends Mockito {
 
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
 		request.setServerName("mock-hostname");
-		request.setPathInfo(Misc.urlDecode(uri)); //Should be decoded by the web container
+		request.setPathInfo(HttpUtils.urlDecode(uri)); //Should be decoded by the web container
 		request.setContextPath("/mock-context-path");
 		request.setServletPath("/mock-servlet-path");
 		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);

@@ -312,7 +312,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter IListener<M> listener;
 	private @Getter ISender errorSender=null;
 	// See configure() for explanation on this field
-	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private @Getter ITransactionalStorage<Serializable> messageLog=null;
 	private @Getter ITransactionalStorage<Serializable> errorStorage=null;
 	private @Getter ISender sender=null; // reply-sender
@@ -573,33 +572,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
 			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
-			// Check if we need to use the in-process storage as
-			// error-storage.
-			// In-process storage is no longer used, but is often
-			// still configured to be used as error-storage.
-			// The rule is:
-			// 1. if error-storage is configured, use it.
-			// 2. If error-storage is not configure but an error-sender is,
-			//    then use the error-sender.
-			// 3. If neither error-storage nor error-sender are configured,
-			//    but the in-process storage is, then use the in-process storage
-			//    for error-storage.
-			// Member variables are accessed directly, to avoid any possible
-			// aliasing-effects applied by getter methods. (These have been
-			// removed for now, but since the getter-methods were not
-			// straightforward in the earlier versions, I felt it was safer
-			// to use direct member variables).
-			if (this.tmpInProcessStorage != null) {
-				if (this.errorSender == null && messageBrowsers.get(ProcessState.ERROR) == null) {
-					messageBrowsers.put(ProcessState.ERROR, this.tmpInProcessStorage);
-					info("has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-					getErrorStorage().setType(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
-				} else {
-					info("has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
-				}
-				// Set temporary in-process storage pointer to null
-				this.tmpInProcessStorage = null;
-			}
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
@@ -1086,7 +1058,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message message;
 			String messageId;
 			try {
-				message = getListener().extractMessage((M)rawMessageOrWrapper, session);
+				message = getListener().extractMessage((M) rawMessageOrWrapper, session);
 			} catch (Exception e) {
 				if(rawMessageOrWrapper instanceof MessageWrapper) {
 					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
@@ -2029,23 +2001,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
-
-	/**
-	 * Sets the inProcessStorage.
-	 * @param inProcessStorage The inProcessStorage to set
-	 * @deprecated
-	 */
-	@Deprecated
-	@ConfigurationWarning("In-Process Storage no longer exists")
-	public void setInProcessStorage(ITransactionalStorage<Serializable> inProcessStorage) {
-		// We do not use an in-process storage anymore, but we temporarily
-		// store it if it's set by the configuration.
-		// During configure, we check if we need to use the in-process storage
-		// as error-storage.
-		this.tmpInProcessStorage = inProcessStorage;
-	}
-
-
 
 	/**
 	 * Sender that will send the result in case the PipeLineExit state was not <code>SUCCESS</code>.

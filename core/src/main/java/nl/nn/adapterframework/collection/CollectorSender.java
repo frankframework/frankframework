@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -36,7 +37,7 @@ import nl.nn.adapterframework.stream.StreamingSenderBase;
  */
 public abstract class CollectorSender<E extends ICollectingElement<C>, C extends ICollector<E>> extends StreamingSenderBase implements ICollectingElement<C> {
 
-	private CollectionActor<E, C> actor = new CollectionActor<E, C>();
+	private CollectionActor<E, C> actor = new CollectionActor<>();
 
 
 	@SuppressWarnings("unchecked")
@@ -67,7 +68,7 @@ public abstract class CollectorSender<E extends ICollectingElement<C>, C extends
 		return actor.provideOutputStream(session, (E)this);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
+	@ReferTo(CollectionActor.class)
 	public void setAction(Action action) {
 		actor.setAction(action);
 	}
@@ -75,7 +76,7 @@ public abstract class CollectorSender<E extends ICollectingElement<C>, C extends
 		return actor.getAction();
 	}
 
-		/** @ff.ref nl.nn.adapterframework.collection.CollectionActor */
+	@ReferTo(CollectionActor.class)
 	public void setCollection(String collection) {
 		actor.setCollection(collection);
 	}

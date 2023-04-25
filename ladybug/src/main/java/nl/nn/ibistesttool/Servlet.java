@@ -15,7 +15,6 @@
 */
 package nl.nn.ibistesttool;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -23,7 +22,6 @@ import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.testtool.echo2.Echo2Application;
 
 /**
@@ -55,10 +53,5 @@ public class Servlet extends WebContainerServlet implements DynamicRegistration.
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return ALL_IBIS_USER_ROLES;
-	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
 	}
 }

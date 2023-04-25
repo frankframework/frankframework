@@ -74,7 +74,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	 * reconfigure all destinations and all monitors.
 	 * monitors will register all required eventNotificationListeners.
 	 */
-	public void reconfigure() throws ConfigurationException {
+	private void reconfigure() throws ConfigurationException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
 		for(String name : destinations.keySet()) {
 			IMonitorAdapter destination = getDestination(name);
@@ -106,13 +106,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return destinations;
 	}
 
-	/**
-	 * Helper method to retrieve the MonitorManager from the ApplicationContext
-	 */
-	public static MonitorManager getInstance(ApplicationContext applicationContext) {
-		return applicationContext.getBean("monitorManager", MonitorManager.class);
-	}
-
 	@Override
 	public void onApplicationEvent(RegisterMonitorEvent event) {
 		EventThrowing thrower = event.getSource();
@@ -122,7 +115,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
 		}
 
-		register(thrower, eventCode);
+		registerEvent(thrower, eventCode);
 	}
 
 	public void addMonitor(Monitor monitor) {
@@ -133,11 +126,11 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public void removeMonitor(Monitor monitor) {
 		int index = monitors.indexOf(monitor);
 		if(index > -1) {
-			if(log.isDebugEnabled()) log.debug(getLogPrefix()+"removing monitor ["+monitor+"]");
-
+			String name = monitor.getName();
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(monitor);
 			monitors.remove(index);
+			log.debug("removing monitor [{}] from MonitorManager [{}]", name, this);
 		}
 	}
 
@@ -163,14 +156,14 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return Collections.unmodifiableList(monitors);
 	}
 
-	private void register(EventThrowing eventThrowing, String eventCode) {
+	private void registerEvent(EventThrowing eventThrowing, String eventCode) {
 		Adapter adapter = eventThrowing.getAdapter();
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
 			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
 		}
 
 		//Update the list with potential events that can be thrown
-		Event event = events.getOrDefault(eventCode, new Event());
+		Event event = events.computeIfAbsent(eventCode, e->new Event());
 		event.addThrower(eventThrowing);
 		events.put(eventCode, event);
 	}

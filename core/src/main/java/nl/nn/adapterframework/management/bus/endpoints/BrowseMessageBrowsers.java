@@ -31,6 +31,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -82,7 +83,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -110,7 +111,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	public StringResponseMessage downloadMessageById(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -141,7 +142,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.FIND)
 	public Message<String> browseMessages(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
@@ -202,7 +203,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.STATUS)
 	public void resend(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -219,7 +220,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DELETE)
 	public void delete(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);
@@ -246,7 +247,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	@ActionSelector(BusAction.MANAGE)
 	public void changeProcessState(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 		String messageId = BusMessageUtils.getHeader(message, HEADER_MESSAGEID_KEY);

@@ -48,6 +48,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
@@ -116,8 +117,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected ConfigurationException configurationException;
-
-	protected final String ABSTRACTXMLVALIDATOR="nl.nn.adapterframework.validation.AbstractXmlValidator";
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -688,7 +687,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return getRoot();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		validator.setFullSchemaChecking(fullSchemaChecking);
 	}
@@ -696,7 +695,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isFullSchemaChecking();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setThrowException(boolean throwException) {
 		validator.setThrowException(throwException);
 	}
@@ -705,7 +704,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isThrowException();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setReasonSessionKey(String reasonSessionKey) {
 		validator.setReasonSessionKey(reasonSessionKey);
 	}
@@ -713,7 +712,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getReasonSessionKey();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
 		validator.setXmlReasonSessionKey(xmlReasonSessionKey);
 	}
@@ -721,7 +720,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getXmlReasonSessionKey();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setValidateFile(boolean b) {
 		validator.setValidateFile(b);
 	}
@@ -729,7 +728,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.isValidateFile();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setCharset(String string) {
 		validator.setCharset(string);
 	}
@@ -764,12 +763,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setWarn(boolean warn) {
 		validator.setWarn(warn);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setIgnoreUnknownNamespaces(Boolean ignoreUnknownNamespaces) {
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
 	}
@@ -777,12 +776,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return validator.getIgnoreUnknownNamespaces();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		validator.setIgnoreCaching(ignoreCaching);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.validation.AbstractXmlValidator */
+	@ReferTo(AbstractXmlValidator.class)
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {
 		validator.setXmlSchemaVersion(xmlSchemaVersion);
 	}
