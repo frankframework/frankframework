@@ -58,7 +58,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"destinations\":[\"one\",\"two\",\"three\"]}";
+		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"monitor\":\"MonitorName\", \"destinations\": [\"one\",\"two\",\"three\" ]}";
 
 		// Act
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/configurations/TestConfiguration/monitors", jsonInput);
@@ -68,18 +68,17 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		assertAll(
 				() -> assertEquals(200, response.getStatus()),
 				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
-				() -> assertEquals("FUNCTIONAL", request.getHeaders().get("type")),
-				() -> assertEquals("one,two,three", request.getHeaders().get("destinations")),
-				() -> assertEquals("UPLOAD", request.getHeaders().get("action"))
+				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
+				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"one\",\"two\",\"three\"],\"name\":\"MonitorName\"}", request.getPayload())
 			);
 	}
 
 	@Test
-	public void testManageMonitor() {
+	public void testUpdateMonitor() {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		String jsonInput = "{ \"type\":\"FUNCTIONAL\", \"destinations\":[\"mockDestination\"]}";
+		String jsonInput = "{\"type\":\"FUNCTIONAL\",\"state\":\"edit\",\"destinations\":[\"mockDestination\"]}";
 
 		// Act
 		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/configurations/TestConfiguration/monitors/monitorName", jsonInput);
@@ -89,10 +88,10 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		assertAll(
 				() -> assertEquals(200, response.getStatus()),
 				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
-				() -> assertEquals("FUNCTIONAL", request.getHeaders().get("type")),
-				() -> assertEquals("mockDestination", request.getHeaders().get("destinations")),
 				() -> assertEquals("MANAGE", request.getHeaders().get("action")),
-				() -> assertEquals("monitorName", request.getHeaders().get("monitor"))
+				() -> assertEquals("edit", request.getHeaders().get("state")),
+				() -> assertEquals("monitorName", request.getHeaders().get("monitor")),
+				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"mockDestination\"]}", request.getPayload())
 			);
 	}
 

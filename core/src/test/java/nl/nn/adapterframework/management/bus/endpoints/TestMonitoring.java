@@ -80,10 +80,12 @@ public class TestMonitoring extends BusTestBase {
 
 			@Override
 			public void configure() throws ConfigurationException {
+				//Nothing to configure, dummy class
 			}
 
 			@Override
 			public void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t) {
+				//Nothing to do, dummy class
 			}
 
 			@Override

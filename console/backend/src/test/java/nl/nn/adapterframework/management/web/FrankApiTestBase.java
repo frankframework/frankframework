@@ -333,15 +333,15 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 
 				response.addMetadata(meta); //Headers
 				return response;
-			} catch (Exception e) {
+			} catch (InvocationTargetException e) {
 				//Directly throw AssertionError so JUnit can analyze the StackTrace
-				if(e instanceof InvocationTargetException && e.getCause() instanceof AssertionError) {
-					throw (AssertionError) e.getCause();
+				//Directly throw ApiExceptions so they can be asserted in JUnit tests
+				if(e.getCause() instanceof RuntimeException) {
+					throw (RuntimeException) e.getCause();
 				}
-				//Directly throw ApiExceptions so they can be asserted
-				if(e instanceof InvocationTargetException && e.getCause() instanceof ApiException) {
-					throw (ApiException) e.getCause();
-				}
+				log.fatal("unexpected InvocationTargetException, failing test", e);
+				return fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
+			} catch (Exception e) {
 				//Handle all other 'unexpected' exceptions by logging the exception and failing the test
 				log.fatal("unexpected exception, failing test", e);
 				return fail("error dispatching request ["+rsResourceKey+"] " + e.getMessage());
