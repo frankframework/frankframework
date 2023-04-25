@@ -9,8 +9,8 @@ module.exports = {
   mode: 'development',
   entry: './index.js',
   output: {
-    // filename: 'js/main.[contenthash].js',
-    filename: 'js/[name].bundle.js',
+    filename: 'js/[name].[contenthash].js',
+    // filename: 'js/[name].bundle.js',
     path: distDir,
   },
   optimization: {
