@@ -2648,15 +2648,9 @@ angular.module('iaf.beheerconsole')
 				var sources = data.trigger.sources;
 				$scope.trigger.sources = [];
 				$scope.trigger.adapters = [];
-<<<<<<<< HEAD:console/src/main/frontend/js/controllers.js
 				for(const adapter in sources) {
-					if(data.trigger.filter == "source") {
-						for(const i in sources[adapter]) {
-========
-				for(adapter in sources) {
 					if(data.trigger.filter == "SOURCE") {
-						for(i in sources[adapter]) {
->>>>>>>> master:console/frontend/src/main/webapp/iaf/gui/js/controllers.js
+						for(const i in sources[adapter]) {
 							$scope.trigger.sources.push(adapter+"$$"+sources[adapter][i]);
 						}
 					} else {
