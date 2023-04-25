@@ -13,34 +13,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$cookiesProvider.defaults.secure = (location.protocol == "https:");
 	$cookiesProvider.defaults.samesite = 'strict';
 
-	/*$ocLazyLoadProvider.config({
-		/!*modules: [
-		{
-			name: 'datatables',
-			serie: true,
-			files: [
-				'js/plugins/dataTables/datatables.v1.10.20.min.js',
-				'css/plugins/dataTables/datatables.v1.10.20.min.css',
-				'js/plugins/dataTables/angular-datatables.v0.6.2.min.js',
-				'js/plugins/dataTables/angular-datatables.buttons.min.js'
-			]
-		}, {
-			serie: true,
-			name: 'chartjs',
-			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
-		},
-		{
-			name: 'mermaid',
-			serie: true,
-			files: [
-				'js/plugins/mermaid/mermaid.min.js',
-				'js/plugins/mermaid/ng-mermaid.js',
-			]
-		}],*!/
-		// Set to true if you want to see what and when is dynamically loaded
-		debug: true
-	});*/
-
 	laddaProvider.setOption({
 		style: 'expand-right'
 	});

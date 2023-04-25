@@ -22,7 +22,8 @@
 		'angular-ladda',                // Ladda
 		'toaster',                       // Toastr
 		'datatables',
-		'chart.js'
+		'chart.js',
+		'angular-mermaid'
 	]).constant("appConstants", {
 		//Configure these in the server AppConstants!!!
 		//The settings here are defaults and will be overwritten upon set in any .properties file.

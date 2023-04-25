@@ -2,7 +2,7 @@ const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const distDir = path.resolve(__dirname, '../gui/');
+const distDir = path.resolve(__dirname, '../webapp/iaf/gui/');
 
 module.exports = {
   mode: 'development',
@@ -86,13 +86,6 @@ module.exports = {
           exposes: ["$", "jQuery"],
         },
       },
-	  /*{
-		test: require.resolve("mermaid"),
-		loader: "expose-loader",
-		options: {
-			exposes: ["mermaid"],
-		},
-	  },*/
     ]
   }
 };
