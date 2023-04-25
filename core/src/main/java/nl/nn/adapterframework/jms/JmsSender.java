@@ -259,7 +259,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 						}
 					}
 					// TODO: I don't like wrapping message just to unwrap it right away again
-					return extractMessage(new RawMessageWrapper<>(rawReplyMsg, rawReplyMsg.getJMSMessageID()), session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					return extractMessage(new RawMessageWrapper<>(rawReplyMsg, rawReplyMsg.getJMSMessageID(), rawReplyMsg.getJMSCorrelationID()), session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
 					if(mc != null) {
 						try {

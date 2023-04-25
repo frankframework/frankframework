@@ -59,7 +59,6 @@ import lombok.Lombok;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
-import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -711,11 +710,8 @@ public class Message implements Serializable {
 		if (object instanceof Path) {
 			return new PathMessage((Path) object);
 		}
-		if (object instanceof MessageWrapper) {
-			return ((MessageWrapper<?>)object).getMessage();
-		}
 		if (object instanceof RawMessageWrapper) {
-			return new Message(null, ((RawMessageWrapper<?>)object).getRawMessage());
+			return ((RawMessageWrapper<?>)object).getMessage();
 		}
 		return new Message(null, object);
 	}

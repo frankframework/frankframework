@@ -263,7 +263,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		if (msg == null) {
 			return null;
 		}
-		return new RawMessageWrapper<>(msg, messageId);
+		return new RawMessageWrapper<>(msg, messageId, correlationId);
 	}
 
 	/**

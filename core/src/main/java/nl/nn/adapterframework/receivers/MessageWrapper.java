@@ -41,8 +41,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	private  static final long serialVersionUID = -8251009650246241025L;
 
 	private @Getter Message message;
-	// TODO: Move up to RawMessageWrapper
-	private @Getter String correlationId;
 
 	public MessageWrapper() {
 		super();
@@ -54,13 +52,12 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	public MessageWrapper(Message message, String messageId, String correlationId) {
 		// Ugly cast, but I don't think it is safe to leave it NULL
-		super((M)message.asObject(), messageId);
+		super((M)message.asObject(), messageId, correlationId);
 		this.message = message;
-		this.correlationId = correlationId;
 	}
 
 	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, IListener<M> listener) throws ListenerException {
-		super(rawMessageWrapper.getRawMessage(), rawMessageWrapper.getId(), rawMessageWrapper.getContext());
+		super(rawMessageWrapper.rawMessage, rawMessageWrapper.id, rawMessageWrapper.correlationId, rawMessageWrapper.context);
 		message = listener.extractMessage(rawMessageWrapper, getContext());
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
 		if (id == null) {
@@ -70,24 +67,21 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 				id = listener.getIdFromRawMessage(rawMessage, context);
 			}
 		}
-		correlationId = (String) context.get("cid");
+		if (correlationId == null) {
+			correlationId = (String) context.get("cid");
+		}
 	}
 
 	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String correlationId) {
-		super(messageWrapper.getRawMessage(), messageWrapper.getId(), messageWrapper.getContext());
+		super(messageWrapper.getRawMessage(), messageWrapper.getId(), null, messageWrapper.getContext());
 		this.message = message;
-		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
 		this.correlationId = correlationId;
 	}
 
 	@Deprecated
 	public void setMessage(Message message) {
 		this.message = message;
-	}
-
-	@Deprecated
-	void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
 	}
 
 	/*

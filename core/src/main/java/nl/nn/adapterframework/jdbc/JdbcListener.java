@@ -342,13 +342,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		Message message;
-		if (rawMessage instanceof MessageWrapper) {
-			message = ((MessageWrapper)rawMessage).getMessage();
-		} else {
-			message = Message.asMessage(rawMessage.getRawMessage());
-		}
-		return message;
+		return rawMessage.getMessage();
 	}
 
 	@Override

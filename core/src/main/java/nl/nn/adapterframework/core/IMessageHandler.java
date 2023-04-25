@@ -29,9 +29,9 @@ import nl.nn.adapterframework.stream.Message;
 public interface IMessageHandler<M> {
 
 	/**
-	 * Will use listener to perform getIdFromRawMessageWrapper(), getStringFromRawMessage and afterMessageProcessed
+	 * Will use listener to perform {@link IListener#getIdFromRawMessageWrapper), {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed}
 	 */
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
+	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
 	 * Same as {@link #processRawMessage(IListener,RawMessageWrapper,PipeLineSession, boolean)}, but now updates IdleStatistics too
@@ -39,13 +39,13 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Alternative to functions above, will NOT use getIdFromRawMessageWrapper() and getStringFromRawMessage(). Used by PushingListeners.
+	 * Alternative to functions above, will NOT use {@link IListener#getIdFromRawMessageWrapper} and {@link IListener#extractMessage}. Used by PushingListeners.
 	 */
-	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
+	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
 	 *  Can be used if the calling system has no other way of returning the exception to the caller.
 	 */
-	public Message formatException(String extraInfo, String correlationId, Message message, Throwable t);
+	Message formatException(String extraInfo, String correlationId, Message message, Throwable t);
 }

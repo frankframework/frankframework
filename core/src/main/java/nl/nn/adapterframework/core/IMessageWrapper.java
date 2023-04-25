@@ -21,10 +21,11 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Interface for message wrappers.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
 public interface IMessageWrapper {
 
 	public Map<String,Object> getContext();

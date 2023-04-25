@@ -18,41 +18,63 @@ package nl.nn.adapterframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import lombok.Getter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 
 public class RawMessageWrapper<M> {
 
-	protected @Getter transient M rawMessage;
+	protected @Getter M rawMessage;
 	protected @Getter String id;
 	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
+	@Getter protected String correlationId;
 
 	public RawMessageWrapper() {
-		this(null, null);
+		this(null, null, (String) null);
 	}
 
 	public RawMessageWrapper(M rawMessage) {
-		this(rawMessage, null);
+		this(rawMessage, null, (String) null);
 	}
 
-	public RawMessageWrapper(M rawMessage, String id) {
+	public RawMessageWrapper(M rawMessage, String id, String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
+		this.correlationId = correlationId;
+		if (id != null) {
+			this.context.put("mid", id);
+		}
+		if (correlationId != null) {
+			this.context.put("cid", correlationId);
+		}
 	}
 
-	public RawMessageWrapper(M rawMessage, Map<String, Object> context, IListener<M> listener) throws ListenerException {
-		this(rawMessage, listener.getIdFromRawMessage(rawMessage, context));
-		this.context.putAll(context);
+	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context, @Nonnull IListener<M> listener) throws ListenerException {
+		// ILister.getIdFromRawMessage() may extract the correlation-id and add it into the context.
+		this(rawMessage, listener.getIdFromRawMessage(rawMessage, context), (String) context.get("cid"), context);
 	}
 
-	public RawMessageWrapper(M rawMessage, String id, Map<String, Object> context) {
-		this(rawMessage, id);
+	public RawMessageWrapper(M rawMessage, String id, String correlationId, Map<String, Object> context) {
+		this(rawMessage, id, correlationId);
 		this.context.putAll(context);
 	}
 
 	@Deprecated
 	public void setId(String string) {
 		id = string;
+	}
+
+	@Deprecated
+	void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
+	}
+
+	public Message getMessage() {
+		Message message = Message.asMessage(rawMessage);
+		message.getContext().putAll(this.context);
+		return message;
 	}
 }

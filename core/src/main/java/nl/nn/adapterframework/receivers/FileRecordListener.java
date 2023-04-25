@@ -242,7 +242,7 @@ public class FileRecordListener implements IPullingListener {
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
 				// TODO: Method to get the ID
-				return new RawMessageWrapper(recordIterator.next(), inputFileName + "-" + recordNo);
+				return new RawMessageWrapper(recordIterator.next(), inputFileName + "-" + recordNo, null);
 			}
 		}
 

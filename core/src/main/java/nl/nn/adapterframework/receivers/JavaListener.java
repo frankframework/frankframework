@@ -143,7 +143,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			session.put(PipeLineSession.correlationIdKey, correlationId);
 			Message message = new Message(rawMessage);
-			RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, correlationId, context);
+			RawMessageWrapper<String> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, correlationId, null, context);
 			try {
 				if (throwException) {
 					try {

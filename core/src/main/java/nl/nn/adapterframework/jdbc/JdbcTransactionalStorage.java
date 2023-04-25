@@ -778,14 +778,18 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream==null) {
 				return null;
 			}
 			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
-				RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)ois.readObject());
-				return messageWrapper;
+				Object s = ois.readObject();
+				if (s instanceof RawMessageWrapper<?>) {
+					return (RawMessageWrapper<S>) s;
+				}
+				return new RawMessageWrapper<>((S)s);
 			}
 		}
 	}

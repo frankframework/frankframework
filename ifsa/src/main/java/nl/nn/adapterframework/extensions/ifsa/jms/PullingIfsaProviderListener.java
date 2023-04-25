@@ -313,7 +313,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 			try {
 				source = header.getIFSA_Source();
 			} catch (Exception e) {
-				source = "unknown due to exeption:"+e.getMessage();
+				source = "unknown due to exception:"+e.getMessage();
 			}
 			String msg=getLogPrefix()+ "received IFSAPoisonMessage "
 						+ "source [" + source + "]"
@@ -328,7 +328,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, result);
 				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, threadContext, this);
 			} else {
-				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, result.getJMSMessageID());
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, result.getJMSMessageID(), result.getJMSCorrelationID());
 			}
 		} catch (Exception e) {
 			throw new ListenerException("cannot wrap non serialzable message in wrapper",e);

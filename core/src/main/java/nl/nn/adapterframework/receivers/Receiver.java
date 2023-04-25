@@ -34,6 +34,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -1016,7 +1018,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * N.B. callers of this method should clear the remaining ThreadContext if it's not to be returned to their callers.
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
+		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
@@ -1039,12 +1042,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		processRawMessage(origin, rawMessage, session, -1, duplicatesAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, long waitingDuration, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1055,7 +1058,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * All messages that for this receiver are pumped down to this method, so it actually calls the {@link Adapter} to process the message.<br/>
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, long waitingDuration, boolean manualRetry, boolean duplicatesAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
 			return;
@@ -1068,6 +1071,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			String messageId;
+			String correlationId;
 			MessageWrapper<M> messageWrapper;
 
 			if (rawMessageWrapper.getId() != null) {
@@ -1078,7 +1082,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				messageId = getListener().getIdFromRawMessageWrapper(rawMessageWrapper, session);
 				rawMessageWrapper.setId(messageId);
 			}
-			String correlationId = session.getCorrelationId();
+			if (rawMessageWrapper.getCorrelationId() != null) {
+				correlationId = rawMessageWrapper.getCorrelationId();
+			} else {
+				correlationId = session.getCorrelationId();
+			}
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
 			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
@@ -1112,7 +1120,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		ThreadContext.clearAll();
 	}
 
-	private CloseableThreadContext.Instance getLoggingContext(IListener listener, PipeLineSession session) {
+	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
 		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
@@ -1128,7 +1136,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
-				RawMessageWrapper<?> msg = new RawMessageWrapper<>(errorStorageBrowser.browseMessage(storageKey), storageKey);
+				RawMessageWrapper<?> msg = new RawMessageWrapper<>(errorStorageBrowser.browseMessage(storageKey), storageKey, null);
 				processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				return;
 			}
@@ -1138,7 +1146,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
 				try {
-					msg = new RawMessageWrapper<>(errorStorage.getMessage(storageKey), storageKey);
+					msg = new RawMessageWrapper<>(errorStorage.getMessage(storageKey), storageKey, null);
 					processRawMessage((RawMessageWrapper<M>)msg, session, -1, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();

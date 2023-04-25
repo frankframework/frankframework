@@ -107,7 +107,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			if (rawMessage == null) {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
 			}
-			RawMessageWrapper rawMessageWrapper = new RawMessageWrapper(rawMessage, null, threadContext);
+			RawMessageWrapper rawMessageWrapper = new RawMessageWrapper(rawMessage, null, null, threadContext);
 			Message result = getListener().extractMessage(rawMessageWrapper, threadContext);
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {

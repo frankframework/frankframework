@@ -324,7 +324,7 @@ public class ReceiverTest {
 		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
-		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id");
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 
 		final int NR_TIMES_MESSAGE_OFFERED = 5;
@@ -465,7 +465,7 @@ public class ReceiverTest {
 		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
-		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id");
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 		ArgumentCaptor<String> messageIdCaptor = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<String> correlationIdCaptor = ArgumentCaptor.forClass(String.class);
@@ -526,7 +526,7 @@ public class ReceiverTest {
 		// Assert
 		assertAll(
 			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
-			() -> assertEquals("dummy-message-id", correlationIdCaptor.getValue(), "Correlation ID does not match"),
+			() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
 			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
@@ -567,9 +567,10 @@ public class ReceiverTest {
 		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> rawMessage = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 		// Act
-		int result = receiver.getDeliveryCount(new RawMessageWrapper<>(jmsMessage, "dummy-message-id"));
+		int result = receiver.getDeliveryCount(rawMessage);
 
 		// Assert
 		assertEquals(4, result);
@@ -603,9 +604,9 @@ public class ReceiverTest {
 
 		final String messageId = "A Path";
 		Path fileMessage = Paths.get(messageId);
+		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId, null);
 
 		// Act
-		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId);
 		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert

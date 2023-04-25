@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
@@ -175,7 +177,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
-			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, null, this), null, false);
+			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, new HashMap<>(), this), null, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
@@ -191,8 +193,11 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		while (iterator.hasNext()) {
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
-			try {
-				handler.processRequest(this, null, new Message(xmlProcessor.render(doc)), null);
+			try (PipeLineSession session = new PipeLineSession()) {
+				String rawMessage = xmlProcessor.render(doc);
+				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage);
+				//noinspection unchecked
+				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

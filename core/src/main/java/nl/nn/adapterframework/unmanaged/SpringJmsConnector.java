@@ -275,7 +275,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				listener.checkTransactionManagerValidity();
 				pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY, session);
 				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
-				RawMessageWrapper<Message> rawMessage = new RawMessageWrapper<>(message, listener.getIdFromRawMessage(message, pipeLineSession));
+				RawMessageWrapper<Message> rawMessage = new RawMessageWrapper<>(message, pipeLineSession, listener);
 				getReceiver().processRawMessage(listener, rawMessage, pipeLineSession, false);
 				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 			} catch (ListenerException e) {
