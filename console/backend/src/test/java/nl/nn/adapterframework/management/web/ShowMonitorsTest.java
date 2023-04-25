@@ -2,6 +2,9 @@ package nl.nn.adapterframework.management.web;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.net.URL;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -15,8 +18,8 @@ import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
-import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 
@@ -99,7 +102,9 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		String jsonInput = TestFileUtils.getTestFile("/monitoring/updateTrigger.json");
+		URL jsonInputURL = ShowMonitorsTest.class.getResource("/monitoring/updateTrigger.json");
+		assertNotNull(jsonInputURL, "unable to find input JSON"); // Check if the file exists to avoid NPE's
+		String jsonInput = StreamUtil.streamToString(jsonInputURL.openStream());
 
 		// Act
 		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/configurations/TestConfiguration/monitors/monitorName/triggers/0", jsonInput);
@@ -111,7 +116,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),	() -> assertEquals("monitorName", request.getHeaders().get("monitor")),
 				() -> assertEquals(0, request.getHeaders().get("trigger")),
 				() -> assertEquals("MANAGE", request.getHeaders().get("action")),
-				() -> MatchUtils.assertJsonEquals(jsonInput, String.valueOf(request.getPayload()))
+				() -> assertEquals(jsonInput, Misc.jsonPretty(String.valueOf(request.getPayload())))
 			);
 	}
 }
