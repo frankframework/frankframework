@@ -22,7 +22,7 @@ import java.util.Set;
 
 public class OverridesMap<V> extends SubstitutionNode<V> implements SubstitutionProvider<V> {
 
-	private Map<String,Set<String>> allParents = new HashMap<String,Set<String>>();
+	private Map<String,Set<String>> allParents = new HashMap<>();
 
 	@Override
 	protected void registerSubstitute(String[] elements, int index, V value) {
@@ -46,7 +46,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 				return; // child already registered with null parent;
 			}
 		} else {
-			parentSetOfChild=new HashSet<String>();
+			parentSetOfChild=new HashSet<>();
 			allParents.put(child, parentSetOfChild);
 			created=true;
 		}

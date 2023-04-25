@@ -17,12 +17,14 @@ package nl.nn.adapterframework.align;
 
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -57,8 +59,8 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	private boolean insertElementContainerElements;
 	private boolean strictSyntax;
 	private @Getter @Setter boolean readAttributes=true;
-	private String attributePrefix="@";
-	private String mixedContentLabel="#text";
+	private String attributePrefix="@";//TODO this should be a static!
+	private String mixedContentLabel="#text";//TODO this should be a static!
 
 	public Json2Xml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation, boolean insertElementContainerElements, String rootElement) {
 		this(validatorHandler, schemaInformation, insertElementContainerElements, rootElement, false);
@@ -75,39 +77,38 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 	public void startParse(JsonValue node) throws SAXException {
 		if (node instanceof JsonObject) {
 			JsonObject root = (JsonObject)node;
-			if (StringUtils.isEmpty(getRootElement())) {
-				if (root.isEmpty()) {
-					throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
-				}
-				if (root.size()>1) {
-					String namesList=null;
-					int i=0;
-					for (String name:root.keySet()) {
-						if (namesList==null) {
-							namesList=name;
-						} else {
-							namesList+=","+name;
-						}
-						if (i++>5) {
-							namesList+=", ...";
-							break;
-						}
-					}
-					throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
-				}
-				setRootElement((String)root.keySet().toArray()[0]);
+			List<String> potentialRootElements = new ArrayList<>(root.keySet());
+			potentialRootElements.removeIf(e-> {return e.startsWith(attributePrefix) || e.startsWith(mixedContentLabel);});
+			if(StringUtils.isEmpty(getRootElement())) {
+				determineRootElement(potentialRootElements);
 			}
+
 			// determine somewhat heuristically whether the json contains a 'root' node:
 			// if the outermost JsonObject contains only one key, that has the name of the root element,
 			// then we'll assume that that is the root element...
-			if (root.size()==1 && getRootElement().equals(root.keySet().toArray()[0])) {
-				node=root.get(getRootElement());
+			if (potentialRootElements.size()==1 && getRootElement().equals(potentialRootElements.get(0))) {
+				node = root.get(getRootElement());
 			}
 		}
 		if (node instanceof JsonArray && !insertElementContainerElements && strictSyntax) {
 			throw new SAXException(MSG_EXPECTED_SINGLE_ELEMENT+" ["+getRootElement()+"] or array element container");
 		}
 		super.startParse(node);
+	}
+
+	private void determineRootElement(List<String> potentialRootElements) throws SAXException {
+		if (potentialRootElements.isEmpty()) {
+			throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
+		}
+		if(potentialRootElements.size() == 1) {
+			setRootElement(potentialRootElements.get(0));
+		} else {
+			String namesList = potentialRootElements.stream().limit(5).collect(Collectors.joining(","));
+			if(potentialRootElements.size() > 5) {
+				namesList+=", ...";
+			}
+			throw new SAXException("Cannot determine XML root element, too many names ["+namesList+"] in JSON");
+		}
 	}
 
 	@Override
@@ -168,7 +169,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			return null;
 		}
 		try {
-			Map<String, String> result=new LinkedHashMap<String,String>(); // it is not really necessary to preserve the order, but often the results look nicer, and it is easier for testing ...
+			Map<String, String> result=new LinkedHashMap<>(); // it is not really necessary to preserve the order, but often the results look nicer, and it is easier for testing ...
 			for (String key:o.keySet()) {
 				if (key.startsWith(attributePrefix)) {
 					String attributeName=key.substring(attributePrefix.length());

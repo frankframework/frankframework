@@ -1,4 +1,4 @@
-<Root xmlns="urn:test">
+<Root xmlns="urn:test" key="$metadata#value">
 	<MetaData>
 		<label name="abc">1234567890</label>
 		<label name="def">Soapui</label>
