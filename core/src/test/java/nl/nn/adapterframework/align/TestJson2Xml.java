@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.align;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -14,8 +15,10 @@ import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class TestJson2Xml extends AlignTestBase {
@@ -175,4 +178,16 @@ public class TestJson2Xml extends AlignTestBase {
 		testFiles("Abc/abc.xsd","urn:test","a","Abc/abc-err", "Abc/abc", false, "Cannot find the declaration of element [d]", false);
 	}
 
+	// Test skipping attributes on ROOT level, and throwing an exception when unable to determine rootElement
+	@Test
+	public void testTooManyRootElements() throws Exception {
+		URL schemaUrl = TestFileUtils.getTestFileURL("/Align/TextAndAttributes/schema.xsd");
+		String jsonIn = TestFileUtils.getTestFile("/Align/TextAndAttributes/input-compact.json");
+		XmlWriter xmlWriter = new XmlWriter();
+
+		JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
+		Json2Xml j2x = Json2Xml.create(schemaUrl, false, null, false, false, "urn:test", null);
+		SAXException e = assertThrows(SAXException.class, ()-> j2x.translate(jsonStructure, xmlWriter));
+		assertEquals("Cannot determine XML root element, too many names [MetaData,intLabel,location] in JSON", e.getMessage());
+	}
 }
