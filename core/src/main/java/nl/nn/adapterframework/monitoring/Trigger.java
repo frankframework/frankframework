@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -206,20 +207,14 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public void setEventCodes(String[] arr) {
+	public void setEventCodes(List<String> events) {
 		clearEventCodes();
-		for (int i=0;i<arr.length;i++) {
-			addEventCode(arr[i]);
-		}
+		eventCodes.addAll(events);
 	}
 
 	@Override
-	public String[] getEventCodes() {
-		return eventCodes.toArray(new String[eventCodes.size()]);
-	}
-
-	public List<String> getEventCodeList() {
-		return eventCodes;
+	public List<String> getEventCodes() {
+		return Collections.unmodifiableList(eventCodes);
 	}
 
 	@Override

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -30,6 +31,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -40,6 +44,7 @@ import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.management.bus.dto.TriggerDTO;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
@@ -55,18 +60,36 @@ import nl.nn.adapterframework.util.SpringUtils;
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)
 public class Monitoring extends BusEndpointBase {
+	public static final String MONITOR_NAME_KEY = "monitor";
+	public static final String TRIGGER_NAME_KEY = "trigger";
 
 	private MonitorManager getMonitorManager(String configurationName) {
 		ApplicationContext applicationContext = getConfigurationByName(configurationName);
 		return applicationContext.getBean("monitorManager", MonitorManager.class);
 	}
 
+	private Monitor getMonitor(MonitorManager mm, String monitorName) {
+		Monitor monitor = mm.findMonitor(monitorName);
+		if(monitor == null) {
+			throw new BusException("monitor not found");
+		}
+		return monitor;
+	}
+
+	private ITrigger getTrigger(Monitor monitor, int triggerId) {
+		ITrigger trigger = monitor.getTrigger(triggerId);
+		if(trigger == null) {
+			throw new BusException("trigger not found");
+		}
+		return trigger;
+	}
+
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMonitors(Message<?> message) {
 		boolean showConfigAsXml = BusMessageUtils.getBooleanHeader(message, "xml", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
-		Integer triggerId = BusMessageUtils.getIntHeader(message, "trigger", null);
+		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null);
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
@@ -74,16 +97,9 @@ public class Monitoring extends BusEndpointBase {
 			return getMonitors(mm, showConfigAsXml);
 		}
 
-		Monitor monitor = mm.findMonitor(monitorName);
-		if(monitor == null) {
-			throw new BusException("monitor not found");
-		}
-
+		Monitor monitor = getMonitor(mm, monitorName);
 		if(triggerId != null) {
-			ITrigger trigger = monitor.getTrigger(triggerId);
-			if(trigger == null) {
-				throw new BusException("trigger not found");
-			}
+			ITrigger trigger = getTrigger(monitor, triggerId);
 			return getTrigger(mm, trigger);
 		}
 
@@ -93,7 +109,7 @@ public class Monitoring extends BusEndpointBase {
 	@ActionSelector(BusAction.UPLOAD)
 	public Message<String> addMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String name = BusMessageUtils.getHeader(message, "monitor", null);
+		String name = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
 		EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class);
 		String destinations = BusMessageUtils.getHeader(message, "destinations");
 
@@ -111,21 +127,14 @@ public class Monitoring extends BusEndpointBase {
 	@ActionSelector(BusAction.DELETE)
 	public Message<String> deleteMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String monitorName = BusMessageUtils.getHeader(message, "monitor", null);
-		Integer triggerId = BusMessageUtils.getIntHeader(message, "trigger", null);
+		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY, null);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null);
 
 		MonitorManager mm = getMonitorManager(configurationName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new BusException("monitor not found");
-		}
+		Monitor monitor = getMonitor(mm, monitorName);
 
 		if(triggerId != null) {
-			ITrigger trigger = monitor.getTrigger(triggerId);
-			if(trigger == null) {
-				throw new BusException("trigger not found");
-			}
+			ITrigger trigger = getTrigger(monitor, triggerId);
 			log.info("removing trigger [{}]", trigger);
 			monitor.removeTrigger(trigger);
 		} else {
@@ -139,52 +148,110 @@ public class Monitoring extends BusEndpointBase {
 	@ActionSelector(BusAction.MANAGE)
 	public Message<String> updateMonitor(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		String monitorName = BusMessageUtils.getHeader(message, "monitor");
+		String monitorName = BusMessageUtils.getHeader(message, MONITOR_NAME_KEY);
+		Integer triggerId = BusMessageUtils.getIntHeader(message, TRIGGER_NAME_KEY, null);
 
 		MonitorManager mm = getMonitorManager(configurationName);
-		Monitor monitor = mm.findMonitor(monitorName);
-		if(monitor == null) {
-			throw new BusException("monitor not found");
-		}
+		Monitor monitor = getMonitor(mm, monitorName);
 
-		String action = BusMessageUtils.getHeader(message, "state", "edit");
-		switch (action) {
-		case "clear":
-			try {
-				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
-			} catch (MonitorException e) {
-				throw new BusException("Failed to change monitor state", e);
+		if(triggerId != null) {
+			ITrigger trigger = getTrigger(monitor, triggerId);
+			updateTrigger(trigger, message);
+		} else {
+			String state = BusMessageUtils.getHeader(message, "state", "edit");
+			if("edit".equals(state)) {
+				updateMonitor(monitor, message);
+			} else {
+				changeMonitorState(monitor, "raise".equals(state));
 			}
-			break;
-		case "raise":
-			try {
-				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
-			} catch (MonitorException e) {
-				throw new BusException("Failed to change monitor state", e);
-			}
-			break;
-		case "edit":
-			String name = BusMessageUtils.getHeader(message, "name", null);
-			if(StringUtils.isNotBlank(name)) {
-				monitor.setName(name);
-			}
-			EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class, null);
-			if(type != null) {
-				monitor.setType(type);
-			}
-			String destinations = BusMessageUtils.getHeader(message, "destinations", null);
-			if(StringUtils.isNotBlank(destinations)) {
-				monitor.setDestinationSet(parseDestinations(destinations));
-			}
-			break;
-
-		default:
-			break;
 		}
 
 		return EmptyResponseMessage.accepted();
+	}
+
+	private void updateTrigger(ITrigger trigger, Message<?> message) {
+		TriggerDTO dto = convertToDTO(message.getPayload(), TriggerDTO.class);
+
+		if(dto.getEvents() != null) {
+			trigger.setEventCodes(dto.getEvents());
+		}
+		if(dto.getType() != null) {
+			trigger.setTriggerType(dto.getType());
+		}
+		if(dto.getSeverity() != null) {
+			trigger.setSeverity(dto.getSeverity());
+		}
+		if(dto.getThreshold() != null) {
+			trigger.setThreshold(dto.getThreshold());
+		}
+		if(dto.getPeriod() != null) {
+			trigger.setPeriod(dto.getPeriod());
+		}
+		if(dto.getFilter() != null) {
+			trigger.setSourceFiltering(dto.getFilter());
+		}
+
+		trigger.clearAdapterFilters();
+		if(SourceFiltering.ADAPTER == dto.getFilter()) {
+			for(String adapter : dto.getAdapters()) {
+				AdapterFilter adapterFilter = new AdapterFilter();
+				adapterFilter.setAdapter(adapter);
+				trigger.registerAdapterFilter(adapterFilter);
+			}
+		} else if(SourceFiltering.SOURCE == dto.getFilter()) {
+			for(Map.Entry<String, List<String>> entry : dto.getSources().entrySet()) {
+				AdapterFilter adapterFilter = new AdapterFilter();
+				adapterFilter.setAdapter(entry.getKey());
+				for(String subObject : entry.getValue()) {
+					adapterFilter.registerSubObject(subObject);
+				}
+				trigger.registerAdapterFilter(adapterFilter);
+			}
+		}
+	}
+
+	//TODO make this more generic
+	private static <T> T convertToDTO(Object payload, Class<T> dto) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+
+			if(payload instanceof String) {
+				return mapper.readValue((String) payload, dto);
+			} else if(payload instanceof byte[]) {
+				return mapper.readValue((byte[]) payload, dto);
+			} else {
+				throw new BusException("unhandled payload type ["+payload.getClass()+"]");
+			}
+		} catch (IOException e) {
+			throw new BusException("unable to parse payload to DTO", e);
+		}
+	}
+
+	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
+		try {
+			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
+			monitor.changeState(new Date(), raiseMonitor, Severity.WARNING, null, null, null);
+		} catch (MonitorException e) {
+			throw new BusException("Failed to change monitor state", e);
+		}
+	}
+
+	private void updateMonitor(Monitor monitor, Message<?> message) {
+		String name = BusMessageUtils.getHeader(message, "name", null);
+		if(StringUtils.isNotBlank(name)) {
+			monitor.setName(name);
+		}
+		EventType type = BusMessageUtils.getEnumHeader(message, "type", EventType.class, null);
+		if(type != null) {
+			monitor.setType(type);
+		}
+		String destinations = BusMessageUtils.getHeader(message, "destinations", null);
+		if(StringUtils.isNotBlank(destinations)) {
+			monitor.setDestinationSet(parseDestinations(destinations));
+		}
 	}
 
 	private Set<String> parseDestinations(String entry) {
@@ -261,7 +328,7 @@ public class Monitoring extends BusEndpointBase {
 			monitorMap.put("alarm", alarm);
 		}
 
-		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
 		for(ITrigger trigger : listOfTriggers) {
 

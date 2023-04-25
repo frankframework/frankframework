@@ -1,17 +1,17 @@
 /*
-Copyright 2016-2017, 2019, 2021 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
@@ -143,8 +143,7 @@ public class ShowMonitors extends Base {
 	@Path("/{monitorName}/triggers")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
-
+	public Response createTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, Map<String, Object> json) {
 		MonitorManager mm = getMonitorManager(configName);
 		Monitor monitor = mm.findMonitor(monitorName);
 
@@ -177,23 +176,14 @@ public class ShowMonitors extends Base {
 	@Path("/{monitorName}/triggers/{trigger}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index, Map<String, Object> json) throws ApiException {
+	public Response updateTrigger(@PathParam("configuration") String configName, @PathParam("monitorName") String monitorName, @PathParam("trigger") int index, Map<String, Object> json) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.MANAGE);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader("monitor", monitorName);
+		builder.addHeader("trigger", index);
+		builder.setJsonPayload(json);
 
-		MonitorManager mm = getMonitorManager(configName);
-		Monitor monitor = mm.findMonitor(monitorName);
-
-		if(monitor == null) {
-			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
-		}
-
-		ITrigger trigger = monitor.getTrigger(index);
-		if(trigger == null) {
-			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
-		}
-
-		handleTrigger(trigger, json);
-
-		return Response.status(Status.OK).build();
+		return callSyncGateway(builder);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -235,7 +225,7 @@ public class ShowMonitors extends Base {
 		}
 
 		// If no parse errors have occured we can continue!
-		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
+		trigger.setEventCodes(eventList);
 		trigger.setTriggerType(type);
 		trigger.setSeverity(severity);
 		trigger.setThreshold(threshold);

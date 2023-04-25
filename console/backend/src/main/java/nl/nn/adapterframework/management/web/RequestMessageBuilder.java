@@ -26,8 +26,12 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.HttpUtils;
 
@@ -57,6 +61,22 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
+	//TODO make this more generic
+	public RequestMessageBuilder setJsonPayload(Object payload) {
+		this.payload = convertToJson(payload);
+		return this;
+	}
+
+	private static String convertToJson(Object payload) {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			return objectMapper.writeValueAsString(payload);
+		} catch (JacksonException e) {
+			throw new BusException("unable to convert response to JSON", e);
+		}
+	}
+
+	//TODO find out if we can use types
 	public RequestMessageBuilder setPayload(Object payload) {
 		this.payload = payload;
 		return this;

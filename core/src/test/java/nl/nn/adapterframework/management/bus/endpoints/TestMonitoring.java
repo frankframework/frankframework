@@ -1,11 +1,16 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,17 +18,21 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.ITrigger;
+import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
@@ -60,6 +69,10 @@ public class TestMonitoring extends BusTestBase {
 		AdapterFilter filter = new AdapterFilter();
 		filter.setAdapter("dummyAdapterName");
 		filter.registerSubObject("dummySubObjectName");
+		trigger.setPeriod(42);
+		trigger.setThreshold(1337);
+		trigger.setSeverity(Severity.HARMLESS);
+		trigger.setTriggerType(TriggerType.ALARM);
 		trigger.registerAdapterFilter(filter);
 		trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
@@ -258,6 +271,131 @@ public class TestMonitoring extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/Monitoring/getTrigger.json");
 		String payload = (String) response.getPayload();
 		MatchUtils.assertJsonEquals(expectedJson, payload);
+	}
+
+	// The request body only contains fields we want to update.
+	@Test
+	public void updateTriggerByAdapter() throws Exception {
+		// Arrange
+		String jsonInput = TestFileUtils.getTestFile("/Management/Monitoring/updateTriggerByAdapter.json");
+		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert Response
+		assertAll(
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals("no-content", response.getPayload())
+			);
+
+		// Assert Trigger
+		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		assertAll(
+				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
+				() -> assertEquals(42, trigger.getPeriod()),
+				() -> assertEquals(1337, trigger.getThreshold()),
+				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
+				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Pipe Exception1", "Pipe Exception2")),
+				() -> assertEquals(SourceFiltering.ADAPTER, trigger.getSourceFiltering()),
+				() -> assertThat(trigger.getAdapterFilters().keySet(), containsInAnyOrder("adapter1", "adapter2")),
+				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter1").getSubObjectList().size()),
+				() -> assertEquals(0, trigger.getAdapterFilters().get("adapter2").getSubObjectList().size())
+			);
+	}
+
+	// The request body contains all fields
+	@Test
+	public void updateTriggerBySource() throws Exception {
+		// Arrange
+		String jsonInput = TestFileUtils.getTestFile("/Management/Monitoring/updateTriggerBySource.json");
+		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert Response
+		assertAll(
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals("no-content", response.getPayload())
+			);
+
+		// Assert Trigger
+		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		assertAll(
+				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
+				() -> assertEquals(3600, trigger.getPeriod()),
+				() -> assertEquals(10, trigger.getThreshold()),
+				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
+				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Sender Timeout")),
+				() -> assertEquals(SourceFiltering.SOURCE, trigger.getSourceFiltering()),
+				() -> assertThat(trigger.getAdapterFilters().keySet(), containsInAnyOrder("adapter1", "adapter2")),
+				() -> assertEquals(1, trigger.getAdapterFilters().get("adapter1").getSubObjectList().size()),
+				() -> assertEquals(1, trigger.getAdapterFilters().get("adapter2").getSubObjectList().size())
+			);
+	}
+
+	// The request body contains filter:NONE as well as filters
+	@Test
+	public void updateTriggerNoFilter() throws Exception {
+		// Arrange
+		String jsonInput = TestFileUtils.getTestFile("/Management/Monitoring/updateTriggerNoFilter.json");
+		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		Message<?> response = callSyncGateway(request);
+
+		// Assert Response
+		assertAll(
+				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
+				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals("no-content", response.getPayload())
+			);
+
+		// Assert Trigger
+		ITrigger trigger = getMonitorManager().getMonitor(0).getTriggers().get(0);
+		assertAll(
+				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
+				() -> assertEquals(3600, trigger.getPeriod()),
+				() -> assertEquals(1, trigger.getThreshold()),
+				() -> assertEquals(TriggerType.ALARM, trigger.getTriggerType()),
+				() -> assertThat(trigger.getEventCodes(), containsInAnyOrder("Pipe Exception", "Sender Timeout")),
+				() -> assertEquals(SourceFiltering.NONE, trigger.getSourceFiltering()),
+				() -> assertEquals(0, trigger.getAdapterFilters().size())
+			);
+	}
+
+	// The request body contains invalid, but parsable JSON
+	@Test
+	public void testInvalidJsonWhenUpdatingTrigger() throws Exception {
+		// Arrange
+		String jsonInput = TestFileUtils.getTestFile("/Management/Monitoring/updateTriggerInvalidJson.json");
+		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.MANAGE);
+		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
+		request.setHeader("monitor", TEST_MONITOR_NAME);
+		request.setHeader("trigger", TEST_TRIGGER_ID);
+
+		// Act
+		MessageHandlingException e = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
+
+		// Assert
+		assertTrue(e.getCause() instanceof BusException);
+		String exception = "unable to parse payload to DTO: (InvalidFormatException) Cannot deserialize value of type `java.lang.Integer` from String \"no-int\"";
+		assertThat(e.getCause().getMessage(), Matchers.startsWith(exception));
 	}
 
 	@Test
