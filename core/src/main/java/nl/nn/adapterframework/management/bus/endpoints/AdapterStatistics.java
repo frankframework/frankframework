@@ -117,8 +117,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		return new JsonResponseMessage(statisticsMap);
 	}
 
-private static class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
-
+	private static class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
 		private Map<String, Object> parent;
 
 		public StatisticsKeeperToMap(Map<String, Object> parent) {
