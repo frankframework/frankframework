@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
@@ -184,8 +185,8 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		while (iterator.hasNext()) {
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
-			try {
-				handler.processRequest(this, null, null, new Message(xmlProcessor.render(doc)), null);
+			try(PipeLineSession session = new PipeLineSession()) {
+				handler.processRequest(this, null, null, new Message(xmlProcessor.render(doc)), session);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

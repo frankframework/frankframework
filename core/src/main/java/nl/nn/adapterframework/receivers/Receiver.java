@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -1027,7 +1029,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * N.B. callers of this method should clear the remaining ThreadContext if its not to be returned to their callers.
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(@Nonnull IListener<M> origin, String correlationId, M rawMessage, Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
@@ -1036,39 +1038,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw new ListenerException(getLogPrefix()+"is not started");
 			}
 
-			boolean sessionCreated=false;
-			try {
-				if (session==null) {
-					session = new PipeLineSession();
-					sessionCreated=true;
-				}
-
-				Date tsReceived = PipeLineSession.getTsReceived(session);
-				Date tsSent = PipeLineSession.getTsSent(session);
-				PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
-				String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
-				return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
-			} finally {
-				if (sessionCreated) {
-					session.close();
-				}
-			}
+			Date tsReceived = PipeLineSession.getTsReceived(session);
+			Date tsSent = PipeLineSession.getTsSent(session);
+			PipeLineSession.setListenerParameters(session, null, correlationId, tsReceived, tsSent);
+			String messageId = (String) session.get(PipeLineSession.originalMessageIdKey);
+			return processMessageInAdapter(rawMessage, message, messageId, correlationId, session, -1, false, false);
 		}
 	}
 
 
-
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null, -1, false);
-	}
-	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, boolean historyAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@Nonnull IListener<M> origin, M rawMessage, @Nonnull PipeLineSession session, boolean historyAlreadyChecked) throws ListenerException {
 		processRawMessage(origin, rawMessage, session, -1, historyAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession session, long waitingDuration, boolean historyAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@Nonnull IListener<M> origin, M rawMessage, @Nonnull PipeLineSession session, long waitingDuration, boolean historyAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1081,73 +1066,62 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	 * Assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(Object rawMessageOrWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
+	private void processRawMessage(Object rawMessageOrWrapper, @Nonnull PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
 			if (rawMessageOrWrapper==null) {
 				log.debug(getLogPrefix()+"received null message, returning directly");
 				return;
 			}
 			long startExtractingMessage = System.currentTimeMillis();
-			boolean sessionCreated=false;
-			if (session==null) {
-				session = new PipeLineSession();
-				sessionCreated = true;
+			if(isForceRetryFlag()) {
+				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
+			}
+
+			Message message;
+			String technicalCorrelationId;
+			try {
+				if (getListener() instanceof MessageStoreListener && manualRetry) {
+					message = ((MessageStoreListener<M>) getListener()).convertToMessage(rawMessageOrWrapper, session);
+				} else {
+					message = getListener().extractMessage((M) rawMessageOrWrapper, session);
+				}
+			} catch (Exception e) {
+				if(rawMessageOrWrapper instanceof MessageWrapper) {
+					//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+					// There are, however, also Listeners that might use MessageWrapper as their raw message type,
+					// like JdbcListener
+					message = ((MessageWrapper)rawMessageOrWrapper).getMessage();
+				} else {
+					throw new ListenerException(e);
+				}
 			}
 			try {
-				if(isForceRetryFlag()) {
-					session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
-				}
-
-				Message message;
-				String technicalCorrelationId;
-				try {
-					if (getListener() instanceof MessageStoreListener && manualRetry) {
-						message = ((MessageStoreListener<M>) getListener()).convertToMessage(rawMessageOrWrapper, session);
-					} else {
-						message = getListener().extractMessage((M) rawMessageOrWrapper, session);
-					}
-				} catch (Exception e) {
-					if(rawMessageOrWrapper instanceof MessageWrapper) {
-						//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
-						// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-						// like JdbcListener
-						message = ((MessageWrapper)rawMessageOrWrapper).getMessage();
-					} else {
-						throw new ListenerException(e);
-					}
-				}
-				try {
-					technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
-				} catch (Exception e) {
-					if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
-						MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
-						technicalCorrelationId = wrapper.getId();
-						session.putAll(wrapper.getContext());
-					} else {
-						throw new ListenerException(e);
-					}
-				}
-				String messageId = (String)session.get(PipeLineSession.originalMessageIdKey);
-				LogUtil.setIdsToThreadContext(ctc, messageId, (String)session.get(PipeLineSession.businessCorrelationIdKey));
-				long endExtractingMessage = System.currentTimeMillis();
-				messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-				Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, historyAlreadyChecked);
-				try {
-					output.close();
-				} catch (Exception e) {
-					log.warn("Could not close result message ["+output+"]", e);
-				}
-				resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
-			} finally {
-				if (sessionCreated) {
-					session.close();
+				technicalCorrelationId = getListener().getIdFromRawMessage((M)rawMessageOrWrapper, session);
+			} catch (Exception e) {
+				if(rawMessageOrWrapper instanceof MessageWrapper) { //somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+					MessageWrapper<M> wrapper = (MessageWrapper)rawMessageOrWrapper;
+					technicalCorrelationId = wrapper.getId();
+					session.putAll(wrapper.getContext());
+				} else {
+					throw new ListenerException(e);
 				}
 			}
+			String messageId = (String)session.get(PipeLineSession.originalMessageIdKey);
+			LogUtil.setIdsToThreadContext(ctc, messageId, (String)session.get(PipeLineSession.businessCorrelationIdKey));
+			long endExtractingMessage = System.currentTimeMillis();
+			messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
+			Message output = processMessageInAdapter(rawMessageOrWrapper, message, messageId, technicalCorrelationId, session, waitingDuration, manualRetry, historyAlreadyChecked);
+			try {
+				output.close();
+			} catch (Exception e) {
+				log.warn("Could not close result message ["+output+"]", e);
+			}
+			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		}
 		ThreadContext.clearAll();
 	}
 
-	private CloseableThreadContext.Instance getLoggingContext(IListener listener, PipeLineSession session) {
+	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
 		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;

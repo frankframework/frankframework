@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -49,9 +50,9 @@ import nl.nn.adapterframework.util.RunState;
  * <tr><td>{@link #setAutomaticReconnect(boolean) automaticReconnect}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank">MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)</a> (apart from this recover job will also try to recover)</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>character encoding of received messages</td><td>UTF-8</td></tr>
  * </table>
- * 
+ *
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
- * 
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  */
@@ -86,7 +87,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
 		receiver.setOnError(Receiver.OnError.RECOVER);
-		// Recover will be triggered when connectionLost was called or listener 
+		// Recover will be triggered when connectionLost was called or listener
 		// could not start in which case client is already disconnected.
 
 		super.configure();
@@ -139,8 +140,8 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		try {
-			messageHandler.processRawMessage(this, message);
+		try (PipeLineSession session = new PipeLineSession()) {
+			messageHandler.processRawMessage(this, message, session, false);
 		} catch(Throwable t) {
 			log.error("Could not process raw message", t);
 		}
