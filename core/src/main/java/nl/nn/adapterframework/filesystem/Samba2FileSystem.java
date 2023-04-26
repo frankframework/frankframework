@@ -163,7 +163,9 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch(authType) {
 				case NTLM:
-					return new AuthenticationContext(credentialFactory.getUsername(), credentialFactory.getPassword().toCharArray(), getAuthenticationDomain());
+					String cfPassword = credentialFactory.getPassword();
+					char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
+					return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getAuthenticationDomain());
 				case SPNEGO:
 					if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
 						System.setProperty("java.security.krb5.kdc", getKdc());
