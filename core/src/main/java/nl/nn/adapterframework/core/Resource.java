@@ -26,7 +26,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -60,7 +60,7 @@ public abstract class Resource implements IScopeProvider {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
 		String ref= resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
-		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
+		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
 			return null;
 		}

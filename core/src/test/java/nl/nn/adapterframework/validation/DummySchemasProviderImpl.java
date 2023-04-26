@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -51,12 +52,12 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 		return Collections.<Schema>singletonList(new Schema() {
 			@Override
 			public Reader getReader() throws IOException {
-				return ClassUtils.urlToReader(ClassUtils.getResourceURL(scopeProvider, xsd));
+				return ClassUtils.urlToReader(ClassLoaderUtils.getResourceURL(scopeProvider, xsd));
 			}
 
 			@Override
 			public String getSystemId() {
-				return ClassUtils.getResourceURL(scopeProvider, xsd).toExternalForm();
+				return ClassLoaderUtils.getResourceURL(scopeProvider, xsd).toExternalForm();
 			}
 		});
 	}

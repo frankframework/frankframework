@@ -24,7 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringUtil;
@@ -52,7 +52,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				messageToReturn = new Message(messageToReturn.asString() + StreamUtil.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
+				messageToReturn = new Message(messageToReturn.asString() + StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [{}]", getFilename(), e);
 			}

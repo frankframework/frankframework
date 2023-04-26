@@ -28,7 +28,7 @@ import liquibase.resource.AbstractResource;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -56,7 +56,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		if (path.equals(resource.getSystemId())) {
 			return asResourceList(path, null, ()->resource.openStream());
 		}
-		URL url = ClassUtils.getResourceURL(resource, path);
+		URL url = ClassLoaderUtils.getResourceURL(resource, path);
 		if (url==null) {
 			return null;
 		}

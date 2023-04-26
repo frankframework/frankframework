@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -123,7 +124,7 @@ public class SqlTranslator implements ISqlTranslator {
 		String sourceMatch=(".source."+sourceDialect.replaceAll(" ", "_")).toLowerCase();
 		String targetMatch=(".target."+targetDialect.replaceAll(" ", "_")).toLowerCase();
 
-		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
+		URL resourceUrl = ClassLoaderUtils.getResourceURL(PATTERN_FILE);
 
 		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
 			String line= reader.readLine();

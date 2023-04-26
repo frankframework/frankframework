@@ -33,7 +33,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -74,7 +74,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, getFileName());
+				resource = ClassLoaderUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception searching for [" + getFileName() + "]", e);
 			}
@@ -115,7 +115,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if(StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, getFileName());
+				resource = ClassLoaderUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception searching for ["+getFileName()+"]", e);
 			}

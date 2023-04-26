@@ -68,6 +68,7 @@ import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -151,7 +152,7 @@ public class AdapterStatus extends BusEndpointBase {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, s.getKeystore());
+		URL certificateUrl = ClassLoaderUtils.getResourceURL(s, s.getKeystore());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");

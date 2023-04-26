@@ -41,7 +41,7 @@ import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -63,7 +63,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		super.configure();
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
-			url = ClassUtils.getResourceURL(this, getXqueryName());
+			url = ClassLoaderUtils.getResourceURL(this, getXqueryName());
 			if (url == null) {
 				throw new ConfigurationException("could not find XQuery '" + getXqueryName() + "'");
 			}

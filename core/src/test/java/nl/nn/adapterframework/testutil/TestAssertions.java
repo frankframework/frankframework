@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -132,7 +132,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
-		URL svg = ClassUtils.getResourceURL("test1.xml");
+		URL svg = ClassLoaderUtils.getResourceURL("test1.xml");
 		String str1 = StreamUtil.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 

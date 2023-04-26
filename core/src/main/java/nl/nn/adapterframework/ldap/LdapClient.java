@@ -49,6 +49,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -683,7 +684,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
     	Properties ldapProperties = new Properties();
     	try {
-    		URL url=ClassUtils.getResourceURL(resourceName);
+    		URL url=ClassLoaderUtils.getResourceURL(resourceName);
     		if (url!=null) {
         		log.info("LDAP properties loading from file ["+url.toString()+"]");
     			InputStream propertyStream = ClassUtils.urlToStream(url,10000);

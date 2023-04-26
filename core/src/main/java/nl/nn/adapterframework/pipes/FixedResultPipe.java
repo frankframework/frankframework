@@ -40,7 +40,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
@@ -113,7 +113,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFilename())) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, getFilename());
+				resource = ClassLoaderUtils.getResourceURL(this, getFilename());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception searching for ["+getFilename()+"]", e);
 			}
@@ -148,7 +148,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(this, filename);
+				resource = ClassLoaderUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception searching for ["+filename+"]", e);
 			}
