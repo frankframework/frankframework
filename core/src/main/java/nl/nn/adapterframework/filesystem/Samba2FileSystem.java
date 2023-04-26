@@ -39,7 +39,6 @@ import javax.security.auth.login.LoginContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
@@ -200,12 +199,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 							throw new IllegalArgumentException("No mechanism found");
 						}
 
-						GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
-							@Override
-							public GSSCredential run() throws GSSException {
-								return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY);
-							}
-						});
+						GSSCredential creds = Subject.doAs(subject, (PrivilegedExceptionAction<GSSCredential>) () -> manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY));
 
 						return new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
 					} catch (Exception e) {
