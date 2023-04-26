@@ -3,7 +3,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const distDir = path.resolve(__dirname, '../webapp/iaf/gui/');
+const distDir = path.resolve(__dirname, '../../../target/frontend/');
 
 module.exports = {
   mode: 'development',
