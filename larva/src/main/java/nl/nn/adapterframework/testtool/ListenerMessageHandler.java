@@ -120,11 +120,6 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null, false);
-	}
-
-	@Override
 	public void processRawMessage(IListener<M> origin, M rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
 		processRawMessage(origin, rawMessage, threadContext, -1, duplicatesAlreadyChecked);
 	}

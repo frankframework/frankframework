@@ -38,12 +38,6 @@ public interface IMessageHandler<M> {
 	public void processRawMessage(IListener<M> origin, M message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,PipeLineSession, boolean)}, but now without context, for convenience
-	 */
-	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
-
-
-	/**
 	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
