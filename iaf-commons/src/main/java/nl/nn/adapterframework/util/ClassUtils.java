@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.INamedObject;
@@ -44,7 +45,7 @@ import nl.nn.adapterframework.core.INamedObject;
  *
  */
 public abstract class ClassUtils {
-	private static Logger log = LogUtil.getLogger(ClassUtils.class);
+	private static Logger log = LogManager.getLogger(ClassUtils.class);
 
 	/**
 	 * Return the context ClassLoader.
