@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.20.0</log4j2.version>
 
-		<jackson.version>2.14.2</jackson.version>
+		<jackson.version>2.15.0</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.27</spring.version>
 		<spring-security.version>5.8.3</spring-security.version>
