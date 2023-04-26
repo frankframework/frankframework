@@ -121,7 +121,8 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 			}
 			session = connection.authenticate(auth);
 			if(session == null) {
-				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+authenticationDomain+"]");
+				throw new FileSystemException("Cannot create session for alias [" +
+						authAlias + "] / user ["+username+"] on domain ["+authenticationDomain+"]");
 			}
 			diskShare = (DiskShare) session.connectShare(getShare());
 			if(diskShare == null) {
@@ -163,7 +164,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch(authType) {
 				case NTLM:
-					return new AuthenticationContext(getUsername(), password.toCharArray(), getAuthenticationDomain());
+					return new AuthenticationContext(credentialFactory.getUsername(), credentialFactory.getPassword().toCharArray(), getAuthenticationDomain());
 				case SPNEGO:
 					if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
 						System.setProperty("java.security.krb5.kdc", getKdc());
@@ -171,11 +172,11 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 					}
 
 					HashMap<String, String> loginParams = new HashMap<>();
-					loginParams.put("principal", getUsername());
+					loginParams.put("principal", credentialFactory.getUsername());
 					LoginContext lc;
 					try {
-						lc = new LoginContext(getUsername(), null,
-								new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
+						lc = new LoginContext(credentialFactory.getUsername(), null,
+								new UsernameAndPasswordCallbackHandler(credentialFactory.getUsername(), credentialFactory.getPassword()),
 								new KerberosLoginConfiguration(loginParams));
 						lc.login();
 
@@ -497,7 +498,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	/**
-	 * Type of the authentication either 'NTLM' or 'SPNEGO' 
+	 * Type of the authentication either 'NTLM' or 'SPNEGO'
 	 * @ff.default SPNEGO
 	 */
 	public void setAuthType(Samba2AuthType authType) {
