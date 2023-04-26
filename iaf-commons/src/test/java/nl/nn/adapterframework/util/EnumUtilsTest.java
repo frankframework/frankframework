@@ -5,79 +5,106 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
-import nl.nn.adapterframework.core.ProcessState;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
-import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 
 public class EnumUtilsTest {
-	@Rule public ExpectedException exception = ExpectedException.none();
+
+	static enum TestEnumWithField {
+		AVAILABLE("Available"),
+		INPROCESS("InProcess"),
+		DONE("Done"),
+		ERROR("Error"),
+		HOLD("Hold");
+
+		@Getter @Setter
+		private String name;
+
+		private TestEnumWithField(String name) {
+			this.name=name;
+		}
+	}
+
+	static enum DocumentedTestEnum implements DocumentedEnum {
+		@EnumLabel("FTP") FTP(null, true),
+		@EnumLabel("SFTP") SFTP(null, true),
+		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),
+		@EnumLabel("FTPSX(TLS)") FTPS_EXPLICIT_TLS("TLS", false),
+		@EnumLabel("FTPSX(SSL)") FTPS_EXPLICIT_SSL("SSL", false);
+
+		private @Getter boolean implicit;
+		private @Getter String protocol;
+		private DocumentedTestEnum(String protocol, boolean implicit) {
+			this.protocol = protocol;
+			this.implicit = implicit;
+		}
+	}
 
 	@Test
 	public void testParseNullValue() {
 		IllegalArgumentException exception = assertThrows(
 				IllegalArgumentException.class, () -> {
-					EnumUtils.parse(ProcessState.class, null);
+					EnumUtils.parse(TestEnumWithField.class, null);
 			}
 		);
-		assertEquals("cannot set field [processState] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", exception.getMessage());
+		assertEquals("cannot set field [testEnumWithField] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", exception.getMessage());
 	}
 
 	@Test
 	public void testParseEnum() {
-		ProcessState state = EnumUtils.parse(ProcessState.class, "available");
+		TestEnumWithField state = EnumUtils.parse(TestEnumWithField.class, "available");
 		assertNotNull(state);
 		assertEquals("Available", state.getName());
 
-		ProcessState state2 = EnumUtils.parseNormal(ProcessState.class, "fieldName", "available");
+		TestEnumWithField state2 = EnumUtils.parseNormal(TestEnumWithField.class, "fieldName", "available");
 		assertNotNull(state2);
 		assertEquals("Available", state2.getName());
 	}
 
 	@Test
 	public void testParseDocumentedEnum() {
-		FtpType type = EnumUtils.parse(FtpType.class, "FTP");
+		DocumentedTestEnum type = EnumUtils.parse(DocumentedTestEnum.class, "FTP");
 		assertNotNull(type);
 		assertEquals("FTP", type.getLabel());
 
-		FtpType type2 = EnumUtils.parseDocumented(FtpType.class, "fieldName", "FTP");
+		DocumentedTestEnum type2 = EnumUtils.parseDocumented(DocumentedTestEnum.class, "fieldName", "FTP");
 		assertNotNull(type2);
 		assertEquals("FTP", type2.getLabel());
 	}
 
 	@Test
 	public void testParseNonExistingEnum() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(ProcessState.class, "tralala"));
-		assertEquals("cannot set field [processState] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(TestEnumWithField.class, "tralala"));
+		assertEquals("cannot set field [testEnumWithField] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingEnumWithFieldName() {
-		EnumUtils.parse(ProcessState.class, "fieldname", "Available"); //Exists
+		EnumUtils.parse(TestEnumWithField.class, "fieldname", "Available"); //Exists
 
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(ProcessState.class, "fieldname", "tralala2")); //Does not exist
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(TestEnumWithField.class, "fieldname", "tralala2")); //Does not exist
 		assertEquals("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingNormalEnumWithCustomFieldName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseNormal(ProcessState.class, "fieldName", "tralala"));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseNormal(TestEnumWithField.class, "fieldName", "tralala"));
 		assertEquals("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingDocumentedEnum() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(FtpType.class, "tralala"));
-		assertEquals("cannot set field [ftpType] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(DocumentedTestEnum.class, "tralala"));
+		assertEquals("cannot set field [documentedTestEnum] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
 	}
 
 	@Test
 	public void testParseNonExistingDocumentedEnumWithCustomFieldName() {
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseDocumented(FtpType.class, "fieldName", "tralala"));
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parseDocumented(DocumentedTestEnum.class, "fieldName", "tralala"));
 		assertEquals("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]", e.getMessage());
 	}
 
