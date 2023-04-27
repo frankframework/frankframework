@@ -122,10 +122,13 @@ public class SqlTranslator implements ISqlTranslator {
 		sources = new LinkedHashMap<>();
 		targets = new LinkedHashMap<>();
 
-		String sourceMatch=(".source."+sourceDialect.replaceAll(" ", "_")).toLowerCase();
-		String targetMatch=(".target."+targetDialect.replaceAll(" ", "_")).toLowerCase();
+		String sourceMatch=(".source."+sourceDialect.replace(" ", "_")).toLowerCase();
+		String targetMatch=(".target."+targetDialect.replace(" ", "_")).toLowerCase();
 
 		URL resourceUrl = ClassLoaderUtils.getResourceURL(PATTERN_FILE);
+		if(resourceUrl == null) {
+			throw new IOException("unable to find SQL Pattern File");
+		}
 		Reader streamReader = StreamUtil.getCharsetDetectingInputStreamReader(resourceUrl.openStream());
 		try (BufferedReader reader = new BufferedReader(streamReader)) {
 			String line= reader.readLine();

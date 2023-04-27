@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.util.HashSet;
@@ -688,8 +689,9 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			URL url = ClassLoaderUtils.getResourceURL(resourceName);
 			if (url != null) {
 				log.info("LDAP properties loading from file [" + url.toString() + "]");
-				InputStream propertyStream = StreamUtil.urlToStream(url, 10000);
-				ldapProperties.load(propertyStream);
+				try(InputStream is = StreamUtil.urlToStream(url, 10000); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+					ldapProperties.load(reader);
+				}
 			}
 
 			for (String[] prop : LDAP_JVM_PROPS) {
