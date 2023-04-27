@@ -19,7 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -83,24 +86,11 @@ public abstract class ClassLoaderUtils {
 		// then try to get it as a URL
 		if (url == null) {
 			if (resourceToUse.contains(":")) {
-				String protocol = resourceToUse.substring(0, resourceToUse.indexOf(":"));
-				if (allowedProtocols==null) {
-					allowedProtocols = DEFAULT_ALLOWED_PROTOCOLS;
-				}
-				if (StringUtils.isNotEmpty(allowedProtocols)) {
-					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
-
-					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
-					if(protocols.contains(protocol)) {
-						try {
-							url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
-						} catch(MalformedURLException e) {
-							log.debug("Could not find resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
-						}
-					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
-				} else {
-					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+nameOf(classLoader)+"], with protocol ["+protocol+"], no allowedProtocols");
-				}
+				log.debug("Could not find resource [{}] in classloader [{}] now trying via native lookup", resource, classLoader);
+				List<String> protocols = new ArrayList<>();
+				protocols.addAll(getAllowedProtocols());
+				protocols.addAll(toList(allowedProtocols));
+				return getResourceNative(resourceToUse, protocols);
 			} else {
 				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and no protocol to try as URL");
 			}
@@ -109,11 +99,42 @@ public abstract class ClassLoaderUtils {
 		return url;
 	}
 
-	public static List<String> getAllowedProtocols() {
-		if(StringUtils.isEmpty(DEFAULT_ALLOWED_PROTOCOLS)) {
-			return new ArrayList<>(); //Arrays.asList(..) won't return an empty List when empty.
+	/**
+	 * Attempt to find the resource native (without ClassLoader).
+	 * Protocol must be allowed by setting <code>classloader.allowed.protocols=file,ftp,protocol-name</code>
+	 */
+	private static @Nullable URL getResourceNative(String resource, List<String> allowedProtocols) {
+		String protocol = resource.substring(0, resource.indexOf(":"));
+		if (allowedProtocols.isEmpty()) {
+			log.debug("Could not find resource as URL [{}] with protocol [{}], no allowedProtocols specified", resource, protocol);
+			return null;
 		}
-		return Arrays.asList(DEFAULT_ALLOWED_PROTOCOLS.split(","));
+		log.debug("determined protocol [{}] for resource [{}]", protocol, resource);
+
+		if(!allowedProtocols.contains(protocol)) {
+			log.debug("Cannot lookup resource [{}] protocol [{}] not in allowedProtocols {}", resource, protocol, allowedProtocols.toString());
+			return null;
+		}
+
+		String escapedURL = StringUtil.replace(resource, " ", "%20");
+		try {
+			return new URL(escapedURL);
+		} catch(MalformedURLException e) {
+			log.debug("Could not find resource [{}] as URL [{}]: {}", resource, escapedURL, e.getMessage());
+			return null;
+		}
+	}
+
+	public static List<String> getAllowedProtocols() {
+		return toList(DEFAULT_ALLOWED_PROTOCOLS);
+	}
+
+	private static List<String> toList(String protocolList) {
+		if(StringUtils.isBlank(protocolList)) {
+			return Collections.emptyList();
+		}
+		//Arrays.asList(..) won't return an empty List when empty.
+		return Arrays.asList(protocolList.split(","));
 	}
 
 	/**

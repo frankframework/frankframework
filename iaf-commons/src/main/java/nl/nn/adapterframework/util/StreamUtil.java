@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -98,6 +99,18 @@ public class StreamUtil {
 		}
 
 		return new NonClosingOutputStreamFilter(stream);
+	}
+
+	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
+		URLConnection conn = url.openConnection();
+		if (timeoutMs==0) {
+			timeoutMs = 10000;
+		}
+		if (timeoutMs>0) {
+			conn.setConnectTimeout(timeoutMs);
+			conn.setReadTimeout(timeoutMs);
+		}
+		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {

@@ -4,7 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.reflect.Method;
+
 import org.junit.jupiter.api.Test;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class ClassUtilsTest {
 
@@ -27,5 +32,17 @@ public class ClassUtilsTest {
 			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(Long.class, "dummy")),
 			() -> assertThrows(IllegalArgumentException.class, ()->ClassUtils.convertToType(int.class, "")) //Empty string
 		);
+	}
+
+	private static class DummyClassWithSetter {
+		private @Getter @Setter String field;
+	}
+
+	@Test
+	public void testInvokeSetter() throws Exception {
+		DummyClassWithSetter clazz = new DummyClassWithSetter();
+		Method method = clazz.getClass().getDeclaredMethod("setField", new Class[] {String.class});
+		ClassUtils.invokeSetter(clazz, method, "value");
+		assertEquals("value", clazz.getField());
 	}
 }

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * @author Michiel Meeuwissen
@@ -52,7 +54,8 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 		return Collections.<Schema>singletonList(new Schema() {
 			@Override
 			public Reader getReader() throws IOException {
-				return ClassUtils.urlToReader(ClassLoaderUtils.getResourceURL(scopeProvider, xsd));
+				URL url = ClassLoaderUtils.getResourceURL(scopeProvider, xsd);
+				return StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 			}
 
 			@Override

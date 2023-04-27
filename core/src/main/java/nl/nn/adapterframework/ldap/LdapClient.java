@@ -53,6 +53,7 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Client for LDAP.<br/>
@@ -682,24 +683,24 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	private static void setLdapJvmProperties(String resourceName){
 		if (log.isDebugEnabled()) log.debug("[TAI] LDAP properties file ["+resourceName+"]");
 
-    	Properties ldapProperties = new Properties();
-    	try {
-    		URL url=ClassLoaderUtils.getResourceURL(resourceName);
-    		if (url!=null) {
-        		log.info("LDAP properties loading from file ["+url.toString()+"]");
-    			InputStream propertyStream = ClassUtils.urlToStream(url,10000);
-        		ldapProperties.load(propertyStream);
-    		}
+		Properties ldapProperties = new Properties();
+		try {
+			URL url = ClassLoaderUtils.getResourceURL(resourceName);
+			if (url != null) {
+				log.info("LDAP properties loading from file [" + url.toString() + "]");
+				InputStream propertyStream = StreamUtil.urlToStream(url, 10000);
+				ldapProperties.load(propertyStream);
+			}
 
-    		for(String[] prop:LDAP_JVM_PROPS){
-    			String property=prop[0];
-    			String propertyValue=ldapProperties.getProperty(property);
-    			if (propertyValue!=null) {
-    	   			setLdapJvmProperty(property,propertyValue,false);
-    			} else {
-        			String defaultValue=prop[1];
-    	   			setLdapJvmProperty(property,defaultValue,true);
-    			}
+			for (String[] prop : LDAP_JVM_PROPS) {
+				String property = prop[0];
+				String propertyValue = ldapProperties.getProperty(property);
+				if (propertyValue != null) {
+					setLdapJvmProperty(property, propertyValue, false);
+				} else {
+					String defaultValue = prop[1];
+					setLdapJvmProperty(property, defaultValue, true);
+				}
 			}
 
 		} catch (IOException e) {

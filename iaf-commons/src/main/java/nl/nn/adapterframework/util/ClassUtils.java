@@ -17,14 +17,11 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.CodeSource;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -68,26 +65,6 @@ public abstract class ClassUtils {
 			log.error(builder.toString(), e);
 			throw e;
 		}
-	}
-
-	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
-		URLConnection conn = url.openConnection();
-		if (timeoutMs==0) {
-			timeoutMs = 10000;
-		}
-		if (timeoutMs>0) {
-			conn.setConnectTimeout(timeoutMs);
-			conn.setReadTimeout(timeoutMs);
-		}
-		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
-	}
-
-	public static Reader urlToReader(URL url) throws IOException {
-		return urlToReader(url, 0);
-	}
-
-	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
-		return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 	}
 
 	/**
