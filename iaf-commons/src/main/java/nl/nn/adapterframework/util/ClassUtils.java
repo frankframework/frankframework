@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.LinkedHashMap;
@@ -49,6 +51,30 @@ public abstract class ClassUtils {
 	 */
 	private static ClassLoader getClassLoader() {
 		return Thread.currentThread().getContextClassLoader();
+	}
+
+	public static URL getResourceURL(String resource) throws FileNotFoundException {
+		String resourceToUse = resource; //Don't change the original resource name for logging purposes
+
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.
+		// Resources retrieved from ClassLoaders should never start with a leading slash
+		if (resourceToUse.startsWith("/")) {
+			resourceToUse = resourceToUse.substring(1);
+		}
+		URL url = getClassLoader().getResource(resourceToUse);
+
+		// then try to get it as a URL
+		if (url == null && resourceToUse.contains(":")) {
+			try {
+				url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
+			} catch (MalformedURLException e) {
+				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
+				fnfe.initCause(e);
+				throw fnfe;
+			}
+		}
+
+		return url;
 	}
 
 	/**
