@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.INamedObject;
 
 public class ClassUtilsTest {
 
@@ -44,5 +45,16 @@ public class ClassUtilsTest {
 		Method method = clazz.getClass().getDeclaredMethod("setField", new Class[] {String.class});
 		ClassUtils.invokeSetter(clazz, method, "value");
 		assertEquals("value", clazz.getField());
+	}
+
+	/** see CredentialProvider ClassUtilsTest to test results without Spring present */
+	@Test
+	public void testNameOf() {
+		assertEquals("String", ClassUtils.nameOf("test"));
+		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this));
+		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
+		assertEquals("nl.nn.adapterframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new INamedObject() {
+			private @Getter @Setter String name;
+		}));
 	}
 }

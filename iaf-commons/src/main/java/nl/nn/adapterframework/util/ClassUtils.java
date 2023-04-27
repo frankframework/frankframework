@@ -83,7 +83,7 @@ public abstract class ClassUtils {
 	public static Constructor<?> getConstructorOnType(Class<?> clas, Class<?>[] parameterTypes) throws NoSuchMethodException {
 		try {
 			return clas.getDeclaredConstructor(parameterTypes);
-		} catch (java.lang.NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			StringBuilder builder = new StringBuilder("cannot create constructor for Class [" + clas.getName() + "]");
 			for (int i = 0; i < parameterTypes.length; i++) {
 				builder.append(", parameter ["+i+"] type [" + parameterTypes[i].getName()+"]");
@@ -177,16 +177,29 @@ public abstract class ClassUtils {
 		if (o==null) {
 			return "<null>";
 		}
-		if(o instanceof Class) {
-			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
+		Class<?> clazz;
+		if(isSpringClassUtilsPresent()) {
+			if(o instanceof Class) {
+				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>)o);
+			} else {
+				clazz = org.springframework.util.ClassUtils.getUserClass(o);
+			}
+		} else {
+			clazz = (o instanceof Class) ? (Class<?>)o : o.getClass();
 		}
-		Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(o);
-		String simpleName = clazz.getSimpleName();
 
-		if (StringUtils.isEmpty(simpleName)) {
-			simpleName = clazz.getTypeName();
+		final String simpleName = clazz.getSimpleName();
+		return (StringUtils.isNotEmpty(simpleName)) ? simpleName : clazz.getTypeName();
+	}
+
+	private static boolean isSpringClassUtilsPresent() {
+		try {
+			Class.forName("org.springframework.util.ClassUtils");
+			return true;
+		} catch (Throwable ex) {
+			// Class or one of its dependencies is not present...
+			return false;
 		}
-		return simpleName;
 	}
 
 	/**
