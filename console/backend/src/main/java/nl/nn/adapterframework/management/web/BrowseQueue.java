@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 /**
@@ -69,7 +70,7 @@ public final class BrowseQueue extends FrankApiBase {
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
-		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
+		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
 		builder.addHeader("type", type);
 		if(rowNumbersOnly != null) {

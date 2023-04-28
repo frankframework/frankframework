@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 @Path("/")
@@ -63,7 +64,7 @@ public final class BrowseJdbcTable extends FrankApiBase {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
 		if(StringUtils.isNotEmpty(datasource)) {
-			builder.addHeader(HEADER_DATASOURCE_NAME_KEY, datasource);
+			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		builder.addHeader("table", tableName);
 		builder.addHeader("where", where);

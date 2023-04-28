@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 /**
@@ -78,8 +79,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAdapter(@PathParam("configuration") String configuration, @PathParam("name") String name, @QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.ADAPTER, BusAction.FIND);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, name);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
 
 		builder.addHeader("showPendingMsgCount", showPendingMsgCount);
 		builder.addHeader("expanded", expanded);
@@ -104,8 +105,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getIbisHealth(@PathParam("configuration") String configuration, @PathParam("name") String name) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.HEALTH);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, name);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, name);
 
 		return callSyncGateway(builder);
 	}
@@ -142,8 +143,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 		builder.addHeader("action", action.name());
 		if(adapters.isEmpty()) {
-			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
-			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, "*ALL*");
+			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, "*ALL*");
+			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, "*ALL*");
 			callAsyncGateway(builder);
 		} else {
 			for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
@@ -153,11 +154,11 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 				if(slash > -1) {
 					adapterName = adapterNameWithPossibleConfigurationName.substring(slash+1);
 					String configurationName = adapterNameWithPossibleConfigurationName.substring(0, slash);
-					builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 				} else {
 					adapterName = adapterNameWithPossibleConfigurationName;
 				}
-				builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapterName);
+				builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 				callAsyncGateway(builder);
 			}
 		}
@@ -195,8 +196,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
-			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
-			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
+			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
 		}
@@ -236,8 +237,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
 			builder.addHeader("action", action.name());
-			builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
-			builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
+			builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+			builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 			builder.addHeader("receiver", receiver);
 			callAsyncGateway(builder);
 			return Response.status(Response.Status.ACCEPTED).entity("{\"status\":\"ok\"}").build();
@@ -263,8 +264,8 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 	@Path("/configurations/{configuration}/adapters/{adapter}/flow")
 	public Response getAdapterFlow(@PathParam("configuration") String configuration, @PathParam("adapter") String adapter) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.FLOW);
-		builder.addHeader(FrankApiBase.HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(FrankApiBase.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		return callSyncGateway(builder);
 	}
 }

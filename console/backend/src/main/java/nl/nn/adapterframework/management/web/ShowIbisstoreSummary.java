@@ -26,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 @Path("/")
@@ -52,7 +53,7 @@ public final class ShowIbisstoreSummary extends FrankApiBase {
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISSTORE_SUMMARY);
-		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("query", query);
 		return callSyncGateway(builder);
 	}

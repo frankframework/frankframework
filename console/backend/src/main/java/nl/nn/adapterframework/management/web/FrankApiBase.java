@@ -47,7 +47,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.IntegrationGateway;
 import nl.nn.adapterframework.util.ResponseUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -59,11 +58,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 
 public abstract class FrankApiBase implements ApplicationContextAware, InitializingBean {
-	@Deprecated public static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
-	@Deprecated public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY;
-	@Deprecated public static final String HEADER_CONFIGURATION_NAME_KEY = BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY;
-	@Deprecated public static final String HEADER_ADAPTER_NAME_KEY = BusMessageUtils.HEADER_ADAPTER_NAME_KEY;
-	@Deprecated public static final String HEADER_RECEIVER_NAME_KEY = BusMessageUtils.HEADER_RECEIVER_NAME_KEY;
 
 	@Context protected ServletConfig servletConfig;
 	@Context protected @Getter SecurityContext securityContext;
