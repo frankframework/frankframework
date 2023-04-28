@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.web;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,14 +27,11 @@ import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusAction;
-import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.HttpUtils;
+import nl.nn.adapterframework.util.JacksonUtils;
 
 public class RequestMessageBuilder {
 	private Map<String, Object> customHeaders = new HashMap<>();
@@ -61,23 +59,17 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	//TODO make this more generic
 	public RequestMessageBuilder setJsonPayload(Object payload) {
-		this.payload = convertToJson(payload);
+		this.payload = JacksonUtils.convertToJson(payload);
 		return this;
 	}
 
-	private static String convertToJson(Object payload) {
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			return objectMapper.writeValueAsString(payload);
-		} catch (JacksonException e) {
-			throw new BusException("unable to convert response to JSON", e);
-		}
+	public RequestMessageBuilder setPayload(InputStream payload) {
+		this.payload = payload;
+		return this;
 	}
 
-	//TODO find out if we can use types
-	public RequestMessageBuilder setPayload(Object payload) {
+	public RequestMessageBuilder setPayload(String payload) {
 		this.payload = payload;
 		return this;
 	}

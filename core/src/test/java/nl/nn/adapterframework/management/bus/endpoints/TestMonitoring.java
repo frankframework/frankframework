@@ -384,7 +384,7 @@ public class TestMonitoring extends BusTestBase {
 
 		// Assert
 		assertTrue(e.getCause() instanceof BusException);
-		String exception = "unable to parse payload to DTO: (InvalidFormatException) Cannot deserialize value of type `java.lang.Integer` from String \"no-int\"";
+		String exception = "unable to convert payload: (InvalidFormatException) Cannot deserialize value of type `java.lang.Integer` from String \"no-int\"";
 		assertThat(e.getCause().getMessage(), Matchers.startsWith(exception));
 	}
 
