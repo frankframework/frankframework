@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.HttpUtils;
@@ -43,7 +44,7 @@ import nl.nn.adapterframework.util.HttpUtils;
  * @since	7.0-B1
  * @author	Niels Meijer
  */
-
+@Component
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 3L;
