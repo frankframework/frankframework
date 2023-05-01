@@ -168,6 +168,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSession session = new PipeLineSession();
 		//session.put("uploadActionTarget", stream);
 
+		fileSystemPipe.setStreamingActive(true);
 		fileSystemPipe.addParameter(new Parameter("filename", filename));
 		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
