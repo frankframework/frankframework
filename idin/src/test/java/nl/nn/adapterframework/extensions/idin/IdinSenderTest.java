@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -77,7 +77,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Before
 	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL("bankid-config.xml");
+		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
 		DirectoryResponse response = mock(DirectoryResponse.class);

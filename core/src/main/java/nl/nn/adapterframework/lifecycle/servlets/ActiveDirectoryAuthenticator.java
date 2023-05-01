@@ -40,7 +40,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
 public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase implements InitializingBean {
@@ -126,7 +126,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 
 	@Override
 	public void afterPropertiesSet() throws FileNotFoundException {
-		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
+		roleMappingURL = ClassLoaderUtils.getResourceURL(roleMappingFile);
 		if(roleMappingURL == null) {
 			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
 		}

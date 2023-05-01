@@ -47,7 +47,7 @@ import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -91,7 +91,7 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	private void loadMediaTypes() throws IOException {
-		URL mappingFile = ClassUtils.getResourceURL("/MediaTypeMapping.properties");
+		URL mappingFile = ClassLoaderUtils.getResourceURL("/MediaTypeMapping.properties");
 		if(mappingFile == null) {
 			throw new IOException("unable to find mappingFile");
 		}

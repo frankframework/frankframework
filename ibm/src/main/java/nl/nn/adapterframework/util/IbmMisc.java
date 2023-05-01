@@ -127,7 +127,7 @@ public class IbmMisc {
 
 	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, TransformerException, SAXException {
 		// providerType: 'JDBC' or 'JMS'
-		URL url = ClassUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
+		URL url = ClassLoaderUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource ["
 					+ GETCONNPOOLPROP_XSLT + "]");
@@ -146,7 +146,7 @@ public class IbmMisc {
 	}
 
 	public static String getJmsDestinations(String confResString) throws IOException, TransformerException, SAXException {
-		URL url = ClassUtils.getResourceURL(GETJMSDEST_XSLT);
+		URL url = ClassLoaderUtils.getResourceURL(GETJMSDEST_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}

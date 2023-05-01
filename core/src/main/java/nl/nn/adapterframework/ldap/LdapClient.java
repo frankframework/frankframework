@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.util.HashSet;
@@ -49,9 +50,11 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Client for LDAP.<br/>
@@ -681,24 +684,25 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	private static void setLdapJvmProperties(String resourceName){
 		if (log.isDebugEnabled()) log.debug("[TAI] LDAP properties file ["+resourceName+"]");
 
-    	Properties ldapProperties = new Properties();
-    	try {
-    		URL url=ClassUtils.getResourceURL(resourceName);
-    		if (url!=null) {
-        		log.info("LDAP properties loading from file ["+url.toString()+"]");
-    			InputStream propertyStream = ClassUtils.urlToStream(url,10000);
-        		ldapProperties.load(propertyStream);
-    		}
+		Properties ldapProperties = new Properties();
+		try {
+			URL url = ClassLoaderUtils.getResourceURL(resourceName);
+			if (url != null) {
+				log.info("LDAP properties loading from file [" + url.toString() + "]");
+				try(InputStream is = StreamUtil.urlToStream(url, 10000); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+					ldapProperties.load(reader);
+				}
+			}
 
-    		for(String[] prop:LDAP_JVM_PROPS){
-    			String property=prop[0];
-    			String propertyValue=ldapProperties.getProperty(property);
-    			if (propertyValue!=null) {
-    	   			setLdapJvmProperty(property,propertyValue,false);
-    			} else {
-        			String defaultValue=prop[1];
-    	   			setLdapJvmProperty(property,defaultValue,true);
-    			}
+			for (String[] prop : LDAP_JVM_PROPS) {
+				String property = prop[0];
+				String propertyValue = ldapProperties.getProperty(property);
+				if (propertyValue != null) {
+					setLdapJvmProperty(property, propertyValue, false);
+				} else {
+					String defaultValue = prop[1];
+					setLdapJvmProperty(property, defaultValue, true);
+				}
 			}
 
 		} catch (IOException e) {

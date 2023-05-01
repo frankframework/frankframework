@@ -41,7 +41,7 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -103,7 +103,7 @@ public class AsposeFontManager {
 
 	/** unpack the fonts.zip archive in the supplied font directory. Does not override existing files */
 	public void unpackDefaultFontArchive() throws IOException {
-		URL fontsUrl = ClassUtils.getResourceURL(FONTS_RESOURCE_NAME);
+		URL fontsUrl = ClassLoaderUtils.getResourceURL(FONTS_RESOURCE_NAME);
 		if(fontsUrl == null) {
 			throw new IllegalStateException("font archive ["+FONTS_RESOURCE_NAME+"] cannot be found");
 		}

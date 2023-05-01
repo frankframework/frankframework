@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 /**
  * Baseclass for Jndi lookups, using property files on the classpath.
@@ -41,7 +41,7 @@ public class ResourceBasedObjectFactory<O, L> extends ObjectFactoryBase<O,L> {
 	@Override
 	protected L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
 		String propertyResource = "/"+jndiName+".properties";
-		URL url = ClassUtils.getResourceURL(propertyResource);
+		URL url = ClassLoaderUtils.getResourceURL(propertyResource);
 		if (url == null) {
 			throw new NamingException("Could not find propertyResource ["+propertyResource+"] to lookup");
 		}

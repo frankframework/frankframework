@@ -33,8 +33,8 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.ClassUtils;
 
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
