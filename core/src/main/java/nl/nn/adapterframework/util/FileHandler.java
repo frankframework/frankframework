@@ -295,7 +295,7 @@ public class FileHandler implements IScopeProvider {
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(this, name);
+			return ClassLoaderUtils.getResourceURL(this, name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);

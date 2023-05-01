@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.ClassUtils;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 

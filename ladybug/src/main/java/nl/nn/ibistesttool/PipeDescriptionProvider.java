@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -203,14 +203,14 @@ public class PipeDescriptionProvider {
 					|| "fileName".equals(attribute.getName())
 					|| "schemaLocation".equals(attribute.getName())) {
 				if ("schemaLocation".equals(attribute.getName())) {
- 					StringTokenizer st = new StringTokenizer(attribute.getValue(),", \t\r\n\f");
- 					while (st.hasMoreTokens()) {
- 						st.nextToken();
- 						String resourceName = st.nextToken();
- 						if (!pipeDescription.containsResourceName(resourceName)) {
- 							pipeDescription.addResourceName(resourceName);
- 						}
- 					}
+					StringTokenizer st = new StringTokenizer(attribute.getValue(),", \t\r\n\f");
+					while (st.hasMoreTokens()) {
+						st.nextToken();
+						String resourceName = st.nextToken();
+						if (!pipeDescription.containsResourceName(resourceName)) {
+							pipeDescription.addResourceName(resourceName);
+						}
+					}
 				} else {
 					String resourceName = attribute.getValue();
 					if (!pipeDescription.containsResourceName(resourceName)) {
@@ -234,7 +234,7 @@ public class PipeDescriptionProvider {
 	public String getResource(PipeLine pipeLine, String resourceName) {
 		String resource;
 		try {
-			URL resourceUrl = ClassUtils.getResourceURL(pipeLine, resourceName);
+			URL resourceUrl = ClassLoaderUtils.getResourceURL(pipeLine, resourceName);
 			if(resourceUrl != null)
 				resource = StreamUtil.resourceToString(resourceUrl, "\n", false);
 			else

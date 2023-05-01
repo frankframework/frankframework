@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Stub4TesttoolTest {
@@ -359,7 +359,7 @@ public class Stub4TesttoolTest {
 	}
 
 	private String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(xslt);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}

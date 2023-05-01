@@ -39,7 +39,6 @@ import javax.security.auth.login.LoginContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
@@ -121,7 +120,8 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 			}
 			session = connection.authenticate(auth);
 			if(session == null) {
-				throw new FileSystemException("Cannot create session for user ["+username+"] on domain ["+authenticationDomain+"]");
+				throw new FileSystemException("Cannot create session for alias [" +
+						authAlias + "] / user ["+username+"] on domain ["+authenticationDomain+"]");
 			}
 			diskShare = (DiskShare) session.connectShare(getShare());
 			if(diskShare == null) {
@@ -163,7 +163,9 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch(authType) {
 				case NTLM:
-					return new AuthenticationContext(getUsername(), password.toCharArray(), getAuthenticationDomain());
+					String cfPassword = credentialFactory.getPassword();
+					char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
+					return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getAuthenticationDomain());
 				case SPNEGO:
 					if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
 						System.setProperty("java.security.krb5.kdc", getKdc());
@@ -171,11 +173,11 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 					}
 
 					HashMap<String, String> loginParams = new HashMap<>();
-					loginParams.put("principal", getUsername());
+					loginParams.put("principal", credentialFactory.getUsername());
 					LoginContext lc;
 					try {
-						lc = new LoginContext(getUsername(), null,
-								new UsernameAndPasswordCallbackHandler(getUsername(), getPassword()),
+						lc = new LoginContext(credentialFactory.getUsername(), null,
+								new UsernameAndPasswordCallbackHandler(credentialFactory.getUsername(), credentialFactory.getPassword()),
 								new KerberosLoginConfiguration(loginParams));
 						lc.login();
 
@@ -199,12 +201,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 							throw new IllegalArgumentException("No mechanism found");
 						}
 
-						GSSCredential creds = Subject.doAs(subject, new PrivilegedExceptionAction<GSSCredential>() {
-							@Override
-							public GSSCredential run() throws GSSException {
-								return manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY);
-							}
-						});
+						GSSCredential creds = Subject.doAs(subject, (PrivilegedExceptionAction<GSSCredential>) () -> manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY));
 
 						return new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
 					} catch (Exception e) {
@@ -497,7 +494,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	/**
-	 * Type of the authentication either 'NTLM' or 'SPNEGO' 
+	 * Type of the authentication either 'NTLM' or 'SPNEGO'
 	 * @ff.default SPNEGO
 	 */
 	public void setAuthType(Samba2AuthType authType) {
