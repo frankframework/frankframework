@@ -38,6 +38,7 @@ import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -122,7 +123,7 @@ public final class ShowConfigurationStatus extends FrankApiBase {
 		IbisAction action = null;
 		ArrayList<String> adapters = new ArrayList<>();
 
-		String value = getValue(json, "action");
+		String value = RequestUtils.getValue(json, "action");
 		if(StringUtils.isNotEmpty(value)) {
 			if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
 			if(value.equals("start")) { action = IbisAction.STARTADAPTER; }

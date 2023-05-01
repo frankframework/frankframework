@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Level;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Read and update logging configuration
@@ -58,10 +59,10 @@ public class UpdateLoggingConfig extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateLogConfiguration(Map<String, Object> json) {
-		Level loglevel = Level.toLevel(getValue(json, "loglevel"), null);
-		Boolean logIntermediaryResults = getBooleanValue(json, "logIntermediaryResults");
-		Integer maxMessageLength = getIntegerValue(json, "maxMessageLength");
-		Boolean enableDebugger = getBooleanValue(json, "enableDebugger");
+		Level loglevel = Level.toLevel(RequestUtils.getValue(json, "loglevel"), null);
+		Boolean logIntermediaryResults = RequestUtils.getBooleanValue(json, "logIntermediaryResults");
+		Integer maxMessageLength = RequestUtils.getIntegerValue(json, "maxMessageLength");
+		Boolean enableDebugger = RequestUtils.getBooleanValue(json, "enableDebugger");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("logLevel", loglevel==null?null:loglevel.name());

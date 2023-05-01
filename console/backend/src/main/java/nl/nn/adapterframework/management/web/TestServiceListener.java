@@ -34,6 +34,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
@@ -70,8 +71,8 @@ public class TestServiceListener extends FrankApiBase {
 		String message = null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SERVICE_LISTENER, BusAction.UPLOAD);
-		builder.addHeader("service", resolveStringFromMap(inputDataMap, "service"));
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		builder.addHeader("service", RequestUtils.resolveStringFromMap(inputDataMap, "service"));
+		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			InputStream file = filePart.getObject(InputStream.class);
@@ -84,7 +85,7 @@ public class TestServiceListener extends FrankApiBase {
 				throw new ApiException("error reading file", e);
 			}
 		} else {
-			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package nl.nn.adapterframework.management.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -69,21 +67,6 @@ public class ApiTestBaseTest extends FrankApiBase {
 		response.put("two", "dos");
 		response.put("three", "tres");
 		return Response.ok().entity(response).build();
-	}
-
-	@Test
-	public void testConversions() throws Exception {
-		InputStream string = new ByteArrayInputStream("string".getBytes());
-		InputStream number = new ByteArrayInputStream("50".getBytes());
-		InputStream boolTrue = new ByteArrayInputStream("true".getBytes());
-		InputStream boolFalse = new ByteArrayInputStream("false".getBytes());
-		InputStream boolNull = new ByteArrayInputStream("".getBytes());
-
-		assertEquals("string", FrankApiBase.convert(String.class, string));
-		assertEquals(true, FrankApiBase.convert(boolean.class, boolTrue));
-		assertEquals(false, FrankApiBase.convert(Boolean.class, boolFalse));
-		assertEquals(false, FrankApiBase.convert(boolean.class, boolNull));
-		assertEquals(50, FrankApiBase.convert(Integer.class, number).intValue());
 	}
 
 	public static class TestApi extends FrankApiTestBase<ApiTestBaseTest> {

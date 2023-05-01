@@ -37,6 +37,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @Path("/")
@@ -59,7 +60,7 @@ public class ShowLiquibaseScript extends FrankApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response generateSQL(MultipartBody inputDataMap) throws ApiException {
 
-		String configuration = resolveStringFromMap(inputDataMap, "configuration", null);
+		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration", null);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(configuration == null || filePart == null) {

@@ -37,6 +37,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
@@ -64,15 +65,15 @@ public class SendJmsMessage extends FrankApiBase {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
-		String destinationName = resolveStringFromMap(inputDataMap, "destination");
-		String destinationType = resolveStringFromMap(inputDataMap, "type");
-		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
-		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
-		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
-		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
-		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
+		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String connectionFactory = RequestUtils.resolveStringFromMap(inputDataMap, "connectionFactory");
+		String destinationName = RequestUtils.resolveStringFromMap(inputDataMap, "destination");
+		String destinationType = RequestUtils.resolveStringFromMap(inputDataMap, "type");
+		String replyTo = RequestUtils.resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
+		boolean persistent = RequestUtils.resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
+		boolean synchronous = RequestUtils.resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+		boolean lookupDestination = RequestUtils.resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
+		String messageProperty = RequestUtils.resolveTypeFromMap(inputDataMap, "property", String.class, "");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.UPLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
@@ -107,7 +108,7 @@ public class SendJmsMessage extends FrankApiBase {
 				}
 			}
 		} else {
-			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {
