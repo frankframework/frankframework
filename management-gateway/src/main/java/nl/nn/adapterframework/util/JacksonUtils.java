@@ -51,13 +51,13 @@ public class JacksonUtils {
 				return MAPPER.readValue((String) payload, dto);
 			} else if(payload instanceof byte[]) {
 				return MAPPER.readValue((byte[]) payload, dto);
+			} else {
+				throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
 			}
 		} catch (JacksonException e) {
 			throw new BusException("unable to convert payload", e);
 		} catch (IOException e) {
 			throw new BusException("unable to parse payload", e);
 		}
-
-		throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
 	}
 }
