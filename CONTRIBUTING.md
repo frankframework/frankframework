@@ -92,7 +92,7 @@ Start reading our code, and you'll get the hang of it. We optimize for readabili
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
   * Use Unix style newlines.
   * Each class that can be used in a configuration must contain the following documentation:
-    - Class level IbisDoc, not larger then 5 to 10 lines
+    - Class level IbisDoc, not larger than 5 to 10 lines
     - For each configurable attribute, IbisDoc must not be larger then 2 lines
     - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
   * In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
@@ -243,9 +243,11 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Create a run configuration for a Tomcat server for the Example project.
 	- In the tab "Deployments", choose the module "ibis-adapterframework-example:war exploded"
 	  (or ibis-adapterframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
-	- Set the context to `/iaf-example`.
+	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project ibis-adapterframework-test).
 	- Add `-Ddtap.stage=LOC` to VM Options.
     - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+    - Under the section "Build", add a build step to build the console-frontend project via Maven. This should be a Maven build action, running target `install` in the project "Frank Console Frontend".
+      __NB__: It is important that you run this step before the final Build step, which is to build the (Exploded) War Artifact! Otherwise, front-end resources will not be deployed.
     - Name your configuration and save it.
 - Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
   Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependenty paths. 

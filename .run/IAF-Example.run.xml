@@ -86,6 +86,7 @@
     </ConfigurationWrapper>
     <method v="2">
       <option name="Make" enabled="true" />
+      <option name="Maven.BeforeRunTask" enabled="true" file="$PROJECT_DIR$/console/frontend/pom.xml" goal="install" />
       <option name="BuildArtifacts" enabled="true">
         <artifact name="ibis-adapterframework-example:war exploded" />
       </option>

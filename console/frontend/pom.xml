@@ -43,7 +43,7 @@
 							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<arguments>run build:prod</arguments>
+							<arguments>run build</arguments>
 						</configuration>
 					</execution>
 				</executions>
@@ -51,6 +51,7 @@
 					<nodeVersion>v18.16.0</nodeVersion>
 					<workingDirectory>src/main/frontend</workingDirectory>
 					<installDirectory>target</installDirectory>
+					<srcdir>src/main/frontend</srcdir>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -90,4 +91,30 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>ci</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>1.12.1</version>
+						<executions>
+							<execution>
+								<id>run npm build</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<configuration>
+									<arguments>run build:prod</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
