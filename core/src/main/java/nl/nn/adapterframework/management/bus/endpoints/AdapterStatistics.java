@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.api;
+package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,19 +22,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.springframework.messaging.Message;
 
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.management.web.ApiException;
-import nl.nn.adapterframework.management.web.Relation;
+import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.ScalarMetricBase;
@@ -42,41 +42,27 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
 
-/**
- * Retrieves the statistics
- *
- * @since	7.0-B1
- * @author	Niels Meijer
- */
+@BusAware("frank-management-bus")
+@TopicSelector(BusTopic.ADAPTER)
+public class AdapterStatistics extends BusEndpointBase {
 
-@Path("/")
-public final class ShowAdapterStatistics extends Base {
+	@ActionSelector(BusAction.STATUS)
+	public Message<String> getStatistics(Message<?> message) {
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
+		Adapter adapter = getAdapterByName(configurationName, adapterName);
 
-	@GET
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	@Path("/adapters/{adapterName}/statistics")
-	@Relation("statistics")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getStatistics(@PathParam("adapterName") String adapterName) throws ApiException {
-
-		Map<String, Object> statisticsMap = new HashMap<String, Object>();
-
+		Map<String, Object> statisticsMap = new HashMap<>();
 		statisticsMap.put("labels", StatisticsKeeper.getLabels());
 		statisticsMap.put("types", StatisticsKeeper.getTypes());
-
-		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new ApiException("Adapter not found!");
-		}
 
 		StatisticsKeeper sk = adapter.getStatsMessageProcessingDuration();
 		statisticsMap.put("totalMessageProccessingTime", sk.asMap());
 
 		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
-		List<Map<String, Object>> hourslyStatistics = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> hourslyStatistics = new ArrayList<>();
 		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
-			Map<String, Object> item = new HashMap<String, Object>(2);
+			Map<String, Object> item = new HashMap<>(2);
 			String startTime;
 			if (i<10) {
 				startTime = "0" + i + ":00";
@@ -89,24 +75,22 @@ public final class ShowAdapterStatistics extends Base {
 		}
 		statisticsMap.put("hourly", hourslyStatistics);
 
-		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> receivers = new ArrayList<>();
 		for (Receiver<?> receiver: adapter.getReceivers()) {
-			Map<String, Object> receiverMap = new HashMap<String, Object>();
+			Map<String, Object> receiverMap = new HashMap<>();
 
 			receiverMap.put("name", receiver.getName());
 			receiverMap.put("class", receiver.getClass().getName());
 			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
 			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
-			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
-//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
-//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
+			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<>();
 			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
 				procStatsMap.add(pstat.asMap());
 			}
 			receiverMap.put("processing", procStatsMap);
 
-			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
+			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<>();
 			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
 				idleStatsMap.add(istat.asMap());
 			}
@@ -116,7 +100,7 @@ public final class ShowAdapterStatistics extends Base {
 		}
 		statisticsMap.put("receivers", receivers);
 
-		Map<String, Object> tmp = new HashMap<String, Object>();
+		Map<String, Object> tmp = new HashMap<>();
 		StatisticsKeeperToMap handler = new StatisticsKeeperToMap(tmp);
 		handler.configure();
 		Object handle = handler.start(null, null, null);
@@ -130,11 +114,10 @@ public final class ShowAdapterStatistics extends Base {
 			handler.end(handle);
 		}
 
-		return Response.status(Response.Status.CREATED).entity(statisticsMap).build();
+		return new JsonResponseMessage(statisticsMap);
 	}
 
-	private class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
-
+	private static class StatisticsKeeperToMap implements StatisticsKeeperIterationHandler {
 		private Map<String, Object> parent;
 
 		public StatisticsKeeperToMap(Map<String, Object> parent) {

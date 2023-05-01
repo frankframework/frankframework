@@ -26,15 +26,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.HttpUtils;
 
 /**
@@ -44,35 +44,40 @@ import nl.nn.adapterframework.util.HttpUtils;
  * @author	Niels Meijer
  */
 
-@IbisInitializer
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 3L;
 
 	private Logger secLog = LogManager.getLogger("SEC");
 	private Logger log = LogManager.getLogger(this);
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	private static final boolean IAF_API_ENABLED = APP_CONSTANTS.getBoolean("iaf-api.enabled", true);
-	private static final String CORS_ALLOW_ORIGIN = APP_CONSTANTS.getString("iaf-api.cors.allowOrigin", ""); //Defaults to nothing
-	private static final String CORS_EXPOSE_HEADERS = APP_CONSTANTS.getString("iaf-api.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	@Value("${iaf-api.enabled:true}")
+	private boolean isEnabled;
+
+	@Value("${iaf-api.cors.allowOrigin:''}")
+	private String allowedCorsOrigins; //Defaults to nothing
+
+	@Value("${iaf-api.cors.exposeHeaders:Allow, ETag, Content-Disposition}")
+	private String exposedCorsHeaders;
+
 	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
-	private static final String CORS_ALLOW_METHODS = APP_CONSTANTS.getString("iaf-api.cors.allowMethods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+	@Value("${iaf-api.cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
+	private String allowedCorsMethods;
 
 	private List<String> allowedCorsDomains =  new ArrayList<>();
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 
-		if(!IAF_API_ENABLED) {
+		if(!isEnabled) {
 			return;
 		}
 
 		log.debug("initialize IAFAPI servlet");
 		super.init(servletConfig);
 
-		if(!CORS_ALLOW_ORIGIN.isEmpty()) {
-			StringTokenizer tokenizer = new StringTokenizer(CORS_ALLOW_ORIGIN, ",");
+		if(StringUtils.isNotEmpty(allowedCorsOrigins)) {
+			StringTokenizer tokenizer = new StringTokenizer(allowedCorsOrigins, ",");
 			while (tokenizer.hasMoreTokens()) {
 				String domain = tokenizer.nextToken();
 				if(domain.startsWith("http://")) {
@@ -90,8 +95,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-
-		if(!IAF_API_ENABLED) {
+		if(!isEnabled) {
 			return;
 		}
 
@@ -111,7 +115,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		if (origin == null) {
 			// Return standard response if OPTIONS request w/o Origin header
 			if(method.equals("OPTIONS")) {
-				response.setHeader("Allow", CORS_ALLOW_METHODS);
+				response.setHeader("Allow", allowedCorsMethods);
 				response.setStatus(200);
 				return;
 			}
@@ -125,8 +129,8 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 				if (requestHeaders != null)
 					response.setHeader("Access-Control-Allow-Headers", requestHeaders);
 
-				response.setHeader("Access-Control-Expose-Headers", CORS_EXPOSE_HEADERS);
-				response.setHeader("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
+				response.setHeader("Access-Control-Expose-Headers", exposedCorsHeaders);
+				response.setHeader("Access-Control-Allow-Methods", allowedCorsMethods);
 
 				// Allow caching cross-domain permission
 				response.setHeader("Access-Control-Max-Age", "3600");
@@ -174,6 +178,11 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public int loadOnStartUp() {
 		return 0;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return isEnabled;
 	}
 
 	@Override

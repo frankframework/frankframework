@@ -38,8 +38,9 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.MethodDispatcher;
 import org.apache.cxf.jaxrs.model.OperationResourceInfo;
+import org.springframework.beans.factory.annotation.Value;
 
-import nl.nn.adapterframework.util.AppConstants;
+import lombok.Getter;
 
 /**
  * Root collection for API.
@@ -52,8 +53,12 @@ import nl.nn.adapterframework.util.AppConstants;
 public class Init extends FrankApiBase {
 	@Context HttpServletRequest httpServletRequest;
 
-	protected static String HATEOASImplementation = AppConstants.getInstance().getString("ibis-api.hateoasImplementation", "default");
-	private static String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+	@Value("${ibis-api.hateoasImplementation:default}")
+	private String HATEOASImplementation;
+	private String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+
+	@Value("${monitoring.enabled:false}")
+	private @Getter boolean monitoringEnabled;
 
 	@GET
 	@PermitAll
@@ -77,8 +82,7 @@ public class Init extends FrankApiBase {
 				if(method.getDeclaringClass() == getClass()) {
 					continue;
 				}
-				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") &&
-					!AppConstants.getInstance().getBoolean("monitoring.enabled", false)) {
+				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && !isMonitoringEnabled()) {
 					continue;
 				}
 
