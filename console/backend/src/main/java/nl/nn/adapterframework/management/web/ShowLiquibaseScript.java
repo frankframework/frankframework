@@ -67,7 +67,7 @@ public class ShowLiquibaseScript extends FrankApiBase {
 		}
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
 		String filename = filePart.getContentDisposition().getParameter("filename");
 		InputStream file = filePart.getObject(InputStream.class);

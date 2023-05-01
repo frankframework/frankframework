@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 /**
@@ -89,7 +90,7 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 			}
 		}
 
-		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("queryType", queryType);
 		return callSyncGateway(builder);
 	}

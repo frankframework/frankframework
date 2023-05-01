@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 /**
@@ -136,7 +137,7 @@ public final class ShowScheduler extends FrankApiBase {
 
 		builder.addHeader("adapter", resolveStringFromMap(inputDataMap, "adapter"));
 		builder.addHeader("receiver", resolveTypeFromMap(inputDataMap, "receiver", String.class, ""));
-		builder.addHeader("configuration", resolveTypeFromMap(inputDataMap, HEADER_CONFIGURATION_NAME_KEY, String.class, ""));
+		builder.addHeader("configuration", resolveTypeFromMap(inputDataMap, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, String.class, ""));
 		builder.addHeader("listener", resolveTypeFromMap(inputDataMap, "listener", String.class, ""));
 
 		builder.addHeader("persistent", resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false));

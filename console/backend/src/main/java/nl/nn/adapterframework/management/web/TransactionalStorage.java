@@ -81,12 +81,12 @@ public class TransactionalStorage extends FrankApiBase {
 		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.GET);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
-			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
 			builder.addHeader("processState", processState);
 		}
 
@@ -111,12 +111,12 @@ public class TransactionalStorage extends FrankApiBase {
 		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
-			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
 			builder.addHeader("processState", processState);
 		}
 
@@ -138,12 +138,12 @@ public class TransactionalStorage extends FrankApiBase {
 		) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
-			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
 			builder.addHeader("processState", processState);
 		}
 
@@ -214,12 +214,12 @@ public class TransactionalStorage extends FrankApiBase {
 
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.FIND);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		if(storageSource == StorageSource.PIPES) {
 			builder.addHeader("pipe", storageSourceName);
 		} else {
-			builder.addHeader(HEADER_RECEIVER_NAME_KEY, storageSourceName);
+			builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, storageSourceName);
 			builder.addHeader("processState", processState);
 		}
 
@@ -258,9 +258,9 @@ public class TransactionalStorage extends FrankApiBase {
 		messageId = HttpUtils.urlDecode(messageId);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 		builder.addHeader("messageId", messageId);
 		return callAsyncGateway(builder);
 	}
@@ -274,9 +274,9 @@ public class TransactionalStorage extends FrankApiBase {
 	public Response resendReceiverMessages(@PathParam("configuration") String configuration, @PathParam("adapterName") String adapter, @PathParam("receiverName") String receiver, MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
 		String[] messageIds = getMessageIds(input);
 
@@ -316,9 +316,9 @@ public class TransactionalStorage extends FrankApiBase {
 			MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.MANAGE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 		builder.addHeader("processState", processState);
 		builder.addHeader("targetState", targetState);
 
@@ -355,9 +355,9 @@ public class TransactionalStorage extends FrankApiBase {
 			@PathParam("messageId") String messageId) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = HttpUtils.urlDecode(messageId);
@@ -379,9 +379,9 @@ public class TransactionalStorage extends FrankApiBase {
 			MultipartBody input) {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
-		builder.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
-		builder.addHeader(HEADER_ADAPTER_NAME_KEY, adapter);
-		builder.addHeader(HEADER_RECEIVER_NAME_KEY, receiver);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
+		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
 
 		String[] messageIds = getMessageIds(input);
 

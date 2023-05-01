@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,10 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
@@ -56,6 +51,7 @@ import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.JacksonUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
 @BusAware("frank-management-bus")
@@ -176,7 +172,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	private void updateTrigger(ITrigger trigger, Message<?> message) {
-		TriggerDTO dto = convertToDTO(message.getPayload(), TriggerDTO.class);
+		TriggerDTO dto = JacksonUtils.convertToDTO(message.getPayload(), TriggerDTO.class);
 
 		if(dto.getEvents() != null) {
 			trigger.setEventCodes(dto.getEvents());
@@ -216,26 +212,6 @@ public class Monitoring extends BusEndpointBase {
 		}
 	}
 
-	//TODO make this more generic
-	private static <T> T convertToDTO(Object payload, Class<T> dto) {
-		try {
-			JsonMapper mapper = JsonMapper.builder().enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
-			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
-
-			if(payload instanceof String) {
-				return mapper.readValue((String) payload, dto);
-			} else if(payload instanceof byte[]) {
-				return mapper.readValue((byte[]) payload, dto);
-			} else {
-				throw new BusException("unhandled payload type ["+payload.getClass()+"]");
-			}
-		} catch (IOException e) {
-			throw new BusException("unable to parse payload to DTO", e);
-		}
-	}
-
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
 			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
@@ -246,7 +222,7 @@ public class Monitoring extends BusEndpointBase {
 	}
 
 	private void updateMonitor(Monitor monitor, Message<?> message) {
-		MonitorDTO dto = convertToDTO(message.getPayload(), MonitorDTO.class);
+		MonitorDTO dto = JacksonUtils.convertToDTO(message.getPayload(), MonitorDTO.class);
 		if(StringUtils.isNotBlank(dto.getName())) {
 			monitor.setName(dto.getName());
 		}
