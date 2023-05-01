@@ -55,7 +55,6 @@ public class Init extends FrankApiBase {
 
 	@Value("${ibis-api.hateoasImplementation:default}")
 	private String HATEOASImplementation;
-	private String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
 
 	@Value("${monitoring.enabled:false}")
 	private @Getter boolean monitoringEnabled;
@@ -141,6 +140,7 @@ public class Init extends FrankApiBase {
 			}
 		}
 
+		final String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
 		if((HATEOASImplementation.equalsIgnoreCase("hal")))
 			resources.put(resourceKey, HALresources);
 		else
