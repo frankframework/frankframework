@@ -156,7 +156,6 @@ public class ConfigurationUtils {
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
 		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
@@ -164,41 +163,43 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query;
+			ResultSet resultSet = null;
 			if(version == null) {//Return active config
-				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
-					rs = stmt.executeQuery();
+					resultSet = stmt.executeQuery();
 				}
 			}
 			else {
-				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, name);
 					stmt.setString(2, version);
-					rs = stmt.executeQuery();
+					resultSet = stmt.executeQuery();
 				}
 			}
-			if (!rs.next()) {
+			if (resultSet.isClosed() || !resultSet.next()) {
 				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
 				return null;
 			}
 
-			Map<String, Object> configuration = new HashMap<>(5);
-			byte[] jarBytes = rs.getBytes(1);
-			if(jarBytes == null) return null;
+			try(ResultSet rs = resultSet) {
+				Map<String, Object> configuration = new HashMap<>(5);
+				byte[] jarBytes = rs.getBytes(1);
+				if(jarBytes == null) return null;
 
-			configuration.put("CONFIG", jarBytes);
-			configuration.put("VERSION", rs.getString(2));
-			configuration.put("FILENAME", rs.getString(3));
-			configuration.put("CREATED", rs.getString(4));
-			configuration.put("USER", rs.getString(5));
-			return configuration;
+				configuration.put("CONFIG", jarBytes);
+				configuration.put("VERSION", rs.getString(2));
+				configuration.put("FILENAME", rs.getString(3));
+				configuration.put("CREATED", rs.getString(4));
+				configuration.put("USER", rs.getString(5));
+				return configuration;
+			}
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			JdbcUtil.fullClose(conn, rs);
+			JdbcUtil.close(conn);
 			qs.close();
 		}
 	}

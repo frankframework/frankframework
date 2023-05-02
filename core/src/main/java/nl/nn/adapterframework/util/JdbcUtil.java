@@ -536,6 +536,7 @@ public class JdbcUtil {
 		}
 	}
 
+	//TODO check rs.isClosed()
 	public static void fullClose(Connection connection, ResultSet rs) {
 		if (rs == null) {
 			log.warn("resultset to close was null");
