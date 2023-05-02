@@ -88,7 +88,7 @@ public abstract class RequestUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
+	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
 		if(clazz.isAssignableFrom(InputStream.class)) {
 			return (T) is;
 		}
@@ -97,13 +97,9 @@ public abstract class RequestUtils {
 			return null;
 		}
 		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
-			return (T) Boolean.valueOf(str);
-		} else if(clazz.isAssignableFrom(int.class) || clazz.isAssignableFrom(Integer.class)) {
-			return (T) Integer.valueOf(str);
-		} else if(clazz.isAssignableFrom(String.class)) {
-			return (T) str;
+			return (T) Boolean.valueOf(str); //At the moment we allow null/empty -> FALSE
 		}
-		throw new IllegalArgumentException("cannot convert to class ["+clazz+"]");
+		return ClassUtils.convertToType(clazz, str);
 	}
 
 	/**
