@@ -40,7 +40,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      language: ['javascript']
 
     steps:
     - name: Checkout repository
