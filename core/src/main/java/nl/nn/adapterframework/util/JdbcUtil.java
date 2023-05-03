@@ -536,26 +536,23 @@ public class JdbcUtil {
 		}
 	}
 
-	//TODO check rs.isClosed()
 	public static void fullClose(Connection connection, ResultSet rs) {
 		if (rs == null) {
 			log.warn("resultset to close was null");
 			close(connection);
 			return;
 		}
-		Statement statement = null;
 		try {
-			statement = rs.getStatement();
+			if(!rs.isClosed()) {
+				try (Statement statement = rs.getStatement()) {
+					fullClose(connection, statement);
+				}
+			} else {
+				close(connection);
+			}
 		} catch (SQLException e) {
 			log.warn("Could not obtain statement or connection from resultset", e);
-		} finally {
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				log.warn("Could not close resultset", e);
-			} finally {
-				fullClose(connection, statement);
-			}
+			close(connection);
 		}
 	}
 
@@ -577,7 +574,9 @@ public class JdbcUtil {
 			return;
 		}
 		try {
-			statement.close();
+			if(!statement.isClosed()) {
+				statement.close();
+			}
 		} catch (SQLException e) {
 			log.warn("Could not close statement", e);
 		} finally {
