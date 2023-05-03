@@ -40,6 +40,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.HttpUtils;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -169,13 +170,13 @@ public final class ShowConfiguration extends FrankApiBase {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource", "");
-		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
-		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
-		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
+		String datasource = RequestUtils.resolveStringFromMap(inputDataMap, "datasource", "");
+		boolean multipleConfigs = RequestUtils.resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activateConfig  = RequestUtils.resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automaticReload = RequestUtils.resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		InputStream file = RequestUtils.resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
-		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
+		String user = RequestUtils.resolveTypeFromMap(inputDataMap, "user", String.class, "");
 		if(StringUtils.isEmpty(user)) {
 			user = getUserPrincipalName();
 		}

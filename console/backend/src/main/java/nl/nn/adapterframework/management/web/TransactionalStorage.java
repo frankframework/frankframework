@@ -46,6 +46,7 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.util.HttpUtils;
+import nl.nn.adapterframework.util.RequestUtils;
 
 @Path("/")
 public class TransactionalStorage extends FrankApiBase {
@@ -405,7 +406,7 @@ public class TransactionalStorage extends FrankApiBase {
 	}
 
 	private String[] getMessageIds(MultipartBody inputDataMap) {
-		String messageIds = resolveStringFromMap(inputDataMap, "messageIds");
+		String messageIds = RequestUtils.resolveStringFromMap(inputDataMap, "messageIds");
 		return messageIds.split(",");
 	}
 }
