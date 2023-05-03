@@ -40,6 +40,7 @@ import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -87,7 +88,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
+	 * @see ClassLoaderUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 */
 	public void init() {
@@ -100,7 +101,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * method to load configuration and related resources from a different
 	 * location from the standard classpath. 
 	 * 
-	 * @see ClassUtils#getResourceURL(IScopeProvider, String)
+	 * @see ClassLoaderUtils#getResourceURL(IScopeProvider, String)
 	 * @see AppConstants#getInstance(ClassLoader)
 	 *
 	 * @param reconnect retry startup when failures occur
