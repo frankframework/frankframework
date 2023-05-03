@@ -40,7 +40,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
 			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
-			configuration = ConfigurationUtils.getConfigFromDatabase(ac, getConfigurationName(), datasourceName);
+			configuration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive

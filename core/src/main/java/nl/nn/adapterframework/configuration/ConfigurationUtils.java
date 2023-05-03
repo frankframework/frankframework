@@ -141,7 +141,7 @@ public class ConfigurationUtils {
 		return version;
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
+	public static Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
 		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
 
@@ -155,52 +155,53 @@ public class ConfigurationUtils {
 		}
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
-		Connection conn = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
 			qs.open();
-			conn = qs.getConnection();
-			ResultSet resultSet = null;
-			if(version == null) {//Return active config
-				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, name);
-					resultSet = stmt.executeQuery();
+			try(Connection conn = qs.getConnection()) {
+				if(version == null) {//Return active config
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+					try (PreparedStatement stmt = conn.prepareStatement(query)) {
+						stmt.setString(1, name);
+						return extractConfigurationFromResultSet(stmt, name, version);
+					}
 				}
-			}
-			else {
-				String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, name);
-					stmt.setString(2, version);
-					resultSet = stmt.executeQuery();
+				else {
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+					try (PreparedStatement stmt = conn.prepareStatement(query)) {
+						stmt.setString(1, name);
+						stmt.setString(2, version);
+						return extractConfigurationFromResultSet(stmt, name, version);
+					}
 				}
-			}
-			if (resultSet.isClosed() || !resultSet.next()) {
-				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
-				return null;
-			}
-
-			try(ResultSet rs = resultSet) {
-				Map<String, Object> configuration = new HashMap<>(5);
-				byte[] jarBytes = rs.getBytes(1);
-				if(jarBytes == null) return null;
-
-				configuration.put("CONFIG", jarBytes);
-				configuration.put("VERSION", rs.getString(2));
-				configuration.put("FILENAME", rs.getString(3));
-				configuration.put("CREATED", rs.getString(4));
-				configuration.put("USER", rs.getString(5));
-				return configuration;
 			}
 		} catch (SenderException | JdbcException | SQLException e) {
 			throw new ConfigurationException(e);
 		} finally {
-			JdbcUtil.close(conn);
 			qs.close();
+		}
+	}
+
+	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
+		try(ResultSet rs = stmt.executeQuery()) {
+			if (!rs.next()) {
+				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
+				return null;
+			}
+
+			Map<String, Object> configuration = new HashMap<>(5);
+			byte[] jarBytes = rs.getBytes(1);
+			if(jarBytes == null) return null;
+
+			configuration.put("CONFIG", jarBytes);
+			configuration.put("VERSION", rs.getString(2));
+			configuration.put("FILENAME", rs.getString(3));
+			configuration.put("CREATED", rs.getString(4));
+			configuration.put("USER", rs.getString(5));
+			return configuration;
 		}
 	}
 
