@@ -141,7 +141,7 @@ public class ConfigurationUtils {
 		return version;
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
+	public static Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
 		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
 
@@ -155,31 +155,38 @@ public class ConfigurationUtils {
 		}
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
-		Connection conn = null;
-		ResultSet rs = null;
 		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
 		qs.setDatasourceName(workdataSourceName);
 		qs.setQuery(DUMMY_SELECT_QUERY);
 		qs.configure();
 		try {
 			qs.open();
-			conn = qs.getConnection();
-			String query;
-			if(version == null) {//Return active config
-				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, name);
-					rs = stmt.executeQuery();
+			try(Connection conn = qs.getConnection()) {
+				if(version == null) {//Return active config
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
+					try (PreparedStatement stmt = conn.prepareStatement(query)) {
+						stmt.setString(1, name);
+						return extractConfigurationFromResultSet(stmt, name, version);
+					}
+				}
+				else {
+					String query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
+					try (PreparedStatement stmt = conn.prepareStatement(query)) {
+						stmt.setString(1, name);
+						stmt.setString(2, version);
+						return extractConfigurationFromResultSet(stmt, name, version);
+					}
 				}
 			}
-			else {
-				query = "SELECT CONFIG, VERSION, FILENAME, CRE_TYDST, RUSER FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-				try (PreparedStatement stmt = conn.prepareStatement(query)) {
-					stmt.setString(1, name);
-					stmt.setString(2, version);
-					rs = stmt.executeQuery();
-				}
-			}
+		} catch (SenderException | JdbcException | SQLException e) {
+			throw new ConfigurationException(e);
+		} finally {
+			qs.close();
+		}
+	}
+
+	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
+		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
 				log.error("no configuration found in database with name ["+name+"] " + (version!=null ? "version ["+version+"]" : "activeconfig [TRUE]"));
 				return null;
@@ -195,11 +202,6 @@ public class ConfigurationUtils {
 			configuration.put("CREATED", rs.getString(4));
 			configuration.put("USER", rs.getString(5));
 			return configuration;
-		} catch (SenderException | JdbcException | SQLException e) {
-			throw new ConfigurationException(e);
-		} finally {
-			JdbcUtil.fullClose(conn, rs);
-			qs.close();
 		}
 	}
 
