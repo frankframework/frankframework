@@ -144,29 +144,33 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Configure Eclipse
 
+- Make sure you have Lombok installed!
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
+- We prefer to run the Frank!Framework on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
+
+*Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
+
+### Set up a Lombok in Eclipse
+- Download the [Lombok dependency](https://projectlombok.org/). Please open it as a Java application.
+- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
+- Press Install / Update.
+- If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
+- You must restart Eclipse to start using the Lombok integration.
+
 
 ### Import the source code
 
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- Go to the Java perspective (not Java EE). You can do this via Windows | Perspective | Open Perspective and select "Java". If you would use the Java EE perspective, your Maven dependencies would not be sorted.
-- In the main menu, choose File | Import...
-- The Import wizard appears which allows you to import many different kinds of projects. Open "Maven" and select "Existing Maven Projects". Click "Next".
-- Browse to the directory in which you cloned the iaf Git repository. A list of `pom.xml` files appears, one for each subproject.
-- **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
+- In the Git Perspective, right click the IAF Repository and click 'Import Projects...'
+- The Import wizard appears which allows you to import many different kinds of projects.
+- **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
-- Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
-- In the project explorer, unfold the Maven dependencies. They should be sorted alphabetically. You should see the Lombok dependency. Please open it as a Java application (right-click, Run As | Java Application).
-- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
-- Press Install / Update.
-- If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
-- You may have to restart Eclipse to start using the Lombok integration.
-- We prefer to run the Frank!Framework on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs.
-- You may have to delete the JRE that came with Eclipse there.
+- Right click iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
+
 
 ### Set up a Tomcat server in Eclipse
 
@@ -177,19 +181,19 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### In some cases you might want/need to:
 
-- Rightclick iaf, Maven, Update Project..., OK.
+- Right click iaf, Maven, Update Project..., OK.
 - Delete .setting folder(s) in broken iaf module(s), followed by rightclick iaf, Maven, Update Project..., OK.
 - Enable Project, Build Automatically
 - Right click Tomcat Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
-- Rightclick pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
+- Right click pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.
 - When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Rightclick project, Run As, Maven Clean, followed by  Right click Tomcat v7.0 Server at localhost, Clean...
 - Check the deployment assemblies:
   - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
     - `src/main/webapp` to `/`
     - `target/m2e-wtp/web-resources` to `/`
-    - `iaf-akami` to `WEB-INF/lib/ibis-adapterframework-akami-X.Y-SNAPSHOT.jar`
+    - `iaf-akamai` to `WEB-INF/lib/ibis-adapterframework-akami-X.Y-SNAPSHOT.jar`
     - ...
     - `iaf-larva `to `WEB-INF/lib/ibis-adapterframework-larva-X.Y-SNAPSHOT.jar`
     - `Maven Dependencies` to `WEB-INF/lib`
