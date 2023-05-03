@@ -545,13 +545,12 @@ public class JdbcUtil {
 		try {
 			if(!rs.isClosed()) {
 				try (Statement statement = rs.getStatement()) {
-					fullClose(connection, statement);
+					//No Operation, just trying to close the statement!
 				}
-			} else {
-				close(connection);
 			}
 		} catch (SQLException e) {
 			log.warn("Could not obtain statement or connection from resultset", e);
+		} finally {
 			close(connection);
 		}
 	}
