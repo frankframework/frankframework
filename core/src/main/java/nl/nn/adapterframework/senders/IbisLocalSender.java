@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -178,7 +178,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
-		Message result = null;
+		Message result;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
 				try {
