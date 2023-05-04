@@ -3,7 +3,7 @@
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareStringPipe" serviceName="ibis4test-CompareStringPipe" />
 		</receiver>
-		<pipeline firstPipe="BigFile">
+		<pipeline firstPipe="FillSessionKey2">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
@@ -26,12 +26,6 @@
 			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="equalsPipe" returnString="[EQUALS]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe name="BigFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
-				  action="read">
-				<param name="filename" value="/Users/tnleeuw/Desktop/TNL22475.RAF"/>
-				<forward name="success" path="EXIT"/>
-			</pipe>
-
 		</pipeline>
 	</adapter>
 </module>
