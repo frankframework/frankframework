@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
@@ -79,7 +79,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	private @Getter boolean open=false;
 	private static Map<String, JavaListener> registeredListeners;
-	private @Getter @Setter IMessageHandler<String> handler;
+	private @Getter @Setter IMessageHandler<M> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -126,6 +126,19 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
+		try {
+			Message result = processRequest(correlationId, (M) rawMessage, new Message(rawMessage), context);
+			return result.asString();
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert stream", e);
+		}
+	}
+
+	public Message processRequest(String correlationId, Message message, Map<String, Object> context) throws ListenerException {
+		return processRequest(correlationId, (M) message.asObject(), message, context);
+	}
+
+	private Message processRequest(String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
@@ -143,31 +156,29 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
 			try {
+				Message result;
 				if (throwException) {
+					result = handler.processRequest(this, correlationId, rawMessage, message, session);
 					try {
-						return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
+						result.preserve();
 					} catch (IOException e) {
-						throw new ListenerException("cannot convert stream", e);
+						throw new ListenerException("Cannot convert stream: " + e.getMessage(), e);
 					}
-				}
-				try {
-					return handler.processRequest(this, correlationId, rawMessage, message, session).asString();
-				} catch (ListenerException | IOException e) {
+				} else {
 					try {
-						return handler.formatException(null,correlationId, message, e).asString();
-					} catch (IOException e1) {
-						e.addSuppressed(e1);
-						throw new ListenerException(e);
+						result = handler.processRequest(this, correlationId, rawMessage, message, session);
+						result.preserve();
+					} catch (ListenerException | IOException e) {
+						result = handler.formatException(null, correlationId, message, e);
 					}
 				}
+				return result;
 			} finally {
 				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
 			}
 		}
 	}
-
 
 	/**
 	 * Register listener so that it can be used by a proxy
@@ -213,14 +224,14 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage);
 	}
 
 	@Override
@@ -262,8 +273,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		synchronous = b;
 	}
 
-	/** 
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. 
+	/**
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */

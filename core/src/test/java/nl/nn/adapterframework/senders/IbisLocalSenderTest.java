@@ -66,13 +66,7 @@ public class IbisLocalSenderTest {
 	}
 
 	private static void registerWithServiceDispatcher(JavaListener listener) throws ListenerException {
-		ServiceClient serviceClient = (correlationId, message, session) -> {
-			try {
-				return new Message(listener.processRequest(correlationId, message.asString(), session));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		};
+		ServiceClient serviceClient = listener::processRequest;
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), serviceClient);
 	}
 

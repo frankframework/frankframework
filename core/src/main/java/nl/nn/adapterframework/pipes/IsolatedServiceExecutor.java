@@ -50,14 +50,14 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 	@Override
 	public void run() {
 		try {
-			threadConnector.startThread(request.asString());
-			String result;
+			threadConnector.startThread(request);
+			Message result;
 			if (targetIsJavaListener) {
-				result = JavaListener.getListener(serviceName).processRequest(correlationID, request.asString(), session);
+				result = JavaListener.getListener(serviceName).processRequest(correlationID, request, session);
 			} else {
-				result = ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request.asString(), session);
+				result = ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request, session);
 			}
-			reply = new Message(threadConnector.endThread(result));
+			reply = Message.asMessage(threadConnector.endThread(result));
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable = threadConnector.abortThread(t);

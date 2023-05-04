@@ -58,23 +58,19 @@ public class ServiceDispatcher  {
 	}
 
 	/**
-	 * Dispatch a request.
+	 * Dispatch a request that came in as String, and return the result as String.
+	 *
+	 * Should not be used when calling with an existing message, only when the input is already in String format.
 	 *
 	 * @since 4.3
 	 */
 	public String dispatchRequest(String serviceName, String correlationId, String request, PipeLineSession session) throws ListenerException {
-		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
-		}
-
-		ServiceClient client = registeredListeners.get(serviceName);
-		if (client == null) {
-			throw new ListenerException("service ["+serviceName+"] is not registered");
-		}
+		Message message = new Message(request);
+		Message resultMessage = dispatchRequest(serviceName, correlationId, message, session);
 
 		String result;
 		try {
-			result = client.processRequest(correlationId, new Message(request), session).asString();
+			result = resultMessage.asString();
 		} catch (IOException e) {
 			throw new ListenerException(e);
 		}
@@ -83,6 +79,29 @@ public class ServiceDispatcher  {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Dispatch a request {@link Message}.
+	 *
+	 * @param serviceName
+	 * @param correlationId
+	 * @param message
+	 * @param session
+	 * @return
+	 * @throws ListenerException
+	 */
+	public Message dispatchRequest(String serviceName, String correlationId, Message message, PipeLineSession session) throws ListenerException {
+		if (log.isDebugEnabled()) {
+			log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, correlationId, message);
+		}
+
+		ServiceClient client = registeredListeners.get(serviceName);
+		if (client == null) {
+			throw new ListenerException("service ["+ serviceName +"] is not registered");
+		}
+		Message resultMessage = client.processRequest(correlationId, message, session);
+		return resultMessage;
 	}
 
 	/**

@@ -24,5 +24,5 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface ServiceClient {
 
-	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException;
+	Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException;
 }

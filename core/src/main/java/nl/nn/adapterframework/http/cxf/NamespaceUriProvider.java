@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http.cxf;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 import javax.xml.soap.SOAPBody;
@@ -27,14 +26,14 @@ import javax.xml.ws.ServiceMode;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Soap Provider that accepts any message and routes it to a listener with a corresponding TargetObjectNamespacURI.
- * 
+ *
  * @author Niels Meijer
  */
 
@@ -60,11 +59,7 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
 		log.debug("found namespace["+serviceName+"]");
-		try {
-			return new Message(sd.dispatchRequest(serviceName, null, message.asString(), pipelineSession));
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
+		return sd.dispatchRequest(serviceName, null, message, pipelineSession);
 	}
 
 	public String findNamespaceUri() throws ListenerException {
