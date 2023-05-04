@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,16 +30,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;
 import org.apache.cxf.jaxrs.model.MethodDispatcher;
 import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.springframework.beans.factory.annotation.Value;
-
-import lombok.Getter;
 
 /**
  * Root collection for API.
@@ -51,13 +46,14 @@ import lombok.Getter;
 
 @Path("/")
 public class Init extends FrankApiBase {
-	@Context HttpServletRequest httpServletRequest;
 
-	@Value("${ibis-api.hateoasImplementation:default}")
-	private String HATEOASImplementation;
+	private String getHATEOASImplementation() {
+		return getProperty("ibis-api.hateoasImplementation", "default");
+	}
 
-	@Value("${monitoring.enabled:false}")
-	private @Getter boolean monitoringEnabled;
+	private boolean isMonitoringEnabled() {
+		return getProperty("monitoring.enabled", false);
+	}
 
 	@GET
 	@PermitAll
@@ -68,7 +64,7 @@ public class Init extends FrankApiBase {
 		Map<String, Object> HALresources = new HashMap<>();
 		Map<String, Object> resources = new HashMap<>(1);
 
-		StringBuffer requestPath = httpServletRequest.getRequestURL();
+		StringBuffer requestPath = getServletRequest().getRequestURL();
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
 			requestPath.setLength(requestPath.length()-1);
 
@@ -109,7 +105,7 @@ public class Init extends FrankApiBase {
 				}
 
 
-				if((HATEOASImplementation.equalsIgnoreCase("hal"))) {
+				if(("hal".equalsIgnoreCase(getHATEOASImplementation()))) {
 					if(method.isAnnotationPresent(Relation.class))
 						relation = method.getAnnotation(Relation.class).value();
 
@@ -120,7 +116,7 @@ public class Init extends FrankApiBase {
 							if(prevRelation instanceof List)
 								tmpList = (List) prevRelation;
 							else {
-								tmpList = new ArrayList<Object>();
+								tmpList = new ArrayList<>();
 								tmpList.add(prevRelation);
 							}
 
@@ -140,11 +136,10 @@ public class Init extends FrankApiBase {
 			}
 		}
 
-		final String resourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
-		if((HATEOASImplementation.equalsIgnoreCase("hal")))
-			resources.put(resourceKey, HALresources);
+		if("hal".equalsIgnoreCase(getHATEOASImplementation()))
+			resources.put("_links", HALresources);
 		else
-			resources.put(resourceKey, JSONresources);
+			resources.put("links", JSONresources);
 
 		return Response.status(Response.Status.CREATED).entity(resources).build();
 	}
