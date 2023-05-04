@@ -1,0 +1,45 @@
+<Module
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../FrankConfig.xsd"
+    name="All">
+    <Adapter name="ManualExerciseMundo" description="This adapter is needed for an exercise in the Frank!Manual. Students write an adapter that does a HTTP request to this adapter. You can also access it using curl: curl -X POST -H &quot;Content-Type: text/xml&quot; --data &quot;@valid.xml&quot; http://localhost:8080/iaf-example/api/mundo. File valid.xml is available in the Larva tests" >
+        <Receiver>
+            <ApiListener name="ManualExerciseMundo" uriPattern="/mundo" method="POST" />
+        </Receiver>
+        <Pipeline>
+            <Exits>
+                <Exit name="READY" state="SUCCESS" code="200" />
+                <Exit name="ERROR" state="ERROR" code="400" />
+            </Exits>
+            <XmlValidatorPipe name="validate" schema="ManualExerciseMundo/input.xsd" root="document">
+                <Forward name="success" path="getMessage" />
+                <Forward name="failure" path="answerError" />
+            </XmlValidatorPipe>
+            <XsltPipe name="getMessage" xpathExpression="/document/body">
+                <Forward name="success" path="decodeMessage" />
+                <Forward name="exception" path="answerError" />
+            </XsltPipe>
+            <Base64Pipe name="decodeMessage" direction="DECODE" storeResultInSessionKey="decodedMessage">
+                <Forward name="success" path="checkMessage" />
+                <Forward name="exception" path="answerError" />
+            </Base64Pipe>
+            <XsltPipe name="checkMessage" styleSheetName="ManualExerciseMundo/contains.xslt" getInputFromFixedValue="&lt;dummy/&gt;" xsltVersion="2">
+                <Param name="message" sessionKey="decodedMessage" />
+                <Param name="testMessage" value="document" />
+                <Forward name="success" path="checkComparisonResult" />
+                <Forward name="exception" path="error" />
+            </XsltPipe>
+            <XmlIfPipe name="checkComparisonResult" xpathExpression="/result='true'">
+                <Forward name="then" path="answerOk" />
+                <Forward name="else" path="answerError" />
+                <Forward name="exception" path="answerError" />
+            </XmlIfPipe>
+            <FixedResultPipe name="answerOk" returnString="ok">
+                <Forward name="success" path="READY" />
+            </FixedResultPipe>
+            <FixedResultPipe name="answerError" returnString="error">
+                <Forward name="success" path="ERROR" />
+            </FixedResultPipe>
+        </Pipeline>
+    </Adapter>
+</Module>
