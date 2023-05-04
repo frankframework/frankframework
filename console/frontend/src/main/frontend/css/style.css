@@ -7046,3 +7046,8 @@ body.body-small .vote-icon {
 .text-center {
   text-align: center;
 }
+
+/* datatable buttons fix */
+.dataTables_wrapper {
+	position: static;
+}
