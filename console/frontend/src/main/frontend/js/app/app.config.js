@@ -1,3 +1,5 @@
+import pagesController from "./components/pages/pages.controller";
+
 angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
 	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
 
@@ -36,15 +38,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 
 	.state('pages', {
 		abstract: true,
-		controller: function($scope, authService, $location, $state) {
-			authService.loggedin(); //Check if the user is logged in.
-			$scope.monitoring = false;
-			$scope.config_database = false;
-
-			angular.element(".main").show();
-			angular.element(".loading").remove();
-		},
-		templateUrl: "views/common/content.html",
+		controller: pagesController,
+		templateUrl: "components/pages/content.html",
 	})
 	.state('pages.status', {
 		url: "/status?configuration&filter&search",

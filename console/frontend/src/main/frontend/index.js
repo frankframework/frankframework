@@ -44,11 +44,10 @@ import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
-import './css/plugins/iCheck/custom.css';
 
-import './js/main';
-import './js/app';
-import './js/config';
-import './js/services';
-import './js/directives';
-import './js/controllers';
+import './js/app/main';
+import './js/app/app.module';
+import './js/app/app.config';
+import './js/app/services';
+import './js/app/directives';
+import './js/app/controllers';
