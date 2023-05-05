@@ -4,6 +4,7 @@ import './services/cookies.service';
 import './services/debug.service';
 import './services/gdpr.service';
 import './services/hooks.service';
+import './services/misc.service';
 import './services/notification.service';
 import './services/poller.service';
 import './services/session.service';

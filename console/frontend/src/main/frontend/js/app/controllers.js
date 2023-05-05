@@ -1,10 +1,13 @@
+import Pace from 'pace-js'
+import './views/login/login.controller';
+import './components/logout/logout.controller';
+import './components/pages/topinfobar/infobar.controller';
+
 /**
  * MainCtrl - controller
  * Used on all pages except login/logout
  *
  */
-import Pace from 'pace-js'
-
 angular.module('iaf.beheerconsole')
 .controller('MainCtrl', ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',
 	function($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
@@ -908,31 +911,6 @@ angular.module('iaf.beheerconsole')
 		Api.Put("configurations/"+adapter.configuration+"/adapters/" + Misc.escapeURL(adapter.name) + "/receivers/" + Misc.escapeURL(receiver.name), {"action": "decthread"});
 	};
 
-}])
-
-.controller('InfoBarCtrl', ['$scope', function($scope) {
-	$scope.$on('loading', function(event, loading) { $scope.loading = loading; });
-}])
-
-.controller('LogoutCtrl', ['$scope', 'Poller', 'authService', 'Idle', function($scope, Poller, authService, Idle) {
-	Poller.getAll().remove();
-	Idle.unwatch();
-	authService.logout();
-}])
-
-.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'Alert',
-	function($scope, authService, $timeout, Alert) {
-	$timeout(function() {
-		$scope.notifications = Alert.get();
-		angular.element(".main").show();
-		angular.element(".loading").hide();
-		angular.element("body").addClass("gray-bg");
-	}, 500);
-	authService.loggedin(); //Check whether or not the client is logged in.
-	$scope.credentials = {};
-	$scope.login = function(credentials) {
-		authService.login(credentials.username, credentials.password);
-	};
 }])
 
 .controller('NotificationsCtrl', ['$scope', 'Api', '$stateParams', 'Hooks', 'Notification',

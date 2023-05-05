@@ -22,7 +22,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	$stateProvider
 	.state('login', {
 		url: "/login",
-		templateUrl: "views/login.html",
+		templateUrl: "js/app/views/login/login.html",
 		controller: 'LoginCtrl',
 		data: {
 			pageTitle: 'Login'
@@ -39,7 +39,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	.state('pages', {
 		abstract: true,
 		controller: pagesController,
-		templateUrl: "components/pages/content.html",
+		templateUrl: "js/app/components/pages/content.html",
 	})
 	.state('pages.status', {
 		url: "/status?configuration&filter&search",
