@@ -23,7 +23,7 @@
                 <Forward name="success" path="checkMessage" />
                 <Forward name="exception" path="answerError" />
             </Base64Pipe>
-            <XsltPipe name="checkMessage" styleSheetName="ManualExerciseMundo/contains.xslt" getInputFromFixedValue="&lt;dummy/&gt;">
+            <XsltPipe name="checkMessage" styleSheetName="ManualExerciseMundo/contains.xslt" getInputFromFixedValue="&lt;dummy/&gt;" xsltVersion="2">
                 <Param name="message" sessionKey="decodedMessage" />
                 <Param name="testMessage" value="document" />
                 <Forward name="success" path="checkComparisonResult" />
