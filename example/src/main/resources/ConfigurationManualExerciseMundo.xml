@@ -27,7 +27,7 @@
                 <Param name="message" sessionKey="decodedMessage" />
                 <Param name="testMessage" value="document" />
                 <Forward name="success" path="checkComparisonResult" />
-                <Forward name="exception" path="error" />
+                <Forward name="exception" path="answerError" />
             </XsltPipe>
             <XmlIfPipe name="checkComparisonResult" xpathExpression="/result='true'">
                 <Forward name="then" path="answerOk" />
