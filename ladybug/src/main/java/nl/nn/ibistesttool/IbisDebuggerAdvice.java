@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.IsolatedServiceExecutor;
 import nl.nn.adapterframework.processors.CacheSenderWrapperProcessor;
 import nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
@@ -388,7 +387,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (M)proceedingJoinPoint.proceed();
 		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		M result = null;
+		M result;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
 			return null;
 		}
@@ -406,8 +405,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
-		if (runnable instanceof ParallelSenderExecutor || runnable instanceof IsolatedServiceExecutor) {
-			Executor executor = new Executor((RequestReplyExecutor)runnable, this);
+		if (runnable instanceof ParallelSenderExecutor) {
+			ParallelSenderExecutorWrapper executor = new ParallelSenderExecutorWrapper((RequestReplyExecutor)runnable, this);
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[0] = executor;
 			return proceedingJoinPoint.proceed(args);
@@ -508,12 +507,11 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return input;
 	}
 
-
-	public class Executor implements Runnable {
+public static class ParallelSenderExecutorWrapper implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
 		private ThreadConnector<ThreadDebugInfo> threadConnector;
 
-		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
+		public ParallelSenderExecutorWrapper(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
 			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, "Debugger", threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
 		}
@@ -535,7 +533,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				}
 			}
 		}
-
 	}
 
 	public String getCorrelationId(PipeLineSession session) {
@@ -544,7 +541,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 	public void setEnabled(boolean enable) {
 		enabled = enable;
-		AppConstants.getInstance().put("testtool.enabled", ""+enable);
+		AppConstants.getInstance().put("testtool.enabled", String.valueOf(enable));
 	}
 	public boolean isEnabled() {
 		return ibisDebugger != null && enabled;
@@ -554,5 +551,4 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
 		setEnabled(event.isEnabled());
 	}
-
 }
