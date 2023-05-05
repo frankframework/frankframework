@@ -30,6 +30,7 @@ module.exports = {
       patterns: [
         { from: "./css/patterns", to: "css/patterns" },
         { from: "./css/plugins/iCheck/green.png", to: "css/green.png" },
+        { from: "./css/plugins/iCheck/green@2x.png", to: "css/green@2x.png" },
         { from: "./images", to: "images" },
         { from: "./views", to: "views" },
         // { from: "./index.jsp", to: "index.jsp" },

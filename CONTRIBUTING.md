@@ -250,7 +250,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project ibis-adapterframework-test).
 	- Add `-Ddtap.stage=LOC` to VM Options.
     - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-    - Under the section "Build", add a build step to build the console-frontend project via Maven. This should be a Maven build action, running target `install` in the project "Frank Console Frontend".
+    - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "ibis-adapterframework-console-frontend".
       __NB__: It is important that you run this step before the final Build step, which is to build the (Exploded) War Artifact! Otherwise, front-end resources will not be deployed.
     - Name your configuration and save it.
 - Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
