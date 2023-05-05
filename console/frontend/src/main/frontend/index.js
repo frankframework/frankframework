@@ -9,6 +9,7 @@ import 'angular';
 import 'angular-animate';
 import 'angular-aria';
 import 'angular-cookies';
+import 'angular-filter';
 import 'angular-loader';
 import 'angular-messages';
 import 'angular-mocks';

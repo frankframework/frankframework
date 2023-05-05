@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -97,7 +98,12 @@ public class WebServices extends BusEndpointBase {
 
 	public StringResponseMessage getOpenApiSpec(Message<?> message) {
 		String uri = BusMessageUtils.getHeader(message, "uri", null);
-
+		Predicate<? super ApiListener> uriPred = uri == null ? x -> true : x -> x.getUriPattern().equals(uri);
+		
+		String configuration = BusMessageUtils.getHeader(message, "configuration", null);
+		Predicate<? super ApiListener> configPred = configuration == null ? x -> true : x -> x.getReceiver().getAdapter().getConfiguration().getName().equals(configuration);
+		
+		
 		JsonObject jsonSchema = null;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		if(uri != null) {
@@ -107,7 +113,7 @@ public class WebServices extends BusEndpointBase {
 			}
 			jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, null);
 		} else {
-			jsonSchema = dispatcher.generateOpenApiJsonSchema(null);
+			jsonSchema = dispatcher.generateOpenApiJsonSchema(x -> uriPred.test(x) && configPred.test(x), null);
 		}
 
 		Map<String, Boolean> config = new HashMap<>();
@@ -189,9 +195,11 @@ public class WebServices extends BusEndpointBase {
 				ApiListener listener = config.getApiListener(method);
 				Receiver<?> receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();
+				final Configuration configuration = adapter == null ? null : adapter.getConfiguration();
 				ListenerDAO dao = new ListenerDAO(listener);
-				if (adapter!=null) dao.setAdapter(adapter);
-				if (receiver!=null) dao.setReceiver(receiver);
+				if (adapter != null) dao.setAdapter(adapter);
+				if (receiver != null) dao.setReceiver(receiver);
+				if (configuration != null) dao.setConfiguration(configuration);
 
 				apiListeners.add(dao);
 			}
@@ -248,6 +256,7 @@ public class WebServices extends BusEndpointBase {
 		private final @Getter String uriPattern;
 		private @Getter String receiver;
 		private @Getter String adapter;
+		private @Getter String configuration;
 
 		public ListenerDAO(RestListener listener) {
 			this.name = listener.getName();
@@ -267,6 +276,10 @@ public class WebServices extends BusEndpointBase {
 
 		public void setAdapter(IAdapter adapter) {
 			this.adapter = adapter.getName();
+		}
+		
+		public void setConfiguration(final Configuration configuration) {
+			this.configuration = configuration.getName();
 		}
 	}
 }

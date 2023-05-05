@@ -63,6 +63,7 @@ public class TestWebServices extends BusTestBase {
 	private ApiListener registerDummyApiListener(Configuration configuration) throws Exception {
 		Adapter adapter = SpringUtils.createBean(configuration, Adapter.class);
 		adapter.setName("ApiTestAdapter");
+		adapter.setConfiguration(getConfiguration());
 		ApiListener listener = new ApiListener();
 		listener.setMethod(HttpMethod.POST);
 		listener.setUriPattern(API_LISTENER_ENDPOINT);
@@ -170,6 +171,21 @@ public class TestWebServices extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "openapi");
 		request.setHeader("uri", API_LISTENER_ENDPOINT);
+		Message<?> response = callSyncGateway(request);
+
+		String result = response.getPayload().toString();
+		result = result.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
+		String expectedJson = TestFileUtils.getTestFile("/Management/WebServices/OpenApiSpec.json");
+		MatchUtils.assertJsonEquals("JSON Mismatch", expectedJson, result);
+	}
+	
+	@Test
+	public void getConfigurationOpenApiSpec() throws Exception {
+		assertEquals(1, ApiServiceDispatcher.getInstance().findMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());
+
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
+		request.setHeader("type", "openapi");
+		request.setHeader("configuration", getConfiguration().getName());
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();

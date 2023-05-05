@@ -25,8 +25,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -163,15 +165,44 @@ public class ApiServiceDispatcher {
 	}
 
 	public JsonObject generateOpenApiJsonSchema(String endpoint) {
-		return generateOpenApiJsonSchema(getPatternClients().values(), endpoint);
+		return generateOpenApiJsonSchema(x -> true, endpoint);
+	}
+	
+	public JsonObject generateOpenApiJsonSchema(Predicate<? super ApiListener> filter, String endpoint) {
+		return generateOpenApiJsonSchema(getPatternClients().values(), filter, endpoint);
+	}
+	
+	public JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, Predicate<? super ApiListener> filter, String endpoint) {
+		Predicate<? super ApiListener> filterPredicate = filter == null ? x -> true : filter; 
+		
+		List<ApiListener> apiListeners = clients.stream()
+				.map(x -> {
+					List<ApiListener> listeners = new ArrayList<ApiListener>();
+					for(HttpMethod method : x.getMethods()) {
+						listeners.add(x.getApiListener(method));
+					}
+					return listeners;
+				})
+				.flatMap(Collection::stream)
+				.filter(filterPredicate)
+				.collect(Collectors.toList());
+		
+		return generateOpenApiJsonSchema(apiListeners, endpoint);
 	}
 
 	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, String endpoint) {
-		List<ApiDispatchConfig> clientList = Arrays.asList(client);
-		return generateOpenApiJsonSchema(clientList, endpoint);
+		List<ApiListener> listeners = new ArrayList<ApiListener>();
+		for(HttpMethod method : client.getMethods()) {
+			listeners.add(client.getApiListener(method));
+		}
+		
+		return generateOpenApiJsonSchema(listeners, endpoint);
 	}
-
-	protected JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, String endpoint) {
+	
+	protected JsonObject generateOpenApiJsonSchema(Collection<ApiListener> apiListeners, String endpoint) {
+		Map<String, List<ApiListener>> groupedByUri = apiListeners.stream()
+				  .collect(Collectors.groupingBy(ApiListener::getUriPattern));
+		
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
@@ -185,34 +216,33 @@ public class ApiServiceDispatcher {
 
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
-
-		for (ApiDispatchConfig config : clients) {
+		
+		for (Entry<String, List<ApiListener>> config : groupedByUri.entrySet()) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
-			ApiListener listener = null;
-			for (HttpMethod method : config.getMethods()) {
+			for (ApiListener listener : config.getValue()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
-				listener = config.getApiListener(method);
-				if(listener != null && listener.getReceiver() != null) {
-					IAdapter adapter = listener.getReceiver().getAdapter();
-					if (StringUtils.isNotEmpty(adapter.getDescription())) {
-						methodBuilder.add("summary", adapter.getDescription());
-					}
-					if(StringUtils.isNotEmpty(listener.getOperationId())) {
-						methodBuilder.add("operationId", listener.getOperationId());
-					}
-					// GET and DELETE methods cannot have a requestBody according to the specs.
-					if(method != HttpMethod.GET && method != HttpMethod.DELETE) {
-						mapRequest(adapter, listener.getConsumes(), methodBuilder);
-					}
-					mapParamsInRequest(adapter, listener, methodBuilder);
 
-					methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
+				if(listener.getReceiver() == null) continue;
+				IAdapter adapter = listener.getReceiver().getAdapter();
+				if(adapter == null) continue;
+				
+				if (StringUtils.isNotEmpty(adapter.getDescription())) {
+					methodBuilder.add("summary", adapter.getDescription());
 				}
+				if(StringUtils.isNotEmpty(listener.getOperationId())) {
+					methodBuilder.add("operationId", listener.getOperationId());
+				}
+				// GET and DELETE methods cannot have a requestBody according to the specs.
+				HttpMethod method = listener.getMethod();
+				if(method != HttpMethod.GET && method != HttpMethod.DELETE) {
+					mapRequest(adapter, listener.getConsumes(), methodBuilder);
+				}
+				mapParamsInRequest(adapter, listener, methodBuilder);
+				
+				methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				methods.add(method.name().toLowerCase(), methodBuilder);
 			}
-			if(listener != null) {
-				paths.add(listener.getUriPattern(), methods);
-			}
+			paths.add(config.getKey(), methods);
 		}
 		root.add("paths", paths.build());
 		JsonObjectBuilder components = Json.createObjectBuilder();

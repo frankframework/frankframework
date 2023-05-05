@@ -17,6 +17,7 @@
     "angular-chart.js": "1.1.1",
     "angular-cookies": "1.7.9",
     "angular-datatables": "0.6.2",
+    "angular-filter": "^0.5.17",
     "angular-ladda": "0.4.3",
     "angular-loader": "1.7.9",
     "angular-messages": "1.7.9",
