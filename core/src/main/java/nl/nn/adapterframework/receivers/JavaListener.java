@@ -161,6 +161,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 				if (throwException) {
 					result = handler.processRequest(this, correlationId, rawMessage, message, session);
 					try {
+						// If message is a stream it will be closed at end of PipeLineSession, so it has to be preserved first.
 						result.preserve();
 					} catch (IOException e) {
 						throw new ListenerException("Cannot convert stream: " + e.getMessage(), e);
@@ -168,8 +169,11 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 				} else {
 					try {
 						result = handler.processRequest(this, correlationId, rawMessage, message, session);
+						// If message is a stream it will be closed at end of PipeLineSession, so it has to be preserved first.
 						result.preserve();
 					} catch (ListenerException | IOException e) {
+						// Message with error contains a String so does not need to be preserved.
+						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
 						result = handler.formatException(null, correlationId, message, e);
 					}
 				}
