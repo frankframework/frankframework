@@ -37,6 +37,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -57,6 +58,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	private @Getter ApplicationContext applicationContext;
 	@Context protected @Getter UriInfo uriInfo;
 	@Context private Request rsRequest;
+	private @Getter Environment environment;
 
 	private JAXRSServiceFactoryBean serviceFactory = null;
 
@@ -112,9 +114,15 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("IAF-API");
+	public final void afterPropertiesSet() throws Exception {
+		SpringJAXRSServerFactoryBean server = (SpringJAXRSServerFactoryBean) applicationContext.getBean("JAXRS-IAF-API");
 		serviceFactory = server.getServiceFactory();
+		environment = applicationContext.getEnvironment();
+	}
+
+	/** Get a property from the Spring Environment. */
+	protected <T> T getProperty(String key, T defaultValue) {
+		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
 	}
 
 	protected JAXRSServiceFactoryBean getJAXRSService() {
