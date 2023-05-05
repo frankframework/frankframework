@@ -178,7 +178,7 @@ public class TestWebServices extends BusTestBase {
 		String expectedJson = TestFileUtils.getTestFile("/Management/WebServices/OpenApiSpec.json");
 		MatchUtils.assertJsonEquals("JSON Mismatch", expectedJson, result);
 	}
-	
+
 	@Test
 	public void getConfigurationOpenApiSpec() throws Exception {
 		assertEquals(1, ApiServiceDispatcher.getInstance().findMatchingConfigsForUri(API_LISTENER_ENDPOINT).size());

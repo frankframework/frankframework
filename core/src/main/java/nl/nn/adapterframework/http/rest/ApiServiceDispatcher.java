@@ -167,13 +167,13 @@ public class ApiServiceDispatcher {
 	public JsonObject generateOpenApiJsonSchema(String endpoint) {
 		return generateOpenApiJsonSchema(x -> true, endpoint);
 	}
-	
+
 	public JsonObject generateOpenApiJsonSchema(Predicate<? super ApiListener> filter, String endpoint) {
 		return generateOpenApiJsonSchema(getPatternClients().values(), filter, endpoint);
 	}
 	
 	public JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, Predicate<? super ApiListener> filter, String endpoint) {
-		Predicate<? super ApiListener> filterPredicate = filter == null ? x -> true : filter; 
+		Predicate<? super ApiListener> filterPredicate = filter == null ? x -> true : filter;
 		
 		List<ApiListener> apiListeners = clients.stream()
 				.map(x -> {
@@ -201,7 +201,7 @@ public class ApiServiceDispatcher {
 	
 	protected JsonObject generateOpenApiJsonSchema(Collection<ApiListener> apiListeners, String endpoint) {
 		Map<String, List<ApiListener>> groupedByUri = apiListeners.stream()
-				  .collect(Collectors.groupingBy(ApiListener::getUriPattern));
+				.collect(Collectors.groupingBy(ApiListener::getUriPattern));
 		
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");

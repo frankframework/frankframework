@@ -99,7 +99,7 @@ public class WebServices extends BusEndpointBase {
 	public StringResponseMessage getOpenApiSpec(Message<?> message) {
 		String uri = BusMessageUtils.getHeader(message, "uri", null);
 		Predicate<? super ApiListener> uriPred = uri == null ? x -> true : x -> x.getUriPattern().equals(uri);
-		
+
 		String configuration = BusMessageUtils.getHeader(message, "configuration", null);
 		Predicate<? super ApiListener> configPred = configuration == null ? x -> true : x -> x.getReceiver().getAdapter().getConfiguration().getName().equals(configuration);
 		
