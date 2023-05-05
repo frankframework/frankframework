@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ import nl.nn.adapterframework.util.Misc;
  * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
- * 
+ *
  *
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -205,7 +205,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getCorrelationId();
-		SenderResult result = null;
+		SenderResult result;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
 				try {

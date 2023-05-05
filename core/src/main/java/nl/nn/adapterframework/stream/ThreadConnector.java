@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,11 +50,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 
 	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
-		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
-		threadInfo=threadLifeCycleEventListener!=null?threadLifeCycleEventListener.announceChildThread(owner, correlationId):null;
+		this.threadLifeCycleEventListener = threadLifeCycleEventListener;
+		threadInfo = threadLifeCycleEventListener != null ? threadLifeCycleEventListener.announceChildThread(owner, correlationId) : null;
 		log.trace("[{}] announced thread [{}] for owner [{}] correlationId [{}]", this, threadInfo, owner, correlationId);
-		parentThread=Thread.currentThread();
-		hideRegex= IbisMaskingLayout.getThreadLocalReplace();
+		parentThread = Thread.currentThread();
+		hideRegex = IbisMaskingLayout.getThreadLocalReplace();
 		transactionConnector = TransactionConnector.getInstance(txManager, owner, description);
 		saveThreadContext();
 	}
@@ -68,7 +68,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 
 	protected void restoreThreadContext() {
-		if (savedThreadContext!=null) {
+		if (savedThreadContext != null) {
 			log.trace("restoring ThreadContext [{}]", savedThreadContext);
 			ThreadContext.putAll(savedThreadContext);
 			savedThreadContext = null;
@@ -77,14 +77,14 @@ public class ThreadConnector<T> implements AutoCloseable {
 
 	public <R> R startThread(R input) {
 		childThread = Thread.currentThread();
-		if (childThread!=parentThread) {
+		if (childThread != parentThread) {
 			restoreThreadContext();
 		}
-		if (transactionConnector!=null) {
+		if (transactionConnector != null) {
 			transactionConnector.beginChildThread();
 		}
-		if (childThread!=parentThread) {
-			childThread.setName(parentThread.getName()+"/"+childThread.getName());
+		if (childThread != parentThread) {
+			childThread.setName(parentThread.getName() + "/" + childThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
 			if (threadLifeCycleEventListener!=null) {
 				threadState = ThreadState.CREATED;
@@ -92,10 +92,10 @@ public class ThreadConnector<T> implements AutoCloseable {
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
 		} else {
-			if (threadLifeCycleEventListener!=null) {
+			if (threadLifeCycleEventListener != null) {
 				log.trace("[{}] cancel thread [{}]", this, threadInfo);
 				threadLifeCycleEventListener.cancelChildThread(threadInfo);
-				threadLifeCycleEventListener=null;
+				threadLifeCycleEventListener = null;
 			}
 		}
 		return input;
@@ -110,11 +110,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 		saveThreadContext();
 		try {
 			try {
-				if (transactionConnector!=null) {
+				if (transactionConnector != null) {
 					transactionConnector.endChildThread();
 				}
 			} finally {
-				if (threadLifeCycleEventListener!=null) {
+				if (threadLifeCycleEventListener != null) {
 					threadState = ThreadState.FINISHED;
 					log.trace("[{}] end thread [{}]", this, threadInfo);
 					result = threadLifeCycleEventListener.threadEnded(threadInfo, response);
@@ -139,16 +139,16 @@ public class ThreadConnector<T> implements AutoCloseable {
 		saveThreadContext();
 		try {
 			try {
-				if (transactionConnector!=null) {
+				if (transactionConnector != null) {
 					transactionConnector.endChildThread();
 				}
 			} finally {
-				if (threadLifeCycleEventListener!=null) {
+				if (threadLifeCycleEventListener != null) {
 					threadState = ThreadState.FINISHED;
 					log.trace("[{}] abort thread [{}]", this, threadInfo);
 					result = threadLifeCycleEventListener.threadAborted(threadInfo, t);
-					if (result==null) {
-						log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
+					if (result == null) {
+						log.warn("Exception ignored by threadLifeCycleEventListener ({}): {}", t.getClass().getName(), t.getMessage());
 					}
 				}
 			}
@@ -162,11 +162,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 	public void close() throws IOException {
 		restoreThreadContext();
 		try {
-			if (transactionConnector!=null) {
+			if (transactionConnector != null) {
 				transactionConnector.close();
 			}
 		} finally {
-			if (threadLifeCycleEventListener!=null) {
+			if (threadLifeCycleEventListener != null) {
 				switch (threadState) {
 				case ANNOUNCED:
 					log.trace("[{}] cancel thread [{}] in close", this, threadInfo);
@@ -180,7 +180,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 				case FINISHED:
 					break;
 				default:
-					throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
+					throw new IllegalStateException("Unknown ThreadState [" + threadState + "]");
 				}
 			}
 		}

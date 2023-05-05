@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,22 +30,22 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class IsolatedServiceExecutor extends RequestReplyExecutor {
-	private Logger log = LogUtil.getLogger(this);
-	private String serviceName;
-	private PipeLineSession session;
-	private boolean targetIsJavaListener;
-	private Guard guard;
-	private ThreadConnector<?> threadConnector;
+	private final Logger log = LogUtil.getLogger(this);
+	private final String serviceName;
+	private final PipeLineSession session;
+	private final boolean targetIsJavaListener;
+	private final Guard guard;
+	private final ThreadConnector<?> threadConnector;
 
 	public IsolatedServiceExecutor(String serviceName, Message message, PipeLineSession session, boolean targetIsJavaListener, Guard guard, ThreadLifeCycleEventListener<?> threadLifeCycleEventListener) {
 		super();
-		this.serviceName=serviceName;
-		this.correlationID=session.getCorrelationId();
-		request=message;
-		this.session=session;
-		this.targetIsJavaListener=targetIsJavaListener;
-		this.guard=guard;
-		this.threadConnector = new ThreadConnector(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, session.getCorrelationId());
+		this.serviceName = serviceName;
+		this.correlationID = session.getCorrelationId();
+		this.request = message;
+		this.session = session;
+		this.targetIsJavaListener = targetIsJavaListener;
+		this.guard = guard;
+		this.threadConnector = new ThreadConnector(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, correlationID);
 	}
 
 	@Override
