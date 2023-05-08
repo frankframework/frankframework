@@ -174,7 +174,7 @@ public class ApiServiceDispatcher {
 
 	public JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, Predicate<? super ApiListener> filter, String endpoint) {
 		Predicate<? super ApiListener> filterPredicate = filter == null ? x -> true : filter;
-		
+
 		List<ApiListener> apiListeners = clients.stream()
 				.map(x -> {
 					List<ApiListener> listeners = new ArrayList<ApiListener>();
@@ -186,7 +186,7 @@ public class ApiServiceDispatcher {
 				.flatMap(Collection::stream)
 				.filter(filterPredicate)
 				.collect(Collectors.toList());
-		
+
 		return generateOpenApiJsonSchema(apiListeners, endpoint);
 	}
 
@@ -195,14 +195,14 @@ public class ApiServiceDispatcher {
 		for(HttpMethod method : client.getMethods()) {
 			listeners.add(client.getApiListener(method));
 		}
-		
+
 		return generateOpenApiJsonSchema(listeners, endpoint);
 	}
-	
+
 	protected JsonObject generateOpenApiJsonSchema(Collection<ApiListener> apiListeners, String endpoint) {
 		Map<String, List<ApiListener>> groupedByUri = apiListeners.stream()
 				.collect(Collectors.groupingBy(ApiListener::getUriPattern));
-		
+
 		JsonObjectBuilder root = Json.createObjectBuilder();
 		root.add("openapi", "3.0.0");
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
@@ -216,7 +216,7 @@ public class ApiServiceDispatcher {
 
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
-		
+
 		for (Entry<String, List<ApiListener>> config : groupedByUri.entrySet()) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
 			for (ApiListener listener : config.getValue()) {
@@ -225,7 +225,7 @@ public class ApiServiceDispatcher {
 				if(listener.getReceiver() == null) continue;
 				IAdapter adapter = listener.getReceiver().getAdapter();
 				if(adapter == null) continue;
-				
+
 				if (StringUtils.isNotEmpty(adapter.getDescription())) {
 					methodBuilder.add("summary", adapter.getDescription());
 				}
@@ -238,7 +238,7 @@ public class ApiServiceDispatcher {
 					mapRequest(adapter, listener.getConsumes(), methodBuilder);
 				}
 				mapParamsInRequest(adapter, listener, methodBuilder);
-				
+
 				methodBuilder.add("responses", mapResponses(adapter, listener.getContentType(), schemas));
 				methods.add(method.name().toLowerCase(), methodBuilder);
 			}

@@ -73,7 +73,7 @@ public class ApiServiceDispatcherTest {
 			listener.setName(name);
 			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
-			
+
 			try {
 				dispatcher.registerServiceClient(listener);
 			} catch (ListenerException e) {

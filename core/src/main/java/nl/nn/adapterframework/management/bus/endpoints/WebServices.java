@@ -276,7 +276,7 @@ public class WebServices extends BusEndpointBase {
 		public void setAdapter(IAdapter adapter) {
 			this.adapter = adapter.getName();
 		}
-		
+
 		public void setConfiguration(final Configuration configuration) {
 			this.configuration = configuration.getName();
 		}
