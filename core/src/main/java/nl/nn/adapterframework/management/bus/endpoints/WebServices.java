@@ -102,8 +102,7 @@ public class WebServices extends BusEndpointBase {
 
 		String configuration = BusMessageUtils.getHeader(message, "configuration", null);
 		Predicate<? super ApiListener> configPred = configuration == null ? x -> true : x -> x.getReceiver().getAdapter().getConfiguration().getName().equals(configuration);
-		
-		
+
 		JsonObject jsonSchema = null;
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		if(uri != null) {

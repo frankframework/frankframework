@@ -171,7 +171,7 @@ public class ApiServiceDispatcher {
 	public JsonObject generateOpenApiJsonSchema(Predicate<? super ApiListener> filter, String endpoint) {
 		return generateOpenApiJsonSchema(getPatternClients().values(), filter, endpoint);
 	}
-	
+
 	public JsonObject generateOpenApiJsonSchema(Collection<ApiDispatchConfig> clients, Predicate<? super ApiListener> filter, String endpoint) {
 		Predicate<? super ApiListener> filterPredicate = filter == null ? x -> true : filter;
 		
