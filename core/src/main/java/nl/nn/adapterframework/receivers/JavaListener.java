@@ -157,19 +157,17 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			session.put(PipeLineSession.businessCorrelationIdKey, correlationId);
 			try {
-				Message result;
 				if (throwException) {
-					result = handler.processRequest(this, correlationId, rawMessage, message, session);
+					return handler.processRequest(this, correlationId, rawMessage, message, session);
 				} else {
 					try {
-						result = handler.processRequest(this, correlationId, rawMessage, message, session);
+						return handler.processRequest(this, correlationId, rawMessage, message, session);
 					} catch (ListenerException e) {
 						// Message with error contains a String so does not need to be preserved.
 						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-						result = handler.formatException(null, correlationId, message, e);
+						return handler.formatException(null, correlationId, message, e);
 					}
 				}
-				return result;
 			} finally {
 				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
 			}
