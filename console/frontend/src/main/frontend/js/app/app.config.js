@@ -1,4 +1,6 @@
 import pagesController from "./components/pages/pages.controller";
+import storageController from "./views/storage/storage.controller";
+import storageViewController from "./views/storage/storage-view/storage-view.controller";
 
 angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
 	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
@@ -43,7 +45,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.status', {
 		url: "/status?configuration&filter&search",
-		templateUrl: "views/ShowConfigurationStatus.html",
+		templateUrl: "js/app/views/ShowConfigurationStatus.html",
 		controller: 'StatusCtrl as status',
 		reloadOnSearch: false,
 		data: {
@@ -60,11 +62,11 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.adapter', {
 		url: "/adapter",
-		templateUrl: "views/ShowConfigurationStatus.html",
+		templateUrl: "js/app/views/ShowConfigurationStatus.html",
 	})
 	.state('pages.adapterstatistics', {
 		url: "/adapter/:name/statistics",
-		templateUrl: "views/adapter_statistics.html",
+		templateUrl: "js/app/views/adapterstatistics/adapter_statistics.html",
 		data: {
 			pageTitle: 'Adapter',
 			breadcrumbs: 'Adapter > Statistics'
@@ -77,10 +79,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		abstract: true,
 		url: "/adapters/:adapter/:storageSource/:storageSourceName/",
 		template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
-		controller: function($state) {
-			$state.current.data.pageTitle = $state.params.processState + " List";
-			$state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "") + $state.params.processState+" List";
-		},
+		controller: storageController,
 		params: {
 			adapter: { value: '', squash: true},
 			storageSourceName: { value: '', squash: true},
@@ -94,17 +93,15 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage.list', {
 		url: "stores/:processState",
-		templateUrl: "views/txstorage/adapter_storage_list.html",
+		templateUrl: "js/app/views/storage/adapter_storage_list.html",
 	})
 	.state('pages.storage.view', {
 		url: "stores/:processState/messages/:messageId",
-		templateUrl: "views/txstorage/adapter_storage_view.html",
+		templateUrl: "js/app/views/storage/storage-view/adapter_storage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
 		},
-		controller: function($state) {
-			$state.current.data.breadcrumbs = "Adapter > "+($state.params.storageSource=='pipes' ? "Pipes > " + $state.params.storageSourceName + " > ": "")+$state.params.processState+" List > View Message "+$state.params.messageId;
-		},
+		controller: storageViewController,
 	})
 	.state('pages.notifications', {
 		url: "/notifications",
