@@ -1,6 +1,7 @@
-import pagesController from "./components/pages/pages.controller";
-import storageController from "./views/storage/storage.controller";
-import storageViewController from "./views/storage/storage-view/storage-view.controller";
+import pagesController from "./components/pages/pages-state.controller";
+import configurationsManageDetailsStateController from "./views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
+import storageController from "./views/storage/storage-state.controller";
+import storageViewController from "./views/storage/storage-view/storage-view-state.controller";
 
 angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
 	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
@@ -93,7 +94,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.storage.list', {
 		url: "stores/:processState",
-		templateUrl: "js/app/views/storage/adapter_storage_list.html",
+		templateUrl: "js/app/views/storage/storage-list/adapter_storage_list.html",
 	})
 	.state('pages.storage.view', {
 		url: "stores/:processState/messages/:messageId",
@@ -105,7 +106,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.notifications', {
 		url: "/notifications",
-		templateUrl: "views/notifications.html",
+		templateUrl: "js/app/views/notifications/notifications.html",
 		data: {
 			pageTitle: 'Notifications',
 			breadcrumbs: 'Notifications'
@@ -117,7 +118,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.configuration', {
 		url: "/configurations?name&loaded",
-		templateUrl: "views/ShowConfiguration.html",
+		templateUrl: "js/app/views/configuration/ShowConfiguration.html",
 		reloadOnSearch: false,
 		data: {
 			pageTitle: 'Configurations',
@@ -130,7 +131,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.upload_configuration', {
 		url: "/configurations/upload",
-		templateUrl: "views/ManageConfigurationsUpload.html",
+		templateUrl: "js/app/views/configuration/configurations-upload/ManageConfigurationsUpload.html",
 		data: {
 			pageTitle: 'Manage Configurations',
 			breadcrumbs: 'Configurations > Upload',
@@ -138,7 +139,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.manage_configurations', {
 		url: "/configurations/manage",
-		templateUrl: "views/ManageConfigurations.html",
+		templateUrl: "js/app/views/configuration/configurations-manage/ManageConfigurations.html",
 		data: {
 			pageTitle: 'Manage Configurations',
 			breadcrumbs: 'Configurations > Manage',
@@ -146,7 +147,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.manage_configuration_details', {
 		url: "/configurations/manage/:name",
-		templateUrl: "views/ManageConfigurationDetails.html",
+		templateUrl: "js/app/views/configuration/configurations-manage/configurations-manage-details/ManageConfigurationDetails.html",
 		data: {
 			pageTitle: 'Manage Configurations',
 			breadcrumbs: 'Configurations > Manage',
@@ -154,16 +155,11 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		params: {
 			name: "",
 		},
-		controller: function($state) {
-			if($state.params && $state.params.name && $state.params.name != "")
-				$state.$current.data.breadcrumbs = "Configurations > Manage > " + $state.params.name;
-			else
-				$state.go("pages.manage_configurations");
-		}
+		controller: configurationsManageDetailsStateController
 	})
 	.state('pages.logging_show', {
 		url: "/logging?directory&file",
-		templateUrl: "views/ShowLogging.html",
+		templateUrl: "js/app/views/logging/ShowLogging.html",
 		data: {
 			pageTitle: 'Logging',
 			breadcrumbs: 'Logging > Log Files'
@@ -175,7 +171,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	})
 	.state('pages.logging_manage', {
 		url: "/logging/settings",
-		templateUrl: "views/ManageLogging.html",
+		templateUrl: "js/app/views/logging/logging-manage/ManageLogging.html",
 		data: {
 			pageTitle: 'Logging',
 			breadcrumbs: 'Logging > Log Settings'
