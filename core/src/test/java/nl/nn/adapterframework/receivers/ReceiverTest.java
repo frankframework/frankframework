@@ -15,7 +15,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.util.RunState;
 
 public class ReceiverTest {
 	protected final static Logger LOG = LogUtil.getLogger(ReceiverTest.class);
+
 	private TestConfiguration configuration = new TestConfiguration();
 
 	@Before
@@ -135,7 +138,7 @@ public class ReceiverTest {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
-		PipeLine pl = new PipeLine();
+		PipeLine pl = spy(new PipeLine());
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -169,6 +172,47 @@ public class ReceiverTest {
 			} catch (InterruptedException e) {
 				fail("test interrupted");
 			}
+		}
+	}
+
+	@Test
+	public void testProcessRequest() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		PipeLine pl = adapter.getPipeLine();
+		PipeLineResult plr = new PipeLineResult();
+		plr.setState(ExitState.SUCCESS);
+		plr.setResult(testMessage);
+		doReturn(plr).when(pl).process(any(), any(), any());
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			// Act
+			Message result = receiver.processRequest(listener, "correlation-id", rawTestMessage, testMessage, session);
+
+			// Assert
+			assertFalse("Result message should not be scheduled for closure on exit of session", result.isScheduledForCloseOnExitOf(session));
+			assertTrue("Result message should be a stream", result.requiresStream());
+			assertTrue("Result message should be a stream", result.asObject() instanceof Reader);
+			assertEquals("TEST", result.asString());
+		} finally {
+			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		}
 	}
 

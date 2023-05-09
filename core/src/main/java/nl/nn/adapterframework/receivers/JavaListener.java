@@ -101,7 +101,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			}
 			open=true;
 		} catch (Exception e) {
-			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
@@ -120,7 +120,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			}
 		}
 		catch (Exception e) {
-			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 
