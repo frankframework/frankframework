@@ -191,6 +191,9 @@ public class Message implements Serializable {
 				charset = MessageUtils.computeDecodingCharset(this);
 			}
 
+			// Remove the size, if present
+			context.remove(MessageContext.METADATA_SIZE);
+
 			if (charset == null) {
 				failedToDetermineCharset = true;
 				if (StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
@@ -271,6 +274,7 @@ public class Message implements Serializable {
 	}
 
 	/*
+	 * TODO SHOULD IMPLEMENT AUTOCLOSABLE!!
 	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
 	 */
 	public void close() throws Exception {

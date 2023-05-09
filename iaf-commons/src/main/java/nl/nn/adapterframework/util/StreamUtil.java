@@ -126,6 +126,10 @@ public class StreamUtil {
 		return streamToBytes(bOMInputStream);
 	}
 
+	public static InputStream removeBOM(InputStream inputStream) {
+		return new BOMInputStream(inputStream, false, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+	}
+
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, the default character set UTF-8 is used.
 	 */
@@ -289,11 +293,11 @@ public class StreamUtil {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
-		try {
+		try (InputStream inStream = inputStream) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			byte[] buffer = new byte[1024];
 			while (true) {
-				int r = inputStream.read(buffer);
+				int r = inStream.read(buffer);
 				if (r == -1) {
 					break;
 				}
@@ -301,8 +305,6 @@ public class StreamUtil {
 			}
 
 			return out.toByteArray();
-		} finally {
-			inputStream.close();
 		}
 	}
 

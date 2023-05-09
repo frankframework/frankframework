@@ -8,12 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class MessageUtilsTest {
@@ -34,10 +38,48 @@ public class MessageUtilsTest {
 	@Test
 	public void testMd5Hash() throws Exception {
 		Message message = new Message("test message");
+
 		String hash = MessageUtils.generateMD5Hash(message);
+
 		assertNotNull(hash);
 		assertEquals(MessageUtils.generateMD5Hash(message), hash, "hash should be the same");
 		assertEquals("c72b9698fa1927e1dd12d3cf26ed84b2", hash);
+	}
+
+	@Test
+	public void testCRC32Checksum() throws Exception {
+		Message message = new Message("test message");
+
+		Long checksum = MessageUtils.generateCRC32(message);
+
+		assertNotNull(checksum);
+		assertEquals(MessageUtils.generateCRC32(message), checksum, "Checksum should be the same");
+		assertEquals(529295243, checksum);
+	}
+
+	@Test
+	public void testCalculateSize() throws Exception {
+		// getNonRepeatableMessage turns this into a reader, thus requiring charset decoding, the result is stored as UTF8
+		Message message = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_ISO88591);
+
+		// Act
+		Long size = MessageUtils.calculateSize(message);
+
+		// Assert
+		assertEquals(1122, size); // UTF-8 representation of the ISO-8895-1 content.
+	}
+
+	@ParameterizedTest
+	@CsvSource({"utf8-with-bom,32", "utf8-without-bom,28", "iso-8859-1,1095"})
+	public void testCalculateSize(String resource, int size) throws Exception {
+		Message message = MessageTestUtils.getMessage("/Util/MessageUtils/"+resource+".txt");
+
+		// Act
+		Long calculatedSize = MessageUtils.calculateSize(message);
+
+		// Assert
+		assertEquals(size, calculatedSize);
+		assertEquals(MessageUtils.calculateSize(message), size, "size should be the same");
 	}
 
 	@Test

@@ -22,12 +22,15 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
@@ -257,13 +260,62 @@ public abstract class MessageUtils {
 	 */
 	public static String generateMD5Hash(Message message) {
 		try {
-			message.preserve();
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
 			try (InputStream inputStream = message.asInputStream()) {
 				return DigestUtils.md5DigestAsHex(inputStream);
 			}
 		} catch (IllegalStateException | IOException e) {
-			LOG.warn("unable to read Message or write the etag", e);
+			LOG.warn("unable to read Message or write the MD5 hash", e);
 		}
 		return null;
+	}
+
+	/**
+	 * Resource intensive operation, preserves the message and calculates an CRC32 checksum over the entire message.
+	 */
+	public static Long generateCRC32(Message message) {
+		try {
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
+			CRC32 checksum = new CRC32();
+			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
+				long size = IOUtils.consume(inputStream);
+				message.getContext().put(MessageContext.METADATA_SIZE, size);
+			}
+			return checksum.getValue();
+		} catch (IOException e) {
+			LOG.warn("unable to read Message or write the CRC32 checksum", e);
+		}
+		return null;
+	}
+
+	/**
+	 * Resource intensive operation, calculates the binary size of a Message.
+	 */
+	public static long calculateSize(Message message) {
+		try {
+			long size = message.size();
+			if(size > 0) {
+				return size;
+			}
+
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
+			try (InputStream inputStream = StreamUtil.removeBOM(message.asInputStream())) {
+				long computedSize = IOUtils.consume(inputStream);
+				message.getContext().put(MessageContext.METADATA_SIZE, computedSize);
+				return computedSize;
+			}
+		} catch (IOException e) {
+			LOG.warn("unable to read Message", e);
+		}
+		return -1;
 	}
 }
