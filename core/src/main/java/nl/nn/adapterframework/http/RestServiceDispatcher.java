@@ -130,7 +130,7 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 
@@ -276,18 +276,13 @@ public class RestServiceDispatcher {
 				}
 			}
 
-			String result;
-			try {
-				result=listener.processRequest(null, new Message(request), context).asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			}
+			Message result=listener.processRequest(null, new Message(request), context);
 			//Caching: pipeline has been processed, save etag
-			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
+			if(!Message.isNull(result) && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey("exitcode")) {
+			if (Message.isNull(result) && !context.containsKey("exitcode")) {
 				log.warn("result is null!");
 			}
 			return result;
