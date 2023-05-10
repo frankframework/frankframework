@@ -232,7 +232,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 				}
 			}
-			final String serviceIndication = getServiceIndication(session);
 			final ServiceClient serviceClient;
 			try {
 				serviceClient = getServiceImplementation(session);
@@ -243,17 +242,17 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				log.info("{} {}", getLogPrefix(), e.getMessage());
 				return new SenderResult("error", new Message("<error>" + e.getMessage() + "</error>"));
 			}
-			final String name = getActualServiceName(session);
+			final String serviceIndication = getServiceIndication(session);
 
 			try {
 				if (isIsolated()) {
 					message.preserve();
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
-						result = isolatedServiceCaller.callServiceIsolated(name, correlationID, message, context, isJavaListener(), threadLifeCycleEventListener);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
 					} else {
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(name, correlationID, message, context, isJavaListener(), threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
 						result = message;
 					}
 				} else {
@@ -262,14 +261,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
+					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
 				if (session!=null) {
+					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+						log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
+					}
 					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}

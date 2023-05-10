@@ -20,6 +20,7 @@ import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
@@ -49,15 +50,15 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener, ThreadLifeCycleEventListener threadLifeCycleEventListener) {
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, null, threadLifeCycleEventListener);
+	public void callServiceAsynchronous(ServiceClient service, String correlationID, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, correlationID, message, session, null, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 	}
 
-	public Message callServiceIsolated(String serviceName, String correlationID, Message message, PipeLineSession session, boolean targetIsJavaListener, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException {
+	public Message callServiceIsolated(ServiceClient service, String correlationID, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException {
 		Guard guard= new Guard();
 		guard.addResource();
-		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, session, targetIsJavaListener, guard, threadLifeCycleEventListener);
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, correlationID, message, session, guard, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 		try {
 			guard.waitForAllResources();
@@ -72,5 +73,4 @@ public class IsolatedServiceCaller {
 		}
 		return ise.getReply();
 	}
-
 }
