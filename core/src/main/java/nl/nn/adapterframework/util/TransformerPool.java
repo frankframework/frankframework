@@ -95,7 +95,7 @@ public class TransformerPool {
 		try {
 			if (xsltVersion<=0) {
 				configMap=getConfigMap();
-				String version=configMap.get("stylesheet-version");
+				String version=configMap.get("version");
 				xsltVersion=XmlUtils.interpretXsltVersion(version);
 			}
 		} catch (TransformerException | IOException | SAXException e) {
@@ -247,7 +247,7 @@ public class TransformerPool {
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {
-					String xsltVersionInStylesheet = result.getConfigMap().get("stylesheet-version");
+					String xsltVersionInStylesheet = result.getConfigMap().get("version");
 					int detectedXsltVersion = XmlUtils.interpretXsltVersion(xsltVersionInStylesheet);
 					if (xsltVersion!=detectedXsltVersion) {
 						ConfigurationWarnings.add(scopeProvider, log, "configured xsltVersion ["+xsltVersion+"] does not match xslt version ["+detectedXsltVersion+"] declared in stylesheet ["+styleSheet.getSystemId()+"]");
