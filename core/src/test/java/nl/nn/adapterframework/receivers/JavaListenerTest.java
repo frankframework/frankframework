@@ -16,7 +16,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,12 +36,9 @@ import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
 
 public class JavaListenerTest {
-	protected final static Logger LOG = LogUtil.getLogger(JavaListenerTest.class);
-
 	private TestConfiguration configuration;
 	private Adapter adapter;
 	private Receiver<String> receiver;
