@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -94,6 +95,8 @@ public class IbisJavaSenderTest {
 		assertEquals("MESSAGE", result.asString());
 		assertTrue("After request the pipeline-session should contain key [my-parameter]", pipeLineSession.containsKey("my-parameter"));
 		assertEquals("parameter-value", pipeLineSession.get("my-parameter"));
+		assertTrue("After request the pipeline-session should not contain key [this-doesnt-exist]", pipeLineSession.containsKey("this-doesnt-exist"));
+		assertNull("Key not in return from service should have value [NULL]", pipeLineSession.get("this-doesnt-exist"));
 	}
 
 	@Test

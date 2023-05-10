@@ -104,7 +104,7 @@
 
 	<bean
 		name="isolatedServiceCaller"
-		class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
+		class="nl.nn.adapterframework.senders.IsolatedServiceCaller"
 		autowire="byName"
 		scope="singleton"
 	/>

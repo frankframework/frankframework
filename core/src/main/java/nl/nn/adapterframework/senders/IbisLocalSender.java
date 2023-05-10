@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.WebServiceListener;
-import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
@@ -219,7 +219,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 
 	@Override
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+		String correlationID = session == null ? null : session.getMessageId();
 		Message result;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
@@ -265,22 +265,20 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
-				if (session!=null) {
-					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-						log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					}
+				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 
-
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			if (exitState!=null && exitState!=ExitState.SUCCESS) {
+			if (exitState != null && exitState != ExitState.SUCCESS) {
 				context.put("originalResult", result);
 				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 			}
-			String forwardName = exitCode !=null ? exitCode.toString() : null;
+
+			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(forwardName, result);
 		}
 	}
