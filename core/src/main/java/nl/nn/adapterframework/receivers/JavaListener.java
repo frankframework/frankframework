@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
@@ -132,6 +132,11 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
 		}
+	}
+
+	@Override
+	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
+		return processRequest(correlationId, (M) message.asObject(), message, session);
 	}
 
 	public Message processRequest(String correlationId, Message message, Map<String, Object> context) throws ListenerException {

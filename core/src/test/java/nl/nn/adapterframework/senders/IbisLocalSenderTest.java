@@ -50,7 +50,7 @@ public class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 	}
 
-	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callSynchronous) {
+	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callSynchronous) throws ConfigurationException {
 		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
 		IbisLocalSender ibisLocalSender = configuration.createBean(IbisLocalSender.class);
 		ibisLocalSender.setIsolatedServiceCaller(serviceCaller);
@@ -62,6 +62,9 @@ public class IbisLocalSenderTest {
 		} else {
 			ibisLocalSender.setJavaListener(listener.getName());
 		}
+
+		ibisLocalSender.setApplicationContext(configuration);
+		ibisLocalSender.configure();
 		return ibisLocalSender;
 	}
 
