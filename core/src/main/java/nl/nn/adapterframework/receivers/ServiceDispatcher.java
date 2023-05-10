@@ -91,7 +91,7 @@ public class ServiceDispatcher  {
 	/**
 	 * Dispatch a request {@link Message} to a service by its configured name.
 	 *
-	 * @param serviceName ServiceName given to the {@link JavaListener} or other {@link ServiceClient} implementation that is to be called
+	 * @param serviceName ServiceName given to the {@link ServiceClient} implementation that is to be called
 	 * @param correlationId Correlation ID of the message to be processed
 	 * @param message {@link Message} to be processed
 	 * @param session Existing {@link PipeLineSession}.
