@@ -213,6 +213,27 @@ public class IbisLocalSenderTest {
 	}
 
 	@Test
+	public void testSendMessageIsolatedWithException() throws Exception {
+		// Arrange
+		TestConfiguration configuration = new TestConfiguration();
+		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
+
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		sender.setIsolatedServiceCaller(serviceCaller);
+		sender.setIsolated(true);
+		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((correlationId, message, session) -> {
+			throw new ListenerException("TEST");
+		}));
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
+
+			// Act / Assert
+			assertThrows(SenderException.class, () -> sender.sendMessageAndProvideForwardName(message, session));
+		}
+	}
+
+	@Test
 	public void testSendMessageWithInvalidServiceName() throws Exception {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
