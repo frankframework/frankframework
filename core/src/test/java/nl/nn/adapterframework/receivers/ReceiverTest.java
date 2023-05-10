@@ -186,11 +186,11 @@ public class ReceiverTest {
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
-		PipeLine pl = adapter.getPipeLine();
-		PipeLineResult plr = new PipeLineResult();
-		plr.setState(ExitState.SUCCESS);
-		plr.setResult(testMessage);
-		doReturn(plr).when(pl).process(any(), any(), any());
+		PipeLine pipeLine = adapter.getPipeLine();
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		pipeLineResult.setState(ExitState.SUCCESS);
+		pipeLineResult.setResult(testMessage);
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
 		receiver.setTxManager(transactionManager);
