@@ -1,9 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="IAF-Example" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 9" ALTERNATIVE_JRE_ENABLED="false">
     <option name="COMMON_VM_ARGUMENTS" value="-Ddtap.stage=LOC" />
-    <option name="UPDATING_POLICY" value="hot-swap-classes" />
     <deployment>
-      <artifact name="ibis-adapterframework-example:war">
+      <artifact name="ibis-adapterframework-example:war exploded">
         <settings>
           <option name="CONTEXT_PATH" value="/iaf-example" />
         </settings>
