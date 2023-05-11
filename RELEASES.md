@@ -13,12 +13,12 @@ Upcoming (7.9)
 - IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
 - For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports
 - Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
+ - Session variable 'exitcode' has been renamed to 'exitCode'.
 - Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
   This is in cases where a received (JMS) correlationId is used to send a response.
 - The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
 - The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
-- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by setting
-  defaultValueMethod="input".
+- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
 - Larva default timeout has been decreased to 10s, and to 2s for local tests
 
