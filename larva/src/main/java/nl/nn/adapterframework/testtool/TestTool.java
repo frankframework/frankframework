@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -1949,8 +1950,8 @@ public class TestTool {
 			String servletPath = request.getServletPath();
 			int i = servletPath.lastIndexOf('/');
 			String realPath = application.getRealPath(servletPath.substring(0, i));
-			List<String> scenariosRootDirectories = new ArrayList<String>();
-			List<String> scenariosRootDescriptions = new ArrayList<String>();
+			List<String> scenariosRootDirectories = new ArrayList<>();
+			List<String> scenariosRootDescriptions = new ArrayList<>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
 					realPath,
 					null, scenariosRootDirectories,
@@ -1961,19 +1962,18 @@ public class TestTool {
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
 		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
 		ProcessUtil.executeCommand(command);
+		Files.delete(tempFileResult.toPath());
+		Files.delete(tempFileExpected.toPath());
 	}
 
 	private static File writeTempFile(String originalFileName, String content) throws IOException {
 		String encoding = getEncoding(originalFileName, content);
 
-		String baseName = FileUtils.getBaseName(originalFileName);
-		String extensie = FileUtils.getFileNameExtension(originalFileName);
+		String extension = FileUtils.getFileNameExtension(originalFileName);
 
-		File tempFile = null;
-		tempFile = File.createTempFile("ibistesttool", "."+extensie);
-		tempFile.deleteOnExit();
+		File tempFile = FileUtils.createTempFile("." + extension);
 		String tempFileMessage;
-		if (extensie.equalsIgnoreCase("XML")) {
+		if ("XML".equalsIgnoreCase(extension)) {
 			tempFileMessage = XmlUtils.canonicalize(content);
 		} else {
 			tempFileMessage = content;
