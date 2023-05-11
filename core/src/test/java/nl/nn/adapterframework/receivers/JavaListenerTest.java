@@ -12,7 +12,6 @@ import static org.mockito.Mockito.spy;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,6 +27,7 @@ import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
@@ -43,6 +43,7 @@ public class JavaListenerTest {
 	private Adapter adapter;
 	private Receiver<String> receiver;
 	private JavaListener<String> listener;
+	private PipeLineSession session;
 
 	@Before
 	public void setUp() throws Exception {
@@ -53,10 +54,12 @@ public class JavaListenerTest {
 		listener = setupJavaListener();
 		receiver = setupReceiver(listener);
 		adapter = setupAdapter(receiver);
+		session = new PipeLineSession();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		session.close();
 		configuration.getIbisManager().handleAction(IbisManager.IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 
 		configuration.stop();
@@ -161,13 +164,11 @@ public class JavaListenerTest {
 		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
-		Map<String, Object> context = new HashMap<>();
-
 		// start adapter
 		startAdapter();
 
 		// Act
-		Message result = listener.processRequest("correlation-id", testMessage, context);
+		Message result = listener.processRequest("correlation-id", testMessage, session);
 
 		// Assert
 		assertTrue("Result message should be a stream", result.requiresStream());
@@ -182,16 +183,14 @@ public class JavaListenerTest {
 		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
 		listener.setThrowException(true);
 
-		Map<String, Object> context = new HashMap<>();
-
 		HttpServletRequest servletRequest = mock(HttpServletRequest.class);
-		context.put("httpRequest", servletRequest);
+		session.put("httpRequest", servletRequest);
 
 		// start adapter
 		startAdapter();
 
 		// Act
-		Message result = listener.processRequest("correlation-id", testMessage, context);
+		Message result = listener.processRequest("correlation-id", testMessage, session);
 
 		// Assert
 		assertTrue("Result message should be a stream", result.requiresStream());
@@ -209,13 +208,11 @@ public class JavaListenerTest {
 		PipeLine pl = adapter.getPipeLine();
 		doThrow(PipeRunException.class).when(pl).process(any(), any(), any());
 
-		Map<String, Object> context = new HashMap<>();
-
 		// start adapter
 		startAdapter();
 
 		// Act / Assert
-		assertThrows(ListenerException.class,() -> listener.processRequest("correlation-id", testMessage, context));
+		assertThrows(ListenerException.class,() -> listener.processRequest("correlation-id", testMessage, session));
 	}
 
 	@Test
@@ -228,13 +225,11 @@ public class JavaListenerTest {
 		PipeLine pipeLine = adapter.getPipeLine();
 		doThrow(new PipeRunException(pipeLine.getPipe(0), "FAILED PIPE")).when(pipeLine).process(any(), any(), any());
 
-		Map<String, Object> context = new HashMap<>();
-
 		// start adapter
 		startAdapter();
 
 		// Act
-		Message result = listener.processRequest("correlation-id", testMessage, context);
+		Message result = listener.processRequest("correlation-id", testMessage, session);
 
 		// Assert
 		String resultString = result.asString();

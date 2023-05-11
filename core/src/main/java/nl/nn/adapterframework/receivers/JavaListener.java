@@ -113,10 +113,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			unregisterListener();
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				// Current DispatcherManager (version 1.3) doesn't have an
-				// unregister method, instead a call to register with a null
-				// value is done.
-				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), null);
+				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
 		}
 		catch (Exception e) {
@@ -137,10 +134,6 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	@Override
 	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
 		return processRequest(correlationId, (M) message.asObject(), message, session);
-	}
-
-	public Message processRequest(String correlationId, Message message, Map<String, Object> context) throws ListenerException {
-		return processRequest(correlationId, (M) message.asObject(), message, context);
 	}
 
 	private Message processRequest(String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
