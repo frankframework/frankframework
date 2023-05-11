@@ -1,7 +1,12 @@
-import pagesController from "./components/pages/pages-state.controller";
+import pagesStateController from "./components/pages/pages-state.controller";
 import configurationsManageDetailsStateController from "./views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
-import storageController from "./views/storage/storage-state.controller";
-import storageViewController from "./views/storage/storage-view/storage-view-state.controller";
+import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
+import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
+import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";
+import iframeLadybugStateController from "./views/iframe/iframe-ladybug/iframe-ladybug-state.controller";
+import iframeLarvaStateController from "./views/iframe/iframe-larva/iframe-larva-state.controller";
+import storageStateController from "./views/storage/storage-state.controller";
+import storageViewStateController from "./views/storage/storage-view/storage-view-state.controller";
 
 angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
 	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
@@ -41,12 +46,12 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 
 			.state('pages', {
 				abstract: true,
-				controller: pagesController,
+				controller: pagesStateController,
 				templateUrl: "js/app/components/pages/content.html",
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
-				templateUrl: "js/app/views/ShowConfigurationStatus.html",
+				templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
 				controller: 'StatusCtrl as status',
 				reloadOnSearch: false,
 				data: {
@@ -63,7 +68,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.adapter', {
 				url: "/adapter",
-				templateUrl: "js/app/views/ShowConfigurationStatus.html",
+				templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
 			})
 			.state('pages.adapterstatistics', {
 				url: "/adapter/:name/statistics",
@@ -80,7 +85,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				abstract: true,
 				url: "/adapters/:adapter/:storageSource/:storageSourceName/",
 				template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
-				controller: storageController,
+				controller: storageStateController,
 				params: {
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
@@ -102,7 +107,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				params: {
 					messageId: { value: '', squash: true },
 				},
-				controller: storageViewController,
+				controller: storageViewStateController,
 			})
 			.state('pages.notifications', {
 				url: "/notifications",
@@ -297,7 +302,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.monitors', {
 				url: "/monitors?configuration",
-				templateUrl: "views/ShowMonitors.html",
+				templateUrl: "js/app/views/monitors/ShowMonitors.html",
 				data: {
 					pageTitle: 'Monitors',
 					breadcrumbs: 'Monitors'
@@ -308,7 +313,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.monitors_editTrigger', {
 				url: "/monitors/:monitor/triggers/:trigger?configuration",
-				templateUrl: "views/EditMonitorTrigger.html",
+				templateUrl: "js/app/views/monitors-add-edit/EditMonitorTrigger.html",
 				data: {
 					pageTitle: 'Edit Trigger',
 					breadcrumbs: 'Monitors > Triggers > Edit'
@@ -321,7 +326,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.monitors_addTrigger', {
 				url: "/monitors/:monitor/triggers/new?configuration",
-				templateUrl: "views/EditMonitorTrigger.html",
+				templateUrl: "js/app/views/monitors-add-edit/EditMonitorTrigger.html",
 				data: {
 					pageTitle: 'Add Trigger',
 					breadcrumbs: 'Monitors > Triggers > Add'
@@ -333,7 +338,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.ibisstore_summary', {
 				url: "/ibisstore-summary",
-				templateUrl: "views/ShowIbisstoreSummary.html",
+				templateUrl: "js/app/views/ibisstore-summary/ShowIbisstoreSummary.html",
 				data: {
 					pageTitle: 'Ibisstore Summary',
 					breadcrumbs: 'JDBC > Ibisstore Summary'
@@ -341,7 +346,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.liquibase', {
 				url: "/liquibase",
-				templateUrl: "views/ShowLiquibaseScript.html",
+				templateUrl: "js/app/views/liquibase/ShowLiquibaseScript.html",
 				data: {
 					pageTitle: 'Liquibase Script',
 					breadcrumbs: 'JDBC > Liquibase Script'
@@ -349,7 +354,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			})
 			.state('pages.customView', {
 				url: "/customView/:name",
-				templateUrl: "views/iFrame.html",
+				templateUrl: "js/app/views/iframe/iFrame.html",
 				data: {
 					pageTitle: "Custom View",
 					breadcrumbs: 'Custom View',
@@ -359,76 +364,56 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 					name: { value: '', squash: true },
 					url: { value: '', squash: true },
 				},
-				controller: function ($scope, Misc, $state, $window) {
-					if ($state.params.url == "")
-						$state.go('pages.status');
-
-					if ($state.params.url.indexOf("http") > -1) {
-						$window.open($state.params.url, $state.params.name);
-						$scope.redirectURL = $state.params.url;
-					}
-					else
-						$scope.url = Misc.getServerPath() + $state.params.url;
-				}
+				controller: iframeCustomViewStateController
 			})
 			.state('pages.larva', {
 				url: "/testing/larva",
-				templateUrl: "views/iFrame.html",
+				templateUrl: "js/app/views/iframe/iFrame.html",
 				data: {
 					pageTitle: 'Larva',
 					breadcrumbs: 'Testing > Larva',
 					iframe: true
 				},
-				controller: function ($scope, Misc, $interval) {
-					$scope.url = Misc.getServerPath() + "iaf/larva";
-				}
+				controller: iframeLarvaStateController
 			})
 			.state('pages.ladybug', {
 				url: "/testing/ladybug",
-				templateUrl: "views/iFrame.html",
+				templateUrl: "js/app/views/iframe/iFrame.html",
 				data: {
 					pageTitle: 'Ladybug',
 					breadcrumbs: 'Testing > Ladybug',
 					iframe: true
 				},
-				controller: function ($scope, Misc, $timeout) {
-					$scope.url = Misc.getServerPath() + "iaf/testtool";
-				}
+				controller: iframeLadybugStateController
 			})
 			.state('pages.ladybug_beta', {
 				url: "/testing/ladybug-beta",
-				templateUrl: "views/iFrame.html",
+				templateUrl: "js/app/views/iframe/iFrame.html",
 				data: {
 					pageTitle: 'Ladybug (beta)',
 					breadcrumbs: 'Testing > Ladybug (beta)',
 					iframe: true
 				},
-				controller: function ($scope, Misc) {
-					$scope.url = Misc.getServerPath() + "iaf/ladybug";
-				}
+				controller: iframeLadybugBetaStateController
 			})
 			.state('pages.empty_page', {
 				url: "/empty_page",
-				templateUrl: "views/empty_page.html",
+				templateUrl: "js/app/views/empty/empty_page.html",
 				data: { pageTitle: 'Empty Page' }
 			})
 			.state('pages.iaf_update', {
 				url: "/iaf-update",
-				templateUrl: "views/iaf-update.html",
+				templateUrl: "js/app/views/iaf-update/iaf-update.html",
 				data: { pageTitle: 'IAF Update' },
-				controller: function ($scope, $location, Session) {
-					$scope.release = Session.get("IAF-Release");
-					if ($scope.release == undefined)
-						$location.path("status");
-				}
+				controller: iafUpdateStatusController
 			})
 			.state('pages.loading', {
 				url: "/",
-				templateUrl: "views/common/loading.html",
+				templateUrl: "js/app/views/loading/loading.html",
 			})
 			.state('pages.errorpage', {
 				url: "/error",
-				templateUrl: "views/common/errorpage.html",
+				templateUrl: "js/app/views/error/errorpage.html",
 			});
 
 	}]).run(['$rootScope', '$state', 'Debug', function ($rootScope, $state, Debug) {
