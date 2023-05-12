@@ -1,4 +1,5 @@
 import Pace from 'pace-js'
+
 import './components/logout/logout.controller';
 import './components/pages/topinfobar/infobar.controller';
 import './views/adapterstatistics/adapterstatistics.controller';

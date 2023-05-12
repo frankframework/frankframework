@@ -66,10 +66,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 				},
 				//parent: "pages"
 			})
-			.state('pages.adapter', {
-				url: "/adapter",
-				templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
-			})
 			.state('pages.adapterstatistics', {
 				url: "/adapter/:name/statistics",
 				templateUrl: "js/app/views/adapterstatistics/adapter_statistics.html",
