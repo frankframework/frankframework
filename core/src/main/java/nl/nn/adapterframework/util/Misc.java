@@ -322,9 +322,12 @@ public class Misc {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
+		return streamToBytes(inputStream, 0);
+	}
+	public static byte[] streamToBytes(InputStream inputStream, int initialCapacity) throws IOException {
 		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			byte[] buffer = new byte[1024];
+			ByteArrayOutputStream out = new ByteArrayOutputStream( initialCapacity > 0 ? initialCapacity : 8192);
+			byte[] buffer = new byte[8192];
 			while (true) {
 				int r = inputStream.read(buffer);
 				if (r == -1) {

@@ -615,7 +615,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	private class MimeContentMessage extends nl.nn.adapterframework.stream.Message {
 
 		public MimeContentMessage(IMAPMessage imapMessage) {
-			super(() -> imapMessage.getMimeStream(), null, imapMessage.getClass());
+			super(imapMessage::getMimeStream, null, imapMessage.getClass());
 		}
 	}
 

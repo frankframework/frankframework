@@ -47,7 +47,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
  *
  */
 public final class AppConstants extends Properties implements Serializable {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
@@ -55,10 +55,11 @@ public final class AppConstants extends Properties implements Serializable {
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
 	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
+	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
-	private static Properties additionalProperties = new Properties();
+	private static final Properties additionalProperties = new Properties();
 
-	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
@@ -69,10 +70,9 @@ public final class AppConstants extends Properties implements Serializable {
 		putAll(additionalProperties);
 
 		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
-		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
-			log.info("created new AppConstants instance for classloader ["+ClassUtils.nameOf(classLoader)+"]");
-		}
-		else {
+		if(classLoader instanceof IConfigurationClassLoader) {
+			log.info("created new AppConstants instance for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
+		} else {
 			log.info("created new AppConstants instance for root classloader");
 		}
 	}

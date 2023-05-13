@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Map;
 
 public class FileMessage extends Message {
@@ -32,7 +31,7 @@ public class FileMessage extends Message {
 	}
 
 	public FileMessage(File file, Map<String,Object> context) {
-		super(() -> new FileInputStream(file), new MessageContext(context)
+		super(new SerializableFileReference(file.toPath()), new MessageContext(context)
 				.withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())

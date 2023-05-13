@@ -53,7 +53,7 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
- * 
+ *
  * @author  Gerrit van Brakel
  */
 public class StreamUtil {
@@ -137,8 +137,11 @@ public class StreamUtil {
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
+		return readerToString(reader, endOfLineString, 0);
+	}
+	public static String readerToString(Reader reader, String endOfLineString, int initialCapacity) throws IOException {
 		try {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder(initialCapacity > 0 ? initialCapacity + 32: 8192);
 			int curChar = -1;
 			int prevChar = -1;
 			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
@@ -154,8 +157,7 @@ public class StreamUtil {
 					}
 				}
 				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-					String appendStr =""+(char) curChar;
-					sb.append(appendStr);
+					sb.append((char)curChar);
 				}
 				prevChar = curChar;
 			}
@@ -170,8 +172,12 @@ public class StreamUtil {
 	}
 
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
+		return streamToByteArray(inputStream, skipBOM, 0);
+	}
+
+	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM, int initialCapacity) throws IOException {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
-		return Misc.streamToBytes(bOMInputStream);
+		return Misc.streamToBytes(bOMInputStream, initialCapacity);
 	}
 
 	/**
@@ -196,19 +202,61 @@ public class StreamUtil {
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
-	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
-		if (in!=null) {
-			byte[] buffer=new byte[chunkSize];
-
-			int bytesRead=1;
-			while (bytesRead>0) {
-				bytesRead=in.read(buffer,0,chunkSize);
-				if (bytesRead>0) {
+	/**
+	 * Copy an {@link InputStream} to the {@link OutputStream}. After copying, the {@link InputStream} is closed but
+	 * the {@link OutputStream} is not.
+	 *
+	 * @param in The {@link InputStream} from which to read bytes to copy.
+	 * @param out The {@link OutputStream} target to which to write the byte from {@code in}.
+	 * @param chunkSize The size of the buffer used for copying.
+	 * @return The number of bytes copied.
+	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
+	 */
+	public static long copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
+		if (in == null) {
+			return 0L;
+		}
+		byte[] buffer=new byte[chunkSize];
+		long totalBytesCopied = 0L;
+		int bytesRead=1;
+		while (bytesRead>0) {
+			bytesRead=in.read(buffer,0,chunkSize);
+			if (bytesRead>0) {
 //					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
-					out.write(buffer,0,bytesRead);
-				} else {
-					in.close();
-				}
+				out.write(buffer,0,bytesRead);
+				totalBytesCopied += bytesRead;
+			} else {
+				in.close();
+			}
+		}
+		return totalBytesCopied;
+	}
+
+	/**
+	 * Copy a maximum of {@code maxBytesToCopy} of an {@link InputStream} to the {@link OutputStream}. If a negative number is passed, then the
+	 * full stream is copied.
+	 * The {@link InputStream} is not closed.
+	 *
+	 * @param in The {@link InputStream} from which to read bytes to copy.
+	 * @param out The {@link OutputStream} target to which to write the byte from {@code in}.
+	 * @param maxBytesToCopy The maximum nr of bytes to copy. If a negative number, then the entire InputStream will be copied.
+	 * @param chunkSize The size of the buffer used for copying.
+	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
+	 */
+	public static void copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
+		if (in == null) {
+			return;
+		}
+
+		byte[] buffer = new byte[chunkSize];
+		long bytesLeft = maxBytesToCopy > 0L ? maxBytesToCopy : Long.MAX_VALUE;
+		int bytesRead = 1;
+		while (bytesRead > 0 && bytesLeft != 0L) {
+			int toRead = (int) Math.min(chunkSize, bytesLeft);
+			bytesRead = in.read(buffer,0, toRead);
+			if (bytesRead > 0) {
+				out.write(buffer,0,bytesRead);
+				bytesLeft -= bytesRead;
 			}
 		}
 	}
@@ -303,7 +351,7 @@ public class StreamUtil {
 		};
 	}
 
-	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below) 
+	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below)
 	private static void closeResource(AutoCloseable resource) {
 		resource.close();
 	}
