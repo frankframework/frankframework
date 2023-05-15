@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import nl.nn.adapterframework.filesystem.FileNotFoundException;
-import nl.nn.adapterframework.testutil.TestAssertions;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +17,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import nl.nn.adapterframework.filesystem.FileNotFoundException;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class FileUtilsTest {
 	private final String BASE = "/Util/FileUtils/";
@@ -96,9 +96,9 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testCreateTempDirBaseDir() throws Exception {
+	public void createTempDirectoryTest() throws Exception {
 		File f = new File(testFolderPath);
-		File file = FileUtils.createTempDir(f);
+		File file = FileUtils.createTempDirectory(f);
 		boolean b = file.exists();
 		file.delete();
 		assertTrue(b);
