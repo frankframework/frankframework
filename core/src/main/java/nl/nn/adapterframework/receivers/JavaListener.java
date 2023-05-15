@@ -133,7 +133,9 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	@Override
 	public Message processRequest(String correlationId, Message message, PipeLineSession session) throws ListenerException {
-		return processRequest(correlationId, (M) message.asObject(), message, session);
+Message response = processRequest(correlationId, (M) message.asObject(), message, session);
+session.closeOnClose(response);
+return  response;
 	}
 
 	private Message processRequest(String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
