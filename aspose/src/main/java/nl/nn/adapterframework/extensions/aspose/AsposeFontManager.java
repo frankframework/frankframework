@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.aspose;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
