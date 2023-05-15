@@ -1,5 +1,6 @@
 import Pace from 'pace-js'
 
+import './components/pages/information-modal/information-modal.controller';
 import './components/logout/logout.controller';
 import './components/pages/topinfobar/infobar.controller';
 import './views/adapterstatistics/adapterstatistics.controller';
@@ -501,7 +502,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.openInfoModel = function () {
 		$uibModal.open({
-			templateUrl: 'views/information.html',
+			templateUrl: 'js/app/components/pages/information-modal/information.html',
 //            size: 'sm',
 			controller: 'InformationCtrl',
 		});
@@ -525,32 +526,6 @@ angular.module('iaf.beheerconsole')
 		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
 		$(".rating i:nth-child(-n+"+ (rating + 1) +")").addClass("fa-star").removeClass("fa-star-o");
 	};
-}])
-
-.controller('InformationCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
-	$scope.error = false;
-	Api.Get("server/info", function(data) {
-		$.extend( $scope, data );
-	}, function() {
-		$scope.error = true;
-	});
-
-	$scope.close = function () {
-		$uibModalInstance.close();
-	};
-
-	$scope.openCookieModel = function () {
-		$uibModalInstance.close(); //close the current model
-
-		$timeout(function() {
-			$uibModal.open({
-				templateUrl: 'views/common/cookieModal.html',
-				size: 'lg',
-				backdrop: 'static',
-				controller: 'CookieModalCtrl',
-			});
-		});
-	}
 }])
 
 .controller('FlowDiagramModalCtrl', ['$scope', '$uibModalInstance', 'xhr', function($scope, $uibModalInstance, xhr) {
@@ -589,27 +564,6 @@ angular.module('iaf.beheerconsole')
 		GDPR.setSettings(cookies);
 		$uibModalInstance.close();
 	};
-}])
-
-.controller('errorController', ['$scope', 'Api', 'Debug', '$http', 'Misc', '$state', '$timeout', function($scope, Api, Debug, $http, Misc, $state, $timeout) {
-	var timeout = null;
-	$scope.retry = function() {
-		$scope.retryInit = true;
-		angular.element('.retryInitBtn i').addClass('fa-spin');
-
-		$http.get(Misc.getServerPath()+"ConfigurationServlet").then(reload, reload).catch(function(error) {
-			Debug.error("An error occured while foisting the IbisContext", error);
-		});
-	};
-	function reload() {
-		window.location.reload();
-		$timeout.cancel(timeout);
-		$timeout(function() {
-			angular.element(".main").show();
-			angular.element(".loading").hide();
-		}, 100);
-	}
-	timeout = $timeout(function(){$scope.retry();}, 60000);
 }])
 
 .controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'SweetAlert', function($scope, $uibModalInstance, $http, rating, $timeout, appConstants, SweetAlert) {
@@ -705,73 +659,5 @@ angular.module('iaf.beheerconsole')
 		}
 
 		return returnArray;
-	};
-}])
-
-.controller('StorageBaseCtrl', ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', function($scope, Api, $state, SweetAlert, Misc) {
-	$scope.notes = [];
-	$scope.addNote = function(type, message, removeQueue) {
-		$scope.notes.push({type:type, message: message});
-	};
-	$scope.closeNote = function(index) {
-		$scope.notes.splice(index, 1);
-	};
-	$scope.closeNotes = function() {
-		$scope.notes = [];
-	};
-
-	$scope.adapterName = $state.params.adapter;
-	if(!$scope.adapterName)
-		return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
-	$scope.storageSourceName = $state.params.storageSourceName;
-	if(!$scope.storageSourceName)
-		return SweetAlert.Warning("Invalid URL", "No receiver or pipe name provided!");
-	$scope.storageSource = $state.params.storageSource;
-	if(!$scope.storageSource)
-		return SweetAlert.Warning("Invalid URL", "Component type [receivers] or [pipes] is not provided in url!");
-	$scope.processState = $state.params.processState;
-	if(!$scope.processState)
-		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
-
-	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+ "/"+$scope.storageSource+"/"+Misc.escapeURL($scope.storageSourceName)+"/stores/"+$scope.processState;
-
-	$scope.updateTable = function() {
-		var table = $('#datatable').DataTable();
-		if(table)
-			table.draw();
-	};
-
-	$scope.doDeleteMessage = function(message, callback) {
-		message.deleting = true;
-		let messageId = message.id;
-		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), function() {
-			if(callback != undefined && typeof callback == 'function')
-				callback(messageId);
-			$scope.addNote("success", "Successfully deleted message with ID: "+messageId);
-			$scope.updateTable();
-		}, function() {
-			message.deleting = false;
-			$scope.addNote("danger", "Unable to delete messages with ID: "+messageId);
-			$scope.updateTable();
-		}, false);
-	};
-	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
-	};
-
-	$scope.doResendMessage = function(message, callback) {
-		message.resending = true;
-		let messageId = message.id;
-		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId)), false, function() {
-			if(callback != undefined && typeof callback == 'function')
-				callback(message.id);
-			$scope.addNote("success", "Message with ID: "+messageId+" will be reprocessed");
-			$scope.updateTable();
-		}, function(data) {
-			message.resending = false;
-			data = (data.error) ? data.error : data;
-			$scope.addNote("danger", "Unable to resend message ["+messageId+"]. "+data);
-			$scope.updateTable();
-		}, false);
 	};
 }]);

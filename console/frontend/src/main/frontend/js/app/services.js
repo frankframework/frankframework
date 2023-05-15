@@ -1,3 +1,5 @@
+import './components/pages/sidebar.service';
+
 import './services/alert.service';
 import './services/api.service';
 import './services/cookies.service';

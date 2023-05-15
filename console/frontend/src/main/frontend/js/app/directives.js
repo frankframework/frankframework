@@ -1,23 +1,22 @@
 import './page-title.directive';
 
+import './components/pages/hamburger.directive';
+import './components/pages/minimaliza-sidebar.directive';
+import './components/pages/scroll-to-top.directive';
+import './components/pages/side-navigation.directive';
+import './components/icheck.directive';
 import './components/time-since.directive';
 import './components/to-date.directive';
 
+import './views/configuration/configurations-manage/configurations-manage-details/icheck-radius.directive';
 import './views/configuration/format-code.directive';
+import './views/iframe/fit-height.directive';
 import './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import './views/logging/clipboard.directive';
 import './views/status/ui-lref.directive';
 import './views/storage/back-button.directive';
 
-function parseStateRef(ref, current) {
-	var preparsed = ref.match(/^\s*({[^}]*})\s*$/), parsed;
-	if (preparsed) ref = current + '(' + preparsed[1] + ')';
-	parsed = ref.replace(/\n/g, " ").match(/^([^(]+?)\s*(\((.*)\))?$/);
-	if (!parsed || parsed.length !== 4) throw new Error("Invalid state ref '" + ref + "'");
-	return { state: parsed[1], paramExpr: parsed[3] || null };
-}
 angular.module('iaf.beheerconsole')
-
 	.directive('flow', ['Misc', '$http', '$uibModal', function (Misc, $http, $uibModal) {
 		return {
 			restrict: 'E',
@@ -84,18 +83,7 @@ angular.module('iaf.beheerconsole')
 		};
 	})
 
-	.directive('sideNavigation', ['$timeout', function ($timeout) {
-		return {
-			restrict: 'A',
-			link: function (scope, element) {
-				// Call the metisMenu plugin and plug it to sidebar navigation
-				$timeout(function () {
-					element.metisMenu();
 
-				});
-			}
-		};
-	}])
 
 	.directive('customViews', ['appConstants', function (appConstants) {
 		return {
@@ -127,178 +115,5 @@ angular.module('iaf.beheerconsole')
 			template: '<li ng-repeat="view in customViews" ui-sref-active="active">' +
 				'<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>' +
 				'</li>'
-		};
-	}])
-
-	.directive('iboxToolsClose', ['$timeout', function ($timeout) {
-		return {
-			restrict: 'A',
-			scope: true,
-			templateUrl: 'views/common/ibox_tools_close.html',
-			controller: function ($scope, $element) {
-				$scope.closebox = function () {
-					var ibox = $element.closest('div.ibox');
-					ibox.remove();
-				};
-			}
-		};
-	}])
-
-	.service('Sidebar', function () {
-		this.toggle = function () {
-			$("body").toggleClass("mini-navbar");
-			if (!$('body').hasClass('mini-navbar') || $('body').hasClass('body-small')) {
-				// Hide menu in order to smoothly turn on when maximize menu
-				$('#side-menu').hide();
-				// For smoothly turn on menu
-				setTimeout(
-					function () {
-						$('#side-menu').fadeIn(400);
-					}, 200);
-			} else if ($('body').hasClass('fixed-sidebar')) {
-				$('#side-menu').hide();
-				setTimeout(
-					function () {
-						$('#side-menu').fadeIn(400);
-					}, 100);
-			} else {
-				// Remove all inline style from jquery fadeIn function to reset menu state
-				$('#side-menu').removeAttr('style');
-			}
-		}
-	})
-
-	.directive('minimalizaSidebar', ['Sidebar', function (Sidebar) {
-		return {
-			restrict: 'A',
-			template: '<a class="navbar-minimalize minimalize" href="" ng-click="toggleSidebar()"><i class="fa left fa-angle-double-left"></i><i class="fa right fa-angle-double-right"></i></a>',
-			controller: function ($scope, $element) {
-				$scope.toggleSidebar = function () { Sidebar.toggle() };
-			}
-		};
-	}])
-
-	.directive('hamburger', ['Sidebar', function (Sidebar) {
-		return {
-			restrict: 'A',
-			template: '<a class="hamburger btn btn-primary " href="" ng-click="toggleSidebar()"><i class="fa fa-bars"></i></a>',
-			controller: function ($scope, $element) {
-				$scope.toggleSidebar = function () { Sidebar.toggle() };
-			}
-		};
-	}])
-
-	.directive('fitHeight', function () {
-		return {
-			restrict: 'A',
-			link: function ($scope, element) {
-				$scope.height = {
-					topnavbar: 0,
-					topinfobar: 0,
-					window: 0,
-					min: 800
-				};
-
-				function fitHeight() {
-					var offset = $scope.height.topnavbar + $scope.height.topinfobar;
-					var height = ($scope.height.window > $scope.height.min ? $scope.height.window : $scope.height.min) - offset;
-					element.css("height", height + "px");
-					element.css("min-height", height + "px");
-				}
-
-				$scope.$watch(function () { return $(window).height(); }, function (newValue) {
-					if (!newValue) return;
-					$scope.height.window = newValue;
-					fitHeight();
-				});
-				$scope.$watch(function () { return $('nav.navbar-default').height(); }, function (newValue) {
-					if (!newValue) return;
-					$scope.height.min = newValue;
-					fitHeight();
-				});
-				$scope.$watch(function () { return $('.topnavbar').height(); }, function (newValue) {
-					if (!newValue) return;
-					$scope.height.topnavbar = newValue;
-					fitHeight();
-				});
-				$scope.$watch(function () { return $('.topinfobar').height(); }, function (newValue) {
-					if (!newValue) return;
-					$scope.height.topinfobar = newValue;
-					fitHeight();
-				});
-
-				fitHeight();
-			}
-		};
-	})
-
-	.directive('scrollToTop', function () {
-		return {
-			restrict: 'A',
-			replace: true,
-			template: '<div class="scroll-to-top"><a title="Scroll to top" ng-click="scrollTop()"><i class="fa fa-arrow-up"></i> <span class="nav-label">Scroll To Top</span></a></div>',
-			controller: function ($scope) {
-				$scope.scrollTop = function () {
-					$(window).scrollTop(0);
-				};
-			}
-		};
-	})
-
-	.directive('icheck', ['$timeout', '$parse', function ($timeout, $parse) {
-		return {
-			restrict: 'A',
-			require: 'ngModel',
-			link: function ($scope, element, $attrs, ngModel) {
-				return $timeout(function () {
-					var value = $attrs['value'];
-
-					$scope.$watch($attrs['ngModel'], function (newValue) {
-						$(element).iCheck('update');
-					});
-
-					return $(element).iCheck({
-						checkboxClass: 'icheckbox_square-green',
-						radioClass: 'iradio_square-green'
-
-					}).on('ifChanged', function (event) {
-						if ($(element).attr('type') === 'checkbox' && $attrs['ngModel']) {
-							$scope.$apply(function () {
-								return ngModel.$setViewValue(event.target.checked);
-							});
-						}
-						if ($(element).attr('type') === 'radio' && $attrs['ngModel']) {
-							return $scope.$apply(function () {
-								return ngModel.$setViewValue(value);
-							});
-						}
-					});
-				});
-			}
-		};
-	}])
-
-	.directive('icheckRadius', ['$timeout', '$parse', function ($timeout, $parse) {
-		return {
-			restrict: 'A',
-			require: 'ngModel',
-			link: function ($scope, element, $attrs, ngModel) {
-				return $timeout(function () {
-
-					$scope.$watch($attrs['ngModel'], function (newValue) {
-						$(element).iCheck('update');
-					});
-
-					return $(element).iCheck({
-						checkboxClass: 'iradio_square-green',
-					}).on('ifChanged', function (event) {
-						if ($(element).attr('type') === 'checkbox' && $attrs['ngModel']) {
-							$scope.$apply(function () {
-								return ngModel.$setViewValue(event.target.checked);
-							});
-						}
-					});
-				});
-			}
 		};
 	}]);
