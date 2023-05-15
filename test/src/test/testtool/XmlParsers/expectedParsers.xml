@@ -9,7 +9,7 @@
   <XMLOutputFactory-class>com.sun.xml.stream.ZephyrWriterFactory</XMLOutputFactory-class>
   <MessageFactory-class>com.sun.xml.messaging.saaj.soap.MessageFactoryImpl</MessageFactory-class>
   <Xerces-Version>Xerces-J 2.12.2-xml-schema-1.1</Xerces-Version>
-  <Xalan-Version>Xalan Java 2.7.2</Xalan-Version>
+  <Xalan-Version>Xalan Java 2.7.3</Xalan-Version>
   <Saxon-Version>SAXON-HE 10.9J from Saxonica</Saxon-Version>
   <Woodstox-Version>woodstox 5.0; xml1.1 enabled</Woodstox-Version>
 </parsers>
