@@ -81,7 +81,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	public SerializableFileReference(String charset, Path path) {
-		this(false, charset, false, path);
+		this(charset == null, charset, false, path);
 	}
 
 	private SerializableFileReference(boolean binary, String charset, boolean isFileOwner, Path path) {

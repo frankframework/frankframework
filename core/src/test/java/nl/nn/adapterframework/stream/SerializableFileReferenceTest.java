@@ -52,11 +52,15 @@ public class SerializableFileReferenceTest {
 	};
 
 	private SerializableFileReference reference;
+	private File tempFile;
 
 	@After
 	public void tearDown() throws Exception {
 		if (reference != null) {
 			reference.close();
+		}
+		if (tempFile != null) {
+			tempFile.delete();
 		}
 	}
 
@@ -202,7 +206,7 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void testWithReferenceToExistingFile() throws Exception {
 		// Arrange
-		File tempFile = FileUtils.createTempFile();
+		tempFile = FileUtils.createTempFile();
 		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
 
 		// Act
@@ -210,14 +214,15 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		assertTrue("Message request should be instance of SerializableFileReference", message.asObject() instanceof SerializableFileReference);
-		assertTrue("Should be binary", message.isBinary());
-		String result = message.asString();
-		assertEquals(TEST_DATA, result);
+		assertFalse("Should not be binary", message.isBinary());
 
 		reference = (SerializableFileReference)message.asObject();
-		assertTrue("Should be binary", reference.isBinary());
+		assertFalse("Should not be binary", reference.isBinary());
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
+
+		String result = message.asString();
+		assertEquals(TEST_DATA, result);
 
 		reference.close();
 		assertTrue("Reference does not own file, Path should still exist after close", Files.exists(path));
@@ -226,7 +231,7 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void testWithReferenceToExistingPath() throws Exception {
 		// Arrange
-		File tempFile = FileUtils.createTempFile();
+		tempFile = FileUtils.createTempFile();
 		Path tempFilePath = tempFile.toPath();
 		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
 
@@ -270,7 +275,7 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void testSerializationWithMessage() throws Exception {
 		// Arrange
-		File tempFile = FileUtils.createTempFile();
+		tempFile = FileUtils.createTempFile();
 		MessageTest.writeContentsToFile(tempFile, TEST_DATA);
 		Message message = new FileMessage(tempFile, "UTF-8");
 

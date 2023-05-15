@@ -17,7 +17,6 @@ public class FileMessageTest {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected String testString = MessageTest.testString;
-	protected String testStringFile = MessageTest.testStringFile;
 	protected int testStringLength = 116;
 
 	private final String[][] wires = {
@@ -41,9 +40,9 @@ public class FileMessageTest {
 		MessageTest.writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
-		assertEquals(testString, out.asString());
+		assertEquals(in.isBinary(), out.isBinary());
 		assertEquals(testStringLength, out.size());
+		assertEquals(testString, out.asString());
 	}
 
 	@Test
