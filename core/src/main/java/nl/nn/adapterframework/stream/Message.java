@@ -357,7 +357,7 @@ public class Message implements Serializable {
 	}
 
 	public void closeOnCloseOf(PipeLineSession session, String requester) {
-		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
+		if (!(request instanceof InputStream || request instanceof Reader || request instanceof SerializableFileReference) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
 		if (log.isDebugEnabled()) log.debug("registering Message [{}] for close on exit", this);

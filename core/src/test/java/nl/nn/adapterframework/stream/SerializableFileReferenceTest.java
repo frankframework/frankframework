@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -201,6 +202,22 @@ public class SerializableFileReferenceTest {
 		}
 		assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, fileLen);
 		assertEquals(TEST_DATA, new String(fileData, 0, fileLen, StandardCharsets.UTF_8));
+	}
+
+	@Test
+	public void testRemoveTempFileOnCloseOfSession() throws Exception {
+		// Arrange
+		reference = SerializableFileReference.of(TEST_DATA, StandardCharsets.UTF_8.name());
+		Path path = reference.getPath();
+		Message message = new Message(reference, new MessageContext(), reference.getClass());
+
+		// Act
+		try (PipeLineSession session = new PipeLineSession()) {
+			message.closeOnCloseOf(session, "test closing");
+		}
+
+		// Assert
+		assertFalse("Path should not exist after close of PipeLineSession", Files.exists(path));
 	}
 
 	@Test
