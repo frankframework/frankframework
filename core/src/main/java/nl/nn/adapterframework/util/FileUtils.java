@@ -296,7 +296,7 @@ public class FileUtils {
 			}
 			directory = file.getAbsolutePath();
 		}
-		log.info("resolved temp directory to [{}]", directory);
+		log.debug("resolved temp directory to [{}]", directory);
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
 		if(StringUtils.isEmpty(directory)) {
