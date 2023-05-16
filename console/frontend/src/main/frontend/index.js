@@ -45,9 +45,10 @@ import 'prismjs/themes/prism.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
 
-import './js/app/main';
+import './js/main';
 import './js/app/app.module';
 import './js/app/app.config';
-import './js/app/services';
-import './js/app/directives';
-import './js/app/controllers';
+import './js/services';
+import './js/filters';
+import './js/directives';
+import './js/controllers';

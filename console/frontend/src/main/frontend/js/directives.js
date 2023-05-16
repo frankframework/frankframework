@@ -1,20 +1,20 @@
-import './page-title.directive';
+import './app/page-title.directive';
 
-import './components/pages/hamburger.directive';
-import './components/pages/minimaliza-sidebar.directive';
-import './components/pages/scroll-to-top.directive';
-import './components/pages/side-navigation.directive';
-import './components/icheck.directive';
-import './components/time-since.directive';
-import './components/to-date.directive';
+import './app/components/pages/hamburger.directive';
+import './app/components/pages/minimaliza-sidebar.directive';
+import './app/components/pages/scroll-to-top.directive';
+import './app/components/pages/side-navigation.directive';
+import './app/components/icheck.directive';
+import './app/components/time-since.directive';
+import './app/components/to-date.directive';
 
-import './views/configuration/configurations-manage/configurations-manage-details/icheck-radius.directive';
-import './views/configuration/format-code.directive';
-import './views/iframe/fit-height.directive';
-import './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
-import './views/logging/clipboard.directive';
-import './views/status/ui-lref.directive';
-import './views/storage/back-button.directive';
+import './app/views/configuration/configurations-manage/configurations-manage-details/icheck-radius.directive';
+import './app/views/configuration/format-code.directive';
+import './app/views/iframe/fit-height.directive';
+import './app/views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import './app/views/logging/clipboard.directive';
+import './app/views/status/ui-lref.directive';
+import './app/views/storage/back-button.directive';
 
 angular.module('iaf.beheerconsole')
 	.directive('flow', ['Misc', '$http', '$uibModal', function (Misc, $http, $uibModal) {
@@ -82,8 +82,6 @@ angular.module('iaf.beheerconsole')
 			template: '<input class="form-control form-file" name="file" type="file" />'
 		};
 	})
-
-
 
 	.directive('customViews', ['appConstants', function (appConstants) {
 		return {

@@ -1,6 +1,5 @@
 import Prism from 'prismjs';
 
-
 if(location.hostname != "localhost") {
 	window.console.log("%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.","font-weight: bold; font-size: 14px;");
 }

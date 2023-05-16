@@ -1,87 +1,20 @@
-import './components/pages/sidebar.service';
+import './app/components/pages/sidebar.service';
 
-import './services/alert.service';
-import './services/api.service';
-import './services/cookies.service';
-import './services/debug.service';
-import './services/gdpr.service';
-import './services/hooks.service';
-import './services/misc.service';
-import './services/notification.service';
-import './services/poller.service';
-import './services/session.service';
-import './services/sweetalert.service';
-import './services/toastr.service';
+import './app/services/alert.service';
+import './app/services/api.service';
+import './app/services/cookies.service';
+import './app/services/debug.service';
+import './app/services/gdpr.service';
+import './app/services/hooks.service';
+import './app/services/misc.service';
+import './app/services/notification.service';
+import './app/services/poller.service';
+import './app/services/session.service';
+import './app/services/sweetalert.service';
+import './app/services/toastr.service';
 
 angular.module('iaf.beheerconsole')
-	.filter('ucfirst', function() {
-		return function(s) {
-			return (angular.isString(s) && s.length > 0) ? s[0].toUpperCase() + s.substr(1).toLowerCase() : s;
-		};
-	}).filter('truncate', function() {
-		return function(input, length) {
-			if(input && input.length > length) {
-				return input.substring(0, length) + "... ("+(input.length - length)+" characters more)";
-			}
-			return input;
-		};
-	}).filter('dropLastChar', function() {
-		return function(input) {
-			if(input && input.length > 0) {
-				return input.substring(0, input.length-1);
-			}
-			return input;
-		};
-	}).filter('markDown', function() {
-		return function(input) {
-			if(!input) return;
-			input = input.replace(/(?:\r\n|\r|\n)/g, '<br />');
-			input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
-			return input;
-		};
-	}).filter('withJavaListener', function() {
-		return function(adapters) {
-			if(!adapters) return;
-			let schedulerEligibleAdapters={};
-			for(const adapter in adapters) {
-				let receivers = adapters[adapter].receivers;
-				for(const r in receivers) {
-					let receiver=receivers[r];
-					if(receiver.listener.class.startsWith('JavaListener')){
-						schedulerEligibleAdapters[adapter] = adapters[adapter];
-					}
-				}
-			}
-			return schedulerEligibleAdapters;
-		};
-	}).filter('dash', function() {
-		return function(input) {
-			if(input || input === 0) return input;
-			else return "-";
-		};
-	}).filter('perc', function() {
-		return function(input) {
-			if(input || input === 0) return input+"%";
-			else return "-";
-		};
-	}).filter('formatStatistics', function() {
-		return function(input, format) {
-			if(!input || !format) return; //skip when no input
-			var formatted = {};
-			for(const key in format) {
-				var value = input[key];
-				if(!value && value !== 0) { // if no value, return a dash
-					value = "-";
-				}
-				if((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
-					value += "%";
-				}
-				formatted[key] = value;
-			}
-			formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle
-			return formatted;
-		};
-	}).factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 'Misc',
+	.factory('authService', ['$rootScope', '$http', 'Base64', '$location', 'appConstants', 'Misc',
 		function($rootScope, $http, Base64, $location, appConstants, Misc) {
 		var authToken;
 		return {
