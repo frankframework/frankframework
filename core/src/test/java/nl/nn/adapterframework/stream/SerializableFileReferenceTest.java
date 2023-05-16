@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,8 +35,8 @@ import java.nio.file.Path;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.SerializationTester;
@@ -56,7 +56,7 @@ public class SerializableFileReferenceTest {
 	private SerializableFileReference reference;
 	private File tempFile;
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		if (reference != null) {
 			reference.close();
@@ -82,11 +82,11 @@ public class SerializableFileReferenceTest {
 		reference = SerializableFileReference.of(in);
 
 		// Assert
-		assertTrue("When creating from stream, stream should be closed when done", closed[0]);
+		assertTrue(closed[0], "When creating from stream, stream should be closed when done");
 		Path path = reference.getPath();
-		assertNotNull("Path should be set", path);
-		assertTrue("Path should exist", Files.exists(path));
-		assertTrue("Should be binary", reference.isBinary());
+		assertNotNull(path, "Path should be set");
+		assertTrue(Files.exists(path), "Path should exist");
+		assertTrue(reference.isBinary(), "Should be binary");
 
 		String fileData;
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -96,7 +96,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(TEST_DATA, fileData);
 
 		reference.close();
-		assertFalse("Path should not exist after close", Files.exists(path));
+		assertFalse(Files.exists(path), "Path should not exist after close");
 	}
 
 	@Test
@@ -109,9 +109,9 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		Path path = reference.getPath();
-		assertNotNull("Path should be set", path);
-		assertTrue("Path should exist", Files.exists(path));
-		assertTrue("Should be binary", reference.isBinary());
+		assertNotNull(path, "Path should be set");
+		assertTrue(Files.exists(path), "Path should exist");
+		assertTrue(reference.isBinary(), "Should be binary");
 
 		String fileData;
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -121,7 +121,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(TEST_DATA, fileData);
 
 		reference.close();
-		assertFalse("Path should not exist after close", Files.exists(path));
+		assertFalse(Files.exists(path), "Path should not exist after close");
 	}
 
 	@Test
@@ -140,11 +140,11 @@ public class SerializableFileReferenceTest {
 		reference = SerializableFileReference.of(in, StandardCharsets.UTF_8.name());
 
 		// Assert
-		assertTrue("When creating from stream, stream should be closed when done", closed[0]);
+		assertTrue(closed[0], "When creating from stream, stream should be closed when done");
 		Path path = reference.getPath();
-		assertNotNull("Path should be set", path);
-		assertTrue("Path should exist", Files.exists(path));
-		assertFalse("Should not be binary", reference.isBinary());
+		assertNotNull(path, "Path should be set");
+		assertTrue(Files.exists(path), "Path should exist");
+		assertFalse(reference.isBinary(), "Should not be binary");
 
 		String fileData;
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -154,7 +154,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(TEST_DATA, fileData);
 
 		reference.close();
-		assertFalse("Path should not exist after close", Files.exists(path));
+		assertFalse(Files.exists(path), "Path should not exist after close");
 	}
 
 	@Test
@@ -164,9 +164,9 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		Path path = reference.getPath();
-		assertNotNull("Path should be set", path);
-		assertTrue("Path should exist", Files.exists(path));
-		assertFalse("Should not be binary", reference.isBinary());
+		assertNotNull(path, "Path should be set");
+		assertTrue(Files.exists(path), "Path should exist");
+		assertFalse(reference.isBinary(), "Should not be binary");
 
 		String fileData;
 		try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -176,7 +176,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(TEST_DATA, fileData);
 
 		reference.close();
-		assertFalse("Path should not exist after close", Files.exists(path));
+		assertFalse(Files.exists(path), "Path should not exist after close");
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public class SerializableFileReferenceTest {
 		}
 
 		// Assert
-		assertFalse("Path should not exist after close of PipeLineSession", Files.exists(path));
+		assertFalse(Files.exists(path), "Path should not exist after close of PipeLineSession");
 	}
 
 	@Test
@@ -247,11 +247,11 @@ public class SerializableFileReferenceTest {
 		Message message = new FileMessage(tempFile, "UTF-8");
 
 		// Assert
-		assertTrue("Message request should be instance of SerializableFileReference", message.asObject() instanceof SerializableFileReference);
-		assertFalse("Should not be binary", message.isBinary());
+		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertFalse(message.isBinary(), "Should not be binary");
 
 		reference = (SerializableFileReference)message.asObject();
-		assertFalse("Should not be binary", reference.isBinary());
+		assertFalse(reference.isBinary(), "Should not be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
@@ -259,7 +259,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(TEST_DATA, result);
 
 		reference.close();
-		assertTrue("Reference does not own file, Path should still exist after close", Files.exists(path));
+		assertTrue(Files.exists(path), "Reference does not own file, Path should still exist after close");
 	}
 
 	@Test
@@ -273,18 +273,18 @@ public class SerializableFileReferenceTest {
 		Message message = new PathMessage(tempFilePath);
 
 		// Assert
-		assertTrue("Message request should be instance of SerializableFileReference", message.asObject() instanceof SerializableFileReference);
-		assertTrue("Should be binary", message.isBinary());
+		assertTrue(message.asObject() instanceof SerializableFileReference, "Message request should be instance of SerializableFileReference");
+		assertTrue(message.isBinary(), "Should be binary");
 		String result = message.asString();
 		assertEquals(TEST_DATA, result);
 
 		reference = (SerializableFileReference)message.asObject();
-		assertTrue("Should be binary", reference.isBinary());
+		assertTrue(reference.isBinary(), "Should be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFilePath, path);
 
 		reference.close();
-		assertTrue("Reference does not own file, Path should still exist after close", Files.exists(path));
+		assertTrue(Files.exists(path), "Reference does not own file, Path should still exist after close");
 	}
 
 	@Test
@@ -336,14 +336,14 @@ public class SerializableFileReferenceTest {
 			SerializableFileReference out = serializationTester.deserialize(wire);
 
 			assertEquals(SerializableFileReference.class, out.getClass());
-			assertFalse(label, out.isBinary());
+			assertFalse(out.isBinary(), label);
 			BufferedReader reader = out.getReader();
 			String result = reader.readLine();
 			assertEquals(TEST_DATA, result);
 
 			Path path = out.getPath();
 			out.close();
-			assertFalse("Path should not exist after close", Files.exists(path));
+			assertFalse(Files.exists(path), "Path should not exist after close");
 		}
 	}
 
@@ -360,9 +360,9 @@ public class SerializableFileReferenceTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(FileMessage.class, out.getClass());
-			assertTrue(label, out.isBinary());
-			assertEquals(label, "UTF-8", out.getCharset());
-			assertEquals(label, TEST_DATA, out.asString());
+			assertTrue(out.isBinary(), label);
+			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(TEST_DATA, out.asString(), label);
 			assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, out.size());
 		}
 	}
