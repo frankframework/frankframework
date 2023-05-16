@@ -15,31 +15,21 @@
 */
 package nl.nn.adapterframework.stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.testutil.SerializationTester;
+import nl.nn.adapterframework.util.FileUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.testutil.SerializationTester;
-import nl.nn.adapterframework.util.FileUtils;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.Assert.*;
 
 public class SerializableFileReferenceTest {
 	private final Logger log = LogManager.getLogger(SerializableFileReferenceTest.class);
@@ -68,12 +58,20 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void ofInputStream() throws Exception {
 		// Arrange
-		InputStream in = new ByteArrayInputStream(TEST_DATA.getBytes(StandardCharsets.UTF_8));
+		final boolean[] closed = {false};
+		InputStream in = new ByteArrayInputStream(TEST_DATA.getBytes(StandardCharsets.UTF_8)) {
+			@Override
+			public void close() throws IOException {
+				closed[0] = true;
+				super.close();
+			}
+		};
 
 		// Act
 		reference = SerializableFileReference.of(in);
 
 		// Assert
+		assertTrue("When creating from stream, stream should be closed when done", closed[0]);
 		Path path = reference.getPath();
 		assertNotNull("Path should be set", path);
 		assertTrue("Path should exist", Files.exists(path));
@@ -118,12 +116,20 @@ public class SerializableFileReferenceTest {
 	@Test
 	public void ofReader() throws Exception {
 		// Arrange
-		Reader in = new StringReader(TEST_DATA);
+		final boolean[] closed = {false};
+		Reader in = new StringReader(TEST_DATA) {
+			@Override
+			public void close() {
+				closed[0] = true;
+				super.close();
+			}
+		};
 
 		// Act
 		reference = SerializableFileReference.of(in, StandardCharsets.UTF_8.name());
 
 		// Assert
+		assertTrue("When creating from stream, stream should be closed when done", closed[0]);
 		Path path = reference.getPath();
 		assertNotNull("Path should be set", path);
 		assertTrue("Path should exist", Files.exists(path));

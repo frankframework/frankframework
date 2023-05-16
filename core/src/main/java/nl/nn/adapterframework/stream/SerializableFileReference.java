@@ -15,30 +15,19 @@
 */
 package nl.nn.adapterframework.stream;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import lombok.Getter;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import lombok.Getter;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.StreamUtil;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * A reference to a file {@link Path} that can be serialized. When serialized it will write all the file data to
@@ -59,7 +48,9 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 
 	public static SerializableFileReference of(InputStream in) throws IOException {
-		return new SerializableFileReference(true, null, true, copyToTempFile(in, -1));
+		try (InputStream is = in){
+			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1));
+		}
 	}
 
 	public static SerializableFileReference of(byte[] data) throws IOException {
@@ -67,7 +58,9 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	public static SerializableFileReference of(Reader in, String charset) throws IOException {
-		return new SerializableFileReference(false, charset, true, copyToTempFile(new ReaderInputStream(in, charset), -1));
+		try (Reader r = in){
+			return new SerializableFileReference(false, charset, true, copyToTempFile(new ReaderInputStream(in, charset), -1));
+		}
 	}
 
 	public static SerializableFileReference of(String data, String charset) throws IOException {
