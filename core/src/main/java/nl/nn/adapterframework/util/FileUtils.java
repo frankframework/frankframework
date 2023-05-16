@@ -324,7 +324,7 @@ public class FileUtils {
 	 */
 	public static File createTempDirectory(File fromDirectory) throws IOException {
 		if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
-			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and mist exist");
+			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and must exist");
 		}
 
 		Path path = Files.createTempDirectory(fromDirectory.toPath(), "tmp");

@@ -219,14 +219,13 @@ public class StreamUtil {
 		byte[] buffer=new byte[chunkSize];
 		long totalBytesCopied = 0L;
 		int bytesRead=1;
-		while (bytesRead>0) {
-			bytesRead=in.read(buffer,0,chunkSize);
-			if (bytesRead>0) {
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
-				out.write(buffer,0,bytesRead);
-				totalBytesCopied += bytesRead;
-			} else {
-				in.close();
+		try (InputStream is = in){
+			while (bytesRead>0) {
+				bytesRead=is.read(buffer,0,chunkSize);
+				if (bytesRead>0) {
+					out.write(buffer,0,bytesRead);
+					totalBytesCopied += bytesRead;
+				}
 			}
 		}
 		return totalBytesCopied;
@@ -265,27 +264,26 @@ public class StreamUtil {
 		if (reader!=null) {
 			char[] buffer=new char[chunkSize];
 
-			int charsRead=1;
-			while (charsRead>0) {
-				charsRead=reader.read(buffer,0,chunkSize);
-				if (charsRead>0) {
-//					if (log.isDebugEnabled()) { log.debug(new String(buffer).substring(0,bytesRead)); }
-					if (resolve) {
-						String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
-						if (xmlEncode) {
-							writer.write(XmlUtils.encodeChars(resolved));
+			try (Reader r = reader){
+				int charsRead=1;
+				while (charsRead>0) {
+					charsRead=r.read(buffer,0,chunkSize);
+					if (charsRead>0) {
+						if (resolve) {
+							String resolved = StringResolver.substVars(new String (buffer,0,charsRead),null);
+							if (xmlEncode) {
+								writer.write(XmlUtils.encodeChars(resolved));
+							} else {
+								writer.write(resolved);
+							}
 						} else {
-							writer.write(resolved);
-						}
-					} else {
-						if (xmlEncode) {
-							writer.write(XmlUtils.encodeChars(buffer,0,charsRead));
-						} else {
-							writer.write(buffer,0,charsRead);
+							if (xmlEncode) {
+								writer.write(XmlUtils.encodeChars(buffer,0,charsRead));
+							} else {
+								writer.write(buffer,0,charsRead);
+							}
 						}
 					}
-				} else {
-					reader.close();
 				}
 			}
 		}

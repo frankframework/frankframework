@@ -55,7 +55,6 @@ public final class AppConstants extends Properties implements Serializable {
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
 	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
-	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	private static final Properties additionalProperties = new Properties();
 

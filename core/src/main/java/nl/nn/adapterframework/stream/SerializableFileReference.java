@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -71,9 +72,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	public static SerializableFileReference of(String data, String charset) throws IOException {
 		return of(new StringReader(data), charset);
-	}
-
-	private SerializableFileReference() {
 	}
 
 	public SerializableFileReference(Path path) {
@@ -175,7 +173,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException Thrown if there was any exception reading or writing the data.
 	 */
 	private static Path copyToTempFile(InputStream in, long maxBytes) throws IOException {
-		Path destination = FileUtils.createTempFile().toPath();
+		File tmpMessagesFolder = FileUtils.getTempDirectory("temp-messages");
+		Path destination = File.createTempFile("msg", ".dat", tmpMessagesFolder).toPath();
 		try (OutputStream fileOutputStream = Files.newOutputStream(destination)) {
 			StreamUtil.copyPartialStream(in, fileOutputStream, maxBytes, 16384);
 		}

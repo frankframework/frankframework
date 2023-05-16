@@ -69,6 +69,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class Message implements Serializable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
+	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -230,7 +231,7 @@ public class Message implements Serializable {
 		}
 
 		long requestSize = size();
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance().getLong(AppConstants.MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
 			preserveToDisk(deepPreserve);
 		} else {
 			preserveToMemory(deepPreserve);
