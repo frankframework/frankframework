@@ -246,11 +246,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 
 			try {
 				if (isIsolated()) {
-					message.preserve();
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
 						result = isolatedServiceCaller.callServiceIsolated(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
 					} else {
+						// We return same message as we send, so it should be preserved in case it's not repeatable
+						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
 						isolatedServiceCaller.callServiceAsynchronous(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
 						result = message;
@@ -278,6 +279,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 			}
 
+			result.unscheduleFromCloseOnExitOf(context);
+			result.closeOnCloseOf(session, this);
 			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(forwardName, result);
 		}

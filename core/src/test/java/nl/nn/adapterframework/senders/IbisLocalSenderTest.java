@@ -79,13 +79,13 @@ public class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), serviceClient);
 	}
 
-	private Message createVirtualInputStream() {
+	private Message createVirtualInputStream(long streamSize) {
 		InputStream virtualInputStream = new InputStream() {
 			LongAdder bytesRead = new LongAdder();
 
 			@Override
 			public int read() throws IOException {
-				if (bytesRead.longValue() >= EXPECTED_BYTE_COUNT) {
+				if (bytesRead.longValue() >= streamSize) {
 					log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
 					return -1;
 				}
@@ -149,7 +149,7 @@ public class IbisLocalSenderTest {
 		// Act
 		PipeLineSession session = new PipeLineSession();
 		log.info("**>>> Calling Local Sender");
-		Message result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
+		Message result = ibisLocalSender.sendMessage(createVirtualInputStream(EXPECTED_BYTE_COUNT), session);
 
 		long localCounterResult = countStreamSize(result);
 		log.info("***>>> Done reading result message");
@@ -157,7 +157,7 @@ public class IbisLocalSenderTest {
 
 		// Assert
 		assertTrue("Async local sender should complete w/o error within at most 10 seconds", completedSuccess);
-		assertEquals(ibisLocalSender.isSynchronous() ? 4 : EXPECTED_BYTE_COUNT, localCounterResult);
+		assertEquals(EXPECTED_BYTE_COUNT, localCounterResult);
 		assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get());
 	}
 
@@ -312,7 +312,8 @@ public class IbisLocalSenderTest {
 					log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 					long counter = countStreamSize(message);
 					asyncCounterResult.set(counter);
-					return new PipeRunResult(getSuccessForward(), counter);
+					// Return a stream from message which will be read by caller, testing that stream is not closed.
+					return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
 				} finally {
 					asyncCompletionSemaphore.release();
 					log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());
@@ -344,7 +345,7 @@ public class IbisLocalSenderTest {
 				Thread.yield();
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Exception running Pipe", e);
+			throw new RuntimeException("Exception reading from message as stream", e);
 		}
 		return counter;
 	}
