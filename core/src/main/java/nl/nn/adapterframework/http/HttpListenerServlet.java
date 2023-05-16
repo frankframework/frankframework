@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -55,7 +56,7 @@ public class HttpListenerServlet extends HttpServletBase {
 		}
 	}
 
-	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void invoke(Message message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
@@ -73,9 +74,13 @@ public class HttpListenerServlet extends HttpServletBase {
 			}
 			try {
 				log.debug("HttpListenerServlet calling service ["+service+"]");
-				String result=sd.dispatchRequest(service, message, messageContext);
-				response.getWriter().print(result);
-			} catch (ListenerException e) {
+				Message result=sd.dispatchRequest(service, message, messageContext);
+				if (result.isBinary()) {
+					StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 16384);
+				} else {
+					StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 16384);
+				}
+			} catch (ListenerException | IOException e) {
 				log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
 			}
@@ -84,13 +89,13 @@ public class HttpListenerServlet extends HttpServletBase {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		String message=request.getParameter(MESSAGE_PARAM);
-		invoke(message,request,response);
+		String message = request.getParameter(MESSAGE_PARAM);
+		invoke(Message.asMessage(message), request,response);
 	}
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		String message= StreamUtil.streamToString(request.getInputStream(),"\n",false);
+		Message message = Message.asMessage(request.getInputStream());
 		invoke(message,request,response);
 	}
 

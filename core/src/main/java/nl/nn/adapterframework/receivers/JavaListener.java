@@ -62,7 +62,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
@@ -78,7 +78,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	private @Getter boolean open=false;
 	private static Map<String, JavaListener> registeredListeners;
-	private @Getter @Setter IMessageHandler<String> handler;
+	private @Getter @Setter IMessageHandler<M> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -100,7 +100,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 			open=true;
 		} catch (Exception e) {
-			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
@@ -112,23 +112,39 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			unregisterListener();
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				// Current DispatcherManager (version 1.3) doesn't have an
-				// unregister method, instead a call to register with a null
-				// value is done.
-				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), null);
+				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
 		}
 		catch (Exception e) {
-			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
+		try {
+			if (context != null) {
+				context.put(PipeLineSession.correlationIdKey, correlationId);
+			}
+			Message result = processRequest((M) rawMessage, new Message(rawMessage), context);
+			return result.asString();
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert stream", e);
+		}
+	}
+
+	@Override
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
+		Message response = processRequest((M) message.asObject(), message, session);
+		response.closeOnCloseOf(session, this);
+		return  response;
+	}
+
+	private Message processRequest(M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), correlationId);
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.correlationIdKey) : null);
 		if (context != null) {
 			Object object = context.get("httpRequest");
 			if (object != null) {
@@ -141,24 +157,16 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
-			session.put(PipeLineSession.correlationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
 			try {
 				if (throwException) {
+					return handler.processRequest(this, rawMessage, message, session);
+				} else {
 					try {
-						return handler.processRequest(this, rawMessage, message, session).asString();
-					} catch (IOException e) {
-						throw new ListenerException("cannot convert stream", e);
-					}
-				}
-				try {
-					return handler.processRequest(this, rawMessage, message, session).asString();
-				} catch (ListenerException | IOException e) {
-					try {
-						return handler.formatException(null,correlationId, message, e).asString();
-					} catch (IOException e1) {
-						e.addSuppressed(e1);
-						throw new ListenerException(e);
+						return handler.processRequest(this, rawMessage, message, session);
+					} catch (ListenerException e) {
+						// Message with error contains a String so does not need to be preserved.
+						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
+						return handler.formatException(null, session.getCorrelationId(), message, e);
 					}
 				}
 			} finally {
@@ -166,7 +174,6 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 		}
 	}
-
 
 	/**
 	 * Register listener so that it can be used by a proxy
@@ -212,14 +219,14 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage);
 	}
 
 	@Override
@@ -265,7 +272,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	/**
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */

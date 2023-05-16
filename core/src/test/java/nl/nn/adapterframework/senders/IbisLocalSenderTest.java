@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.senders;
 
-import static org.awaitility.Awaitility.await;
+import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitForState;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,22 +19,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -56,39 +57,38 @@ class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 	}
 
-	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callSynchronous) {
+	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
 		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
 		IbisLocalSender ibisLocalSender = configuration.createBean(IbisLocalSender.class);
+		ibisLocalSender.setCheckDependency(true);
 		ibisLocalSender.setIsolatedServiceCaller(serviceCaller);
-		ibisLocalSender.setIsolated(true);
-		ibisLocalSender.setSynchronous(callSynchronous);
+		ibisLocalSender.setIsolated(callIsolated);
+		// If not synchronous then isolated is always true, so actual value we set should depend on callIsolated
+		ibisLocalSender.setSynchronous(!callIsolated || callSynchronous);
 
 		if (callByServiceName) {
 			ibisLocalSender.setServiceName(listener.getServiceName());
 		} else {
 			ibisLocalSender.setJavaListener(listener.getName());
 		}
+
+		ibisLocalSender.setApplicationContext(configuration);
+		ibisLocalSender.configure();
 		return ibisLocalSender;
 	}
 
 	private static void registerWithServiceDispatcher(JavaListener listener) throws ListenerException {
-		ServiceClient serviceClient = (message, session) -> {
-			try {
-				return new Message(listener.processRequest(session.getCorrelationId(), message.asString(), session));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		};
+		ServiceClient serviceClient = listener::processRequest;
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), serviceClient);
 	}
 
-	private Message createVirtualInputStream() {
+	private Message createVirtualInputStream(long streamSize) {
 		InputStream virtualInputStream = new InputStream() {
 			LongAdder bytesRead = new LongAdder();
 
 			@Override
 			public int read() throws IOException {
-				if (bytesRead.longValue() >= EXPECTED_BYTE_COUNT) {
+				if (bytesRead.longValue() >= streamSize) {
 					log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
 					return -1;
 				}
@@ -101,10 +101,17 @@ class IbisLocalSenderTest {
 		return new Message(virtualInputStream);
 	}
 
-	@ParameterizedTest(name = "Call via Dispatcher: {0}")
-	@CsvSource({"false", "true"})
-	@DisplayName("Test IbisLocalSender with Async and Isolated")
-	void sendMessageAsync(boolean callByServiceName) throws Exception {
+	@ParameterizedTest(name = "Call via Dispatcher: {0}, Isolated: {1}, Synchronous: {2}")
+	@CsvSource({
+			"true, true, false",
+			"false, true, false",
+			"true, true, true",
+			"false, true, true",
+			"false, false, false",
+			"true, false, false"
+	})
+	@DisplayName("Test IbisLocalSender")
+	void sendMessageAsync(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration();
 		configuration.stop();
@@ -114,18 +121,19 @@ class IbisLocalSenderTest {
 
 		PipeLine pipeline = createPipeLine(configuration, asyncCounterResult, asyncCompletionSemaphore);
 		JavaListener listener = setupJavaListener(configuration, pipeline, callByServiceName);
-		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, false);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, callIsolated, callSynchronous);
 
 		log.info("*>>> Starting Configuration");
 		configuration.configure();
 		configuration.start();
 
 		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		ibisLocalSender.open();
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
 		log.info("**>>> Calling Local Sender");
-		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(), session);
+		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(EXPECTED_BYTE_COUNT), session);
 
 		long localCounterResult = countStreamSize(result.getResult());
 		log.info("***>>> Done reading result message");
@@ -138,6 +146,114 @@ class IbisLocalSenderTest {
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes.")
 		);
+	}
+
+	@Test
+	public void testSendMessageWithParamValuesAndReturnSessionKeys() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("my-parameter", "parameter-value");
+			Message message = new Message("my-parameter");
+
+			// Act
+			SenderResult result = sender.sendMessage(message, session);
+
+			// Assert
+			assertEquals("parameter-value", result.getResult().asString());
+			assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]");
+			assertEquals("parameter-value", session.get("my-parameter"));
+			assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
+			assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]");
+		}
+	}
+
+	@Test
+	public void testSendMessageWithExitStateError() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
+			Message message = new Message("my-parameter");
+
+			// Act / Assert
+			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+		}
+	}
+
+	@Test
+	public void testSendMessageWithException() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
+			throw new ListenerException("TEST");
+		}));
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
+
+			// Act / Assert
+			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+		}
+	}
+
+	@Test
+	public void testSendMessageIsolatedWithException() throws Exception {
+		// Arrange
+		TestConfiguration configuration = new TestConfiguration();
+		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
+
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		sender.setIsolatedServiceCaller(serviceCaller);
+		sender.setIsolated(true);
+		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
+		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
+			throw new ListenerException("TEST");
+		}));
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
+
+			// Act / Assert
+			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+		}
+	}
+
+	@Test
+	public void testSendMessageWithInvalidServiceName() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		sender.setThrowJavaListenerNotFoundException(true);
+		sender.setServiceName("invalid");
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
+
+			// Act / Assert
+			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+		}
+	}
+
+	@Test
+	public void testSendMessageWithInvalidServiceNameNoException() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		sender.setThrowJavaListenerNotFoundException(false);
+		sender.setServiceName("invalid");
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
+
+			// Act / Assert
+			SenderResult result = sender.sendMessage(message, session);
+
+			assertNull(result.getForwardName(), "ForwardName for this error expected to be null");
+			assertFalse(result.isSuccess(), "Result not expected to be success");
+			assertEquals("<error>No service with name [invalid] has been registered</error>", result.getResult().asString());
+		}
 	}
 
 	private JavaListener setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
@@ -176,7 +292,8 @@ class IbisLocalSenderTest {
 					log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 					long counter = countStreamSize(message);
 					asyncCounterResult.set(counter);
-					return new PipeRunResult(getSuccessForward(), counter);
+					// Return a stream from message which will be read by caller, testing that stream is not closed.
+					return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
 				} finally {
 					asyncCompletionSemaphore.release();
 					log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());
@@ -208,20 +325,29 @@ class IbisLocalSenderTest {
 				Thread.yield();
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Exception running Pipe", e);
+			throw new RuntimeException("Exception reading from message as stream", e);
 		}
 		return counter;
 	}
 
-	public void waitForState(IManagable object, RunState... state) {
-		Set<RunState> states = new HashSet<>();
-		Collections.addAll(states, state);
+	private static IbisLocalSender createIbisLocalSenderWithDummyServiceClient() throws ListenerException, ConfigurationException {
+		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> session.getMessage(message.asObject().toString())));
+		IbisLocalSender sender = new IbisLocalSender();
+		sender.setServiceName(SERVICE_NAME);
+		sender.setSynchronous(true);
+		sender.setIsolated(false);
+		sender.setReturnedSessionKeys("my-parameter,this-doesnt-exist");
 
-		log.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
-		await()
-				.atMost(10, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> states.contains(object.getRunState()));
+		Parameter parameter = new Parameter("my-parameter", null);
+		parameter.setSessionKey("my-parameter");
+		parameter.configure();
+		sender.addParameter(parameter);
+
+		Parameter exitStateParameter = new Parameter(PipeLineSession.EXIT_STATE_CONTEXT_KEY, null);
+		exitStateParameter.setSessionKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		exitStateParameter.configure();
+		sender.addParameter(exitStateParameter);
+
+		return sender;
 	}
-
 }
