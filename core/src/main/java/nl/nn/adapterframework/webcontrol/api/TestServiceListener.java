@@ -85,7 +85,9 @@ public final class TestServiceListener extends Base {
 	public Response postServiceListeners(MultipartBody inputDataMap) throws ApiException {
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		String message = null, serviceName = null, dispatchResult = null;
+		String message;
+		String serviceName = null;
+		String dispatchResult;
 		InputStream file = null;
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,14 +62,15 @@ import nl.nn.adapterframework.util.Misc;
 @Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
+	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
+	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
+
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
-	private @Getter String returnedSessionKeys = ""; // do not intialize with null, returned session keys must be set explicitly
+	private @Getter String returnedSessionKeys = ""; // do not initialize with null, returned session keys must be set explicitly
 	private @Getter boolean multipartResponse = false;
-	private String multipartResponseContentType = "application/octet-stream";
-	private String multipartResponseCharset = "UTF-8";
 	private @Getter String dispatchType = "default";
 
 	@Override
@@ -94,15 +96,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String result = null;
-		HashMap context = null;
+		String result;
+		Map<String, Object> context = null;
 		try {
 			if (paramList!=null) {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = paramList.getValues(message, session).getValueMap();
 			} else {
-				context=new HashMap();
+				context=new HashMap<>();
 			}
-			DispatcherManager dm = null;
+			DispatcherManager dm;
 			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 
 			if(getDispatchType().equalsIgnoreCase("DLL")) {
@@ -126,9 +128,9 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			}
 
 			String correlationID = session==null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
-			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
+			result = dm.processRequest(serviceName, correlationID, message.asString(), (HashMap) context);
 			if (isMultipartResponse()) {
-				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
+				return HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session);
 			}
 
 		} catch (ParameterException e) {
@@ -139,7 +141,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			if (session!=null) {
+			if (session!=null && context != null) {
 				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}

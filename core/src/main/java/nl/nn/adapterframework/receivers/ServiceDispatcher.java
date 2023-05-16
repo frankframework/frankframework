@@ -58,23 +58,26 @@ public class ServiceDispatcher  {
 	}
 
 	/**
-	 * Dispatch a request.
+	 * Dispatch a request that came in as String, and return the result as String.
+	 *
+	 * Should not be used when calling with an existing message, only when the input is already in String format.
+	 *
+	 * @param serviceName ServiceName given to the {@link JavaListener} or other {@link ServiceClient} implementation that is to be called
+	 * @param correlationId Correlation ID of the message to be processed
+	 * @param request to be processed, as a String.
+	 * @param session Existing {@link PipeLineSession}.
+	 * @return {@link String} with the result of the requested adapter execution.
+	 * @throws ListenerException If there was an error in request execution.
 	 *
 	 * @since 4.3
 	 */
 	public String dispatchRequest(String serviceName, String correlationId, String request, PipeLineSession session) throws ListenerException {
-		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
-		}
-
-		ServiceClient client = registeredListeners.get(serviceName);
-		if (client == null) {
-			throw new ListenerException("service ["+serviceName+"] is not registered");
-		}
+		Message message = new Message(request);
+		Message resultMessage = dispatchRequest(serviceName, correlationId, message, session);
 
 		String result;
 		try {
-			result = client.processRequest(correlationId, new Message(request), session).asString();
+			result = Message.asString(resultMessage);
 		} catch (IOException e) {
 			throw new ListenerException(e);
 		}
@@ -86,11 +89,33 @@ public class ServiceDispatcher  {
 	}
 
 	/**
+	 * Dispatch a request {@link Message} to a service by its configured name.
+	 *
+	 * @param serviceName ServiceName given to the {@link ServiceClient} implementation that is to be called
+	 * @param correlationId Correlation ID of the message to be processed
+	 * @param message {@link Message} to be processed
+	 * @param session Existing {@link PipeLineSession}.
+	 * @return {@link Message} with the result of the requested adapter execution.
+	 * @throws ListenerException If there was an error in request execution.
+	 */
+	public Message dispatchRequest(String serviceName, String correlationId, Message message, PipeLineSession session) throws ListenerException {
+		if (log.isDebugEnabled()) {
+			log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, correlationId, message);
+		}
+
+		ServiceClient client = registeredListeners.get(serviceName);
+		if (client == null) {
+			throw new ListenerException("service ["+ serviceName +"] is not registered");
+		}
+		return client.processRequest(correlationId, message, session);
+	}
+
+	/**
 	 * Retrieve the names of the registered listeners in alphabetical order.
 	 * @return Iterator with the names.
 	 */
 	public Iterator<String> getRegisteredListenerNames() {
-		SortedSet<String> sortedKeys = new TreeSet<String>(registeredListeners.keySet());
+		SortedSet<String> sortedKeys = new TreeSet<>(registeredListeners.keySet());
 		return sortedKeys.iterator();
 	}
 
