@@ -41,12 +41,12 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 		this.request = message;
 		this.session = session;
 		this.guard = guard;
-		this.threadConnector = new ThreadConnector(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, correlationID);
+		this.threadConnector = new ThreadConnector<>(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, session);
 	}
 
 	@Override
 	public void run() {
-		try {
+		try (ThreadConnector<?> threadConnector = this.threadConnector) {
 			threadConnector.startThread(request);
 			Message result = service.processRequest(request, session);
 			reply = new SenderResult(Message.asMessage(threadConnector.endThread(result)));

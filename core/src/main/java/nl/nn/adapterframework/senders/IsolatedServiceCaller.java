@@ -50,12 +50,12 @@ public class IsolatedServiceCaller {
 		return taskExecutor;
 	}
 
-	public void callServiceAsynchronous(ServiceClient service, String correlationID, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) {
+	public void callServiceAsynchronous(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) {
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, null, threadLifeCycleEventListener);
 		getTaskExecutor().execute(ise);
 	}
 
-	public SenderResult callServiceIsolated(ServiceClient service, String correlationID, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException {
+	public SenderResult callServiceIsolated(ServiceClient service, Message message, PipeLineSession session, ThreadLifeCycleEventListener threadLifeCycleEventListener) throws ListenerException {
 		Guard guard = new Guard();
 		guard.addResource();
 		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(service, message, session, guard, threadLifeCycleEventListener);

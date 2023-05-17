@@ -255,12 +255,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
-						result = isolatedServiceCaller.callServiceIsolated(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, context, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, context, threadLifeCycleEventListener);
 						result = new SenderResult(message);
 					}
 				} else {
