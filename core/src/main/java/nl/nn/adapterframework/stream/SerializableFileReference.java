@@ -15,24 +15,35 @@
 */
 package nl.nn.adapterframework.stream;
 
-import lombok.Getter;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.StreamUtil;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import lombok.Getter;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * A reference to a file {@link Path} that can be serialized. When serialized it will write all the file data to
  * the serialization stream.
- * When deserialized, it will copy all file-data to a temporary file.
+ * When deserialized, it will copy all file-data to a new temporary file.
  */
 public class SerializableFileReference implements Serializable, AutoCloseable {
 
@@ -47,30 +58,93 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	private transient boolean isFileOwner;
 
 
+	/**
+	 * Create a new {@link SerializableFileReference} from the given {@link InputStream}. The {@link InputStream} will be copied
+	 * to a temporary file on disk and will be closed afterward. The {@link SerializableFileReference} will be treated as binary data.
+	 * <p>
+	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param in The {@link InputStream} from which to create the {@link SerializableFileReference}. Will be closed after completion of this method.
+	 * @return A new binary {@link SerializableFileReference}.
+	 * @throws IOException If the {@link InputStream} cannot be read or a temporary file cannot be created / written to.
+	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
 		try (InputStream is = in){
 			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1));
 		}
 	}
 
+	/**
+	 * Create a new {@link SerializableFileReference} from the given {@link byte[]}. The {@link byte[]} will be copied
+	 * to a temporary file on disk. The {@link SerializableFileReference} will be treated as binary data.
+	 * <p>
+	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param data The {@link byte[]} from which to create the {@link SerializableFileReference}.
+	 * @return A new binary {@link SerializableFileReference}.
+	 * @throws IOException If the {@link byte[]} cannot be written to a temporary file.
+	 */
 	public static SerializableFileReference of(byte[] data) throws IOException {
 		return of(new ByteArrayInputStream(data));
 	}
 
+	/**
+	 * Create a new {@link SerializableFileReference} from the given {@link Reader}. The {@link Reader} will be copied
+	 * to a temporary file on disk and will be closed afterward. The {@link SerializableFileReference} will be treated as character data.
+	 * <p>
+	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param in The {@link Reader} from which to create the {@link SerializableFileReference}. Will be closed after completion of this method.
+	 * @param charset Character set of the data in the {@link Reader}.
+	 * @return A new character-data {@link SerializableFileReference}.
+	 * @throws IOException If the {@link Reader} cannot be read or a temporary file cannot be created / written to.
+	 */
 	public static SerializableFileReference of(Reader in, String charset) throws IOException {
 		try (Reader r = in){
 			return new SerializableFileReference(false, charset, true, copyToTempFile(new ReaderInputStream(in, charset), -1));
 		}
 	}
 
+	/**
+	 * Create a new {@link SerializableFileReference} from the given {@link String}. The {@link String} will be copied
+	 * to a temporary file on disk. The {@link SerializableFileReference} will be treated as character data.
+	 * <p>
+	 * The temporary file will be deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param data The {@link String} from which to create the {@link SerializableFileReference}.
+	 * @param charset Character used for writing out and reading back the data.
+	 * @return A new character-data {@link SerializableFileReference}.
+	 * @throws IOException If the {@link String} data cannot be written to a temporary file.
+	 */
 	public static SerializableFileReference of(String data, String charset) throws IOException {
 		return of(new StringReader(data), charset);
 	}
 
+	/**
+	 * Create a binary {@code SerializableFileReference} for the file at given path.
+	 * <p>
+	 * The file will be not deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param path {@link Path} to the file being referenced.
+	 */
 	public SerializableFileReference(Path path) {
 		this(true, null, false, path);
 	}
 
+	/**
+	 * Create a character-data {@code SerializableFileReference} for the file at given path.
+	 * <p>
+	 * The file will be not deleted on calling {@link SerializableFileReference#close()}.
+	 * </p>
+	 *
+	 * @param charset Character set to be used when reading the file.
+	 * @param path {@link Path} to the file being referenced.
+	 */
 	public SerializableFileReference(String charset, Path path) {
 		this(charset == null, charset, false, path);
 	}

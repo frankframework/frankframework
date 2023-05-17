@@ -15,21 +15,32 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.testutil.SerializationTester;
-import nl.nn.adapterframework.util.FileUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.testutil.SerializationTester;
+import nl.nn.adapterframework.util.FileUtils;
 
 public class SerializableFileReferenceTest {
 	private final Logger log = LogManager.getLogger(SerializableFileReferenceTest.class);
