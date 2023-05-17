@@ -67,9 +67,7 @@ public class HttpListenerServlet extends HttpServletBase {
 			while (paramNames.hasMoreElements()) {
 				String paramName = paramNames.nextElement();
 				String paramValue = request.getParameter(paramName);
-				if (log.isDebugEnabled()) {
-					log.debug("HttpListenerServlet setting parameter ["+paramName+"] to ["+paramValue+"]");
-				}
+				log.debug("HttpListenerServlet setting parameter [{}] to [{}]", paramName, paramValue);
 				messageContext.put(paramName, paramValue);
 			}
 			try {
