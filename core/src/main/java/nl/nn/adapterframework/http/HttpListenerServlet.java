@@ -63,26 +63,26 @@ public class HttpListenerServlet extends HttpServletBase {
 			messageContext.put("httpListenerServletRequest", request);
 			messageContext.put("httpListenerServletResponse", response);
 			String service=request.getParameter(SERVICE_ID_PARAM);
-			Enumeration<String> paramnames=request.getParameterNames();
-			while (paramnames.hasMoreElements()) {
-				String paramname = paramnames.nextElement();
-				String paramvalue = request.getParameter(paramname);
+			Enumeration<String> paramNames=request.getParameterNames();
+			while (paramNames.hasMoreElements()) {
+				String paramName = paramNames.nextElement();
+				String paramValue = request.getParameter(paramName);
 				if (log.isDebugEnabled()) {
-					log.debug("HttpListenerServlet setting parameter ["+paramname+"] to ["+paramvalue+"]");
+					log.debug("HttpListenerServlet setting parameter ["+paramName+"] to ["+paramValue+"]");
 				}
-				messageContext.put(paramname, paramvalue);
+				messageContext.put(paramName, paramValue);
 			}
 			try {
 				log.debug("HttpListenerServlet calling service ["+service+"]");
-				Message result=sd.dispatchRequest(service, message, messageContext);
+				Message result = sd.dispatchRequest(service, message, messageContext);
 				if (result.isBinary()) {
 					StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 16384);
 				} else {
 					StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 16384);
 				}
 			} catch (ListenerException | IOException e) {
-				log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+				log.warn("HttpListenerServlet caught exception, will rethrow as ServletException", e);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			}
 		}
 	}
