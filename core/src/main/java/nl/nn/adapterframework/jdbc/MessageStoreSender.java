@@ -27,11 +27,13 @@ import org.apache.commons.text.TextStringBuilder;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.ExcludeFromType;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -66,7 +68,7 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @author Jaco de Groot
  */
-@FrankDocGroup(name = "Senders")
+@ExcludeFromType(ITransactionalStorage.class)
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
