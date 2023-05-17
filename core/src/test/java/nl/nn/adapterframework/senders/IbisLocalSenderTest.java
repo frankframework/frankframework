@@ -110,7 +110,7 @@ class IbisLocalSenderTest {
 			"false, false, false",
 			"true, false, false"
 	})
-	@DisplayName("Test IbisLocalSender")
+	@DisplayName("Test IbisLocalSender.sendMessage()")
 	void sendMessageAsync(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
 		TestConfiguration configuration = new TestConfiguration();
@@ -176,10 +176,14 @@ class IbisLocalSenderTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
+			session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "400");
 			Message message = new Message("my-parameter");
 
 			// Act / Assert
-			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+			SenderResult result = sender.sendMessage(message, session);
+
+			assertFalse(result.isSuccess(), "Expected SenderResult to have error");
+			assertEquals("400", result.getForwardName());
 		}
 	}
 
@@ -338,16 +342,19 @@ class IbisLocalSenderTest {
 		sender.setIsolated(false);
 		sender.setReturnedSessionKeys("my-parameter,this-doesnt-exist");
 
-		Parameter parameter = new Parameter("my-parameter", null);
-		parameter.setSessionKey("my-parameter");
-		parameter.configure();
-		sender.addParameter(parameter);
+		addParameter("my-parameter", sender);
 
-		Parameter exitStateParameter = new Parameter(PipeLineSession.EXIT_STATE_CONTEXT_KEY, null);
-		exitStateParameter.setSessionKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		exitStateParameter.configure();
-		sender.addParameter(exitStateParameter);
+		addParameter(PipeLineSession.EXIT_STATE_CONTEXT_KEY, sender);
+
+		addParameter(PipeLineSession.EXIT_CODE_CONTEXT_KEY, sender);
 
 		return sender;
+	}
+
+	private static void addParameter(String name, IbisLocalSender sender) throws ConfigurationException {
+		Parameter parameter = new Parameter(name, null);
+		parameter.setSessionKey(name);
+		parameter.configure();
+		sender.addParameter(parameter);
 	}
 }

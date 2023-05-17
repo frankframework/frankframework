@@ -226,7 +226,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session == null ? null : session.getCorrelationId();
 		SenderResult result;
 		try (PipeLineSession context = new PipeLineSession()) {
 			if (paramList!=null) {
