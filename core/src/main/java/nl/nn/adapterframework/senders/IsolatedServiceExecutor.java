@@ -49,7 +49,7 @@ public class IsolatedServiceExecutor extends RequestReplyExecutor {
 		try (ThreadConnector<?> threadConnector = this.threadConnector) {
 			threadConnector.startThread(request);
 			Message result = service.processRequest(request, session);
-			reply = new SenderResult(Message.asMessage(threadConnector.endThread(result)));
+			reply = new SenderResult(threadConnector.endThread(result));
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable = threadConnector.abortThread(t);

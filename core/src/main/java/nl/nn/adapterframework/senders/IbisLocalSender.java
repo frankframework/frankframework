@@ -281,18 +281,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 
 			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-			if (exitState != null && exitState != ExitState.SUCCESS) {
-				context.put("originalResult", result.getResult());
-				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-			}
-
-			result.getResult().unscheduleFromCloseOnExitOf(context);
-			result.getResult().closeOnCloseOf(session, this);
 
 			String forwardName = Objects.toString(exitCode, null);
 			result.setForwardName(forwardName);
 			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
 			result.setErrorMessage("exitState="+exitState);
+
+			result.getResult().unscheduleFromCloseOnExitOf(context);
+			result.getResult().closeOnCloseOf(session, this);
 
 			return result;
 		}
