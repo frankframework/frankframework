@@ -33,22 +33,10 @@ import './app/views/scheduler/scheduler-add/scheduler-add.controller';
 import './app/views/scheduler/scheduler-edit/scheduler-edit.controller';
 import './app/views/security-items/security-items.controller';
 import './app/views/status/status.controller';
+import './app/views/status/flow/flow-modal/flow-modal.controller';
 import './app/views/storage/storage.controller';
 import './app/views/storage/storage-list/storage-list.controller';
 import './app/views/storage/storage-view/storage-view.controller';
 import './app/views/test-pipeline/test-pipeline.controller';
 import './app/views/test-service-listener/test-service-listener.controller';
 import './app/views/webservices/webservices.controller';
-
-
-angular.module('iaf.beheerconsole')
-
-
-.controller('FlowDiagramModalCtrl', ['$scope', '$uibModalInstance', 'xhr', function($scope, $uibModalInstance, xhr) {
-	$scope.adapter = xhr.adapter;
-	$scope.flow = xhr.data;
-
-	$scope.close = function () {
-		$uibModalInstance.close();
-	};
-}]);
