@@ -230,6 +230,8 @@ public class Message implements Serializable {
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
 	 * For instance, it could replace an InputStream with a byte array or String.
+	 *
+	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
 	 */
 	public void preserve() throws IOException {
 		preserve(false);
@@ -282,7 +284,7 @@ public class Message implements Serializable {
 	/**
 	 * Preserve message to disk.
 	 *
-	 * @throws IOException
+	 * @throws IOException Throws {@link IOException} if the Message cannot be read, or no temporary file can be written to.
 	 */
 	private void preserveToDisk(boolean deepPreserve) throws IOException {
 		if (request instanceof SerializableFileReference) {
