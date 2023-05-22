@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.StringReader;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +63,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private Map<Message,String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -268,19 +267,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Double.parseDouble(this.getString(key));
 	}
 
-	public void scheduleCloseOnSessionExit(Message message, String label) {
-		closeables.put(message, label);
-	}
-
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
-		// create a dummy Message, to be able to schedule the resource for close on exit of session
-		Message resourceMessage = new Message(new StringReader("dummy")) {
-			@Override
-			public void close() throws Exception {
-				resource.close();
-			}
-		};
-		scheduleCloseOnSessionExit(resourceMessage, ClassUtils.nameOf(resource) +" of "+requester);
+		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
 	}
 
 	public boolean isScheduledForCloseOnExit(Message message) {
@@ -295,16 +283,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public void close() {
 		log.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
-			Iterator<Entry<Message,String>> it = closeables.entrySet().iterator();
-			Entry<Message,String> entry = it.next();
-			Message messageToClose = entry.getKey();
+			Iterator<Entry<AutoCloseable, String>> it = closeables.entrySet().iterator();
+			Entry<AutoCloseable, String> entry = it.next();
+			AutoCloseable closeable = entry.getKey();
 			try {
 				log.warn("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
-				messageToClose.close();
+				closeable.close();
 			} catch (Exception e) {
 				log.warn("Exception closing resource", e);
 			} finally {
-				closeables.remove(messageToClose);
+				closeables.remove(closeable);
 			}
 		}
 	}
