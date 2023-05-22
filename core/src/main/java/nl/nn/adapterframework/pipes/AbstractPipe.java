@@ -38,7 +38,6 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.Mandatory;
@@ -174,14 +173,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	protected <T> T createBean(Class<T> beanClass) {
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}
-
-
-	/**
-	 * This is where the action takes place. Pipes may only throw a PipeRunException,
-	 * to be handled by the caller of this object.
-	 */
-	@Override
-	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
 
 	@Override
 	public void start() throws PipeStartException {}

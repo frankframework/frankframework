@@ -18,11 +18,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>credentialprovider</artifactId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
