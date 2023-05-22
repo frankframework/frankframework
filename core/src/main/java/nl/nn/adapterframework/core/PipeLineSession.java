@@ -277,11 +277,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		closeables.put(resource, ClassUtils.nameOf(resource) +" of "+requester);
 	}
 
-	public boolean isScheduledForCloseOnExit(Message message) {
+	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
 		return closeables.containsKey(message);
 	}
 
-	public void unscheduleCloseOnSessionExit(Message message) {
+	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
 		closeables.remove(message);
 	}
 
