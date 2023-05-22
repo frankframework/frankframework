@@ -69,7 +69,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 
 	/**
 	 * returns true when:
-	 *  a) the pipe might be able to accept an input by providing an OutputStream, and 
+	 *  a) the pipe might be able to accept an input by providing an OutputStream, and
 	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe (e.g. storeResultInSessionKey)
 	 *  c) there are no side effects that require the input to be available at the end of the pipe (e.g. preserveInput=true)
 	 *  d) there are no parameters that require the input value or context
@@ -103,7 +103,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 */
 	@Override //Can't make AOP'd methods final
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
+		if (!isStreamingActive() || !canProvideOutputStream()) {
 			log.debug("pipe [{}] cannot provide outputstream", this::getName);
 			return null;
 		}

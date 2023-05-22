@@ -31,7 +31,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.keys.keyrings.Keyring
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.pipes.PGPPipe;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 /**
  * This is an abstraction of general pgp actions
@@ -80,14 +80,14 @@ public abstract class PGPAction implements IScopeProvider {
 			// Add public keys
 			if (publicKeys != null) {
 				for (String s : publicKeys) {
-					URL url = ClassUtils.getResourceURL(this, s);
+					URL url = ClassLoaderUtils.getResourceURL(this, s);
 					keyringConfig.addPublicKey(IOUtils.toByteArray(url.openStream()));
 				}
 			}
 
 			// Add private key
 			if (secretKey != null) {
-				URL url = ClassUtils.getResourceURL(this, secretKey);
+				URL url = ClassLoaderUtils.getResourceURL(this, secretKey);
 				keyringConfig.addSecretKey(IOUtils.toByteArray(url.openStream()));
 			}
 		} catch (IOException | PGPException e) {

@@ -45,6 +45,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -55,7 +56,7 @@
 					<systemProperties>
 						<systemProperty>
 							<name>log.dir</name>
-							<value>./target</value>
+							<value>./target/logs</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.level</name>
@@ -67,7 +68,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/ibis-adapterframework-*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>.*/ibis-adapterframework-[^/]*\.jar$</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>

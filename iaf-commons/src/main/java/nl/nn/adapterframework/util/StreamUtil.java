@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -100,6 +101,18 @@ public class StreamUtil {
 		return new NonClosingOutputStreamFilter(stream);
 	}
 
+	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
+		URLConnection conn = url.openConnection();
+		if (timeoutMs==0) {
+			timeoutMs = 10000;
+		}
+		if (timeoutMs>0) {
+			conn.setConnectTimeout(timeoutMs);
+			conn.setReadTimeout(timeoutMs);
+		}
+		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
+	}
+
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		return readerToString(reader, endOfLineString, false);
 	}
@@ -109,8 +122,12 @@ public class StreamUtil {
 	}
 
 	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
+		return streamToByteArray(inputStream, skipBOM, 0);
+	}
+
+	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM, int initialCapacity) throws IOException {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
-		return streamToBytes(bOMInputStream);
+		return streamToBytes(bOMInputStream, initialCapacity);
 	}
 
 	/**
@@ -135,33 +152,80 @@ public class StreamUtil {
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
-	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
-		if (in!=null) {
-			byte[] buffer=new byte[chunkSize];
-
-			int bytesRead=1;
+	/**
+	 * Copy an {@link InputStream} to the {@link OutputStream}. After copying, the {@link InputStream} is closed but
+	 * the {@link OutputStream} is not.
+	 *
+	 * @param in The {@link InputStream} from which to read bytes to copy.
+	 * @param out The {@link OutputStream} target to which to write the byte from {@code in}.
+	 * @param chunkSize The size of the buffer used for copying.
+	 * @return The number of bytes copied.
+	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
+	 */
+	public static long copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
+		if (in == null) {
+			return 0L;
+		}
+		byte[] buffer=new byte[chunkSize];
+		long totalBytesCopied = 0L;
+		int bytesRead=1;
+		try (InputStream is = in){
 			while (bytesRead>0) {
-				bytesRead=in.read(buffer,0,chunkSize);
+				bytesRead=is.read(buffer,0,chunkSize);
 				if (bytesRead>0) {
 					out.write(buffer,0,bytesRead);
+					totalBytesCopied += bytesRead;
 				}
 			}
-			in.close();
+		}
+		return totalBytesCopied;
+	}
+
+	/**
+	 * Copy a maximum of {@code maxBytesToCopy} of an {@link InputStream} to the {@link OutputStream}. If a negative number is passed, then the
+	 * full stream is copied.
+	 * The {@link InputStream} is not closed.
+	 *
+	 * @param in The {@link InputStream} from which to read bytes to copy.
+	 * @param out The {@link OutputStream} target to which to write the byte from {@code in}.
+	 * @param maxBytesToCopy The maximum nr of bytes to copy. If a negative number, then the entire InputStream will be copied.
+	 * @param chunkSize The size of the buffer used for copying.
+	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
+	 */
+	public static void copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
+		if (in == null) {
+			return;
+		}
+
+		byte[] buffer = new byte[chunkSize];
+		long bytesLeft = maxBytesToCopy > 0L ? maxBytesToCopy : Long.MAX_VALUE;
+		int bytesRead;
+		while (bytesLeft != 0L) {
+			int toRead = (int) Math.min(chunkSize, bytesLeft);
+			bytesRead = in.read(buffer,0, toRead);
+			if (bytesRead <= 0) {
+				break;
+			}
+			out.write(buffer,0,bytesRead);
+			bytesLeft -= bytesRead;
 		}
 	}
 
 	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize) throws IOException {
-		if (reader!=null) {
-			char[] buffer=new char[chunkSize];
+		if (reader == null) {
+			return;
+		}
+		char[] buffer=new char[chunkSize];
 
-			int charsRead=1;
-			while (charsRead>0) {
-				charsRead=reader.read(buffer,0,chunkSize);
-				if (charsRead>0) {
-					writer.write(buffer,0,charsRead);
+		int charsRead;
+		try (Reader r = reader){
+			while (true) {
+				charsRead=r.read(buffer,0,chunkSize);
+				if (charsRead <= 0) {
+					break;
 				}
+				writer.write(buffer,0,charsRead);
 			}
-			reader.close();
 		}
 	}
 
@@ -230,17 +294,15 @@ public class StreamUtil {
 	 */
 	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
 		if (input!=null) {
-			try {
+			try (InputStream is = input) {
 				byte[] buffer=new byte[BUFFERSIZE];
 				int bytesRead;
-				while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>-1) {
+				while ((bytesRead=is.read(buffer,0,BUFFERSIZE))>-1) {
 					output.write(buffer,0,bytesRead);
 				}
 				if(eof != null) {
 					output.write(eof);
 				}
-			} finally {
-				input.close();
 			}
 		}
 	}
@@ -276,11 +338,14 @@ public class StreamUtil {
 	 * </p>
 	 */
 	public static byte[] streamToBytes(InputStream inputStream) throws IOException {
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			byte[] buffer = new byte[1024];
+		return streamToBytes(inputStream, 0);
+	}
+	public static byte[] streamToBytes(InputStream inputStream, int initialCapacity) throws IOException {
+		try (InputStream is = inputStream) {
+			ByteArrayOutputStream out = new ByteArrayOutputStream( initialCapacity > 0 ? initialCapacity : 8192);
+			byte[] buffer = new byte[8192];
 			while (true) {
-				int r = inputStream.read(buffer);
+				int r = is.read(buffer);
 				if (r == -1) {
 					break;
 				}
@@ -288,8 +353,6 @@ public class StreamUtil {
 			}
 
 			return out.toByteArray();
-		} finally {
-			inputStream.close();
 		}
 	}
 
@@ -306,15 +369,14 @@ public class StreamUtil {
 	 * </p>
 	 */
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
-		if (reader!=null) {
-			try {
-				char[] buffer=new char[BUFFERSIZE];
-				int charsRead;
-				while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>-1) {
-					writer.write(buffer,0,charsRead);
-				}
-			} finally {
-				reader.close();
+		if (reader == null) {
+			return;
+		}
+		try (Reader r = reader) {
+			char[] buffer=new char[BUFFERSIZE];
+			int charsRead;
+			while ((charsRead=r.read(buffer,0,BUFFERSIZE))>-1) {
+				writer.write(buffer,0,charsRead);
 			}
 		}
 	}
@@ -359,7 +421,10 @@ public class StreamUtil {
 	 * @param xmlEncode if set to true, applies XML encodings to the content of the reader
 	 */
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
-		StringBuilder sb = new StringBuilder();
+		return readerToString(reader, endOfLineString, xmlEncode, 0);
+	}
+	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode, int initialCapacity) throws IOException {
+		StringBuilder sb = new StringBuilder(initialCapacity > 0 ? initialCapacity + 32: 8192);
 		int curChar = -1;
 		int prevChar = -1;
 		try {
@@ -376,8 +441,11 @@ public class StreamUtil {
 					}
 				}
 				if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-					String appendStr =""+(char) curChar;
-					sb.append(xmlEncode ? XmlEncodingUtils.encodeChars(appendStr) : appendStr);
+					if (xmlEncode) {
+						sb.append(XmlEncodingUtils.encodeChars(String.valueOf((char) curChar)));
+					} else {
+						sb.append((char) curChar);
+					}
 				}
 				prevChar = curChar;
 			}

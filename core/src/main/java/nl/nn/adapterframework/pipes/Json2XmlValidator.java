@@ -302,9 +302,9 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				aligner.startParse(jsonStructure);
 				out = xmlWriter.toString();
 			}
-			validationResult= validator.finalizeValidation(context, session, null);
+			validationResult = validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {
-			validationResult= validator.finalizeValidation(context, session, e);
+			validationResult = validator.finalizeValidation(context, session, e);
 		}
 
 		PipeForward forward=determineForward(validationResult, session, responseMode);

@@ -50,6 +50,7 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Supplier;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -60,6 +61,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
@@ -70,6 +72,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
+	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
+	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -131,6 +135,17 @@ public class Message implements Serializable {
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
 	protected Message(ThrowingSupplier<InputStream, Exception> request, Map<String, Object> context, Class<?> requestClass) {
+		this(context, request, requestClass);
+	}
+
+	/**
+	 * Constructor for Message using a {@link SerializableFileReference}.
+	 *
+	 * @param request Request as {@link SerializableFileReference}
+	 * @param context {@link MessageContext}
+	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
+	 */
+	protected Message(SerializableFileReference request, MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -216,6 +231,8 @@ public class Message implements Serializable {
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
 	 * For instance, it could replace an InputStream with a byte array or String.
+	 *
+	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
 	 */
 	public void preserve() throws IOException {
 		preserve(false);
@@ -223,6 +240,23 @@ public class Message implements Serializable {
 
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
+			return;
+		}
+		if (request instanceof SerializableFileReference) {
+			return;
+		}
+
+		long requestSize = size();
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+			preserveToDisk(deepPreserve);
+		} else {
+			preserveToMemory(deepPreserve);
+		}
+	}
+
+	private void preserveToMemory(boolean deepPreserve) throws IOException {
+		if (request instanceof SerializableFileReference) {
+			// Should not happen but just in case.
 			return;
 		}
 		if (request instanceof Reader) {
@@ -249,6 +283,37 @@ public class Message implements Serializable {
 	}
 
 	/**
+	 * Preserve message to disk.
+	 *
+	 * @throws IOException Throws {@link IOException} if the Message cannot be read, or no temporary file can be written to.
+	 */
+	private void preserveToDisk(boolean deepPreserve) throws IOException {
+		if (request instanceof SerializableFileReference) {
+			// Should not happen but just in case.
+			return;
+		}
+		if (request instanceof Reader) {
+			log.debug("preserving Reader {} as SerializableFileReference", this::getId);
+			request = SerializableFileReference.of((Reader) request, computeDecodingCharset(getCharset()));
+		} else if (request instanceof InputStream) {
+			log.debug("preserving InputStream {} as SerializableFileReference", this::getId);
+			request = SerializableFileReference.of((InputStream) request);
+		} else if (request instanceof String) {
+			request = SerializableFileReference.of((String) request, computeDecodingCharset(getCharset()));
+		} else if (request instanceof byte[]) {
+			request = SerializableFileReference.of((byte[]) request);
+		} else if (deepPreserve) {
+			if (isBinary()) {
+				log.debug("preserving {} as SerializableFileReference", this::getId);
+				request = SerializableFileReference.of(asInputStream());
+			} else {
+				log.debug("preserving {} as SerializableFileReference", this::getId);
+				request = SerializableFileReference.of(asReader(), computeDecodingCharset(getCharset()));
+			}
+		}
+	}
+
+	/**
 	 * @deprecated Please avoid the use of the raw object.
 	 */
 	@Deprecated
@@ -257,18 +322,22 @@ public class Message implements Serializable {
 	}
 
 	public boolean isBinary() {
+		if (request instanceof SerializableFileReference) {
+			return ((SerializableFileReference) request).isBinary();
+		}
+
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node;
+		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
 	}
 
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader;
+		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader || request instanceof SerializableFileReference;
 	}
 
 	/*
@@ -305,7 +374,7 @@ public class Message implements Serializable {
 	}
 
 	public void closeOnCloseOf(PipeLineSession session, String requester) {
-		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
+		if (!(request instanceof InputStream || request instanceof Reader || request instanceof SerializableFileReference) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
 		log.debug("registering Message [{}] for close on exit", this);
@@ -355,6 +424,10 @@ public class Message implements Serializable {
 			log.debug("returning Reader {} as Reader", this::getId);
 			return (Reader) request;
 		}
+		if (request instanceof SerializableFileReference && !((SerializableFileReference)request).isBinary()) {
+			log.debug("returning SerializableFileReference {} as Reader", this::getId);
+			return ((SerializableFileReference)request).getReader();
+		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
 
@@ -396,6 +469,10 @@ public class Message implements Serializable {
 			if (request instanceof InputStream) {
 				log.debug("returning InputStream {} as InputStream", this::getId);
 				return (InputStream) request;
+			}
+			if (request instanceof SerializableFileReference) {
+				log.debug("returning InputStream {} from SerializableFileReference", this::getId);
+				return ((SerializableFileReference)request).getInputStream();
 			}
 			if (request instanceof ThrowingSupplier) {
 				log.debug("returning InputStream {} from supplier", this::getId);
@@ -597,7 +674,8 @@ public class Message implements Serializable {
 			return ((String) request).getBytes(charset);
 		}
 		// save the generated byte array as the request before returning it
-		request = StreamUtil.streamToByteArray(asInputStream(charset), false);
+		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
+		request = StreamUtil.streamToByteArray(asInputStream(charset), false, (int) size() + 32);
 		return (byte[]) request;
 	}
 
@@ -625,8 +703,9 @@ public class Message implements Serializable {
 		}
 
 		// save the generated String as the request before returning it
-		String result = StreamUtil.readerToString(asReader(decodingCharset), null);
-		if (!isBinary() || !isRepeatable()) {
+		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
+		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
+		if(!isBinary() || !isRepeatable()) {
 			request = result;
 		}
 		return result;
@@ -912,18 +991,22 @@ public class Message implements Serializable {
 			return ((byte[]) request).length;
 		}
 
+		if (request instanceof SerializableFileReference) {
+			return ((SerializableFileReference)request).getSize();
+		}
+
 		if (request instanceof FileInputStream) {
 			try {
 				FileInputStream fileStream = (FileInputStream) request;
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
-				log.debug("unable to determine size of stream [{}]", ClassUtils.nameOf(request), e);
+				log.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
 			}
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
-			log.debug("unable to determine size of Message [{}]", ClassUtils.nameOf(request));
+			log.debug("unable to determine size of Message [{}]", ()->ClassUtils.nameOf(request));
 		}
 
 		return MESSAGE_SIZE_UNKNOWN;
@@ -974,7 +1057,7 @@ public class Message implements Serializable {
 	}
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		log.debug("creating capture of {}", ClassUtils.nameOf(request));
+		log.debug("creating capture of {}", ()->ClassUtils.nameOf(request));
 		if (isRepeatable()) {
 			log.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getId(), request.getClass().getTypeName());
 		}

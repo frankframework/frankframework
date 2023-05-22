@@ -40,7 +40,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-console-frontend</artifactId>
-			<type>war</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>

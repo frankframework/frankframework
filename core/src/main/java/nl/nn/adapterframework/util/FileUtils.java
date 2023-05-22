@@ -296,7 +296,7 @@ public class FileUtils {
 			}
 			directory = file.getAbsolutePath();
 		}
-		log.info("resolved temp directory to [{}]", directory);
+		log.debug("resolved temp directory to [{}]", directory);
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
 		if(StringUtils.isEmpty(directory)) {
@@ -324,7 +324,7 @@ public class FileUtils {
 	 */
 	public static File createTempDirectory(File fromDirectory) throws IOException {
 		if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
-			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and mist exist");
+			throw new IOException("base directory [" + fromDirectory.getPath() + "] must be a directory and must exist");
 		}
 
 		Path path = Files.createTempDirectory(fromDirectory.toPath(), "tmp");

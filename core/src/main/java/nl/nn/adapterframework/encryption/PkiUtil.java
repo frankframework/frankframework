@@ -46,7 +46,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -205,7 +205,7 @@ public class PkiUtil {
 
 	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner, String purpose) throws EncryptionException {
 		PrivateKey privateKey;
-		URL keystoreUrl = ClassUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		try {
 			if (keystoreOwner.getKeystoreType()==KeystoreType.PEM) {
 				privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
@@ -233,7 +233,7 @@ public class PkiUtil {
 
 	public static PublicKey getPublicKey(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
 		Certificate certificate;
-		URL truststoreUrl = ClassUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		try {
 			if (truststoreOwner.getTruststoreType()==KeystoreType.PEM) {
 				certificate = PkiUtil.getCertificateFromPem(truststoreUrl);

@@ -64,8 +64,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlAligner extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	public final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
-	public final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
+	public static final String FEATURE_NAMESPACES="http://xml.org/sax/features/namespaces";
+	public static final String FEATURE_NAMESPACE_PREFIXES="http://xml.org/sax/features/namespace-prefixes";
 
 	private @Setter PSVIProvider psviProvider;
 	private boolean indent=true;
@@ -129,6 +129,12 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	@Override
+	public void startDocument() throws SAXException {
+		context = new AlignmentContext();
+		super.startDocument();
+	}
+
+	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attributes) throws SAXException {
 		if (log.isTraceEnabled()) log.trace("startElement() uri ["+namespaceUri+"] localName ["+localName+"] qName ["+qName+"]");
 		// call getChildElementDeclarations with in startElement, to obtain all child elements of the current node
@@ -161,8 +167,9 @@ public class XmlAligner extends XMLFilterImpl {
 			super.startElement(namespaceUri, localName, qName, attributes);
 		}
 		indentLevel++;
-		context = new AlignmentContext(context, namespaceUri, localName, qName, attributes, typeDefinition, indentLevel, multipleOccurringChildElements, parentOfSingleMultipleOccurringChildElement);
+		context = new AlignmentContext(context, localName, typeDefinition);
 	}
+
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (log.isTraceEnabled()) log.trace("endElement() uri ["+uri+"] localName ["+localName+"] qName ["+qName+"]");

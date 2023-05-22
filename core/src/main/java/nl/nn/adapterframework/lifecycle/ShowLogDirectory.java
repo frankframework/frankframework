@@ -56,8 +56,8 @@ public class ShowLogDirectory {
 	@Bean
 	public IntegrationFlow wireLogging() {
 		return IntegrationFlows.from("frank-management-bus")
-				.filter(MessageDispatcher.topicSelector(BusTopic.LOGGING))
-				.filter(MessageDispatcher.actionSelector(BusAction.GET))
+				.filter(MessageDispatcher.headerSelector(BusTopic.LOGGING, BusTopic.TOPIC_HEADER_NAME))
+				.filter(MessageDispatcher.headerSelector(BusAction.GET, BusAction.ACTION_HEADER_NAME))
 				.handle(getHandler()).get();
 	}
 

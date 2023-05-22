@@ -38,7 +38,7 @@ class StreamCaptureUtilsTest {
 
 	@Test
 	public void testCaptureWithMarkSupportedOutputStream() throws Exception {
-		URL input = ClassUtils.getResourceURL("/ForEachChildElementPipe/bulk2.xml");
+		URL input = ClassLoaderUtils.getResourceURL("/ForEachChildElementPipe/bulk2.xml");
 
 		int bufferSize = 2048;
 		Message message = new Message(input.openStream()); //non-repeatable

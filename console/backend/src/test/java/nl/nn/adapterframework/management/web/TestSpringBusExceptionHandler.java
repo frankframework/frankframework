@@ -1,97 +1,120 @@
 package nl.nn.adapterframework.management.web;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.ws.rs.core.Response;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.messaging.support.GenericMessage;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import nl.nn.adapterframework.management.bus.BusAction;
-import nl.nn.adapterframework.management.bus.BusTestBase;
-import nl.nn.adapterframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
-import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.testutil.SpringRootInitializer;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.management.bus.BusException;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(initializers = {SpringRootInitializer.class})
-public class TestSpringBusExceptionHandler extends BusTestBase {
+public class TestSpringBusExceptionHandler {
 	private SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
+	public enum TestExceptionType {
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION
+	}
+
+	private MessageHandlingException createException(TestExceptionType type) {
+		Exception cause = createExceptionCause(type);
+
+		GenericMessage<String> message = new GenericMessage<>("dummy message");
+		return new MessageHandlingException(message, "error occurred during processing message", cause);
+	}
+
+	private Exception createExceptionCause(TestExceptionType type) {
+		Exception cause = new IbisException("cannot stream",
+			new IbisException("cannot configure",
+				new IllegalStateException("something is wrong")));
+
+		switch (type) {
+		case MESSAGE:
+			return new BusException("message without cause");
+		case CAUSE:
+			return new IllegalStateException("uncaught exception", cause);
+		case AUTHORIZATION:
+			return new AccessDeniedException("Access Denied");
+		case AUTHENTICATION:
+			return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
+		case MESSAGE_WITH_CAUSE:
+		default:
+			return new BusException("message with a cause", cause);
+		}
+	}
 
 	@Test
 	public void testEndpointMessageException() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
-		request.setHeader("type", ExceptionTestTypes.MESSAGE.name());
-		try {
-			callSyncGateway(request);
-		} catch (MessageHandlingException e) {
-			Response response = handler.toResponse(e);
-			assertEquals(500, response.getStatus());
-			String json = ApiExceptionTest.toJsonString(response.getEntity());
-			assertEquals("message with a cause", json);
-		}
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.MESSAGE);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(500, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("message without cause", json);
 	}
 
 	@Test
 	public void testEndpointMessageWithCauseException() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
-		request.setHeader("type", ExceptionTestTypes.MESSAGE_WITH_CAUSE.name());
-		try {
-			callSyncGateway(request);
-		} catch (MessageHandlingException e) {
-			Response response = handler.toResponse(e);
-			assertEquals(500, response.getStatus());
-			String json = ApiExceptionTest.toJsonString(response.getEntity());
-			assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", json);
-		}
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.MESSAGE_WITH_CAUSE);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(500, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", json);
 	}
 
 	@Test
 	public void testEndpointCauseException() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.WARNINGS);
-		request.setHeader("type", ExceptionTestTypes.CAUSE.name());
-		try {
-			callSyncGateway(request);
-		} catch (MessageHandlingException e) {
-			Response response = handler.toResponse(e);
-			assertEquals(500, response.getStatus());
-			String json = ApiExceptionTest.toJsonString(response.getEntity());
-			assertThat(json, Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
-			assertThat(json, Matchers.endsWith("nested exception is nl.nn.adapterframework.stream.StreamingException: cannot stream: cannot configure: (IllegalStateException) something is wrong"));
-		}
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.CAUSE);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(500, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("error occurred during processing message; nested exception is java.lang.IllegalStateException: uncaught exception", json);
 	}
 
 	@Test
 	public void testEndpointMessageWithAuthenticationError() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		try {
-			callSyncGateway(request);
-		} catch (MessageHandlingException e) {
-			Response response = handler.toResponse(e);
-			assertEquals(401, response.getStatus());
-			String json = ApiExceptionTest.toJsonString(response.getEntity());
-			assertEquals("An Authentication object was not found in the SecurityContext", json);
-		}
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.AUTHENTICATION);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(401, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("An Authentication object was not found in the SecurityContext", json);
 	}
 
 	@Test
 	@WithMockUser(authorities = { "lala" })
 	public void testEndpointMessageWithAuthorizationError() {
-		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.DEBUG, BusAction.MANAGE);
-		try {
-			callSyncGateway(request);
-		} catch (MessageHandlingException e) {
-			Response response = handler.toResponse(e);
-			assertEquals(403, response.getStatus());
-			String json = ApiExceptionTest.toJsonString(response.getEntity());
-			assertEquals("Access Denied", json);
-		}
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.AUTHORIZATION);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(403, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("Access Denied", json);
 	}
 }

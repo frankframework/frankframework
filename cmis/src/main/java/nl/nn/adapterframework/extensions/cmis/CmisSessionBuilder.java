@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -152,7 +152,7 @@ public class CmisSessionBuilder {
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
 			if(overrideEntryPointWSDL != null) {
-				URL url = ClassUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
+				URL url = ClassLoaderUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
 						parameterMap.put(OVERRIDE_WSDL_KEY, StreamUtil.streamToString(url.openStream()));

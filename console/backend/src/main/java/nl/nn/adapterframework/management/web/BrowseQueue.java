@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Send a message with JMS.
@@ -56,12 +58,12 @@ public final class BrowseQueue extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putBrowseQueue(Map<String, Object> json) {
 
-		String connectionFactory = getValue(json, "connectionFactory");
-		String destination = getValue(json, "destination");
-		Boolean rowNumbersOnly = getBooleanValue(json, "rowNumbersOnly");
-		Boolean showPayload = getBooleanValue(json, "payload");
-		Boolean lookupDestination = getBooleanValue(json, "lookupDestination");
-		String type = getValue(json, "type");
+		String connectionFactory = RequestUtils.getValue(json, "connectionFactory");
+		String destination = RequestUtils.getValue(json, "destination");
+		Boolean rowNumbersOnly = RequestUtils.getBooleanValue(json, "rowNumbersOnly");
+		Boolean showPayload = RequestUtils.getBooleanValue(json, "payload");
+		Boolean lookupDestination = RequestUtils.getBooleanValue(json, "lookupDestination");
+		String type = RequestUtils.getValue(json, "type");
 
 		if(StringUtils.isNotEmpty(destination))
 			throw new ApiException("No destination provided");
@@ -69,7 +71,7 @@ public final class BrowseQueue extends FrankApiBase {
 			throw new ApiException("No type provided");
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.QUEUE, BusAction.FIND);
-		builder.addHeader(HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
+		builder.addHeader(BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY, connectionFactory);
 		builder.addHeader("destination", destination);
 		builder.addHeader("type", type);
 		if(rowNumbersOnly != null) {

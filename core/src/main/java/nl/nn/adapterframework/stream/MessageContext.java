@@ -75,7 +75,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
-			log.warn("unable to parse mimetype from string ["+mimeType+"]", imte);
+			log.warn("unable to parse mimetype from string [{}]", mimeType, imte);
 		}
 
 		return this;

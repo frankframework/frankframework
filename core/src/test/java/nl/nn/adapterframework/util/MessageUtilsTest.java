@@ -42,7 +42,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testComputeMimeTypeWithISO8559Charset() throws Exception {
-		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
@@ -51,7 +51,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testComputeMimeTypeBinaryContent() throws Exception {
-		URL url = ClassUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
+		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]");
@@ -60,7 +60,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testComputeMimeTypeBinaryContentTwice() throws Exception {
-		URL url = ClassUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
+		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		MessageUtils.computeMimeType(message);
@@ -70,7 +70,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testComputeMimeTypeWithISO8559CharsetAuto() throws Exception {
-		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
 
@@ -81,7 +81,7 @@ public class MessageUtilsTest {
 
 	@Test
 	public void testComputeMimeTypeWithISO8559CharsetUTF8() throws Exception {
-		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); //Is wrong, but it's been set, to must be used...
 

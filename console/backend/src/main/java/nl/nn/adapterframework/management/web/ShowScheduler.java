@@ -32,7 +32,9 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
@@ -72,7 +74,7 @@ public final class ShowScheduler extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateScheduler(Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", getValue(json, "action"));
+		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		return callSyncGateway(builder);
 	}
 
@@ -84,7 +86,7 @@ public final class ShowScheduler extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
-		builder.addHeader("operation", getValue(json, "action"));
+		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 		return callSyncGateway(builder);
@@ -99,7 +101,7 @@ public final class ShowScheduler extends FrankApiBase {
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSchedule(MultipartBody input) {
-		String jobGroupName = resolveStringFromMap(input, "group");
+		String jobGroupName = RequestUtils.resolveStringFromMap(input, "group");
 		return createSchedule(jobGroupName, input);
 	}
 
@@ -122,7 +124,7 @@ public final class ShowScheduler extends FrankApiBase {
 	}
 
 	private Response createSchedule(String groupName, MultipartBody input) {
-		String jobName = resolveStringFromMap(input, "name");
+		String jobName = RequestUtils.resolveStringFromMap(input, "name");
 		return createSchedule(groupName, jobName, input, false);
 	}
 
@@ -131,21 +133,21 @@ public final class ShowScheduler extends FrankApiBase {
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 
-		builder.addHeader("cron", resolveTypeFromMap(inputDataMap, "cron", String.class, ""));
-		builder.addHeader("interval", resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1));
+		builder.addHeader("cron", RequestUtils.resolveTypeFromMap(inputDataMap, "cron", String.class, ""));
+		builder.addHeader("interval", RequestUtils.resolveTypeFromMap(inputDataMap, "interval", Integer.class, -1));
 
-		builder.addHeader("adapter", resolveStringFromMap(inputDataMap, "adapter"));
-		builder.addHeader("receiver", resolveTypeFromMap(inputDataMap, "receiver", String.class, ""));
-		builder.addHeader("configuration", resolveTypeFromMap(inputDataMap, HEADER_CONFIGURATION_NAME_KEY, String.class, ""));
-		builder.addHeader("listener", resolveTypeFromMap(inputDataMap, "listener", String.class, ""));
+		builder.addHeader("adapter", RequestUtils.resolveStringFromMap(inputDataMap, "adapter"));
+		builder.addHeader("receiver", RequestUtils.resolveTypeFromMap(inputDataMap, "receiver", String.class, ""));
+		builder.addHeader("configuration", RequestUtils.resolveTypeFromMap(inputDataMap, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, String.class, ""));
+		builder.addHeader("listener", RequestUtils.resolveTypeFromMap(inputDataMap, "listener", String.class, ""));
 
-		builder.addHeader("persistent", resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false));
-		builder.addHeader("locker", resolveTypeFromMap(inputDataMap, "locker", boolean.class, false));
-		builder.addHeader("lockkey", resolveTypeFromMap(inputDataMap, "lockkey", String.class, "lock4["+jobName+"]"));
+		builder.addHeader("persistent", RequestUtils.resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false));
+		builder.addHeader("locker", RequestUtils.resolveTypeFromMap(inputDataMap, "locker", boolean.class, false));
+		builder.addHeader("lockkey", RequestUtils.resolveTypeFromMap(inputDataMap, "lockkey", String.class, "lock4["+jobName+"]"));
 
-		builder.addHeader("message", resolveStringFromMap(inputDataMap, "message"));
+		builder.addHeader("message", RequestUtils.resolveStringFromMap(inputDataMap, "message"));
 
-		builder.addHeader("description", resolveStringFromMap(inputDataMap, "description"));
+		builder.addHeader("description", RequestUtils.resolveStringFromMap(inputDataMap, "description"));
 		if(overwrite) {
 			builder.addHeader("overwrite", overwrite);
 		}

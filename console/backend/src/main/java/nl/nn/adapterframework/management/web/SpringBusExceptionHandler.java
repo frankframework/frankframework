@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.AuthenticationException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -41,7 +41,7 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	private Logger log = LogManager.getLogger(this);
 
 	public enum ManagedException {
-		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationCredentialsNotFoundException.class),
+		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationException.class),
 		AUTHORIZATION(Status.FORBIDDEN, AccessDeniedException.class),
 		BUS_EXCEPTION(Status.INTERNAL_SERVER_ERROR, BusException.class);
 
@@ -55,7 +55,7 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 
 		public static ManagedException parse(Throwable cause) {
 			for(ManagedException me : ManagedException.values()) {
-				if(cause.getClass().isAssignableFrom(me.exceptionClass)) {
+				if(me.exceptionClass.isAssignableFrom(cause.getClass())) {
 					return me;
 				}
 			}

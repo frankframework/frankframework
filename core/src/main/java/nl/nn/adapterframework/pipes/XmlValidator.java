@@ -52,7 +52,7 @@ import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -561,7 +561,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		List<Schema> xsds = new ArrayList<>();
 		String schemaLocation = getSchemasId(session);
 		if (getSchemaSessionKey() != null) {
-			final URL url = ClassUtils.getResourceURL(this, schemaLocation);
+			final URL url = ClassLoaderUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");
 			}

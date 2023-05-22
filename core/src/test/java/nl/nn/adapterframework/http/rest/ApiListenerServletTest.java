@@ -104,7 +104,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -582,7 +582,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/listenerDetectMimeType";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
 
-		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 
 		// It does not need to compute the MimeType as the value should be provided by the HttpEntity
@@ -604,10 +604,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -628,10 +628,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addPart("file1", new UrlMessage(url1));
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addPart("file2", new UrlMessage(url2));
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -652,10 +652,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -676,7 +676,7 @@ public class ApiListenerServletTest extends Mockito {
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
 		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
 
-		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
 
@@ -708,7 +708,7 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setMtomMultipart();
 		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/xml", "UTF-8"));//explicitly sent as UTF-8, defaults to ISO-8859-1
 
-		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
 

@@ -391,12 +391,12 @@
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan</artifactId>
-			<version>2.7.2</version>
+			<version>2.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>serializer</artifactId>
-			<version>2.7.2</version>
+			<version>2.7.3</version>
 			<exclusions>
 				<exclusion><!-- Part of JDK nowadays, prevent conflicts -->
 					<groupId>xml-apis</groupId>
@@ -475,7 +475,7 @@
 		<dependency> <!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
-			<version>2.27</version>
+			<version>2.28</version>
 		</dependency>
 
 		<!-- oidc and oauth library -->
@@ -532,7 +532,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.20.0</version>
+			<version>4.21.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>

@@ -40,6 +40,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
+import nl.nn.adapterframework.util.RequestUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
@@ -63,18 +64,18 @@ public class TestPipeline extends FrankApiBase {
 		String message = null;
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
-		String configuration = resolveStringFromMap(inputDataMap, "configuration");
+		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration");
 		builder.addHeader("configuration", configuration);
-		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
+		String adapterName = RequestUtils.resolveStringFromMap(inputDataMap, "adapter");
 		builder.addHeader("adapter", adapterName);
 
 		// resolve session keys
-		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
+		String sessionKeys = RequestUtils.resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
 		if(StringUtils.isNotEmpty(sessionKeys)) { //format: [{"index":1,"key":"test","value":"123"}]
 			builder.addHeader("sessionKeys", sessionKeys);
 		}
 
-		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
@@ -99,7 +100,7 @@ public class TestPipeline extends FrankApiBase {
 				}
 			}
 		} else {
-			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
+			message = RequestUtils.resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(StringUtils.isEmpty(message)) {
