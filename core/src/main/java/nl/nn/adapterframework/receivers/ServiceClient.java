@@ -24,5 +24,14 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface ServiceClient {
 
-	public Message processRequest(Message message, PipeLineSession session) throws ListenerException;
+	/**
+	 * Method to implement for processing a request. This will usually delegate
+	 * to a {@link nl.nn.adapterframework.core.IListener} implementation.
+	 *
+	 * @param message {@link Message} to process
+	 * @param session {@link PipeLineSession} of the request
+	 * @return Resulting {@link Message}.
+	 * @throws ListenerException Thrown if an exception occurs.
+	 */
+	Message processRequest(Message message, PipeLineSession session) throws ListenerException;
 }

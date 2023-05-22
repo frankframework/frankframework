@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
+import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitForState;
+import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitWhileInState;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -21,16 +23,16 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,7 +65,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IListenerConnector;
-import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -76,6 +77,7 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -205,28 +207,6 @@ public class ReceiverTest {
 
 	public ITransactionalStorage<Serializable> setupErrorStorage() {
 		return mock(JdbcTransactionalStorage.class);
-	}
-
-	public void waitWhileInState(IManagable object, RunState... state) {
-		Set<RunState> states = new HashSet<>();
-		Collections.addAll(states, state);
-
-		LOG.debug("Wait while runstate of [{}] (currently in [{}]) to change to not any of [{}]", object.getName(), object.getRunState(), states);
-		await()
-				.atMost(60, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(()-> !states.contains(object.getRunState()));
-	}
-
-	public void waitForState(IManagable object, RunState... state) {
-		Set<RunState> states = new HashSet<>();
-		Collections.addAll(states, state);
-
-		LOG.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
-		await()
-				.atMost(10, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> states.contains(object.getRunState()));
 	}
 
 	public static Stream<Arguments> transactionManagers() {
@@ -606,6 +586,48 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(2, result2);
+	}
+
+	@Test
+	public void testProcessRequest() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		PipeLine pipeLine = adapter.getPipeLine();
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		pipeLineResult.setState(ExitState.SUCCESS);
+		pipeLineResult.setResult(testMessage);
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			// Act
+			Message result = receiver.processRequest(listener, rawTestMessage, testMessage, session);
+
+			// Assert
+			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
+			assertTrue(result.requiresStream(), "Result message should be a stream");
+			assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+			assertEquals("TEST", result.asString());
+		} finally {
+			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		}
 	}
 
 	@Test

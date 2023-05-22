@@ -17,6 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
@@ -29,7 +30,7 @@ import nl.nn.adapterframework.util.Semaphore;
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
 	private ISender sender;
-	private PipeLineSession session;
+	@Getter private PipeLineSession session;
 	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
 	private Guard guard;         // supports to wait for all threads to have ended
 	private StatisticsKeeper sk;
@@ -46,7 +47,6 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 		this.guard=guard;
 		this.semaphore=semaphore;
 		this.sk=sk;
-		correlationID = session.getCorrelationId();
 	}
 
 	@Override

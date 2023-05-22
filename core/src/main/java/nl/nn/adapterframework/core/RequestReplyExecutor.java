@@ -27,9 +27,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot
  */
 public abstract class RequestReplyExecutor implements Runnable {
-	protected @Getter @Setter String correlationID;
 	protected @Getter @Setter Message request;
 	protected @Getter @Setter SenderResult reply;
 	protected @Getter @Setter Throwable throwable;
-
 }
