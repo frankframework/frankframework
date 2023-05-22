@@ -31,6 +31,7 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -60,8 +61,8 @@ public class HttpListenerServlet extends HttpServletBase {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
-			messageContext.put("httpListenerServletRequest", request);
-			messageContext.put("httpListenerServletResponse", response);
+			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
+			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			String service=request.getParameter(SERVICE_ID_PARAM);
 			Enumeration<String> paramNames=request.getParameterNames();
 			while (paramNames.hasMoreElements()) {
@@ -93,7 +94,7 @@ public class HttpListenerServlet extends HttpServletBase {
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		Message message = Message.asMessage(request.getInputStream());
+		Message message = new Message(request.getInputStream(), MessageUtils.getContext(request));
 		invoke(message,request,response);
 	}
 
