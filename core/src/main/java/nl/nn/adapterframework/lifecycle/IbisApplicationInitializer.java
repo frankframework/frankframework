@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -47,6 +48,17 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class IbisApplicationInitializer extends ContextLoaderListener {
 	private Logger log = LogUtil.getLogger(this);
+
+	// This list comes from https://stackoverflow.com/questions/37756464/setting-apache-cxf-bus-properties-for-malicious-xml.
+	// The present code to process them expects them to be integers.
+	private static final List<String> CFX_SECURITY_PROPERTIES = Arrays.asList(
+		"org.apache.cxf.stax.maxAttributeSize",
+		"org.apache.cxf.stax.maxChildElements",
+		"org.apache.cxf.stax.maxElementDepth",
+		"org.apache.cxf.stax.maxAttributeCount",
+		"org.apache.cxf.stax.maxTextLength",
+		"org.apache.cxf.stax.maxElementCount");
+	private static final String SOAP_BUS_PREFIX = "soap.bus.";
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
@@ -106,10 +118,21 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
 			log.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
 			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+			setCfxSecurityProperties(wac, bus);
 			return wac;
 		} catch (Exception e) {
 			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			throw e;
+		}
+	}
+
+	private void setCfxSecurityProperties(WebApplicationContext wac, SpringBus bus) {
+		for(String propName: CFX_SECURITY_PROPERTIES) {
+			String propValue = wac.getEnvironment().getProperty(SOAP_BUS_PREFIX + propName);
+			if(! StringUtils.isBlank(propValue)) {
+				bus.setProperty(propName, Integer.valueOf(propValue));
+				log.info("Set property [{}] of bus [{}] to [{}]", () -> propName, bus::getId, () -> propValue);
+			}
 		}
 	}
 
