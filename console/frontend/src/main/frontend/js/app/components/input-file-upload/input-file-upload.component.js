@@ -22,11 +22,11 @@ const InputFileUploadController = function ($element) {
 appModule.component('inputFileUpload', {
 	bindings: {
 		file: '<',
-		onUpdateFile: '&', // add binding to retrieve file update function from parent
+		onUpdateFile: '&',
 		accept: '@',
 		title: '@'
 	},
 	controller: ['$element', InputFileUploadController],
 	transclude: true,
-	template: '<input class="form-control form-file" name="file" type="file" accept="ctrl.accept" title="ctrl.title" />'
+	template: '<input class="form-control form-file" name="file" type="file" accept="{{$ctrl.accept}}" title="{{$ctrl.title}}" />'
 });

@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const CustomViewsController = function ($scope) {
+const CustomViewsController = function ($scope, appConstants) {
 	const ctrl = this;
 
 	ctrl.customViews = [];
@@ -29,7 +29,7 @@ const CustomViewsController = function ($scope) {
 }
 
 appModule.component('customViews', {
-	controller: ['$scope', CustomViewsController],
+	controller: ['$scope', 'appConstants', CustomViewsController],
 	template: '<li ng-repeat="view in customViews" ui-sref-active="active">' +
 		'<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>' +
 		'</li>'
