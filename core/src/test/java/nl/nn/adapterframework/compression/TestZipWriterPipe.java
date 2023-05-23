@@ -2,6 +2,7 @@ package nl.nn.adapterframework.compression;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.junit.Test;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.collection.Collection;
 import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
@@ -20,6 +22,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -57,9 +60,12 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 		Collection<TestCollector, TestCollectorPart> collection = getCollectionFromSession();
 		assertNotNull(collection);
-		Message message = collection.build();
-		assertNotNull(message);
-		assertEquals("", message.asString());
+		Message result = collection.build();
+		assertNotNull(result);
+		assertEquals(MimeType.valueOf("application/zip"), result.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
+			assertNull(zipin.getNextEntry());
+		}
 	}
 
 	@Test
@@ -144,8 +150,16 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		pipe.setAction(Action.CLOSE);
 		configureAndStartPipe();
 
+		// Act
 		PipeRunResult prr = doPipe("dummy");
+
+		// Assert
 		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals("", prr.getResult().asString());
+		Message result = prr.getResult();
+		assertNotNull(result);
+		assertEquals(MimeType.valueOf("application/zip"), result.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
+			assertNull(zipin.getNextEntry());
+		}
 	}
 }

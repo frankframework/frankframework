@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.collection.CollectionException;
 import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
@@ -32,11 +33,13 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.FileUtils;
 
 public class ZipWriter implements ICollector<MessageZipEntry> {
 
+	private static final MediaType MIMETYPE_ZIP = new MediaType("application", "zip");
 	static final String PARAMETER_FILENAME="filename";
 	static final String PARAMETER_CONTENTS="contents";
 
@@ -92,7 +95,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
 		File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
-		File tempFile = File.createTempFile("msg", ".dat", collectorsTempFolder);
+		File tempFile = File.createTempFile("msg", ".zip", collectorsTempFolder);
 
 		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
 			try (ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
@@ -102,7 +105,9 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 			}
 		}
 
-		return PathMessage.asTemporaryMessage(tempFile.toPath());
+		Message result = PathMessage.asTemporaryMessage(tempFile.toPath());
+		result.getContext().put(MessageContext.METADATA_MIMETYPE, MIMETYPE_ZIP);
+		return result;
 	}
 
 	@Override
