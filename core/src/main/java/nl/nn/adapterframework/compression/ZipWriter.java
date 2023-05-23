@@ -18,7 +18,6 @@ package nl.nn.adapterframework.compression;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -32,8 +31,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.FileUtils;
 
 public class ZipWriter implements ICollector<MessageZipEntry> {
@@ -89,7 +88,8 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
-		File tempFile = FileUtils.createTempFile("collector");
+		File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
+		File tempFile = File.createTempFile("msg", ".dat", collectorsTempFolder);
 
 		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
 			ZipOutputStream zipoutput = new ZipOutputStream(fos);
@@ -98,16 +98,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 			}
 		}
 
-		return new FileMessage(tempFile) {
-			@Override
-			public void close() throws Exception {
-				try {
-					super.close();
-				} finally {
-					Files.delete(tempFile.toPath());
-				}
-			}
-		};
+		return PathMessage.asTemporaryMessage(tempFile.toPath());
 	}
 
 	@Override

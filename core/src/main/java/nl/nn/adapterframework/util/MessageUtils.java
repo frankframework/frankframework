@@ -289,7 +289,7 @@ public abstract class MessageUtils {
 			}
 			return checksum.getValue();
 		} catch (IOException e) {
-			LOG.warn("unable to read Message or write the CRC32 checksum", e);
+			LOG.warn("unable to read Message", e);
 		}
 		return null;
 	}
@@ -300,7 +300,7 @@ public abstract class MessageUtils {
 	public static long calculateSize(Message message) {
 		try {
 			long size = message.size();
-			if(size > 0) {
+			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
 
@@ -308,7 +308,7 @@ public abstract class MessageUtils {
 				message.preserve();
 			}
 
-			try (InputStream inputStream = StreamUtil.removeBOM(message.asInputStream())) {
+			try (InputStream inputStream = message.asInputStream()) {
 				long computedSize = IOUtils.consume(inputStream);
 				message.getContext().put(MessageContext.METADATA_SIZE, computedSize);
 				return computedSize;

@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.net.URL;
 
@@ -60,13 +63,15 @@ public class MessageUtilsTest {
 	@Test
 	public void testCalculateSize() throws Exception {
 		// getNonRepeatableMessage turns this into a reader, thus requiring charset decoding, the result is stored as UTF8
-		Message message = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_ISO88591);
+		Message message = spy(MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_ISO88591));
 
 		// Act
 		Long size = MessageUtils.calculateSize(message);
 
 		// Assert
-		assertEquals(1122, size); // UTF-8 representation of the ISO-8895-1 content.
+		verify(message, times(1)).isRepeatable();
+		verify(message, times(1)).preserve();
+		assertEquals(1095, size);
 	}
 
 	@ParameterizedTest

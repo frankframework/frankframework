@@ -58,7 +58,6 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Lombok;
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
@@ -208,7 +207,7 @@ public class Message implements Serializable, Closeable {
 				charset = MessageUtils.computeDecodingCharset(this);
 			}
 
-			// Remove the size, if present
+			// Remove the size, if present, when the charset changes!
 			context.remove(MessageContext.METADATA_SIZE);
 
 			if (charset == null) {
@@ -344,18 +343,17 @@ public class Message implements Serializable, Closeable {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader || request instanceof SerializableFileReference;
 	}
 
-	/*
-	 * TODO SHOULD IMPLEMENT AUTOCLOSABLE!!
-	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
-	 */
-	@SneakyThrows
 	@Override
 	public void close() throws IOException {
 		try {
 			if (request instanceof AutoCloseable) {
-				((AutoCloseable) request).close();
-				request = null;
+				try {
+					((AutoCloseable) request).close();
+				} catch (Exception e) {
+					log.warn("Could not close request", e);
+				}
 			}
+			request = null;
 		} finally {
 			if (resourcesToClose != null) {
 				resourcesToClose.forEach(r -> {

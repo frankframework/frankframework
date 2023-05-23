@@ -137,6 +137,16 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	/**
+	 * Create a binary {@code SerializableFileReference} for the file at given path.
+	 *
+	 * @param path {@link Path} to the file being referenced.
+	 * @param deleteOnClose if the temporary file will be deleted on calling {@link SerializableFileReference#close()}.
+	 */
+	public SerializableFileReference(Path path, boolean deleteOnClose) {
+		this(true, null, deleteOnClose, path);
+	}
+
+	/**
 	 * Create a character-data {@code SerializableFileReference} for the file at given path.
 	 * <p>
 	 * The file will be not deleted on calling {@link SerializableFileReference#close()}.
