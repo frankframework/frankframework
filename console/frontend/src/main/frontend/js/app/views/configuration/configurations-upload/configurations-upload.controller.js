@@ -23,6 +23,10 @@ appModule.controller('UploadConfigurationsCtrl', ['$scope', 'Api', 'appConstants
 
 	$scope.file = null;
 
+	$scope.updateFile = function (file) {
+		$scope.file = file;
+	}
+
 	$scope.submit = function () {
 		if ($scope.file == null) return;
 

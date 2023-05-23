@@ -52,3 +52,4 @@ import './js/services';
 import './js/filters';
 import './js/directives';
 import './js/controllers';
+import './js/components';

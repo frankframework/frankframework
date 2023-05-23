@@ -6,25 +6,27 @@ const InputFileUploadController = function ($element) {
 
 	ctrl.$postLink = function(){
 		$element.find("input").bind("change", function () {
-			ctrl.handleFile(test.files);
+			ctrl.handleFile(this.files);
 		});
 	}
 
 	ctrl.handleFile = function (files) {
 		if (files.length == 0) {
-			ctrl.file = null;
+			ctrl.onUpdateFile(null);
 			return;
 		}
-		ctrl.file = files[0]; //Can only parse 1 file!
+		ctrl.onUpdateFile(files[0]); //Can only parse 1 file!
 	}
 }
 
-appModule.component("InputFileUpload", {
+appModule.component('inputFileUpload', {
 	bindings: {
-		file: "<",
-		onUpdateFile: "&" // add binding to retrieve file update function from parent
+		file: '<',
+		onUpdateFile: '&', // add binding to retrieve file update function from parent
+		accept: '@',
+		title: '@'
 	},
 	controller: ['$element', InputFileUploadController],
 	transclude: true,
-	template: '<input class="form-control form-file" name="file" type="file" />'
+	template: '<input class="form-control form-file" name="file" type="file" accept="ctrl.accept" title="ctrl.title" />'
 });
