@@ -106,7 +106,7 @@
         "XMLOutputFactory-class": "com.sun.xml.stream.ZephyrWriterFactory",
         "MessageFactory-class": "com.sun.xml.messaging.saaj.soap.MessageFactoryImpl",
         "Xerces-Version": "Xerces-J 2.12.2-xml-schema-1.1",
-        "Xalan-Version": "Xalan Java 2.7.2",
+        "Xalan-Version": "Xalan Java 2.7.3",
         "Saxon-Version": "SAXON-HE 10.9J from Saxonica",
         "Woodstox-Version": "woodstox 5.0; xml1.1 enabled"
     }

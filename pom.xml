@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.20.0</log4j2.version>
 
-		<jackson.version>2.15.0</jackson.version>
+		<jackson.version>2.15.1</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.27</spring.version>
 		<spring-security.version>5.8.3</spring-security.version>
@@ -20,7 +20,7 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.6</micrometer.version>
+		<micrometer.version>1.11.0</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -431,7 +431,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.11.0</version>
+				<version>2.12.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>

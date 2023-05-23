@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,8 +62,8 @@ public class ServiceListener extends BusEndpointBase {
 			throw new BusException("ServiceListener not found");
 		}
 
-		String payload = (String) message.getPayload();
-		String dispatchResult;
+		nl.nn.adapterframework.stream.Message payload = nl.nn.adapterframework.stream.Message.asMessage(message.getPayload());
+		nl.nn.adapterframework.stream.Message dispatchResult;
 		try (PipeLineSession session = new PipeLineSession()) {
 			dispatchResult = ServiceDispatcher.getInstance().dispatchRequest(serviceName, payload, session);
 		} catch (ListenerException e) {
@@ -71,7 +72,11 @@ public class ServiceListener extends BusEndpointBase {
 
 		Map<String, String> result = new HashMap<>();
 		result.put("state", ExitState.SUCCESS.name());
-		result.put("result", dispatchResult);
+		try {
+			result.put("result", dispatchResult.asString());
+		} catch (IOException e) {
+			throw new BusException("Error converting result to string: " + e.getMessage(), e);
+		}
 
 		return new JsonResponseMessage(result);
 	}

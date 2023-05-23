@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:input="http://wearefrank.nl/manual/exercise/mundo"
+    targetNamespace="http://wearefrank.nl/manual/exercise/mundo"
+    elementFormDefault="qualified">
+    <xs:element name="document">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="header" type="input:headerType" minOccurs="1" maxOccurs="1" />
+                <xs:element name="body" type="xs:string" />
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" />
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="headerType">
+        <xs:sequence>
+            <xs:element name="to" type="input:accountType" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="cc" type="input:accountType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="accountType">
+        <xs:all>
+            <xs:element name="accountId" type="xs:string" minOccurs="1"/>
+            <xs:element name="displayName" type="xs:string" minOccurs="1"/>
+            <xs:element name="email" type="xs:string" minOccurs="1"/>
+            <xs:element name="street" type="xs:string" minOccurs="1"/>
+            <xs:element name="houseNumber" type="xs:string" minOccurs="1"/>
+            <xs:element name="city" type="xs:string" minOccurs="1"/>
+            <xs:element name="zip" type="xs:string" minOccurs="1"/>
+            <xs:element name="country" type="xs:string" minOccurs="1"/>
+        </xs:all>
+    </xs:complexType>
+</xs:schema>
