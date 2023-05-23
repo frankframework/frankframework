@@ -48,6 +48,9 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 				break;
 			case WRITE:
 			case LAST:
+				if(parameterList == null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				}
 				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
 				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
 				if (filenameParameter==null && contentsParameter==null) {
@@ -55,8 +58,8 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 				}
 				break;
 			case CLOSE:
-				if (parameterList.findParameter(PARAMETER_FILENAME)!=null) {
-					throw new ConfigurationException("with action ["+action+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
+				if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME)!=null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
 				}
 				break;
 			default:
@@ -92,9 +95,10 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 		File tempFile = File.createTempFile("msg", ".dat", collectorsTempFolder);
 
 		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-			ZipOutputStream zipoutput = new ZipOutputStream(fos);
-			for(MessageZipEntry entry : parts) {
-				entry.writeEntry(zipoutput);
+			try (ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
+				for(MessageZipEntry entry : parts) {
+					entry.writeEntry(zipoutput);
+				}
 			}
 		}
 

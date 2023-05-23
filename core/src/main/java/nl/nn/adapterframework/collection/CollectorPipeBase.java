@@ -51,7 +51,10 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		CLOSE;
 	}
 
-	/** @ff.default WRITE */
+	/**
+	 * Collectors must be opened before you can write content to them, after it's closed you can no longer write to it.
+	 * @ff.default WRITE
+	 */
 	private @Getter @Setter Action action=Action.WRITE;
 
 	/** Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session
