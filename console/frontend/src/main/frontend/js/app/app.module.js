@@ -1,3 +1,6 @@
+import './components/custom-views/custom-views.component';
+import './components/input-file-upload/input-file-upload.component';
+
 var server; //Try and see if serverurl has been defined, if not try to deduct from local url;
 try {
 	server = serverurl;
