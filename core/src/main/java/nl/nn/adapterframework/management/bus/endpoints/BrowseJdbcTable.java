@@ -45,7 +45,7 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -123,7 +123,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			fielddefinition.append("</fielddefinition>");
 
 			String browseJdbcTableExecuteREQ = browseJdbcTableExecuteREQ(dbmsSupport.getDbms(), table, where, order, numberOfRowsOnly, minRow, maxRow, fielddefinition.toString());
-			URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
+			URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
 			if (url != null) {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);

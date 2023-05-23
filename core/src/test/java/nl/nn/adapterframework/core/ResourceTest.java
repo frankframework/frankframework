@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
@@ -52,7 +52,7 @@ public class ResourceTest {
 
 	@Test
 	public void localClassLoaderFileRef() throws Exception {
-		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
+		URL url = ClassLoaderUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
 		testUri(null, ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
@@ -70,7 +70,7 @@ public class ResourceTest {
 
 	@Test
 	public void bytesClassLoaderFileRef() throws Exception {
-		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
+		URL url = ClassLoaderUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
 		testUri(getBytesClassLoaderProvider(), ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
@@ -104,10 +104,10 @@ public class ResourceTest {
 //		case LOCAL:
 //			return "/ClassLoader/Xslt/root.xsl";
 //		case BYTES:
-//			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+//			result = ClassLoaderUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
 //			return result.toExternalForm();
 //		case FILE_SCHEME:
-//			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+//			result = ClassLoaderUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
 //			return result.toExternalForm();
 //		case NULL:
 //			return null;
@@ -135,7 +135,7 @@ public class ResourceTest {
 //		case OVERRIDABLE:
 //			return "/ClassLoader/overridablefile.xml";
 //		case FILE_SCHEME:
-//			return ClassUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
+//			return ClassLoaderUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
 //		default:
 //			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
 //		}

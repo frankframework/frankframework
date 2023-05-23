@@ -37,12 +37,12 @@ public class RedirectIndexProxy extends HttpServletBase {
 			response.sendRedirect(consoleLocation);
 		}
 		else {
-			response.sendRedirect("iaf/gui");
+			response.sendRedirect("iaf/gui/");
 		}
 	}
 
 	@Override
 	public String getUrlMapping() {
-		return "/index.jsp";
+		return "/index.html";
 	}
 }

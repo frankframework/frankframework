@@ -17,21 +17,11 @@ package nl.nn.adapterframework.management.bus;
 
 import org.springframework.http.MediaType;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.nn.adapterframework.util.JacksonUtils;
 
 public class JsonResponseMessage extends StringResponseMessage {
 
 	public JsonResponseMessage(Object payload) {
-		super(convertToJson(payload), MediaType.APPLICATION_JSON);
-	}
-
-	private static String convertToJson(Object payload) {
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			return objectMapper.writeValueAsString(payload);
-		} catch (JacksonException e) {
-			throw new BusException("unable to convert response to JSON", e);
-		}
+		super(JacksonUtils.convertToJson(payload), MediaType.APPLICATION_JSON);
 	}
 }

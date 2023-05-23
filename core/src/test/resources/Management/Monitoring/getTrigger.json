@@ -1,14 +1,14 @@
 {
     "trigger": {
-        "severity": null,
+        "severity": "HARMLESS",
         "filter": "ADAPTER",
-        "period": 0,
+        "period": 42,
         "sources": {
             "dummyAdapterName": [
                 "dummySubObjectName"
             ]
         },
-        "threshold": 0,
+        "threshold": 1337,
         "type": "ALARM",
         "events": [
             "testEvent1"

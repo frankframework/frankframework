@@ -75,7 +75,7 @@ public class Utils {
 
 //	public static Schema getSchemaFromResource(String xsd) throws SAXException {
 //		System.out.println("xsd: "+xsd);
-//		URL schemaURL = ClassUtils.getResourceURL(Utils.class,xsd);
+//		URL schemaURL = ClassLoaderUtils.getResourceURL(Utils.class,xsd);
 //		return getSchemaFromResource(schemaURL);
 //	}
 
@@ -122,7 +122,7 @@ public class Utils {
 
 
 //	public static Document constructValididatedXml(String xml, final String xsd) throws ParserConfigurationException, SAXException, IOException {
-//		URL schemaUrl =  ClassUtils.getResourceURL(Utils.class, xsd);
+//		URL schemaUrl =  ClassLoaderUtils.getResourceURL(Utils.class, xsd);
 //		
 //		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 //		dbf.setNamespaceAware(true);

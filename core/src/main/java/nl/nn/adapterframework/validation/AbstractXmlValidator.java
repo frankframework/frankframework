@@ -154,7 +154,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 */
 	public ValidationResult finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = context.getErrorHandler();
-		ValidationResult result = ValidationResult.VALID;
+		ValidationResult result;
 		if (t != null) {
 			result = ValidationResult.PARSER_ERROR;
 			// A SAXParseException will already be reported by the parser to the

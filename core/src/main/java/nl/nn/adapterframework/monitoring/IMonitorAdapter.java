@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -26,14 +27,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since   4.7
  */
 @FrankDocGroup(name = "Monitoring")
-public interface IMonitorAdapter {
+public interface IMonitorAdapter extends INamedObject {
 
 	void configure() throws ConfigurationException;
 
 	void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t);
 
 	public XmlBuilder toXml();
-
-	void setName(String name);
-	String getName();
 }

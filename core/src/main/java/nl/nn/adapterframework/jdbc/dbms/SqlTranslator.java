@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -28,8 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sql syntax translator to translate queries
@@ -120,12 +122,15 @@ public class SqlTranslator implements ISqlTranslator {
 		sources = new LinkedHashMap<>();
 		targets = new LinkedHashMap<>();
 
-		String sourceMatch=(".source."+sourceDialect.replaceAll(" ", "_")).toLowerCase();
-		String targetMatch=(".target."+targetDialect.replaceAll(" ", "_")).toLowerCase();
+		String sourceMatch=(".source."+sourceDialect.replace(" ", "_")).toLowerCase();
+		String targetMatch=(".target."+targetDialect.replace(" ", "_")).toLowerCase();
 
-		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
-
-		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
+		URL resourceUrl = ClassLoaderUtils.getResourceURL(PATTERN_FILE);
+		if(resourceUrl == null) {
+			throw new IOException("unable to find SQL Pattern File");
+		}
+		Reader streamReader = StreamUtil.getCharsetDetectingInputStreamReader(resourceUrl.openStream());
+		try (BufferedReader reader = new BufferedReader(streamReader)) {
 			String line= reader.readLine();
 			while (line!=null) {
 				int equalsPos = line.indexOf("=");

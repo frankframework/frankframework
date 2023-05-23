@@ -1,5 +1,5 @@
 <monitor name="TestMonitor" type="FUNCTIONAL">
-	<trigger className="nl.nn.adapterframework.monitoring.Alarm">
+	<trigger className="nl.nn.adapterframework.monitoring.Alarm" period="42" severity="HARMLESS" threshold="1337">
 		<event>testEvent1</event>
 		<adapterfilter adapter="dummyAdapterName"/>
 	</trigger>

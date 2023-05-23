@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 @Path("/")
 public final class BrowseJdbcTable extends FrankApiBase {
@@ -39,23 +41,14 @@ public final class BrowseJdbcTable extends FrankApiBase {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(Map<String, Object> json) {
-		int minRow = 1;
-		int maxRow = 100;
+		String datasource = RequestUtils.getValue(json, "datasource");
+		String tableName = RequestUtils.getValue(json, "table");
+		String where = RequestUtils.getValue(json, "where");
+		String order = RequestUtils.getValue(json, "order");
+		Boolean numberOfRowsOnly = RequestUtils.getBooleanValue(json, "numberOfRowsOnly");
 
-		String datasource = getValue(json, "datasource");
-		String tableName = getValue(json, "table");
-		String where = getValue(json, "where");
-		String order = getValue(json, "order");
-		Boolean numberOfRowsOnly = Boolean.parseBoolean(getValue(json, "numberOfRowsOnly"));
-
-		String minRowStr = getValue(json, "minRow");
-		if(StringUtils.isNotEmpty(minRowStr)) {
-			minRow = Integer.parseInt(minRowStr);
-		}
-		String maxRowStr = getValue(json, "maxRow");
-		if(StringUtils.isNotEmpty(maxRowStr)) {
-			maxRow = Integer.parseInt(maxRowStr);
-		}
+		Integer minRow = RequestUtils.getIntegerValue(json, "minRow");
+		Integer maxRow = RequestUtils.getIntegerValue(json, "maxRow");
 
 		if(tableName == null) {
 			throw new ApiException("tableName not defined.", 400);
@@ -63,7 +56,7 @@ public final class BrowseJdbcTable extends FrankApiBase {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.FIND);
 		if(StringUtils.isNotEmpty(datasource)) {
-			builder.addHeader(HEADER_DATASOURCE_NAME_KEY, datasource);
+			builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		}
 		builder.addHeader("table", tableName);
 		builder.addHeader("where", where);

@@ -20,7 +20,7 @@ import javax.annotation.security.RolesAllowed;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;

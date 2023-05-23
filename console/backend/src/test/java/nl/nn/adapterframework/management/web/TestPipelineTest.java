@@ -21,7 +21,6 @@ import org.springframework.messaging.support.GenericMessage;
 import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 
@@ -73,7 +72,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	public void testZipMessage() throws Exception {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		URL zip = TestFileUtils.getTestFileURL("/Webcontrol.api/temp.zip");
+		URL zip = TestPipelineTest.class.getResource("/TestPipeline/temp.zip");
 
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));

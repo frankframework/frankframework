@@ -44,6 +44,7 @@ import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
+import './css/plugins/iCheck/custom.css';
 
 import './js/main';
 import './js/app/app.module';

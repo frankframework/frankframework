@@ -1,0 +1,11 @@
+{
+    "filter": "ADAPTER",
+    "events": [
+        "Pipe Exception1",
+        "Pipe Exception2"
+    ],
+    "adapters": [
+        "adapter1",
+        "adapter2"
+    ]
+}

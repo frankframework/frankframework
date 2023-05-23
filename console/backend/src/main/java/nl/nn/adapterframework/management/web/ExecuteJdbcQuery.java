@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2022 WeAreFrank!
+   Copyright 2016-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
-
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
 
 /**
  * Executes a query.
@@ -57,9 +57,9 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(Map<String, Object> json) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.JDBC, BusAction.MANAGE);
-		String datasource = getValue(json, "datasource");
-		String query = getValue(json, "query");
-		String resultType = getValue(json, "resultType");
+		String datasource = RequestUtils.getValue(json, "datasource");
+		String query = RequestUtils.getValue(json, "query");
+		String resultType = RequestUtils.getValue(json, "resultType");
 
 		if(resultType == null || query == null) {
 			throw new ApiException("Missing data, datasource, resultType and query are expected.", 400);
@@ -67,16 +67,10 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 		builder.addHeader("query", query);
 		builder.addHeader("resultType", resultType);
 
-		String avoidLocking = getValue(json, "avoidLocking");
-		if(StringUtils.isNotEmpty(avoidLocking)) {
-			builder.addHeader("avoidLocking", Boolean.parseBoolean(avoidLocking));
-		}
-		String trimSpaces = getValue(json, "trimSpaces");
-		if(StringUtils.isNotEmpty(trimSpaces)) {
-			builder.addHeader("trimSpaces", Boolean.parseBoolean(trimSpaces));
-		}
+		builder.addHeader("avoidLocking", RequestUtils.getBooleanValue(json, "avoidLocking"));
+		builder.addHeader("trimSpaces", RequestUtils.getBooleanValue(json, "trimSpaces"));
 
-		String queryType = getValue(json, "queryType");
+		String queryType = RequestUtils.getValue(json, "queryType");
 		if("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
@@ -89,7 +83,7 @@ public final class ExecuteJdbcQuery extends FrankApiBase {
 			}
 		}
 
-		builder.addHeader(FrankApiBase.HEADER_DATASOURCE_NAME_KEY, datasource);
+		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasource);
 		builder.addHeader("queryType", queryType);
 		return callSyncGateway(builder);
 	}

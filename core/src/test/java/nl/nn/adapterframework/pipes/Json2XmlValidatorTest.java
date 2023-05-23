@@ -497,6 +497,26 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
+	@Test
+	public void testAttributeValue() throws Exception {
+		pipe.setName("testAttributeValue");
+		pipe.setSchema("/Align/TextAndAttributes/schema.xsd");
+		pipe.setRoot("Root");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(new Parameter("intArray", "44"));
+
+		pipe.configure();
+		pipe.start();
+
+		String input    = TestFileUtils.getTestFile("/Align/TextAndAttributes/input-compact.json");
+		String expected = TestFileUtils.getTestFile("/Align/TextAndAttributes/input.xml");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		String actualXml = Message.asString(prr.getResult());
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
 	public void testStoreRootElement(DocumentFormat outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
 		pipe.setSchema("/Align/Abc/abc.xsd");

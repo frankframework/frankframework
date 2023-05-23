@@ -17,16 +17,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>*</artifactId>
-					<groupId>*</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 
@@ -150,28 +140,17 @@
 			<version>2.0.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-core</artifactId>
-			<version>${micrometer.version}</version>
+		<!-- because 'jakarta.activation' is managed explicitly add javax.activation -->
+		<dependency><!-- Version is managed, CXF uses a younger version -->
+			<groupId>com.sun.activation</groupId>
+			<artifactId>jakarta.activation</artifactId>
+		</dependency>
+		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-			<classifier>tests</classifier>
-			<type>test-jar</type>
-			<version>${project.version}</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.mail</groupId>
-					<artifactId>jakarta.mail</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>

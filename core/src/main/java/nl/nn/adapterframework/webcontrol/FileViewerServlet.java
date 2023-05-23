@@ -46,7 +46,7 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.statistics.StatisticsUtil;
 import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
@@ -116,7 +116,7 @@ public class FileViewerServlet extends HttpServletBase {
 	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
-		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
 			if (parameters!=null) {
@@ -131,7 +131,7 @@ public class FileViewerServlet extends HttpServletBase {
 
 	public static void transformSource(Source source, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws TransformerException, IOException {
 		PrintWriter out = response.getWriter();
-		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters!=null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

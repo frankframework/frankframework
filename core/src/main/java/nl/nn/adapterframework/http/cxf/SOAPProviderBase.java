@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.activation.DataHandler;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
@@ -39,7 +38,6 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.handler.MessageContext;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +53,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageDataSource;
 import nl.nn.adapterframework.util.MessageUtils;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -220,7 +219,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 							if(!partObject.isNull()) {
 								String mimeType = partElement.getAttribute("mimeType");
-								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
+								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
+								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(new MessageDataSource(partObject, mimeType));
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
 								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 								soapMessage.addAttachmentPart(attachmentPart);

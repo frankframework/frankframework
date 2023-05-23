@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "build:prod": "webpack --mode production",
-    "watch": "webpack --watch",
+    "watch": "webpack --watch --config webpack.dev.js",
     "watch:prod": "webpack --mode production --watch"
   },
   "dependencies": {

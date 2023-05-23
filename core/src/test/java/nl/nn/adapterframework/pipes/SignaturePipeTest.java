@@ -26,7 +26,7 @@ import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
@@ -45,7 +45,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		String pfxCertificate = "/Signature/certificate.pfx";
 		String pfxPassword = "geheim";
 
-		URL pfxURL = ClassUtils.getResourceURL(pfxCertificate);
+		URL pfxURL = ClassLoaderUtils.getResourceURL(pfxCertificate);
 		assertNotNull("PFX file not found", pfxURL);
 		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);

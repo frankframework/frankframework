@@ -69,10 +69,9 @@ public final class AppConstants extends Properties implements Serializable {
 		putAll(additionalProperties);
 
 		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
-		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
+		if(classLoader instanceof IConfigurationClassLoader) {
 			log.info("created new AppConstants instance for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
-		}
-		else {
+		} else {
 			log.info("created new AppConstants instance for root classloader");
 		}
 	}

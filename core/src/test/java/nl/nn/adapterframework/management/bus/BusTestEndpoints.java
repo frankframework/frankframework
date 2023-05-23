@@ -48,7 +48,7 @@ public class BusTestEndpoints {
 				new IllegalStateException("something is wrong")));
 		switch (type) {
 		case MESSAGE:
-			throw new BusException("message with a cause");
+			throw new BusException("message without cause");
 		case CAUSE:
 			throw new IllegalStateException("uncaught exception", cause);
 		case MESSAGE_WITH_CAUSE:

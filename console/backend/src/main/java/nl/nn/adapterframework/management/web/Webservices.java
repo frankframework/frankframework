@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
 /**
@@ -92,8 +93,8 @@ public final class Webservices extends FrankApiBase {
 			throw new ApiException("no adapter specified");
 		}
 
-		request.addHeader(HEADER_ADAPTER_NAME_KEY, adapterName);
-		request.addHeader(HEADER_CONFIGURATION_NAME_KEY, configuration);
+		request.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		request.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return callSyncGateway(request);
 	}
 }

@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -29,6 +27,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Singleton class that knows about the ServiceListeners that are active.
  * <br/>
@@ -60,38 +59,31 @@ public class ServiceDispatcher  {
 	}
 
 	/**
-	 * Dispatch a request.
+	 * Dispatch a request {@link Message} to a service by its configured name.
 	 *
-	 * @since 4.3
+	 * @param serviceName ServiceName given to the {@link ServiceClient} implementation that is to be called
+	 * @param message {@link Message} to be processed
+	 * @param session Existing {@link PipeLineSession}.
+	 * @return {@link Message} with the result of the requested adapter execution.
+	 * @throws ListenerException If there was an error in request execution.
 	 */
-	public String dispatchRequest(String serviceName, String request, PipeLineSession session) throws ListenerException {
-		log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, session.getCorrelationId(), request);
+	public Message dispatchRequest(String serviceName, Message message, PipeLineSession session) throws ListenerException {
+		log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, session != null ? session.getCorrelationId() : null, message);
 
 		ServiceClient client = registeredListeners.get(serviceName);
 		if (client == null) {
-			throw new ListenerException("service ["+serviceName+"] is not registered");
+			throw new ListenerException("service ["+ serviceName +"] is not registered");
 		}
-
-		String result;
-		try {
-			result = client.processRequest(new Message(request), session).asString();
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
-		if (result == null) {
-			log.warn("result is null!");
-		}
-
-		return result;
+		return client.processRequest(message, session);
 	}
 
 	/**
 	 * Retrieve the names of the registered listeners in alphabetical order.
-	 * @return Iterator with the names.
+	 * @return Set with the names.
 	 */
-	public Set<String> getRegisteredListenerNames() {
+	public SortedSet<String> getRegisteredListenerNames() {
 		SortedSet<String> sortedKeys = new TreeSet<>(registeredListeners.keySet());
-		return Collections.unmodifiableSet(sortedKeys);
+		return Collections.unmodifiableSortedSet(sortedKeys);
 	}
 
 	/**

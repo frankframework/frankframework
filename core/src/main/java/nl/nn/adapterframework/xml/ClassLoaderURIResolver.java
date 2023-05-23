@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
 	private IScopeProvider scopeProvider;
-	private List<String> allowedProtocols = ClassUtils.getAllowedProtocols();
+	private List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");

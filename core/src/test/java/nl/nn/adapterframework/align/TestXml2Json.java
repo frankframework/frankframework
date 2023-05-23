@@ -123,7 +123,7 @@ public class TestXml2Json extends AlignTestBase {
 	}
 
 //	private String getTestFile(String file) throws IOException, TimeoutException {
-//		URL url=ClassUtils.getResourceURL(this, file);
+//		URL url=ClassLoaderUtils.getResourceURL(this, file);
 //		if (url==null) {
 //			return null;
 //		}

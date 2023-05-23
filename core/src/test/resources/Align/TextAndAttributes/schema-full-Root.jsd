@@ -63,6 +63,9 @@
             "type":"object",
             "additionalProperties":false,
             "properties":{
+                "@key": {
+                    "type": "string"
+                },
                 "MetaData":{
                     "$ref":"#/definitions/MetaData"
                 },

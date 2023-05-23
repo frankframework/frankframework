@@ -197,7 +197,10 @@ public class XmlUtils {
 			+ "<xsl:output method=\"text\"/>"
 			+ 	"<xsl:template match=\"/\">"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ 			"<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"<xsl:for-each select=\"/xsl:transform/@*\">"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
 			+ 		"</xsl:for-each>"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
 			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
@@ -222,7 +225,7 @@ public class XmlUtils {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
-		Map<String,String> result = new LinkedHashMap<String,String>();
+		Map<String,String> result = new LinkedHashMap<>();
 		while (st1.hasMoreTokens()) {
 			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
 			String key=st2.nextToken();
@@ -1565,7 +1568,7 @@ public class XmlUtils {
 
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
