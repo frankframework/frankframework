@@ -176,8 +176,8 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
-		try {
-			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, new HashMap<>(), this), null, false);
+		try (PipeLineSession session = new PipeLineSession()) {
+			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, this.getIdFromRawMessage(jcoFunction, new HashMap<>()), null), session, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
@@ -189,13 +189,12 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		if(log.isDebugEnabled()) log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
 		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
-		IDocDocument doc = null;
 		while (iterator.hasNext()) {
-			doc = iterator.next();
+			IDocDocument doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try (PipeLineSession session = new PipeLineSession()) {
 				String rawMessage = xmlProcessor.render(doc);
-				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage);
+				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
 				//noinspection unchecked
 				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
 			} catch (Throwable t) {

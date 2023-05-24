@@ -99,7 +99,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	@Override
 	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
-		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), null);
+		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 		// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
 		Message message = extractMessage(rawMessageWrapper, session);
 		try {

@@ -135,7 +135,6 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (isMultipartResponse()) {
 				return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
 			}
-
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {

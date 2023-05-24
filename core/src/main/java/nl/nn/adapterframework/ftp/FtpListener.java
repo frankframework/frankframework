@@ -109,12 +109,12 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
      */
 	@Override
 	public synchronized RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
-		log.debug("FtpListener [" + getName() + "] in getRawMessage, retrieving contents of directory [" +remoteDirectory+ "]");
+		log.debug("FtpListener [{}] in getRawMessage, retrieving contents of directory [{}]", getName(), remoteDirectory);
 		if (remoteFilenames.isEmpty()) {
 			try {
 				openClient(remoteDirectory);
 				List<String> names = ls(remoteDirectory, true, true);
-				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
+				log.debug("FtpListener [{}] received ls result of [{}] files", this::getName, names::size);
 				if (!names.isEmpty()) {
 					remoteFilenames.addAll(names);
 				}
@@ -128,16 +128,20 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		}
 		if (! remoteFilenames.isEmpty()) {
 			String result = remoteFilenames.removeFirst();
-			log.debug("FtpListener " + getName() + " returns " + result);
-			return new RawMessageWrapper<>(result, threadContext, this);
+			log.debug("FtpListener [{}] returns {}", getName(), result);
+			return wrapRawMessage(result, threadContext);
 		}
 		waitAWhile();
 		return null;
 	}
 
+	private RawMessageWrapper<String> wrapRawMessage(String rawMessage, Map<String, Object> threadContext) {
+		return new RawMessageWrapper<>(rawMessage, this.getIdFromRawMessage(rawMessage, threadContext), null);
+	}
+
 	private void waitAWhile() throws ListenerException {
 		try {
-			log.debug("FtpListener " + getName() + " starts waiting ["+responseTime+"] ms in chunks of ["+localResponseTime+"] ms");
+			log.debug("FtpListener [{}] starts waiting [{}] ms in chunks of [{}] ms", getName(), responseTime, localResponseTime);
 			long timeWaited;
 			for (timeWaited=0; canGoOn() && timeWaited+localResponseTime<responseTime; timeWaited+=localResponseTime) {
 				Thread.sleep(localResponseTime);

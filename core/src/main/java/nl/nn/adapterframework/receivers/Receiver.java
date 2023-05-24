@@ -937,8 +937,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		String originalMessageId = rawMessageWrapper.getId();
 		String correlationId;
-		if (rawMessageWrapper instanceof MessageWrapper && ((MessageWrapper<?>) rawMessageWrapper).getCorrelationId() != null) {
-			correlationId = ((MessageWrapper<?>) rawMessageWrapper).getCorrelationId();
+		if (rawMessageWrapper.getCorrelationId() != null) {
+			correlationId = rawMessageWrapper.getCorrelationId();
 		} else {
 			correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		}
@@ -970,14 +970,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				Message message;
 				if (rawMessageWrapper instanceof MessageWrapper) {
-					message = ((MessageWrapper<?>) rawMessageWrapper).getMessage();
+					message = rawMessageWrapper.getMessage();
 				} else {
 					message = getListener().extractMessage(rawMessageWrapper, threadContext);
 				}
 				errorSender.sendMessageOrThrow(message, null);
 			}
 			if (errorStorage!=null) {
-				Serializable sobj = serializeMessageObject(rawMessageWrapper);
+				Serializable sobj = serializeMessageObject(rawMessageWrapper, threadContext);
 				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
 			}
 			txManager.commit(txStatus);
@@ -993,7 +993,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper) throws ListenerException {
+	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
 		Serializable sobj;
 
 		if (rawMessageWrapper instanceof MessageWrapper) {
@@ -1002,9 +1002,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			sobj=(Serializable) rawMessageWrapper.getRawMessage();
 		} else {
 			try {
-				sobj = new MessageWrapper<M>(rawMessageWrapper, getListener());
+				sobj = new MessageWrapper<M>(rawMessageWrapper, getListener().extractMessage(rawMessageWrapper, threadContext));
 			} catch (ListenerException e) {
-				log.error("{} could not wrap non serializable message for messageId [{}]", supplier(this::getLogPrefix), supplier(rawMessageWrapper::getId),e);
+				log.error("{} could not wrap non serializable message for messageId [{}]", supplier(this::getLogPrefix), supplier(rawMessageWrapper::getId));
 				throw e;
 			}
 		}
@@ -1031,6 +1031,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Date tsReceived = PipeLineSession.getTsReceived(session);
 			Date tsSent = PipeLineSession.getTsSent(session);
 			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
+			// TODO: Sort out this sorry mess with messageId / correlationId and the Session
 			String messageId = session.getMessageId();
 			String correlationId = session.getCorrelationId();
 			rawMessage.setId(messageId);
@@ -1085,6 +1086,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (rawMessageWrapper.getCorrelationId() != null) {
 				correlationId = rawMessageWrapper.getCorrelationId();
 			} else {
+				// TODO: Does session ever have correlationId when rawMessageWrapper doesn't?
 				correlationId = session.getCorrelationId();
 			}
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
@@ -1095,13 +1097,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				// like JdbcListener
 				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
 				if (messageWrapper.getCorrelationId() == null) {
+					// TODO: Do we need this??
 					log.warn("<!> Do we need this?");
 					messageWrapper.setCorrelationId(correlationId);
 				}
 			} else {
 				try {
 					Message message = getListener().extractMessage(rawMessageWrapper, session);
-					messageWrapper = new MessageWrapper<>(rawMessageWrapper, message, correlationId);
+					messageWrapper = new MessageWrapper<>(rawMessageWrapper, message);
 				} catch (Exception e) {
 					throw new ListenerException(e);
 				}

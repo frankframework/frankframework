@@ -211,7 +211,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 */
 	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			return extractMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
+			return extractMessage(rawMessage.getRawMessage(), threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

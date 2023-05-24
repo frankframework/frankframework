@@ -245,9 +245,11 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				while (msg==null && correlationId==null && canGoOn() && !isTransacted()) {
 					msg = mc.receive(getTimeOut());
 				}
-				if (msg != null) {
-					messageId = msg.getJMSMessageID();
+				if (msg == null) {
+					return null;
 				}
+				messageId = msg.getJMSMessageID();
+				return new RawMessageWrapper<>(msg, messageId, correlationId == null ? msg.getJMSCorrelationID() : correlationId);
 			} catch (JMSException e) {
 				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
 			} finally {
@@ -260,17 +262,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				releaseSession(session);
 			}
 		}
-		if (msg == null) {
-			return null;
-		}
-		return new RawMessageWrapper<>(msg, messageId, correlationId);
 	}
 
 	/**
 	 * @see IPostboxListener#retrieveRawMessage(String, Map)
 	 */
 	@Override
-	public javax.jms.Message retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		try {
 			session = getSession(threadContext);
@@ -278,7 +276,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
 				javax.jms.Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
-				return result;
+				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
 			} finally {
 				if (mc != null) {
 					try {

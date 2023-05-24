@@ -40,19 +40,25 @@ public interface IListener<M> extends IConfigurable {
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */
 	@Override
-	public void configure() throws ConfigurationException;
+	void configure() throws ConfigurationException;
 
 	/**
 	 * Prepares the listener for receiving messages.
 	 * <code>open()</code> is called once each time the listener is started.
 	 */
-	public void open() throws ListenerException;
+	void open() throws ListenerException;
 
 	/**
 	 * Close all resources used for listening.
 	 * Called once once each time the listener is stopped.
 	 */
-	public void close() throws ListenerException;
+	void close() throws ListenerException;
+
+	// TODO: Candidate method:
+	// RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException
+	// May not work easily with:
+	// - PullingJmsListener
+
 
 	/**
 	 * Extracts ID-string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
@@ -70,6 +76,7 @@ public interface IListener<M> extends IConfigurable {
 	 *
 	 * TODO: Do we need this method still?
 	 */
+	@Deprecated
 	String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 
 	/**
@@ -84,7 +91,9 @@ public interface IListener<M> extends IConfigurable {
 	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
 	 * </ul>
 	 *
-	 * @return Correlation ID string.
+	 * TODO: Would be good if we can get rid of this method but not sure it is possible.
+	 *
+	 * @return Message ID string.
 	 */
 	String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 

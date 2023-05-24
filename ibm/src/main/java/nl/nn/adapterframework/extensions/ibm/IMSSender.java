@@ -34,7 +34,6 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -151,12 +150,12 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		BytesMessage message;
 		try {
-			message = (BytesMessage)rawMessage.getRawMessage();
+			message = (BytesMessage)rawMessage;
 		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getRawMessage().getClass().getName()+"]", e);
+			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type BytesMessage, but ["+rawMessage.getClass().getName()+"]", e);
 			return null;
 		}
 

@@ -21,43 +21,33 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class RawMessageWrapper<M> {
 
 	protected @Getter M rawMessage;
 	protected @Getter String id;
+	protected @Getter String correlationId;
 	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
-	@Getter protected String correlationId;
 
 	public RawMessageWrapper() {
-		this(null, null, (String) null);
+		this(null, null, null);
 	}
 
 	public RawMessageWrapper(M rawMessage) {
-		this(rawMessage, null, (String) null);
+		this(rawMessage, null, null);
 	}
 
 	public RawMessageWrapper(M rawMessage, String id, String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
-		if (id != null) {
-			this.context.put("mid", id);
-		}
-		if (correlationId != null) {
-			this.context.put("cid", correlationId);
-		}
+		this.context.put(PipeLineSession.messageIdKey, id);
+		this.context.put(PipeLineSession.correlationIdKey, correlationId);
 	}
 
-	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context, @Nonnull IListener<M> listener) throws ListenerException {
-		// ILister.getIdFromRawMessage() may extract the correlation-id and add it into the context.
-		this(rawMessage, listener.getIdFromRawMessage(rawMessage, context), (String) context.get("cid"), context);
-	}
-
-	public RawMessageWrapper(M rawMessage, String id, String correlationId, Map<String, Object> context) {
+	public RawMessageWrapper(M rawMessage, String id, String correlationId, @Nonnull Map<String, Object> context) {
 		this(rawMessage, id, correlationId);
 		this.context.putAll(context);
 	}
@@ -65,11 +55,13 @@ public class RawMessageWrapper<M> {
 	@Deprecated
 	public void setId(String string) {
 		id = string;
+		this.context.put(PipeLineSession.messageIdKey, id);
 	}
 
 	@Deprecated
 	void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
+		this.context.put(PipeLineSession.correlationIdKey, correlationId);
 	}
 
 	public Message getMessage() {

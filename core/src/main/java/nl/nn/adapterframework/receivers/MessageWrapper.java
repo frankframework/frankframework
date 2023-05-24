@@ -24,9 +24,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -56,27 +56,17 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		this.message = message;
 	}
 
-	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, IListener<M> listener) throws ListenerException {
+	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message) throws ListenerException {
 		super(rawMessageWrapper.rawMessage, rawMessageWrapper.id, rawMessageWrapper.correlationId, rawMessageWrapper.context);
-		message = listener.extractMessage(rawMessageWrapper, context);
-		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
-		if (id == null) {
-			if (context.containsKey("mid")) {
-				id = (String) context.get("mid");
-			} else {
-				id = listener.getIdFromRawMessage(rawMessage, context);
-			}
-		}
-		if (correlationId == null) {
-			correlationId = (String) context.get("cid");
-		}
+		this.message = message;
+		this.context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
 	}
 
+	// TODO: Sort out if we need this extra constructor with correlationId (we probably do, but only once)
 	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String correlationId) {
-		super(messageWrapper.getRawMessage(), messageWrapper.getId(), null, messageWrapper.getContext());
+		super(messageWrapper.getRawMessage(), messageWrapper.getId(), correlationId, messageWrapper.getContext());
 		this.message = message;
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
-		this.correlationId = correlationId;
 	}
 
 	@Deprecated
@@ -115,5 +105,15 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 			// Correlation ID was not written
 			correlationId = null;
 		}
+
+		// Synchronise ID / CID fields with context map.
+		if (id == null) {
+			id = (String) context.get(PipeLineSession.messageIdKey);
+		}
+		if (correlationId == null) {
+			correlationId = (String) context.get(PipeLineSession.correlationIdKey);
+		}
+		this.context.put(PipeLineSession.messageIdKey, id);
+		this.context.put(PipeLineSession.correlationIdKey, correlationId);
 	}
 }

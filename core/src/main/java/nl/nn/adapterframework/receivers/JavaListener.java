@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -137,8 +138,9 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		@SuppressWarnings("unchecked") RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
+	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
+		@SuppressWarnings({"unchecked", "deprecation"})
+		RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
 		Message response = processRequest(rawMessageWrapper, message, session);
 		response.closeOnCloseOf(session, this);
 		return  response;
@@ -156,7 +158,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
 					context.put(PipeLineSession.securityHandlerKey, securityHandler);
 				} else {
-					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
+					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 				}
 			}
 		}

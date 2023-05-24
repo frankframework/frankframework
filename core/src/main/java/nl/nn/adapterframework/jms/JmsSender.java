@@ -46,7 +46,6 @@ import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -213,7 +212,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			}
 			if (replyQueue!=null) {
 				msg.setJMSReplyTo(replyQueue);
-				if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue.toString() + "]");
+				if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue + "]");
 			}
 
 			// send message
@@ -258,8 +257,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 							}
 						}
 					}
-					// TODO: I don't like wrapping message just to unwrap it right away again
-					return extractMessage(new RawMessageWrapper<>(rawReplyMsg, rawReplyMsg.getJMSMessageID(), rawReplyMsg.getJMSCorrelationID()), session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
 					if(mc != null) {
 						try {

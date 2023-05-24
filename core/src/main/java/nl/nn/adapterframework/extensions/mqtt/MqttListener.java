@@ -122,19 +122,24 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
+		// No-op
 	}
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
 		try (PipeLineSession session = new PipeLineSession()) {
-			messageHandler.processRawMessage(this, new RawMessageWrapper<>(message, session, this), session, false);
-		} catch(Throwable t) {
-			log.error("Could not process raw message", t);
+			messageHandler.processRawMessage(this, wrapRawMessage(message, session), session, false);
+		} catch(Exception e) {
+			log.error("Could not process raw message", e);
 		}
 	}
 
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, Map<String, Object> threadContext) throws ListenerException {
+		return new RawMessageWrapper<>(message, this.getIdFromRawMessage(message, threadContext), null);
+	}
+
 	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		return rawMessage.getId();
 	}
 
@@ -145,10 +150,11 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public Message extractMessage(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
-		return new Message(rawMessage.getRawMessage().getPayload(),getCharset());
+		return new Message(rawMessage.getRawMessage().getPayload(), getCharset());
 	}
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+		// No-op
 	}
 }

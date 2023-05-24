@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.jms.Session;
@@ -320,18 +321,23 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 						+ "content [" + ToStringBuilder.reflectionToString(result) + "]";
 			log.warn(msg);
 		}
+		return wrapRawMessage(result, threadContext);
+	}
+
+	public RawMessageWrapper<IFSAMessage> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		RawMessageWrapper<IFSAMessage> rawMessageWrapper;
 		try {
-			if ((result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage) &&
+			if ((rawMessage instanceof IFSATextMessage || rawMessage instanceof IFSAPoisonMessage) &&
 				 JtaUtil.inTransaction()
 				) {
-				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, result);
-				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, threadContext, this);
+				// TODO: Cleanup rawMessageWrapper creation, and storing of original raw message
+				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, rawMessage);
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, this.getIdFromRawMessage((IFSAMessage) rawMessage, threadContext), rawMessage.getJMSCorrelationID());
 			} else {
-				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) result, result.getJMSMessageID(), result.getJMSCorrelationID());
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, rawMessage.getJMSMessageID(), rawMessage.getJMSCorrelationID());
 			}
 		} catch (Exception e) {
-			throw new ListenerException("cannot wrap non serialzable message in wrapper",e);
+			throw new ListenerException("cannot wrap message in wrapper",e);
 		}
 		return rawMessageWrapper;
 	}

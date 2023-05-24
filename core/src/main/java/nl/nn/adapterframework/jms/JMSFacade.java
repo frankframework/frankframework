@@ -63,8 +63,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.jndi.JndiBase;
-import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -732,23 +730,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 */
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessageWrapper, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		Message message;
-		if (rawMessageWrapper instanceof MessageWrapper) {
-			message = ((MessageWrapper<?>)rawMessageWrapper).getMessage();
+
+		if (jmsMessage instanceof TextMessage) {
+			message = new Message(((TextMessage) jmsMessage).getText(), getContext(jmsMessage));
+		} else if (jmsMessage instanceof BytesMessage) {
+			BytesMessage bytesMsg = (BytesMessage) jmsMessage;
+			InputStream input = new BytesMessageInputStream(bytesMsg);
+			message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
+		} else if (jmsMessage == null) {
+			message = Message.nullMessage();
 		} else {
-			javax.jms.Message jmsMessage = rawMessageWrapper.getRawMessage();
-			if (jmsMessage instanceof TextMessage) {
-				message = new Message(((TextMessage) jmsMessage).getText(), getContext(jmsMessage));
-			} else if (jmsMessage instanceof BytesMessage) {
-				BytesMessage bytesMsg = (BytesMessage) jmsMessage;
-				InputStream input = new BytesMessageInputStream(bytesMsg);
-				message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
-			} else if (jmsMessage == null) {
-				message = Message.nullMessage();
-			} else {
-				message = Message.asMessage(jmsMessage);
-			}
+			message = Message.asMessage(jmsMessage);
 		}
 		if (!soap) {
 			return message;

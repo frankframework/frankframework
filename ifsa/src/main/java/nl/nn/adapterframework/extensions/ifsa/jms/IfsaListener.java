@@ -91,10 +91,6 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return wrapper.getId();
 	}
 
-	protected Message getMessageFromWrapper(MessageWrapper wrapper, Map<String,Object> threadContext)  {
-		return wrapper.getMessage();
-	}
-
 	/**
 	 * Extracts ID-string from message obtained from raw message}.
 	 * Puts also the following parameters  in the threadContext:
@@ -288,7 +284,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	@Override
 	public Message extractMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage instanceof MessageWrapper) {
-			return getMessageFromWrapper((MessageWrapper)rawMessage,threadContext);
+			return rawMessage.getMessage();
 		}
 		IFSAMessage ifsaMessage = rawMessage.getRawMessage();
 		if (ifsaMessage instanceof IFSAPoisonMessage) {

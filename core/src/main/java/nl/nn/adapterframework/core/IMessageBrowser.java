@@ -73,6 +73,8 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 
 	/**
 	 * Retrieves the message, but does not delete.
+	 *
+	 * TODO: Can this return a RawMessageWrapper?
 	 */
 	public M browseMessage(String storageKey) throws ListenerException;
 	/**

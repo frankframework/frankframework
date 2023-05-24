@@ -250,7 +250,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 				}
-				return wrap(file, threadContext);
+				return wrapRawMessage(file, threadContext);
 			}
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
@@ -416,11 +416,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
-		return wrap(file, originalMessage.getContext());
+		return wrapRawMessage(file, originalMessage.getContext());
 	}
 
-	private RawMessageWrapper<F> wrap(F file, Map<String, Object> context) throws ListenerException {
-		return new RawMessageWrapper<>(file, context, this);
+	public RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
+		return new RawMessageWrapper<>(file, this.getIdFromRawMessage(file, context), (String) context.get(PipeLineSession.correlationIdKey), context);
 	}
 
 	public String getStateFolder(ProcessState state) {
