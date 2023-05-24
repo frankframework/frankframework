@@ -406,7 +406,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return proceedingJoinPoint.proceed();
 		}
 		if (runnable instanceof ParallelSenderExecutor) {
-			ParallelSenderExecutorWrapper executor = new ParallelSenderExecutorWrapper((RequestReplyExecutor)runnable, this);
+			ParallelSenderExecutorWrapper executor = new ParallelSenderExecutorWrapper((ParallelSenderExecutor) runnable, this);
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[0] = executor;
 			return proceedingJoinPoint.proceed(args);
@@ -511,9 +511,9 @@ public static class ParallelSenderExecutorWrapper implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
 		private ThreadConnector<ThreadDebugInfo> threadConnector;
 
-		public ParallelSenderExecutorWrapper(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
-			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, "Debugger", threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
+		public ParallelSenderExecutorWrapper(ParallelSenderExecutor parallelSenderExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
+			this.requestReplyExecutor=parallelSenderExecutor;
+			this.threadConnector = new ThreadConnector<>(parallelSenderExecutor, "Debugger", threadLifeCycleEventListener, null, parallelSenderExecutor.getSession());
 		}
 
 		@Override

@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.activation.DataHandler;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
@@ -220,7 +219,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 
 							if(!partObject.isNull()) {
 								String mimeType = partElement.getAttribute("mimeType");
-								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
+								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
+								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(new MessageDataSource(partObject, mimeType));
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
 								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 								soapMessage.addAttachmentPart(attachmentPart);

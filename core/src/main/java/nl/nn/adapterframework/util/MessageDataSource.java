@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import javax.activation.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
@@ -28,7 +27,7 @@ import org.springframework.util.MimeTypeUtils;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
-public class MessageDataSource implements DataSource {
+public class MessageDataSource implements javax.activation.DataSource, jakarta.activation.DataSource, Closeable {
 	private final Message message;
 	private final String name;
 	private String contentType;
@@ -86,6 +85,10 @@ public class MessageDataSource implements DataSource {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
+		if(Message.isNull(message)) {
+			throw new IOException("unable to read message, already closed");
+		}
+
 		return message.asInputStream();
 	}
 
@@ -96,6 +99,11 @@ public class MessageDataSource implements DataSource {
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		return null;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void close() throws IOException {
+		message.close();
 	}
 }

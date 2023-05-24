@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Lombok;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
@@ -70,7 +72,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class Message implements Serializable {
+public class Message implements Serializable, Closeable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -343,7 +345,9 @@ public class Message implements Serializable {
 	/*
 	 * provide close(), but do not implement AutoCloseable, to avoid having to enclose all messages in try-with-resource clauses.
 	 */
-	public void close() throws Exception {
+	@SneakyThrows
+	@Override
+	public void close() throws IOException {
 		try {
 			if (request instanceof AutoCloseable) {
 				((AutoCloseable) request).close();
@@ -362,7 +366,7 @@ public class Message implements Serializable {
 		}
 	}
 
-	public void closeOnClose(AutoCloseable resource) {
+	private void closeOnClose(AutoCloseable resource) {
 		if (resourcesToClose == null) {
 			resourcesToClose = new LinkedHashSet<>();
 		}

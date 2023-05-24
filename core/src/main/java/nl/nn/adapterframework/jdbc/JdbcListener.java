@@ -301,7 +301,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			mid = rawMessage.getId();
 		} else if (rawMessage instanceof MessageWrapper) {
 			try {
-				mid = ((MessageWrapper<M>) rawMessage).getMessage().asString();
+				mid = rawMessage.getMessage().asString();
 			} catch (IOException e) {
 				throw new ListenerException(e);
 			}

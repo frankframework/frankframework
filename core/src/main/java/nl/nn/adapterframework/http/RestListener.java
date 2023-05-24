@@ -216,6 +216,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}
 
+	/** Can be either <code>/rest</code> or <code>/rest-public</code> and must correspond with the available RestListenerServlet path(s). */
 	public void setRestPath(String restPath) {
 		this.restPath = restPath;
 	}
