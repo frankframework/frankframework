@@ -1,3 +1,9 @@
+import('pace-js').then((Pace) => {
+	Pace.start({
+		ajax: false
+	});
+});
+
 import 'jquery';
 import 'metismenu';
 import './js/plugins/iCheck/icheck.min';
