@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -42,19 +41,16 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 	private static final String SOAP_BUS_PREFIX = "soap.bus.";
 
 	private Logger log = LogUtil.getLogger(this);
-	private WebApplicationContext ctx;
+	private ApplicationContext ctx;
 
 	public SpringSoapBus() {
-		super();
+		super(true);
 	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext ctx) {
 		super.setApplicationContext(ctx);
-		if(! (ctx instanceof WebApplicationContext)) {
-			throw new ClassCastException("A SpringSoapBus should be instantiated from a WebApplicationContext");
-		}
-		this.ctx = (WebApplicationContext) ctx;
+		this.ctx = ctx;
 	}
 
 	@Override
