@@ -28,7 +28,7 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
-import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.IMonitorDestination;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
@@ -77,7 +77,7 @@ public class TestMonitoring extends BusTestBase {
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
 		monitor.registerTrigger(trigger);
 		manager.addMonitor(monitor);
-		IMonitorAdapter ima = new IMonitorAdapter() {
+		IMonitorDestination ima = new IMonitorDestination() {
 			private @Getter @Setter String name = "mockDestination";
 
 			@Override

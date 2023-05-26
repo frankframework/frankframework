@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -35,15 +36,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class MonitorAdapterBase implements IMonitorAdapter, ApplicationContextAware {
+public abstract class MonitorDestinationBase implements IMonitorDestination, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
-	protected @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 
-	private String name;
+	private @Getter @Setter String name;
 	private String hostname;
 
-	protected MonitorAdapterBase() {
-		log.debug("creating Destination ["+ClassUtils.nameOf(this)+"]");
+	protected MonitorDestinationBase() {
+		log.debug("creating Destination [{}]", ()->ClassUtils.nameOf(this));
 	}
 
 	@Override
@@ -62,10 +63,14 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
 		eventXml.addAttribute("code", event.getEventCode());
-		try {
-			eventXml.addAttribute("message", event.getEventMessage().asString());
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!Message.isNull(event.getEventMessage())) {
+			try {
+				XmlBuilder messageBuilder = new XmlBuilder("message");
+				messageBuilder.setCdataValue(event.getEventMessage().asString());
+				eventXml.addSubElement(messageBuilder);
+			} catch (IOException e) {
+				log.warn("unable to read monitor event message", e);
+			}
 		}
 		return eventXml.toXML();
 	}
@@ -80,14 +85,5 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 
 	protected Class<?> getUserClass(Object clazz) {
 		return org.springframework.util.ClassUtils.getUserClass(clazz);
-	}
-
-	@Override
-	public void setName(String string) {
-		name = string;
-	}
-	@Override
-	public String getName() {
-		return name;
 	}
 }

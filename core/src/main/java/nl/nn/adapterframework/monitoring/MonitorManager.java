@@ -57,7 +57,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
 	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
-	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
+	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
 	private Instant stateLastChanged = null;
@@ -70,7 +70,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public void configure() throws ConfigurationException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
 		for(String name : destinations.keySet()) {
-			IMonitorAdapter destination = getDestination(name);
+			IMonitorDestination destination = getDestination(name);
 			destination.configure();
 		}
 
@@ -89,13 +89,13 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		stateLastChanged = date;
 	}
 
-	public void registerDestination(IMonitorAdapter monitorAdapter) {
+	public void registerDestination(IMonitorDestination monitorAdapter) {
 		destinations.put(monitorAdapter.getName(), monitorAdapter);
 	}
-	public IMonitorAdapter getDestination(String name) {
+	public IMonitorDestination getDestination(String name) {
 		return destinations.get(name);
 	}
-	public Map<String, IMonitorAdapter> getDestinations() {
+	public Map<String, IMonitorDestination> getDestinations() {
 		return destinations;
 	}
 
@@ -188,7 +188,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		XmlBuilder configXml=new XmlBuilder("monitoring");
 		configXml.addAttribute("enabled",isEnabled());
 		for(String name : destinations.keySet()) {
-			IMonitorAdapter ma=getDestination(name);
+			IMonitorDestination ma=getDestination(name);
 
 			XmlBuilder destinationXml=new XmlBuilder("destination");
 			destinationXml.addAttribute("name",ma.getName());

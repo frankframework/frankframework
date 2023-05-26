@@ -37,7 +37,7 @@ public class TriggerTest implements EventThrowing {
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
 		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorAdapter destination = mock(IMonitorAdapter.class);
+		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
@@ -93,7 +93,7 @@ public class TriggerTest implements EventThrowing {
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
 		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorAdapter destination = mock(IMonitorAdapter.class);
+		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
@@ -152,7 +152,7 @@ public class TriggerTest implements EventThrowing {
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
 		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorAdapter destination = mock(IMonitorAdapter.class);
+		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
@@ -204,7 +204,7 @@ public class TriggerTest implements EventThrowing {
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
 		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorAdapter destination = mock(IMonitorAdapter.class);
+		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
@@ -268,7 +268,7 @@ public class TriggerTest implements EventThrowing {
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
 		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorAdapter destination = mock(IMonitorAdapter.class);
+		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy destination");
 		when(destination.toXml()).thenReturn(new XmlBuilder("destination"));
 

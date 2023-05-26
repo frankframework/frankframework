@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since   4.7
  */
 @FrankDocGroup(name = "Monitoring")
-public interface IMonitorAdapter extends INamedObject {
+public interface IMonitorDestination extends INamedObject {
 
 	void configure() throws ConfigurationException;
 

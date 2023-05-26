@@ -133,7 +133,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		setStateChangeDate(event.getInstant());
 
 		for(String destination : destinations) {
-			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
+			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
 			if (monitorAdapter != null) {

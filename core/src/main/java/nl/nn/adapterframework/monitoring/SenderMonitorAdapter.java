@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.adapterframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
@@ -30,9 +32,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderMonitorAdapter extends MonitorAdapterBase {
+public class SenderMonitorAdapter extends MonitorDestinationBase {
 
-	private ISender sender;
+	private @Getter @Setter ISender sender;
 	private boolean senderConfigured=false;
 
 	@Override
@@ -45,6 +47,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 		}
 
 		super.configure();
+
 		if (!senderConfigured) {
 			getSender().configure();
 			senderConfigured=true;
@@ -78,12 +81,5 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 		senderXml.addAttribute("className", getUserClass(getSender()).getCanonicalName());
 		result.addSubElement(senderXml);
 		return result;
-	}
-
-	public void setSender(ISender sender) {
-		this.sender = sender;
-	}
-	public ISender getSender() {
-		return sender;
 	}
 }
