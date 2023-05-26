@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -23,6 +25,7 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -52,13 +55,18 @@ public abstract class MonitorAdapterBase implements IMonitorAdapter, Application
 		hostname = Misc.getHostname();
 	}
 
-	public String makeXml(String eventSource, EventType eventType, Severity severity, String message, Throwable t) {
+	public String makeXml(EventType eventType, Severity severity, MonitorEvent event) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
-		eventXml.addAttribute("source", eventSource);
+		eventXml.addAttribute("source", event.getSource().getEventSourceName());
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
-		eventXml.addAttribute("message", message);
+		eventXml.addAttribute("code", event.getEventCode());
+		try {
+			eventXml.addAttribute("message", event.getEventMessage().asString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return eventXml.toXML();
 	}
 

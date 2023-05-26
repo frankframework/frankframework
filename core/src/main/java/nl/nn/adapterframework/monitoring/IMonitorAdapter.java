@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.monitoring;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -31,7 +32,7 @@ public interface IMonitorAdapter extends INamedObject {
 
 	void configure() throws ConfigurationException;
 
-	void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t);
+	void fireEvent(EventType eventType, Severity severity, EventThrowing source, MonitorEvent message);
 
 	public XmlBuilder toXml();
 }

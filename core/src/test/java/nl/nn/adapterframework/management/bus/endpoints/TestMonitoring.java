@@ -26,10 +26,12 @@ import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
+import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
@@ -57,7 +59,7 @@ public class TestMonitoring extends BusTestBase {
 		createMonitor();
 	}
 
-	public void createMonitor() {
+	public void createMonitor() throws Exception {
 		MonitorManager manager = getMonitorManager();
 		Monitor monitor = SpringUtils.createBean(getConfiguration(), Monitor.class);
 		monitor.setName(TEST_MONITOR_NAME);
@@ -84,7 +86,7 @@ public class TestMonitoring extends BusTestBase {
 			}
 
 			@Override
-			public void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t) {
+			public void fireEvent(EventType eventType, Severity severity, EventThrowing source, MonitorEvent message) {
 				//Nothing to do, dummy class
 			}
 

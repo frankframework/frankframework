@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -62,9 +63,9 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public void fireEvent(String eventSource, EventType eventType, Severity severity, String message, Throwable t) {
+	public void fireEvent(EventType eventType, Severity severity, EventThrowing source, MonitorEvent event) {
 		try {
-			getSender().sendMessageOrThrow(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
+			getSender().sendMessageOrThrow(new Message(makeXml(eventType, severity, event)),null);
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}

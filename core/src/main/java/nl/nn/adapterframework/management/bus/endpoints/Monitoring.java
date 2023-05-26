@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.events.ConsoleMonitorEvent;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JacksonUtils;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -110,17 +111,20 @@ public class Monitoring extends BusEndpointBase {
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
+		Monitor monitor;
 		if(name != null) {
-			Monitor monitor = getMonitor(mm, name);
+			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
-			monitor.registerTrigger(trigger);
-			monitor.configure();
 		} else {
-			Monitor monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
 			mm.addMonitor(monitor);
+		}
+		try {
 			monitor.configure();
+		} catch (ConfigurationException e) {
+			throw new BusException("unable to (re)configure Monitor", e);
 		}
 
 		return EmptyResponseMessage.created();
@@ -215,7 +219,8 @@ public class Monitoring extends BusEndpointBase {
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
 			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
-			monitor.changeState(new Date(), raiseMonitor, Severity.WARNING, null, null, null);
+			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
+			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {
 			throw new BusException("Failed to change monitor state", e);
 		}
@@ -284,7 +289,7 @@ public class Monitoring extends BusEndpointBase {
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
+		monitorMap.put("changed", monitor.getStateChangeDate());
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {

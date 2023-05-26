@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -59,22 +60,14 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
-	private Date lastStateChange=null;
+	private Instant stateLastChanged = null;
 
-	@Override
-	public void configure() {
-		try {
-			reconfigure();
-		} catch (ConfigurationException e) {
-			log.error("error configuring Monitors in MonitorManager ["+this+"]", e);
-		}
-	}
-
-	/*
-	 * reconfigure all destinations and all monitors.
-	 * monitors will register all required eventNotificationListeners.
+	/**
+	 * (re)configure all destinations and all monitors.
+	 * Monitors will register all required eventNotificationListeners.
 	 */
-	private void reconfigure() throws ConfigurationException {
+	@Override
+	public void configure() throws ConfigurationException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"configuring destinations");
 		for(String name : destinations.keySet()) {
 			IMonitorAdapter destination = getDestination(name);
@@ -92,12 +85,12 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return "Manager@"+this.hashCode();
 	}
 
-	public void registerStateChange(Date date) {
-		lastStateChange=date;
+	public void registerStateChange(Instant date) {
+		stateLastChanged = date;
 	}
 
 	public void registerDestination(IMonitorAdapter monitorAdapter) {
-		destinations.put(monitorAdapter.getName(),monitorAdapter);
+		destinations.put(monitorAdapter.getName(), monitorAdapter);
 	}
 	public IMonitorAdapter getDestination(String name) {
 		return destinations.get(name);
@@ -177,8 +170,8 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		long totalMem = Runtime.getRuntime().totalMemory();
 
 		XmlBuilder statusXml=new XmlBuilder("monitorstatus");
-		if (lastStateChange!=null) {
-			statusXml.addAttribute("lastStateChange",DateUtils.format(lastStateChange,DateUtils.FORMAT_FULL_GENERIC));
+		if (stateLastChanged != null) {
+			statusXml.addAttribute("lastStateChange", DateUtils.format(Date.from(stateLastChanged), DateUtils.FORMAT_FULL_GENERIC));
 		}
 		statusXml.addAttribute("timestamp",DateUtils.format(new Date()));
 		statusXml.addAttribute("heapSize", Long.toString (totalMem-freeMem) );

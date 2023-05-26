@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -32,9 +33,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.core.IConfigurationAware;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -47,17 +49,17 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Niels Meijer
  */
 @FrankDocGroup(name = "Monitoring")
-public class Monitor implements IConfigurationAware, INamedObject, DisposableBean {
+public class Monitor implements IConfigurable, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
-	private Date stateChangeDt = null;
+	private Instant stateChanged = null;
 
 	private int additionalHitCount = 0;
-	private Date lastHit = null;
+	private Instant lastHit = null;
 
 	private @Getter @Setter Severity alarmSeverity = null;
 	private EventThrowing alarmSource = null;
@@ -69,7 +71,8 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 	private Set<String> destinations = new HashSet<>();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public void configure() {
+	@Override
+	public void configure() throws ConfigurationException {
 		for(String destination : destinations) {
 			if(getManager().getDestination(destination) == null) {
 				throw new IllegalArgumentException("destination ["+destination+"] does not exist");
@@ -86,25 +89,28 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		}
 	}
 
-	public void changeState(Date date, boolean alarm, Severity severity, EventThrowing source, String details, Throwable t) throws MonitorException {
+	public void changeState(boolean alarm, Severity severity, MonitorEvent event) throws MonitorException {
+		EventThrowing source = event.getSource();
 		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
 		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be cleared");
 			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
 			EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
-			changeMonitorState(date, clearSource, EventType.CLEARING, clearSeverity, details, t);
+			log.info("{}clearing state with severity [{}] from source [{}]", getLogPrefix(), clearSeverity, clearSource);
+
+			changeMonitorState(clearSource, EventType.CLEARING, clearSeverity, event);
+			setAlarmSource(null);
 		}
 		if (up) {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverity()+"] will be raised to ["+severity+"]");
-			changeMonitorState(date, source, getType(), severity, details, t);
+			log.debug("{}state [{}] will be raised to [{}]", this::getLogPrefix, this::getAlarmSeverity, ()->severity);
+			changeMonitorState(source, getType(), severity, event);
 			setAlarmSource(source);
-			setAlarmSeverityEnum(severity);
-			setLastHit(date);
+			setAlarmSeverity(severity);
+			setLastHit(event.getInstant());
 			setAdditionalHitCount(0);
 		} else {
 			if (alarm && isHit(severity)) {
-				setLastHit(date);
+				setLastHit(event.getInstant());
 				setAdditionalHitCount(getAdditionalHitCount()+1);
 			}
 		}
@@ -116,22 +122,22 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		return (getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0);
 	}
 
-	public void changeMonitorState(Date date, EventThrowing subSource, EventType eventType, Severity severity, String message, Throwable t) throws MonitorException {
-		String eventSource=subSource==null?"":subSource.getEventSourceName();
+	public void changeMonitorState(EventThrowing source, EventType eventType, Severity severity, MonitorEvent event) throws MonitorException {
 		if (eventType==null) {
 			throw new MonitorException("eventType cannot be null");
 		}
 		if (severity==null) {
 			throw new MonitorException("severity cannot be null");
 		}
-		setStateChangeDt(date);
+
+		setStateChangeDate(event.getInstant());
 
 		for(String destination : destinations) {
 			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
 			if (monitorAdapter != null) {
-				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null);
+				monitorAdapter.fireEvent(eventType, severity, source, event);
 			}
 		}
 	}
@@ -149,8 +155,8 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("raised",isRaised());
-		if (stateChangeDt!=null) {
-			monitor.addAttribute("changed",getStateChangeDtStr());
+		if (stateChanged != null) {
+			monitor.addAttribute("changed",getStateChangeDateStr());
 		}
 		if (isRaised()) {
 			monitor.addAttribute("severity", getAlarmSeverity().name());
@@ -262,10 +268,6 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		return raised;
 	}
 
-	public void setAlarmSeverityEnum(Severity enumeration) {
-		alarmSeverity = enumeration;
-	}
-
 	public EventThrowing getAlarmSource() {
 		return alarmSource;
 	}
@@ -273,31 +275,32 @@ public class Monitor implements IConfigurationAware, INamedObject, DisposableBea
 		alarmSource = source;
 	}
 
-	public void setStateChangeDt(Date date) {
-		stateChangeDt = date;
+	private void setStateChangeDate(Instant date) {
+		stateChanged = date;
 		getManager().registerStateChange(date);
 	}
-	public Date getStateChangeDt() {
-		return stateChangeDt;
+	public Date getStateChangeDate() {
+		if(stateChanged == null) {
+			return null;
+		}
+
+		return Date.from(stateChanged);
 	}
-	public String getStateChangeDtStr() {
-		if (stateChangeDt!=null) {
-			return DateUtils.format(stateChangeDt,DateUtils.FORMAT_FULL_GENERIC);
+	public String getStateChangeDateStr() {
+		if (stateChanged != null) {
+			return DateUtils.format(getStateChangeDate(), DateUtils.FORMAT_FULL_GENERIC);
 		}
 		return "";
 	}
 
-	public void setLastHit(Date date) {
+	public void setLastHit(Instant date) {
 		lastHit = date;
 	}
 	public Date getLastHit() {
-		return lastHit;
-	}
-	public String getLastHitStr() {
-		if (lastHit!=null) {
-			return DateUtils.format(lastHit,DateUtils.FORMAT_FULL_GENERIC);
+		if(lastHit == null) {
+			return null;
 		}
-		return "";
+		return Date.from(lastHit);
 	}
 
 	public void setAdditionalHitCount(int i) {
