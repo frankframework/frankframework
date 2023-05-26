@@ -293,7 +293,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		return "";
 	}
 
-	public void setLastHit(Instant date) {
+	private void setLastHit(Instant date) {
 		lastHit = date;
 	}
 	public Date getLastHit() {
