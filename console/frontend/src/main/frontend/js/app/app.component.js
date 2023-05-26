@@ -1,6 +1,6 @@
 import { appModule } from "./app.module";
 
-const AppController = function ($scope, $rootScope, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
+const AppController = function ($scope, $rootScope, authService, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
 	const ctrl = this;
 
 	ctrl.loading = true;
@@ -32,7 +32,16 @@ const AppController = function ($scope, $rootScope, appConstants, Api, Hooks, $s
 	ctrl.lastUpdated = 0;
 	ctrl.timeout = null;
 
-	ctrl.$onInit = function (){
+	ctrl.$onInit = function () {
+		/* state controller */
+		authService.loggedin(); //Check if the user is logged in.
+		ctrl.monitoring = false;
+		ctrl.config_database = false;
+
+		angular.element(".main").show();
+		angular.element(".loading").remove();
+		/* state controller end */
+
 		$rootScope.adapters = {};
 
 		Pace.on("done", initializeFrankConsole);
@@ -493,7 +502,7 @@ const AppController = function ($scope, $rootScope, appConstants, Api, Hooks, $s
 	};
 }
 
-appModule.component('app', {
-	controller: ['$scope', '$rootScope', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout',],
+export const AppComponent = appModule.component('app', {
+	controller: ['$scope', '$rootScope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', AppController],
 	templateUrl: 'js/app/app.component.html'
 });

@@ -1,14 +1,15 @@
 <!-- Wrapper-->
 <div id="wrapper">
     <!-- Navigation -->
-    <div ng-include="'js/app/components/pages/navigation.html'"></div>
+    <!-- <div ng-include="'js/app/components/pages/navigation.html'"></div> -->
+	<pages-navigation></pages-navigation>
 
     <!-- Page wraper -->
     <!-- ng-class with current state name give you the ability to extended customization your view -->
     <div id="page-wrapper" class="gray-bg {{$state.current.name}}">
 
         <!-- Page wrapper -->
-        <div ng-include="'js/app/components/pages/topnavbar.html'" class="topnavbar"></div>
+        <pages-topnavbar class="topnavbar"></pages-topnavbar>
         <div ng-include="'js/app/components/pages/topinfobar/topinfobar.html'" class="topinfobar"></div>
 
 

@@ -1,5 +1,3 @@
-// import './app/app.controller';
-
 import './app/components/logout/logout.controller';
 import './app/components/pages/feedback-modal/feedback-modal.controller';
 import './app/components/pages/information-modal/cookie-modal.controller';

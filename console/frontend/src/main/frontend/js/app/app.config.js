@@ -1,5 +1,5 @@
+import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import pagesStateController from "./components/pages/pages-state.controller";
 import configurationsManageDetailsStateController from "./views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
 import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
@@ -120,8 +120,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 
 			.state('pages', {
 				abstract: true,
-				controller: pagesStateController,
-				templateUrl: "js/app/components/pages/content.html",
+				component: AppComponent,
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
