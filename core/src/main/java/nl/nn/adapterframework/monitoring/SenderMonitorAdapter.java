@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.stream.Message;
@@ -67,8 +68,8 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 
 	@Override
 	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
-		try {
-			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)),null);
+		try (PipeLineSession session = new PipeLineSession()) {
+			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session);
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}

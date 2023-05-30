@@ -118,8 +118,8 @@ public class Trigger implements ITrigger {
 		log.debug("evaluating MonitorEvent [{}]", event::getEventSourceName);
 
 		if (getThreshold()>0) {
-			cleanUpEvents(event.getInstant());
-			eventDates.add(event.getInstant());
+			cleanUpEvents(event.getEventTime());
+			eventDates.add(event.getEventTime());
 			if (eventDates.size() >= getThreshold()) {
 				getMonitor().changeState(alarm, getSeverity(), event);
 			}

@@ -106,11 +106,11 @@ public class Monitor implements IConfigurable, DisposableBean {
 			changeMonitorState(getType(), severity, event.getEventCode(), event);
 			storeRaisedBy(event);
 			setAlarmSeverity(severity);
-			setLastHit(event.getInstant());
+			setLastHit(event.getEventTime());
 			setAdditionalHitCount(0);
 		} else {
 			if (alarm && isHit(severity)) {
-				setLastHit(event.getInstant());
+				setLastHit(event.getEventTime());
 				setAdditionalHitCount(getAdditionalHitCount()+1);
 			}
 		}
@@ -130,7 +130,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			throw new MonitorException("severity cannot be null");
 		}
 
-		setStateChangeDate(event.getInstant());
+		setStateChangeDate(event.getEventTime());
 
 		for(String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);

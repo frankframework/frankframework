@@ -38,7 +38,7 @@ public class MonitorEvent extends ApplicationEvent {
 		return (EventThrowing) super.getSource();
 	}
 
-	public Instant getInstant() {
+	public Instant getEventTime() {
 		return Instant.ofEpochMilli(getTimestamp());
 	}
 
