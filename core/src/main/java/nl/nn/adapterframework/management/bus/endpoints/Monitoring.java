@@ -164,7 +164,7 @@ public class Monitoring extends BusEndpointBase {
 			ITrigger trigger = getTrigger(monitor, triggerId);
 			updateTrigger(trigger, message);
 		} else {
-			String state = BusMessageUtils.getHeader(message, "state", "edit");
+			String state = BusMessageUtils.getHeader(message, "state", "edit"); // raise / clear / edit
 			if("edit".equals(state)) {
 				updateMonitor(monitor, message);
 			} else {

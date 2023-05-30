@@ -79,9 +79,9 @@ public class ShowMonitors extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
 
-		String state = String.valueOf(json.remove("state"));
+		Object state = json.remove("action");
 		if(state != null) {
-			builder.addHeader("state", state);
+			builder.addHeader("state", String.valueOf(state));
 		}
 		builder.setJsonPayload(json);
 

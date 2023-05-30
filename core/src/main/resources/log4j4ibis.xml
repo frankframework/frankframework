@@ -107,9 +107,6 @@
 			<AppenderRef ref="config"/>
 		</Logger>
 
-		<Logger name="GALM" additivity="false" level="INFO">
-			<AppenderRef ref="galm"/>
-		</Logger>
 		<Logger name="MSG" additivity="false" level="INFO">
 			<AppenderRef ref="msg-text"/>
 			<AppenderRef ref="msg-json"/>
