@@ -100,7 +100,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger logger = LogUtil.getLogger(TestTool.class);
+	private static final Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
@@ -115,7 +115,7 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	private static AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -153,6 +153,7 @@ public class TestTool {
 			try {
 				timeout = Integer.parseInt(paramGlobalTimeout);
 			} catch(NumberFormatException e) {
+				// Ignore error, use default
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
@@ -176,7 +177,7 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
-		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
+		if (paramLogLevel != null && LOG_LEVEL_ORDER.contains("[" + paramLogLevel + "]")) {
 			logLevel = paramLogLevel;
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
@@ -193,8 +194,8 @@ public class TestTool {
 			writers.put("autoscroll", autoScroll);
 			writers.put("usehtmlbuffer", "false");
 			writers.put("uselogbuffer", "true");
-			writers.put("messagecounter", new Integer(0));
-			writers.put("scenariocounter", new Integer(1));
+			writers.put("messagecounter", 0);
+			writers.put("scenariocounter", 1);
 		} else {
 			silentOut = out;
 		}
@@ -211,7 +212,7 @@ public class TestTool {
 				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
-		if (scenariosRootDirectories.size() == 0) {
+		if (scenariosRootDirectories.isEmpty()) {
 			debugMessage("Stop logging to logbuffer", writers);
 			writers.put("uselogbuffer", "stop");
 			errorMessage("No scenarios root directories found", writers);
@@ -226,6 +227,7 @@ public class TestTool {
 			try {
 				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
 			} catch(NumberFormatException e) {
+				// Ignore the error, use default
 			}
 		}
 
@@ -312,7 +314,7 @@ public class TestTool {
 											writeHtml("<div class='odd'>", writers, false);
 											evenStep = true;
 										}
-										String step = (String)iterator.next();
+										String step = iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
 										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
@@ -1238,7 +1240,7 @@ public class TestTool {
 		debugMessage("Close jdbc connections", writers);
 		iterator = queues.keySet().iterator();
 		while (iterator.hasNext()) {
-			String name = (String)iterator.next();
+			String name = iterator.next();
 			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
 				Map<?, ?> querySendersInfo = (Map<?, ?>)queues.get(name);
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
@@ -1446,7 +1448,7 @@ public class TestTool {
 			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
-				String correlationId = pullingJmsListener.getIdFromRawMessageWrapper(rawMessage, threadContext);
+				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.
 				jmsListenerInfo.put("correlationId", correlationId);
 			}
 		} catch(ListenerException e) {
@@ -1515,18 +1517,19 @@ public class TestTool {
 	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
-		Map listenerInfo = (Map)queues.get(queueName);
+		Map listenerInfo = queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = null;
-			Long timeout = Long.parseLong(""+parameterTimeout);
+			ListenerMessage listenerMessage;
+			Long timeout;
 			try {
 				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
 				debugMessage("Timeout set to '" + timeout + "'", writers);
 			} catch (Exception e) {
+				timeout = (long)parameterTimeout;
 			}
 			try {
 				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
@@ -1567,7 +1570,7 @@ public class TestTool {
 	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map querySendersInfo = (Map)queues.get(queueName);
+		Map querySendersInfo = queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
 		if (waitBeforeRead != null) {
