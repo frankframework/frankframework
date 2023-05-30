@@ -32,11 +32,11 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		MonitorEvent event = new MonitorEvent(this, EVENTCODE, null);
 
 		// Act
-		destination.fireEvent(EventType.FUNCTIONAL, Severity.WARNING, null, event);
+		destination.fireEvent("monitor-name", EventType.FUNCTIONAL, Severity.WARNING, EVENTCODE, event);
 
 		// Assert
 		Message message = messageCapture.getValue();
-		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\"/>";
+		String result = "<event hostname=\"XXX\" monitor=\"monitor-name\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\"/>";
 		assertEquals(result, ignoreHostname(message.asString()));
 	}
 
@@ -53,7 +53,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		MonitorEvent event = new MonitorEvent(this, EVENTCODE, new Message("<ik>ben<xml/></ik>"));
 
 		// Act
-		destination.fireEvent(EventType.FUNCTIONAL, Severity.WARNING, null, event);
+		destination.fireEvent(null, EventType.FUNCTIONAL, Severity.WARNING, EVENTCODE, event);
 
 		// Assert
 		Message message = messageCapture.getValue();

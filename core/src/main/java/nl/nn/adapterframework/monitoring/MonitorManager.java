@@ -18,7 +18,6 @@ package nl.nn.adapterframework.monitoring;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.Event;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -163,25 +161,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	public Map<String, Event> getEvents() {
 		return events;
-	}
-
-	public XmlBuilder getStatusXml() {
-		long freeMem = Runtime.getRuntime().freeMemory();
-		long totalMem = Runtime.getRuntime().totalMemory();
-
-		XmlBuilder statusXml=new XmlBuilder("monitorstatus");
-		if (stateLastChanged != null) {
-			statusXml.addAttribute("lastStateChange", DateUtils.format(Date.from(stateLastChanged), DateUtils.FORMAT_FULL_GENERIC));
-		}
-		statusXml.addAttribute("timestamp",DateUtils.format(new Date()));
-		statusXml.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
-		statusXml.addAttribute("totalMemory", Long.toString(totalMem) );
-
-		for (int i=0; i<monitors.size(); i++) {
-			Monitor monitor=getMonitor(i);
-			statusXml.addSubElement(monitor.getStatusXml());
-		}
-		return statusXml;
 	}
 
 	public XmlBuilder toXml() {

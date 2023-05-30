@@ -33,8 +33,9 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
+ * Base class for Monitor Destination implementations.
+ * 
  * @author  Gerrit van Brakel
- * @since   4.9
  */
 public abstract class MonitorDestinationBase implements IMonitorDestination, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -56,13 +57,14 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 		hostname = Misc.getHostname();
 	}
 
-	public String makeXml(EventType eventType, Severity severity, MonitorEvent event) {
+	public String makeXml(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
-		eventXml.addAttribute("source", event.getSource().getEventSourceName());
+		eventXml.addAttribute("monitor", monitorName);
+		eventXml.addAttribute("source", event.getEventSourceName());
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
-		eventXml.addAttribute("code", event.getEventCode());
+		eventXml.addAttribute("code", eventCode);
 		if(!Message.isNull(event.getEventMessage())) {
 			try {
 				XmlBuilder messageBuilder = new XmlBuilder("message");

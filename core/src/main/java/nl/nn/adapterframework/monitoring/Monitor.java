@@ -37,7 +37,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -62,7 +61,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 	private Instant lastHit = null;
 
 	private @Getter @Setter Severity alarmSeverity = null;
-	private EventThrowing alarmSource = null;
+	private String eventCode = null;
+	private @Getter EventThrowing raisedBy = null;
 
 
 	private MonitorManager manager = null;
@@ -95,16 +95,16 @@ public class Monitor implements IConfigurable, DisposableBean {
 		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
 			Severity clearSeverity=getAlarmSeverity()!=null?getAlarmSeverity():severity;
-			EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
-			log.info("{}clearing state with severity [{}] from source [{}]", getLogPrefix(), clearSeverity, clearSource);
+			String originalEventCode = eventCode!=null ? eventCode : event.getEventCode();
+			log.info("{}clearing event [{}] state with severity [{}] from source [{}]", getLogPrefix(), originalEventCode, clearSeverity, event.getEventSourceName());
 
-			changeMonitorState(clearSource, EventType.CLEARING, clearSeverity, event);
-			setAlarmSource(null);
+			changeMonitorState(EventType.CLEARING, clearSeverity, originalEventCode, event);
+			clearRaisedBy();
 		}
 		if (up) {
 			log.debug("{}state [{}] will be raised to [{}]", this::getLogPrefix, this::getAlarmSeverity, ()->severity);
-			changeMonitorState(source, getType(), severity, event);
-			setAlarmSource(source);
+			changeMonitorState(getType(), severity, event.getEventCode(), event);
+			storeRaisedBy(event);
 			setAlarmSeverity(severity);
 			setLastHit(event.getInstant());
 			setAdditionalHitCount(0);
@@ -122,7 +122,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		return (getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<=0);
 	}
 
-	public void changeMonitorState(EventThrowing source, EventType eventType, Severity severity, MonitorEvent event) throws MonitorException {
+	public void changeMonitorState(EventType eventType, Severity severity, String eventCode, MonitorEvent event) throws MonitorException {
 		if (eventType==null) {
 			throw new MonitorException("eventType cannot be null");
 		}
@@ -137,7 +137,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
 
 			if (monitorAdapter != null) {
-				monitorAdapter.fireEvent(eventType, severity, source, event);
+				monitorAdapter.fireEvent(name, eventType, severity, eventCode, event);
 			}
 		}
 	}
@@ -151,22 +151,16 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 	}
 
-	public XmlBuilder getStatusXml() {
-		XmlBuilder monitor=new XmlBuilder("monitor");
-		monitor.addAttribute("name",getName());
-		monitor.addAttribute("raised",isRaised());
-		if (stateChanged != null) {
-			monitor.addAttribute("changed",getStateChangeDateStr());
-		}
-		if (isRaised()) {
-			monitor.addAttribute("severity", getAlarmSeverity().name());
-			EventThrowing source = getAlarmSource();
-			if (source!=null) {
-				monitor.addAttribute("source",source.getEventSourceName());
-			}
-		}
-		return monitor;
+	private void storeRaisedBy(MonitorEvent event) {
+		eventCode = event.getEventCode();
+		raisedBy = event.getSource();
 	}
+
+	private void clearRaisedBy() {
+		eventCode = null;
+		raisedBy = null;
+	}
+
 	public XmlBuilder toXml() {
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		monitor.addAttribute("name",getName());
@@ -268,13 +262,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 		return raised;
 	}
 
-	public EventThrowing getAlarmSource() {
-		return alarmSource;
-	}
-	public void setAlarmSource(EventThrowing source) {
-		alarmSource = source;
-	}
-
 	private void setStateChangeDate(Instant date) {
 		stateChanged = date;
 		getManager().registerStateChange(date);
@@ -285,12 +272,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 
 		return Date.from(stateChanged);
-	}
-	public String getStateChangeDateStr() {
-		if (stateChanged != null) {
-			return DateUtils.format(getStateChangeDate(), DateUtils.FORMAT_FULL_GENERIC);
-		}
-		return "";
 	}
 
 	private void setLastHit(Instant date) {

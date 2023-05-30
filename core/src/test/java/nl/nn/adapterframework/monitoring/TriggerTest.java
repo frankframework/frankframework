@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -13,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -42,11 +45,12 @@ public class TriggerTest implements EventThrowing {
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
-		ArgumentCaptor<EventThrowing> eventSourceCaptor = ArgumentCaptor.forClass(EventThrowing.class);
+		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(eventTypeCaptor.capture(), severityCaptor.capture(), eventSourceCaptor.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
+		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
 		manager.registerDestination(destination);
@@ -69,10 +73,9 @@ public class TriggerTest implements EventThrowing {
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
 		assertNotNull(capturedEvent);
 		assertEquals(this, capturedEvent.getSource());
-		assertEquals(capturedEvent.getSource(), eventSourceCaptor.getValue());
 		assertNull(capturedEvent.getEventMessage());
 		assertTrue(monitor.isRaised());
-		assertNotNull(monitor.getAlarmSource());
+		assertNotNull(monitor.getRaisedBy());
 		assertEquals("TriggerTestClass", capturedEvent.getEventSourceName());
 		assertEquals(EVENT_CODE, capturedEvent.getEventCode());
 		assertEquals(0, monitor.getAdditionalHitCount());
@@ -98,11 +101,12 @@ public class TriggerTest implements EventThrowing {
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
-		ArgumentCaptor<EventThrowing> eventSourceCaptor = ArgumentCaptor.forClass(EventThrowing.class);
+		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(eventTypeCaptor.capture(), severityCaptor.capture(), eventSourceCaptor.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
+		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
 		manager.registerDestination(destination);
@@ -157,14 +161,14 @@ public class TriggerTest implements EventThrowing {
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
-		ArgumentCaptor<EventThrowing> eventSourceCaptor = ArgumentCaptor.forClass(EventThrowing.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(eventTypeCaptor.capture(), severityCaptor.capture(), eventSourceCaptor.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
 		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
 		manager.registerDestination(destination);
+		monitor.setName("monitorName");
 		monitor.setDestinations(destination.getName());
 		monitor.setAlarmSeverity(Severity.WARNING);
 
@@ -196,8 +200,9 @@ public class TriggerTest implements EventThrowing {
 		assertNotNull(monitorEventCaptor.getValue());
 	}
 
-	@Test
-	public void testTriggerConsoleEvent() throws Exception {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testTriggerAndClearConsoleEvent(boolean eventCausedByMonitor) throws Exception {
 		// Arrange
 		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
@@ -209,11 +214,12 @@ public class TriggerTest implements EventThrowing {
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
-		ArgumentCaptor<EventThrowing> eventSourceCaptor = ArgumentCaptor.forClass(EventThrowing.class);
+		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
-		doNothing().when(destination).fireEvent(eventTypeCaptor.capture(), severityCaptor.capture(), eventSourceCaptor.capture(), monitorEventCaptor.capture());
+		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
+		monitor.setName("monitorName");
 		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
 		manager.registerDestination(destination);
@@ -225,7 +231,7 @@ public class TriggerTest implements EventThrowing {
 		manager.configure();
 
 		// Act
-		MonitorEvent event = new ConsoleMonitorEvent("dummyUser");
+		MonitorEvent event = eventCausedByMonitor ? new ConsoleMonitorEvent("dummyUser") : new FireMonitorEvent(this, EVENT_CODE);
 		monitor.changeState(true, Severity.CRITICAL, event);
 
 		// Assert
@@ -234,30 +240,27 @@ public class TriggerTest implements EventThrowing {
 		assertEquals(EventType.TECHNICAL, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue());
 		MonitorEvent capturedEvent = monitorEventCaptor.getValue();
-		assertEquals(capturedEvent.getSource(), eventSourceCaptor.getValue());
 		assertNotNull(capturedEvent);
 		assertNull(capturedEvent.getEventMessage());
 		assertTrue(monitor.isRaised());
-		assertNotNull(monitor.getAlarmSource());
-		assertEquals("Frank!Console on behalf of 'dummyUser'", capturedEvent.getEventSourceName());
-		assertEquals("CONSOLE", capturedEvent.getEventCode());
+		assertNotNull(monitor.getRaisedBy());
 		assertEquals(0, monitor.getAdditionalHitCount());
 
 		// Act
-		monitor.changeState(false, Severity.WARNING, event); //WARNING
+		monitor.changeState(false, Severity.WARNING, new ConsoleMonitorEvent("dummyUser")); //WARNING, cleared by MONITOR
 
 		// Assert
 		assertEquals(EventType.CLEARING, eventTypeCaptor.getValue());
 		assertEquals(Severity.CRITICAL, severityCaptor.getValue()); // OLD STATE 'CRITICAL'
 		MonitorEvent capturedEvent2 = monitorEventCaptor.getValue();
-		assertEquals(capturedEvent.getSource(), eventSourceCaptor.getValue());
 		assertNotNull(capturedEvent2);
 		assertNull(capturedEvent2.getEventMessage());
 		assertFalse(monitor.isRaised());
-		assertNull(monitor.getAlarmSource());
+		assertNull(monitor.getRaisedBy());
+		assertEquals(0, monitor.getAdditionalHitCount());
+		assertEquals(eventCausedByMonitor ? "CONSOLE" : EVENT_CODE, eventCode.getValue());
 		assertEquals("Frank!Console on behalf of 'dummyUser'", capturedEvent2.getEventSourceName());
 		assertEquals("CONSOLE", capturedEvent2.getEventCode());
-		assertEquals(0, monitor.getAdditionalHitCount());
 	}
 
 	@Test

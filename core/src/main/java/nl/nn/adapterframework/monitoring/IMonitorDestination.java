@@ -32,7 +32,7 @@ public interface IMonitorDestination extends INamedObject {
 
 	void configure() throws ConfigurationException;
 
-	void fireEvent(EventType eventType, Severity severity, EventThrowing source, MonitorEvent message);
+	void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent message);
 
 	public XmlBuilder toXml();
 }

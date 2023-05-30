@@ -295,7 +295,7 @@ public class Monitoring extends BusEndpointBase {
 		if(isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
+			EventThrowing source = monitor.getRaisedBy();
 			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {

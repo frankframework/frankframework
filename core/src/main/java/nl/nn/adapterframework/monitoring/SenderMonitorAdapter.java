@@ -66,9 +66,9 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 	}
 
 	@Override
-	public void fireEvent(EventType eventType, Severity severity, EventThrowing source, MonitorEvent event) {
+	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		try {
-			getSender().sendMessageOrThrow(new Message(makeXml(eventType, severity, event)),null);
+			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)),null);
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}
