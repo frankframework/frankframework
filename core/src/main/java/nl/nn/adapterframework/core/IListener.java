@@ -54,12 +54,6 @@ public interface IListener<M> extends IConfigurable {
 	 */
 	void close() throws ListenerException;
 
-	// TODO: Candidate method:
-	// RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException
-	// May not work easily with:
-	// - PullingJmsListener
-
-
 	/**
 	 * Extracts ID-string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.

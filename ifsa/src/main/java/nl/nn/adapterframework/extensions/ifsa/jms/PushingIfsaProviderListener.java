@@ -208,9 +208,6 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 		return jmsConnector;
 	}
 
-
-
-
 	/**
 	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
 	 *
@@ -225,9 +222,6 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 	public void setListenerPort(String listenerPort) {
 		this.listenerPort = listenerPort;
 	}
-
-
-
 
 	/**
 	 * Controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER
@@ -294,4 +288,11 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 		}
 	}
 
+	@Override
+	public RawMessageWrapper<IFSAMessage> wrapRawMessage(IFSAMessage rawMessage, Map<String, Object> threadContext) {
+		getIdFromRawMessage(rawMessage, threadContext);
+		String mid = (String) threadContext.get(PipeLineSession.messageIdKey);
+		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		return new RawMessageWrapper<>(rawMessage, mid, cid);
+	}
 }

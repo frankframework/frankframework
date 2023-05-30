@@ -46,16 +46,16 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
 		return rawMessage.getId();
 	}
 

@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.util.Map;
+
+import javax.jms.Message;
+
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -29,5 +33,10 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) {
+		return null;
 	}
 }

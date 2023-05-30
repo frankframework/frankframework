@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -149,18 +148,23 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 
 	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessageWrapper(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) {
 		return getCorrelationIdFromField(rawMessage.getRawMessage());
 	}
 
 	@Override
-	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String, Object> threadContext) {
 		return getCorrelationIdFromField(rawMessage);
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		return functionCall2message(rawMessage.getRawMessage());
+	public RawMessageWrapper<JCoFunction> wrapRawMessage(JCoFunction jcoFunction, Map<String, Object> threadContext) throws ListenerException {
+		return new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField(jcoFunction), null);
+	}
+
+	@Override
+	public Message extractMessage(RawMessageWrapper<JCoFunction> rawMessageWrapper, Map<String,Object> threadContext) {
+		return functionCall2message(rawMessageWrapper.getRawMessage());
 	}
 
 	@Override
@@ -177,7 +181,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try (PipeLineSession session = new PipeLineSession()) {
-			handler.processRawMessage(this, new RawMessageWrapper<>(jcoFunction, this.getIdFromRawMessage(jcoFunction, new HashMap<>()), null), session, false);
+			handler.processRawMessage(this, wrapRawMessage(jcoFunction, session), session, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());

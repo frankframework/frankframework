@@ -15,7 +15,12 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,10 +38,12 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
 
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -147,8 +154,76 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return jmsConnector;
 	}
 
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		Map<String, Object> messageContext = new HashMap<>();
 
+		String id;
+		String cid;
+		DeliveryMode mode;
+		Date tsSent;
+		Destination replyTo;
+		try {
+			mode = DeliveryMode.parse(rawMessage.getJMSDeliveryMode());
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSDeliveryMode()", e);
+			mode = null;
+		}
+		// --------------------------
+		// retrieve MessageID
+		// --------------------------
+		try {
+			id = rawMessage.getJMSMessageID();
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSMessageID()", e);
+			id = null;
+		}
+		// --------------------------
+		// retrieve CorrelationID
+		// --------------------------
+		try {
+			cid = rawMessage.getJMSCorrelationID();
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSCorrelationID()", e);
+			cid = null;
+		}
+		// --------------------------
+		// retrieve TimeStamp
+		// --------------------------
+		try {
+			long lTimeStamp = rawMessage.getJMSTimestamp();
+			tsSent = new Date(lTimeStamp);
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSTimestamp()", e);
+			tsSent = null;
+		}
+		// --------------------------
+		// retrieve ReplyTo address
+		// --------------------------
+		try {
+			replyTo = rawMessage.getJMSReplyTo();
+		} catch (JMSException e) {
+			log.debug("ignoring JMSException in getJMSReplyTo()", e);
+			replyTo = null;
+		}
 
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+"listener on ["+ getDestinationName()
+					+ "] got message with JMSDeliveryMode=[" + mode
+					+ "] \n  JMSMessageID=[" + id
+					+ "] \n  JMSCorrelationID=[" + cid
+					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
+					+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
+					+ "] \n Message=[" + rawMessage
+					+ "]");
+		}
+
+		PipeLineSession.updateListenerParameters(threadContext, id, cid, null, tsSent);
+		threadContext.put("timestamp",tsSent);
+		threadContext.put("replyTo",replyTo);
+
+		return new RawMessageWrapper<>(rawMessage, id, cid, messageContext);
+	}
 
 	@Override
 	public boolean isThreadCountReadable() {

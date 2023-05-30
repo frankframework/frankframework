@@ -77,6 +77,11 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) {
+		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.messageIdKey), (String) threadContext.get(PipeLineSession.correlationIdKey));
+	}
+
+	@Override
 	public String getIdFromRawMessageWrapper(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
 		// TODO: Check code coverage of this line
 		// TODO: Check why not return rawMessage.getId() now (which may still be NULL).
@@ -92,6 +97,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
 		return rawMessage.getMessage();
 	}
+
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		// descendants can override this method when specific actions are required

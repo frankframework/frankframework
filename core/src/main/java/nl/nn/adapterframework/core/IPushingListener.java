@@ -15,10 +15,14 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.util.Map;
+
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 /**
  * Defines listening behaviour of message driven receivers.
- * @param <M> the raw message type 
- * 
+ * @param <M> the raw message type
+ *
  * @author Gerrit van Brakel
  * @since 4.2
  */
@@ -33,9 +37,11 @@ public interface IPushingListener<M> extends IListener<M> {
 
 	/**
 	 * Set a (single) listener that will be notified of any exceptions.
-	 * The listener should use this listener to notify the receiver of 
+	 * The listener should use this listener to notify the receiver of
 	 * any exception that occurs outside the processing of a message.
 	 */
 	void setExceptionListener(IbisExceptionListener listener);
 
+	// TODO: Candidate method:
+	RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 }

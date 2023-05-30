@@ -259,13 +259,13 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		threadContext.put("ifsaBifName", BIFname);
 		threadContext.put("ifsaBtcData", btcData);
 
-		Map udz = (Map) message.getIncomingUDZObject();
+		Map udz = message.getIncomingUDZObject();
 		if (udz!=null) {
-			String contextDump = "ifsaUDZ:";
+			StringBuilder contextDump = new StringBuilder("ifsaUDZ:");
 			for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
 				String key = (String)it.next();
 				String value = (String)udz.get(key);
-				contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				contextDump.append("\n ").append(key).append("=[").append(value).append("]");
 				threadContext.put(key, value);
 			}
 			if (log.isDebugEnabled()) {

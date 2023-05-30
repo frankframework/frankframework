@@ -122,6 +122,11 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		}
 	}
 
+	@Override
+	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) {
+		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.messageIdKey), (String) threadContext.get(PipeLineSession.correlationIdKey));
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
