@@ -336,6 +336,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
 		Map<String,Object> context = new HashMap<>();
+		// TODO: Clean this up
 		getIdFromRawMessageWrapper(rawMessage, context); // populate context with storage key
 		return (String)context.get(STORAGE_KEY_KEY);
 	}

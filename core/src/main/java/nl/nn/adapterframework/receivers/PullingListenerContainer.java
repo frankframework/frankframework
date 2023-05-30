@@ -317,13 +317,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
+							messageId = rawMessage.getId();
 							if (receiver.getMaxRetries()>=0) {
-								if (rawMessage.getId() == null) {
-									log.warn("<!> I don't wanna get into this branch <!>");
-									messageId = listener.getIdFromRawMessageWrapper(rawMessage, threadContext);
-								} else {
-									messageId = rawMessage.getId();
-								}
 								deliveryCount = receiver.getDeliveryCount(rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {

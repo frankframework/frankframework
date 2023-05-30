@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -407,6 +408,7 @@ public class ReceiverTest {
 
 		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
+//		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 1
 
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -447,9 +449,9 @@ public class ReceiverTest {
 		doReturn("message").when(jmsMessage).getText();
 		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
-		ArgumentCaptor<String> messageIdCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> correlationIdCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<Serializable> messageCaptor = ArgumentCaptor.forClass(Serializable.class);
+		ArgumentCaptor<String> messageIdCaptor = forClass(String.class);
+		ArgumentCaptor<String> correlationIdCaptor = forClass(String.class);
+		ArgumentCaptor<Serializable> messageCaptor = forClass(Serializable.class);
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
@@ -669,8 +671,8 @@ public class ReceiverTest {
 		waitForState(adapter, RunState.STARTED);
 		waitForState(receiver, RunState.STARTED);
 
-		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
+		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);

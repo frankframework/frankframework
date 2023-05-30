@@ -735,7 +735,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-
 	@Override
 	public void startRunning() {
 		try {
@@ -847,7 +846,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> message, ProcessState toState, String reason) throws ListenerException {
 		if (toState==ProcessState.AVAILABLE) {
-			String id = getListener().getIdFromRawMessageWrapper(message, null);
+			String id = message.getId();
 			resetProblematicHistory(id);
 		}
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
@@ -1031,11 +1030,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Date tsReceived = PipeLineSession.getTsReceived(session);
 			Date tsSent = PipeLineSession.getTsSent(session);
 			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
-			// TODO: Sort out this sorry mess with messageId / correlationId and the Session
-			String messageId = session.getMessageId();
-			String correlationId = session.getCorrelationId();
-			rawMessage.setId(messageId);
-			MessageWrapper<M> messageWrapper = new MessageWrapper<>(rawMessage, message, correlationId);
+
+			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
+			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
+			MessageWrapper<M> messageWrapper = new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 			Message result = processMessageInAdapter(messageWrapper, session, -1, false, false);
 			result.unscheduleFromCloseOnExitOf(session);
 			return result;
@@ -1071,36 +1069,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 			}
 
-			String messageId;
-			String correlationId;
-			MessageWrapper<M> messageWrapper;
-
-			if (rawMessageWrapper.getId() != null) {
-				messageId = rawMessageWrapper.getId();
-				session.putAll(rawMessageWrapper.getContext());
-			} else {
-				log.warn("<!> I don't wanna get into this branch <!>");
-				messageId = getListener().getIdFromRawMessageWrapper(rawMessageWrapper, session);
-				rawMessageWrapper.setId(messageId);
-			}
-			if (rawMessageWrapper.getCorrelationId() != null) {
-				correlationId = rawMessageWrapper.getCorrelationId();
-			} else {
-				// TODO: Does session ever have correlationId when rawMessageWrapper doesn't?
-				correlationId = session.getCorrelationId();
-			}
+			String messageId = rawMessageWrapper.getId();
+			String correlationId = rawMessageWrapper.getCorrelationId();
+			session.putAll(rawMessageWrapper.getContext());
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
+			MessageWrapper<M> messageWrapper;
 			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
 				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
 				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
-				if (messageWrapper.getCorrelationId() == null) {
-					// TODO: Do we need this??
-					log.warn("<!> Do we need this?");
-					messageWrapper.setCorrelationId(correlationId);
-				}
 			} else {
 				try {
 					Message message = getListener().extractMessage(rawMessageWrapper, session);
@@ -1145,12 +1124,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			PlatformTransactionManager txManager = getTxManager();
 			IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
-			RawMessageWrapper<Serializable> msg=null;
+			RawMessageWrapper<Serializable> msg = null;
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
 				try {
 					msg = new RawMessageWrapper<>(errorStorage.getMessage(storageKey), storageKey, null);
-					processRawMessage((RawMessageWrapper<M>)msg, session, -1, true, false);
+					processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
 					throw new ListenerException(t);
@@ -1163,7 +1142,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
 					Date receivedDate = session.getTsReceived();
-					if (receivedDate==null) {
+					if (receivedDate == null) {
 						log.warn("{} {} is unknown, cannot update comments", supplier(this::getLogPrefix), supply(PipeLineSession.TS_RECEIVED_KEY));
 					} else {
 						errorStorage.deleteMessage(storageKey);
@@ -1193,10 +1172,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String messageId = ensureMessageIdNotEmpty(messageWrapper.getId());
 			Message message = compactMessageIfRequired(messageWrapper.getMessage(), session);
 
-			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, session);
+			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, messageId, session);
 			session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
 
-			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, businessCorrelationId);
+			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, messageId, businessCorrelationId);
 
 			final String label = extractLabel(message);
 			boolean exitWithoutProcessing = checkMessageHistory(businessMessage, session, manualRetry, historyAlreadyChecked);
@@ -1242,7 +1221,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					try {
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
+
 						pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
+
 						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
 						result=pipeLineResult.getResult();
@@ -1434,7 +1415,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return null;
 	}
 
-	private String getBusinessCorrelationId(MessageWrapper<M> messageWrapper, PipeLineSession session) {
+	private String getBusinessCorrelationId(MessageWrapper<M> messageWrapper, String messageId, PipeLineSession session) {
 		String logPrefix = getLogPrefix();
 		String businessCorrelationId = session.get(PipeLineSession.correlationIdKey, messageWrapper.getCorrelationId());
 		if (correlationIDTp != null) {
@@ -1457,11 +1438,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 		}
-		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageWrapper.getId())) {
-			log.info("{} did not find (technical) correlationId, reverting to messageId [{}]", logPrefix, messageWrapper.getId());
-			businessCorrelationId= messageWrapper.getId();
+		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
+			log.info("{} did not find (technical) correlationId, reverting to messageId [{}]", logPrefix, messageId);
+			businessCorrelationId = messageId;
 		}
-		log.info("{} messageId [{}] correlationId [{}] businessCorrelationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId(), businessCorrelationId);
+		log.info("{} messageId [{}] correlationId [{}] businessCorrelationId [{}]", logPrefix, messageId, messageWrapper.getCorrelationId(), businessCorrelationId);
 		return businessCorrelationId;
 	}
 
@@ -1530,7 +1511,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * returns true if message should not be processed
 	 */
-	public boolean isDeliveryRetryLimitExceeded(String messageId, String correlationId, RawMessageWrapper<M> rawMessageWrapper, Map<String,Object> threadContext, boolean manualRetry) throws ListenerException {
+	private boolean isDeliveryRetryLimitExceeded(String messageId, String correlationId, RawMessageWrapper<M> rawMessageWrapper, Map<String,Object> threadContext, boolean manualRetry) throws ListenerException {
 		if (manualRetry) {
 			threadContext.put(RETRY_FLAG_SESSION_KEY, "true");
 			return isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, correlationId);

@@ -43,25 +43,43 @@ public class RawMessageWrapper<M> {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
-		this.context.put(PipeLineSession.messageIdKey, id);
-		this.context.put(PipeLineSession.correlationIdKey, correlationId);
+		if (id != null) {
+			this.context.put(PipeLineSession.messageIdKey, id);
+		}
+		if (correlationId != null) {
+			this.context.put(PipeLineSession.correlationIdKey, correlationId);
+		}
 	}
 
 	public RawMessageWrapper(M rawMessage, String id, String correlationId, @Nonnull Map<String, Object> context) {
 		this(rawMessage, id, correlationId);
 		this.context.putAll(context);
+		if (context.get(PipeLineSession.messageIdKey) != null) {
+			this.id = (String) context.get(PipeLineSession.messageIdKey);
+		}
+		if (context.get(PipeLineSession.correlationIdKey) != null) {
+			this.correlationId = (String) context.get(PipeLineSession.correlationIdKey);
+		}
 	}
 
 	@Deprecated
-	public void setId(String string) {
-		id = string;
-		this.context.put(PipeLineSession.messageIdKey, id);
+	public void setId(String id) {
+		this.id = id;
+		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
 	}
 
 	@Deprecated
 	void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
-		this.context.put(PipeLineSession.correlationIdKey, correlationId);
+		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
+	}
+
+	protected void updateOrRemoveValue(String key, String value) {
+		if (value != null) {
+			this.context.put(key, value);
+		} else {
+			this.context.remove(key);
+		}
 	}
 
 	public Message getMessage() {

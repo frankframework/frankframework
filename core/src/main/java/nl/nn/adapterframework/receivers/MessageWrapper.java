@@ -63,8 +63,8 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	}
 
 	// TODO: Sort out if we need this extra constructor with correlationId (we probably do, but only once)
-	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String correlationId) {
-		super(messageWrapper.getRawMessage(), messageWrapper.getId(), correlationId, messageWrapper.getContext());
+	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String messageId, String correlationId) {
+		super(messageWrapper.getRawMessage(), messageId, correlationId, messageWrapper.getContext());
 		this.message = message;
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
 	}
@@ -102,7 +102,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		try {
 			correlationId = (String) stream.readObject();
 		} catch (OptionalDataException | EOFException e) {
-			// Correlation ID was not written
+			// Correlation ID was not written in original serialised message
 			correlationId = null;
 		}
 
@@ -113,7 +113,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		if (correlationId == null) {
 			correlationId = (String) context.get(PipeLineSession.correlationIdKey);
 		}
-		this.context.put(PipeLineSession.messageIdKey, id);
-		this.context.put(PipeLineSession.correlationIdKey, correlationId);
+		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
+		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
 	}
 }

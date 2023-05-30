@@ -129,7 +129,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			if (context != null) {
 				context.put(PipeLineSession.correlationIdKey, correlationId);
 			}
-			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, correlationId, correlationId);
+			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
 			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
 			return result.asString();
 		} catch (IOException e) {
