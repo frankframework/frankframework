@@ -89,7 +89,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		String jsonInput = "{\"type\":\"FUNCTIONAL\",\"state\":\"edit\",\"destinations\":[\"mockDestination\"]}";
+		String jsonInput = "{\"type\":\"FUNCTIONAL\",\"action\":\"edit\",\"destinations\":[\"mockDestination\"]}";
 
 		// Act
 		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/configurations/TestConfiguration/monitors/monitorName", jsonInput);

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
@@ -28,7 +29,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		destination.setSender(sender);
 		destination.configure();
 
-		when(sender.sendMessage(messageCapture.capture(), isNull())).thenCallRealMethod();
+		when(sender.sendMessage(messageCapture.capture(), any(PipeLineSession.class))).thenCallRealMethod();
 		MonitorEvent event = new MonitorEvent(this, EVENTCODE, null);
 
 		// Act
@@ -49,7 +50,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		destination.setSender(sender);
 		destination.configure();
 
-		when(sender.sendMessage(messageCapture.capture(), isNull())).thenCallRealMethod();
+		when(sender.sendMessage(messageCapture.capture(), any(PipeLineSession.class))).thenCallRealMethod();
 		MonitorEvent event = new MonitorEvent(this, EVENTCODE, new Message("<ik>ben<xml/></ik>"));
 
 		// Act
