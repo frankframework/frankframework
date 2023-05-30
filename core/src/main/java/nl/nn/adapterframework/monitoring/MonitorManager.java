@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.monitoring;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,7 +57,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
-	private Instant stateLastChanged = null;
 
 	/**
 	 * (re)configure all destinations and all monitors.
@@ -81,10 +79,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	private String getLogPrefix() {
 		return "Manager@"+this.hashCode();
-	}
-
-	public void registerStateChange(Instant date) {
-		stateLastChanged = date;
 	}
 
 	public void registerDestination(IMonitorDestination monitorAdapter) {

@@ -45,7 +45,6 @@ public class TriggerTest implements EventThrowing {
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
-		ArgumentCaptor<String> eventCode = ArgumentCaptor.forClass(String.class);
 		ArgumentCaptor<MonitorEvent> monitorEventCaptor = ArgumentCaptor.forClass(MonitorEvent.class);
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());

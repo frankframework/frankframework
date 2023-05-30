@@ -90,7 +90,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	public void changeState(boolean alarm, Severity severity, MonitorEvent event) throws MonitorException {
-		EventThrowing source = event.getSource();
 		boolean up=alarm && (!raised || getAlarmSeverity()==null || getAlarmSeverity().compareTo(severity)<0);
 		boolean clear=raised && (!alarm || (up && getAlarmSeverity()!=null && getAlarmSeverity()!=severity));
 		if (clear) {
@@ -264,7 +263,6 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 	private void setStateChangeDate(Instant date) {
 		stateChanged = date;
-		getManager().registerStateChange(date);
 	}
 	public Date getStateChangeDate() {
 		if(stateChanged == null) {
