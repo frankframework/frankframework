@@ -141,7 +141,7 @@ public class StreamUtil {
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
 	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
-		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, true, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		ByteOrderMark bom = bOMInputStream.getBOM();
 		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
 
