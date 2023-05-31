@@ -43,16 +43,13 @@ public class MessageWrapperTest {
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
-		MessageWrapper in = new MessageWrapper();
-		in.setMessage(new Message(data));
-		in.setId(id);
-		in.setCorrelationId(correlationId);
+		MessageWrapper<?> in = new MessageWrapper<>(new Message(data), id, correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
 
 		assertNotNull(wire);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -67,14 +64,13 @@ public class MessageWrapperTest {
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
-		MessageWrapper in = new MessageWrapper();
-		in.setMessage(new Message(data));
+		MessageWrapper<?> in = new MessageWrapper<>(new Message(data), null, null);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
 
 		assertNotNull(wire);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -92,16 +88,13 @@ public class MessageWrapperTest {
 		String contextKey = "messageWrapperContextItem";
 		String contextValue = "fakeValue";
 
-		MessageWrapper in = new MessageWrapper();
-		in.setMessage(new Message(data));
-		in.setId(id);
-		in.setCorrelationId(correlationId);
+		MessageWrapper<?> in = new MessageWrapper<>(new Message(data), id, correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
 
 		assertNotNull(wire);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -122,10 +115,7 @@ public class MessageWrapperTest {
 		Path file = Files.createTempFile("MessageWrapperTest", null);
 		Files.write(file, data);
 
-		MessageWrapper in = new MessageWrapper();
-		in.setMessage(new PathMessage(file));
-		in.setId(id);
-		in.setCorrelationId(correlationId);
+		MessageWrapper<?> in = new MessageWrapper<>(new PathMessage(file), id, correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
@@ -133,7 +123,7 @@ public class MessageWrapperTest {
 		Files.delete(file);
 
 		assertNotNull(wire);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -153,16 +143,13 @@ public class MessageWrapperTest {
 
 		MimeBodyPart bodyPart = new MimeBodyPart(new InternetHeaders(), data);
 
-		MessageWrapper in = new MessageWrapper();
-		in.setMessage(new PartMessage(bodyPart));
-		in.setId(id);
-		in.setCorrelationId(correlationId);
+		MessageWrapper<?> in = new MessageWrapper<>(new PartMessage(bodyPart), id, correlationId);
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
 
 		assertNotNull(wire);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -179,7 +166,7 @@ public class MessageWrapperTest {
 		String contextValue = "fakeValue";
 
 		byte[] wire = Hex.decodeHex(characterWire76);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -197,7 +184,7 @@ public class MessageWrapperTest {
 		String contextValue = "fakeValue";
 
 		byte[] wire = Hex.decodeHex(binaryWire76);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -221,7 +208,7 @@ public class MessageWrapperTest {
 //		System.out.println("Character: "+Hex.encodeHexString(wire));
 
 		byte[] wire = Hex.decodeHex(characterWire77);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -246,7 +233,7 @@ public class MessageWrapperTest {
 //		System.out.println("Bytes: "+Hex.encodeHexString(wire));
 
 		byte[] wire = Hex.decodeHex(binaryWire77);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -270,7 +257,7 @@ public class MessageWrapperTest {
 //		System.out.println("Character: "+Hex.encodeHexString(wire));
 
 		byte[] wire = Hex.decodeHex(characterWire78);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -295,7 +282,7 @@ public class MessageWrapperTest {
 //		System.out.println("Bytes: "+Hex.encodeHexString(wire));
 
 		byte[] wire = Hex.decodeHex(binaryWire78);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());
@@ -313,7 +300,7 @@ public class MessageWrapperTest {
 		String contextValue = "fakeValue";
 
 		byte[] wire = Hex.decodeHex(characterWire79);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertFalse(out.getMessage().isBinary());
 		assertEquals(data, out.getMessage().asString());
@@ -333,7 +320,7 @@ public class MessageWrapperTest {
 
 
 		byte[] wire = Hex.decodeHex(binaryWire79);
-		MessageWrapper out = serializationTester.deserialize(wire);
+		MessageWrapper<?> out = serializationTester.deserialize(wire);
 
 		assertTrue(out.getMessage().isBinary());
 		assertEquals(new String(data), out.getMessage().asString());

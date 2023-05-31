@@ -31,10 +31,6 @@ public class RawMessageWrapper<M> {
 	protected @Getter String correlationId;
 	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
 
-	protected RawMessageWrapper() {
-		this(null, null, null);
-	}
-
 	public RawMessageWrapper(M rawMessage) {
 		this(rawMessage, null, null);
 	}
@@ -60,18 +56,6 @@ public class RawMessageWrapper<M> {
 		if (context.get(PipeLineSession.correlationIdKey) != null) {
 			this.correlationId = (String) context.get(PipeLineSession.correlationIdKey);
 		}
-	}
-
-	@Deprecated
-	public void setId(String id) {
-		this.id = id;
-		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
-	}
-
-	@Deprecated
-	void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
-		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
 	}
 
 	protected void updateOrRemoveValue(String key, String value) {

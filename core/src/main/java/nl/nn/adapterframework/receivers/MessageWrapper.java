@@ -41,10 +41,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	private @Getter Message message;
 
-	public MessageWrapper() {
-		super();
-	}
-
 	public MessageWrapper(Message message, String messageId) {
 		this(message, messageId, null);
 	}
@@ -66,11 +62,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		super(messageWrapper.getRawMessage(), messageId, correlationId, messageWrapper.getContext());
 		this.message = message;
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
-	}
-
-	@Deprecated
-	public void setMessage(Message message) {
-		this.message = message;
 	}
 
 	/*
