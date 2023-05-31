@@ -31,6 +31,11 @@ public class RawMessageWrapper<M> {
 	protected @Getter String correlationId;
 	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
 
+	protected RawMessageWrapper() {
+		// For Serialisation
+		this(null, null, null);
+	}
+
 	public RawMessageWrapper(M rawMessage) {
 		this(rawMessage, null, null);
 	}

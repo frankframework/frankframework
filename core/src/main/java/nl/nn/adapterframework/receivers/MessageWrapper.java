@@ -41,6 +41,10 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	private @Getter Message message;
 
+	protected MessageWrapper() {
+		super();
+	}
+
 	public MessageWrapper(Message message, String messageId) {
 		this(message, messageId, null);
 	}
