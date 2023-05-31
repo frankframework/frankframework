@@ -187,20 +187,9 @@ public class FileRecordListener implements IPullingListener<String> {
 		}
 		return null;
 	}
-	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a
-	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
-	 * in the processing of the file.
-	 * Override this method for your specific needs!
-	 */
-	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return getIdFromRawMessage(rawMessage.getRawMessage(), threadContext);
-	}
 
-	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		// TODO: See where used and if it needs to update context, or what part can be inlined
 		String correlationId = inputFileName + "-" + recordNo;
 		PipeLineSession.updateListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;

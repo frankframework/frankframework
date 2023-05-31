@@ -318,12 +318,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<F> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return rawMessage.getId();
-	}
-
-	@Override
 	public String getIdFromRawMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String filename=null;
 		try {

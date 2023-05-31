@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -36,7 +35,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.3
  */
 @SuppressWarnings({"deprecation", "unchecked"})
-public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable, IMessageWrapper {
+public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable {
 
 	private  static final long serialVersionUID = -8251009650246241025L;
 

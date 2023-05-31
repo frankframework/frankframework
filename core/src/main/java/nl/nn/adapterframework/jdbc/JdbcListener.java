@@ -287,9 +287,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	@Override
 	public String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		// TODO: See how to put all this into getIdFromRawMessage
+		// TODO: Clean up this crap, inline with caller?
 		if (rawMessage == null) {
 			updateThreadContextWithIds(threadContext, null, null, null);
 			return null;
@@ -320,7 +319,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return mid;
 	}
 
-	@Override
 	public String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String mid = rawMessage != null ? rawMessage.toString() : null;
 		updateThreadContextWithIds(threadContext, mid, mid, mid);

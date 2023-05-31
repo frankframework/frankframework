@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import nl.nn.adapterframework.jms.JmsListener;
  */
 public class IfsaSimulatorJmsListener extends JmsListener {
 
-	@Override
     public String getIdFromRawMessage(Message rawMessage, Map threadContext) throws ListenerException {
 		String cid = super.getIdFromRawMessage(rawMessage, threadContext);
 

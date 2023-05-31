@@ -146,17 +146,6 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		return "progid ["+getProgid()+"] on "+super.getPhysicalDestinationName();
 	}
 
-
-	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<JCoFunction> rawMessage, Map<String,Object> threadContext) {
-		return getCorrelationIdFromField(rawMessage.getRawMessage());
-	}
-
-	@Override
-	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String, Object> threadContext) {
-		return getCorrelationIdFromField(rawMessage);
-	}
-
 	@Override
 	public RawMessageWrapper<JCoFunction> wrapRawMessage(JCoFunction jcoFunction, Map<String, Object> threadContext) throws ListenerException {
 		return new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField(jcoFunction), null);

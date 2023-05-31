@@ -30,9 +30,7 @@ import org.xml.sax.SAXException;
 
 import com.tibco.tibjms.TibjmsMapMessage;
 
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
@@ -108,21 +106,6 @@ public class TibcoLogJmsListener extends JmsListener {
 			}
 		}
 		return new Message(DateUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
-	}
-
-	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		TibjmsMapMessage tjmMessage;
-		try {
-			tjmMessage = (TibjmsMapMessage) rawMessage.getRawMessage();
-		} catch (ClassCastException e) {
-			log.error("message received by listener on ["
-					+ getDestinationName()
-					+ "] was not of type TibjmsMapMessage, but ["
-					+ rawMessage.getRawMessage().getClass().getName() + "]", e);
-			return null;
-		}
-		return getIdFromRawMessage(tjmMessage, threadContext);
 	}
 
 	private String logLevelToText(int logLevel) {

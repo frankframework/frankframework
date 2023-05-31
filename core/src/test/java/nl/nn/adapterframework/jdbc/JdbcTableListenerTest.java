@@ -420,6 +420,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		RawMessageWrapper rawMessage = listener.getRawMessage(context);
 
+		// TODO: The RawMessageWrapper should already have the ID
 		String mid = listener.getIdFromRawMessageWrapper(rawMessage, context);
 		String cid = (String)context.get(PipeLineSession.correlationIdKey);
 

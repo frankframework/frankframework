@@ -55,43 +55,6 @@ public interface IListener<M> extends IConfigurable {
 	void close() throws ListenerException;
 
 	/**
-	 * Extracts ID-string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the context.
-	 * <br/>
-	 * Common entries in the session context are:
-	 * <ul>
-	 * 	<li>id: messageId, identifies the current transportation of the message</li>
-	 * 	<li>cid: correlationId, identifies the processing of the message in the global chain</li>
-	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
-	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
-	 * </ul>
-	 *
-	 * @return Correlation ID string.
-	 *
-	 * TODO: Do we need this method still?
-	 */
-	@Deprecated
-	String getIdFromRawMessageWrapper(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
-
-	/**
-	 * Extracts ID-string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the context.
-	 * <br/>
-	 * Common entries in the session context are:
-	 * <ul>
-	 * 	<li>id: messageId, identifies the current transportation of the message</li>
-	 * 	<li>cid: correlationId, identifies the processing of the message in the global chain</li>
-	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
-	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
-	 * </ul>
-	 *
-	 * TODO: Would be good if we can get rid of this method but not sure it is possible.
-	 *
-	 * @return Message ID string.
-	 */
-	String getIdFromRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
-
-	/**
 	 * Extracts string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.

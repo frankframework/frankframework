@@ -82,11 +82,12 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return new LinkedHashMap<String,Object>();
+		return new LinkedHashMap<>();
 	}
 
 	@Override
 	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+		// No-op
 	}
 
 	@Override
@@ -121,16 +122,6 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query [" + query + "]", e);
 		}
-	}
-
-	@Override
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
-		return null;
-	}
-
-	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		return null;
 	}
 
 	@Override

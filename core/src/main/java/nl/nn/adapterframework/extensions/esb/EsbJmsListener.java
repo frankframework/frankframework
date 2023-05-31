@@ -102,7 +102,6 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 	}
 
-	@Override
 	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String id = super.getIdFromRawMessage(rawMessage, threadContext);
 		if (isCopyAEProperties()) {

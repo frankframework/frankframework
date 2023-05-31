@@ -110,7 +110,6 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	 * </ul>
 	 * @return ID-string of message for adapter.
 	 */
-	@Override
 	public String getIdFromRawMessageWrapper(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) {
 
 		if (rawMessage instanceof MessageWrapper) {
@@ -127,7 +126,6 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return getIdFromRawMessage(message, threadContext);
 	}
 
-	@Override
 	public String getIdFromRawMessage(IFSAMessage message, Map<String, Object> threadContext) {
 		String mode = "unknown";
 		String id = "unset";
