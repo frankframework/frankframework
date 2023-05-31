@@ -18,7 +18,7 @@ package nl.nn.adapterframework.receivers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -263,7 +263,7 @@ public class FileRecordListener implements IPullingListener<String> {
 
 	@Override
 	public Map<String, Object> openThread() throws ListenerException {
-		return Collections.emptyMap();
+		return new HashMap<>();
 	}
 
 	/**

@@ -138,7 +138,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		Map<String,Object> threadContext = new HashMap<String,Object>();
+		Map<String,Object> threadContext = new HashMap<>();
 
 		try {
 			if (!isSessionsArePooled()) {

@@ -136,11 +136,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, Map<String, Object> threadContext) throws ListenerException {
-		return new RawMessageWrapper<>(message, this.getIdFromRawMessage(message), null);
-	}
-
-	private String getIdFromRawMessage(MqttMessage rawMessage) {
-		return String.valueOf(rawMessage.getId());
+		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 
 	@Override

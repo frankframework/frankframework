@@ -42,6 +42,5 @@ public interface IPushingListener<M> extends IListener<M> {
 	 */
 	void setExceptionListener(IbisExceptionListener listener);
 
-	// TODO: Candidate method:
 	RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 }

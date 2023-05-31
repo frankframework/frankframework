@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.ftp;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return null;
+		return new HashMap<>();
 	}
 
 	@Override

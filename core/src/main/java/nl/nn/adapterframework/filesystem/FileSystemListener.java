@@ -192,7 +192,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return null;
+		return new HashMap<>();
 	}
 
 	@Override

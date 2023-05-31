@@ -165,8 +165,8 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 	}
 
 	@Override
-	public Map openThread() throws ListenerException {
-		Map threadContext = new HashMap();
+	public Map<String,Object> openThread() throws ListenerException {
+		Map<String,Object> threadContext = new HashMap<>();
 
 		try {
 			if (!isSessionsArePooled()) {
