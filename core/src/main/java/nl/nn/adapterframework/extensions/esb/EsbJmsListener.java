@@ -103,8 +103,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String id = super.getIdFromRawMessage(rawMessage, threadContext);
+	public void populateContextFromMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		super.populateContextFromMessage(rawMessage, threadContext);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
@@ -147,7 +147,6 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);
 		}
-		return id;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {

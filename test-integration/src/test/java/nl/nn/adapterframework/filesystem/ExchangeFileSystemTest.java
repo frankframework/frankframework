@@ -77,12 +77,12 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		Map<String,Object> threadContext2 = new HashMap<>();
 
 		RawMessageWrapper<ExchangeMessageReference> msg1 = listener1.getRawMessage(threadContext1);
-		String msgId1 = listener1.getIdFromRawMessage(msg1.getRawMessage(), threadContext1);
+		String msgId1 = listener1.populateContextFromMessage(msg1.getRawMessage(), threadContext1);
 		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
 
 
 		RawMessageWrapper<ExchangeMessageReference> msg2 = listener2.getRawMessage(threadContext2);
-		String msgId2 = listener2.getIdFromRawMessage(msg2.getRawMessage(), threadContext2);
+		String msgId2 = listener2.populateContextFromMessage(msg2.getRawMessage(), threadContext2);
 		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
 
 		assertEquals(msgId1, msgId2);

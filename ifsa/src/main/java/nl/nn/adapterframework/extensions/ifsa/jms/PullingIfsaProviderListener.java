@@ -332,7 +332,10 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				) {
 				// TODO: Cleanup rawMessageWrapper creation, and storing of original raw message
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, rawMessage);
-				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, this.getIdFromRawMessage((IFSAMessage) rawMessage, threadContext), rawMessage.getJMSCorrelationID());
+				populateContextFromMessage((IFSAMessage) rawMessage, threadContext);
+				String mid = (String) threadContext.get(PipeLineSession.messageIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, mid, cid);
 			} else {
 				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, rawMessage.getJMSMessageID(), rawMessage.getJMSCorrelationID());
 			}

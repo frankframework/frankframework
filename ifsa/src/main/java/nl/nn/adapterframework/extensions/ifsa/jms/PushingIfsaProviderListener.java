@@ -290,7 +290,7 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 
 	@Override
 	public RawMessageWrapper<IFSAMessage> wrapRawMessage(IFSAMessage rawMessage, Map<String, Object> threadContext) {
-		getIdFromRawMessage(rawMessage, threadContext);
+		populateContextFromMessage(rawMessage, threadContext);
 		String mid = (String) threadContext.get(PipeLineSession.messageIdKey);
 		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
 		return new RawMessageWrapper<>(rawMessage, mid, cid);

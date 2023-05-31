@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
  * found, it is read in a String object and parsed to records.
  * After reading the file, the file is renamed and moved to a directory.
  *
- * @author  Johan Verrips
+ * @author Johan Verrips
  */
 @Deprecated
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
@@ -83,10 +83,11 @@ public class FileRecordListener implements IPullingListener<String> {
 			}
 		}
 	}
+
 	/**
 	 * Moves a file to another directory and places a UUID in the name.
-	 * @return String with the name of the (renamed and moved) file
 	 *
+	 * @return String with the name of the (renamed and moved) file
 	 */
 	protected String archiveFile(File file) throws ListenerException {
 		String directoryTo = getDirectoryProcessedFiles();
@@ -137,6 +138,7 @@ public class FileRecordListener implements IPullingListener<String> {
 			throw new ListenerException("Error closing sender [" + sender.getName() + "]", e);
 		}
 	}
+
 	@Override
 	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
@@ -144,7 +146,6 @@ public class FileRecordListener implements IPullingListener<String> {
 
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
-	 *
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -170,6 +171,7 @@ public class FileRecordListener implements IPullingListener<String> {
 		}
 
 	}
+
 	/**
 	 * Gets a file to process.
 	 */
@@ -188,32 +190,30 @@ public class FileRecordListener implements IPullingListener<String> {
 		return null;
 	}
 
-	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		// TODO: See where used and if it needs to update context, or what part can be inlined
-		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSession.updateListenerParameters(threadContext, correlationId, correlationId, null, null);
-		return correlationId;
+	private String constructMessageId() {
+		return inputFileName + "-" + recordNo;
 	}
 
 	/**
-     * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
-     * is a new file to process and returns the first record.
-     */
+	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
+	 * is a new file to process and returns the first record.
+	 */
 	@Override
 	public synchronized RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext)
-		throws ListenerException {
+			throws ListenerException {
 		String fullInputFileName;
 		if (recordIterator != null && recordIterator.hasNext()) {
-				recordNo += 1;
-				return new RawMessageWrapper<>(recordIterator.next(), this.getIdFromRawMessage(recordIterator.next(), threadContext), (String) threadContext.get("cid"), threadContext);
-
+			recordNo += 1;
+			String id = constructMessageId();
+			PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+			return new RawMessageWrapper<>(recordIterator.next(), id, id);
 		}
 		if (getFileToProcess() != null) {
 			File inputFile = getFileToProcess();
 			log.info(" processing file [{}] size [{}]", inputFile::getName, inputFile::length);
 
 			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
-				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
+				threadContext.put(getStoreFileNameInSessionKey(), inputFile.getName());
 			}
 
 			String fileContent = "";
@@ -231,12 +231,13 @@ public class FileRecordListener implements IPullingListener<String> {
 			recordIterator = parseToRecords(fileContent);
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				// TODO: Method to get the ID
-				return new RawMessageWrapper<>(recordIterator.next(), inputFileName + "-" + recordNo, null);
+				String id = constructMessageId();
+				PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+				return new RawMessageWrapper<>(recordIterator.next(), id, id);
 			}
 		}
 
-		// if nothing was found, just sleep thight.
+		// if nothing was found, just sleep tight.
 		try {
 			Thread.sleep(responseTime);
 		} catch (InterruptedException e) {
@@ -264,6 +265,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	public Map<String, Object> openThread() throws ListenerException {
 		return Collections.emptyMap();
 	}
+
 	/**
 	 * Parse a String to an Iterator with objects (records). This method
 	 * currently uses the end-of-line character ("\n") as a seperator.
@@ -281,20 +283,19 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
+
 	public ISender getSender() {
 		return sender;
 	}
 
 	@Override
 	public String toString() {
-		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		ts.append("name", getName());
 		ts.append("inputDirectory", getInputDirectory());
 		ts.append("wildcard", getWildcard());
-		result += ts.toString();
-		return result;
 
+		return super.toString() + ts;
 	}
 
 	@Override
@@ -302,6 +303,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	@Override
 	public String getName() {
 		return name;
@@ -311,6 +313,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
+
 	public String getInputDirectory() {
 		return inputDirectory;
 	}
@@ -319,6 +322,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
+
 	public String getWildcard() {
 		return wildcard;
 	}
@@ -327,17 +331,20 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
 	}
+
 	public String getDirectoryProcessedFiles() {
 		return directoryProcessedFiles;
 	}
 
 	/**
 	 * The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file
+	 *
 	 * @ff.default 1000
 	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
+
 	public long getResponseTime() {
 		return responseTime;
 	}
@@ -346,6 +353,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
 		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
 	}
+
 	public String getStoreFileNameInSessionKey() {
 		return storeFileNameInSessionKey;
 	}

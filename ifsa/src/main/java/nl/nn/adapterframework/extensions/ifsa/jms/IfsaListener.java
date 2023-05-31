@@ -81,7 +81,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return result.toString();
 	}
 
-	public String getIdFromRawMessage(IFSAMessage message, Map<String, Object> threadContext) {
+	public void populateContextFromMessage(IFSAMessage message, Map<String, Object> threadContext) {
 		String mode = "unknown";
 		String id = "unset";
 		String cid = "unset";
@@ -157,20 +157,23 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 			log.error(getLogPrefix() + "got error getting serviceparameter", e);
 		}
 
-		String BIFname=null;
+		String BIFname;
 		try {
 			BIFname= message.getBifName();
 			if (StringUtils.isNotEmpty(BIFname)) {
 				threadContext.put(THREAD_CONTEXT_BIFNAME_KEY,BIFname);
+				id = BIFname;
 			}
 		} catch (JMSException e) {
 			log.error(getLogPrefix() + "got error getting BIFname", e);
+			BIFname = null;
 		}
-		byte btcData[]=null;
+		byte[] btcData;
 		try {
 			btcData= message.getBtcData();
 		} catch (JMSException e) {
 			log.error(getLogPrefix() + "got error getting btcData", e);
+			btcData = null;
 		}
 
 		if (log.isDebugEnabled()) {
@@ -225,8 +228,6 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 				log.debug(getLogPrefix()+ contextDump);
 			}
 		}
-
-		return BIFname;
 	}
 
 	/**

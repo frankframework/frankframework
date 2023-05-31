@@ -32,8 +32,8 @@ import nl.nn.adapterframework.jms.JmsListener;
 public class IfsaSimulatorJmsListener extends JmsListener {
 
     @Override
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String cid = super.getIdFromRawMessage(rawMessage, threadContext);
+	public void populateContextFromMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		super.populateContextFromMessage(rawMessage, threadContext);
 
 		String ifsa_bif_id = null;
 		String ifsa_source = null;
@@ -52,8 +52,6 @@ public class IfsaSimulatorJmsListener extends JmsListener {
 		threadContext.put("ifsa_source",ifsa_source);
 		threadContext.put("ifsa_node_id",ifsa_node_id);
 		threadContext.put("ifsa_destination",ifsa_destination);
-
-		return cid;
 	}
 
 }

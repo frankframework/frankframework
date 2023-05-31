@@ -318,7 +318,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	public String getIdFromRawMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String populateContextFromMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
@@ -371,6 +371,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				metadataBuilder.close();
 				threadContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
 			}
+			// Returns the message-id for use in test ExchangeFileSystemTest, in test-integration project
 			return messageId;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
@@ -414,7 +415,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	public RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
-		return new RawMessageWrapper<>(file, this.getIdFromRawMessage(file, context), (String) context.get(PipeLineSession.correlationIdKey), context);
+		this.populateContextFromMessage(file, context);
+		return new RawMessageWrapper<>(file, (String) context.get(PipeLineSession.messageIdKey), (String) context.get(PipeLineSession.correlationIdKey), context);
 	}
 
 	public String getStateFolder(ProcessState state) {
