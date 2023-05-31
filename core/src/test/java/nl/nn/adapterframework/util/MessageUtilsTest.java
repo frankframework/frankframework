@@ -76,15 +76,16 @@ public class MessageUtilsTest {
 
 	@ParameterizedTest
 	@CsvSource({"utf8-with-bom,32", "utf8-without-bom,28", "iso-8859-1,1095"})
-	public void testCalculateSize(String resource, int size) throws Exception {
+	public void testCalculateSize(String resource, long size) throws Exception {
 		Message message = MessageTestUtils.getMessage("/Util/MessageUtils/"+resource+".txt");
 
 		// Act
-		Long calculatedSize = MessageUtils.calculateSize(message);
+		Long calculatedSize = MessageUtils.computeSize(message);
 
 		// Assert
 		assertEquals(size, calculatedSize);
-		assertEquals(MessageUtils.calculateSize(message), size, "size should be the same");
+		assertEquals(MessageUtils.computeSize(message), size, "computing twice should have the same result");
+		assertEquals(message.getContext().get(MessageContext.METADATA_SIZE), size, "(correct) size should be in the message context");
 	}
 
 	@Test

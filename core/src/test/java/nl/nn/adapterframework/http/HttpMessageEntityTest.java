@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
@@ -14,7 +15,8 @@ import org.apache.http.entity.InputStreamEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
@@ -156,11 +158,23 @@ public class HttpMessageEntityTest {
 		assertEquals(binaryMessage.asString(), toString(hmeUrlRepeatable));
 	}
 
+	public static Stream<Arguments> testWriteToCharacterData() {
+		return Stream.of(
+				Arguments.of(MessageType.CHARACTER_UTF8, true),
+				Arguments.of(MessageType.CHARACTER_UTF8, false),
+				Arguments.of(MessageType.CHARACTER_ISO88591, true),
+				Arguments.of(MessageType.CHARACTER_ISO88591, false),
+				Arguments.of(MessageType.BINARY, true),
+				Arguments.of(MessageType.BINARY, false)
+			);
+	}
+
+	// see MessageContentBody
 	@ParameterizedTest
-	@EnumSource(value = MessageType.class)
-	public void testWriteToCharacterData(MessageType type) throws Exception {
+	@MethodSource
+	public void testWriteToCharacterData(MessageType type, boolean preserved) throws Exception {
 		Message message = MessageTestUtils.getNonRepeatableMessage(type);
-		message.preserve();
+		if(preserved) message.preserve();
 
 		HttpMessageEntity entity = new HttpMessageEntity(message);
 
@@ -168,6 +182,7 @@ public class HttpMessageEntityTest {
 			assertNull(message.getCharset());
 			assertNull(entity.getContentEncoding());
 		} else {
+			assertNotNull(message.getCharset());
 			assertEquals(message.getCharset(), entity.getContentEncoding().getValue());
 		}
 
@@ -176,8 +191,9 @@ public class HttpMessageEntityTest {
 		entity.writeTo(boas);
 
 		// Assert
+		assertEquals(type.getMessage().size(), boas.toByteArray().length);
 		String boasString = type.equals(MessageType.BINARY) ? boas.toString(): boas.toString(message.getCharset());
-		assertEquals(message.asString(), boasString);
+		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);
 	}
 
 	private String toString(HttpEntity entity) throws IOException {
