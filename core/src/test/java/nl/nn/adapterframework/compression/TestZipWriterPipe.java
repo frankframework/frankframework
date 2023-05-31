@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -137,6 +138,48 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals(filename1, entry.getName());
 			assertEquals(fileContents1, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+
+			entry = zipin.getNextEntry();
+			assertEquals(filename2, entry.getName());
+			assertEquals(fileContents2, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+		}
+	}
+
+	@Test
+	public void testWriteWithFileHeaders() throws Exception {
+		pipe.setCompleteFileHeader(true);
+		createCollector();
+		pipe.setAction(Action.WRITE);
+		pipe.addParameter(ParameterBuilder.create().withName("filename").withSessionKey("filename"));
+		configureAndStartPipe();
+
+		String fileContents1 = "some text to be compressed";
+		String fileContents2 = "more text to be compressed";
+		CRC32 checksum = new CRC32();
+		checksum.update(fileContents1.getBytes());
+
+		String filename1 = "filename1";
+		String filename2 = "filename2";
+
+		session.put("filename", filename1);
+		PipeRunResult prr = doPipe(fileContents1);
+		assertEquals("success", prr.getPipeForward().getName());
+		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+
+		session.put("filename", filename2);
+		prr = doPipe(fileContents2);
+		assertEquals("success", prr.getPipeForward().getName());
+		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+
+		Message result = getCollectionFromSession().build();
+		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
+			ZipEntry entry = zipin.getNextEntry();
+			assertEquals(filename1, entry.getName());
+			String result222 = StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null);
+			assertEquals(fileContents1, result222);
+			assertEquals(checksum.getValue(), entry.getCrc());
+			assertEquals(fileContents1.getBytes().length, entry.getSize());
+			assertEquals(fileContents1.getBytes().length, result222.getBytes().length);
 
 			entry = zipin.getNextEntry();
 			assertEquals(filename2, entry.getName());
