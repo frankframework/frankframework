@@ -44,7 +44,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	public void configure() throws ConfigurationException {
 		setCollectionName("zipwriterhandle");
 		super.configure();
-		ZipWriter.configure(getAction(), getParameterList());
+		ZipWriter.validateParametersForAction(getAction(), getParameterList());
 	}
 
 	@Override

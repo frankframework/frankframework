@@ -249,10 +249,8 @@ public abstract class MessageUtils {
 			return mimeType;
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
+			return null;
 		}
-
-		LOG.info("unable to determine mimetype");
-		return null;
 	}
 
 	/**
@@ -269,8 +267,8 @@ public abstract class MessageUtils {
 			}
 		} catch (IllegalStateException | IOException e) {
 			LOG.warn("unable to read Message or write the MD5 hash", e);
+			return null;
 		}
-		return null;
 	}
 
 	/**
@@ -290,14 +288,14 @@ public abstract class MessageUtils {
 			return checksum.getValue();
 		} catch (IOException e) {
 			LOG.warn("unable to read Message", e);
+			return null;
 		}
-		return null;
 	}
 
 	/**
 	 * Resource intensive operation, calculates the binary size of a Message.
 	 */
-	public static long calculateSize(Message message) {
+	public static long computeSize(Message message) {
 		try {
 			long size = message.size();
 			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
@@ -308,6 +306,12 @@ public abstract class MessageUtils {
 				message.preserve();
 			}
 
+			// Preserving the message might make reading the size known. If so, there is no need to compute it.
+			size = message.size();
+			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+				return size;
+			}
+
 			try (InputStream inputStream = message.asInputStream()) {
 				long computedSize = IOUtils.consume(inputStream);
 				message.getContext().put(MessageContext.METADATA_SIZE, computedSize);
@@ -315,7 +319,7 @@ public abstract class MessageUtils {
 			}
 		} catch (IOException e) {
 			LOG.warn("unable to read Message", e);
+			return Message.MESSAGE_SIZE_UNKNOWN;
 		}
-		return -1;
 	}
 }

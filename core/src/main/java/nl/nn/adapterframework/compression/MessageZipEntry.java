@@ -57,9 +57,9 @@ public class MessageZipEntry extends ZipEntry {
 		}
 	}
 
-	/** Doesn't do anything is the size was already known. Computes if unknown. */
+	/** Doesn't do anything if the size was already known. Computes if unknown. */
 	public void computeSize() {
-		setSize(MessageUtils.calculateSize(message));
+		setSize(MessageUtils.computeSize(message));
 	}
 
 	public void computeCrc() {

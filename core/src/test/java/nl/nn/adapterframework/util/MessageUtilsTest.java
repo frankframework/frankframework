@@ -66,7 +66,7 @@ public class MessageUtilsTest {
 		Message message = spy(MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_ISO88591));
 
 		// Act
-		Long size = MessageUtils.calculateSize(message);
+		Long size = MessageUtils.computeSize(message);
 
 		// Assert
 		verify(message, times(1)).isRepeatable();

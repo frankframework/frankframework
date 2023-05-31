@@ -22,6 +22,15 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
+/**
+ * Implementations should convert their input to a 'usable' part.
+ * The {@link Collection collection} handles the collection of parts,
+ * ensures they are closed if required and 'builds' the collection.
+ * 
+ * @author Niels Meijer
+ *
+ * @param <P> Part to be added to the {@link Collection collection}.
+ */
 public interface ICollector<P> extends AutoCloseable {
 
 	/** Add a single item to the collection */

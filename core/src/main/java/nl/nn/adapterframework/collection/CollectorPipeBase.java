@@ -101,7 +101,7 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 					collection = new Collection<>(createCollector());
 					session.scheduleCloseOnSessionExit(collection, ClassUtils.nameOf(this));
 					session.put(getCollectionName(), collection);
-					break; //should also be able to write?
+					break;
 				}
 				case WRITE:
 				case LAST:

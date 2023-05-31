@@ -37,7 +37,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	public void configure() throws ConfigurationException {
 		setCollectionName("zipwriterhandle");
 		super.configure();
-		ZipWriter.configure(Action.WRITE, getParameterList());
+		ZipWriter.validateParametersForAction(Action.WRITE, getParameterList());
 	}
 
 	/**

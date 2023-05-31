@@ -45,7 +45,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	private final boolean includeFileHeaders;
 
-	static void configure(Action action, ParameterList parameterList) throws ConfigurationException {
+	static void validateParametersForAction(Action action, ParameterList parameterList) throws ConfigurationException {
 		switch (action) {
 			case OPEN:
 				break;
@@ -97,11 +97,9 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 		File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
 		File tempFile = File.createTempFile("msg", ".zip", collectorsTempFolder);
 
-		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-			try (ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
-				for(MessageZipEntry entry : parts) {
-					entry.writeEntry(zipoutput);
-				}
+		try (FileOutputStream fos = new FileOutputStream(tempFile); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
+			for(MessageZipEntry entry : parts) {
+				entry.writeEntry(zipoutput);
 			}
 		}
 

@@ -23,6 +23,15 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * Aggregator which handles the collection of {@link ICollector collector parts}.
+ * Ensures they are closed if required and 'builds' the collection.
+ * 
+ * @author Niels Meijer
+ *
+ * @param <C> Collector to use, which creates the parts
+ * @param <P> Parts to be added to each collection
+ */
 public class Collection<C extends ICollector<P>, P> implements AutoCloseable {
 	private final List<P> parts;
 	private final C collector;
