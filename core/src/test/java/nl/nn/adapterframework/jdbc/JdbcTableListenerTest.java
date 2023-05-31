@@ -42,7 +42,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -414,19 +413,17 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.configure();
 		listener.open();
 
-		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
+		JdbcUtil.executeStatement(dbmsSupport, connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
 
 		Map<String,Object> context = new HashMap<>();
 
 		RawMessageWrapper rawMessage = listener.getRawMessage(context);
 
-		// TODO: The RawMessageWrapper should already have the ID
-		String mid = listener.getIdFromRawMessageWrapper(rawMessage, context);
-		String cid = (String)context.get(PipeLineSession.correlationIdKey);
+		String mid = rawMessage.getId();
+		String cid = rawMessage.getCorrelationId();
 
 		assertEquals("fakeMid", mid);
 		assertEquals("fakeCid", cid);
-
 	}
 
 
@@ -478,7 +475,10 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 					waitBeforeUpdate.release();
 					updateDone.acquire();
 				}
-				rawMessage1 = listener.changeProcessState(conn, new RawMessageWrapper<>("10"), ProcessState.ERROR, "test");
+				String key = "10";
+				RawMessageWrapper<String> rawMessage = new RawMessageWrapper<>(key, key, key);
+				rawMessage.getContext().put(JdbcListener.STORAGE_KEY_KEY, key);
+				rawMessage1 = listener.changeProcessState(conn, rawMessage, ProcessState.ERROR, "test");
 				if (mainThreadFirst) {
 					waitBeforeUpdate.release();
 				} else {
