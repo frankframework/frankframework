@@ -180,7 +180,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public RawMessageWrapper<M> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);

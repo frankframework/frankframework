@@ -279,7 +279,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 	 * Retrieves messages to be processed by the server, implementing an IFSA-service, but does no processing on it.
 	 */
 	@Override
-	public RawMessageWrapper<IFSAMessage> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<IFSAMessage> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		javax.jms.Message result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;

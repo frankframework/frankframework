@@ -201,7 +201,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	 * is a new file to process and returns the first record.
 	 */
 	@Override
-	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext)
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext)
 			throws ListenerException {
 		String fullInputFileName;
 		if (recordIterator != null && recordIterator.hasNext()) {

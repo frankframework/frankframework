@@ -206,7 +206,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
      * Retrieves messages from queue or other channel, but does no processing on it.
      */
 	@Override
-	public RawMessageWrapper<Message> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 

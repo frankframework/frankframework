@@ -94,7 +94,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);

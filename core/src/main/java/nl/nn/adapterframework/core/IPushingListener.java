@@ -42,5 +42,15 @@ public interface IPushingListener<M> extends IListener<M> {
 	 */
 	void setExceptionListener(IbisExceptionListener listener);
 
+	/**
+	 * Wrap a raw message in a MessageWrapper.
+	 *
+	 * TODO: Call with ThreadContext, or PipeLineSession? ->> probably PipeLineSession
+	 *
+	 * @param rawMessage
+	 * @param threadContext
+	 * @return
+	 * @throws ListenerException
+	 */
 	RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 }

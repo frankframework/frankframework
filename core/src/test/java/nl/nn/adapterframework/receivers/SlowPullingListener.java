@@ -36,7 +36,7 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 	}
 
 	@Override
-	public RawMessageWrapper<javax.jms.Message> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) {
+	public RawMessageWrapper<javax.jms.Message> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		return null;
 	}
 }

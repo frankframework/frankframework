@@ -99,10 +99,10 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		Map threadContext = null;
+		Map<String, Object> threadContext = null;
 		try {
 			threadContext = getListener().openThread();
-			RawMessageWrapper rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
+			RawMessageWrapper<?> rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
 
 			if (rawMessage == null) {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
@@ -114,7 +114,9 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 		finally {
 			try {
-				getListener().closeThread(threadContext);
+				if (threadContext != null) {
+					getListener().closeThread(threadContext);
+				}
 			}
 			catch (ListenerException le) {
 				log.error("got error closing listener");

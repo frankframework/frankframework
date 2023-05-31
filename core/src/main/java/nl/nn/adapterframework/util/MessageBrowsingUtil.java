@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +50,7 @@ public class MessageBrowsingUtil {
 			}
 			String msg = null;
 			try {
-				msg = listener.extractMessage(rawMessageWrapper, null).asString();
+				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
 			} catch (Exception e) {
 				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawmsg + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
 			}

@@ -94,7 +94,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
      * is a new file to process and returns the first record.
      */
 	@Override
-	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.debug("FtpListener [{}] in getRawMessage, retrieving contents of directory [{}]", getName(), remoteDirectory);
 		if (remoteFilenames.isEmpty()) {
 			try {

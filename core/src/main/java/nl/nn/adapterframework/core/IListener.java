@@ -58,6 +58,8 @@ public interface IListener<M> extends IConfigurable {
 	 * Extracts string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
+	 *
+	 * TODO: Should parameter to this call be a ThreadContext, or a PipeLineSession? Both are used, should probably be a PipeLineSession
 	 */
 	Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 
