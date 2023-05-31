@@ -30,7 +30,7 @@ appModule.directive('flow', ['Misc', '$http', '$uibModal', function (Misc, $http
 			scope.openFlowModal = function (xhr) {
 				scope.flowModalLadda = true;
 				$uibModal.open({
-					templateUrl: 'views/flow-modal.html',
+					templateUrl: 'js/app/views/status/flow/flow-modal/flow-modal.html',
 					windowClass: 'mermaidFlow',
 					resolve: {
 						xhr: function () {

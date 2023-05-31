@@ -120,7 +120,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 
 			.state('pages', {
 				abstract: true,
-				component: AppComponent,
+				component: 'app',
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
@@ -485,12 +485,13 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				templateUrl: "js/app/views/error/errorpage.html",
 			});
 
-	}]).run(['$rootScope', '$state', 'Debug', function ($rootScope, $state, Debug) {
+	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope, $state, Debug, $trace) {
 		// Set this asap on localhost to capture all debug data
 		if (location.hostname == "localhost")
 			Debug.setLevel(3);
 
 		$rootScope.$state = $state;
+		$trace.enable('TRANSITION');
 
 		$rootScope.foist = function (callback) {
 			Debug.warn("Dirty injection!", callback);

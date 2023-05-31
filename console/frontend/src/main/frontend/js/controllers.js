@@ -2,7 +2,6 @@ import './app/components/logout/logout.controller';
 import './app/components/pages/feedback-modal/feedback-modal.controller';
 import './app/components/pages/information-modal/cookie-modal.controller';
 import './app/components/pages/information-modal/information-modal.controller';
-import './app/components/pages/topinfobar/infobar.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/configuration/configuration.controller';

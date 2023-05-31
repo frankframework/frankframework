@@ -11,7 +11,7 @@ console.time("documentReady");
 $(document).ready(function () {
 	console.timeEnd("documentReady");
 	console.log("Launching GUI!");
-
+	$(".loading").css('display', '');
 	// Full height of sidebar
 	function fix_height_func() {
 		var navbarHeight = $('nav.navbar-default').height();

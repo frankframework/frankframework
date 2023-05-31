@@ -33,7 +33,7 @@ module.exports = {
         { from: "./css/plugins/iCheck/green@2x.png", to: "css/green@2x.png" },
         { from: "./js/**/*.html" },
         { from: "./images", to: "images" },
-        { from: "./views", to: "views" },
+        // { from: "./views", to: "views" },
       ],
     }),
     new HtmlWebpackPlugin({

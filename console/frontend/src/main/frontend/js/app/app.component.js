@@ -262,7 +262,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				});
 			}
 		});
-	};
+	}
 
 	function initializeFrankConsole() {
 		if (appConstants.init === -1) {
@@ -502,7 +502,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 	};
 }
 
-export const AppComponent = appModule.component('app', {
+appModule.component('app', {
 	controller: ['$scope', '$rootScope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', AppController],
 	templateUrl: 'js/app/app.component.html'
 });

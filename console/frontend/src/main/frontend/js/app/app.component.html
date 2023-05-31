@@ -1,16 +1,15 @@
 <!-- Wrapper-->
 <div id="wrapper">
     <!-- Navigation -->
-    <!-- <div ng-include="'js/app/components/pages/navigation.html'"></div> -->
-	<pages-navigation></pages-navigation>
+	<pages-navigation on-open-info="$ctrl.openInfoModel()" on-open-feedback="$ctrl.sendFeedback()"></pages-navigation>
 
     <!-- Page wraper -->
     <!-- ng-class with current state name give you the ability to extended customization your view -->
     <div id="page-wrapper" class="gray-bg {{$state.current.name}}">
 
         <!-- Page wrapper -->
-        <pages-topnavbar class="topnavbar"></pages-topnavbar>
-        <div ng-include="'js/app/components/pages/topinfobar/topinfobar.html'" class="topinfobar"></div>
+        <pages-topnavbar class="topnavbar" on-open-feedback="$ctrl.sendFeedback(value)"></pages-topnavbar>
+        <pages-topinfobar class="topinfobar"></pages-topinfobar>
 
 
         <div class="m-sm alert alert-danger pointer" role="alert" type="danger" ng-if="startupError" ui-sref="pages.errorpage">
@@ -21,7 +20,7 @@
         <div ui-view></div>
 
         <!-- Footer -->
-        <div ng-show="!$state.current.data.iframe" ng-include="'js/app/components/pages/footer.html'"></div>
+        <pages-footer ng-show="!$state.current.data.iframe"></pages-footer>
 
     </div>
     <!-- End page wrapper-->
