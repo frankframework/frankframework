@@ -31,7 +31,8 @@ import nl.nn.adapterframework.jms.JmsListener;
  */
 public class IfsaSimulatorJmsListener extends JmsListener {
 
-    public String getIdFromRawMessage(Message rawMessage, Map threadContext) throws ListenerException {
+    @Override
+	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String cid = super.getIdFromRawMessage(rawMessage, threadContext);
 
 		String ifsa_bif_id = null;

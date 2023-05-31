@@ -81,51 +81,6 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return result.toString();
 	}
 
-	protected String getIdFromWrapper(RawMessageWrapper<IFSAMessage> wrapper, Map<String,Object> threadContext)  {
-		for (Iterator<String> it = wrapper.getContext().keySet().iterator(); it.hasNext();) {
-			String key = it.next();
-			Object value = wrapper.getContext().get(key);
-			log.debug(getLogPrefix()+"setting variable ["+key+"] to ["+value+"]");
-			threadContext.put(key, value);
-		}
-		return wrapper.getId();
-	}
-
-	/**
-	 * Extracts ID-string from message obtained from raw message}.
-	 * Puts also the following parameters  in the threadContext:
-	 * <ul>
-	 *   <li>id</li>
-	 *   <li>cid</li>
-	 *   <li>timestamp</li>
-	 *   <li>replyTo</li>
-	 *   <li>messageText</li>
-	 *   <li>fullIfsaServiceName</li>
-	 *   <li>ifsaServiceName</li>
-	 *   <li>ifsaGroup</li>
-	 *   <li>ifsaOccurrence</li>
-	 *   <li>ifsaVersion</li>
-	 *   <li>ifsaBifName</li>
-	 *   <li>ifsaBtcData</li>
-	 * </ul>
-	 * @return ID-string of message for adapter.
-	 */
-	public String getIdFromRawMessageWrapper(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) {
-
-		if (rawMessage instanceof MessageWrapper) {
-			return getIdFromWrapper(rawMessage,threadContext);
-		}
-
-		IFSAMessage message;
-		try {
-			message = rawMessage.getRawMessage();
-		} catch (ClassCastException e) {
-			log.error("{} message received was not of type IFSAMessage, but [{}]",  getLogPrefix(), rawMessage.getRawMessage().getClass().getName(), e);
-			return null;
-		}
-		return getIdFromRawMessage(message, threadContext);
-	}
-
 	public String getIdFromRawMessage(IFSAMessage message, Map<String, Object> threadContext) {
 		String mode = "unknown";
 		String id = "unset";

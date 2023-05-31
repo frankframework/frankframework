@@ -228,7 +228,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				return null;
 			}
 			Iterator<F> it = ds.iterator();
-			if (it==null || !it.hasNext()) {
+			if (!it.hasNext()) {
 				return null;
 			}
 

@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessageReference, ExchangeAttachmentReference, ExchangeFileSystem>{
@@ -75,16 +76,17 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 		Map<String,Object> threadContext1 = new HashMap<>();
 		Map<String,Object> threadContext2 = new HashMap<>();
 
-		ExchangeMessageReference msg1 = listener1.getRawMessage(threadContext1);
-		String msgId1 = listener1.getIdFromRawMessage(msg1, threadContext1);
+		RawMessageWrapper<ExchangeMessageReference> msg1 = listener1.getRawMessage(threadContext1);
+		String msgId1 = listener1.getIdFromRawMessage(msg1.getRawMessage(), threadContext1);
 		System.out.println("1st msgid ["+msgId1+"], filename ["+fileSystem.getName(msg1)+"]");
 
 
-		ExchangeMessageReference msg2 = listener2.getRawMessage(threadContext2);
-		String msgId2 = listener2.getIdFromRawMessage(msg2, threadContext2);
+		RawMessageWrapper<ExchangeMessageReference> msg2 = listener2.getRawMessage(threadContext2);
+		String msgId2 = listener2.getIdFromRawMessage(msg2.getRawMessage(), threadContext2);
 		System.out.println("2nd msgid ["+msgId2+"], filename ["+fileSystem.getName(msg2)+"]");
 
 		assertEquals(msgId1, msgId2);
+		assertEquals(msg1.getId(), msgId1);
 
 		assertEquals(messageId, msgId2);
 	}

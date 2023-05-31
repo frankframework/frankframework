@@ -86,19 +86,6 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	/**
-	 * Returns the name of the file in process (the 'archiveFile(File)' archived} file) concatenated with the
-	 * record number. As the 'archiveFile(File)' archivedFile method always renames to a
-	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
-	 * in the processing of the file.
-	 * Override this method for your specific needs!
-	 */
-	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) {
-		// TODO: Check where used, this is ugly. Can perhaps be inlined?
-		PipeLineSession.updateListenerParameters(threadContext, rawMessage, rawMessage, null, null);
-		return rawMessage;
-	}
-
-	/**
      * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
      * is a new file to process and returns the first record.
      */
@@ -131,7 +118,9 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	private RawMessageWrapper<String> wrapRawMessage(String rawMessage, Map<String, Object> threadContext) {
-		return new RawMessageWrapper<>(rawMessage, this.getIdFromRawMessage(rawMessage, threadContext), null);
+		// TODO: The raw message is used both as message, as ID, and as CorrelationID. Check if that is OK?
+		PipeLineSession.updateListenerParameters(threadContext, rawMessage, rawMessage, null, null);
+		return new RawMessageWrapper<>(rawMessage, rawMessage, rawMessage);
 	}
 
 	private void waitAWhile() throws ListenerException {
