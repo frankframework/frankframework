@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -136,6 +137,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		Map<String,Object> threadContext = new HashMap<>();
@@ -156,7 +158,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		try {
 			if (!isSessionsArePooled()) {
 				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
@@ -204,7 +206,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
      * Retrieves messages from queue or other channel, but does no processing on it.
      */
 	@Override
-	public RawMessageWrapper<Message> getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 

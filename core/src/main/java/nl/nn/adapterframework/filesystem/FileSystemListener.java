@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -190,13 +192,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special here
 	}
 
@@ -219,7 +222,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public synchronized RawMessageWrapper<F> getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public synchronized RawMessageWrapper<F> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.trace("Get Raw Message");
 		FS fileSystem=getFileSystem();
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());

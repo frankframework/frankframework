@@ -23,6 +23,8 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -80,18 +82,19 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// No-op
 	}
 
 	@Override
-	public RawMessageWrapper<String> getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.QueueReceiver;
@@ -164,6 +165,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		Map<String,Object> threadContext = new HashMap<>();
@@ -193,7 +195,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 	}
 
 	@Override
-	public void closeThread(Map threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 
 		if (!isSessionsArePooled()) {
 			QueueReceiver receiver = (QueueReceiver) threadContext.remove(THREAD_CONTEXT_RECEIVER_KEY);
@@ -277,7 +279,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 	 * Retrieves messages to be processed by the server, implementing an IFSA-service, but does no processing on it.
 	 */
 	@Override
-	public RawMessageWrapper<IFSAMessage> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<IFSAMessage> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		javax.jms.Message result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;

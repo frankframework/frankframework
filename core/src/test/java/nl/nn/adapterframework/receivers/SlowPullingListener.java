@@ -18,22 +18,25 @@ package nl.nn.adapterframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import nl.nn.adapterframework.core.IPullingListener;
 
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<javax.jms.Message> {
 
+	@Nonnull
 	@Override
 	public Map<String, Object> openThread() {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String, Object> threadContext) {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) {
 		log.debug("closeThread called in slow pulling listener");
 	}
 
 	@Override
-	public RawMessageWrapper<javax.jms.Message> getRawMessage(Map<String, Object> threadContext) {
+	public RawMessageWrapper<javax.jms.Message> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) {
 		return null;
 	}
 }

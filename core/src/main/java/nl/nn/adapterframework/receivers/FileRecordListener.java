@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -140,7 +142,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	}
 
 	@Override
-	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
 	}
 
@@ -199,7 +201,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	 * is a new file to process and returns the first record.
 	 */
 	@Override
-	public synchronized RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext)
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext)
 			throws ListenerException {
 		String fullInputFileName;
 		if (recordIterator != null && recordIterator.hasNext()) {
@@ -261,6 +263,7 @@ public class FileRecordListener implements IPullingListener<String> {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String, Object> openThread() throws ListenerException {
 		return new HashMap<>();

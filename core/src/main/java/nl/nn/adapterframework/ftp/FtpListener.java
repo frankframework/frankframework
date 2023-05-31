@@ -20,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -67,13 +69,14 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	public void close() throws ListenerException {
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 	}
 
 	/**
@@ -91,7 +94,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
      * is a new file to process and returns the first record.
      */
 	@Override
-	public synchronized RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.debug("FtpListener [{}] in getRawMessage, retrieving contents of directory [{}]", getName(), remoteDirectory);
 		if (remoteFilenames.isEmpty()) {
 			try {

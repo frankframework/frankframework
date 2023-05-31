@@ -1439,9 +1439,9 @@ public class TestTool {
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map jmsListenerInfo = queues.get(queueName);
+		Map<String, Object> jmsListenerInfo = queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
-		Map threadContext = null;
+		Map<String, Object> threadContext = null;
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();

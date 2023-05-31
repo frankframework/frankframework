@@ -31,7 +31,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -208,7 +207,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.open();
 
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,"+status+")", null);
-		RawMessageWrapper rawMessage = listener.getRawMessage(null);
+		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
 		if (expectMessage) {
 			assertEquals("10",rawMessage.getRawMessage());
 		} else {
@@ -415,9 +414,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		JdbcUtil.executeStatement(dbmsSupport, connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
 
-		Map<String,Object> context = new HashMap<>();
-
-		RawMessageWrapper rawMessage = listener.getRawMessage(context);
+		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
 
 		String mid = rawMessage.getId();
 		String cid = rawMessage.getCorrelationId();
@@ -438,14 +435,14 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (10,1)", null);
 		try (Connection connection1 = getConnection()) {
 			connection1.setAutoCommit(false);
-			RawMessageWrapper rawMessage1 = listener.getRawMessage(connection1,null);
+			RawMessageWrapper<?> rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
 			JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (11,1)", null);
-			RawMessageWrapper rawMessage2 = listener.getRawMessage(null);
+			RawMessageWrapper<?> rawMessage2 = listener.getRawMessage(new HashMap<>());
 			assertEquals("11",rawMessage2.getRawMessage());
 
 		}
@@ -615,7 +612,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		// execute peek, the result does not matter, but it should not throw an exception;
 		listener.hasRawMessageAvailable();
 		// execute read, return the result, it should not return an exception
-		RawMessageWrapper rawMessage = listener.getRawMessage(null);
+		RawMessageWrapper<?> rawMessage = listener.getRawMessage(new HashMap<>());
 		if (rawMessage==null) {
 			return false;
 		}

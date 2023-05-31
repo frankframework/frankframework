@@ -17,7 +17,6 @@ package nl.nn.adapterframework.receivers;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -227,9 +226,6 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
 					threadContext = listener.openThread();
-					if (threadContext == null) {
-						threadContext = new HashMap<>();
-					}
 					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
 					int deliveryCount=0;
