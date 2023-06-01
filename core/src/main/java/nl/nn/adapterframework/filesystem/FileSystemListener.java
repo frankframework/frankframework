@@ -17,9 +17,11 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -66,9 +68,19 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final String ORIGINAL_FILENAME_KEY = "originalFilename";
-	public final String FILENAME_KEY = "filename";
-	public final String FILEPATH_KEY = "filepath";
+	public final static String ORIGINAL_FILENAME_KEY = "originalFilename";
+	public final static String FILENAME_KEY = "filename";
+	public final static String FILEPATH_KEY = "filepath";
+
+	private final static Set<String> KEYS_COPIED_TO_MESSAGE_CONTEXT;
+
+	static {
+		KEYS_COPIED_TO_MESSAGE_CONTEXT = new HashSet<>();
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(PipeLineSession.MESSAGE_ID_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(PipeLineSession.CORRELATION_ID_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(FILENAME_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(FILEPATH_KEY);
+	}
 
 	private @Getter String name;
 	private @Getter String inputFolder;
@@ -411,14 +423,16 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
-		// TODO: I think this should use real threadContext, not old message context
-		return wrapRawMessage(file, originalMessage.getContext());
+		// Do not modify original message context.
+		return wrapRawMessage(file, new HashMap<>(originalMessage.getContext()));
 	}
 
-	private RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
-		this.populateContextFromMessage(file, context);
-		// TODO: Not all fields should be copied into the message context.
-		return new RawMessageWrapper<>(file, context);
+	private RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> threadContext) throws ListenerException {
+		this.populateContextFromMessage(file, threadContext);
+		Map<String, Object> messageContext = threadContext.entrySet().stream()
+				.filter((entry) -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		return new RawMessageWrapper<>(file, messageContext);
 	}
 
 	public String getStateFolder(ProcessState state) {
