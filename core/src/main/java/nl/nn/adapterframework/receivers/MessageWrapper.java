@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import lombok.Getter;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -37,16 +36,13 @@ import nl.nn.adapterframework.stream.Message;
 @SuppressWarnings({"deprecation", "unchecked"})
 public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable {
 
-	private  static final long serialVersionUID = -8251009650246241025L;
+	private static final long serialVersionUID = -8251009650246241025L;
 
 	private @Getter Message message;
 
 	protected MessageWrapper() {
+		// For Serialisation
 		super();
-	}
-
-	public MessageWrapper(Message message, String messageId) {
-		this(message, messageId, null);
 	}
 
 	public MessageWrapper(Message message, String messageId, String correlationId) {
@@ -55,15 +51,13 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		this.message = message;
 	}
 
-	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message) throws ListenerException {
-		super(rawMessageWrapper.rawMessage, rawMessageWrapper.id, rawMessageWrapper.correlationId, rawMessageWrapper.context);
-		this.message = message;
-		this.context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY
+	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message) {
+		this(rawMessageWrapper, message, rawMessageWrapper.id, rawMessageWrapper.correlationId);
 	}
 
-	// TODO: Sort out if we need this extra constructor with correlationId (we probably do, but only once)
-	public MessageWrapper(RawMessageWrapper<M> messageWrapper, Message message, String messageId, String correlationId) {
-		super(messageWrapper.getRawMessage(), messageId, correlationId, messageWrapper.getContext());
+	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message, String messageId, String correlationId) {
+		super(rawMessageWrapper.getRawMessage(), messageId, correlationId);
+		this.context.putAll(rawMessageWrapper.getContext());
 		this.message = message;
 		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
 	}
@@ -72,16 +66,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		message.preserve();
-		if (message.isBinary()) {
-			if (!(message.asObject() instanceof byte[])) {
-				message = new Message(message.asByteArray(), message.getContext());
-			}
-		} else {
-			if (!(message.asObject() instanceof String)) {
-				message = new Message(message.asString(), message.getContext());
-			}
-		}
 		stream.writeObject(context);
 		stream.writeObject(id);
 		stream.writeObject(message);

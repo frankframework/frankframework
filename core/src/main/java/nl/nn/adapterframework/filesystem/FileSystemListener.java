@@ -247,7 +247,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 						continue;
 					}
 				}
-				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
+				if (StringUtils.isNotEmpty(getInProcessFolder())) {
 					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
 				}
 				if (StringUtils.isNotEmpty(getLogFolder())) {
@@ -308,25 +308,25 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage.getRawMessage());
-			if (attributes!=null) {
-				Object result=attributes.get(getMessageType());
-				if (result!=null) {
+			if (attributes != null) {
+				Object result = attributes.get(getMessageType());
+				if (result != null) {
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute ["+getMessageType()+"] found for file ["+getFileSystem().getName(rawMessage.getRawMessage())+"]");
+			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(rawMessage.getRawMessage()) + "]");
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
-	public String populateContextFromMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String populateContextFromMessage(@Nonnull F rawMessage, @Nonnull Map<String, Object> threadContext) throws ListenerException {
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
 			F file = rawMessage;
-			filename=fileSystem.getName(rawMessage);
+			filename = fileSystem.getName(rawMessage);
 			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
 			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
@@ -337,34 +337,32 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
 				}
 			}
-			if (StringUtils.isEmpty(messageId) && threadContext!=null) {
+			if (StringUtils.isEmpty(messageId)) {
 				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
 			}
 			if (StringUtils.isEmpty(messageId)) {
 				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
+				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			if (threadContext!=null) {
-				PipeLineSession.updateListenerParameters(threadContext, messageId, messageId, null, null);
-				if (attributes!=null) {
-					threadContext.putAll(attributes);
-				}
-				if (!"path".equals(getMessageType())) {
-					threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
-				}
-				if (!"name".equals(getMessageType())) {
-					threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
-				}
+			PipeLineSession.updateListenerParameters(threadContext, messageId, messageId, null, null);
+			if (attributes!=null) {
+				threadContext.putAll(attributes);
+			}
+			if (!"path".equals(getMessageType())) {
+				threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
+			}
+			if (!"name".equals(getMessageType())) {
+				threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
 
-				if (attributes!=null) {
+				if (attributes != null) {
 					attributes.forEach((k,v) -> {
 						try {
-							metadataBuilder.add(k, v==null?null:v.toString());
+							metadataBuilder.add(k, v == null ? null : v.toString());
 						} catch (SAXException e) {
 							log.warn("cannot add property [{}] value [{}]", k, v, e);
 						}
@@ -417,9 +415,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		return wrapRawMessage(file, originalMessage.getContext());
 	}
 
-	public RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
+	private RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
 		this.populateContextFromMessage(file, context);
-		return new RawMessageWrapper<>(file, (String) context.get(PipeLineSession.messageIdKey), (String) context.get(PipeLineSession.correlationIdKey), context);
+		return new RawMessageWrapper<>(file, context);
 	}
 
 	public String getStateFolder(ProcessState state) {

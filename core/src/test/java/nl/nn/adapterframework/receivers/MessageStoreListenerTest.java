@@ -42,7 +42,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 			@Override
 			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				//super class JdbcListener always wraps this in a MessageWrapper
-				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.messageIdKey)));
+				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.messageIdKey)), null);
 			}
 		});
 		DatabaseMetaData md = mock(DatabaseMetaData.class);
@@ -69,7 +69,6 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 
 		String input = "test-message";
 		RawMessageWrapper<M> rawMessage = getRawMessage(input);
-		// TODO: Fix this -- likely incorrect
 		assertTrue(rawMessage instanceof MessageWrapper);
 		assertEquals("MessageStoreListener should not manipulate the rawMessage", input, ((MessageWrapper<Object>)rawMessage).getMessage().asString());
 	}
@@ -82,7 +81,6 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 
 		String input = "test-message,\"value1\",value2,value3";
 		RawMessageWrapper<M> rawMessage = getRawMessage(input);
-		// TODO: Fix the instanceof check, likely incorrect
 		assertTrue(rawMessage instanceof MessageWrapper);
 		Message message = listener.extractMessage(rawMessage, threadContext);
 		assertEquals("test-message", message.asString());

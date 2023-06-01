@@ -54,7 +54,7 @@ public class MessageBrowsingUtilTest {
 	public void testGetMessageTextWithMessageWrapper() throws Exception {
 		String contents = "fakeMessage";
 		Message message = new Message(contents);
-		MessageWrapper messageWrapper = new MessageWrapper(message,"fakeId");
+		MessageWrapper messageWrapper = new MessageWrapper(message, "fakeId", null);
 
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(messageWrapper, new TestListener()));
 	}

@@ -27,12 +27,12 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 
 	@Override
 	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
-		// TODO Auto-generated method stub
+		// No-op
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
-		// TODO Auto-generated method stub
+		// No-op
 	}
 
 	@Override

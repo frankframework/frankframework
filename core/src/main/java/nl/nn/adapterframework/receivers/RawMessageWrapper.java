@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,31 +37,46 @@ public class RawMessageWrapper<M> {
 		this(null, null, null);
 	}
 
+	/**
+	 * Create a new instance with just message data, and no ID or Correlation ID.
+	 *
+	 * @param rawMessage The raw message data.
+	 */
 	public RawMessageWrapper(M rawMessage) {
 		this(rawMessage, null, null);
 	}
 
-	public RawMessageWrapper(M rawMessage, String id, String correlationId) {
+	/**
+	 * Create new instance with raw message, id and correlation ID.
+	 *
+	 * @param rawMessage The raw message.
+	 * @param id The ID of the message. May be null. If not null, will be copied to the message context with the
+	 *           key {@link PipeLineSession#messageIdKey}.
+	 * @param correlationId The Correlation ID of the message. May be null. If not null, will be copied to the
+	 *                       message context with the key {@link PipeLineSession#correlationIdKey}.
+	 */
+	public RawMessageWrapper(@Nonnull M rawMessage, @Nullable String id, @Nullable String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
-		if (id != null) {
-			this.context.put(PipeLineSession.messageIdKey, id);
-		}
-		if (correlationId != null) {
-			this.context.put(PipeLineSession.correlationIdKey, correlationId);
-		}
+		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
+		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
 	}
 
-	public RawMessageWrapper(M rawMessage, String id, String correlationId, @Nonnull Map<String, Object> context) {
-		this(rawMessage, id, correlationId);
+	/**
+	 * Create a new instance with raw message data and existing context. Message ID and Correlation ID are
+	 * taken from this context, if present.
+	 * All values from the given context are copied into the message context.
+	 *
+	 * @param rawMessage The raw message data.
+	 * @param context Context for the message. If containing the keys {@link PipeLineSession#messageIdKey} and / or
+	 *                {@link PipeLineSession#correlationIdKey}, these will be copied to their respective fields.
+	 */
+	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context) {
+		this(rawMessage);
 		this.context.putAll(context);
-		if (context.get(PipeLineSession.messageIdKey) != null) {
-			this.id = (String) context.get(PipeLineSession.messageIdKey);
-		}
-		if (context.get(PipeLineSession.correlationIdKey) != null) {
-			this.correlationId = (String) context.get(PipeLineSession.correlationIdKey);
-		}
+		this.id = (String) context.get(PipeLineSession.messageIdKey);
+		this.correlationId = (String) context.get(PipeLineSession.correlationIdKey);
 	}
 
 	protected void updateOrRemoveValue(String key, String value) {
@@ -71,6 +87,11 @@ public class RawMessageWrapper<M> {
 		}
 	}
 
+	/**
+	 * Get message for the raw message data. Does not call listener to extract message.
+	 *
+	 * @return The {@link Message}.
+	 */
 	public Message getMessage() {
 		Message message = Message.asMessage(rawMessage);
 		message.getContext().putAll(this.context);
