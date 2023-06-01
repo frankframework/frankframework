@@ -244,7 +244,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (messageAvailable) {
 									// Start a transaction if the entire processing is transacted, or
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
-									if (receiver.isTransacted() || inProcessStateManager != null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
+									if (receiver.isTransacted() || (inProcessStateManager != null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED)) {
 										txStatus = txManager.getTransaction(txNew);
 										log.trace("Transaction Started, Get Message from Listener");
 									}

@@ -44,13 +44,13 @@ public interface IPushingListener<M> extends IListener<M> {
 
 	/**
 	 * Wrap a raw message in a MessageWrapper.
-	 *
+	 * <br/>
 	 * TODO: Call with ThreadContext, or PipeLineSession? ->> probably PipeLineSession
 	 *
-	 * @param rawMessage
-	 * @param threadContext
-	 * @return
-	 * @throws ListenerException
+	 * @param rawMessage The raw message data, unwrapped
+	 * @param threadContext Thread context
+	 * @return Wrapped raw message
+	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
 	 */
 	RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
 }

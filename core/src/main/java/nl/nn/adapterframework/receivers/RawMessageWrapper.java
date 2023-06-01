@@ -34,7 +34,6 @@ public class RawMessageWrapper<M> {
 
 	protected RawMessageWrapper() {
 		// For Serialisation
-		this(null, null, null);
 	}
 
 	/**
@@ -42,7 +41,7 @@ public class RawMessageWrapper<M> {
 	 *
 	 * @param rawMessage The raw message data.
 	 */
-	public RawMessageWrapper(M rawMessage) {
+	public RawMessageWrapper(@Nonnull M rawMessage) {
 		this(rawMessage, null, null);
 	}
 

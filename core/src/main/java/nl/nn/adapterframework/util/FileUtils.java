@@ -481,7 +481,7 @@ public class FileUtils {
 
 	public static List<String> getListFromNames(String[] names) {
 		if (names == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		return Arrays.asList(names);
 	}

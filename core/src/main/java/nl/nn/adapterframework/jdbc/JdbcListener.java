@@ -257,7 +257,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected MessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
 		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
-			String key=rs.getString(getKeyField());
+			String key = rs.getString(getKeyField());
 			Message message;
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				switch (getMessageFieldType()) {
@@ -267,7 +267,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
-							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
+							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
 							// TESTCOVERAGE: Untested branch
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
@@ -277,7 +277,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 						}
 						break;
 					case STRING:
-						message=new Message(rs.getString(getMessageField()));
+						message = new Message(rs.getString(getMessageField()));
 						break;
 					default:
 						throw new IllegalArgumentException("Illegal messageFieldType [" + getMessageFieldType() + "]");

@@ -206,15 +206,17 @@ public class TestTool {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
 		debugMessage("Initialize scenarios root directories", writers);
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		List<String> scenariosRootDirectories = new ArrayList<>();
+		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
 				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
 		if (scenariosRootDirectories.isEmpty()) {
 			debugMessage("Stop logging to logbuffer", writers);
-			writers.put("uselogbuffer", "stop");
+			if (writers != null) {
+				writers.put("uselogbuffer", "stop");
+			}
 			errorMessage("No scenarios root directories found", writers);
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}

@@ -74,9 +74,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class for sftp and ftp.
- * 
  *
- * 
+ *
+ *
  * @author John Dekker
  */
 public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
@@ -235,7 +235,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 				}
 			}
 
-			// make a secure connection with the remote host 
+			// make a secure connection with the remote host
 			sshClient = new SshClient();
 			if (StringUtils.isNotEmpty(knownHostsPath)) {
 				AbstractKnownHostsKeyVerification hv = null;
@@ -333,7 +333,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 				System.getProperties().put("ftpProxyPort", "" + proxyPort);
 			}
 
-			// connect and logic using normal, non-secure ftp 
+			// connect and logic using normal, non-secure ftp
 			ftpClient = createFTPClient();
 			ftpClient.connect(host, port);
 			if (isPassive()) {
@@ -505,13 +505,13 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 		try {
 			if (ftpType == FtpType.SFTP) {
-				List<String> result = new LinkedList<String>();
+				List<String> result = new LinkedList<>();
 				List<?> listOfSftpFiles = sftpClient.ls();
-				for (Iterator<?> sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
-					SftpFile file = (SftpFile)sftpFileIt.next();
+				for (Object listOfSftpFile : listOfSftpFiles) {
+					SftpFile file = (SftpFile) listOfSftpFile;
 					String filename = file.getFilename();
-					if (filesOnly || (! file.isDirectory())) {
-						if (! filename.startsWith(".")) {
+					if (filesOnly || (!file.isDirectory())) {
+						if (!filename.startsWith(".")) {
 							result.add(filename);
 						}
 					}
@@ -597,7 +597,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * Returns a list as separated string of filenames of locally created files 
+	 * Returns a list as separated string of filenames of locally created files
 	 */
 	private List<String> _get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, List<String> filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
@@ -773,7 +773,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * (sftp) 
+	 * (sftp)
 	 * @ff.default false
 	 */
 	public void setConsoleKnownHostsVerifier(boolean b) {
@@ -811,7 +811,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		keystore = string;
 	}
 
-	/** (ftps) Type of keystore 
+	/** (ftps) Type of keystore
 	 * @ff.default pkcs12
 	 */
 	@Override
@@ -863,7 +863,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		truststore = string;
 	}
 
-	/** (ftps) Type of truststore 
+	/** (ftps) Type of truststore
 	 * @ff.default jks
 	 */
 	@Override
