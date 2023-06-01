@@ -49,16 +49,16 @@ public class RawMessageWrapper<M> {
 	 *
 	 * @param rawMessage The raw message.
 	 * @param id The ID of the message. May be null. If not null, will be copied to the message context with the
-	 *           key {@link PipeLineSession#messageIdKey}.
+	 *           key {@link PipeLineSession#MESSAGE_ID_KEY}.
 	 * @param correlationId The Correlation ID of the message. May be null. If not null, will be copied to the
-	 *                       message context with the key {@link PipeLineSession#correlationIdKey}.
+	 *                       message context with the key {@link PipeLineSession#CORRELATION_ID_KEY}.
 	 */
 	public RawMessageWrapper(@Nonnull M rawMessage, @Nullable String id, @Nullable String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
-		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
-		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
+		updateOrRemoveValue(PipeLineSession.MESSAGE_ID_KEY, id);
+		updateOrRemoveValue(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 	}
 
 	/**
@@ -67,14 +67,14 @@ public class RawMessageWrapper<M> {
 	 * All values from the given context are copied into the message context.
 	 *
 	 * @param rawMessage The raw message data.
-	 * @param context Context for the message. If containing the keys {@link PipeLineSession#messageIdKey} and / or
-	 *                {@link PipeLineSession#correlationIdKey}, these will be copied to their respective fields.
+	 * @param context Context for the message. If containing the keys {@link PipeLineSession#MESSAGE_ID_KEY} and / or
+	 *                {@link PipeLineSession#CORRELATION_ID_KEY}, these will be copied to their respective fields.
 	 */
 	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context) {
 		this(rawMessage);
 		this.context.putAll(context);
-		this.id = (String) context.get(PipeLineSession.messageIdKey);
-		this.correlationId = (String) context.get(PipeLineSession.correlationIdKey);
+		this.id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);
+		this.correlationId = (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
 	}
 
 	protected void updateOrRemoveValue(String key, String value) {

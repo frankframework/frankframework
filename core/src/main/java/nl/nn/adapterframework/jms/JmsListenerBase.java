@@ -238,10 +238,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
-			replyCid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+			replyCid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 		if (StringUtils.isEmpty(replyCid)) {
-			replyCid = (String) threadContext.get(PipeLineSession.messageIdKey);
+			replyCid = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
 		}
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in JmsListener.afterMessageProcessed()");
@@ -287,7 +287,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
 					}
 					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(PipeLineSession.correlationIdKey,replyCid);
+					pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY,replyCid);
 					getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
 				}
 			}

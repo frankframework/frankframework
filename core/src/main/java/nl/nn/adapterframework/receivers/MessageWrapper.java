@@ -60,9 +60,10 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		super(rawMessageWrapper.getRawMessage(), messageId, correlationId);
-		this.context.putAll(rawMessageWrapper.getContext());
 		this.message = message;
-		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
+		this.context.putAll(rawMessageWrapper.getContext());
+		this.context.remove(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		this.context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
 	}
 
 	/*
@@ -89,12 +90,12 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 
 		// Synchronise ID / CID fields with context map.
 		if (id == null) {
-			id = (String) context.get(PipeLineSession.messageIdKey);
+			id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);
 		}
 		if (correlationId == null) {
-			correlationId = (String) context.get(PipeLineSession.correlationIdKey);
+			correlationId = (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
-		updateOrRemoveValue(PipeLineSession.messageIdKey, id);
-		updateOrRemoveValue(PipeLineSession.correlationIdKey, correlationId);
+		updateOrRemoveValue(PipeLineSession.MESSAGE_ID_KEY, id);
+		updateOrRemoveValue(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 	}
 }

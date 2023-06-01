@@ -1136,10 +1136,10 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
-		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.correlationIdKey));
+		assertTrue(session.containsKey(PipeLineSession.MESSAGE_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.MESSAGE_ID_KEY));
+		assertTrue(session.containsKey(PipeLineSession.CORRELATION_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.CORRELATION_ID_KEY));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1162,10 +1162,10 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
-		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
-		assertEquals("msg2", session.get(PipeLineSession.correlationIdKey));
+		assertTrue(session.containsKey(PipeLineSession.MESSAGE_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.MESSAGE_ID_KEY));
+		assertTrue(session.containsKey(PipeLineSession.CORRELATION_ID_KEY));
+		assertEquals("msg2", session.get(PipeLineSession.CORRELATION_ID_KEY));
 		assertNull(result.getErrorMessage());
 	}
 

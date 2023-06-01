@@ -42,7 +42,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 			@Override
 			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				//super class JdbcListener always wraps this in a MessageWrapper
-				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.messageIdKey)), null);
+				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
 			}
 		});
 		DatabaseMetaData md = mock(DatabaseMetaData.class);

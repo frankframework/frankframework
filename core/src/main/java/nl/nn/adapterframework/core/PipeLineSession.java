@@ -39,11 +39,11 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
-	public static final String originalMessageKey="originalMessage";
-	public static final String messageIdKey="mid";           // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
-	public static final String correlationIdKey="cid";       // conversationId, e.g. JmsCorrelationID.
+	public static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
+	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
+	public static final String CORRELATION_ID_KEY   = "cid";       // conversationId, e.g. JmsCorrelationID.
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
@@ -84,12 +84,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	@SneakyThrows
 	public String getMessageId() {
-		return getString(messageIdKey); // Allow Ladybug to wrap it in a Message
+		return getString(MESSAGE_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
 	@SneakyThrows
 	public String getCorrelationId() {
-		return getString(correlationIdKey); // Allow Ladybug to wrap it in a Message
+		return getString(CORRELATION_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
 	public Message getMessage(String key) {
@@ -137,10 +137,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return;
 		}
 		if (messageId!=null) {
-			map.put(messageIdKey, messageId);
+			map.put(MESSAGE_ID_KEY, messageId);
 		}
 		if (correlationId!=null) {
-			map.put(correlationIdKey, correlationId);
+			map.put(CORRELATION_ID_KEY, correlationId);
 		}
 		if (tsReceived==null) {
 			tsReceived=new Date();

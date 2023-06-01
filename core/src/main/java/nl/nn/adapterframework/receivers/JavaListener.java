@@ -124,7 +124,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	@Override
 	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) {
-		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.messageIdKey), (String) threadContext.get(PipeLineSession.correlationIdKey));
+		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY), (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -132,7 +132,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try {
 			if (context != null) {
-				context.put(PipeLineSession.correlationIdKey, correlationId);
+				context.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
 			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
 			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
@@ -155,7 +155,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.correlationIdKey) : null);
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.CORRELATION_ID_KEY) : null);
 		if (context != null) {
 			Object object = context.get("httpRequest");
 			if (object != null) {

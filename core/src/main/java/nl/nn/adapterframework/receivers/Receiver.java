@@ -939,7 +939,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (rawMessageWrapper.getCorrelationId() != null) {
 			correlationId = rawMessageWrapper.getCorrelationId();
 		} else {
-			correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
+			correlationId = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 
 		final ISender errorSender = getErrorSender();
@@ -1173,7 +1173,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message message = compactMessageIfRequired(messageWrapper.getMessage(), session);
 
 			final String businessCorrelationId = getBusinessCorrelationId(messageWrapper, messageId, session);
-			session.put(PipeLineSession.correlationIdKey, businessCorrelationId);
+			session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
 
 			MessageWrapper<M> businessMessage = new MessageWrapper<>(messageWrapper, message, messageId, businessCorrelationId);
 
@@ -1417,7 +1417,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private String getBusinessCorrelationId(MessageWrapper<M> messageWrapper, String messageId, PipeLineSession session) {
 		String logPrefix = getLogPrefix();
-		String businessCorrelationId = session.get(PipeLineSession.correlationIdKey, messageWrapper.getCorrelationId());
+		String businessCorrelationId = session.get(PipeLineSession.CORRELATION_ID_KEY, messageWrapper.getCorrelationId());
 		if (correlationIDTp != null) {
 			try {
 				messageWrapper.getMessage().preserve();

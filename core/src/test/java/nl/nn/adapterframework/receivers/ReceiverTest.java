@@ -596,7 +596,7 @@ public class ReceiverTest {
 
 		// Arrange (for 2nd invocation)
 		try (PipeLineSession session = new PipeLineSession()) {
-			session.put(PipeLineSession.messageIdKey, messageId);
+			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// We expected an exception here...

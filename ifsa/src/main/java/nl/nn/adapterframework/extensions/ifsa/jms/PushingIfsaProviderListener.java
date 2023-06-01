@@ -178,7 +178,7 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {
@@ -291,8 +291,8 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 	@Override
 	public RawMessageWrapper<IFSAMessage> wrapRawMessage(IFSAMessage rawMessage, Map<String, Object> threadContext) {
 		populateContextFromMessage(rawMessage, threadContext);
-		String mid = (String) threadContext.get(PipeLineSession.messageIdKey);
-		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		String mid = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
+		String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 		return new RawMessageWrapper<>(rawMessage, mid, cid);
 	}
 }

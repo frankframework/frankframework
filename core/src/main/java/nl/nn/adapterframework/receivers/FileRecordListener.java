@@ -76,7 +76,7 @@ public class FileRecordListener implements IPullingListener<String> {
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+		String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 		if (sender != null && processResult.isSuccessful()) {
 			try {
 				sender.sendMessageOrThrow(processResult.getResult(), null);

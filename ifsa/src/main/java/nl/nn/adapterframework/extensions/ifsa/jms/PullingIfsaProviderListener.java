@@ -236,8 +236,8 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String id = (String) threadContext.get(PipeLineSession.messageIdKey);
-				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+				String id = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
+				String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
 				QueueSession session = getSession(threadContext);
@@ -335,8 +335,8 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				// TODO: Cleanup rawMessageWrapper creation, and storing of original raw message
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, rawMessage);
 				populateContextFromMessage((IFSAMessage) rawMessage, threadContext);
-				String mid = (String) threadContext.get(PipeLineSession.messageIdKey);
-				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+				String mid = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
+				String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
 				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, mid, cid);
 			} else {
 				rawMessageWrapper = new RawMessageWrapper<>((IFSAMessage) rawMessage, rawMessage.getJMSMessageID(), rawMessage.getJMSCorrelationID());
