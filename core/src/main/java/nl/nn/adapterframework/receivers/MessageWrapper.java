@@ -23,6 +23,9 @@ import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -45,17 +48,17 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		super();
 	}
 
-	public MessageWrapper(Message message, String messageId, String correlationId) {
+	public MessageWrapper(@Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		// Ugly cast, but I don't think it is safe to leave it NULL
 		super((M)message.asObject(), messageId, correlationId);
 		this.message = message;
 	}
 
-	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message) {
+	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message) {
 		this(rawMessageWrapper, message, rawMessageWrapper.id, rawMessageWrapper.correlationId);
 	}
 
-	public MessageWrapper(RawMessageWrapper<M> rawMessageWrapper, Message message, String messageId, String correlationId) {
+	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		super(rawMessageWrapper.getRawMessage(), messageId, correlationId);
 		this.context.putAll(rawMessageWrapper.getContext());
 		this.message = message;
