@@ -798,46 +798,9 @@ public class Message implements Serializable, Closeable {
 			return ((MessageWrapper<?>)object).getMessage();
 		}
 		if (object instanceof RawMessageWrapper) {
-			// TODO: Should this be allowed? Should not better be done via listener?
-			return asMessage(((RawMessageWrapper<?>)object).getRawMessage());
+			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
 		}
 		return new Message(null, object);
-	}
-
-	@Deprecated
-	public static Object asObject(Object object) {
-		if (object instanceof Message) {
-			return ((Message) object).asObject();
-		}
-		return object;
-	}
-
-	public static Reader asReader(Object object) throws IOException {
-		return asReader(object, null);
-	}
-
-	public static Reader asReader(Object object, String defaultCharset) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof Reader) {
-			return (Reader) object;
-		}
-		return Message.asMessage(object).asReader(defaultCharset);
-	}
-
-	public static InputStream asInputStream(Object object) throws IOException {
-		return asInputStream(object, null);
-	}
-
-	public static InputStream asInputStream(Object object, String defaultCharset) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof InputStream) {
-			return (InputStream) object;
-		}
-		return Message.asMessage(object).asInputStream(defaultCharset);
 	}
 
 	public static InputSource asInputSource(Object object) throws IOException {
