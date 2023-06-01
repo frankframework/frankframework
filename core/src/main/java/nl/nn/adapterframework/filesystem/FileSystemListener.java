@@ -227,9 +227,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		FS fileSystem=getFileSystem();
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
-			if (ds==null) {
-				return null;
-			}
 			Iterator<F> it = ds.iterator();
 			if (!it.hasNext()) {
 				return null;
@@ -294,27 +291,28 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public Message extractMessage(RawMessageWrapper<F> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("Extract message from raw message");
 		try {
+			F file = rawMessage.getRawMessage();
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
-				return new Message(getFileSystem().getName(rawMessage.getRawMessage()));
+				return new Message(getFileSystem().getName(file));
 			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
-				return new Message(getFileSystem().getCanonicalName(rawMessage.getRawMessage()));
+				return new Message(getFileSystem().getCanonicalName(file));
 			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
-				return getFileSystem().readFile(rawMessage.getRawMessage(), getCharset());
+				return getFileSystem().readFile(file, getCharset());
 			}
 			if (getMessageType().equalsIgnoreCase("info")) {
-				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), rawMessage.getRawMessage(), getOutputFormat()));
+				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
 			}
 
-			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage.getRawMessage());
+			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(file);
 			if (attributes != null) {
 				Object result = attributes.get(getMessageType());
 				if (result != null) {
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(rawMessage.getRawMessage()) + "]");
+			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(file) + "]");
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -403,6 +401,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					}
 					i++;
 				}
+				//noinspection unchecked
 				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
 			}
 			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, toState==ProcessState.INPROCESS), message);
@@ -412,11 +411,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
+		// TODO: I think this should use real threadContext, not old message context
 		return wrapRawMessage(file, originalMessage.getContext());
 	}
 
 	private RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> context) throws ListenerException {
 		this.populateContextFromMessage(file, context);
+		// TODO: Not all fields should be copied into the message context.
 		return new RawMessageWrapper<>(file, context);
 	}
 
