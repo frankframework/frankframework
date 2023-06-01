@@ -238,7 +238,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	@Override
 	public Message extractMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage instanceof MessageWrapper) {
-			return rawMessage.getMessage();
+			return ((MessageWrapper<IFSAMessage>) rawMessage).getMessage();
 		}
 		IFSAMessage ifsaMessage = rawMessage.getRawMessage();
 		if (ifsaMessage instanceof IFSAPoisonMessage) {

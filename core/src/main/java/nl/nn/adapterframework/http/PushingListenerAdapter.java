@@ -83,7 +83,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 	@Override
 	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
-		return rawMessage.getMessage();
+		return rawMessage.getRawMessage();
 	}
 
 	@Override

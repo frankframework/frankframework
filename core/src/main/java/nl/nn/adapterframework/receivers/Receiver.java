@@ -969,7 +969,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (errorSender!=null) {
 				Message message;
 				if (rawMessageWrapper instanceof MessageWrapper) {
-					message = rawMessageWrapper.getMessage();
+					message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
 				} else {
 					message = getListener().extractMessage(rawMessageWrapper, threadContext);
 				}

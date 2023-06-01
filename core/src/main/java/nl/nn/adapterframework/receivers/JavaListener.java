@@ -230,7 +230,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	@Override
 	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException {
-		return rawMessage.getMessage();
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override

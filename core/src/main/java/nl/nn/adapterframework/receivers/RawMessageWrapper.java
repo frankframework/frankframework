@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.stream.Message;
 
 public class RawMessageWrapper<M> {
 
@@ -84,16 +83,5 @@ public class RawMessageWrapper<M> {
 		} else {
 			this.context.remove(key);
 		}
-	}
-
-	/**
-	 * Get message for the raw message data. Does not call listener to extract message.
-	 *
-	 * @return The {@link Message}.
-	 */
-	public Message getMessage() {
-		Message message = Message.asMessage(rawMessage);
-		message.getContext().putAll(this.context);
-		return message;
 	}
 }

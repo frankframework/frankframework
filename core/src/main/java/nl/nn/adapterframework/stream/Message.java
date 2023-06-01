@@ -62,6 +62,7 @@ import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -793,8 +794,12 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof Path) {
 			return new PathMessage((Path) object);
 		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>)object).getMessage();
+		}
 		if (object instanceof RawMessageWrapper) {
-			return ((RawMessageWrapper<?>)object).getMessage();
+			// TODO: Should this be allowed? Should not better be done via listener?
+			return asMessage(((RawMessageWrapper<?>)object).getRawMessage());
 		}
 		return new Message(null, object);
 	}
