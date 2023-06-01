@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
@@ -39,21 +40,14 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import com.sshtools.j2ssh.SftpClient;
-import com.sshtools.j2ssh.SshClient;
-import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
-import com.sshtools.j2ssh.authentication.KBIAuthenticationClient;
-import com.sshtools.j2ssh.authentication.KBIPrompt;
-import com.sshtools.j2ssh.authentication.KBIRequestHandler;
-import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
-import com.sshtools.j2ssh.authentication.PublicKeyAuthenticationClient;
-import com.sshtools.j2ssh.authentication.SshAuthenticationClient;
-import com.sshtools.j2ssh.configuration.SshConnectionProperties;
-import com.sshtools.j2ssh.sftp.SftpFile;
-import com.sshtools.j2ssh.transport.AbstractKnownHostsKeyVerification;
-import com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification;
-import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
-import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Proxy;
+import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS4;
+import com.jcraft.jsch.ProxySOCKS5;
+import com.jcraft.jsch.Session;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -124,6 +118,39 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 	}
 
+	public enum TransportType {
+		HTTP, SOCKS4, SOCKS5
+	}
+
+	private Proxy createProxy() {
+		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
+		switch (proxyTransportType) {
+		case HTTP: {
+				ProxyHTTP proxy = new ProxyHTTP(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			case SOCKS4: {
+				ProxySOCKS4 proxy = new ProxySOCKS4(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			case SOCKS5: {
+				ProxySOCKS5 proxy = new ProxySOCKS5(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			default:
+				throw new IllegalStateException("proxy type does not exist");
+		}
+	}
+
 	private @Getter String name;
 
 	// configuration parameters, global for all types
@@ -143,14 +170,14 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter boolean keyboardInteractive=false;
 
 	// configuration property for sftp
-	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
+	private TransportType proxyTransportType = TransportType.SOCKS5;
 	private String prefCSEncryption = null;
 	private String prefSCEncryption = null;
 	private String privateKeyFilePath = null;
 	private @Getter String privateKeyAuthAlias;
 	private @Getter String privateKeyPassword = null;
 	private String knownHostsPath = null;
-	private boolean consoleKnownHostsVerifier = false;
+	private boolean strictHostKeyChecking = true;
 
 	// configuration parameters for ftps
 	private @Getter String keystore;
@@ -170,8 +197,8 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter boolean allowSelfSignedCertificates = false;
 	private @Getter boolean ignoreCertificateExpiredException = false;
 
-	private SshClient sshClient;
-	private SftpClient sftpClient;
+	private Session sftpSession;
+	private ChannelSftp sftpClient;
 	public FTPClient ftpClient;
 
 	@Override
@@ -190,9 +217,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 			else if (StringUtils.isEmpty(privateKeyAuthAlias)) {
 				throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' nor 'privateKeyAuthAlias' is set");
 			}
-		}
-		if (proxyTransportType < 1 && proxyTransportType > 4) {
-			throw new ConfigurationException("Incorrect value for [proxyTransportType]");
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
@@ -214,107 +238,63 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	private void openSftpClient(String remoteDirectory) throws FtpConnectException {
 		try {
+			JSch jsch = new JSch();
+			final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			Properties config = new Properties();
+
+			if (StringUtils.isNotEmpty(privateKeyFilePath)) {
+				CredentialFactory pkcf = new CredentialFactory(getPrivateKeyAuthAlias(), getUsername(), getPrivateKeyPassword());
+				jsch.addIdentity(privateKeyFilePath, pkcf.getPassword());
+			}
+
+			if (StringUtils.isNotEmpty(knownHostsPath)) {
+				jsch.setKnownHosts(knownHostsPath);
+			}
+			if(!strictHostKeyChecking) {
+				config.put("StrictHostKeyChecking", "no");
+			}
+
+			sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
+
+			if (StringUtils.isNotEmpty(getPassword())) {
+				sftpSession.setPassword(getPassword());
+			}
+
 			// Set the connection properties and if necessary the proxy properties
-			SshConnectionProperties sshProp = new SshConnectionProperties();
-			sshProp.setHost(host);
-			sshProp.setPort(port);
-			if (StringUtils.isNotEmpty(prefCSEncryption))
-				sshProp.setPrefCSEncryption(prefCSEncryption);
-			if (StringUtils.isNotEmpty(prefSCEncryption))
-				sshProp.setPrefCSEncryption(prefSCEncryption);
+			if (StringUtils.isNotEmpty(prefCSEncryption)) {
+				sftpSession.setConfig("cipher.s2c", prefCSEncryption);
+			}
+			if (StringUtils.isNotEmpty(prefSCEncryption)) {
+				sftpSession.setConfig("cipher.s2c", prefSCEncryption);
+			}
 
 			if (! StringUtils.isEmpty(proxyHost)) {
-				sshProp.setTransportProvider(proxyTransportType);
-				sshProp.setProxyHost(proxyHost);
-				sshProp.setProxyPort(proxyPort);
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
-
-				if (! StringUtils.isEmpty(pcf.getUsername())) {
-					sshProp.setProxyUsername(pcf.getUsername());
-					sshProp.setProxyPassword(pcf.getPassword());
-				}
+				sftpSession.setProxy(createProxy());
 			}
 
-			// make a secure connection with the remote host 
-			sshClient = new SshClient();
-			if (StringUtils.isNotEmpty(knownHostsPath)) {
-				AbstractKnownHostsKeyVerification hv = null;
-				if (consoleKnownHostsVerifier) {
-					hv = new ConsoleKnownHostsKeyVerification(knownHostsPath);
-				}
-				else {
-					hv = new SftpHostVerification(knownHostsPath);
-				}
-				sshClient.connect(sshProp, hv);
-			}
-			else {
-				sshClient.connect(sshProp, new IgnoreHostKeyVerification());
-			}
+			// make a secure connection with the remote host
+//			sftpSession.setSocketFactory(null); //TODO
 
-			SshAuthenticationClient sac;
-			if (!isKeyboardInteractive()) {
-				// pass the authentication information
-				sac = getSshAuthentication();
-			} else {
-				// TODO: detecteren dat sshClient.getAvailableAuthMethods("ftpmsg")
-				// wel keyboard-interactive terug geeft, maar geen password en dan deze methode
-				// gebruiken
-				final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-				KBIAuthenticationClient kbiAuthenticationClient = new KBIAuthenticationClient();
-				kbiAuthenticationClient.setUsername(credentialFactory.getUsername());
-				kbiAuthenticationClient.setKBIRequestHandler(
-					new KBIRequestHandler() {
-						@Override
-						public void showPrompts(String name, String instruction, KBIPrompt[] prompts) {
-							//deze 3 regels in x.zip naar Zenz gemaild, hielp ook niet
-							if(prompts==null) {
-								return;
-							}
-							for(int i=0; i<prompts.length; i++) {
-								prompts[i].setResponse(credentialFactory.getPassword());
-							}
-						}
-					}
-				);
-				sac=kbiAuthenticationClient;
-			}
-			int result = sshClient.authenticate(sac);
+			sftpSession.setConfig(config);
+			sftpSession.connect();
 
-			if (result != AuthenticationProtocolState.COMPLETE) {
+			if (sftpSession.isConnected()) {
 				closeSftpClient();
-				throw new IOException("Could not authenticate to sftp server " + result);
+				throw new IOException("Could not authenticate to sftp server");
 			}
 
-			// use the connection for sftp
-			sftpClient = sshClient.openSftpClient();
+			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
+			channel.connect();
 
 			if (! StringUtils.isEmpty(remoteDirectory)) {
-				sftpClient.cd(remoteDirectory);
+				channel.cd(remoteDirectory);
 			}
+			sftpClient = channel;
 		}
 		catch(Exception e) {
 			closeSftpClient();
 			throw new FtpConnectException(e);
 		}
-	}
-
-	private SshAuthenticationClient getSshAuthentication() throws Exception {
-		if (StringUtils.isNotEmpty(privateKeyFilePath)) {
-			PublicKeyAuthenticationClient pk = new PublicKeyAuthenticationClient();
-			CredentialFactory pkcf = new CredentialFactory(getPrivateKeyAuthAlias(), getUsername(), getPrivateKeyPassword());
-			pk.setUsername(pkcf.getUsername());
-			SshPrivateKeyFile pkFile = SshPrivateKeyFile.parse(new File(privateKeyFilePath));
-			pk.setKey(pkFile.toPrivateKey(pkcf.getPassword()));
-			return pk;
-		}
-			CredentialFactory usercf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			if (StringUtils.isNotEmpty(usercf.getPassword())) {
-			PasswordAuthenticationClient pac = new PasswordAuthenticationClient();
-			pac.setUsername(usercf.getUsername());
-			pac.setPassword(usercf.getPassword());
-			return pac;
-		}
-		throw new Exception("Unknown authentication type, either the password or the privateKeyFile must be filled");
 	}
 
 	protected void checkReply(String cmd) throws IOException  {
@@ -390,12 +370,14 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	private void closeSftpClient() {
-		if (sshClient != null) {
-			if (sshClient.isConnected()) {
-				sshClient.disconnect();
+		if (sftpSession != null) {
+			if (sftpClient != null && sftpClient.isConnected()) {
+				sftpClient.disconnect();
 			}
-			sshClient = null;
-			sftpClient = null;
+			if (sftpSession.isConnected()) {
+				sftpSession.disconnect();
+			}
+			sftpSession = null;
 		}
 	}
 
@@ -505,12 +487,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 		try {
 			if (ftpType == FtpType.SFTP) {
-				List<String> result = new LinkedList<String>();
-				List<?> listOfSftpFiles = sftpClient.ls();
-				for (Iterator<?> sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
-					SftpFile file = (SftpFile)sftpFileIt.next();
+				List<String> result = new LinkedList<>();
+				List<LsEntry> listOfSftpFiles = sftpClient.ls(remoteDirectory);
+				for(LsEntry file : listOfSftpFiles) {
 					String filename = file.getFilename();
-					if (filesOnly || (! file.isDirectory())) {
+					if (filesOnly || (! file.getAttrs().isDir())) {
 						if (! filename.startsWith(".")) {
 							result.add(filename);
 						}
@@ -735,11 +716,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * (sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)
-	 * @ff.default 4
+	 * (sftp) Transport type in case of sftp
+	 * @ff.default SOCKS5
 	 */
-	public void setProxyTransportType(int i) {
-		proxyTransportType = i;
+	public void setProxyTransportType(TransportType type) {
+		proxyTransportType = type;
 	}
 
 	/** (sftp) Optional preferred encryption from client to server for sftp protocol */
@@ -773,14 +754,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * (sftp) 
-	 * @ff.default false
+	 * (sftp) Verify the hosts againt the knownhosts file.
+	 * @ff.default true
 	 */
-	public void setConsoleKnownHostsVerifier(boolean b) {
-		consoleKnownHostsVerifier = b;
-	}
-	public boolean isConsoleKnownHostsVerifier() {
-		return consoleKnownHostsVerifier;
+	public void setStrictHostKeyChecking(boolean b) {
+		strictHostKeyChecking = b;
 	}
 
 
