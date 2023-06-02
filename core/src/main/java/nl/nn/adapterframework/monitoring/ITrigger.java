@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.DisposableBean;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
@@ -35,7 +36,7 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 
 	boolean isAlarm();
 	void clearEvents();
-	void configure();
+	void configure() throws ConfigurationException;
 	boolean isConfigured();
 	void setMonitor(Monitor monitor);
 	void toXml(XmlBuilder monitor);
