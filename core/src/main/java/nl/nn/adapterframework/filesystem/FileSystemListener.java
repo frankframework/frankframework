@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -256,13 +257,17 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 						continue;
 					}
 				}
+				String originalFilename;
 				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
+					originalFilename = fileSystem.getName(file);
+					threadContext.put(ORIGINAL_FILENAME_KEY, originalFilename);
+				} else {
+					originalFilename = null;
 				}
 				if (StringUtils.isNotEmpty(getLogFolder())) {
 					FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 				}
-				return wrapRawMessage(file, threadContext);
+				return wrapRawMessage(file, originalFilename, threadContext);
 			}
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
@@ -331,7 +336,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	public String populateContextFromMessage(@Nonnull F rawMessage, @Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nonnull Map<String, Object> populateContextFromMessage(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
+		Map<String, Object> messageContext = new HashMap<>();
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
@@ -348,7 +354,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				}
 			}
 			if (StringUtils.isEmpty(messageId)) {
-				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
+				messageId = originalFilename;
 			}
 			if (StringUtils.isEmpty(messageId)) {
 				messageId = fileSystem.getName(rawMessage);
@@ -356,15 +362,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (isFileTimeSensitive()) {
 				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			PipeLineSession.updateListenerParameters(threadContext, messageId, messageId, null, null);
+			PipeLineSession.updateListenerParameters(messageContext, messageId, messageId, null, null);
 			if (attributes!=null) {
-				threadContext.putAll(attributes);
+				messageContext.putAll(attributes);
 			}
 			if (!"path".equals(getMessageType())) {
-				threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
+				messageContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
 			}
 			if (!"name".equals(getMessageType())) {
-				threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
+				messageContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
@@ -380,10 +386,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				}
 
 				metadataBuilder.close();
-				threadContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
+				messageContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
 			}
-			// Returns the message-id for use in test ExchangeFileSystemTest, in test-integration project
-			return messageId;
+			return messageContext;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
 		}
@@ -423,12 +428,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
-		// Do not modify original message context.
-		return wrapRawMessage(file, new HashMap<>(originalMessage.getContext()));
+		// Do not modify original message context. We do not have threadContext so pass copy of message context as substitute.
+		String originalFilename = (String) originalMessage.getContext().get(ORIGINAL_FILENAME_KEY);
+		return wrapRawMessage(file, originalFilename, new HashMap<>(originalMessage.getContext()));
 	}
 
-	private RawMessageWrapper<F> wrapRawMessage(F file, Map<String, Object> threadContext) throws ListenerException {
-		this.populateContextFromMessage(file, threadContext);
+	private RawMessageWrapper<F> wrapRawMessage(F file, String originalFilename, Map<String, Object> threadContext) throws ListenerException {
+		Map<String, Object> rawMessageContext = populateContextFromMessage(file, originalFilename);
+		threadContext.putAll(rawMessageContext);
 		Map<String, Object> messageContext = threadContext.entrySet().stream()
 				.filter((entry) -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

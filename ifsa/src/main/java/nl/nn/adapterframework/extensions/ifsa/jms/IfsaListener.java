@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -81,7 +82,8 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return result.toString();
 	}
 
-	public void populateContextFromMessage(IFSAMessage message, Map<String, Object> threadContext) {
+	public Map<String, Object> populateContextFromMessage(IFSAMessage message) {
+		Map<String, Object> messageContext = new HashMap<>();
 		String mode = "unknown";
 		String id = "unset";
 		String cid = "unset";
@@ -161,7 +163,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		try {
 			BIFname= message.getBifName();
 			if (StringUtils.isNotEmpty(BIFname)) {
-				threadContext.put(THREAD_CONTEXT_BIFNAME_KEY,BIFname);
+				messageContext.put(THREAD_CONTEXT_BIFNAME_KEY,BIFname);
 				id = BIFname;
 			}
 		} catch (JMSException e) {
@@ -203,17 +205,17 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 //			}
 //		}
 
-		PipeLineSession.updateListenerParameters(threadContext, id, BIFname, null, tsSent);
-		threadContext.put("timestamp", tsSent);
-		threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
-		threadContext.put("messageText", messageText);
-		threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
-		threadContext.put("ifsaServiceName", ifsaServiceName);
-		threadContext.put("ifsaGroup", ifsaGroup);
-		threadContext.put("ifsaOccurrence", ifsaOccurrence);
-		threadContext.put("ifsaVersion", ifsaVersion);
-		threadContext.put("ifsaBifName", BIFname);
-		threadContext.put("ifsaBtcData", btcData);
+		PipeLineSession.updateListenerParameters(messageContext, id, BIFname, null, tsSent);
+		messageContext.put("timestamp", tsSent);
+		messageContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
+		messageContext.put("messageText", messageText);
+		messageContext.put("fullIfsaServiceName", fullIfsaServiceName);
+		messageContext.put("ifsaServiceName", ifsaServiceName);
+		messageContext.put("ifsaGroup", ifsaGroup);
+		messageContext.put("ifsaOccurrence", ifsaOccurrence);
+		messageContext.put("ifsaVersion", ifsaVersion);
+		messageContext.put("ifsaBifName", BIFname);
+		messageContext.put("ifsaBtcData", btcData);
 
 		Map udz = message.getIncomingUDZObject();
 		if (udz!=null) {
@@ -222,12 +224,13 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 				String key = (String)it.next();
 				String value = (String)udz.get(key);
 				contextDump.append("\n ").append(key).append("=[").append(value).append("]");
-				threadContext.put(key, value);
+				messageContext.put(key, value);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix()+ contextDump);
 			}
 		}
+		return messageContext;
 	}
 
 	/**

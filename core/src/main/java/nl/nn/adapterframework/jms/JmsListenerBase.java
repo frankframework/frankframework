@@ -131,10 +131,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * This includes a Session. The Session object can be passed in
 	 * externally.
 	 *
-	 * @param rawMessage    - Original message received, can not be <code>null</code>
-	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
+	 * @param rawMessage - Original message received, can not be <code>null</code>
+	 * @return
 	 */
-	public void populateContextFromMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public Map<String, Object> populateContextFromMessage(javax.jms.Message rawMessage) throws ListenerException {
+		Map<String, Object> messageContext = new HashMap<>();
 		String id = "unset";
 		String cid = "unset";
 		DeliveryMode mode = null;
@@ -192,9 +193,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "]");
 		}
 
-		PipeLineSession.updateListenerParameters(threadContext, id, cid, null, tsSent);
-		threadContext.put("timestamp",tsSent);
-		threadContext.put("replyTo",replyTo);
+		PipeLineSession.updateListenerParameters(messageContext, id, cid, null, tsSent);
+		messageContext.put("timestamp",tsSent);
+		messageContext.put("replyTo",replyTo);
+		return messageContext;
 	}
 
 

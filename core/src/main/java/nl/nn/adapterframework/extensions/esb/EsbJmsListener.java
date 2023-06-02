@@ -103,8 +103,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public void populateContextFromMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		super.populateContextFromMessage(rawMessage, threadContext);
+	public Map<String, Object> populateContextFromMessage(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageContext = super.populateContextFromMessage(rawMessage);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
@@ -117,7 +117,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				if (propertyName.startsWith("ae_")) {
 					try {
 						Object object = rawMessage.getObjectProperty(propertyName);
-						threadContext.put(propertyName, object);
+						messageContext.put(propertyName, object);
 					} catch (JMSException e) {
 						log.debug("ignoring JMSException in getObjectProperty()", e);
 					}
@@ -138,15 +138,16 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 					String xPath = pair.getValue();
 					String result = getResultFromxPath(soapMessage, xPath);
 					if(result.length() > 0) {
-						threadContext.put(sessionKey, result);
+						messageContext.put(sessionKey, result);
 						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
 					}
 				}
-				threadContext.put("xPathLogKeys", xPathLogKeys.toString());
+				messageContext.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);
 		}
+		return messageContext;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
