@@ -491,7 +491,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			Debug.setLevel(3);
 
 		$rootScope.$state = $state;
-		$trace.enable('TRANSITION');
+		// $trace.enable('TRANSITION');
 
 		$rootScope.foist = function (callback) {
 			Debug.warn("Dirty injection!", callback);

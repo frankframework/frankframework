@@ -8,7 +8,14 @@
     <div id="page-wrapper" class="gray-bg {{$state.current.name}}">
 
         <!-- Page wrapper -->
-        <pages-topnavbar class="topnavbar" on-open-feedback="$ctrl.sendFeedback(value)"></pages-topnavbar>
+        <pages-topnavbar class="topnavbar"
+			on-open-feedback="$ctrl.sendFeedback(rating)"
+			server-time="$ctrl.serverTime"
+			dtap-side="$ctrl.dtapSide"
+			dtap-stage="$ctrl.dtapStage"
+			user-name="$ctrl.userName"
+			loggedin="$ctrl.loggedin"
+		></pages-topnavbar>
         <pages-topinfobar class="topinfobar"></pages-topinfobar>
 
 

@@ -44,14 +44,9 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 
 		$rootScope.adapters = {};
 
-		Pace.on("done", initializeFrankConsole);
-		$scope.$on('initializeFrankConsole', initializeFrankConsole);
-		$timeout(initializeFrankConsole, 250);
-
-		$scope.$watch(function () { return Notification.getCount(); }, function () {
-			ctrl.notificationCount = Notification.getCount();
-			ctrl.notificationList = Notification.getLatest(5);
-		});
+		Pace.on("done", ctrl.initializeFrankConsole);
+		$scope.$on('initializeFrankConsole', ctrl.initializeFrankConsole);
+		$timeout(ctrl.initializeFrankConsole, 250);
 
 		$scope.$on('IdleStart', function () {
 			Poller.getAll().changeInterval(appConstants["console.idle.pollerInterval"]);
@@ -264,7 +259,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		});
 	}
 
-	function initializeFrankConsole() {
+	ctrl.initializeFrankConsole = function() {
 		if (appConstants.init === -1) {
 			appConstants.init = 0;
 			Debug.log("Initializing Frank!Console");
@@ -305,8 +300,10 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
 
 				$rootScope.dtapStage = data["dtap.stage"];
-				$rootScope.dtapSide = data["dtap.side"];
-				$rootScope.userName = data["userName"];
+				ctrl.dtapStage = data["dtap.stage"];
+				ctrl.dtapSide = data["dtap.side"];
+				// $rootScope.userName = data["userName"];
+				ctrl.userName = data["userName"];
 
 				if ($rootScope.dtapStage == "LOC") {
 					Debug.setLevel(3);
@@ -472,8 +469,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		ctrl.lastUpdated = updated;
 	};
 
-	ctrl.resetNotificationCount = function () { Notification.resetCount(); };
-
 	ctrl.openInfoModel = function () {
 		$uibModal.open({
 			templateUrl: 'js/app/components/pages/information-modal/information.html',
@@ -483,6 +478,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 	};
 
 	ctrl.sendFeedback = function (rating) {
+		console.log("sendFeedback rating", rating);
 		if (!appConstants["console.feedbackURL"])
 			return;
 
@@ -494,11 +490,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			controller: 'FeedbackCtrl',
 			resolve: { rating: function () { return rating; } },
 		});
-	};
-
-	ctrl.hoverFeedback = function (rating) {
-		$(".rating i").removeClass("fa-star").addClass("fa-star-o");
-		$(".rating i:nth-child(-n+" + (rating + 1) + ")").addClass("fa-star").removeClass("fa-star-o");
 	};
 }
 
