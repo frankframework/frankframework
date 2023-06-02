@@ -268,7 +268,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 		long latestAcceptableFileModTime = System.currentTimeMillis() - stabilityLimit;
 
-		return ds.filter((file) -> isFileOlderThan(file, latestAcceptableFileModTime))
+		return ds.filter(file -> isFileOlderThan(file, latestAcceptableFileModTime))
 				.findFirst();
 	}
 
@@ -283,15 +283,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
 		if ((rawMessage instanceof MessageWrapper)) {
-			// TODO: Check if below is still correct!
-			// TODO: Check test coverage of this code, in old and new branches.
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
 			MessageWrapper<?> wrapper = (MessageWrapper<?>) rawMessage;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
-				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
+				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
 			}
 		} else {
-			F file = rawMessage.getRawMessage(); // if it is not a MessageWrapper, then it must be a RawMessageWrapper<F>
+			F file = rawMessage.getRawMessage();
 			try {
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
 					fileSystem.deleteFile(file);

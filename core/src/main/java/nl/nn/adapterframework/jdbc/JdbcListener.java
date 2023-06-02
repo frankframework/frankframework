@@ -304,7 +304,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			return key;
 		}
 
-		// TODO: Below code appears untouched in our unit tests and IAF-Test but might be needed for some stored messages?
+		// TESTCOVERAGE: TODO: Below code appears untouched in our unit tests and IAF-Test but might be needed for some stored messages?
 		if (rawMessage.getId() != null) {
 			return rawMessage.getId();
 		} else if (rawMessage instanceof MessageWrapper) {
