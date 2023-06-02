@@ -314,10 +314,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			eventPublisher.registerEvent(this, description);
 		}
 	}
+
 	@Override
-	public void throwEvent(String event) {
+	public void throwEvent(String event, Message message) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this ,event);
+			eventPublisher.fireEvent(this, event);
 		}
 	}
 

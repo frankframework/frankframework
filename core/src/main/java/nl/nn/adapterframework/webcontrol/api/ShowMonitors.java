@@ -48,13 +48,13 @@ import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -106,7 +106,7 @@ public final class ShowMonitors extends Base {
 
 		returnMap.put("monitors", monitors);
 		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
+		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
 		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(returnMap).build();
@@ -245,14 +245,14 @@ public final class ShowMonitors extends Base {
 		} else if(action.equals("clear")) {
 			try {
 				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, SeverityEnum.WARNING, null, null, null);
+				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		} else if(action.equals("raise")) {
 			try {
 				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
+				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
@@ -361,7 +361,7 @@ public final class ShowMonitors extends Base {
 			}
 		}
 
-		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
+		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
 		returnMap.put("events", mm.getEvents());
 
 		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
@@ -406,7 +406,7 @@ public final class ShowMonitors extends Base {
 	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		TriggerType type = null;
-		SeverityEnum severity = null;
+		Severity severity = null;
 		int threshold = 0;
 		int period = 0;
 		String filter = null;
@@ -420,7 +420,7 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("type")) {
 				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("severity")) {
-				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
+				severity = EnumUtils.parse(Severity.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
 				threshold = (Integer.parseInt("" + entry.getValue()));
 				if(threshold < 0) {
@@ -505,7 +505,7 @@ public final class ShowMonitors extends Base {
 	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
 
 		String name = null;
-		EventTypeEnum type = null;
+		EventType type = null;
 		Set<String> destinations = null;
 
 		for(Entry<String, Object> entry : json.entrySet()) {
@@ -514,7 +514,7 @@ public final class ShowMonitors extends Base {
 				name = entry.getValue().toString();
 			}
 			else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(EventTypeEnum.class, entry.getValue().toString());
+				type = EnumUtils.parse(EventType.class, entry.getValue().toString());
 			}
 			else if(key.equalsIgnoreCase("destinations")) {
 				destinations = parseDestinations(entry);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -27,10 +28,10 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -47,13 +48,9 @@ public class Trigger implements ITrigger {
 	private static final String CLASS_NAME_ALARM = Alarm.class.getName();
 	private static final String CLASS_NAME_CLEARING = Clearing.class.getName();
 
-	public static final int SOURCE_FILTERING_NONE=0;
-	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
-	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
-
-	private Monitor monitor;
-	private SeverityEnum severity;
-	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
+	private @Getter Monitor monitor;
+	private @Getter @Setter Severity severity;
+	private @Getter @Setter SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
 	private List<String> eventCodes = new ArrayList<>();
@@ -62,21 +59,28 @@ public class Trigger implements ITrigger {
 	private @Getter int threshold = 0;
 	private @Getter int period = 0;
 
-	private LinkedList<Date> eventDates = null;
+	private LinkedList<Instant> eventDates = null;
 	private boolean configured = false;
 
 	@Override
-	public void configure() {
-		if (eventCodes.isEmpty()) {
-			log.warn("trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
+	public void configure() throws ConfigurationException {
+		if(monitor == null) {
+			throw new ConfigurationException("no monitor autowired");
 		}
 
-		if (threshold>0) {
-			if (eventDates==null) {
+		if (eventCodes.isEmpty()) {
+			log.warn("trigger of Monitor [{}] should have at least one eventCode specified", monitor::getName);
+		}
+
+		if (threshold > 0) {
+			if(period < 1) {
+				throw new ConfigurationException("you must define a period when using threshold > 0");
+			}
+			if (eventDates == null) {
 				eventDates = new LinkedList<>();
 			}
-		} else {
-			eventDates=null;
+		} else { // In case of a reconfigure
+			eventDates = null;
 		}
 
 		configured = true;
@@ -94,11 +98,10 @@ public class Trigger implements ITrigger {
 		}
 	}
 
-	public void evaluateEvent(FireMonitorEvent event) {
-		EventThrowing source = event.getSource();
-		if(evaluateAdapterFilters(source)) {
+	protected void evaluateEvent(FireMonitorEvent event) {
+		if(evaluateAdapterFilters(event.getSource())) {
 			try {
-				evaluateEvent(source, event.getEventCode());
+				changeState(event);
 			} catch (MonitorException e) {
 				throw new IllegalStateException("unable to evaluate trigger for event ["+event.getEventCode()+"]", e);
 			}
@@ -110,19 +113,18 @@ public class Trigger implements ITrigger {
 		return (getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName())));
 	}
 
-	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
+	protected void changeState(FireMonitorEvent event) throws MonitorException {
 		boolean alarm = isAlarm();
-		if (log.isDebugEnabled()) log.debug("evaluating MonitorEvent ["+source.getEventSourceName()+"]");
+		log.debug("evaluating MonitorEvent [{}]", event::getEventSourceName);
 
-		Date now = new Date();
 		if (getThreshold()>0) {
-			cleanUpEvents(now);
-			eventDates.add(now);
+			cleanUpEvents(event.getEventTime());
+			eventDates.add(event.getEventTime());
 			if (eventDates.size() >= getThreshold()) {
-				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+				getMonitor().changeState(alarm, getSeverity(), event);
 			}
 		} else {
-			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+			getMonitor().changeState(alarm, getSeverity(), event);
 		}
 	}
 
@@ -133,12 +135,12 @@ public class Trigger implements ITrigger {
 		}
 	}
 
-	protected void cleanUpEvents(Date now) {
+	protected void cleanUpEvents(Instant now) {
 		while(!eventDates.isEmpty()) {
-			Date firstDate = eventDates.getFirst();
-			if ((now.getTime() - firstDate.getTime()) > getPeriod() * 1000) {
+			Instant firstDate = eventDates.getFirst();
+			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000) {
 				eventDates.removeFirst();
-				if (log.isDebugEnabled()) log.debug("removed element dated ["+DateUtils.format(firstDate)+"]");
+				if (log.isDebugEnabled()) log.debug("removed element dated ["+DateUtils.format(firstDate.toEpochMilli())+"]");
 			} else {
 				break;
 			}
@@ -151,7 +153,7 @@ public class Trigger implements ITrigger {
 		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
-			trigger.addAttribute("severity",getSeverity());
+			trigger.addAttribute("severity", getSeverity().name());
 		}
 		if (getThreshold()>0) {
 			trigger.addAttribute("threshold",getThreshold());
@@ -164,22 +166,20 @@ public class Trigger implements ITrigger {
 			trigger.addSubElement(event);
 			event.setValue(eventCodes.get(i));
 		}
-		if (getAdapterFilters()!=null) {
-			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
-				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
-					String adapterName = it.next();
-					AdapterFilter af = getAdapterFilters().get(adapterName);
-					XmlBuilder adapter = new XmlBuilder("adapterfilter");
-					trigger.addSubElement(adapter);
-					adapter.addAttribute("adapter",adapterName);
-					if (isFilterOnLowerLevelObjects()) {
-						List<String> subobjectList=af.getSubObjectList();
-						if (subobjectList!=null) {
-							for(String subObjectName : subobjectList) {
-								XmlBuilder sourceXml=new XmlBuilder("source");
-								adapter.addSubElement(sourceXml);
-								sourceXml.setValue(subObjectName);
-							}
+		if (getAdapterFilters()!=null && getSourceFiltering() != SourceFiltering.NONE) {
+			for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
+				String adapterName = it.next();
+				AdapterFilter af = getAdapterFilters().get(adapterName);
+				XmlBuilder adapter = new XmlBuilder("adapterfilter");
+				trigger.addSubElement(adapter);
+				adapter.addAttribute("adapter",adapterName);
+				if (isFilterOnLowerLevelObjects()) {
+					List<String> subobjectList=af.getSubObjectList();
+					if (subobjectList!=null) {
+						for(String subObjectName : subobjectList) {
+							XmlBuilder sourceXml=new XmlBuilder("source");
+							adapter.addSubElement(sourceXml);
+							sourceXml.setValue(subObjectName);
 						}
 					}
 				}
@@ -190,9 +190,6 @@ public class Trigger implements ITrigger {
 	@Override
 	public void setMonitor(Monitor monitor) {
 		this.monitor = monitor;
-	}
-	public Monitor getMonitor() {
-		return monitor;
 	}
 
 	@Override
@@ -213,39 +210,14 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public void setEventCodes(String[] arr) {
+	public void setEventCodes(List<String> events) {
 		clearEventCodes();
-		for (int i=0;i<arr.length;i++) {
-			addEventCode(arr[i]);
-		}
+		eventCodes.addAll(events);
 	}
 
 	@Override
-	public String[] getEventCodes() {
-		return eventCodes.toArray(new String[eventCodes.size()]);
-	}
-
-	public List<String> getEventCodeList() {
-		return eventCodes;
-	}
-
-	public void setSeverity(String severity) {
-		setSeverityEnum(EnumUtils.parse(SeverityEnum.class, severity));
-	}
-
-	@Override
-	public void setSeverityEnum(SeverityEnum enumeration) {
-		severity = enumeration;
-	}
-
-	@Override
-	public SeverityEnum getSeverityEnum() {
-		return severity;
-	}
-
-	@Override
-	public String getSeverity() {
-		return severity==null?null:severity.name();
+	public List<String> getEventCodes() {
+		return Collections.unmodifiableList(eventCodes);
 	}
 
 	@Override
@@ -266,16 +238,16 @@ public class Trigger implements ITrigger {
 	@Override
 	public void clearAdapterFilters() {
 		adapterFilters.clear();
-		setSourceFilteringEnum(SourceFiltering.NONE);
+		setSourceFiltering(SourceFiltering.NONE);
 	}
 
 	@Override
 	public void registerAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
-			setSourceFilteringEnum(SourceFiltering.SOURCE);
-		} else if (getSourceFilteringEnum() == SourceFiltering.NONE) {
-			setSourceFilteringEnum(SourceFiltering.ADAPTER);
+			setSourceFiltering(SourceFiltering.SOURCE);
+		} else if (getSourceFiltering() == SourceFiltering.NONE) {
+			setSourceFiltering(SourceFiltering.ADAPTER);
 		}
 	}
 
@@ -284,21 +256,6 @@ public class Trigger implements ITrigger {
 	}
 	public boolean isFilterOnAdapters() {
 		return sourceFiltering == SourceFiltering.ADAPTER;
-	}
-
-	@Override
-	public void setSourceFilteringEnum(SourceFiltering filtering) {
-		this.sourceFiltering = filtering;
-	}
-
-	@Override
-	public String getSourceFiltering() {
-		return sourceFiltering.name().toLowerCase();
-	}
-
-	@Override
-	public SourceFiltering getSourceFilteringEnum() {
-		return sourceFiltering;
 	}
 
 	@Override

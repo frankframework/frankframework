@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Publisher to wrap the monitoring events and publish them to the Spring Context
@@ -27,7 +28,7 @@ import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
  * @author Niels Meijer
  *
  */
-public class EventPublisher implements ApplicationEventPublisherAware, EventHandler {
+public class EventPublisher implements ApplicationEventPublisherAware {
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
@@ -35,13 +36,15 @@ public class EventPublisher implements ApplicationEventPublisherAware, EventHand
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 
-	@Override
 	public void registerEvent(EventThrowing source, String eventCode) {
 		applicationEventPublisher.publishEvent(new RegisterMonitorEvent(source, eventCode));
 	}
 
-	@Override
 	public void fireEvent(EventThrowing source, String eventCode) {
 		applicationEventPublisher.publishEvent(new FireMonitorEvent(source, eventCode));
+	}
+
+	public void fireEvent(EventThrowing source, String eventCode, Message eventMessage) {
+		applicationEventPublisher.publishEvent(new FireMonitorEvent(source, eventCode, eventMessage));
 	}
 }

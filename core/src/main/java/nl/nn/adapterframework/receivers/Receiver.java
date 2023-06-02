@@ -976,6 +976,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			return;
 		}
 
+		//TODO throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 		Message message=null;
 		try {
 			if (errorSender!=null) {
@@ -1617,14 +1618,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getEventSourceName() {
 		return getLogPrefix().trim();
 	}
-	protected void registerEvent(String eventCode) {
+	private void registerEvent(String eventCode) {
 		if (eventPublisher != null) {
 			eventPublisher.registerEvent(this, eventCode);
 		}
 	}
 	protected void throwEvent(String eventCode) {
+		throwEvent(eventCode, null);
+	}
+	private void throwEvent(String eventCode, Message eventMessage) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this, eventCode);
+			eventPublisher.fireEvent(this, eventCode, eventMessage);
 		}
 	}
 
