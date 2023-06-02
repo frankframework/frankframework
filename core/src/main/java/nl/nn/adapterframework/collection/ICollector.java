@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,25 +15,28 @@
 */
 package nl.nn.adapterframework.collection;
 
-import java.io.OutputStream;
+import java.io.IOException;
+import java.util.List;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 
-public interface ICollector<E extends ICollectingElement> extends AutoCloseable {
+/**
+ * Implementations should convert their input to a 'usable' part.
+ * The {@link Collection collection} handles the collection of parts,
+ * ensures they are closed if required and 'builds' the collection.
+ * 
+ * @author Niels Meijer
+ *
+ * @param <P> Part to be added to the {@link Collection collection}.
+ */
+public interface ICollector<P> extends AutoCloseable {
 
-	/** write (or add) a single item to the collection*/
-	Message writeItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException, TimeoutException;
+	/** Add a single item to the collection */
+	P createPart(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException;
 
-	/** return an OutputStream message that can be used to write a single item to */
-	OutputStream streamItem(Message input, PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException;
-
-	/** provide a MessageOutputStream message that can be used to write a single item to */
-	default MessageOutputStream provideOutputStream(PipeLineSession session, ParameterValueList pvl, E collectingElement) throws CollectionException {
-		return null;
-	}
-
+	/** 'builds' the collection and returns a persistent Message 
+	 * @throws IOException */
+	Message build(List<P> parts) throws IOException;
 }

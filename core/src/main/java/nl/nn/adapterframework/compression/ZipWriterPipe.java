@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@ package nl.nn.adapterframework.compression;
 
 import lombok.Getter;
 import nl.nn.adapterframework.collection.CollectionException;
-import nl.nn.adapterframework.collection.CollectorPipe;
+import nl.nn.adapterframework.collection.CollectorPipeBase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that creates a ZipStream.
@@ -40,58 +36,20 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterPipe extends CollectorPipe<IZipWritingElement, ZipWriter> implements IZipWritingElement {
+public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
 
-	private @Getter boolean closeInputstreamOnExit=true;
-	private @Getter boolean closeOutputstreamOnExit=true;
-	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private @Getter boolean completeFileHeader=false;
-
-	public ZipWriterPipe() {
-		super();
-		setCollection("zipwriterhandle");
-	}
+	private @Getter boolean includeFileHeaders=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
+		setCollectionName("zipwriterhandle");
 		super.configure();
-		ZipWriter.configure(getAction(), getParameterList());
+		ZipWriter.validateParametersForAction(getAction(), getParameterList());
 	}
 
 	@Override
-	public ZipWriter openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-		return ZipWriter.openCollection(input, session, pvl, this);
-	}
-
-
-
-	/**
-	 * Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written
-	 * @ff.default true
-	 */
-	public void setCloseInputstreamOnExit(boolean b) {
-		closeInputstreamOnExit = b;
-	}
-
-	/**
-	 * Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished
-	 * @ff.default true
-	 */
-	public void setCloseOutputstreamOnExit(boolean b) {
-		closeOutputstreamOnExit = b;
-	}
-	@Deprecated
-	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeOutputstreamOnExit'")
-	public void setCloseStreamOnExit(boolean b) {
-		setCloseOutputstreamOnExit(b);
-	}
-
-	/**
-	 * Only for action='write': Charset used to write strings to zip entries
-	 * @ff.default utf-8
-	 */
-	public void setCharset(String string) {
-		charset = string;
+	protected ZipWriter createCollector() throws CollectionException {
+		return new ZipWriter(includeFileHeaders);
 	}
 
 	/**
@@ -99,9 +57,9 @@ public class ZipWriterPipe extends CollectorPipe<IZipWritingElement, ZipWriter> 
 	 * @ff.default zipwriterhandle
 	 */
 	@Deprecated
-	@ConfigurationWarning("Replaced with attribute collection")
+	@ConfigurationWarning("Replaced with attribute collectionName")
 	public void setZipWriterHandle(String string) {
-		setCollection(string);
+		setCollectionName(string);
 	}
 
 	/**
@@ -109,9 +67,6 @@ public class ZipWriterPipe extends CollectorPipe<IZipWritingElement, ZipWriter> 
 	 * @ff.default false
 	 */
 	public void setCompleteFileHeader(boolean b) {
-		completeFileHeader = b;
+		includeFileHeaders = b;
 	}
-
-
-
 }

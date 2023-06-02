@@ -22,8 +22,16 @@ public class PathMessage extends Message {
 
 	private static final long serialVersionUID = -6810228164430433617L;
 
+	public PathMessage(Path path) {
+		this(path, new MessageContext());
+	}
+
 	public PathMessage(Path path, Map<String,Object> context) {
-		super(new SerializableFileReference(path), new MessageContext(context)
+		this(path, context, false);
+	}
+
+	private PathMessage(Path path, Map<String,Object> context, boolean removeOnClose) {
+		super(new SerializableFileReference(path, removeOnClose), new MessageContext(context)
 				.withModificationTime(path.toFile().lastModified())
 				.withSize(path.toFile().length())
 				.withName(path.getFileName().toString())
@@ -31,7 +39,7 @@ public class PathMessage extends Message {
 			, path.getClass());
 	}
 
-	public PathMessage(Path path) {
-		this(path, new MessageContext());
+	public static PathMessage asTemporaryMessage(Path path) {
+		return new PathMessage(path, new MessageContext(), true);
 	}
 }

@@ -4,16 +4,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class MessageUtilsTest {
@@ -34,10 +41,51 @@ public class MessageUtilsTest {
 	@Test
 	public void testMd5Hash() throws Exception {
 		Message message = new Message("test message");
+
 		String hash = MessageUtils.generateMD5Hash(message);
+
 		assertNotNull(hash);
 		assertEquals(MessageUtils.generateMD5Hash(message), hash, "hash should be the same");
 		assertEquals("c72b9698fa1927e1dd12d3cf26ed84b2", hash);
+	}
+
+	@Test
+	public void testCRC32Checksum() throws Exception {
+		Message message = new Message("test message");
+
+		Long checksum = MessageUtils.generateCRC32(message);
+
+		assertNotNull(checksum);
+		assertEquals(MessageUtils.generateCRC32(message), checksum, "Checksum should be the same");
+		assertEquals(529295243, checksum);
+	}
+
+	@Test
+	public void testCalculateSize() throws Exception {
+		// getNonRepeatableMessage turns this into a reader, thus requiring charset decoding, the result is stored as UTF8
+		Message message = spy(MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_ISO88591));
+
+		// Act
+		Long size = MessageUtils.computeSize(message);
+
+		// Assert
+		verify(message, times(1)).isRepeatable();
+		verify(message, times(1)).preserve();
+		assertEquals(1095, size);
+	}
+
+	@ParameterizedTest
+	@CsvSource({"utf8-with-bom,32", "utf8-without-bom,28", "iso-8859-1,1095"})
+	public void testCalculateSize(String resource, long size) throws Exception {
+		Message message = MessageTestUtils.getMessage("/Util/MessageUtils/"+resource+".txt");
+
+		// Act
+		Long calculatedSize = MessageUtils.computeSize(message);
+
+		// Assert
+		assertEquals(size, calculatedSize);
+		assertEquals(MessageUtils.computeSize(message), size, "computing twice should have the same result");
+		assertEquals(message.getContext().get(MessageContext.METADATA_SIZE), size, "(correct) size should be in the message context");
 	}
 
 	@Test
