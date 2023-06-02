@@ -289,9 +289,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 					if (log.isDebugEnabled()) {
 						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [" + replyCid + "] [" + plr.getResult() + "]");
 					}
-					PipeLineSession pipeLineSession = new PipeLineSession();
-					pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY,replyCid);
-					getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
+					try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+						pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, replyCid);
+						getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
+					}
 				}
 			}
 		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException | JmsException e) {

@@ -108,7 +108,7 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 		if (jmsConnector==null) {
 			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
 		}
-		Destination destination=null;
+		Destination destination;
 		try {
 			destination=getServiceQueue();
 		} catch (Exception e) {
@@ -122,8 +122,6 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 			throw new ConfigurationException(e);
 		}
 	}
-
-
 
 	@Override
 	public void open() throws ListenerException {

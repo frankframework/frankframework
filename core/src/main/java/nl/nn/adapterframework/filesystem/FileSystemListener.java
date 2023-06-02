@@ -18,8 +18,8 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -69,12 +70,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String ORIGINAL_FILENAME_KEY = "originalFilename";
-	public final static String FILENAME_KEY = "filename";
-	public final static String FILEPATH_KEY = "filepath";
+	public static final String ORIGINAL_FILENAME_KEY = "originalFilename";
+	public static final String FILENAME_KEY = "filename";
+	public static final String FILEPATH_KEY = "filepath";
 
-	private final static Set<String> KEYS_COPIED_TO_MESSAGE_CONTEXT;
-
+	private static final Set<String> KEYS_COPIED_TO_MESSAGE_CONTEXT;
 	static {
 		KEYS_COPIED_TO_MESSAGE_CONTEXT = new HashSet<>();
 		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(PipeLineSession.MESSAGE_ID_KEY);
@@ -240,40 +240,42 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		FS fileSystem=getFileSystem();
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
-			Iterator<F> it = ds.iterator();
-			if (!it.hasNext()) {
+			Optional<F> fo = findFirstStableFile(ds);
+			if (!fo.isPresent()) {
 				return null;
 			}
-
-			long stabilityLimit = getMinStableTime();
-			if (stabilityLimit>0) {
-				stabilityLimit=System.currentTimeMillis()-stabilityLimit;
+			F file = fo.get();
+			String originalFilename;
+			if (StringUtils.isNotEmpty(getInProcessFolder())) {
+				originalFilename = fileSystem.getName(file);
+				threadContext.put(ORIGINAL_FILENAME_KEY, originalFilename);
+			} else {
+				originalFilename = null;
 			}
-			while (it.hasNext()) {
-				F file = it.next();
-				if (stabilityLimit>0) {
-					long filemodtime=fileSystem.getModificationTime(file).getTime();
-					if (filemodtime>stabilityLimit) {
-						continue;
-					}
-				}
-				String originalFilename;
-				if (StringUtils.isNotEmpty(getInProcessFolder())) {
-					originalFilename = fileSystem.getName(file);
-					threadContext.put(ORIGINAL_FILENAME_KEY, originalFilename);
-				} else {
-					originalFilename = null;
-				}
-				if (StringUtils.isNotEmpty(getLogFolder())) {
-					FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
-				}
-				return wrapRawMessage(file, originalFilename, threadContext);
+			if (StringUtils.isNotEmpty(getLogFolder())) {
+				FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 			}
+			return wrapRawMessage(file, originalFilename, threadContext);
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
 		}
+	}
 
-		return null;
+	private Optional<F> findFirstStableFile(Stream<F> ds) {
+		long stabilityLimit = getMinStableTime();
+		if (stabilityLimit <= 0L) {
+			return ds.findFirst();
+		}
+		long latestAcceptableFileModTime = System.currentTimeMillis() - stabilityLimit;
+
+		return ds.filter((file) -> isFileOlderThan(file, latestAcceptableFileModTime))
+				.findFirst();
+	}
+
+	@SneakyThrows
+	private boolean isFileOlderThan(F file, long timeInMillis) {
+		long filemodtime=fileSystem.getModificationTime(file).getTime();
+		return filemodtime <= timeInMillis;
 	}
 
 	@Override

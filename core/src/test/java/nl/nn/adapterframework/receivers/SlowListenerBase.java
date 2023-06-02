@@ -44,6 +44,7 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
+		// No-op
 	}
 
 	@Override

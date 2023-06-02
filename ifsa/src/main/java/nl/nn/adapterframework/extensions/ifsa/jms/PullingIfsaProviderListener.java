@@ -229,11 +229,11 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 		}
 		// on request-reply send the reply.
 		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
-			javax.jms.Message originalRawMessage;
-			if (rawMessage instanceof javax.jms.Message) {
-				originalRawMessage = (javax.jms.Message)rawMessage;
+			Message originalRawMessage;
+			if (rawMessage instanceof Message) {
+				originalRawMessage = (Message)rawMessage;
 			} else {
-				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
 				String id = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
@@ -280,7 +280,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 	 */
 	@Override
 	public RawMessageWrapper<IFSAMessage> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
-		javax.jms.Message result=null;
+		Message result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;
 

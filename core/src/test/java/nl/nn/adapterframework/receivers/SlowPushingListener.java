@@ -23,10 +23,10 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 
-public class SlowPushingListener extends SlowListenerBase implements IPushingListener<javax.jms.Message> {
+public class SlowPushingListener extends SlowListenerBase implements IPushingListener<Message> {
 
 	@Override
-	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
+	public void setHandler(IMessageHandler<Message> handler) {
 		// No-op
 	}
 

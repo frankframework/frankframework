@@ -25,9 +25,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -85,56 +83,55 @@ public class MessageBrowsingUtilTest {
 
 		@Override
 		public void setName(String name) {
-			// TODO Auto-generated method stub
+			// No-op
 		}
 
 		@Override
 		public String getName() {
-			// TODO Auto-generated method stub
+			// No-op
 			return null;
 		}
 
 		@Override
 		public ApplicationContext getApplicationContext() {
-			// TODO Auto-generated method stub
+			// No-op
 			return null;
 		}
 
 		@Override
 		public ClassLoader getConfigurationClassLoader() {
-			// TODO Auto-generated method stub
+			// No-op
 			return null;
 		}
 
 		@Override
 		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-			// TODO Auto-generated method stub
+			// No-op
 		}
 
 		@Override
-		public void configure() throws ConfigurationException {
-			// TODO Auto-generated method stub
+		public void configure() {
+			// No-op
 		}
 
 		@Override
-		public void open() throws ListenerException {
-			// TODO Auto-generated method stub
+		public void open() {
+			// No-op
 		}
 
 		@Override
-		public void close() throws ListenerException {
-			// TODO Auto-generated method stub
+		public void close() {
+			// No-op
 		}
 
 		@Override
-		public Message extractMessage(RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+		public Message extractMessage(RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) {
 			return new Message(rawMessage.getRawMessage().text);
 		}
 
 		@Override
-		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<TestListenerMessage> rawMessage,
-										  Map<String, Object> context) throws ListenerException {
-			// TODO Auto-generated method stub
+		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) {
+			// No-op
 		}
 
 	}

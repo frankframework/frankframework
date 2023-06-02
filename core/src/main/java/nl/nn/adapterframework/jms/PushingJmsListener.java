@@ -85,14 +85,14 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
+public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
 
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
 
-	private @Getter @Setter IListenerConnector<javax.jms.Message> jmsConnector;
-	private @Getter @Setter IMessageHandler<javax.jms.Message> handler;
-	private @Getter @Setter Receiver<javax.jms.Message> receiver;
+	private @Getter @Setter IListenerConnector<Message> jmsConnector;
+	private @Getter @Setter IMessageHandler<Message> handler;
+	private @Getter @Setter Receiver<Message> receiver;
 	private @Getter @Setter IbisExceptionListener exceptionListener;
 
 
@@ -146,7 +146,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public IListenerConnector<javax.jms.Message> getListenerPortConnector() {
+	public IListenerConnector<Message> getListenerPortConnector() {
 		return jmsConnector;
 	}
 
@@ -220,7 +220,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	@Override
 	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
 		try {
-			javax.jms.Message message=rawMessage.getRawMessage();
+			Message message=rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not

@@ -146,6 +146,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, Map<String,Object> context) throws ListenerException {
+		// No-op
 	}
 
 	protected void execute(Connection conn, String query) throws ListenerException {

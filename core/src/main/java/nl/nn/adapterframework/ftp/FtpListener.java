@@ -63,10 +63,12 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 
 	@Override
 	public void open() throws ListenerException {
+		// No-op
 	}
 
 	@Override
 	public void close() throws ListenerException {
+		// No-op
 	}
 
 	@Nonnull
@@ -77,6 +79,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 
 	@Override
 	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+		// No-op
 	}
 
 	/**

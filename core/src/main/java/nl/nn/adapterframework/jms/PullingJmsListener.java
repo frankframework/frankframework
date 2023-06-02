@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<javax.jms.Message>, ICorrelatedPullingListener<javax.jms.Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
@@ -211,8 +211,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 
 	@Override
-	public RawMessageWrapper<javax.jms.Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
-		RawMessageWrapper<javax.jms.Message> msg = getRawMessageFromDestination(correlationId, threadContext);
+	public RawMessageWrapper<Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
+		RawMessageWrapper<Message> msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
 			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
@@ -233,9 +233,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private RawMessageWrapper<javax.jms.Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
+	private RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
-		javax.jms.Message msg = null;
+		Message msg = null;
 		String messageId = null;
 		checkTransactionManagerValidity();
 		try {
@@ -277,7 +277,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			MessageConsumer mc=null;
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				javax.jms.Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
+				Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
 				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
 			} finally {
 				if (mc != null) {
