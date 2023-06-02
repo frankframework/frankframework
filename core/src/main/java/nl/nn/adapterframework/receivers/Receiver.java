@@ -952,7 +952,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			return;
 		}
-		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 		log.debug("{} moves message with id [{}] correlationId [{}] to errorSender/errorStorage", this::getLogPrefix, ()->originalMessageId, ()->correlationId);
 		TransactionStatus txStatus;
 		try {
@@ -966,13 +965,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		try {
+			Message message;
+			if (rawMessageWrapper instanceof MessageWrapper) {
+				message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
+			} else {
+				message = getListener().extractMessage(rawMessageWrapper, threadContext);
+			}
+			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
 			if (errorSender!=null) {
-				Message message;
-				if (rawMessageWrapper instanceof MessageWrapper) {
-					message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
-				} else {
-					message = getListener().extractMessage(rawMessageWrapper, threadContext);
-				}
 				errorSender.sendMessageOrThrow(message, null);
 			}
 			if (errorStorage!=null) {
@@ -1605,14 +1605,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getEventSourceName() {
 		return getLogPrefix().trim();
 	}
-	protected void registerEvent(String eventCode) {
+	private void registerEvent(String eventCode) {
 		if (eventPublisher != null) {
 			eventPublisher.registerEvent(this, eventCode);
 		}
 	}
 	protected void throwEvent(String eventCode) {
+		throwEvent(eventCode, null);
+	}
+	private void throwEvent(String eventCode, Message eventMessage) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this, eventCode);
+			eventPublisher.fireEvent(this, eventCode, eventMessage);
 		}
 	}
 

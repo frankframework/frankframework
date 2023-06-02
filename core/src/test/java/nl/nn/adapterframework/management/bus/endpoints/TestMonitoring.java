@@ -27,7 +27,7 @@ import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventType;
-import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.IMonitorDestination;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -57,7 +58,7 @@ public class TestMonitoring extends BusTestBase {
 		createMonitor();
 	}
 
-	public void createMonitor() {
+	public void createMonitor() throws Exception {
 		MonitorManager manager = getMonitorManager();
 		Monitor monitor = SpringUtils.createBean(getConfiguration(), Monitor.class);
 		monitor.setName(TEST_MONITOR_NAME);
@@ -75,7 +76,7 @@ public class TestMonitoring extends BusTestBase {
 		trigger.addEventCode(TEST_TRIGGER_EVENT_NAME);
 		monitor.registerTrigger(trigger);
 		manager.addMonitor(monitor);
-		IMonitorAdapter ima = new IMonitorAdapter() {
+		IMonitorDestination ima = new IMonitorDestination() {
 			private @Getter @Setter String name = "mockDestination";
 
 			@Override
@@ -84,7 +85,7 @@ public class TestMonitoring extends BusTestBase {
 			}
 
 			@Override
-			public void fireEvent(String subSource, EventType eventType, Severity severity, String message, Throwable t) {
+			public void fireEvent(String monitor, EventType eventType, Severity severity, String eventCode, MonitorEvent message) {
 				//Nothing to do, dummy class
 			}
 

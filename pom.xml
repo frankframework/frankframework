@@ -699,6 +699,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.5.0</version>
 					<configuration>
+						<source>1.8</source>
 						<doclint>none</doclint>
 						<tags>
 							<tag>
@@ -707,10 +708,10 @@
 								<head>Parameters</head>
 							</tag>
 							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
-							     The standard doclet does not properly format JavaDoc tags in this case. This
-							     can be solved with a taglet, but WeAreFrank! does not want that complexity.
-							     We therefore accept that all occurrences of ff.parameter are formatted on the
-							     same line.
+								 The standard doclet does not properly format JavaDoc tags in this case. This
+								 can be solved with a taglet, but WeAreFrank! does not want that complexity.
+								 We therefore accept that all occurrences of ff.parameter are formatted on the
+								 same line.
 
 								 The ff.parameter tag was introduced for the Frank!Doc. The Frank!Doc formats
 								 it properly.
@@ -740,11 +741,12 @@
 							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-frontend</skippedModules>
 					</configuration>
 					<executions>
 						<execution>
-							<id>attach-javadocs</id>
+							<id>attach-javadoc</id>
+							<phase>generate-sources</phase>
 							<goals>
 								<goal>jar</goal>
 							</goals>
@@ -788,17 +790,16 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.4.1</version>
+					<version>1.5.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
 					</configuration>
 					<executions>
 						<execution>
-							<id>clean-and-flatten</id>
-							<phase>process-resources</phase>
+							<id>flatten</id>
+							<phase>initialize</phase>
 							<goals>
-								<goal>clean</goal>
 								<goal>flatten</goal>
 							</goals>
 						</execution>
@@ -965,6 +966,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.4.3</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>modules</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 			<!--
 				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
@@ -974,10 +982,16 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.5.0</version>
-				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
+						<id>default</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+					<reportSet>
 						<id>javadoc</id>
+						<inherited>false</inherited>
 						<reports>
 							<report>aggregate</report>
 						</reports>
@@ -1190,21 +1204,9 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.5.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
@@ -1263,8 +1265,8 @@
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
-							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
-							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+							<finalName>ibis-adapterframework-parent-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-backend,ibis-adapterframework-console-frontend</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

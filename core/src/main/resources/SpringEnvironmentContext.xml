@@ -27,7 +27,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+	<bean id="cxf" class="nl.nn.adapterframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
 

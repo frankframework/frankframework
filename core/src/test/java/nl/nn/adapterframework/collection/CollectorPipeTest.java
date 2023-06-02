@@ -1,105 +1,85 @@
 package nl.nn.adapterframework.collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.collection.CollectionActor.Action;
+import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
+import nl.nn.adapterframework.pipes.PipeTestBase;
 
-public class CollectorPipeTest extends StreamingPipeTestBase<CollectorPipe> {
+public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollector, TestCollectorPart>> {
+	private TestCollector collector = new TestCollector();
 
 	@Override
-	public CollectorPipe createPipe() throws ConfigurationException {
-		return new CollectorPipe() {
+	public CollectorPipeBase<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {
+		return new CollectorPipeBase<TestCollector, TestCollectorPart>() {
 
 			@Override
-			public ICollector openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-				return new TestCollector(input, session, pvl);
+			protected TestCollector createCollector() throws CollectionException {
+				return collector;
 			}
 
 		};
 	}
-
 
 	@Test
 	public void testOpen() throws Exception {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 
-		String input = "testOpen";
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr = doPipe("testOpen");
 
 		assertEquals("success", prr.getPipeForward().getName());
 
-		TestCollector collector = (TestCollector)session.get("collection");
-
-		assertEquals(true, collector.open);
-		assertEquals(input, collector.input.toString());
-		assertEquals(session, collector.session);
+		assertTrue(collector.open);
+		assertEquals("", collector.getInput());
 	}
 
 	@Test
 	public void testClose() throws Exception {
+		pipe.setAction(Action.OPEN);
+		pipe.doAction(Action.OPEN, null, session);
 		pipe.setAction(Action.CLOSE);
 		configureAndStartPipe();
 
-		TestCollector collector = new TestCollector();
-		session.put("collection", collector);
-
-		String input = "testClose";
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr = doPipe("testClose");
 
 		assertEquals("success", prr.getPipeForward().getName());
-
-		assertEquals(false, collector.open);
+		assertFalse(collector.open);
 	}
 
 	@Test
 	public void testWrite() throws Exception {
+		pipe.setAction(Action.OPEN);
+		pipe.doAction(Action.OPEN, null, session);
 		pipe.setAction(Action.WRITE);
 		configureAndStartPipe();
 
-		TestCollector collector = new TestCollector();
-		session.put("collection", collector);
-
-		String input = "testWrite";
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr = doPipe("testWrite");
 
 		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals("writeItem", prr.getResult().asString());
-
+		assertEquals("testWrite", collector.getInput());
+		assertNull(prr.getResult().asString());
 		assertEquals(true, collector.open);
-		assertEquals(input, collector.input.toString());
-		assertEquals(session, collector.session);
-		assertEquals(pipe, collector.writingElement);
 	}
 
 	@Test
-	public void testStream() throws Exception {
-		pipe.setAction(Action.STREAM);
+	public void testLast() throws Exception {
+		pipe.setAction(Action.OPEN);
+		pipe.doAction(Action.OPEN, null, session);
+		pipe.setAction(Action.WRITE);
 		configureAndStartPipe();
 
-		TestCollector collector = new TestCollector();
-		session.put("collection", collector);
-
-		String input = "testStream";
-		PipeRunResult prr = doPipe(input);
+		PipeRunResult prr = doPipe("testWrite");
 
 		assertEquals("success", prr.getPipeForward().getName());
-		assertNotNull(prr.getResult().asObject());
-		assertEquals(collector.outputStream, prr.getResult().asObject());
-
-		assertEquals(true, collector.open);
-		assertEquals(input, collector.input.toString());
-		assertEquals(session, collector.session);
-		assertEquals(pipe, collector.writingElement);
+		assertEquals("testWrite", collector.getInput());
+		assertNull(prr.getResult().asString());
+		assertTrue(collector.open);
 	}
-
 }
