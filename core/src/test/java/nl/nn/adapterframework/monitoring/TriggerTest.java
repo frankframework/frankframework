@@ -13,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -32,16 +33,31 @@ public class TriggerTest implements EventThrowing {
 	private @Getter String eventSourceName = "TriggerTestClass";
 	private @Getter Adapter adapter;
 
+	private ConfigurableApplicationContext applContext;
+	private IMonitorDestination destination;
+	private MonitorManager manager;
+	private Monitor monitor;
+
+	@BeforeEach
+	public void setup() {
+		applContext = mock(ConfigurableApplicationContext.class);
+		destination = mock(IMonitorDestination.class);
+		when(destination.getName()).thenReturn("dummy destination");
+
+		manager = spy(MonitorManager.class);
+		monitor = spy(Monitor.class);
+		monitor.setApplicationContext(applContext);
+
+		monitor.setName("monitorName");
+		manager.addMonitor(monitor);
+		manager.registerDestination(destination);
+		monitor.setDestinations(destination.getName());
+	}
+
 	@Test
 	public void testTriggerEvent() throws Exception {
 		// Arrange
-		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
@@ -49,11 +65,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		monitor.setName("monitorName");
-		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
-		monitor.setDestinations(destination.getName());
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -90,13 +102,7 @@ public class TriggerTest implements EventThrowing {
 	@Test
 	public void testTriggerMultipleEventsWithThreshold() throws Exception {
 		// Arrange
-		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
@@ -105,11 +111,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.setName("monitorName");
-		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
-		monitor.setDestinations(destination.getName());
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -150,13 +152,7 @@ public class TriggerTest implements EventThrowing {
 	@Test
 	public void testTriggerMultipleEventsHitCount() throws Exception {
 		// Arrange
-		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
@@ -164,11 +160,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), anyString(), monitorEventCaptor.capture());
 
-		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
-		monitor.setName("monitorName");
-		monitor.setDestinations(destination.getName());
 		monitor.setAlarmSeverity(Severity.WARNING);
 
 		trigger.addEventCode(EVENT_CODE);
@@ -203,13 +195,7 @@ public class TriggerTest implements EventThrowing {
 	@ValueSource(booleans = {true, false})
 	public void testTriggerAndClearConsoleEvent(boolean eventCausedByMonitor) throws Exception {
 		// Arrange
-		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
-		Monitor monitor = spy(Monitor.class);
-		monitor.setApplicationContext(applContext);
-		MonitorManager manager = spy(MonitorManager.class);
-		IMonitorDestination destination = mock(IMonitorDestination.class);
-		when(destination.getName()).thenReturn("dummy destination");
 
 		ArgumentCaptor<EventType> eventTypeCaptor = ArgumentCaptor.forClass(EventType.class);
 		ArgumentCaptor<Severity> severityCaptor = ArgumentCaptor.forClass(Severity.class);
@@ -218,11 +204,7 @@ public class TriggerTest implements EventThrowing {
 
 		doNothing().when(destination).fireEvent(anyString(), eventTypeCaptor.capture(), severityCaptor.capture(), eventCode.capture(), monitorEventCaptor.capture());
 
-		monitor.setName("monitorName");
-		manager.addMonitor(monitor);
 		monitor.registerTrigger(trigger);
-		manager.registerDestination(destination);
-		monitor.setDestinations(destination.getName());
 
 		trigger.addEventCode(EVENT_CODE);
 		trigger.setSeverity(Severity.CRITICAL);
@@ -265,7 +247,6 @@ public class TriggerTest implements EventThrowing {
 	@Test
 	public void testMonitoringXML() throws Exception {
 		// Arrange
-		ConfigurableApplicationContext applContext = mock(ConfigurableApplicationContext.class);
 		Trigger trigger = spy(Alarm.class);
 		Monitor monitor = spy(Monitor.class);
 		monitor.setApplicationContext(applContext);
