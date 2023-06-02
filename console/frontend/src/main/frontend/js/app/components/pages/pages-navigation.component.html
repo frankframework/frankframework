@@ -15,30 +15,28 @@
 				</div>
 			</li>
 
-			<p ng-class="{active: $state.includes('configuration')}">{{$state}} TEST</p>
-
 			<custom-views></custom-views>
 
 			<li ui-sref-active="active">
 				<a ui-sref="pages.status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
 			</li>
-			<li ng-class="{active: $state.includes('configuration')}" class="nav-group">
+			<li ng-class="{active: $ctrl.$state.includes('configuration')}" class="nav-group">
 				<a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span class="fa arrow"></span></a>
-				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
+				<ul class="nav nav-second-level" ng-class="{in: $ctrl.$state.includes('configuration')}">
 					<li ui-sref-active="active"><a ui-sref="pages.configuration">Show Configurations</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.manage_configurations">Manage Configurations</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('logging')}" class="nav-group">
+			<li ng-class="{active: $ctrl.$state.includes('logging')}" class="nav-group">
 				<a href=""><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span></a>
-				<ul class="nav nav-second-level" ng-class="{in: $state.includes('configuration')}">
+				<ul class="nav nav-second-level" ng-class="{in: $ctrl.$state.includes('configuration')}">
 					<li ui-sref-active="active"><a ui-sref="pages.logging_show">Log Files</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.logging_manage">Log Settings</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('testing')}" class="nav-group">
+			<li ng-class="{active: $ctrl.$state.includes('testing')}" class="nav-group">
 				<a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
-				<ul class="nav nav-second-level" ng-class="{in: $state.includes('testing')}">
+				<ul class="nav nav-second-level" ng-class="{in: $ctrl.$state.includes('testing')}">
 					<li ui-sref-active="active"><a ui-sref="pages.larva">Larva</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.ladybug">Ladybug</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.ladybug_beta">Ladybug (beta)</a></li>
@@ -46,17 +44,17 @@
 					<li ui-sref-active="active"><a ui-sref="pages.test_servicelistener">Test a ServiceListener</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jdbc')}" class="nav-group">
+			<li ng-class="{active: $ctrl.$state.includes('jdbc')}" class="nav-group">
 				<a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
-				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jdbc')}">
+				<ul class="nav nav-second-level" ng-class="{in: $ctrl.$state.includes('jdbc')}">
 					<li ui-sref-active="active"><a ui-sref="pages.execute_query">Execute Query</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.browse_tables">Browse Tables</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.liquibase">Liquibase Script</a></li>
 				</ul>
 			</li>
-			<li ng-class="{active: $state.includes('jms')}" class="nav-group">
+			<li ng-class="{active: $ctrl.$state.includes('jms')}" class="nav-group">
 				<a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
-				<ul class="nav nav-second-level" ng-class="{in: $state.includes('jms')}">
+				<ul class="nav nav-second-level" ng-class="{in: $ctrl.$state.includes('jms')}">
 					<li ui-sref-active="active"><a ui-sref="pages.browse_queue">Browse Queue</a></li>
 					<li ui-sref-active="active"><a ui-sref="pages.send_message">Send Message</a></li>
 				</ul>
