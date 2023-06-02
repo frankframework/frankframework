@@ -77,12 +77,12 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) {
-		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY), (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY));
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) {
+	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> context) {
 		return rawMessage.getRawMessage();
 	}
 

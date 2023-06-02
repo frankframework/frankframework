@@ -15,13 +15,12 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.util.Map;
-
 import javax.jms.Message;
 
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 public class SlowPushingListener extends SlowListenerBase implements IPushingListener<Message> {
 
@@ -36,7 +35,7 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) {
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
 		return null;
 	}
 }

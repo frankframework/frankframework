@@ -82,7 +82,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		return result.toString();
 	}
 
-	public Map<String, Object> populateContextFromMessage(IFSAMessage message) {
+	public Map<String, Object> extractMessageProperties(IFSAMessage message) {
 		Map<String, Object> messageContext = new HashMap<>();
 		String mode = "unknown";
 		String id = "unset";
@@ -239,7 +239,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	 * @return input message for adapter.
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> context) throws ListenerException {
 		if (rawMessage instanceof MessageWrapper) {
 			return ((MessageWrapper<IFSAMessage>) rawMessage).getMessage();
 		}
@@ -268,7 +268,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		}
 		try {
 			String result=message.getText();
-			threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
+			context.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
 			return new Message(result);
 		} catch (JMSException e) {
 			throw new ListenerException(getLogPrefix(),e);

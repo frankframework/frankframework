@@ -160,7 +160,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * Returns a string of the rawMessage
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
 		return new Message(rawMessage.getRawMessage());
 	}
 

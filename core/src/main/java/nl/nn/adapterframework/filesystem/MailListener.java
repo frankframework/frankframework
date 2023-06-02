@@ -72,7 +72,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException {
 		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
 			try {
 				return getFileSystem().getMimeContent(rawMessage.getRawMessage());
@@ -81,7 +81,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 			}
 		}
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
-			return super.extractMessage(rawMessage, threadContext);
+			return super.extractMessage(rawMessage, context);
 		}
 		XmlWriter writer = new XmlWriter();
 		try (SaxElementBuilder emailXml = new SaxElementBuilder("email",writer)) {
@@ -92,7 +92,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 			}
 			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
 				Message mimeContent = getFileSystem().getMimeContent(rawMessage.getRawMessage());
-				threadContext.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
+				context.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
 			}
 		} catch (SAXException | IOException | FileSystemException e) {
 			throw new ListenerException(e);

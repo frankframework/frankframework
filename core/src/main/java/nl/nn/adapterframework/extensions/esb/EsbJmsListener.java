@@ -103,8 +103,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public Map<String, Object> populateContextFromMessage(Message rawMessage) throws ListenerException {
-		Map<String, Object> messageContext = super.populateContextFromMessage(rawMessage);
+	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
@@ -112,12 +112,12 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			} catch (JMSException e) {
 				log.debug("ignoring JMSException in getPropertyName()", e);
 			}
-			while (propertyNames.hasMoreElements()) {
+			while (propertyNames != null && propertyNames.hasMoreElements()) {
 				String propertyName = (String) propertyNames.nextElement ();
 				if (propertyName.startsWith("ae_")) {
 					try {
 						Object object = rawMessage.getObjectProperty(propertyName);
-						messageContext.put(propertyName, object);
+						messageProperties.put(propertyName, object);
 					} catch (JMSException e) {
 						log.debug("ignoring JMSException in getObjectProperty()", e);
 					}
@@ -129,25 +129,23 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			TextMessage textMessage = (TextMessage) rawMessage;
 			String soapMessage = textMessage.getText();
 
-			if(getxPathLogMap().size() > 0) {
+			if(!getxPathLogMap().isEmpty()) {
 				StringBuilder xPathLogKeys = new StringBuilder();
-				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
-				while(it.hasNext()) {
-					Map.Entry<String, String> pair = it.next();
-					String sessionKey = pair.getKey();
-					String xPath = pair.getValue();
-					String result = getResultFromxPath(soapMessage, xPath);
-					if(result.length() > 0) {
-						messageContext.put(sessionKey, result);
-						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
-					}
-				}
-				messageContext.put("xPathLogKeys", xPathLogKeys.toString());
+                for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+                    String sessionKey = pair.getKey();
+                    String xPath = pair.getValue();
+                    String result = getResultFromxPath(soapMessage, xPath);
+                    if (!result.isEmpty()) {
+                        messageProperties.put(sessionKey, result);
+                        xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+                    }
+                }
+				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);
 		}
-		return messageContext;
+		return messageProperties;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {

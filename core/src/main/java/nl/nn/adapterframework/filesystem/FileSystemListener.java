@@ -305,7 +305,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * Returns the filename, or the contents
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<F> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<F> rawMessage, Map<String,Object> context) throws ListenerException {
 		log.debug("Extract message from raw message");
 		try {
 			F file = rawMessage.getRawMessage();
@@ -336,8 +336,8 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
-	public @Nonnull Map<String, Object> populateContextFromMessage(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
-		Map<String, Object> messageContext = new HashMap<>();
+	public @Nonnull Map<String, Object> extractMessageProperties(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
+		Map<String, Object> messageProperties = new HashMap<>();
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
@@ -362,15 +362,15 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (isFileTimeSensitive()) {
 				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			PipeLineSession.updateListenerParameters(messageContext, messageId, messageId, null, null);
+			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
 			if (attributes!=null) {
-				messageContext.putAll(attributes);
+				messageProperties.putAll(attributes);
 			}
 			if (!"path".equals(getMessageType())) {
-				messageContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
+				messageProperties.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
 			}
 			if (!"name".equals(getMessageType())) {
-				messageContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
+				messageProperties.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
@@ -386,9 +386,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				}
 
 				metadataBuilder.close();
-				messageContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
+				messageProperties.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
 			}
-			return messageContext;
+			return messageProperties;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
 		}
@@ -434,10 +434,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	private RawMessageWrapper<F> wrapRawMessage(F file, String originalFilename, Map<String, Object> threadContext) throws ListenerException {
-		Map<String, Object> rawMessageContext = populateContextFromMessage(file, originalFilename);
-		threadContext.putAll(rawMessageContext);
+		Map<String, Object> messageProperties = extractMessageProperties(file, originalFilename);
+		threadContext.putAll(messageProperties);
 		Map<String, Object> messageContext = threadContext.entrySet().stream()
-				.filter((entry) -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
+				.filter(entry -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		return new RawMessageWrapper<>(file, messageContext);
 	}

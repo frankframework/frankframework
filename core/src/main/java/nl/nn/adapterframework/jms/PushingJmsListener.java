@@ -151,12 +151,10 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		Map<String, Object> messageContext = populateContextFromMessage(rawMessage);
-		String id = (String) messageContext.get(PipeLineSession.MESSAGE_ID_KEY);
-		String cid = (String) messageContext.get(PipeLineSession.CORRELATION_ID_KEY);
-		threadContext.putAll(messageContext);
-		return new RawMessageWrapper<>(rawMessage, id, cid);
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+		Map<String, Object> messageProperties = extractMessageProperties(rawMessage);
+		session.putAll(messageProperties);
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	@Override

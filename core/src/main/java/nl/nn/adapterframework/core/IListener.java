@@ -55,11 +55,16 @@ public interface IListener<M> extends IConfigurable {
 	void close() throws ListenerException;
 
 	/**
-	 * Extracts string from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the threadContext.
-	 * @return input message for adapter.
+	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)} or
+	 * {@link IPushingListener#wrapRawMessage(Object, PipeLineSession)}. May also extract
+	 * other parameters from the message and put those in the context.
 	 *
-	 * TODO: Should parameter to this call be a ThreadContext, or a PipeLineSession? Both are used, should probably be a PipeLineSession
+	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
+	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
+	 * @return input {@link Message} for adapter.
+	 *
+	 * TODO: Should context parameter to this call be a ThreadContext, or a PipeLineSession? Both are used, should probably be a PipeLineSession
+	 *   but that is not available in all places this method is called from.
 	 */
 	Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
 

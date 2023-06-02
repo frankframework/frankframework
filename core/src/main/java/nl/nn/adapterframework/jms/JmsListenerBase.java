@@ -34,6 +34,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IRedeliveringListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
@@ -134,8 +135,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @return
 	 */
-	public Map<String, Object> populateContextFromMessage(javax.jms.Message rawMessage) throws ListenerException {
-		Map<String, Object> messageContext = new HashMap<>();
+	public Map<String, Object> extractMessageProperties(javax.jms.Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = new HashMap<>();
 		String id = "unset";
 		String cid = "unset";
 		DeliveryMode mode = null;
@@ -193,22 +194,24 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "]");
 		}
 
-		messageContext.put(PipeLineSession.MESSAGE_ID_KEY, id);
-		messageContext.put(PipeLineSession.CORRELATION_ID_KEY, cid);
-		messageContext.put("timestamp",tsSent);
-		messageContext.put("replyTo",replyTo);
-		return messageContext;
+		PipeLineSession.updateListenerParameters(messageProperties, id, cid, null, tsSent);
+		messageProperties.put("timestamp",tsSent);
+		messageProperties.put("replyTo",replyTo);
+		return messageProperties;
 	}
 
 
 	/**
-	 * Extracts string from message obtained from getRawMessage. May also extract
-	 * other parameters from the message and put those in the threadContext.
-	 * @return String  input message for adapter.
+	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)}. May also extract
+	 * other parameters from the message and put those in the context.
+	 *
+	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
+	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
+	 * @return String  input {@link Message} for adapter.
 	 */
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> context) throws ListenerException {
 		try {
-			return extractMessage(rawMessage.getRawMessage(), threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
+			return extractMessage(rawMessage.getRawMessage(), context, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

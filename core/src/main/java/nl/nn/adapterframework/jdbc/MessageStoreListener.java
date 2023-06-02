@@ -72,7 +72,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * a <code>JdbcErrorStorage</code> or <code>JdbcMessageLog</code> within the same receiver.
  * <br/><br/>
  * See /IAF_util/IAF_DatabaseChangelog.xml for the structure of table IBISSTORE.
- * 
+ *
  * @author Jaco de Groot
  */
 public class MessageStoreListener<M> extends JdbcTableListener<M> {
@@ -139,11 +139,11 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String, Object> context) throws ListenerException {
 		if (rawMessage != null && sessionKeys != null) {
-			return convertToMessage(rawMessage, threadContext);
+			return convertToMessage(rawMessage, context);
 		}
-		return super.extractMessage(rawMessage, threadContext);
+		return super.extractMessage(rawMessage, context);
 	}
 
 	private Message convertToMessage(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {

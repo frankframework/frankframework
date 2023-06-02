@@ -1217,21 +1217,19 @@ public class TestTool {
 		boolean remainingMessagesFound = false;
 		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-				JmsSender jmsSender = (JmsSender)((Map<?, ?>)queues.get(queueName)).get("jmsSender");
+				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
 				jmsSender.close();
 				debugMessage("Closed jms sender '" + queueName + "'", writers);
 			}
 		}
 		debugMessage("Close jms listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map<?, ?>)queues.get(queueName)).get("jmsListener");
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
 				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					remainingMessagesFound = true;
 				}
@@ -1240,11 +1238,10 @@ public class TestTool {
 			}
 		}
 		debugMessage("Close jdbc connections", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String name = iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String name = entry.getKey();
 			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
-				Map<?, ?> querySendersInfo = (Map<?, ?>)queues.get(name);
+				Queue querySendersInfo = entry.getValue();
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
 					try {

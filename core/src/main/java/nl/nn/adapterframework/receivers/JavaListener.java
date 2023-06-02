@@ -123,8 +123,8 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) {
-		return new RawMessageWrapper<>(rawMessage, (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY), (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY));
+	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	@SuppressWarnings("unchecked")

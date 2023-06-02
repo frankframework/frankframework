@@ -335,7 +335,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 				// TODO: Cleanup rawMessageWrapper creation, and storing of original raw message
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, rawMessage);
 
-				Map<String, Object> messageContext = populateContextFromMessage((IFSAMessage) rawMessage);
+				Map<String, Object> messageContext = extractMessageProperties((IFSAMessage) rawMessage);
 				String mid = (String) messageContext.get(PipeLineSession.MESSAGE_ID_KEY);
 				String cid = (String) messageContext.get(PipeLineSession.CORRELATION_ID_KEY);
 				threadContext.putAll(messageContext);

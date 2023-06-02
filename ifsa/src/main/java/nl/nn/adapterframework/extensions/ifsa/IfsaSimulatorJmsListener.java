@@ -32,8 +32,8 @@ import nl.nn.adapterframework.jms.JmsListener;
 public class IfsaSimulatorJmsListener extends JmsListener {
 
 	@Override
-	public Map<String, Object> populateContextFromMessage(Message rawMessage) throws ListenerException {
-		Map<String, Object> messageContext = super.populateContextFromMessage(rawMessage);
+	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 
 		String ifsa_bif_id = null;
 		String ifsa_source = null;
@@ -48,11 +48,11 @@ public class IfsaSimulatorJmsListener extends JmsListener {
 			log.debug("error getting IFSA jms properties", ignore);
 		}
 
-		messageContext.put("ifsa_bif_id",ifsa_bif_id);
-		messageContext.put("ifsa_source",ifsa_source);
-		messageContext.put("ifsa_node_id",ifsa_node_id);
-		messageContext.put("ifsa_destination",ifsa_destination);
-		return messageContext;
+		messageProperties.put("ifsa_bif_id",ifsa_bif_id);
+		messageProperties.put("ifsa_source",ifsa_source);
+		messageProperties.put("ifsa_node_id",ifsa_node_id);
+		messageProperties.put("ifsa_destination",ifsa_destination);
+		return messageProperties;
 	}
 
 }

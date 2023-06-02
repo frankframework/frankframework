@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
@@ -43,14 +41,13 @@ public interface IPushingListener<M> extends IListener<M> {
 	void setExceptionListener(IbisExceptionListener listener);
 
 	/**
-	 * Wrap a raw message in a MessageWrapper.
-	 * <br/>
-	 * TODO: Call with ThreadContext, or PipeLineSession? ->> probably PipeLineSession
+	 * Wrap a raw message in a MessageWrapper. Populate {@link PipeLineSession} with properties
+	 * from the message.
 	 *
 	 * @param rawMessage The raw message data, unwrapped
-	 * @param threadContext Thread context
+	 * @param session {@link PipeLineSession} to populate with properties from the message.
 	 * @return Wrapped raw message
 	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
 	 */
-	RawMessageWrapper<M> wrapRawMessage(M rawMessage, Map<String, Object> threadContext) throws ListenerException;
+	RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) throws ListenerException;
 }
