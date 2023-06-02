@@ -18,7 +18,6 @@ package nl.nn.adapterframework.monitoring;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -55,10 +54,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
 	private boolean raised = false;
-	private Instant stateChanged = null;
+	private @Getter Instant stateChanged = null;
 
 	private int additionalHitCount = 0;
-	private Instant lastHit = null;
+	private @Getter Instant lastHit = null;
 
 	private @Getter @Setter Severity alarmSeverity = null;
 	private String eventCode = null;
@@ -75,7 +74,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	public void configure() throws ConfigurationException {
 		for(String destination : destinations) {
 			if(getManager().getDestination(destination) == null) {
-				throw new IllegalArgumentException("destination ["+destination+"] does not exist");
+				throw new ConfigurationException("destination ["+destination+"] does not exist");
 			}
 		}
 
@@ -129,7 +128,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 			throw new MonitorException("severity cannot be null");
 		}
 
-		setStateChangeDate(event.getEventTime());
+		setStateChanged(event.getEventTime());
 
 		for(String destination : destinations) {
 			IMonitorDestination monitorAdapter = getManager().getDestination(destination);
@@ -261,25 +260,12 @@ public class Monitor implements IConfigurable, DisposableBean {
 		return raised;
 	}
 
-	private void setStateChangeDate(Instant date) {
-		stateChanged = date;
-	}
-	public Date getStateChangeDate() {
-		if(stateChanged == null) {
-			return null;
-		}
-
-		return Date.from(stateChanged);
+	private void setStateChanged(Instant date) {
+		this.stateChanged = date;
 	}
 
 	private void setLastHit(Instant date) {
 		lastHit = date;
-	}
-	public Date getLastHit() {
-		if(lastHit == null) {
-			return null;
-		}
-		return Date.from(lastHit);
 	}
 
 	public void setAdditionalHitCount(int i) {

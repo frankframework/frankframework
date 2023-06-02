@@ -285,11 +285,11 @@ public class Monitoring extends BusEndpointBase {
 		monitorMap.put("name", monitor.getName());
 		monitorMap.put("type", monitor.getType());
 		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
+		monitorMap.put("lastHit", monitor.getLastHit() != null ? monitor.getLastHit().toEpochMilli() : null);
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDate());
+		monitorMap.put("changed", monitor.getStateChanged() != null ? monitor.getStateChanged().toEpochMilli() : null);
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {
