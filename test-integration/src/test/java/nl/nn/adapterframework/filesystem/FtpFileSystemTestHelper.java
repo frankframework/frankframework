@@ -82,7 +82,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
 		try {
 			String path = folder != null ? folder + "/" + filename : filename;
-			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> f.getName().equals(filename));
+			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> f.getName().equals(path));
 			return files.length > 0;
 		} catch (IOException e) {
 			throw new FileSystemException(e);

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
@@ -37,6 +36,7 @@ import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.SerializableFileReference;
 
 /**
  *
@@ -89,7 +89,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			FTPFile[] files = ftpClient.listFiles(folder);
+			FTPFile[] files = ftpClient.listFiles(folder, FTPFile::isFile);
 			return files == null? 0 : files.length;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
@@ -245,12 +245,16 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		String destinationFilename = destinationFolder+"/"+getName(f);
+		FTPFileRef destination = new FTPFileRef(getName(f));
+		destination.setFolder(destinationFolder);
 		try {
-			if(ftpClient.rename(getCanonicalName(f), destinationFilename)) {
-				return toFile(destinationFilename);
+			if(exists(destination)) {
+				throw new FileSystemException("target already exists");
 			}
-			return null;
+			if(ftpClient.rename(getCanonicalName(f), destination.getName())) {
+				return destination;
+			}
+			throw new FileSystemException("unable to move file");
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -258,7 +262,23 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFileRef copyFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		throw new NotImplementedException("CopyFile not implemented for FtpFileSystem");
+		if(createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
+		}
+
+		FTPFileRef destination = new FTPFileRef(getName(f));
+		destination.setFolder(destinationFolder);
+
+		try (InputStream inputStream = ftpClient.retrieveFileStream(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
+			ftpClient.completePendingCommand();
+			if(ftpClient.storeFile(destination.getName(), ref.getInputStream())) {
+				return destination;
+			}
+
+			throw new FileSystemException("unable to copy file");
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override
