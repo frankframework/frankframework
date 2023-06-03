@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations
+ * 
+ * @author Niels Meijer
  *
  */
 public class FTPFileRef extends FTPFile {
