@@ -122,35 +122,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		HTTP, SOCKS4, SOCKS5
 	}
 
-	private Proxy createProxy() {
-		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
-		switch (proxyTransportType) {
-		case HTTP: {
-				ProxyHTTP proxy = new ProxyHTTP(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			case SOCKS4: {
-				ProxySOCKS4 proxy = new ProxySOCKS4(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			case SOCKS5: {
-				ProxySOCKS5 proxy = new ProxySOCKS5(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			default:
-				throw new IllegalStateException("proxy type does not exist");
-		}
-	}
-
 	private @Getter String name;
 
 	// configuration parameters, global for all types
@@ -294,6 +265,35 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		catch(Exception e) {
 			closeSftpClient();
 			throw new FtpConnectException(e);
+		}
+	}
+
+	private Proxy createProxy() {
+		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
+		switch (proxyTransportType) {
+		case HTTP: {
+				ProxyHTTP proxy = new ProxyHTTP(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			case SOCKS4: {
+				ProxySOCKS4 proxy = new ProxySOCKS4(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			case SOCKS5: {
+				ProxySOCKS5 proxy = new ProxySOCKS5(proxyHost, proxyPort);
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
+				}
+				return proxy;
+			}
+			default:
+				throw new IllegalStateException("proxy type does not exist");
 		}
 	}
 
