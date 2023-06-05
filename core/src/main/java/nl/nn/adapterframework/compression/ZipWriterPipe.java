@@ -15,11 +15,23 @@
 */
 package nl.nn.adapterframework.compression;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import nl.nn.adapterframework.collection.CollectionException;
 import nl.nn.adapterframework.collection.CollectorPipeBase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.PathMessage;
+import nl.nn.adapterframework.util.FileUtils;
 
 /**
  * Pipe that creates a ZipStream.
@@ -38,18 +50,73 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
  */
 public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
 
-	private @Getter boolean includeFileHeaders=false;
+	private @Getter boolean includeFileHeaders = false;
+
+	private boolean backwardsCompatibility = false;
+
+	public ZipWriterPipe() {
+		setCollectionName("zipwriterhandle");
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		setCollectionName("zipwriterhandle");
 		super.configure();
 		ZipWriter.validateParametersForAction(getAction(), getParameterList());
 	}
 
 	@Override
-	protected ZipWriter createCollector() throws CollectionException {
-		return new ZipWriter(includeFileHeaders);
+	protected ZipWriter createCollector(Message input, PipeLineSession session) throws CollectionException {
+		String filename = ParameterValueList.getValue(getParameterValueList(input, session), ZipWriter.PARAMETER_FILENAME, "");
+		if(backwardsCompatibility && input.asObject() instanceof String && StringUtils.isEmpty(filename)) {
+			try {
+				filename = input.asString();
+			} catch (IOException e) {
+				throw new CollectionException("unable to convert inputstring to filename");
+			}
+		}
+		return new ZipWriter(includeFileHeaders, filename);
+	}
+
+	@Override
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+		if(backwardsCompatibility) {
+			try {
+				if(Action.STREAM == getAction()) {
+					return handleStreamAction(input, session);
+				}
+
+				input.preserve();
+				super.doPipe(input, session);
+
+				return new PipeRunResult(getSuccessForward(), input);
+			} catch (IOException e) {
+				throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
+			}
+		}
+
+		return super.doPipe(input, session);
+	}
+
+	private PipeRunResult handleStreamAction(Message input, PipeLineSession session) throws PipeRunException, IOException {
+		try {
+			ParameterValueList pvl = getParameterValueList(input, session);
+			String filename = ParameterValueList.getValue(pvl, ZipWriter.PARAMETER_FILENAME, "");
+			if(StringUtils.isEmpty(filename)) {
+				throw new PipeRunException(this, "filename may not be empty");
+			}
+
+			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
+			File file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+
+//			doAction(Action.WRITE, PathMessage.asTemporaryMessage(file.toPath()), session);
+			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file.toPath());
+			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
+
+			//We must return a file location, not the reference or file it self
+			return new PipeRunResult(getSuccessForward(), new Message(file.getAbsolutePath()));
+		} catch (CollectionException e) {
+			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
+		}
 	}
 
 	/**
@@ -68,5 +135,15 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	 */
 	public void setCompleteFileHeader(boolean b) {
 		includeFileHeaders = b;
+	}
+
+	/**
+	 * When action is OPEN: If input is a string, it's assumed it's the location where to save the Zip Archive.
+	 * When action is WRITE: Input will be 'piped' to the output, and the message will be preserved.
+	 * Avoid using this if possible.
+	 */
+	@Deprecated
+	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
+		this.backwardsCompatibility = backwardsCompatibility;
 	}
 }

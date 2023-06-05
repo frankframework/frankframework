@@ -86,4 +86,9 @@ public class MessageZipEntry extends ZipEntry {
 		writeTo(outputStream);
 		outputStream.closeEntry();
 	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder("ZipEntry for [").append(message.getRequestClass()).append("]").toString();
+	}
 }

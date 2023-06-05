@@ -50,6 +50,21 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
+	public void testCollectionName() throws Exception {
+		pipe.setAction(Action.OPEN);
+		configureAndStartPipe();
+		assertEquals("zipwriterhandle", pipe.getCollectionName());
+	}
+
+	@Test
+	public void testChangeCollectionName() throws Exception {
+		pipe.setZipWriterHandle("test123");
+		pipe.setAction(Action.OPEN);
+		configureAndStartPipe();
+		assertEquals("test123", pipe.getCollectionName());
+	}
+
+	@Test
 	public void testOpenCollection() throws Exception {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
