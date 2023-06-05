@@ -18,9 +18,11 @@ Upcoming (7.9)
   This is in cases where a received (JMS) correlationId is used to send a response.
 - The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
 - The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
+- The ZipWriterPipe and Sender both have a backwardsCompatibility attribute to handle string (filename) inputs. The close action will now return the zip archive so it is no longer required to create a file first nor is it required to specify a filename on the OPEN action.
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
 - Larva default timeout has been decreased to 10s, and to 2s for local tests
+- 
 
 
 7.8-RC1
