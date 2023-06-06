@@ -32,6 +32,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.PathMessage;
@@ -44,6 +45,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	static final String PARAMETER_CONTENTS="contents";
 
 	private final boolean includeFileHeaders;
+	private final String zipLocation;
 
 	static void validateParametersForAction(Action action, ParameterList parameterList) throws ConfigurationException {
 		switch (action) {
@@ -65,13 +67,28 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
 				}
 				break;
+			case STREAM:
+				if(parameterList == null || parameterList.findParameter(PARAMETER_FILENAME)==null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
+				}
+				break;
 			default:
-				throw new ConfigurationException("unknwon action ["+action+"]");
+				throw new ConfigurationException("unknown action ["+action+"]");
 		}
 	}
 
 	public ZipWriter(boolean includeFileHeaders) {
+		this(includeFileHeaders, null);
+	}
+
+	/**
+	 * Create a new ZipWriterCollector
+	 * @param includeFileHeaders whether to calculate the size and crc for each entry
+	 * @param zipLocation if exists the file should be placed here, for legacy / deprecated purposes only!
+	 */
+	public ZipWriter(boolean includeFileHeaders, String zipLocation) {
 		this.includeFileHeaders = includeFileHeaders;
+		this.zipLocation = zipLocation;
 	}
 
 	@Override
@@ -94,16 +111,21 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	@Override
 	public Message build(List<MessageZipEntry> parts) throws IOException {
-		File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
-		File tempFile = File.createTempFile("msg", ".zip", collectorsTempFolder);
+		File file;
+		if(StringUtils.isEmpty(zipLocation)) {
+			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
+			file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+		} else {
+			file = new File(zipLocation);
+		}
 
-		try (FileOutputStream fos = new FileOutputStream(tempFile); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
+		try (FileOutputStream fos = new FileOutputStream(file); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
 			for(MessageZipEntry entry : parts) {
 				entry.writeEntry(zipoutput);
 			}
 		}
 
-		Message result = PathMessage.asTemporaryMessage(tempFile.toPath());
+		Message result = StringUtils.isEmpty(zipLocation) ? PathMessage.asTemporaryMessage(file.toPath()) : new FileMessage(file);
 		result.getContext().put(MessageContext.METADATA_MIMETYPE, MIMETYPE_ZIP);
 		return result;
 	}

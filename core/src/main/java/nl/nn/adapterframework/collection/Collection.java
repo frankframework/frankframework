@@ -18,9 +18,15 @@ package nl.nn.adapterframework.collection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -32,9 +38,11 @@ import nl.nn.adapterframework.util.LogUtil;
  * @param <C> Collector to use, which creates the parts
  * @param <P> Parts to be added to each collection
  */
-public class Collection<C extends ICollector<P>, P> implements AutoCloseable {
+public class Collection<C extends ICollector<P>, P> implements AutoCloseable, INamedObject {
+	private @Getter @Setter String name;
 	private final List<P> parts;
 	private final C collector;
+	private Logger log = LogUtil.getLogger(this);
 
 	public Collection(C collector) {
 		this.collector = collector;
@@ -42,13 +50,17 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable {
 	}
 
 	public void add(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-		P part = collector.createPart(input, session, pvl);
+		final P part = collector.createPart(input, session, pvl);
+		log.debug("collection [{}] adding part [{}]", this::toString, ()->part);
+
 		parts.add(part);
 	}
 
 	/** closes the collector */
 	public Message build() throws CollectionException {
 		try(C closeMe = collector) {
+			log.debug("building collection [{}]", this::toString);
+
 			return collector.build(parts);
 		} catch (Exception e) {
 			throw new CollectionException("unable to build collection", e);
@@ -57,7 +69,9 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
+		log.debug("closing collection [{}]", this::toString);
 		collector.close();
+
 		for(P part : parts) {
 			if(part instanceof AutoCloseable) {
 				try {
@@ -68,5 +82,18 @@ public class Collection<C extends ICollector<P>, P> implements AutoCloseable {
 			}
 		}
 		parts.clear();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder("Collection [");
+		builder.append(getName());
+		builder.append("] of type [");
+		builder.append(ClassUtils.nameOf(collector));
+		builder.append("] consisting of [");
+		builder.append(parts.size());
+		builder.append("] parts");
+
+		return builder.toString();
 	}
 }
