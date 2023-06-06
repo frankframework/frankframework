@@ -108,7 +108,9 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
 			File file = File.createTempFile("msg", ".zip", collectorsTempFolder);
 
-//			doAction(Action.WRITE, PathMessage.asTemporaryMessage(file.toPath()), session);
+			// Unfortunately we cannot call doAction(Action.WRITE, PathMessage, session);
+			// directly because the ParameterList is resolved against the input message.
+			// We have to change the input here, but want to keep the original PVL.
 			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file.toPath());
 			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
 
