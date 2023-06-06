@@ -29,7 +29,6 @@ import './app/views/scheduler/scheduler.controller';
 import './app/views/scheduler/scheduler-add/scheduler-add.controller';
 import './app/views/scheduler/scheduler-edit/scheduler-edit.controller';
 import './app/views/security-items/security-items.controller';
-import './app/views/status/status.controller';
 import './app/views/status/flow/flow-modal/flow-modal.controller';
 import './app/views/storage/storage.controller';
 import './app/views/storage/storage-list/storage-list.controller';

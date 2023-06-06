@@ -124,8 +124,9 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
-				templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
-				controller: 'StatusCtrl as status',
+				// templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
+				// controller: 'StatusCtrl as status',
+				component: 'status',
 				reloadOnSearch: false,
 				data: {
 					pageTitle: 'Adapter Status',

@@ -3,6 +3,8 @@ import { appModule } from "./app.module";
 const AppController = function ($scope, $rootScope, authService, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
 	const ctrl = this;
 
+	ctrl.$state = $state;
+
 	ctrl.loading = true;
 	ctrl.serverInfo = {};
 

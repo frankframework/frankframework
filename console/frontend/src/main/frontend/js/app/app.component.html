@@ -5,7 +5,7 @@
 
     <!-- Page wraper -->
     <!-- ng-class with current state name give you the ability to extended customization your view -->
-    <div id="page-wrapper" class="gray-bg {{$state.current.name}}">
+    <div id="page-wrapper" class="gray-bg {{$ctrl.$state.current.name}}">
 
         <!-- Page wrapper -->
         <pages-topnavbar class="topnavbar"
@@ -24,10 +24,10 @@
         </div>
 
         <!-- Main view  -->
-        <div ui-view></div>
+        <ui-view></ui-view>
 
         <!-- Footer -->
-        <pages-footer ng-show="!$state.current.data.iframe"></pages-footer>
+        <pages-footer ng-show="!$ctrl.$state.current.data.iframe"></pages-footer>
 
     </div>
     <!-- End page wrapper-->
