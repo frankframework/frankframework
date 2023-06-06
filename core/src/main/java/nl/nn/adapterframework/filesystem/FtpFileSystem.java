@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.ftp.FTPFileRef;
@@ -37,39 +39,41 @@ import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.SerializableFileReference;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
- *
+ * Implementation of FTP and FTPs FileSystem
+ * 
  * @author Daniël Meyer
- *
+ * @author Niels Meijer
  */
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFileRef> {
+	private final Logger log = LogUtil.getLogger(this);
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "FTP";
 	private String remoteDirectory = "";
 
-	private boolean open;
+	private FTPClient ftpClient;
 
 	@Override
 	public void open() throws FileSystemException {
 		try {
-			openClient(remoteDirectory);
+			ftpClient = openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
-		open=true;
 	}
 
 	@Override
 	public void close() {
-		open=false;
-		closeClient();
+		close(ftpClient);
+		ftpClient = null;
 	}
 
 
 	@Override
 	public boolean isOpen() {
-		return open;
+		return ftpClient != null && ftpClient.isConnected();
 	}
 
 
