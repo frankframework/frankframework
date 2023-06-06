@@ -2,7 +2,7 @@
 	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-		https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 <!-- When using one of the following commands, a rollback script is not required
 AddColumn
@@ -34,7 +34,7 @@ TagDatabase
 		<preConditions onFail="MARK_RAN"><tableExists tableName="IBISTEMP"/></preConditions>
 		<dropTable tableName="IBISTEMP"/>
  	</changeSet>
- 	
+
 	<changeSet id="IBISTEMP" author="Gerrit van Brakel">
 		<comment>Add IBISTEMP Table</comment>
 		<createTable tableName="IBISTEMP">
@@ -87,5 +87,9 @@ TagDatabase
 			<column name="CREATED_AT"/>
 		</createIndex>
 		<createSequence sequenceName="SEQ_IBISFILETRIGGER" startValue="1"/>
+	</changeSet>
+
+	<changeSet id="Enlarge IBISTEMP Size" author="Tim van der Leeuw">
+		<modifyDataType tableName="IBISTEMP" columnName="TVARCHAR" newDataType="varchar(200)"/>
 	</changeSet>
 </databaseChangeLog>
