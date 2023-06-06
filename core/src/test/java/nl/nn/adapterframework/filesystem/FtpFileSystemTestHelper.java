@@ -12,19 +12,20 @@ import org.junit.Before;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
+import nl.nn.adapterframework.util.FilenameUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
-	private String username = "";
-	private String password = "";
-	private String host = "";
-	private String remoteDirectory = "";
-	private int port = 21;
-	
+	private final String username;
+	private final String password;
+	private final String host;
+	private final int port;
+	private final String remoteDirectory;
+
 	private FtpSession ftpSession;
-	
-	public FtpFileSystemTestHelper(String username, String password, String host, String remoteDirectory,
-			int port) {
+
+	public FtpFileSystemTestHelper(String username, String password, String host, String remoteDirectory, int port) {
 		this.username = username;
 		this.password = password;
 		this.host = host;
@@ -61,11 +62,11 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 				}
 			}
 		} catch (IOException e) {
-			System.err.println(e);
+			LogUtil.getLogger(this).error("unable to clean folder", e);
 		}
 	}
 	private void open() throws FileSystemException, ConfigurationException {
-		ftpSession = new FtpSession(); 
+		ftpSession = new FtpSession();
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
 		ftpSession.setHost(host);
@@ -82,11 +83,16 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
 		try {
 			String path = folder != null ? folder + "/" + filename : filename;
-			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> f.getName().equals(filename));
+			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> fileNameFilter(f, filename));
 			return files.length > 0;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	// FTPFile might return a name with folder prefix.
+	private static boolean fileNameFilter(FTPFile file, String match) {
+		return FilenameUtils.getName(file.getName()).equals(match);
 	}
 
 	@Override

@@ -554,7 +554,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		}
 		createFile(folderName, filename, "dummy");
 		waitForActionToFinish();
-		assertThrows(FileSystemException.class, () -> fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", false, false), "Expected that file could not be copied, because folder should not be created");
+		F file = fileSystem.toFile(folderName, filename);
+		assertThrows(FileSystemException.class, () -> fileSystem.copyFile(file, "folder", false, false), "Expected that file could not be copied, because folder should not be created");
 	}
 
 	@Test

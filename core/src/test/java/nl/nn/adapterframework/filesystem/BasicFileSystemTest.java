@@ -313,9 +313,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F f = fileSystem.toFile(srcFolder, filename);
 
-		assertThrows(FileSystemException.class, ()->{
-			fileSystem.moveFile(f, dstFolder, false, true);
-		});
+		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false, true) );
 	}
 
 	@Test
@@ -547,7 +545,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		if (_folderExists(folderName)) {
 			_deleteFolder(folderName);
-		};
+		}
 		_createFolder(folderName);
 
 		fileSystem.configure();
