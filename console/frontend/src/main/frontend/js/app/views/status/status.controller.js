@@ -1,7 +1,7 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http',
-	function ($scope, Hooks, Api, SweetAlert, Poller, $filter, $state, Misc, $anchorScroll, $location, $http) {
+appModule.controller('StatusCtrl', ['$scope', '$rootScope', 'Api', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http',
+	function ($scope, $rootScope, Api, Poller, $filter, $state, Misc, $anchorScroll, $location, $http) {
 
 		var hash = $location.hash();
 		var adapterName = $state.params.adapter;
@@ -163,17 +163,28 @@ appModule.controller('StatusCtrl', ['$scope', 'Hooks', 'Api', 'SweetAlert', 'Pol
 		$scope.isConfigStubbed = {};
 		$scope.isConfigReloading = {};
 		$scope.check4StubbedConfigs = function () {
-			for (var i in $scope.configurations) {
-				var config = $scope.configurations[i];
+			$scope.configurations = $rootScope.configurations;
+			for (var i in $rootScope.configurations) {
+				var config = $rootScope.configurations[i];
 				$scope.isConfigStubbed[config.name] = config.stubbed;
 				$scope.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
 			}
 		};
-		$scope.$watch('configurations', $scope.check4StubbedConfigs);
+		$rootScope.$watch('configurations', $scope.check4StubbedConfigs);
+		$rootScope.$watch('adapterSummary', function () { $scope.adapterSummary = $rootScope.adapterSummary; });
+		$rootScope.$watch('receiverSummary', function () { $scope.receiverSummary = $rootScope.receiverSummary; });
+		$rootScope.$watch('messageSummary', function () { $scope.messageSummary = $rootScope.messageSummary; });
+		$rootScope.$watch('alerts', function () { $scope.alerts = $rootScope.alerts; }, true);
+		$rootScope.$watch('messageLog', function () { $scope.messageLog = $rootScope.messageLog; });
+		$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
+
+		$scope.closeAlert = function (index) {
+			$rootScope.alerts.splice(index, 1);
+		};
 
 		$scope.changeConfiguration = function (name) {
 			$scope.selectedConfiguration = name;
-			$scope.updateAdapterSummary(name);
+			$rootScope.updateAdapterSummary(name);
 			$scope.updateQueryParams();
 			$scope.updateConfigurationFlowDiagram(name);
 		};

@@ -7,30 +7,33 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 	ctrl.serverInfo = {};
 
 	ctrl.loggedin = false;
-	ctrl.alerts = [];
 
-	ctrl.adapterSummary = {
+	$rootScope.alerts = [];
+
+	$rootScope.adapterSummary = {
 		started: 0,
 		stopped: 0,
 		starting: 0,
 		stopping: 0,
 		error: 0
 	};
-	ctrl.receiverSummary = {
+	$rootScope.receiverSummary = {
 		started: 0,
 		stopped: 0,
 		starting: 0,
 		stopping: 0,
 		error: 0
 	};
-	ctrl.messageSummary = {
+	$rootScope.messageSummary = {
 		info: 0,
 		warn: 0,
 		error: 0
 	};
 
-	ctrl.lastUpdated = 0;
-	ctrl.timeout = null;
+	$rootScope.lastUpdated = 0;
+	$rootScope.timeout = null;
+
+	$rootScope.configurations = [];
 
 	ctrl.$onInit = function () {
 		/* state controller */
@@ -113,7 +116,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			});
 
 			Poller.add("server/warnings", function (configurations) {
-				ctrl.alerts = []; //Clear all old alerts
+				$rootScope.alerts = []; //Clear all old alerts
 
 				configurations['All'] = { messages: configurations.messages };
 				delete configurations.messages;
@@ -145,7 +148,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 					}
 				}
 
-				ctrl.messageLog = configurations;
+				$rootScope.messageLog = configurations;
 			}, true, 60000);
 
 			var raw_adapter_data = {};
@@ -212,7 +215,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 
 						$rootScope.adapters[adapter.name] = adapter;
 
-						ctrl.updateAdapterSummary();
+						$rootScope.updateAdapterSummary();
 						Hooks.call("adapterUpdated", adapter);
 						//					$scope.$broadcast('adapterUpdated', adapter);
 					}
@@ -354,7 +357,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		var line = message.match(/line \[(\d+)\]/);
 		var isValidationAlert = message.indexOf("Validation") !== -1;
 		var link = (line && !isValidationAlert) ? { name: configuration, '#': 'L' + line[1] } : undefined;
-		ctrl.alerts.push({
+		$rootScope.alerts.push({
 			link: link,
 			type: type,
 			configuration: configuration,
@@ -368,20 +371,17 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		ctrl.addAlert("danger", configuration, message);
 	};
 
-	ctrl.closeAlert = function (index) {
-		ctrl.alerts.splice(index, 1);
-	};
-
 	ctrl.updateConfigurations = function (configurations) {
-		ctrl.configurations = new Array();
+		const updatedConfigurations = [];
 		for (var i in configurations) {
 			var config = configurations[i];
 			if (config.name.startsWith("IAF_"))
-				ctrl.configurations.unshift(config);
+				updatedConfigurations.unshift(config);
 			else
-				ctrl.configurations.push(config);
+				updatedConfigurations.push(config);
 		}
-		$rootScope.$broadcast('configurations', ctrl.configurations);
+		$rootScope.$broadcast('configurations', updatedConfigurations);
+		$rootScope.configurations = updatedConfigurations;
 	}
 
 	ctrl.getProcessStateIcon = function (processState) {
@@ -413,11 +413,11 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		}
 	};
 
-	ctrl.updateAdapterSummary = function (configurationName) {
+	$rootScope.updateAdapterSummary = function (configurationName) {
 		var updated = (new Date().getTime());
-		if (updated - 3000 < ctrl.lastUpdated && !configurationName) { //3 seconds
-			clearTimeout(ctrl.timeout);
-			ctrl.timeout = setTimeout(ctrl.updateAdapterSummary, 1000);
+		if (updated - 3000 < $rootScope.lastUpdated && !configurationName) { //3 seconds
+			clearTimeout($rootScope.timeout);
+			$rootScope.timeout = setTimeout($rootScope.updateAdapterSummary, 1000);
 			return;
 		}
 		if (configurationName == undefined)
@@ -463,10 +463,10 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			}
 		}
 
-		ctrl.adapterSummary = adapterSummary;
-		ctrl.receiverSummary = receiverSummary;
-		ctrl.messageSummary = messageSummary;
-		ctrl.lastUpdated = updated;
+		$rootScope.adapterSummary = adapterSummary;
+		$rootScope.receiverSummary = receiverSummary;
+		$rootScope.messageSummary = messageSummary;
+		$rootScope.lastUpdated = updated;
 	};
 
 	ctrl.openInfoModel = function () {
