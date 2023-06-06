@@ -9,7 +9,7 @@
 					<field name="TKEY" type="NUMERIC" columnDisplaySize="39" precision="38" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
 					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
 					<field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="11" precision="0" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="oracle.sql.TIMESTAMP"/>
-					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="200" precision="200" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
 				</fielddefinition>
 				<rowset>
 					<row number="0">

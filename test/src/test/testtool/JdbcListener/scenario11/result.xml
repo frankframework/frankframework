@@ -9,7 +9,7 @@
 					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
 					<field name="TCLOB" type="CLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="java.sql.Clob"/>
 					<field name="TNUMBER" type="DECIMAL" columnDisplaySize="19" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
-					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="200" precision="200" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
 				</fielddefinition>
 				<rowset>
 					<row number="0">
