@@ -23,6 +23,7 @@ import nl.nn.adapterframework.filesystem.FtpFileSystem;
 import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
+import nl.nn.adapterframework.ftp.FtpSession.TransportType;
 
 public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 
@@ -108,7 +109,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@ReferTo(FtpFileSystem.class)
-	default void setProxyTransportType(int proxyTransportType) {
+	default void setProxyTransportType(TransportType proxyTransportType) {
 		getFileSystem().setProxyTransportType(proxyTransportType);
 	}
 
@@ -143,8 +144,8 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@ReferTo(FtpFileSystem.class)
-	default void setConsoleKnownHostsVerifier(boolean verifier) {
-		getFileSystem().setConsoleKnownHostsVerifier(verifier);
+	default void setStrictHostKeyChecking(boolean strictChecking) {
+		getFileSystem().setStrictHostKeyChecking(strictChecking);
 	}
 
 	@Override

@@ -23,9 +23,11 @@ import org.apache.logging.log4j.CloseableThreadContext;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -48,7 +50,9 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		/** Combination of WRITE and CLOSE: Add an item to to an existing collection, then finalize the collection */
 		LAST,
 		/** Finalize the collection */
-		CLOSE;
+		CLOSE,
+		@Deprecated
+		STREAM;
 	}
 
 	/**
@@ -75,9 +79,10 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			Message result = doAction(getAction(), input, session);
+
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (CollectionException e) {
-			throw new PipeRunException(this, "unable to ["+getAction()+"]", e);
+			throw new PipeRunException(this, "unable to complete action ["+getAction()+"]", e);
 		}
 	}
 
@@ -90,6 +95,14 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		return collection;
 	}
 
+	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws CollectionException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new CollectionException("cannot determine parameter values", e);
+		}
+	}
+
 	protected final @Nullable Message doAction(Action action, Message input, PipeLineSession session) throws CollectionException, PipeRunException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", action.name())) {
 			Collection<C, P> collection = getCollection(session);
@@ -98,14 +111,15 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 					if(collection != null) {
 						throw new CollectionException("collection [" + getCollectionName() + "] is already open, unable to create a new one");
 					}
-					collection = new Collection<>(createCollector());
+					collection = new Collection<>(createCollector(input, session));
+					collection.setName(getCollectionName());
 					session.scheduleCloseOnSessionExit(collection, ClassUtils.nameOf(this));
 					session.put(getCollectionName(), collection);
 					break;
 				}
 				case WRITE:
 				case LAST:
-					collection.add(input, session, getParameterValueList(input, session));
+					addPartToCollection(collection, input, session, getParameterValueList(input, session));
 					if (action == Action.LAST) {
 						return closeCollector(collection, session);
 					}
@@ -120,7 +134,12 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		}
 	}
 
-	protected abstract C createCollector() throws CollectionException;
+	// This purely exists because of the STREAM action in the ZipWriterPipe.
+	protected void addPartToCollection(Collection<C, P> collection, Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
+		collection.add(input, session, pvl);
+	}
+
+	protected abstract C createCollector(Message input, PipeLineSession session) throws CollectionException;
 
 	protected Message closeCollector(Collection<C, P> collection, PipeLineSession session) throws CollectionException {
 		try {

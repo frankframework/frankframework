@@ -15,10 +15,17 @@
 */
 package nl.nn.adapterframework.compression;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
 import nl.nn.adapterframework.collection.CollectorSenderBase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
@@ -33,11 +40,31 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
  */
 public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEntry> {
 
+	private boolean backwardsCompatibility = false;
+
+	public ZipWriterSender() {
+		setCollectionName("zipwriterhandle");
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
-		setCollectionName("zipwriterhandle");
 		super.configure();
 		ZipWriter.validateParametersForAction(Action.WRITE, getParameterList());
+	}
+
+	@Override
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		if(backwardsCompatibility) {
+			try {
+				message.preserve();
+				super.sendMessage(message, session);
+				return new SenderResult(message);
+			} catch (IOException e) {
+				throw new SenderException("unable to preserve input", e);
+			}
+		}
+
+		return super.sendMessage(message, session);
 	}
 
 	/**
@@ -48,5 +75,13 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	@ConfigurationWarning("Replaced with attribute collection")
 	public void setZipWriterHandle(String string) {
 		setCollectionName(string);
+	}
+
+	/**
+	 * Input will be 'piped' to the output, and the message will be preserved. Avoid using this if possible.
+	 */
+	@Deprecated
+	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
+		this.backwardsCompatibility = backwardsCompatibility;
 	}
 }

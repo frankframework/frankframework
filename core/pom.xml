@@ -185,10 +185,6 @@
 			<artifactId>commons-validator</artifactId>
 			<version>1.7</version>
 		</dependency>
-		<dependency>
-			<groupId>commons-net</groupId>
-			<artifactId>commons-net</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
@@ -368,14 +364,26 @@
 			<version>2.3.2</version>
 		</dependency>
 		<dependency>
-			<groupId>sshtools</groupId>
-			<artifactId>j2ssh-core</artifactId>
-			<version>0.2.9</version>
-		</dependency>
-		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 			<version>2.10.9.2</version>
+		</dependency>
+
+		<!-- FTP -->
+		<dependency>
+			<groupId>com.github.mwiede</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.2.9</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockftpserver</groupId>
+			<artifactId>MockFtpServer</artifactId>
+			<version>3.1.0</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

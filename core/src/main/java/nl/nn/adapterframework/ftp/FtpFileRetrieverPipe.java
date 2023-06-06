@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
+import nl.nn.adapterframework.ftp.FtpSession.TransportType;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -231,10 +232,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 
 	/**
-	 * (sftp) transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)
-	 * @ff.default 4
+	 * (sftp) transport type in case of sftp
 	 */
-	public void setProxyTransportType(int proxyTransportType) {
+	public void setProxyTransportType(TransportType proxyTransportType) {
 		ftpSession.setProxyTransportType(proxyTransportType);
 	}
 
@@ -269,11 +269,11 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * (sftp) 
-	 * @ff.default false
+	 * (sftp) Verify the hosts againt the knownhosts file.
+	 * @ff.default true
 	 */
-	public void setConsoleKnownHostsVerifier(boolean verifier) {
-		ftpSession.setConsoleKnownHostsVerifier(verifier);
+	public void setStrictHostKeyChecking(boolean strictChecking) {
+		ftpSession.setStrictHostKeyChecking(strictChecking);
 	}
 
 
