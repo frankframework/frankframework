@@ -250,7 +250,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull nl.nn.adapterframework.receivers.RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

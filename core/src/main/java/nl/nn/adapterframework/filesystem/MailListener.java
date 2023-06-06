@@ -18,6 +18,8 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -72,7 +74,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
 			try {
 				return getFileSystem().getMimeContent(rawMessage.getRawMessage());

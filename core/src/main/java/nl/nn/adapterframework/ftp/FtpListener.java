@@ -93,9 +93,9 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	/**
-     * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
-     * is a new file to process and returns the first record.
-     */
+	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
+	 * is a new file to process and returns the first record.
+	 */
 	@Override
 	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.debug("FtpListener [{}] in getRawMessage, retrieving contents of directory [{}]", getName(), remoteDirectory);
@@ -160,7 +160,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	 * Returns a string of the rawMessage
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return new Message(rawMessage.getRawMessage());
 	}
 

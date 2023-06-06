@@ -29,7 +29,6 @@ import org.springframework.core.type.ClassMetadata;
 import org.springframework.util.Assert;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.core.IListener;
 
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
@@ -229,12 +228,12 @@ public class TestAnnotationUtils {
 
 		Set<String> interfacesToSkip = new HashSet<>();
 		interfacesToSkip.add(IbisManager.class.getCanonicalName());
-		interfacesToSkip.add(IListener.class.getCanonicalName());
+
 		for (Class<?> interfaze : interfazes) {
-			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)) {
+			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)
+					&& !interfacesToSkip.contains(interfaze.getCanonicalName())) {
 				for(Method method : interfaze.getDeclaredMethods()) {
 					for(Annotation annotation : method.getAnnotations()) {
-						if (interfacesToSkip.contains(interfaze.getCanonicalName())) continue;
 						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
 							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
 						}

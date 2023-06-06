@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -82,7 +84,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<Message> rawMessage, Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
 		return rawMessage.getRawMessage();
 	}
 

@@ -305,7 +305,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 * Returns the filename, or the contents
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<F> rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<F> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		log.debug("Extract message from raw message");
 		try {
 			F file = rawMessage.getRawMessage();

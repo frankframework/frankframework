@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sap.conn.idoc.IDocDocument;
@@ -152,7 +154,7 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<JCoFunction> rawMessageWrapper, Map<String,Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<JCoFunction> rawMessageWrapper, @Nonnull Map<String,Object> context) {
 		return functionCall2message(rawMessageWrapper.getRawMessage());
 	}
 

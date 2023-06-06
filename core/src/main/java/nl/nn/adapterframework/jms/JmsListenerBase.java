@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
@@ -209,7 +210,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
 	 * @return String  input {@link Message} for adapter.
 	 */
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		try {
 			return extractMessage(rawMessage.getRawMessage(), context, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
@@ -431,6 +432,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 
 	/**
+	 * Flag if reply-to queue from the request message should be used or not.
 	 *
 	 * @ff.default true
 	 */

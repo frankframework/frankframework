@@ -131,15 +131,15 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 			if(!getxPathLogMap().isEmpty()) {
 				StringBuilder xPathLogKeys = new StringBuilder();
-                for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
-                    String sessionKey = pair.getKey();
-                    String xPath = pair.getValue();
-                    String result = getResultFromxPath(soapMessage, xPath);
-                    if (!result.isEmpty()) {
-                        messageProperties.put(sessionKey, result);
-                        xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
-                    }
-                }
+				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+				String sessionKey = pair.getKey();
+				String xPath = pair.getValue();
+				String result = getResultFromxPath(soapMessage, xPath);
+				if (!result.isEmpty()) {
+					messageProperties.put(sessionKey, result);
+					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+				}
+			}
 				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
@@ -150,17 +150,15 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
 		String found = "";
-		if(message != null && message.length() > 0) {
-			if(XmlUtils.isWellFormed(message)) {
-				try {
-					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
-					found = test.transform(message, null);
+		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
+			try {
+				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), 0);
+				found = test.transform(message, null);
 
-					//xPath not found and message length is 0 but not null nor ""
-					if(found.length() == 0) found = "";
-				} catch (Exception e) {
-					log.debug("could not evaluate xpath expression",e);
-				}
+				//xPath not found and message length is 0 but not null nor ""
+				if(found.isEmpty()) found = "";
+			} catch (Exception e) {
+				log.debug("could not evaluate xpath expression",e);
 			}
 		}
 		return found;

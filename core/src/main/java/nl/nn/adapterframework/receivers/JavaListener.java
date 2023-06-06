@@ -161,7 +161,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			if (object != null) {
 				if (object instanceof HttpServletRequest) {
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.securityHandlerKey, securityHandler);
+					context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 				} else {
 					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 				}
@@ -229,7 +229,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

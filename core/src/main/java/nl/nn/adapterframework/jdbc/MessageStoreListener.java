@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -139,14 +141,14 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String, Object> context) throws ListenerException {
-		if (rawMessage != null && sessionKeys != null) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		if (sessionKeys != null) {
 			return convertToMessage(rawMessage, context);
 		}
 		return super.extractMessage(rawMessage, context);
 	}
 
-	private Message convertToMessage(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
+	private Message convertToMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
 		String messageData = extractStringData(rawMessageWrapper);
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
@@ -163,10 +165,8 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return message;
 	}
 
-	private static String extractStringData(RawMessageWrapper<?> rawMessageWrapper) throws ListenerException {
-		if (rawMessageWrapper == null) {
-			throw new ListenerException("Raw message data is null");
-		} else if (rawMessageWrapper instanceof MessageWrapper) {
+	private static String extractStringData(@Nonnull RawMessageWrapper<?> rawMessageWrapper) throws ListenerException {
+		if (rawMessageWrapper instanceof MessageWrapper) {
 			try {
 				return ((MessageWrapper<?>) rawMessageWrapper).getMessage().asString();
 			} catch (IOException e) {

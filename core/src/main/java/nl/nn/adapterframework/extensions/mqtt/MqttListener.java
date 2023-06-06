@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -140,7 +142,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<MqttMessage> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return new Message(rawMessage.getRawMessage().getPayload(), getCharset());
 	}
 

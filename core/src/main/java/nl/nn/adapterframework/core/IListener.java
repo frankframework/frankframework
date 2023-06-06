@@ -17,6 +17,8 @@ package nl.nn.adapterframework.core;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -58,15 +60,16 @@ public interface IListener<M> extends IConfigurable {
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)} or
 	 * {@link IPushingListener#wrapRawMessage(Object, PipeLineSession)}. May also extract
 	 * other parameters from the message and put those in the context.
-	 *
-	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
-	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map<String,Object>} threadContext depending on caller.
-	 * @return input {@link Message} for adapter.
-	 *
+	 * <br/>
 	 * TODO: Should context parameter to this call be a ThreadContext, or a PipeLineSession? Both are used, should probably be a PipeLineSession
 	 *   but that is not available in all places this method is called from.
+	 *
+	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
+	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map} threadContext depending on caller.
+	 * @return input {@link Message} for adapter.
+	 *
 	 */
-	Message extractMessage(RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
+	Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException;
 
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the

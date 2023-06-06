@@ -17,6 +17,8 @@ package nl.nn.adapterframework.receivers;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -48,7 +50,7 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<javax.jms.Message> rawMessage, @Nonnull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

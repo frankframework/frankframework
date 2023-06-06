@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -125,7 +127,7 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public Message extractMessage(RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) {
+		public Message extractMessage(@Nonnull RawMessageWrapper<TestListenerMessage> rawMessage, @Nonnull Map<String, Object> context) {
 			return new Message(rawMessage.getRawMessage().text);
 		}
 
@@ -133,6 +135,5 @@ public class MessageBrowsingUtilTest {
 		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) {
 			// No-op
 		}
-
 	}
 }

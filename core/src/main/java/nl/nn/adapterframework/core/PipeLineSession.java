@@ -47,7 +47,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
-	public static final String securityHandlerKey="securityHandler";
+	public static final String SECURITY_HANDLER_KEY ="securityHandler";
 
 	public static final String HTTP_REQUEST_KEY    = "servletRequest";
 	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
@@ -153,12 +153,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
-		put(securityHandlerKey, handler);
+		put(SECURITY_HANDLER_KEY, handler);
 	}
 
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
-			securityHandler=(ISecurityHandler)get(securityHandlerKey);
+			securityHandler=(ISecurityHandler)get(SECURITY_HANDLER_KEY);
 			if (securityHandler==null) {
 				throw new NotImplementedException("no securityhandler found in PipeLineSession");
 			}
