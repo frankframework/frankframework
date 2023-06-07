@@ -1008,7 +1008,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (rawMessageWrapper instanceof MessageWrapper) {
 			sobj = (MessageWrapper<?>) rawMessageWrapper;
 		} else if (rawMessageWrapper.getRawMessage() instanceof Serializable) {
-			// TODO: Perhaps we should rather store always a MessageWrapper, not the raw message, so we keep extra meta data?
+			// TODO: Branch not actually touched in any tests. Perhaps we should rather store always a MessageWrapper, not the raw message, so we keep extra meta data?
 			sobj = (Serializable) rawMessageWrapper.getRawMessage();
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
