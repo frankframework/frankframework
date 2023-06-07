@@ -975,7 +975,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 
 		try {
-			Message message;
+			final Message message;
 			if (rawMessageWrapper instanceof MessageWrapper) {
 				message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
 			} else {
@@ -986,7 +986,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				errorSender.sendMessageOrThrow(message, null);
 			}
 			if (errorStorage!=null) {
-				Serializable sobj = serializeMessageObject(rawMessageWrapper, context);
+				Serializable sobj = serializeMessageObject(rawMessageWrapper, message);
 				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
 			}
 			txManager.commit(txStatus);
@@ -1002,20 +1002,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext) throws ListenerException {
-		Serializable sobj;
+	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Message message) {
+		final Serializable sobj;
 
 		if (rawMessageWrapper instanceof MessageWrapper) {
-			sobj = (MessageWrapper<?>)rawMessageWrapper;
+			sobj = (MessageWrapper<?>) rawMessageWrapper;
 		} else if (rawMessageWrapper.getRawMessage() instanceof Serializable) {
-			sobj=(Serializable) rawMessageWrapper.getRawMessage();
+			// TODO: Perhaps we should rather store always a MessageWrapper, not the raw message, so we keep extra meta data?
+			sobj = (Serializable) rawMessageWrapper.getRawMessage();
 		} else {
-			try {
-				sobj = new MessageWrapper<M>(rawMessageWrapper, getListener().extractMessage(rawMessageWrapper, threadContext));
-			} catch (ListenerException e) {
-				log.error("{} could not wrap non serializable message for messageId [{}]", supplier(this::getLogPrefix), supplier(rawMessageWrapper::getId));
-				throw e;
-			}
+			sobj = new MessageWrapper<>(rawMessageWrapper, message);
 		}
 
 		return sobj;
