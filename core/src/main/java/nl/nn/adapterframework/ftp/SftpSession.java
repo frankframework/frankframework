@@ -17,7 +17,6 @@ package nl.nn.adapterframework.ftp;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
@@ -54,7 +53,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author John Dekker
  */
 public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
-	protected Logger log = LogUtil.getLogger(this);
+	private static Logger LOG = LogUtil.getLogger(SftpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -104,7 +103,7 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter boolean allowSelfSignedCertificates = false;
 	private @Getter boolean ignoreCertificateExpiredException = false;
 
-	private Session sftpSession;
+	private JSch jsch;
 	private ChannelSftp sftpClient;
 
 	@Override
@@ -117,29 +116,9 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
-	}
 
-	public void openClient(String remoteDirectory) throws FtpConnectException {
-		log.debug("Open sftp client");
-		if (sftpClient == null || sftpClient.isClosed()) {
-			openSftpClient();
-
-			if (! StringUtils.isEmpty(remoteDirectory)) {
-				try {
-					sftpClient.cd(remoteDirectory);
-				} catch (SftpException e) {
-					throw new FtpConnectException("unable to enter remote directory ["+remoteDirectory+"]");
-				}
-			}
-		}
-	}
-
-	private void openSftpClient() throws FtpConnectException {
 		try {
-			JSch jsch = new JSch();
-			final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			Properties config = new Properties();
-
+			jsch = new JSch();
 			if (StringUtils.isNotEmpty(privateKeyFilePath)) {
 				CredentialFactory pkcf = new CredentialFactory(getPrivateKeyAuthAlias(), getUsername(), getPrivateKeyPassword());
 				jsch.addIdentity(privateKeyFilePath, pkcf.getPassword());
@@ -148,14 +127,49 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 			if (StringUtils.isNotEmpty(knownHostsPath)) {
 				jsch.setKnownHosts(knownHostsPath);
 			}
-			if(!strictHostKeyChecking) {
-				config.put("StrictHostKeyChecking", "no");
+		} catch (JSchException e) {
+			throw new ConfigurationException("unable to configure Java Secure Channel", e);
+		}
+	}
+
+	public synchronized ChannelSftp openClient(String remoteDirectory) throws FtpConnectException {
+		LOG.debug("open sftp client");
+		if (sftpClient == null || sftpClient.isClosed()) {
+			openSftpClient(remoteDirectory);
+		}
+		return sftpClient;
+	}
+
+	private void openSftpClient(String remoteDirectory) throws FtpConnectException {
+		try {
+			Session sftpSession = createSftpSession(jsch);
+			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
+			channel.connect();
+
+			if (StringUtils.isNotEmpty(remoteDirectory)) {
+				channel.cd(remoteDirectory);
 			}
 
-			sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
+			sftpClient = channel;
+		} catch (JSchException e) {
+			throw new FtpConnectException("unable to open SFTP channel");
+		} catch (SftpException e) {
+			throw new FtpConnectException("unable to enter remote directory ["+remoteDirectory+"]");
+		}
+	}
+
+	private Session createSftpSession(JSch jsch) throws FtpConnectException {
+		try {
+			final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+
+			Session sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
 
 			if (StringUtils.isNotEmpty(getPassword())) {
 				sftpSession.setPassword(getPassword());
+			}
+
+			if(!strictHostKeyChecking) {
+				sftpSession.setConfig("StrictHostKeyChecking", "no");
 			}
 
 			// Set the connection properties and if necessary the proxy properties
@@ -174,21 +188,15 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 			SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, "TLS");
 			sftpSession.setSocketFactory(new SftpSocketFactory(sslContext));
 
-			sftpSession.setConfig(config);
 			sftpSession.connect();
 
-			if (sftpSession.isConnected()) {
-				close();
-				throw new IOException("Could not authenticate to sftp server");
+			if (!sftpSession.isConnected()) {
+				throw new FtpConnectException("Could not authenticate to sftp server");
 			}
 
-			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
-			channel.connect();
-
-			sftpClient = channel;
+			return sftpSession;
 		}
 		catch(JSchException | IOException | GeneralSecurityException e) {
-			close();
 			throw new FtpConnectException(e);
 		}
 	}
@@ -222,17 +230,15 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 	}
 
-	public void close() {
-		log.debug("Close ftp client");
-		if (sftpSession != null) {
-			if (sftpClient != null && sftpClient.isConnected()) {
-				sftpClient.disconnect();
-			}
-			if (sftpSession.isConnected()) {
-				sftpSession.disconnect();
-			}
-			sftpSession = null;
+	public static void close(ChannelSftp sftpClient) {
+		LOG.debug("closing ftp client");
+		if (sftpClient != null && sftpClient.isConnected()) {
+			sftpClient.disconnect();
 		}
+	}
+
+	public void close() {
+		close(sftpClient);
 	}
 
 	/** Name or ip address of remote host */
