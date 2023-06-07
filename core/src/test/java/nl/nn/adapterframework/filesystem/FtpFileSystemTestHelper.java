@@ -65,6 +65,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 			LogUtil.getLogger(this).error("unable to clean folder", e);
 		}
 	}
+
 	private void open() throws FileSystemException, ConfigurationException {
 		FtpSession ftpSession = new FtpSession();
 		ftpSession.setUsername(username);
@@ -79,6 +80,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
 		}
 	}
+
 	@Override
 	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
 		try {

@@ -15,11 +15,6 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -53,7 +48,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author John Dekker
  */
 public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
-	private static Logger LOG = LogUtil.getLogger(SftpSession.class);
+	private static final Logger LOG = LogUtil.getLogger(SftpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -165,7 +160,10 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 			Session sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
 
 			if (StringUtils.isNotEmpty(getPassword())) {
+				sftpSession.setConfig("PreferredAuthentications", "password");
 				sftpSession.setPassword(getPassword());
+			} else {
+				sftpSession.setConfig("PreferredAuthentications", "publickey");
 			}
 
 			if(!strictHostKeyChecking) {
@@ -196,7 +194,7 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 			return sftpSession;
 		}
-		catch(JSchException | IOException | GeneralSecurityException e) {
+		catch(JSchException  e) {
 			throw new FtpConnectException(e);
 		}
 	}
