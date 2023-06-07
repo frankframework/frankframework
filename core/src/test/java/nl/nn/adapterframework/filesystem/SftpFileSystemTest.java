@@ -1,7 +1,22 @@
 package nl.nn.adapterframework.filesystem;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+
+import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.auth.AsyncAuthException;
+import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
+import org.apache.sshd.server.auth.password.PasswordAuthenticator;
+import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
+import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,22 +34,59 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 	private String username = "wearefrank";
 	private String password = "pass_123";
 	private String host = "localhost";
-	private int port = 22;
-	private String remoteDirectory = "/home/wearefrank/dir";
+	private int port = 6123;
+	private String remoteDirectory = "/home/wearefrank/sftp";
+
+	private SshServer sshd;
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
-			//TODO setup mock
+			remoteDirectory = "/";
+
+			sshd = SshServer.setUpDefaultServer();
+			sshd.setPort(port);
+			sshd.setHost("localhost");
+			sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
+
+				@Override
+				public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException, AsyncAuthException {
+					return "wearefrank".equals(username) && "pass_123".equals(password);
+				}
+
+			});
+			sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
+
+			SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
+			sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
+			sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
+
+			Path sftpTestFS = getTestDirectory();
+			sshd.setFileSystemFactory(new VirtualFileSystemFactory(sftpTestFS));
+
+			sshd.start();
 		}
 
 		super.setUp();
 	}
 
+	private static Path getTestDirectory() throws IOException {
+		File targetFolder = new File(".", "target");
+		File sftpTestFS = new File(targetFolder.getCanonicalPath(), "sftpTestFS");
+		sftpTestFS.mkdir();
+		assertTrue(sftpTestFS.exists());
+		return sftpTestFS.toPath();
+	}
+
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
+		if(sshd != null) {
+			if(sshd.isStarted()) sshd.stop();
+			sshd.close(true);
+			sshd = null;
+		}
 		super.tearDown();
 	}
 
@@ -52,7 +104,6 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 		fileSystem.setRemoteDirectory(remoteDirectory);
 		fileSystem.setPort(port);
 		fileSystem.setStrictHostKeyChecking(false);
-//		fileSystem.setVerifyHostname(false);
 
 		return fileSystem;
 	}
