@@ -241,20 +241,20 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessage;
 	}
 
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessage, PipeLineSession session) throws ListenerException {
 		String replyCid = null;
 
 		if (!isForceMessageIdAsCorrelationId()) {
-			replyCid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
+			replyCid = session.getCorrelationId();
 		}
 		if (StringUtils.isEmpty(replyCid)) {
-			replyCid = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
+			replyCid = session.getMessageId();
 		}
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in JmsListener.afterMessageProcessed()");
 		// handle reply
 		try {
-			Destination replyTo = isUseReplyTo() ? (Destination) threadContext.get("replyTo") : null;
+			Destination replyTo = isUseReplyTo() ? (Destination) session.get("replyTo") : null;
 			if (replyTo==null && StringUtils.isNotEmpty(getReplyDestinationName())) {
 				replyTo = getDestination(getReplyDestinationName());
 			}
@@ -284,8 +284,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 						ignoreInvalidDestinationException = true;
 					}
 				}
-				Map<String, Object> properties = getMessageProperties(threadContext);
-				sendReply(plr, replyTo, replyCid, timeToLive, ignoreInvalidDestinationException, threadContext, properties);
+				Map<String, Object> properties = getMessageProperties(session);
+				sendReply(plr, replyTo, replyCid, timeToLive, ignoreInvalidDestinationException, session, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.");
@@ -307,15 +307,15 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		try {
 			if (plr!=null && !isTransacted()) {
 				if (isJmsTransacted()) {
-					Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-					if (session==null) {
+					Session queueSession = (Session)session.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
+					if (queueSession==null) {
 						log.error(getLogPrefix()+"session is null, cannot commit or roll back session");
 					} else {
 						if (plr.getState()!=ExitState.SUCCESS) {
 							log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
-							session.rollback();
+							queueSession.rollback();
 						} else {
-							session.commit();
+							queueSession.commit();
 						}
 					}
 				} else {
@@ -335,7 +335,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	@Override
-	public boolean messageWillBeRedeliveredOnExitStateError(Map<String, Object> context) {
+	public boolean messageWillBeRedeliveredOnExitStateError(PipeLineSession pipeLineSession) {
 		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum()==AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 

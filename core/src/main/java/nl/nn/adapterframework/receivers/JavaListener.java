@@ -224,7 +224,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// do nothing
 	}
 

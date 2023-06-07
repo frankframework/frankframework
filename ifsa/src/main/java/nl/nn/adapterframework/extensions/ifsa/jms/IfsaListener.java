@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -239,7 +240,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 	 * @return input message for adapter.
 	 */
 	@Override
-	public Message extractMessage(RawMessageWrapper<IFSAMessage> rawMessage, Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<IFSAMessage> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException {
 		if (rawMessage instanceof MessageWrapper) {
 			return ((MessageWrapper<IFSAMessage>) rawMessage).getMessage();
 		}

@@ -883,7 +883,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		log.debug("{} finishes processing message", this::getLogPrefix);
 	}
 
-	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, MessageWrapper<M> messageWrapper, Map<String,Object> threadContext, ProcessResultCacheItem prci, String comments) throws ListenerException {
+	private void moveInProcessToErrorAndDoPostProcessing(IListener<M> origin, MessageWrapper<M> messageWrapper, PipeLineSession session, ProcessResultCacheItem prci, String comments) throws ListenerException {
 		String messageId = messageWrapper.getId();
 		String correlationId = messageWrapper.getCorrelationId();
 		try {
@@ -899,7 +899,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						(!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId) || !isDuplicateAndSkip(getMessageBrowser(ProcessState.ERROR), messageId, correlationId))
 					)
 				) {
-				moveInProcessToError(messageWrapper, threadContext, rcvDate, comments, TXREQUIRED);
+				moveInProcessToError(messageWrapper, session, rcvDate, comments, TXREQUIRED);
 			}
 			PipeLineResult plr = new PipeLineResult();
 			Message result=new Message("<error>"+ XmlEncodingUtils.encodeChars(comments)+"</error>");
@@ -911,7 +911,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.warn("problem sending result: {}", sendMsg);
 				}
 			}
-			origin.afterMessageProcessed(plr, messageWrapper, threadContext);
+			origin.afterMessageProcessed(plr, messageWrapper, session);
 		} catch (ListenerException e) {
 			String errorDescription;
 			if (prci != null) {
@@ -924,7 +924,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	public void moveInProcessToError(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> threadContext, Instant receivedDate, String comments, TransactionDefinition txDef) {
+	/**
+	 * Move a message from the "in process" state or storage, to the error state or storage.
+	 *
+	 * @param rawMessageWrapper Wrapper for the raw message, may be an instance of {@link RawMessageWrapper} or {@link MessageWrapper}. If an instance of {@link RawMessageWrapper} then
+	 *                          the {@link IListener} will be used to extract the full {@link Message} object to be sent to the error storage.
+	 * @param context Context of the process. Can be either the thread context of a {@link IPullingListener}, or the current {@link PipeLineSession}.
+	 * @param receivedDate Timestamp of when the message was received.
+	 * @param comments Processing comments and error message regarding the reason the message was rejected.
+	 * @param txDef {@link TransactionDefinition} for the transaction to be used for moving the message to error state / storage.
+	 */
+	public void moveInProcessToError(RawMessageWrapper<M> rawMessageWrapper, Map<String, Object> context, Instant receivedDate, String comments, TransactionDefinition txDef) {
 		if (getListener() instanceof IHasProcessState && !knownProcessStates.isEmpty()) {
 			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 			try {
@@ -939,7 +949,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (rawMessageWrapper.getCorrelationId() != null) {
 			correlationId = rawMessageWrapper.getCorrelationId();
 		} else {
-			correlationId = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
+			correlationId = (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 
 		final ISender errorSender = getErrorSender();
@@ -969,14 +979,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (rawMessageWrapper instanceof MessageWrapper) {
 				message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
 			} else {
-				message = getListener().extractMessage(rawMessageWrapper, threadContext);
+				message = getListener().extractMessage(rawMessageWrapper, context);
 			}
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
 			if (errorSender!=null) {
 				errorSender.sendMessageOrThrow(message, null);
 			}
 			if (errorStorage!=null) {
-				Serializable sobj = serializeMessageObject(rawMessageWrapper, threadContext);
+				Serializable sobj = serializeMessageObject(rawMessageWrapper, context);
 				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
 			}
 			txManager.commit(txStatus);

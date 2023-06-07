@@ -27,6 +27,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -45,7 +46,7 @@ public abstract class SlowListenerBase implements IListener<javax.jms.Message> {
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, Map<String, Object> context) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<javax.jms.Message> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 

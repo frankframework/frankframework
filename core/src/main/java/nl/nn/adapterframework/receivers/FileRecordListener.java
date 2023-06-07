@@ -69,14 +69,14 @@ public class FileRecordListener implements IPullingListener<String> {
 	private String directoryProcessedFiles;
 	private String storeFileNameInSessionKey;
 
-	private long recordNo = 0; // the current record number;
+	private long recordNo = 0; // the current record number
 	private String inputFileName; // the name of the file currently in process
 	private ISender sender;
 	private Iterator<String> recordIterator = null;
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		String cid = pipeLineSession.getCorrelationId();
 		if (sender != null && processResult.isSuccessful()) {
 			try {
 				sender.sendMessageOrThrow(processResult.getResult(), null);
@@ -250,7 +250,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull nl.nn.adapterframework.receivers.RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

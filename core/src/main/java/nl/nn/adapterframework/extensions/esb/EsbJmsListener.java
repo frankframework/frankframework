@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Mandatory;
@@ -165,10 +166,10 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, pipeLineSession);
 		if (getMessageProtocol() == MessageProtocol.RR) {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {
 				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
 			}

@@ -164,8 +164,8 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessageWrapper, Map<String,Object> threadContext) throws ListenerException {
-		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		QueueSession queueSession= (QueueSession) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 
 		// on request-reply send the reply.
 		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
@@ -173,13 +173,13 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 			if (rawMessageWrapper instanceof javax.jms.Message) {
 				originalRawMessage = (javax.jms.Message)rawMessageWrapper;
 			} else {
-				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (javax.jms.Message) pipeLineSession.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
+				String cid = (String) pipeLineSession.get(PipeLineSession.CORRELATION_ID_KEY);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
-				if (session==null) {
+				if (queueSession==null) {
 					throw new ListenerException(getLogPrefix()+"no session found in context, cannot send result");
 				}
 				try {
@@ -187,10 +187,10 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 					if (plr!=null && plr.getResult()!=null) {
 						result=plr.getResult().asString();
 					}
-					sendReply(session, originalRawMessage, result);
+					sendReply(queueSession, originalRawMessage, result);
 				} catch (IfsaException | IOException e) {
 					try {
-						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
+						sendReply(queueSession, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {
 						log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
 					}

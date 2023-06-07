@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
@@ -326,7 +327,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// required action already done via ChangeProcessState()
 	}
 

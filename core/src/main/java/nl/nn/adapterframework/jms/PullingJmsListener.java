@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -174,12 +175,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, pipeLineSession);
 		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
-			Session session = (Session)threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
-			if (session!=null) {
-				releaseSession(session);
+			Session queueSession = (Session) pipeLineSession.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+			if (queueSession!=null) {
+				releaseSession(queueSession);
 			}
 		}
 	}

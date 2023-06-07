@@ -52,7 +52,7 @@ public interface IListener<M> extends IConfigurable {
 
 	/**
 	 * Close all resources used for listening.
-	 * Called once once each time the listener is stopped.
+	 * Called once each time the listener is stopped.
 	 */
 	void close() throws ListenerException;
 
@@ -75,6 +75,6 @@ public interface IListener<M> extends IConfigurable {
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the
 	 * Pipeline.
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, Map<String,Object> context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException;
 
 }

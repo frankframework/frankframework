@@ -279,7 +279,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
 		if ((rawMessage instanceof MessageWrapper)) {

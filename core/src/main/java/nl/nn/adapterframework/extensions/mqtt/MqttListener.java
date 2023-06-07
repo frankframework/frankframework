@@ -147,7 +147,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<MqttMessage> rawMessage, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<MqttMessage> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// No-op
 	}
 }

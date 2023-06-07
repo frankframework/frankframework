@@ -208,20 +208,20 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 
 		try {
 			if (isJmsTransacted() && !(getMessagingSource().isXaEnabledForSure() && JtaUtil.inTransaction())) {
-				QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+				QueueSession queueSession = (QueueSession) pipeLineSession.get(THREAD_CONTEXT_SESSION_KEY);
 
 				try {
-					session.commit();
+					queueSession.commit();
 				} catch (JMSException e) {
 					log.error(getLogPrefix()+"got error committing the received message", e);
 				}
 				if (isSessionsArePooled()) {
-					threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-					releaseSession(session);
+					pipeLineSession.remove(THREAD_CONTEXT_SESSION_KEY);
+					releaseSession(queueSession);
 				}
 			}
 		} catch (Exception e) {
@@ -233,29 +233,29 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 			if (rawMessage instanceof Message) {
 				originalRawMessage = (Message)rawMessage;
 			} else {
-				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (Message) pipeLineSession.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String id = (String) threadContext.get(PipeLineSession.MESSAGE_ID_KEY);
-				String cid = (String) threadContext.get(PipeLineSession.CORRELATION_ID_KEY);
+				String id = pipeLineSession.getMessageId();
+				String cid = pipeLineSession.getCorrelationId();
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
-				QueueSession session = getSession(threadContext);
+				QueueSession queueSession = getSession(pipeLineSession);
 				try {
 					String result="<exception>no result</exception>";
 					if (plr!=null && plr.getResult()!=null) {
 						result=plr.getResult().asString();
 					}
-					sendReply(session, originalRawMessage, result);
+					sendReply(queueSession, originalRawMessage, result);
 				} catch (IfsaException | IOException e) {
 					try {
-						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
+						sendReply(queueSession, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {
 						log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
 					}
 					throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
 				} finally {
-					releaseSession(session);
+					releaseSession(queueSession);
 				}
 			}
 		}

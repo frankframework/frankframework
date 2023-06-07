@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -132,7 +133,7 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<TestListenerMessage> rawMessage, Map<String, Object> context) {
+		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<TestListenerMessage> rawMessage, PipeLineSession pipeLineSession) {
 			// No-op
 		}
 	}
