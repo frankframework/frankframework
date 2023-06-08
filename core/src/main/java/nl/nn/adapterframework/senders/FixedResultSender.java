@@ -39,7 +39,6 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -80,7 +79,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
-			returnString = StringUtil.replace(returnString, replaceFrom, replaceTo );
+			returnString = returnString.replace(replaceFrom, replaceTo);
 		}
 	}
 
@@ -96,7 +95,9 @@ public class FixedResultSender extends SenderWithParametersBase {
 			}
 			if (pvl!=null) {
 				for(ParameterValue pv : pvl) {
-					result=StringUtil.replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
+					String from = "${"+pv.getDefinition().getName()+"}";
+					String to = pv.asStringValue("");
+					result= result.replace(from, to);
 				}
 			}
 		}

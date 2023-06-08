@@ -116,7 +116,7 @@ public abstract class ClassLoaderUtils {
 			return null;
 		}
 
-		String escapedURL = StringUtil.replace(resource, " ", "%20");
+		String escapedURL = resource.replace(" ", "%20");
 		try {
 			return new URL(escapedURL);
 		} catch(MalformedURLException e) {

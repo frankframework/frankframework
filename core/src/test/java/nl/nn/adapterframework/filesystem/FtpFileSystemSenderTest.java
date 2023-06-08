@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
@@ -51,6 +52,7 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemS
 	}
 
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		ftpServer.stop();
 		ftpServer = null;

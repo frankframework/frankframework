@@ -44,7 +44,6 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -167,7 +166,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = StringUtil.replace(result, getReplaceFrom(), getReplaceTo());
+			result = result.replace(getReplaceFrom(), getReplaceTo());
 		}
 		if (!getParameterList().isEmpty()) {
 			try {
@@ -179,7 +178,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 					} else {
 						replaceFrom="${"+pv.getName()+"}";
 					}
-					result= StringUtil.replace(result, replaceFrom, pv.asStringValue(""));
+					String to = pv.asStringValue("");
+					result= result.replace(replaceFrom, to);
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);

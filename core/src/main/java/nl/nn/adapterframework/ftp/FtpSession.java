@@ -15,21 +15,10 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.security.GeneralSecurityException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
@@ -40,48 +29,32 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Proxy;
-import com.jcraft.jsch.ProxyHTTP;
-import com.jcraft.jsch.ProxySOCKS4;
-import com.jcraft.jsch.ProxySOCKS5;
-import com.jcraft.jsch.Session;
-
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Helper class for sftp and ftp.
- *
- *
- *
+ * Base class for FTP(s) connections
+ * 
  * @author John Dekker
  */
 public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
-	protected Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(FtpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter FtpType ftpType = FtpType.FTP;
 	public enum FtpType implements DocumentedEnum {
 		@EnumLabel("FTP") FTP(null, true),
-		@EnumLabel("SFTP") SFTP(null, true),
 		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),
 		@EnumLabel("FTPSX(TLS)") FTPS_EXPLICIT_TLS("TLS", false),
 		@EnumLabel("FTPSX(SSL)") FTPS_EXPLICIT_SSL("SSL", false);
@@ -119,7 +92,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	public enum TransportType {
-		HTTP, SOCKS4, SOCKS5
+		DIRECT, HTTP, SOCKS
 	}
 
 	private @Getter String name;
@@ -130,27 +103,15 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
+
 	private @Getter String proxyHost;
 	private @Getter int proxyPort = 1080;
-	private @Getter String proxyAuthAlias;
-	private @Getter String proxyUsername;
-	private @Getter String proxyPassword;
+	private TransportType proxyTransportType = TransportType.SOCKS;
+
 	private @Getter FileType fileType = null;
-	private @Getter boolean messageIsContent=false;
 	private @Getter boolean passive=true;
-	private @Getter boolean keyboardInteractive=false;
 
-	// configuration property for sftp
-	private TransportType proxyTransportType = TransportType.SOCKS5;
-	private String prefCSEncryption = null;
-	private String prefSCEncryption = null;
-	private String privateKeyFilePath = null;
-	private @Getter String privateKeyAuthAlias;
-	private @Getter String privateKeyPassword = null;
-	private String knownHostsPath = null;
-	private boolean strictHostKeyChecking = true;
-
-	// configuration parameters for ftps
+	// configuration parameters for SSL Context and SocketFactory
 	private @Getter String keystore;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
@@ -168,9 +129,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter boolean allowSelfSignedCertificates = false;
 	private @Getter boolean ignoreCertificateExpiredException = false;
 
-	private Session sftpSession;
-	private ChannelSftp sftpClient;
-	public FTPClient ftpClient;
+	private FTPClient ftpClient;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -181,139 +140,21 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		if (StringUtils.isEmpty(host)) {
 			throw new ConfigurationException("Attribute [host] is not set");
 		}
-		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(getAuthAlias())) {
-			if (ftpType != FtpType.SFTP) {
-				throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' is set");
-			}
-			else if (StringUtils.isEmpty(privateKeyAuthAlias)) {
-				throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' nor 'privateKeyAuthAlias' is set");
-			}
-		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 	}
 
-	public void openClient(String remoteDirectory) throws FtpConnectException {
-		log.debug("Open ftp client");
-		if (ftpType == FtpType.SFTP) {
-			if (sftpClient == null || sftpClient.isClosed()) {
-				openSftpClient(remoteDirectory);
-			}
+	public synchronized FTPClient openClient(String remoteDirectory) throws FtpConnectException {
+		LOG.debug("open ftp client");
+		if (ftpClient == null || ! ftpClient.isConnected()) {
+			openFtpClient(remoteDirectory);
 		}
-		else {
-			if (ftpClient == null || ! ftpClient.isConnected()) {
-				openFtpClient(remoteDirectory);
-			}
-		}
-	}
-
-	private void openSftpClient(String remoteDirectory) throws FtpConnectException {
-		try {
-			JSch jsch = new JSch();
-			final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			Properties config = new Properties();
-
-			if (StringUtils.isNotEmpty(privateKeyFilePath)) {
-				CredentialFactory pkcf = new CredentialFactory(getPrivateKeyAuthAlias(), getUsername(), getPrivateKeyPassword());
-				jsch.addIdentity(privateKeyFilePath, pkcf.getPassword());
-			}
-
-			if (StringUtils.isNotEmpty(knownHostsPath)) {
-				jsch.setKnownHosts(knownHostsPath);
-			}
-			if(!strictHostKeyChecking) {
-				config.put("StrictHostKeyChecking", "no");
-			}
-
-			sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
-
-			if (StringUtils.isNotEmpty(getPassword())) {
-				sftpSession.setPassword(getPassword());
-			}
-
-			// Set the connection properties and if necessary the proxy properties
-			if (StringUtils.isNotEmpty(prefCSEncryption)) {
-				sftpSession.setConfig("cipher.s2c", prefCSEncryption);
-			}
-			if (StringUtils.isNotEmpty(prefSCEncryption)) {
-				sftpSession.setConfig("cipher.s2c", prefSCEncryption);
-			}
-
-			if (! StringUtils.isEmpty(proxyHost)) {
-				sftpSession.setProxy(createProxy());
-			}
-
-			// make a secure connection with the remote host
-//			sftpSession.setSocketFactory(null); //TODO
-
-			sftpSession.setConfig(config);
-			sftpSession.connect();
-
-			if (sftpSession.isConnected()) {
-				closeSftpClient();
-				throw new IOException("Could not authenticate to sftp server");
-			}
-
-			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
-			channel.connect();
-
-			if (! StringUtils.isEmpty(remoteDirectory)) {
-				channel.cd(remoteDirectory);
-			}
-			sftpClient = channel;
-		}
-		catch(Exception e) {
-			closeSftpClient();
-			throw new FtpConnectException(e);
-		}
-	}
-
-	private Proxy createProxy() {
-		CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
-		switch (proxyTransportType) {
-		case HTTP: {
-				ProxyHTTP proxy = new ProxyHTTP(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			case SOCKS4: {
-				ProxySOCKS4 proxy = new ProxySOCKS4(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			case SOCKS5: {
-				ProxySOCKS5 proxy = new ProxySOCKS5(proxyHost, proxyPort);
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					proxy.setUserPasswd(pcf.getUsername(), pcf.getPassword());
-				}
-				return proxy;
-			}
-			default:
-				throw new IllegalStateException("proxy type does not exist");
-		}
-	}
-
-	protected void checkReply(String cmd) throws IOException  {
-		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
-			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
-		}
-		if (log.isDebugEnabled()) log.debug("Command [" + cmd + "] returned " + ftpClient.getReplyString());
+		return ftpClient;
 	}
 
 	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
 		try {
-			// set proxy properties
-			if (! StringUtils.isEmpty(proxyHost)) {
-				System.getProperties().put("ftpProxySet", "true" );
-				System.getProperties().put("ftpProxyHost", proxyHost);
-				System.getProperties().put("ftpProxyPort", "" + proxyPort);
-			}
-
-			// connect and logic using normal, non-secure ftp
+			// connect and logic using normal, non-secure ftp 
 			ftpClient = createFTPClient();
 			ftpClient.connect(host, port);
 			if (isPassive()) {
@@ -327,303 +168,90 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 				checkReply("changeWorkingDirectory "+remoteDirectory);
 			}
 
-			if (fileType!=null) {
+			if (fileType != null) {
 				ftpClient.setFileType(fileType.ftpFileType);
 				checkReply("setFileType "+remoteDirectory);
 			}
-		}
-		catch(Exception e) {
-			closeFtpClient();
+		} catch(Exception e) {
+			close(ftpClient);
 			throw new FtpConnectException(e);
 		}
 	}
 
-	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+	private void checkReply(String cmd) throws IOException  {
+		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
+		}
+		LOG.debug("Command [{}] returned ", ()->cmd, ftpClient::getReplyString);
+	}
+
+	private FTPClient createFTPClient() throws GeneralSecurityException, IOException {
 		FtpType transport = getFtpType();
+		Proxy proxy = getProxy();
 		if (transport == FtpType.FTP) {
-			return new FTPClient();
+			FTPClient client = new FTPClient();
+			if(proxy != null) {
+				client.setProxy(proxy); //May not set NULL
+			}
+			return client;
 		}
 
-		SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, getFtpType().getProtocol());
-		FTPSClient client = new FTPSClient(sslContext);
+		SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, transport.getProtocol());
+		FTPSClient client = new FTPSClient(transport.isImplicit(), sslContext);
+
+		if(proxy != null) {
+			client.setProxy(proxy);
+			client.setSocketFactory(sslContext.getSocketFactory()); // Have to set the SocketFactory again
+		}
+
 		if(isVerifyHostname()) {
-			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager'
+			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager' and uses the JVM Default
 		}
-		client = new FTPSClient(transport.getProtocol(), transport.isImplicit());
 
-		if(prot != Prot.C) {
+		if(prot != Prot.C) { //Have to check if not C because that removes the SSLSocketFactory
 			client.execPROT(prot.name());
 		}
 
 		return client;
 	}
 
-
-	public void closeClient() {
-		log.debug("Close ftp client");
-		if (ftpType == FtpType.SFTP) {
-			closeSftpClient();
+	private Proxy getProxy() {
+		if (StringUtils.isNotEmpty(proxyHost)) {
+			Proxy.Type type;
+			switch (proxyTransportType) {
+			case DIRECT:
+				type = Proxy.Type.DIRECT;
+				break;
+			case SOCKS:
+				type = Proxy.Type.SOCKS;
+				break;
+			case HTTP:
+				type = Proxy.Type.HTTP;
+				break;
+			default:
+				throw new IllegalStateException("invalid proxy type");
+			}
+			return new Proxy(type, new InetSocketAddress(host, port));
 		}
-		else {
-			closeFtpClient();
-		}
+		return null;
 	}
 
-	private void closeSftpClient() {
-		if (sftpSession != null) {
-			if (sftpClient != null && sftpClient.isConnected()) {
-				sftpClient.disconnect();
+	public static void close(FTPClient ftpClient) {
+		if (ftpClient != null && ftpClient.isConnected()) {
+			LOG.debug("closing ftp client");
+			try {
+				ftpClient.quit();
+				LOG.debug(ftpClient.getReplyString());
+				ftpClient.disconnect();
 			}
-			if (sftpSession.isConnected()) {
-				sftpSession.disconnect();
-			}
-			sftpSession = null;
-		}
-	}
-
-	private void closeFtpClient() {
-		if (ftpClient != null) {
-			if (ftpClient.isConnected()) {
-				try {
-					ftpClient.quit();
-					log.debug(ftpClient.getReplyString());
-					ftpClient.disconnect();
-				}
-				catch(Exception e) {
-					log.error("Error while closeing FtpClient", e);
-				}
-			}
-			ftpClient = null;
-		}
-	}
-
-	public String put(ParameterList params, PipeLineSession session, String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
-		if (messageIsContent) {
-			return _put(params, session, message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
-		}
-		List<String> remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
-		return FileUtils.getNamesFromList(remoteFilenames, ';');
-	}
-
-	/**
-	 * Transfers the contents of a stream to a file on the server.
-	 * @return name of the create remote file
-	 */
-	private String _put(ParameterList params, PipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
-		openClient(remoteDirectory);
-
-		// get remote name
-		String remoteFilename = FileUtils.getFilename(params, session, (File)null, remoteFilenamePattern);
-
-		// open local file
-		InputStream is = new ByteArrayInputStream(contents.getBytes());
-		try {
-			if (ftpType == FtpType.SFTP) {
-				sftpClient.put(is, remoteFilename);
-			}
-			else {
-				ftpClient.storeFile(remoteFilename, is);
-				checkReply("storeFile "+remoteFilename);
-			}
-		}
-		finally {
-			is.close();
-
-			if (closeAfterSend) {
-				closeClient();
-			}
-		}
-		return remoteFilename;
-	}
-
-	/**
-	 * @return list of remotely created files
-	 */
-	private List<String> _put(ParameterList params, PipeLineSession session, List<String> filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
-		openClient(remoteDirectory);
-
-		try {
-			LinkedList<String> remoteFilenames = new LinkedList<String>();
-			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
-				String localFilename = (String)filenameIt.next();
-				File localFile = new File(localFilename);
-
-				// get remote name
-				String remoteFilename = null;
-				if (! StringUtils.isEmpty(remoteFilenamePattern)) {
-					remoteFilename = FileUtils.getFilename(params, session, localFile, remoteFilenamePattern);
-				}
-				else {
-					remoteFilename = localFile.getName();
-				}
-
-				// open local file
-				FileInputStream fis = new FileInputStream(localFile);
-				try {
-					if (ftpType == FtpType.SFTP) {
-						sftpClient.put(fis, remoteFilename);
-					}
-					else {
-						ftpClient.storeFile(remoteFilename, fis);
-						checkReply("storeFile "+remoteFilename);
-					}
-				}
-				finally {
-					fis.close();
-				}
-				remoteFilenames.add(remoteFilename);
-			}
-			return remoteFilenames;
-		}
-		finally {
-			if (closeAfterSend) {
-				closeClient();
+			catch(Exception e) {
+				LOG.error("error while closeing FtpClient", e);
 			}
 		}
 	}
 
-	public List<String> ls(String remoteDirectory, boolean filesOnly, boolean closeAfterSend) throws Exception {
-		openClient(remoteDirectory);
-
-		try {
-			if (ftpType == FtpType.SFTP) {
-				List<String> result = new LinkedList<>();
-				List<LsEntry> listOfSftpFiles = sftpClient.ls(remoteDirectory);
-				for(LsEntry file : listOfSftpFiles) {
-					String filename = file.getFilename();
-					if (filesOnly || (! file.getAttrs().isDir())) {
-						if (! filename.startsWith(".")) {
-							result.add(filename);
-						}
-					}
-				}
-				return result;
-			}
-			return FileUtils.getListFromNames(ftpClient.listNames());
-		}
-		finally {
-			if (closeAfterSend) {
-				closeClient();
-			}
-		}
-	}
-
-	public String lsAsString(String remoteDirectory, boolean filesOnly, boolean closeAfterSend) throws Exception {
-		List<String> result = ls(remoteDirectory, filesOnly, closeAfterSend);
-		return FileUtils.getNamesFromList(result, ';');
-	}
-
-	public String get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
-		if (messageIsContent) {
-			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
-		}
-		List<String> result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
-		return FileUtils.getNamesFromList(result, ';');
-	}
-
-	public void deleteRemote(String remoteDirectory, String filename, boolean closeAfterDelete) throws Exception {
-		openClient(remoteDirectory);
-
-		try {
-			if (ftpType == FtpType.SFTP) {
-				sftpClient.rm(filename);
-			}
-			else {
-				ftpClient.deleteFile(filename);
-			}
-		}
-		finally {
-			if (closeAfterDelete) {
-				closeClient();
-			}
-		}
-	}
-
-	/**
-	 * @return concatenation of the contents of all received files
-	 */
-	private String _get(String remoteDirectory, List<String> filenames, boolean closeAfterGet) throws Exception {
-		openClient(remoteDirectory);
-
-		try {
-			StringBuffer result = new StringBuffer();
-			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
-				String remoteFilename = filenameIt.next();
-				OutputStream os = null;
-
-				os = new ByteArrayOutputStream();
-
-				try {
-					if (ftpType == FtpType.SFTP) {
-						sftpClient.get(remoteFilename, os);
-					}
-					else {
-						ftpClient.retrieveFile(remoteFilename, os);
-						checkReply("retrieve "+remoteFilename);
-					}
-				}
-				finally {
-					os.close();
-				}
-
-				result.append(((ByteArrayOutputStream)os).toString());
-			}
-			return result.toString();
-		}
-		finally {
-			if (closeAfterGet) {
-				closeClient();
-			}
-		}
-	}
-
-	/**
-	 * Returns a list as separated string of filenames of locally created files
-	 */
-	private List<String> _get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, List<String> filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
-		openClient(remoteDirectory);
-
-		try {
-			LinkedList<String> remoteFilenames = new LinkedList<String>();
-			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
-				String remoteFilename = (String)filenameIt.next();
-
-				String localFilename = remoteFilename;
-				if (! StringUtils.isEmpty(localFilenamePattern)) {
-					localFilename = FileUtils.getFilename(params, session, remoteFilename, localFilenamePattern);
-				}
-
-				File localFile = new File(localDirectory, localFilename);
-				OutputStream os = new FileOutputStream(localFile,false);
-				try {
-					if (ftpType == FtpType.SFTP) {
-						sftpClient.get(remoteFilename, os);
-					}
-					else {
-						ftpClient.retrieveFile(remoteFilename, os);
-						checkReply("retrieve "+remoteFilename);
-					}
-				}
-				catch(IOException e) {
-					os.close();
-					os = null;
-					localFile.delete();
-					throw e;
-				}
-				finally {
-					if (os != null)
-						os.close();
-				}
-
-				remoteFilenames.add(localFile.getAbsolutePath());
-			}
-			return remoteFilenames;
-		}
-		finally {
-			if (closeAfterGet) {
-				closeClient();
-			}
-		}
+	public void close() {
+		close(ftpClient);
 	}
 
 	/** Name or ip address of remote host */
@@ -667,26 +295,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		proxyPort = i;
 	}
 
-	/** alias to obtain credentials to authenticate on proxy */
-	public void setProxyAuthAlias(String string) {
-		proxyAuthAlias = string;
-	}
-
-	/** Default user name in case proxy requires authentication */
-	public void setProxyUsername(String string) {
-		proxyUsername = string;
-	}
-
-	/** Default password in case proxy requires authentication */
-	public void setProxyPassword(String string) {
-		proxyPassword = string;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(FtpType value) {
-		setFtpType(value);
-	}
 	/**
 	 * FTP protocol to use
 	 * @ff.default FTP
@@ -700,14 +308,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * If <code>true</code>, the contents of the message is send, otherwise it message contains the local filenames of the files to be send
-	 * @ff.default false
-	 */
-	public void setMessageIsContent(boolean b) {
-		messageIsContent = b;
-	}
-
-	/**
 	 * If <code>true</code>, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server
 	 * @ff.default true
 	 */
@@ -716,71 +316,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * (sftp) Transport type in case of sftp
+	 * (ftps) Transport type in case of sftp
 	 * @ff.default SOCKS5
 	 */
 	public void setProxyTransportType(TransportType type) {
 		proxyTransportType = type;
-	}
-
-	/** (sftp) Optional preferred encryption from client to server for sftp protocol */
-	public void setPrefCSEncryption(String string) {
-		prefCSEncryption = string;
-	}
-
-	/** (sftp) Optional preferred encryption from server to client for sftp protocol */
-	public void setPrefSCEncryption(String string) {
-		prefSCEncryption = string;
-	}
-
-	/** (sftp) Path to private key file for sftp authentication */
-	public void setPrivateKeyFilePath(String string) {
-		privateKeyFilePath = string;
-	}
-
-	/** (sftp) Name of the alias to obtain credentials for passphrase of private key file */
-	public void setPrivateKeyAuthAlias(String string) {
-		privateKeyAuthAlias = string;
-	}
-
-	/** (sftp) Passphrase of private key file */
-	public void setPrivateKeyPassword(String password) {
-		privateKeyPassword = password;
-	}
-
-	/** (sftp) Path to file with knownhosts */
-	public void setKnownHostsPath(String string) {
-		knownHostsPath = string;
-	}
-
-	/**
-	 * (sftp) Verify the hosts againt the knownhosts file.
-	 * @ff.default true
-	 */
-	public void setStrictHostKeyChecking(boolean b) {
-		strictHostKeyChecking = b;
-	}
-
-
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystore instead")
-	public void setCertificate(String string) {
-		setKeystore(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("has been replaced with keystoreType")
-	public void setCertificateType(KeystoreType value) {
-		setKeystoreType(value);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
-	public void setCertificateAuthAlias(String string) {
-		setKeystoreAuthAlias(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystorePassword instead")
-	public void setCertificatePassword(String string) {
-		setKeystorePassword(string);
 	}
 
 	/** (ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
@@ -789,7 +329,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		keystore = string;
 	}
 
-	/** (ftps) Type of keystore
+	/** (ftps) Type of keystore 
 	 * @ff.default pkcs12
 	 */
 	@Override
@@ -841,7 +381,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		truststore = string;
 	}
 
-	/** (ftps) Type of truststore
+	/** (ftps) Type of truststore 
 	 * @ff.default jks
 	 */
 	@Override
@@ -891,29 +431,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	/**
-	 * (ftps) if true, the server returns data via a SSL socket
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("use attribute prot=\"P\" instead")
-	public void setProtP(boolean b) {
-		prot = Prot.P;
-	}
-
-	/**
 	 * Sets the <code>Data Channel Protection Level</code>.
 	 * @ff.default C
 	 */
 	public void setProt(Prot prot) {
 		this.prot = prot;
-	}
-
-	/**
-	 * When <code>true</code>, keyboardinteractive is used to login
-	 * @ff.default false
-	 */
-	public void setKeyboardInteractive(boolean keyboardInteractive) {
-		this.keyboardInteractive = keyboardInteractive;
 	}
 
 	@Override

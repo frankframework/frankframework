@@ -23,44 +23,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class StringUtil {
-	/**
-	 * String replacer.
-	 *
-	 * @deprecated Use instead {@link String#replace(CharSequence, CharSequence)}.
-	 *
-	 * <p>
-	 *     Example:
-	 *     <pre>
-	 *         String a = "WeAreFrank";
-	 *         String res = StringUtil.replace(a, "WeAre", "IAm");
-	 *         System.out.println(res); // prints "IAmFrank"
-	 *     </pre>
-	 * </p>
-	 * @param source	is the original string
-	 * @param from		is the string to be replaced
-	 * @param to		is the string which will used to replace
-	 */
-	@Deprecated
-	public static String replace (String source, String from, String to) {
-		int start = source.indexOf(from);
-		if (start==-1) {
-			return source;
-		}
-		int fromLength = from.length();
-		char [] sourceArray = source.toCharArray();
-
-		StringBuilder buffer = new StringBuilder();
-		int srcPos=0;
-
-		while (start != -1) {
-			buffer.append (sourceArray, srcPos, start-srcPos);
-			buffer.append (to);
-			srcPos=start+fromLength;
-			start = source.indexOf (from, srcPos);
-		}
-		buffer.append (sourceArray, srcPos, sourceArray.length-srcPos);
-		return buffer.toString();
-	}
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
