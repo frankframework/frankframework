@@ -7,16 +7,6 @@ import org.junit.jupiter.api.Test;
 class StringUtilTest {
 
 	/**
-	 * Method: replace(String source, String from, String to)
-	 */
-	@Test
-	public void testReplace() {
-		String a = "Kobe";
-		String res = StringUtil.replace(a, "Ko", "Phoe");
-		assertEquals("Phoebe", res);
-	}
-
-	/**
 	 * Method: concatStrings(String part1, String separator, String part2)
 	 */
 	@Test

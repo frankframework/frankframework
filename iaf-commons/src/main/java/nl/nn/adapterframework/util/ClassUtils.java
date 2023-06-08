@@ -66,7 +66,7 @@ public abstract class ClassUtils {
 		// then try to get it as a URL
 		if (url == null && resourceToUse.contains(":")) {
 			try {
-				url = new URL(StringUtil.replace(resourceToUse, " ", "%20"));
+				url = new URL(resourceToUse.replace(" ", "%20"));
 			} catch (MalformedURLException e) {
 				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
 				fnfe.initCause(e);
