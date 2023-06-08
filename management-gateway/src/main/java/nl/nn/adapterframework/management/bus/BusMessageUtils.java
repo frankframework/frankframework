@@ -30,7 +30,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
