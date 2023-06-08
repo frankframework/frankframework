@@ -42,6 +42,6 @@ appModule.directive('flow', ['Misc', '$http', '$uibModal', function (Misc, $http
 				setTimeout(function () { scope.flowModalLadda = false; }, 1000);
 			}
 		},
-		template: '<a ng-if="flow.image === true" ng-href="{{flow.url}}" target="_blank"><img ng-src="{{flow.url}}" alt="Flow Diagram"></a><button ng-if="flow.image === false" ladda="flowModalLadda" ng-click="openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>'
+		template: '<a ng-if="flow.image === true" ng-href="{{flow.url}}" target="_blank" rel="noopener noreferrer"><img ng-src="{{flow.url}}" alt="Flow Diagram"></a><button ng-if="flow.image === false" ladda="flowModalLadda" ng-click="openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>'
 	}
 }]);
