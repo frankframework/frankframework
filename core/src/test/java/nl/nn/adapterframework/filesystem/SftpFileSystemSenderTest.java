@@ -26,7 +26,7 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
-			remoteDirectory = "/";
+			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = SftpFileSystemTest.createSshServer(port, username, password);
 

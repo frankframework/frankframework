@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collections;
 
+import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.AsyncAuthException;
@@ -43,7 +43,7 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
-			remoteDirectory = "/";
+			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
 			sshd = createSshServer(port, username, password);
 
@@ -71,17 +71,21 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 		sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
 		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
 
-		Path sftpTestFS = getTestDirectory();
-		sshd.setFileSystemFactory(new VirtualFileSystemFactory(sftpTestFS));
+		sshd.setFileSystemFactory(getTestDirectoryFS());
 		return sshd;
 	}
 
-	private static Path getTestDirectory() throws IOException {
+	/**
+	 * Creates the folder '../target/sftpTestFS' in which the tests will be executed.
+	 * This 'virtual FS' will pretend that the mentioned folder is the SFTP HOME directory.
+	 */
+	private static FileSystemFactory getTestDirectoryFS() throws IOException {
 		File targetFolder = new File(".", "target");
 		File sftpTestFS = new File(targetFolder.getCanonicalPath(), "sftpTestFS");
 		sftpTestFS.mkdir();
 		assertTrue(sftpTestFS.exists());
-		return sftpTestFS.toPath();
+
+		return new VirtualFileSystemFactory(sftpTestFS.toPath());
 	}
 
 	@Override

@@ -18,7 +18,6 @@ package nl.nn.adapterframework.ftp;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.Proxy.Type;
 import java.security.GeneralSecurityException;
 
 import javax.net.ssl.SSLContext;
@@ -218,16 +217,16 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	private Proxy getProxy() {
 		if (StringUtils.isNotEmpty(proxyHost)) {
-			Type type;
+			Proxy.Type type;
 			switch (proxyTransportType) {
 			case DIRECT:
-				type = Type.DIRECT;
+				type = Proxy.Type.DIRECT;
 				break;
 			case SOCKS:
-				type = Type.SOCKS;
+				type = Proxy.Type.SOCKS;
 				break;
 			case HTTP:
-				type = Type.HTTP;
+				type = Proxy.Type.HTTP;
 				break;
 			default:
 				throw new IllegalStateException("invalid proxy type");

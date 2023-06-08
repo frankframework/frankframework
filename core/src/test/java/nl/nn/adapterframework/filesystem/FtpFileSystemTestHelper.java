@@ -144,9 +144,8 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public boolean _folderExists(String folder) throws Exception {
-		String pwd = null;
 		try {
-			pwd = ftpClient.printWorkingDirectory();
+			String pwd = ftpClient.printWorkingDirectory();
 			try {
 				return ftpClient.changeWorkingDirectory(pwd + "/" + folder);
 			} finally {

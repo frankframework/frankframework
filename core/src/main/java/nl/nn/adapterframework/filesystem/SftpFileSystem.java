@@ -223,8 +223,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	/**
 	 * Recursively remove directory
-	 * @param folder
-	 * @throws FileSystemException
 	 */
 	private void removeDirectoryContent(String folder) throws SftpException, FileSystemException {
 		String pwd = ftpClient.pwd();
