@@ -9,6 +9,8 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		"warning": true
 	};
 
+	ctrl.adapters = {};
+
 	ctrl.searchText = "";
 
 	ctrl.selectedConfiguration = "All";
@@ -50,6 +52,8 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		$rootScope.$watch('alerts', function () { ctrl.alerts = $rootScope.alerts; }, true);
 		$rootScope.$watch('messageLog', function () { ctrl.messageLog = $rootScope.messageLog; });
 		$rootScope.$watch('adapters', function () { ctrl.adapters = $rootScope.adapters; });
+
+		ctrl.getProcessStateIconColor = $rootScope.getProcessStateIconColor;
 
 		if ($state.params.configuration != "All")
 			ctrl.changeConfiguration($state.params.configuration);

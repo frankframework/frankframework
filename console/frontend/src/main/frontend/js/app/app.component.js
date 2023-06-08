@@ -10,33 +10,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 
 	ctrl.loggedin = false;
 
-	$rootScope.alerts = [];
-
-	$rootScope.adapterSummary = {
-		started: 0,
-		stopped: 0,
-		starting: 0,
-		stopping: 0,
-		error: 0
-	};
-	$rootScope.receiverSummary = {
-		started: 0,
-		stopped: 0,
-		starting: 0,
-		stopping: 0,
-		error: 0
-	};
-	$rootScope.messageSummary = {
-		info: 0,
-		warn: 0,
-		error: 0
-	};
-
-	$rootScope.lastUpdated = 0;
-	$rootScope.timeout = null;
-
-	$rootScope.configurations = [];
-
 	ctrl.$onInit = function () {
 		/* state controller */
 		authService.loggedin(); //Check if the user is logged in.
@@ -48,6 +21,32 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		/* state controller end */
 
 		$rootScope.adapters = {};
+		$rootScope.alerts = [];
+
+		$rootScope.adapterSummary = {
+			started: 0,
+			stopped: 0,
+			starting: 0,
+			stopping: 0,
+			error: 0
+		};
+		$rootScope.receiverSummary = {
+			started: 0,
+			stopped: 0,
+			starting: 0,
+			stopping: 0,
+			error: 0
+		};
+		$rootScope.messageSummary = {
+			info: 0,
+			warn: 0,
+			error: 0
+		};
+
+		$rootScope.lastUpdated = 0;
+		$rootScope.timeout = null;
+
+		$rootScope.configurations = [];
 
 		Pace.on("done", ctrl.initializeFrankConsole);
 		$scope.$on('initializeFrankConsole', ctrl.initializeFrankConsole);
@@ -400,7 +399,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				return "fa-pause-circle";
 		}
 	};
-	ctrl.getProcessStateIconColor = function (processState) {
+	$rootScope.getProcessStateIconColor = function (processState) {
 		switch (processState) {
 			case "Available":
 				return "success";

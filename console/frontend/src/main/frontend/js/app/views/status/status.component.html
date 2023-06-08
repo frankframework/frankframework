@@ -206,7 +206,7 @@
     </div>
 
     <div class="row">
-        <div ng-repeat="adapter in $ctrl.adapters | configurationFilter:this | searchFilter:this" class="col-lg-12 adapters">
+        <div ng-repeat="adapter in $ctrl.adapters | configurationFilter:$ctrl | searchFilter:$ctrl" class="col-lg-12 adapters">
             <div ng-init="showContent = $ctrl.showContent(adapter)" class="ibox float-e-margins" id="{{::adapter.name}}">
                 <div ng-click="showContent = !showContent" class="ibox-title" title="Click to open" ng-class="(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')">
                     <div class="ibox-tools pull-right">
@@ -357,14 +357,14 @@
                                             <td>
                                                 <span class="pull-right">
                                                 	<span ng-repeat="store in receiver.transactionalStores">
-                                                		<span class="text-{{::getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
+                                                		<span class="text-{{::$ctrl.getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
 	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})" class="btn btn-xs btn-default" type="button">
-	                                                            <i class="fa {{::getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
+	                                                            <i class="fa {{::$ctrl.getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
 	                                                        </button>
 	                                                    </span>
                                                 	</span>
-                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started' || receiver.state =='exception_starting'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
-                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                                                    <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started' || receiver.state =='exception_starting'" type="button" ng-click="$ctrl.stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                                                    <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button" ng-click="$ctrl.startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
                                                     <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='loading' || receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
                                                     <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
