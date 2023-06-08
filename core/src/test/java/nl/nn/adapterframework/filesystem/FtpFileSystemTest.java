@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
@@ -51,9 +52,12 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem>
 	}
 
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
-		ftpServer.stop();
-		ftpServer = null;
+		if(ftpServer != null) {
+			ftpServer.stop();
+			ftpServer = null;
+		}
 
 		super.tearDown();
 	}

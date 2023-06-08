@@ -74,21 +74,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@ReferTo(FtpFileSystem.class)
-	default void setProxyAuthAlias(String proxyAuthAlias) {
-		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setProxyUsername(String proxyUsername) {
-		getFileSystem().setProxyUsername(proxyUsername);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setProxyPassword(String proxyPassword) {
-		getFileSystem().setProxyPassword(proxyPassword);
-	}
-
-	@ReferTo(FtpFileSystem.class)
 	default void setFtpType(FtpType value) {
 		getFileSystem().setFtpType(value);
 	}
@@ -99,11 +84,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@ReferTo(FtpFileSystem.class)
-	default void setMessageIsContent(boolean messageIsContent) {
-		getFileSystem().setMessageIsContent(messageIsContent);
-	}
-
-	@ReferTo(FtpFileSystem.class)
 	default void setPassive(boolean b) {
 		getFileSystem().setPassive(b);
 	}
@@ -111,41 +91,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	@ReferTo(FtpFileSystem.class)
 	default void setProxyTransportType(TransportType proxyTransportType) {
 		getFileSystem().setProxyTransportType(proxyTransportType);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setPrefCSEncryption(String prefCSEncryption) {
-		getFileSystem().setPrefCSEncryption(prefCSEncryption);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setPrefSCEncryption(String prefSCEncryption) {
-		getFileSystem().setPrefSCEncryption(prefSCEncryption);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setPrivateKeyFilePath(String privateKeyFilePath) {
-		getFileSystem().setPrivateKeyFilePath(privateKeyFilePath);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setPrivateKeyAuthAlias(String privateKeyAuthAlias) {
-		getFileSystem().setPrivateKeyAuthAlias(privateKeyAuthAlias);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setPrivateKeyPassword(String passPhrase) {
-		getFileSystem().setPrivateKeyPassword(passPhrase);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setKnownHostsPath(String knownHostsPath) {
-		getFileSystem().setKnownHostsPath(knownHostsPath);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setStrictHostKeyChecking(boolean strictChecking) {
-		getFileSystem().setStrictHostKeyChecking(strictChecking);
 	}
 
 	@Override
@@ -312,10 +257,5 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	@ReferTo(FtpFileSystem.class)
 	default void setProt(Prot prot) {
 		getFileSystem().setProt(prot);
-	}
-
-	@ReferTo(FtpFileSystem.class)
-	default void setKeyboardInteractive(boolean keyboardInteractive) {
-		getFileSystem().setKeyboardInteractive(keyboardInteractive);
 	}
 }

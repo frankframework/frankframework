@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.senders;
+package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.filesystem.FileSystemSender;
-import nl.nn.adapterframework.filesystem.FtpFileSystem;
-import nl.nn.adapterframework.ftp.FTPFileRef;
-import nl.nn.adapterframework.ftp.FtpFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.SftpFileSystem;
+import nl.nn.adapterframework.ftp.SftpFileRef;
+import nl.nn.adapterframework.ftp.SftpFileSystemDelegator;
 
-public class FtpFileSystemSender extends FileSystemSender<FTPFileRef, FtpFileSystem> implements FtpFileSystemDelegator {
+public class SftpFileSystemListener extends FileSystemListener<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 
-	public FtpFileSystemSender() {
-		setFileSystem(new FtpFileSystem());
+	@Override
+	public SftpFileSystem createFileSystem() {
+		return SftpFileSystemDelegator.super.createFileSystem();
 	}
+
 }
