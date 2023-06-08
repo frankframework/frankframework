@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StringUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -113,7 +112,7 @@ public class DelphiStringRecordReader extends Reader {
 		}
 		String result=new String(buf,charsetName);
 		if (StringUtils.isNotEmpty(separatorReplacement)) {
-			result= StringUtil.replace(result,separator,separatorReplacement);
+			result= result.replace(separator, separatorReplacement);
 		}
 		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
 		return result;
