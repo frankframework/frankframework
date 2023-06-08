@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
 
@@ -93,7 +93,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			Vector<LsEntry> files = ftpClient.ls(folder);
+			LinkedList<LsEntry> files = list(folder);
 			return (int) files.stream().filter(f -> !f.getAttrs().isDir()).count();
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
@@ -103,7 +103,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public DirectoryStream<SftpFileRef> listFiles(String folder) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folder, ftpClient.ls( (folder == null) ? "*" : folder )));
+			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folder, list(folder)));
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
@@ -120,7 +120,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
-			Vector<LsEntry> files = ftpClient.ls(file.getName());
+			LinkedList<LsEntry> files = list(file.getName());
 			if(!files.isEmpty()) {
 				return SftpFileRef.fromLsEntry(files.get(0));
 			}
@@ -130,6 +130,11 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			}
 		}
 		return null;
+	}
+
+	private LinkedList<LsEntry> list(String folder) throws SftpException {
+		String path = (folder == null) ? "*" : folder;
+		return new LinkedList<>(ftpClient.ls(path));
 	}
 
 	@Override
@@ -223,7 +228,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	 */
 	private void removeDirectoryContent(String folder) throws SftpException, FileSystemException {
 		String pwd = ftpClient.pwd();
-		Vector<LsEntry> files = ftpClient.ls(pwd+"/"+folder);
+		LinkedList<LsEntry> files = list(pwd+"/"+folder);
 		for (LsEntry ftpFile : files) {
 			String fileName = ftpFile.getFilename();
 			if (fileName.equals(".") || fileName.equals("..")) {
@@ -361,7 +366,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		private List<SftpFileRef> files;
 		private int i = 0;
 
-		SftpFilePathIterator(String folder, Vector<LsEntry> fileEnties) {
+		SftpFilePathIterator(String folder, LinkedList<LsEntry> fileEnties) {
 			files = new ArrayList<>();
 			for (LsEntry ftpFile : fileEnties) {
 				if(!ftpFile.getAttrs().isDir()) {

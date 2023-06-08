@@ -164,7 +164,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		if(folderName != null) {
+		if(folderName != null && _folderExists(folderName)) {
 			ftpClient.rmdir(folderName);
 		}
 	}

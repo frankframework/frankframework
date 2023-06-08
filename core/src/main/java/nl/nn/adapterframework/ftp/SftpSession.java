@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,21 +33,15 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
-import nl.nn.adapterframework.encryption.HasKeystore;
-import nl.nn.adapterframework.encryption.HasTruststore;
-import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Helper class for sftp and ftp.
+ * Helper class for sftp.
  * 
- *
- * 
- * @author John Dekker
+ * @author Niels Meijer
  */
-public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
+public class SftpSession implements IConfigurable {
 	private static final Logger LOG = LogUtil.getLogger(SftpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -80,24 +74,6 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private String knownHostsPath = null;
 	private boolean strictHostKeyChecking = true;
 
-	// configuration parameters for SSL Context and SocketFactory
-	private @Getter String keystore;
-	private @Getter String keystoreAuthAlias;
-	private @Getter String keystorePassword;
-	private @Getter KeystoreType keystoreType = KeystoreType.PKCS12;
-	private @Getter String keystoreAlias;
-	private @Getter String keystoreAliasAuthAlias;
-	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
-	private @Getter String truststore = null;
-	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
-	private @Getter String truststoreAuthAlias;
-	private @Getter String truststorePassword = null;
-	private @Getter String trustManagerAlgorithm=null;
-	private @Getter boolean verifyHostname = true;
-	private @Getter boolean allowSelfSignedCertificates = false;
-	private @Getter boolean ignoreCertificateExpiredException = false;
-
 	private JSch jsch;
 	private ChannelSftp sftpClient;
 
@@ -109,8 +85,6 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(getAuthAlias()) && StringUtils.isEmpty(privateKeyAuthAlias)) {
 			throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' nor 'privateKeyAuthAlias' is set");
 		}
-
-		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
 		try {
 			jsch = new JSch();
@@ -183,9 +157,6 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 			}
 
 			// make a secure connection with the remote host
-			SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, "TLS");
-			sftpSession.setSocketFactory(new SftpSocketFactory(sslContext));
-
 			sftpSession.connect();
 
 			if (!sftpSession.isConnected()) {
@@ -194,7 +165,7 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 			return sftpSession;
 		}
-		catch(JSchException  e) {
+		catch(JSchException e) {
 			throw new FtpConnectException(e);
 		}
 	}
@@ -339,111 +310,6 @@ public class SftpSession implements IConfigurable, HasKeystore, HasTruststore {
 	 */
 	public void setStrictHostKeyChecking(boolean b) {
 		strictHostKeyChecking = b;
-	}
-
-	/** Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
-	@Override
-	public void setKeystore(String string) {
-		keystore = string;
-	}
-
-	/** Type of keystore 
-	 * @ff.default pkcs12
-	 */
-	@Override
-	public void setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-	}
-
-	/** Authentication alias used to obtain keystore password */
-	@Override
-	public void setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-	}
-
-	/** Default password to access keystore */
-	@Override
-	public void setKeystorePassword(String string) {
-		keystorePassword = string;
-	}
-
-	/** Key manager algorithm. Can be left empty to use the servers default algorithm */
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
-	}
-
-	/** Alias to obtain specific certificate or key in keystore */
-	@Override
-	public void setKeystoreAlias(String string) {
-		keystoreAlias = string;
-	}
-
-	/** Authentication alias to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	@Override
-	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-	}
-
-	/** Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	@Override
-	public void setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
-	}
-
-	/** Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
-	@Override
-	public void setTruststore(String string) {
-		truststore = string;
-	}
-
-	/** Type of truststore 
-	 * @ff.default jks
-	 */
-	@Override
-	public void setTruststoreType(KeystoreType value) {
-		truststoreType = value;
-	}
-
-	/** Authentication alias used to obtain truststore password */
-	@Override
-	public void setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-	}
-
-	/** Default password to access truststore */
-	@Override
-	public void setTruststorePassword(String string) {
-		truststorePassword = string;
-	}
-
-	/** Trust manager algorithm. Can be left empty to use the servers default algorithm */
-	@Override
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		this.trustManagerAlgorithm = trustManagerAlgorithm;
-	}
-
-	/** If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
-	@Override
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
-	/** If <code>true</code>, self signed certificates are accepted
-	 * @ff.default false
-	 */
-	@Override
-	public void setAllowSelfSignedCertificates(boolean b) {
-		allowSelfSignedCertificates = b;
-	}
-
-	/**
-	 * If <code>true</code>, CertificateExpiredExceptions are ignored
-	 * @ff.default false
-	 */
-	@Override
-	public void setIgnoreCertificateExpiredException(boolean b) {
-		ignoreCertificateExpiredException = b;
 	}
 
 	@Override

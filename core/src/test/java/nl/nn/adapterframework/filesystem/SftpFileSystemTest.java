@@ -45,30 +45,35 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 		if("localhost".equals(host)) {
 			remoteDirectory = "/";
 
-			sshd = SshServer.setUpDefaultServer();
-			sshd.setPort(port);
-			sshd.setHost("localhost");
-			sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
-
-				@Override
-				public boolean authenticate(String username, String password, ServerSession session) throws PasswordChangeRequiredException, AsyncAuthException {
-					return "wearefrank".equals(username) && "pass_123".equals(password);
-				}
-
-			});
-			sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
-
-			SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
-			sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
-			sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
-
-			Path sftpTestFS = getTestDirectory();
-			sshd.setFileSystemFactory(new VirtualFileSystemFactory(sftpTestFS));
+			sshd = createSshServer(port, username, password);
 
 			sshd.start();
 		}
 
 		super.setUp();
+	}
+
+	static SshServer createSshServer(int port, String username, String password) throws IOException {
+		SshServer sshd = SshServer.setUpDefaultServer();
+		sshd.setPort(port);
+		sshd.setHost("localhost");
+		sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
+
+			@Override
+			public boolean authenticate(String uname, String psswrd, ServerSession session) throws PasswordChangeRequiredException, AsyncAuthException {
+				return username.equals(uname) && password.equals(psswrd);
+			}
+
+		});
+		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
+
+		SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
+		sshd.setSubsystemFactories(Collections.singletonList(sftpFactory));
+		sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
+
+		Path sftpTestFS = getTestDirectory();
+		sshd.setFileSystemFactory(new VirtualFileSystemFactory(sftpTestFS));
+		return sshd;
 	}
 
 	private static Path getTestDirectory() throws IOException {
