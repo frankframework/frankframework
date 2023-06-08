@@ -44,6 +44,7 @@ import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
 /**
  * Singleton class that knows about the RestListeners that are active.
@@ -118,7 +119,7 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		log.trace("searching listener for uri [{}] method [{}]", uri, method);
 
@@ -248,18 +249,13 @@ public class RestServiceDispatcher {
 				}
 			}
 
-			String result;
-			try {
-				result=listener.processRequest(new Message(request), context).asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			}
+			Message result=listener.processRequest(new Message(request), context);
 			//Caching: pipeline has been processed, save etag
-			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
+			if(!Message.isNull(result) && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
+			if (Message.isNull(result) && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
 				log.warn("result is null!");
 			}
 			return result;

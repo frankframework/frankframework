@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class PropertyUtil {
@@ -21,7 +21,7 @@ public class PropertyUtil {
 		if (properties == null) {
 			properties = new Properties();
 			try {
-				properties.load(ClassUtils.getResourceURL(propertyFile).openStream());
+				properties.load(ClassLoaderUtils.getResourceURL(propertyFile).openStream());
 			} catch (IOException e) {
 				log.warn("Could not load property file ["+propertyFile+"]",e);
 			}

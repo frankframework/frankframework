@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
@@ -53,7 +55,6 @@ import nl.nn.adapterframework.management.bus.dto.ConfigurationDTO;
 public class ConfigManagement extends BusEndpointBase {
 
 	private static final String HEADER_CONFIGURATION_VERSION_KEY = "version";
-	private static final String HEADER_DATASOURCE_NAME_KEY = BusMessageUtils.HEADER_DATASOURCE_NAME_KEY;
 
 	/**
 	 * The header 'loaded' is used to differentiate between the loaded and original (raw) XML.
@@ -89,7 +90,7 @@ public class ConfigManagement extends BusEndpointBase {
 			Configuration configuration = getConfigurationByName(configurationName);
 
 			if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-				String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+				String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				List<ConfigurationDTO> configs = getConfigsFromDatabase(configurationName, datasourceName);
 
 				for(ConfigurationDTO config: configs) {
@@ -126,7 +127,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		Boolean activate = BusMessageUtils.getBooleanHeader(message, "activate", null);
 		Boolean autoreload = BusMessageUtils.getBooleanHeader(message, "autoreload", null);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 
 		try {
 			if(activate != null) {
@@ -149,7 +150,7 @@ public class ConfigManagement extends BusEndpointBase {
 		boolean multipleConfigs = BusMessageUtils.getBooleanHeader(message, "multiple_configs", false);
 		boolean activateConfig = BusMessageUtils.getBooleanHeader(message, "activate_config", true);
 		boolean automaticReload = BusMessageUtils.getBooleanHeader(message, "automatic_reload", false);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String user = BusMessageUtils.getHeader(message, "user");
 		InputStream file = message.getPayload();
 		String filename = BusMessageUtils.getHeader(message, "filename");
@@ -181,7 +182,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 
 		Map<String, Object> configuration;
 		try {
@@ -206,7 +207,7 @@ public class ConfigManagement extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		getConfigurationByName(configurationName); //Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
-		String datasourceName = BusMessageUtils.getHeader(message, HEADER_DATASOURCE_NAME_KEY);
+		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 
 		try {
 			ConfigurationUtils.removeConfigFromDatabase(getApplicationContext(), configurationName, datasourceName, version);
@@ -215,15 +216,8 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 	}
 
-	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, String dataSourceName) {
+	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, @Nonnull final String dataSourceName) {
 		List<ConfigurationDTO> configurations = new LinkedList<>();
-
-		if (StringUtils.isEmpty(dataSourceName)) {
-			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-			if (StringUtils.isEmpty(dataSourceName)) {
-				throw new BusException("no datasource specified and default datasource not found");
-			}
-		}
 
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 		qs.setDatasourceName(dataSourceName);

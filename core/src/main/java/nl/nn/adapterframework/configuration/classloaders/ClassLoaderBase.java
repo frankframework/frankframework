@@ -31,7 +31,7 @@ import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -321,6 +321,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	@Override
 	public String toString() {
-		return ClassUtils.nameOf(this);
+		return ClassLoaderUtils.nameOf(this);
 	}
 }

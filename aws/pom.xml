@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.405</version>
+			<version>1.12.466</version>
 		</dependency>
 
 		<dependency>
@@ -93,4 +93,30 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<!-- The sqs messaging lib is locked to Java 8, these dependencies are required by CloudWatch (MicroMeter) -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>sqs</artifactId>
+				<version>2.20.67</version>
+			</dependency>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>auth</artifactId>
+				<version>2.20.69</version>
+			</dependency>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>utils</artifactId>
+				<version>2.20.63</version>
+			</dependency>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>cloudwatch</artifactId>
+				<version>2.20.63</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

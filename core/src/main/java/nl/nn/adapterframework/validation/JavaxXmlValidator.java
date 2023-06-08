@@ -65,8 +65,8 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 //	private static final Map<String, URL> globalRegistry = new HashMap<String, URL>();
 //
 //	static {
-//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
-//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
+//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassLoaderUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
+//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassLoaderUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
 //	}
 
 	private Map<String, Schema> javaxSchemas = new LinkedHashMap<String, Schema>();

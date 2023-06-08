@@ -37,7 +37,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentLength="100"
+						maxCommentLength="200"
 						selectCondition="TNUMBER=${jdbc.querylistener.key}"
 						statusValueAvailable="5"
 						statusValueProcessed="6"
@@ -69,7 +69,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="JdbcListenerDatabaseMiddleware" 
+	<adapter name="JdbcListenerDatabaseMiddleware"
 		description="Used as a middleware in JdbcListener scenarios to prevent other nodes processing the message">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -78,25 +78,25 @@
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
-			</exits> 
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" 
+			</exits>
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<pipe name="DeleteIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}" 
+					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}"
 				/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="DeleteIbisstore">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="DELETE FROM IBISSTORE WHERE SLOTID = ?" 
+					query="DELETE FROM IBISSTORE WHERE SLOTID = ?"
 				/>
 					<param name="slotid" xpathExpression="request/@slotId"/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="InsertIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)" 
+					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)"
 				>
 					<param name="status" xpathExpression="request/@status"/>
 					<param name="string" xpathExpression="request/@string"/>

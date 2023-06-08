@@ -21,15 +21,13 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Runnable object for calling a request reply service. When a
- * <code>Throwable</code> has been thrown during execution is should be returned
+ * <code>Throwable</code> has been thrown during execution it should be returned
  * by getThrowable() otherwise the reply should be returned by getReply().
  *
  * @author Jaco de Groot
  */
 public abstract class RequestReplyExecutor implements Runnable {
-	protected @Getter @Setter String correlationID;
 	protected @Getter @Setter Message request;
 	protected @Getter @Setter SenderResult reply;
 	protected @Getter @Setter Throwable throwable;
-
 }

@@ -1,0 +1,18 @@
+{
+    "severity": "CRITICAL",
+    "filter": "SOURCE",
+    "period": 3600,
+    "sources": {
+        "adapter1": [
+            "Pipe [Send transacted message to mandatory subadapter]"
+        ],
+        "adapter2": [
+            "Pipe [Continue if this call was transacted]"
+        ]
+    },
+    "threshold": 10,
+    "type": "ALARM",
+    "events": [
+        "Sender Timeout"
+    ]
+}

@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
@@ -48,10 +49,6 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 	List<Configuration> getConfigurations();
 
 	Configuration getConfiguration(String configurationName);
-
-	public enum IbisAction {
-		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
-	}
 
 	/**
 	 * Utility function to give commands to Adapters and Receivers

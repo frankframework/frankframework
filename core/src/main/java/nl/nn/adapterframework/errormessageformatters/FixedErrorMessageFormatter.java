@@ -24,10 +24,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -52,7 +51,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				messageToReturn = new Message(messageToReturn.asString() + StreamUtil.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
+				messageToReturn = new Message(messageToReturn.asString() + StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [{}]", getFilename(), e);
 			}
@@ -62,7 +61,8 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			try {
-				messageToReturn = new Message(StringUtil.replace(messageToReturn.asString(), getReplaceFrom(), getReplaceTo()));
+				String messageAsString = messageToReturn.asString();
+				messageToReturn = new Message(messageAsString.replace(getReplaceFrom(), getReplaceTo()));
 			} catch (IOException e) {
 				log.error("got error formatting errorMessage", e);
 			}

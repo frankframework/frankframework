@@ -29,7 +29,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
@@ -58,7 +58,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "Ldap/data.ldif";
-		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
+		URL ldifDataUrl = ClassLoaderUtils.getResourceURL(ldifDataFile);
 		if (ldifDataUrl == null) {
 			fail("cannot find resource [" + ldifDataFile + "]");
 		}
@@ -165,7 +165,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	private void compareXML(String expectedFile, String result) throws SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL(expectedFile);
+		URL expectedUrl = ClassLoaderUtils.getResourceURL(expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}

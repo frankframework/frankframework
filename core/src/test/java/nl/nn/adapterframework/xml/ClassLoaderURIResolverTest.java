@@ -28,7 +28,7 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -89,12 +89,12 @@ public class ClassLoaderURIResolverTest {
 		case LOCAL:
 			return "/ClassLoader/Xslt/root.xsl";
 		case BYTES:
-			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
+			result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
 		case CLASSPATH:
 			return "classpath:ClassLoader/Xslt/root.xsl";
 		case FILE_SCHEME:
-			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
+			result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
 		case NULL:
 			return null;
@@ -124,7 +124,7 @@ public class ClassLoaderURIResolverTest {
 		case CLASSPATH:
 			return "classpath:/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
-			return ClassUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
+			return ClassLoaderUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
 		default:
 			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
 		}

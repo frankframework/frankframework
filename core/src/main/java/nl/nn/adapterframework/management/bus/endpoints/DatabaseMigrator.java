@@ -52,7 +52,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@ActionSelector(BusAction.DOWNLOAD)
 	public BinaryResponseMessage downloadMigrationScript(Message<?> message) throws IOException {
-		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
 		if(IbisManager.ALL_CONFIGS_KEY.equals(configurationName)) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try (ZipOutputStream zos = new ZipOutputStream(out)) {

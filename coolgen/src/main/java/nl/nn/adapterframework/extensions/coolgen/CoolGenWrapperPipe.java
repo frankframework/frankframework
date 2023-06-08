@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.coolgen.proxy.CoolGenXMLProxy;
 import nl.nn.coolgen.proxy.XmlProxyException;
@@ -120,7 +120,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		if (preProcStylesheetName != null) {
 			try {
 
-				URL preprocUrl = ClassUtils.getResourceURL(this, preProcStylesheetName);
+				URL preprocUrl = ClassLoaderUtils.getResourceURL(this, preProcStylesheetName);
 
 				if (preprocUrl == null)
 					throw new ConfigurationException("cannot find resource for preProcTransformer, URL-String [" + preProcStylesheetName + "]");
@@ -134,7 +134,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 		if (postProcStylesheetName != null) {
 			try {
 
-				URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
+				URL postprocUrl = ClassLoaderUtils.getResourceURL(this, postProcStylesheetName);
 				if (postprocUrl == null)
 					throw new ConfigurationException("cannot find resource for postProcTransformer, URL-String [" + postProcStylesheetName + "]");
 
@@ -147,7 +147,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
 
 		if (proxyInputSchema != null) {
 			String stylesheet;
-			URL schemaUrl = ClassUtils.getResourceURL(this, proxyInputSchema);
+			URL schemaUrl = ClassLoaderUtils.getResourceURL(this, proxyInputSchema);
 
 			if (schemaUrl == null)
 				throw new ConfigurationException("cannot find resource for proxyInputSchema, URL-String [" + proxyInputSchema + "]");

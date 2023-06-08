@@ -39,8 +39,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console</artifactId>
-			<type>war</type>
+			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-console-backend</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>

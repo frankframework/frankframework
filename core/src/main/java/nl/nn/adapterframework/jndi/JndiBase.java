@@ -25,14 +25,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +32,13 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -94,7 +93,7 @@ public class JndiBase implements IConfigurable {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(this, getJndiProperties());
+			URL url = ClassLoaderUtils.getResourceURL(this, getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}

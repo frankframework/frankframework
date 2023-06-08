@@ -2,4 +2,5 @@
 	<Include ref="ConfigurationHelloWorld.xml"/>
 	<Include ref="ConfigurationHelloWorlds.xml"/>
 	<Include ref="ConfigurationHelloBeautifulWorld.xml"/>
+	<Include ref="ConfigurationManualExerciseMundo.xml"/>
 </Configuration>

@@ -64,7 +64,7 @@ import nl.nn.adapterframework.core.SharedResources;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.validation.IXSD;
 import nl.nn.adapterframework.validation.SchemaUtils;
@@ -405,7 +405,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 	ClassLoaderWSDLLocator(WsdlXmlValidator wsdlXmlValidator, String wsdl) {
 		configurationClassLoader = wsdlXmlValidator.getConfigurationClassLoader();
 		this.wsdl = wsdl;
-		url = ClassUtils.getResourceURL(this, wsdl);
+		url = ClassLoaderUtils.getResourceURL(this, wsdl);
 	}
 
 	@Override
@@ -438,7 +438,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 	}
 
 	private InputSource getInputSource(String resource) {
-		return getInputSource(ClassUtils.getResourceURL(this, resource));
+		return getInputSource(ClassLoaderUtils.getResourceURL(this, resource));
 	}
 
 	private InputSource getInputSource(URL url) {

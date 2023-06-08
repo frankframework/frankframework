@@ -27,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterReader;
 import java.io.IOException;
@@ -603,7 +602,7 @@ public class MessageTest {
 		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath() + "-bestaatniet";
 		File source = new File(unkownfilename);
 		Message adapter = new FileMessage(source);
-		Exception exception = assertThrows(FileNotFoundException.class, () -> { adapter.asInputStream(); });
+		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); });
 		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
 
