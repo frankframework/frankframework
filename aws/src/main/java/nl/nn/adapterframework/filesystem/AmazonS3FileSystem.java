@@ -30,6 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+
+import com.amazonaws.services.s3.model.PutObjectRequest;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.AmazonServiceException;
@@ -89,6 +93,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
+
+	private @Getter String storageClass = null;
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -265,7 +271,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 						ObjectMetadata metaData = new ObjectMetadata();
 						metaData.setContentLength(file.length());
 
-						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+						PutObjectRequest por = new PutObjectRequest(bucketName, f.getKey(), fis, metaData);
+						if(StringUtils.isNotEmpty(getStorageClass())){
+							por.setStorageClass(getStorageClass());
+						}
+
+						s3Client.putObject(por);
 					} finally {
 						isClosed = true;
 						Files.delete(file.toPath());
@@ -366,7 +377,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
-		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, source.getKey(), bucketName, destination.getKey());
+		if(StringUtils.isNotEmpty(getStorageClass())){
+			cor.setStorageClass(getStorageClass());
+		}
+		s3Client.copyObject(cor);
 		s3Client.deleteObject(bucketName, source.getKey());
 		return destination;
 	}
@@ -377,7 +392,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
 		}
 		String destinationFile = destinationFolder+"/"+getName(f);
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
+		if(StringUtils.isNotEmpty(getStorageClass())){
+			cor.setStorageClass(getStorageClass());
+		}
+		s3Client.copyObject(cor);
 		return toFile(destinationFile);
 	}
 
@@ -653,6 +672,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/** Proxy port */
 	public void setProxyPort(Integer proxyPort) {
 		this.proxyPort = proxyPort;
+	}
+
+	/** S3 Storage Class, for more information see https://aws.amazon.com/s3/storage-classes/ */
+	public void setStorageClass(String storageClass) {
+		this.storageClass = storageClass;
 	}
 
 }

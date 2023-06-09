@@ -70,4 +70,9 @@ public interface AmazonS3FileSystemDelegator {
 	default void setServiceEndpoint(String serviceEndpoint) {
 		getFileSystem().setServiceEndpoint(serviceEndpoint);
 	}
+
+	@ReferTo(AmazonS3FileSystem.class)
+	default void setStorageClass(String storageClass) {
+		getFileSystem().setStorageClass(storageClass);
+	}
 }
