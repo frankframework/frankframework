@@ -63,7 +63,7 @@ public class SlidesConvertor extends AbstractConvertor {
 		}
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
-			if(configuration.isLoadExternalResources()){
+			if(!configuration.isLoadExternalResources()){
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
 			Presentation presentation = new Presentation(inputStream, loadOptions);
