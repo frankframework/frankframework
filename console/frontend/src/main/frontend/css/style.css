@@ -7059,11 +7059,7 @@ body.body-small .vote-icon {
 .dataTables_paginate a:hover{
   background-color: #E9E9ED !important;
   border: none !important;
-  transition: all 0.3s ease-in-out;
   cursor: pointer;
-}
-.paginate_button.current{
-  color: green !important;
 }
 
 /* Makes both classes be inline */
