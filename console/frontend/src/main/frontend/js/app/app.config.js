@@ -332,7 +332,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.execute_query', {
 				url: "/jdbc/execute-query",
-				templateUrl: "js/app/views/jdbc/jdbc-execute-query/ExecuteJdbcQuery.html",
+				component: 'jdbcExecuteQuery',
 				data: {
 					pageTitle: 'Execute JDBC Query',
 					breadcrumbs: 'JDBC > Execute Query'

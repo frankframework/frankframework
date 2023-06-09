@@ -235,5 +235,5 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 appModule.component('status', {
 	controller: ['$scope', '$rootScope', 'Api', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http', StatusController],
-	templateUrl: "js/app/views/status/status.component.html",
+	templateUrl: 'js/app/views/status/status.component.html',
 });
