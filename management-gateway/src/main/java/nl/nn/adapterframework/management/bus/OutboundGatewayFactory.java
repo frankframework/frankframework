@@ -20,13 +20,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Allows the creation of outbound integration gateways.
@@ -38,29 +37,24 @@ public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationC
 	private IntegrationGateway<T> gateway;
 
 	private static final String GATEWAY_CLASS_KEY = "management.gateway.outbound.class";
+	private @Setter String gatewayClassname = null;
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() throws Exception {
-		String gatewayClassname = getGatewayClassname();
+		if(StringUtils.isBlank(gatewayClassname)) {
+			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
+		}
+		log.info("attempting to initialize using gateway class [{}]", gatewayClassname);
+
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 
 		if(!IntegrationGateway.class.isAssignableFrom(gatewayClass)) {
 			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
 		}
 
-		gateway = (IntegrationGateway<T>) applicationContext.getAutowireCapableBeanFactory().createBean(gatewayClass, AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR, false);
+		gateway = (IntegrationGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
 		log.info("created gateway [{}]", gateway);
-	}
-
-	private String getGatewayClassname() {
-		Environment env = applicationContext.getEnvironment();
-		String classname = env.getProperty(GATEWAY_CLASS_KEY);
-		if(StringUtils.isBlank(classname)) {
-			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
-		}
-		log.info("attempting to initialize using gateway class [{}]", classname);
-		return classname;
 	}
 
 	@Override

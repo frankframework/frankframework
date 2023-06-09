@@ -15,105 +15,50 @@
 */
 package nl.nn.adapterframework.management.gateway;
 
-import java.util.Collections;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.EvaluationException;
-import org.springframework.expression.Expression;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-import org.springframework.integration.channel.QueueChannel;
-import org.springframework.integration.expression.ValueExpression;
-import org.springframework.integration.http.outbound.HttpRequestExecutingMessageHandler;
-import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
-import org.springframework.integration.support.MessageBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
 
+import lombok.Setter;
 import nl.nn.adapterframework.management.bus.IntegrationGateway;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class HttpOutboundGateway<T> extends HttpRequestExecutingMessageHandler implements IntegrationGateway<T> {
+public class HttpOutboundGateway<T> implements InitializingBean, ApplicationContextAware, IntegrationGateway<T> {
 
-	public HttpOutboundGateway() {
-		this("http://localhost/iaf-test/iaf/management");
-	}
+	private HttpOutboundHandler handler;
+	private @Setter ApplicationContext applicationContext;
 
-	public HttpOutboundGateway(@Value("${management.gateway.http.outbound.endpoint}") String endpoint) {
-		super(endpoint);
-	}
-
-	/**
-	 * Triggered by final AfterPropertiesSet()
-	 */
-	@Override
-	protected void doInit() {
-		super.doInit();
-
-		QueueChannel responseChannel = SpringUtils.createBean(getApplicationContext(), QueueChannel.class);
-		setOutputChannel(responseChannel);
-
-		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(getApplicationContext(), DefaultHttpHeaderMapper.class);
-		headerMapper.setOutboundHeaderNames("topic", "action");
-		headerMapper.setInboundHeaderNames("meta-*");
-		setHeaderMapper(headerMapper);
-
-		setMessageConverters(Collections.singletonList(new ByteArrayHttpMessageConverter()));
-
-		setHttpMethodExpression(new HttpMethodExpression());
-	}
-
-	private static class HttpMethodExpression extends ValueExpression<HttpMethod> {
-
-		public HttpMethodExpression() {
-			super(HttpMethod.POST);
-		}
-
-		@Override
-		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
-			if(rootObject instanceof Message<?> && "NONE".equals(((Message<?>) rootObject).getPayload())) {
-				return HttpMethod.GET;
-			}
-			return super.getValue(context, rootObject);
-		}
-	}
+	@Value("${management.gateway.http.outbound.endpoint}")
+	private String endpoint;
 
 	@Override
-	protected Object resolveErrorChannel(MessageHeaders requestHeaders) {
-		return getOutputChannel();
+	public void afterPropertiesSet() throws Exception {
+		if(StringUtils.isBlank(endpoint)) {
+			throw new IllegalStateException("no endpoint specified");
+		}
+
+		handler = new HttpOutboundHandler(endpoint);
+		SpringUtils.autowireByName(applicationContext, handler);
 	}
 
 	// T in T out.
-	@Override//handleRequestMessage
-	public Message<T> sendSyncMessage(Message<T> in) {
-		Object response = handleRequestMessage(in);
-		if(response instanceof Message) {
-			return (Message<T>) response;
-		}
-		if(response instanceof MessageBuilder) {
-			return ((MessageBuilder) response).build();
-		}
-
-		throw new IllegalStateException("unknown response type ["+((response != null) ? response.getClass().getCanonicalName() : "null")+"]");
-	}
-
-	/**
-	 * Always convert to a binary response, JAX-RS may convert this to characters if needed.
-	 * The conversion from String to binary may use the wrong encoding.
-	 */
 	@Override
-	protected Object evaluateTypeFromExpression(Message<?> requestMessage, Expression expression, String property) {
-		if("expectedResponseType".equals(property)) {
-			return byte[].class;
-		}
-
-		return super.evaluateTypeFromExpression(requestMessage, expression, property);
+	public Message<T> sendSyncMessage(Message<T> in) {
+		return (Message<T>) handler.handleRequestMessage(in);
 	}
 
 	// T in, no reply
 	@Override
 	public void sendAsyncMessage(Message<T> in) {
-		super.handleMessage(in);
+		handler.handleMessage(in);
+	}
+
+	@Override
+	public IntegrationPatternType getIntegrationPatternType() {
+		return IntegrationPatternType.outbound_gateway;
 	}
 }
