@@ -16,11 +16,10 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import com.aspose.slides.IResourceLoadingArgs;
-import com.aspose.words.IResourceLoadingCallback;
 import com.aspose.words.ResourceLoadingAction;
 import com.aspose.words.ResourceLoadingArgs;
 
-public class OfflineResourceLoader implements IResourceLoadingCallback, com.aspose.slides.IResourceLoadingCallback {
+public class OfflineResourceLoader implements com.aspose.words.IResourceLoadingCallback, com.aspose.slides.IResourceLoadingCallback {
 
 	@Override
 	public int resourceLoading(IResourceLoadingArgs resourceLoadingArgs) {
