@@ -143,8 +143,8 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testMessageFilterWithMessageWrapper() throws Exception {
-		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID");
-		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id");
+		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID", null);
+		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id", null);
 		testMessageFilterWithJavaListenerHelper(messageInFilter, messageOutOfFilter);
 	}
 

@@ -61,6 +61,8 @@ import lombok.Lombok;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -772,7 +774,7 @@ public class Message implements Serializable, Closeable {
 			if (request == null) {
 				result.write("null");
 			} else {
-				result.write(getRequestClass() + " " + getId() + ": " + request.toString());
+				result.write(getRequestClass() + " " + getId() + ": [" + request.toString() + "]");
 			}
 		} catch (IOException e) {
 			result.write("cannot write toString: " + e.getMessage());
@@ -798,43 +800,13 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof Path) {
 			return new PathMessage((Path) object);
 		}
+		if (object instanceof MessageWrapper) {
+			return ((MessageWrapper<?>)object).getMessage();
+		}
+		if (object instanceof RawMessageWrapper) {
+			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
+		}
 		return new Message(null, object);
-	}
-
-	@Deprecated
-	public static Object asObject(Object object) {
-		if (object instanceof Message) {
-			return ((Message) object).asObject();
-		}
-		return object;
-	}
-
-	public static Reader asReader(Object object) throws IOException {
-		return asReader(object, null);
-	}
-
-	public static Reader asReader(Object object, String defaultCharset) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof Reader) {
-			return (Reader) object;
-		}
-		return Message.asMessage(object).asReader(defaultCharset);
-	}
-
-	public static InputStream asInputStream(Object object) throws IOException {
-		return asInputStream(object, null);
-	}
-
-	public static InputStream asInputStream(Object object, String defaultCharset) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof InputStream) {
-			return (InputStream) object;
-		}
-		return Message.asMessage(object).asInputStream(defaultCharset);
 	}
 
 	public static InputSource asInputSource(Object object) throws IOException {

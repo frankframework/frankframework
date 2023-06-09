@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,16 +27,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -51,20 +41,29 @@ import com.ing.ifsa.IFSATextMessage;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
  * <br/>
  * <p>Descender classes must set either Requester or Provider behaviour in their constructor.</p>
- * 
- * N.B. 
+ *
+ * N.B.
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
  * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
- * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
+ * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on
  * the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
- * 
+ *
  * <code>    ifsa.provider.useSelectors=false</code>
- * 
+ *
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
@@ -80,7 +79,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
 	private static final int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
 
-	private static Boolean useSelectorsStore=null; 
+	private static Boolean useSelectorsStore=null;
 
 	private int ackMode = -1;
 
@@ -95,10 +94,10 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
     private IFSAQueue queue;
 
 	private IfsaMessagingSource messagingSource=null;
-	
+
 	private boolean requestor=false;
 	private boolean provider=false;
-		
+
 	private String providerSelector=null;
 
 	public IfsaFacade(boolean asProvider) {
@@ -109,26 +108,26 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		else
 			requestor=true;
 	}
-	
+
 	protected String getLogPrefix() {
-		
+
 		String objectType;
 		String serviceInfo="";
 		try {
 			if (isRequestor()) {
 				objectType = "IfsaRequester";
-				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"] ":""); 
+				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"] ":"");
 			} else {
-				objectType = "IfsaProvider";				
-				serviceInfo = "for Application ["+getApplicationId()+"] "; 
-			} 
+				objectType = "IfsaProvider";
+				serviceInfo = "for Application ["+getApplicationId()+"] ";
+			}
 		} catch (IfsaException e) {
 			log.debug("Exception determining objectType in getLogPrefix",e);
 			objectType="Object";
-			serviceInfo = "of Application ["+getApplicationId()+"]"; 
+			serviceInfo = "of Application ["+getApplicationId()+"]";
 		}
-		
-		return objectType + "["+ getName()+ "] " + serviceInfo;  
+
+		return objectType + "["+ getName()+ "] " + serviceInfo;
 	}
 
 	/**
@@ -188,7 +187,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		}
 	}
 
-	/** 
+	/**
 	 * Prepares object for communication on the IFSA bus.
 	 * Obtains a connection and a serviceQueue.
 	 */
@@ -203,7 +202,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		}
 	}
 
-	/** 
+	/**
 	 * Stops communication on the IFSA bus.
 	 * Releases references to serviceQueue and connection.
 	 */
@@ -226,7 +225,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 			messagingSource = null;
 	    }
 	}
-	
+
 
 	/**
 	 * Looks up the <code>serviceId</code> in the <code>IFSAContext</code>.<br/>
@@ -274,13 +273,13 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		}
 		return messagingSource;
 	}
-	
+
 	/**
 	 *  Create a session on the connection to the service
 	 */
 	protected QueueSession createSession() throws IfsaException {
 		try {
-			int mode = getAckMode(); 
+			int mode = getAckMode();
 			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
@@ -301,10 +300,10 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		}
 	}
 
-	
+
 	protected QueueSender createSender(QueueSession session, Queue queue)
 	    throws IfsaException {
-	
+
 	    try {
 	        QueueSender queueSender = session.createSender(queue);
 	        if (log.isDebugEnabled()) {
@@ -345,12 +344,12 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	protected QueueReceiver getServiceReceiver(
 		QueueSession session)
 		throws IfsaException {
-	
+
 		try {
 			QueueReceiver queueReceiver;
-			    
+
 			if (isProvider()) {
-				String selector = getProviderSelector();			
+				String selector = getProviderSelector();
 				if (StringUtils.isEmpty(selector)) {
 					queueReceiver = session.createReceiver(getServiceQueue());
 				} else {
@@ -375,11 +374,11 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 			throw new IfsaException(e);
 		}
 	}
-	
+
 	public long getExpiry() throws IfsaException {
 		return getExpiry((IFSAQueue) getServiceQueue());
 	}
-	
+
 	public long getExpiry(IFSAQueue queue) throws IfsaException {
 		long expiry = getTimeOut();
 		if (expiry>=0) {
@@ -402,7 +401,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
         return messageProtocol;
     }
-    
+
 	/**
 	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
@@ -412,11 +411,11 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	 */
 	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)
 	    throws IfsaException {
-		    
+
 	    if (isProvider()) {
 	        throw new IfsaException("cannot get ReplyReceiver: Provider cannot act as Requestor");
-	    } 
-	
+	    }
+
 		return getMessagingSource().getReplyReceiver(session, sentMessage);
 	}
 
@@ -424,13 +423,13 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		log.debug(getLogPrefix()+"closing replyreceiver");
 		getMessagingSource().closeReplyReceiver(receiver);
 	}
-	
+
 	/**
 	 * Indicates whether the object at hand represents a Client (returns <code>True</code>) or
 	 * a Server (returns <code>False</code>).
 	 */
 	public boolean isRequestor() throws IfsaException {
-			
+
 		if (requestor && provider) {
 	        throw new IfsaException("cannot be both Requestor and Provider");
 		}
@@ -470,7 +469,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 				Map udzObject = (Map)((IFSAMessage) msg).getOutgoingUDZObject();
 				udzObject.putAll(udzMap);
 			}
-			String replyToQueueName="-"; 
+			String replyToQueueName="-";
 	        //Client side
 	        if (messageProtocol == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 	            // set reply-to address
@@ -487,7 +486,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 			if (btcData!=null && btcData.length>0) {
 				msg.setBtcData(btcData);
 			}
-	
+
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix()
 						+ " messageProtocol ["
@@ -510,20 +509,20 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 
 	        // send the message
 	        sender.send(msg);
-	
+
 	        // perform commit
 	        if (isJmsTransacted() && !(messagingSource.isXaEnabledForSure() && JtaUtil.inTransaction())) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
-	
+
 	        return msg;
-		    
+
 	 	} catch (Exception e) {
 			throw new IfsaException(e);
 		}
 	}
-	
+
 	/**
 	 * Intended for server-side reponse sending and implies that the received
 	 * message *always* contains a reply-to address.
@@ -545,7 +544,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 					tqs.close();
 				} catch (JMSException e) {
 					log.warn(getLogPrefix()+ "exception closing reply queue sender",e);
-				}	
+				}
 	    	}
 	    }
 	}
@@ -559,7 +558,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
         log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getLabel());
     }
- 
+
 	public boolean isSessionsArePooled() {
 		try {
 			return getMessagingSource().sessionsArePooled();
@@ -568,7 +567,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 			return false;
 		}
 	}
-    
+
     /**
      * controls whether sessions are created in JMS transacted mode. JMS transacted sessions
      * are required by IFSA for FF, although they result in log messages about active transactions
@@ -577,7 +576,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
     protected boolean isJmsTransacted() {
 		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.FIRE_AND_FORGET;
     }
-    
+
 	@Override
 	public String toString() {
 	    String result = super.toString();
@@ -591,17 +590,17 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	    }
 	    else
 	        ts.append("messageProtocol", "null!");
-	
+
 	    result += ts.toString();
 	    return result;
-	
+
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-	
+
 		String result = null;
-	
+
 		try {
 			if (isRequestor()) {
 				result = getServiceId();

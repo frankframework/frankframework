@@ -126,7 +126,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("false","dummy-Path"));
 
 		session=new PipeLineSession();
-		session.put(PipeLineSession.originalMessageKey, message);
+		session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}
@@ -149,7 +149,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("false","dummy-Path"));
 
 		session=new PipeLineSession();
-		session.put(PipeLineSession.originalMessageKey, message);
+		session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
 	}

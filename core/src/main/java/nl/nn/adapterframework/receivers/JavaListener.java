@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
@@ -121,12 +123,19 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
+	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try {
 			if (context != null) {
-				context.put(PipeLineSession.correlationIdKey, correlationId);
+				context.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
-			Message result = processRequest((M) rawMessage, new Message(rawMessage), context);
+			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
+			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
 			return result.asString();
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
@@ -134,35 +143,37 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		Message response = processRequest((M) message.asObject(), message, session);
+	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
+		@SuppressWarnings({"unchecked", "deprecation"})
+		RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
+		Message response = processRequest(rawMessageWrapper, message, session);
 		response.closeOnCloseOf(session, this);
 		return  response;
 	}
 
-	private Message processRequest(M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
+	private Message processRequest(RawMessageWrapper<M> rawMessageWrapper, Message message, Map<String, Object> context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.correlationIdKey) : null);
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.CORRELATION_ID_KEY) : null);
 		if (context != null) {
 			Object object = context.get("httpRequest");
 			if (object != null) {
 				if (object instanceof HttpServletRequest) {
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.securityHandlerKey, securityHandler);
+					context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 				} else {
-					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
+					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 				}
 			}
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			try {
 				if (throwException) {
-					return handler.processRequest(this, rawMessage, message, session);
+					return handler.processRequest(this, rawMessageWrapper, message, session);
 				} else {
 					try {
-						return handler.processRequest(this, rawMessage, message, session);
+						return handler.processRequest(this, rawMessageWrapper, message, session);
 					} catch (ListenerException e) {
 						// Message with error contains a String so does not need to be preserved.
 						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
@@ -213,20 +224,13 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// do nothing
 	}
 
-
 	@Override
-	public String getIdFromRawMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
-		// do nothing
-		return null;
-	}
-
-	@Override
-	public Message extractMessage(M rawMessage, Map<String,Object> context) throws ListenerException {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override

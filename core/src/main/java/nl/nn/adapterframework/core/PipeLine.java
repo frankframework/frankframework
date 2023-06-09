@@ -645,21 +645,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public String toString(){
-		// TODO: Should use StringBuilder
-		String result = "";
-		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
-		result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
-		result+="[startPipe="+firstPipe+"]";
+		StringBuilder result = new StringBuilder();
+		result.append("[ownerName=").append(owner == null ? "-none-" : owner.getName()).append("]");
+		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
+		result.append("[startPipe=").append(firstPipe).append("]");
 //		result+="[transacted="+transacted+"]";
-		result+="[transactionAttribute="+getTransactionAttribute()+"]";
+		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
 		for (int i=0; i<pipes.size(); i++) {
-			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
+			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
 		for (String exitName : pipeLineExits.keySet()) {
 			PipeLineExit pe = pipeLineExits.get(exitName);
-			result += "[name:" + pe.getName() + " state:" + pe.getState() + "]";
+			result.append("[name:").append(pe.getName()).append(" state:").append(pe.getState()).append("]");
 		}
-		return result;
+		return result.toString();
 	}
 
 

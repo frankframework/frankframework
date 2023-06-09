@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018-2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		Message response;
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String messageId = UUIDUtil.createSimpleUUID();
-			PipeLineSession.setListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
+			PipeLineSession.updateListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
 			log.debug((messageId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 

@@ -15,10 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.Map;
-
 public interface IRedeliveringListener<M> extends IListener<M> {
 
-	boolean messageWillBeRedeliveredOnExitStateError(Map<String,Object> context);
+	boolean messageWillBeRedeliveredOnExitStateError(PipeLineSession pipeLineSession);
 
 }

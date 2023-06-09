@@ -1,42 +1,42 @@
+/*
+   Copyright 2022-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.receivers;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import nl.nn.adapterframework.core.IPullingListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.stream.Message;
 
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<javax.jms.Message> {
 
+	@Nonnull
 	@Override
-	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
-		return null;
+	public Map<String, Object> openThread() {
+		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String, Object> context) throws ListenerException {
-		return Message.asMessage(rawMessage);
-	}
-
-	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
-	}
-
-	@Override
-	public Map<String, Object> openThread() throws ListenerException {
-		return new LinkedHashMap<String,Object>();
-	}
-
-	@Override
-	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) {
 		log.debug("closeThread called in slow pulling listener");
 	}
 
 	@Override
-	public javax.jms.Message getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<javax.jms.Message> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		return null;
 	}
-
 }

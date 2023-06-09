@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class IMSSender extends MQSender {
 	private static final int IIH_HEADERSIZE = 88;
 
 	// IMS Header fields
-	private static final String	  IIH_HEADER_STRUCT_ID		= "IIH ";		// MQIIH_STRUC_ID (4 pos) 
+	private static final String	  IIH_HEADER_STRUCT_ID		= "IIH ";		// MQIIH_STRUC_ID (4 pos)
 	private static final int	  IIH_HEADER_VERSION		= 1;			// MQIIH_VERSION_1 (4 pos)
 	private static final int	  IIH_HEADER_LENGTH			= 84;			// MQIIH_LENGTH_1 (4 pos)
 	private static final int	  IIH_HEADER_ENCODING		= 0;			// MQ reserved (4 pos)
@@ -143,14 +143,14 @@ public class IMSSender extends MQSender {
 
 		// Set Properties
 		bytesMessage.setIntProperty("JMS_IBM_Encoding", MQENC_NATIVE);
-		bytesMessage.setIntProperty("JMS_IBM_Character_Set", CCSID_ISO_8859_1);	
-		bytesMessage.setStringProperty("JMS_IBM_Format", MQC_MQFMT_IMS);	
+		bytesMessage.setIntProperty("JMS_IBM_Character_Set", CCSID_ISO_8859_1);
+		bytesMessage.setStringProperty("JMS_IBM_Format", MQC_MQFMT_IMS);
 
 		return bytesMessage;
 	}
 
 	@Override
-	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;
@@ -204,12 +204,12 @@ public class IMSSender extends MQSender {
 	private byte[] intToBytes(int i) {
 		ByteBuffer bb = ByteBuffer.allocate(4);
 		bb.putInt(i);
-		return bb.array(); 
+		return bb.array();
 	}
 
 	private byte[] shortToBytes(int i) {
 		ByteBuffer bb = ByteBuffer.allocate(2);
 		bb.putShort((short) i);
-		return bb.array(); 
+		return bb.array();
 	}
 }

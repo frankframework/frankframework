@@ -16,7 +16,7 @@
 						<field name="TKEY">62620</field>
 						<field name="TCHAR">E</field>
 						<field name="TTIMESTAMP">2021-06-14 15:54:58</field>
-						<field name="TVARCHAR">too many retries; exitState [error], result [String: &lt;root forward="error"/&gt;]</field>
+						<field name="TVARCHAR">too many retries; exitState [error], result [String: [&lt;root forward="error"/&gt;]]</field>
 					</row>
 				</rowset>
 			</result>

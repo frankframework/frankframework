@@ -25,8 +25,8 @@ public abstract class JdbcSenderTestBase<S extends JdbcSenderBase<?>> extends Jd
 	@Before
 	public void setUp() throws Exception {
 		session = new PipeLineSession();
-		session.put(PipeLineSession.messageIdKey, ConfiguredTestBase.testMessageId);
-		session.put(PipeLineSession.correlationIdKey, ConfiguredTestBase.testCorrelationId);
+		session.put(PipeLineSession.MESSAGE_ID_KEY, ConfiguredTestBase.testMessageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
 		sender = createSender();
 		autowire(sender);
 	}

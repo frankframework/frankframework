@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package nl.nn.adapterframework.receivers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -50,11 +53,11 @@ import nl.nn.adapterframework.util.WildCardFilter;
  * found, it is read in a String object and parsed to records.
  * After reading the file, the file is renamed and moved to a directory.
  *
- * @author  Johan Verrips
+ * @author Johan Verrips
  */
 @Deprecated
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
-public class FileRecordListener implements IPullingListener {
+public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -66,14 +69,14 @@ public class FileRecordListener implements IPullingListener {
 	private String directoryProcessedFiles;
 	private String storeFileNameInSessionKey;
 
-	private long recordNo = 0; // the current record number;
+	private long recordNo = 0; // the current record number
 	private String inputFileName; // the name of the file currently in process
 	private ISender sender;
 	private Iterator<String> recordIterator = null;
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		String cid = pipeLineSession.getCorrelationId();
 		if (sender != null && processResult.isSuccessful()) {
 			try {
 				sender.sendMessageOrThrow(processResult.getResult(), null);
@@ -82,13 +85,13 @@ public class FileRecordListener implements IPullingListener {
 			}
 		}
 	}
+
 	/**
 	 * Moves a file to another directory and places a UUID in the name.
-	 * @return String with the name of the (renamed and moved) file
 	 *
+	 * @return String with the name of the (renamed and moved) file
 	 */
 	protected String archiveFile(File file) throws ListenerException {
-		boolean success = false;
 		String directoryTo = getDirectoryProcessedFiles();
 		String fullFilePath = "";
 		// Destination directory
@@ -96,7 +99,7 @@ public class FileRecordListener implements IPullingListener {
 		try {
 			fullFilePath = file.getCanonicalPath();
 		} catch (IOException e) {
-			log.warn(getName() + " error retrieving canonical path of file [" + file.getName() + "]");
+			log.warn("{} error retrieving canonical path of file [{}]", this::getName, file::getName);
 			fullFilePath = file.getName();
 		}
 
@@ -104,45 +107,47 @@ public class FileRecordListener implements IPullingListener {
 			throw new ListenerException(getName() + " error renaming directory: The directory [" + directoryTo + "] to move the file [" + fullFilePath + "] is not a directory!");
 		}
 		// Move file to new directory
-		String newFileName = UUIDUtil.createSimpleUUID() + "-" + file.getName();
-
+		String newFileName;
 		int dotPosition = file.getName().lastIndexOf(".");
-		if (dotPosition > 0)
-			newFileName = file.getName().substring(0, dotPosition) + "-" + UUIDUtil.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
+		if (dotPosition > 0) {
+			newFileName = file.getName().substring(0, dotPosition) + "-" + UUIDUtil.createSimpleUUID() + file.getName().substring(dotPosition);
+		} else {
+			newFileName = UUIDUtil.createSimpleUUID() + "-" + file.getName();
+		}
 
-		success = file.renameTo(new File(dir, newFileName));
+		boolean success = file.renameTo(new File(dir, newFileName));
 		if (!success) {
-			log.error(getName() + " was unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
+			log.error("{} was unable to move file [{}] to [{}]", getName(), fullFilePath, directoryTo);
 			throw new ListenerException("unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
-		} else
-			log.info(getName() + " moved file [" + fullFilePath + "] to [" + directoryTo + "]");
+		} else {
+			log.info("{} moved file [{}] to [{}]", getName(), fullFilePath, directoryTo);
+		}
 
-		String result = null;
 		try {
-			result = new File(dir, newFileName).getCanonicalPath();
+			return new File(dir, newFileName).getCanonicalPath();
 		} catch (IOException e) {
 			throw new ListenerException("error retrieving canonical path of renamed file [" + file.getName() + "]", e);
 		}
-		return result;
 	}
 
 	@Override
 	public void close() throws ListenerException {
 		try {
-			if (sender != null)
+			if (sender != null) {
 				sender.close();
+			}
 		} catch (SenderException e) {
 			throw new ListenerException("Error closing sender [" + sender.getName() + "]", e);
 		}
 	}
+
 	@Override
-	public void closeThread(Map threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
 	}
 
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
-	 *
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -168,6 +173,7 @@ public class FileRecordListener implements IPullingListener {
 		}
 
 	}
+
 	/**
 	 * Gets a file to process.
 	 */
@@ -185,18 +191,9 @@ public class FileRecordListener implements IPullingListener {
 		}
 		return null;
 	}
-	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a
-	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
-	 * in the processing of the file.
-	 * Override this method for your specific needs!
-	 */
-	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
-		return correlationId;
+
+	private String constructMessageId() {
+		return inputFileName + "-" + recordNo;
 	}
 
 	/**
@@ -204,22 +201,21 @@ public class FileRecordListener implements IPullingListener {
 	 * is a new file to process and returns the first record.
 	 */
 	@Override
-	public synchronized Object getRawMessage(Map threadContext)
-		throws ListenerException {
-		String fullInputFileName = null;
-		if (recordIterator != null) {
-			if (recordIterator.hasNext()) {
-				recordNo += 1;
-				return recordIterator.next();
-			}
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext)
+			throws ListenerException {
+		String fullInputFileName;
+		if (recordIterator != null && recordIterator.hasNext()) {
+			recordNo += 1;
+			String id = constructMessageId();
+			PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+			return new RawMessageWrapper<>(recordIterator.next(), id, id);
 		}
 		if (getFileToProcess() != null) {
 			File inputFile = getFileToProcess();
-			log.info(
-				" processing file [" + inputFile.getName() + "] size [" + inputFile.length() + "]");
+			log.info(" processing file [{}] size [{}]", inputFile::getName, inputFile::length);
 
 			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
-				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
+				threadContext.put(getStoreFileNameInSessionKey(), inputFile.getName());
 			}
 
 			String fileContent = "";
@@ -233,44 +229,46 @@ public class FileRecordListener implements IPullingListener {
 			} finally {
 				recordNo = 0;
 			}
-			log.info(" processing file [" + fullInputFileName + "]");
+			log.info(" processing file [{}]", fullInputFileName);
 			recordIterator = parseToRecords(fileContent);
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				return recordIterator.next();
+				String id = constructMessageId();
+				PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+				return new RawMessageWrapper<>(recordIterator.next(), id, id);
 			}
 		}
 
-		// if nothing was found, just sleep thight.
+		// if nothing was found, just sleep tight.
 		try {
 			Thread.sleep(responseTime);
 		} catch (InterruptedException e) {
-			throw new ListenerException("interupted...", e);
+			throw new ListenerException("interrupted...", e);
 		}
 
 		return null;
 	}
 
 	@Override
-	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
 	public void open() throws ListenerException {
 		try {
-			if (sender != null)
-				sender.open();
+			if (sender != null) sender.open();
 		} catch (SenderException e) {
 			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
 		}
-		return;
 	}
 
+	@Nonnull
 	@Override
-	public Map openThread() throws ListenerException {
-		return null;
+	public Map<String, Object> openThread() throws ListenerException {
+		return new HashMap<>();
 	}
+
 	/**
 	 * Parse a String to an Iterator with objects (records). This method
 	 * currently uses the end-of-line character ("\n") as a seperator.
@@ -278,7 +276,7 @@ public class FileRecordListener implements IPullingListener {
 	 */
 	protected Iterator<String> parseToRecords(String input) {
 		StringTokenizer t = new StringTokenizer(input, "\n");
-		List<String> array = new ArrayList<String>();
+		List<String> array = new ArrayList<>();
 		while (t.hasMoreTokens()) {
 			array.add(t.nextToken());
 		}
@@ -288,20 +286,19 @@ public class FileRecordListener implements IPullingListener {
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
+
 	public ISender getSender() {
 		return sender;
 	}
 
 	@Override
 	public String toString() {
-		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		ts.append("name", getName());
 		ts.append("inputDirectory", getInputDirectory());
 		ts.append("wildcard", getWildcard());
-		result += ts.toString();
-		return result;
 
+		return super.toString() + ts;
 	}
 
 	@Override
@@ -309,6 +306,7 @@ public class FileRecordListener implements IPullingListener {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	@Override
 	public String getName() {
 		return name;
@@ -318,6 +316,7 @@ public class FileRecordListener implements IPullingListener {
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
+
 	public String getInputDirectory() {
 		return inputDirectory;
 	}
@@ -326,6 +325,7 @@ public class FileRecordListener implements IPullingListener {
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
+
 	public String getWildcard() {
 		return wildcard;
 	}
@@ -334,17 +334,20 @@ public class FileRecordListener implements IPullingListener {
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
 	}
+
 	public String getDirectoryProcessedFiles() {
 		return directoryProcessedFiles;
 	}
 
 	/**
 	 * The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file
+	 *
 	 * @ff.default 1000
 	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
+
 	public long getResponseTime() {
 		return responseTime;
 	}
@@ -353,6 +356,7 @@ public class FileRecordListener implements IPullingListener {
 	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
 		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
 	}
+
 	public String getStoreFileNameInSessionKey() {
 		return storeFileNameInSessionKey;
 	}

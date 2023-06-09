@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 /**
- * Interface to be implemented by Listeners that can find out the delivery count 
+ * Interface to be implemented by Listeners that can find out the delivery count
  * of the messages they receive.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since	4.9  
+ * @since	4.9
  */
 public interface IKnowsDeliveryCount<M> {
 
-	int getDeliveryCount(M rawMessage);
+	int getDeliveryCount(RawMessageWrapper<M> rawMessage);
 
 }
