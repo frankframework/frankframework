@@ -546,14 +546,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 
 	public ClientConfiguration getClientConfig() {
-		ClientConfiguration clientConfiguration = null;
+		ClientConfiguration clientConfiguration = new ClientConfiguration();
+		clientConfiguration.setMaxConnections(getMaxConnections());
+
 		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			clientConfiguration = new ClientConfiguration();
 			clientConfiguration.setProtocol(Protocol.HTTPS);
 			clientConfiguration.setProxyHost(this.getProxyHost());
 			clientConfiguration.setProxyPort(this.getProxyPort());
 		}
-		clientConfiguration.setMaxConnections(getMaxConnections());
 
 		return clientConfiguration;
 	}
