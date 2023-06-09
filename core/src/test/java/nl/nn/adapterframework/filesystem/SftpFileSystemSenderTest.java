@@ -12,7 +12,7 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	private String username = "wearefrank";
 	private String password = "pass_123";
 	private String host = "localhost";
-	private int port = 6124;
+	private int port = 22;
 	private String remoteDirectory = "/home/wearefrank/sftp";
 
 	private SshServer sshd;
@@ -28,9 +28,10 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 		if("localhost".equals(host)) {
 			remoteDirectory = "/"; // See getTestDirectoryFS(), '/' is the SFTP HOME directory.
 
-			sshd = SftpFileSystemTest.createSshServer(port, username, password);
+			sshd = SftpFileSystemTest.createSshServer(username, password);
 
 			sshd.start();
+			port = sshd.getPort();
 		}
 
 		super.setUp();
