@@ -7051,3 +7051,27 @@ body.body-small .vote-icon {
 .dataTables_wrapper {
 	position: static;
 }
+/* datatable buttons fix, Selects all <a> */
+.dataTables_paginate a {
+  color: #2F4050 !important;
+}
+
+.dataTables_paginate a:hover{
+  background-color: #E9E9ED !important;
+  border: none !important;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+.paginate_button.current{
+  color: green !important;
+}
+
+/* Makes both classes be inline */
+.dataTables_paginate {
+  display: inline-block !important;
+  /*make it so that it gets lowered*/
+  margin-top: 7px !important;
+}
+.dataTables_info{
+  display: inline-block !important;
+}
