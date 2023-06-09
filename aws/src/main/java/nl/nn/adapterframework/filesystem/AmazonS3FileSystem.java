@@ -89,6 +89,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
+	private @Getter int maxConnections = 50;
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -133,7 +134,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 				.withChunkedEncodingDisabled(isChunkedEncodingDisabled())
 				.withForceGlobalBucketAccessEnabled(isForceGlobalBucketAccessEnabled())
 				.withCredentials(credentialProvider)
-				.withClientConfiguration(this.getProxyConfig())
+				.withClientConfiguration(this.getClientConfig())
 				.enablePathStyleAccess();
 
 		if(StringUtils.isBlank(serviceEndpoint)) {
@@ -544,15 +545,17 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 
 
-	public ClientConfiguration getProxyConfig() {
-		ClientConfiguration proxyConfig = null;
+	public ClientConfiguration getClientConfig() {
+		ClientConfiguration clientConfiguration = null;
 		if (this.getProxyHost() != null && this.getProxyPort() != null) {
-			proxyConfig = new ClientConfiguration();
-			proxyConfig.setProtocol(Protocol.HTTPS);
-			proxyConfig.setProxyHost(this.getProxyHost());
-			proxyConfig.setProxyPort(this.getProxyPort());
+			clientConfiguration = new ClientConfiguration();
+			clientConfiguration.setProtocol(Protocol.HTTPS);
+			clientConfiguration.setProxyHost(this.getProxyHost());
+			clientConfiguration.setProxyPort(this.getProxyPort());
 		}
-		return proxyConfig;
+		clientConfiguration.setMaxConnections(getMaxConnections());
+
+		return clientConfiguration;
 	}
 
 	@Override
@@ -653,6 +656,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/** Proxy port */
 	public void setProxyPort(Integer proxyPort) {
 		this.proxyPort = proxyPort;
+	}
+
+	/** Maximum concurrent connections towards S3 */
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
 	}
 
 }
