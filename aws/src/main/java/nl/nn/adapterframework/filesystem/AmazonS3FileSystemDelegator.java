@@ -75,4 +75,8 @@ public interface AmazonS3FileSystemDelegator {
 	default void setStorageClass(String storageClass) {
 		getFileSystem().setStorageClass(storageClass);
 	}
+	@ReferTo(AmazonS3FileSystem.class)
+	default void setMaxConnections(int maxConnections) {
+		getFileSystem().setMaxConnections(maxConnections);
+	}
 }
