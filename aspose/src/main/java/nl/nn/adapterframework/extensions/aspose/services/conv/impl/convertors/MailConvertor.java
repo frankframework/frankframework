@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -76,6 +76,15 @@ class MailConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
+	private static final MhtSaveOptions options = SaveOptions.getDefaultMhtml();
+	static {
+		options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
+				MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
+				MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress |
+				MhtFormatOptions.WriteCompleteToEmailAddress);
+		options.setPreserveOriginalDate(true);
+	}
+
 	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
@@ -99,12 +108,6 @@ class MailConvertor extends AbstractConvertor {
 		LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
 		LOGGER.debug("subject : " + eml.getSubject());
 
-		MhtSaveOptions options = SaveOptions.getDefaultMhtml();
-		options.setMhtFormatOptions(MhtFormatOptions.HideExtraPrintHeader | MhtFormatOptions.WriteHeader |
-				MhtFormatOptions.WriteCompleteBccEmailAddress | MhtFormatOptions.WriteCompleteCcEmailAddress |
-				MhtFormatOptions.WriteCompleteEmailAddress | MhtFormatOptions.WriteCompleteFromEmailAddress |
-				MhtFormatOptions.WriteCompleteToEmailAddress);
-		options.setPreserveOriginalDate(true);
 		// Overrules the default documentname.
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
@@ -117,6 +120,9 @@ class MailConvertor extends AbstractConvertor {
 		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
 		loadOptions.setLoadFormat(LoadFormat.MHTML);
 		loadOptions.setWebRequestTimeout(0);
+		if(!configuration.isLoadExternalResources()){
+			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+		}
 
 		Long startTime = new Date().getTime();
 		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){

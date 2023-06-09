@@ -12,7 +12,7 @@
 
 	<properties>
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
-		<aspose.version>19.1</aspose.version>
+		<aspose.version>23.1</aspose.version>
 	</properties>
 
 	<dependencies>
@@ -264,9 +264,9 @@
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
-			<!-- for some reason version 19.1 does not exist for aspose-imaging -->
+			<!-- for some reason version 23.1 does not exist for aspose-imaging -->
 <!-- 			<version>${aspose.version}</version> -->
-			<version>18.11</version>
+			<version>22.10</version>
 		</dependency>
 
 		<!-- test scoped dependencies -->
