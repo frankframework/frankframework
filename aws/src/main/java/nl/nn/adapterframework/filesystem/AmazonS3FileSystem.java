@@ -267,6 +267,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
 					} finally {
+						try {
+							f.close();
+						} catch (Exception e){
+							// ignore e?
+						}
 						isClosed = true;
 						Files.delete(file.toPath());
 					}
@@ -414,7 +419,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public long getFileSize(S3Object f) throws FileSystemException {
-		return resolve(f).getObjectMetadata().getContentLength();
+		S3Object file = resolve(f);
+		long fileSize = file.getObjectMetadata().getContentLength();
+		try {
+			file.close();
+			return fileSize;
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override
@@ -422,7 +434,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		if(f.getKey().isEmpty()) {
 			return null;
 		}
-		return resolve(f).getObjectMetadata().getLastModified();
+		S3Object file = resolve(f);
+		Date date = file.getObjectMetadata().getLastModified();
+		try {
+			file.close();
+			return date;
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 //	/**
