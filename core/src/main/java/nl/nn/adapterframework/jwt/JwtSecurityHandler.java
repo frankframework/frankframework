@@ -31,7 +31,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	private @Getter Map<String, Object> claimsSet;
 	private @Getter String roleClaim;
-	private @Getter String principalClaim;
+	private @Getter String principalNameClaim;
 
 	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalClaim) {
 		this.claimsSet = claimsSet;
@@ -50,7 +50,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 			@Override
 			public String getName() {
-				return (String) getClaimsSet().get(principalClaim);
+				return (String) getClaimsSet().get(principalNameClaim);
 			}
 
 		};

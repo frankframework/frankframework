@@ -92,7 +92,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
 
-	private @Getter String principalClaim = "sub";
+	private @Getter String principalNameClaim = "sub";
 	private @Getter(onMethod = @__(@Override)) String physicalDestinationName = null;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
@@ -374,8 +374,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** claim name which specifies the principal */
-	public void setPrincipalClaim(String principalClaim) {
-		this.principalClaim = principalClaim;
+	public void setPrincipalNameClaim(String principalNameClaim) {
+		this.principalNameClaim = principalNameClaim;
 	}
 
 	@Override
