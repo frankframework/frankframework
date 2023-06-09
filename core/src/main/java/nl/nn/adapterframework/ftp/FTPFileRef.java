@@ -73,6 +73,18 @@ public class FTPFileRef extends FTPFile {
 		return "file-ref name["+super.getName()+"] folder["+getFolder()+"]";
 	}
 
+	public void updateFTPFile(FTPFile ftpFile) {
+		setGroup(ftpFile.getGroup());
+		setHardLinkCount(ftpFile.getHardLinkCount());
+		setLink(ftpFile.getLink());
+		setName(ftpFile.getName());
+		setRawListing(ftpFile.getRawListing());
+		setSize(ftpFile.getSize());
+		setTimestamp(ftpFile.getTimestamp());
+		setType(ftpFile.getType());
+		setUser(ftpFile.getUser());
+	}
+
 	/**
 	 * Creates a deep-copy of FTPFile
 	 */
