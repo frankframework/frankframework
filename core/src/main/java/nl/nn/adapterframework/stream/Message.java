@@ -38,7 +38,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -84,12 +83,12 @@ public class Message implements Serializable, Closeable {
 	private Object request;
 	private @Getter String requestClass;
 
-	private @Getter Map<String, Object> context;
+	private @Getter MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Map<String, Object> context, Object request, Class<?> requestClass) {
+	private Message(MessageContext context, Object request, Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -101,11 +100,11 @@ public class Message implements Serializable, Closeable {
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 
-	private Message(Map<String, Object> context, Object request) {
+	private Message(MessageContext context, Object request) {
 		this(context, request, request != null ? request.getClass() : null);
 	}
 
-	public Message(String request, Map<String, Object> context) {
+	public Message(String request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -117,7 +116,7 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(byte[] request, Map<String, Object> context) {
+	public Message(byte[] request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -125,7 +124,7 @@ public class Message implements Serializable, Closeable {
 		this(null, request);
 	}
 
-	public Message(Reader request, Map<String, Object> context) {
+	public Message(Reader request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -136,7 +135,7 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream, Exception> request, Map<String, Object> context, Class<?> requestClass) {
+	protected Message(ThrowingSupplier<InputStream, Exception> request, MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -155,7 +154,7 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(InputStream request, Map<String, Object> context) {
+	public Message(InputStream request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -163,7 +162,7 @@ public class Message implements Serializable, Closeable {
 		this(null, request);
 	}
 
-	public Message(Node request, Map<String, Object> context) {
+	public Message(Node request, MessageContext context) {
 		this(context, request);
 	}
 

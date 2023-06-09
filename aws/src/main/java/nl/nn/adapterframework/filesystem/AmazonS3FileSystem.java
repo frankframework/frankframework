@@ -281,11 +281,16 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return null;
 	}
 
+	/** 
+	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
+	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
+	 * Further, failure to close this stream can cause the request pool to become blocked. 
+	 */
 	@Override
-	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
+	public Message readFile(S3Object f, String charset) throws FileSystemException {
 		try {
 			S3Object file = resolve(f);
-			return new S3Message(file, FileSystemUtils.getContext(this, file, charset));
+			return new Message(file.getObjectContent(), FileSystemUtils.getContext(this, file, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -306,17 +311,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private static class LocalS3Object extends S3Object {
 		// no extra or overridden methods, this class purely exists to differentiate
 		// between locally created S3Objects and actual S3 representative objects.
-	}
-
-	/** 
-	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
-	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
-	 * Further, failure to close this stream can cause the request pool to become blocked. 
-	 */
-	private static class S3Message extends Message {
-		public S3Message(S3Object file, Map<String,Object> context) {
-			super(file.getObjectContent(), context);
-		}
 	}
 
 	@Override
