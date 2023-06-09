@@ -18,6 +18,7 @@ package nl.nn.adapterframework.senders;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,11 +26,11 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
@@ -57,21 +58,22 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
 @Category("Advanced")
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
+	private static final String MULTIPART_RESPONSE_CONTENT_TYPE = "application/octet-stream";
+	private static final String MULTIPART_RESPONSE_CHARSET = "UTF-8";
+
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;
-	private @Getter String returnedSessionKeys = ""; // do not intialize with null, returned session keys must be set explicitly
+	private @Getter String returnedSessionKeys = ""; // do not initialize with null, returned session keys must be set explicitly
 	private @Getter boolean multipartResponse = false;
-	private String multipartResponseContentType = "application/octet-stream";
-	private String multipartResponseCharset = "UTF-8";
 	private @Getter String dispatchType = "default";
 
 	@Override
@@ -97,15 +99,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String result = null;
-		HashMap context = null;
+		String result;
+		Map<String, Object> context = null;
 		try {
 			if (paramList!=null) {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = paramList.getValues(message, session).getValueMap();
 			} else {
-				context=new HashMap();
+				context=new HashMap<>();
 			}
-			DispatcherManager dm = null;
+			DispatcherManager dm;
 			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 
 			if(getDispatchType().equalsIgnoreCase("DLL")) {
@@ -128,12 +130,11 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : session.getMessage(PipeLineSession.correlationIdKey).asString();
-			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
+			String correlationID = session==null ? null : session.getMessage(PipeLineSession.CORRELATION_ID_KEY).asString();
+			result = dm.processRequest(serviceName, correlationID, message.asString(), (HashMap) context);
 			if (isMultipartResponse()) {
-				return new SenderResult(HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session));
+				return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
 			}
-
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {

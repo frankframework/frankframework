@@ -63,7 +63,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 				}
 			}
 			return message;
-		} 
+		}
 		if (message instanceof WriterPlaceHolder) {
 			WriterPlaceHolder writerPlaceHolder = (WriterPlaceHolder)message;
 			writerPlaceHolder.setWriter(writer);

@@ -54,7 +54,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -64,6 +63,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
+import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.ArrayBuilder;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
@@ -413,8 +413,8 @@ public class JdbcUtil {
 			}
 			String rawMessage;
 			if (objectOK) {
-				if (result instanceof IMessageWrapper) {
-					rawMessage = ((IMessageWrapper)result).getMessage().asString();
+				if (result instanceof MessageWrapper) {
+					rawMessage = ((MessageWrapper)result).getMessage().asString();
 				} else if (result instanceof TextMessage) {
 					try {
 						rawMessage = ((TextMessage)result).getText();
@@ -542,19 +542,16 @@ public class JdbcUtil {
 			close(connection);
 			return;
 		}
-		Statement statement = null;
 		try {
-			statement = rs.getStatement();
+			if(!rs.isClosed()) {
+				try (Statement statement = rs.getStatement()) {
+					//No Operation, just trying to close the statement!
+				}
+			}
 		} catch (SQLException e) {
 			log.warn("Could not obtain statement or connection from resultset", e);
 		} finally {
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				log.warn("Could not close resultset", e);
-			} finally {
-				fullClose(connection, statement);
-			}
+			close(connection);
 		}
 	}
 
@@ -576,7 +573,9 @@ public class JdbcUtil {
 			return;
 		}
 		try {
-			statement.close();
+			if(!statement.isClosed()) {
+				statement.close();
+			}
 		} catch (SQLException e) {
 			log.warn("Could not close statement", e);
 		} finally {

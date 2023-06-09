@@ -11,7 +11,7 @@ import org.junit.Test;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 
@@ -26,7 +26,7 @@ public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 		assertNotNull(resources);
 
 		URI actualUri = resources.get(0).getUri();
-		URI expectedURI = ClassUtils.getResourceURL("/Migrator/DatabaseChangelog_plus_changes.xml").toURI();
+		URI expectedURI = ClassLoaderUtils.getResourceURL("/Migrator/DatabaseChangelog_plus_changes.xml").toURI();
 
 		assertEquals(expectedURI, actualUri);
 	}

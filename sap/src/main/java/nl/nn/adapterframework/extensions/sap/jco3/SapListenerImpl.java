@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 
 import java.io.IOException;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,9 +53,11 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -144,22 +148,21 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		return "progid ["+getProgid()+"] on "+super.getPhysicalDestinationName();
 	}
 
-
 	@Override
-	public String getIdFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		return getCorrelationIdFromField(rawMessage);
+	public RawMessageWrapper<JCoFunction> wrapRawMessage(JCoFunction jcoFunction, PipeLineSession session) throws ListenerException {
+		return new RawMessageWrapper<>(jcoFunction, getCorrelationIdFromField(jcoFunction), null);
 	}
 
 	@Override
-	public Message extractMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		return functionCall2message(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<JCoFunction> rawMessageWrapper, @Nonnull Map<String,Object> context) {
+		return functionCall2message(rawMessageWrapper.getRawMessage());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<JCoFunction> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 		try {
-			if (rawMessageOrWrapper instanceof JCoFunction) {
-				message2FunctionResult((JCoFunction)rawMessageOrWrapper, processResult.getResult().asString());
+			if (rawMessageWrapper.getRawMessage() != null) {
+				message2FunctionResult(rawMessageWrapper.getRawMessage(), processResult.getResult().asString());
 			}
 		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
@@ -168,8 +171,8 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
-		try {
-			handler.processRawMessage(this, jcoFunction, null, false);
+		try (PipeLineSession session = new PipeLineSession()) {
+			handler.processRawMessage(this, wrapRawMessage(jcoFunction, session), session, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
@@ -181,12 +184,14 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 		if(log.isDebugEnabled()) log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
 		IDocXMLProcessor xmlProcessor = JCoIDoc.getIDocFactory().getIDocXMLProcessor();
 		IDocDocumentIterator iterator = documentList.iterator();
-		IDocDocument doc = null;
 		while (iterator.hasNext()) {
-			doc = iterator.next();
+			IDocDocument doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
-			try {
-				handler.processRequest(this, null, new Message(xmlProcessor.render(doc)), null);
+			try (PipeLineSession session = new PipeLineSession()) {
+				String rawMessage = xmlProcessor.render(doc);
+				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
+				//noinspection unchecked
+				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

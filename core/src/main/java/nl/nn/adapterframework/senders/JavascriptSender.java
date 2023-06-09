@@ -37,7 +37,7 @@ import nl.nn.adapterframework.extensions.javascript.Rhino;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -95,7 +95,7 @@ public class JavascriptSender extends SenderSeries {
 		super.open();
 
 		if (StringUtils.isNotEmpty(getJsFileName())) {
-			URL resource = ClassUtils.getResourceURL(this, getJsFileName());
+			URL resource = ClassLoaderUtils.getResourceURL(this, getJsFileName());
 			if (resource == null) {
 				throw new SenderException(getLogPrefix() + "cannot find resource [" + getJsFileName() + "]");
 			}

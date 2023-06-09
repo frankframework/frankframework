@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
@@ -198,7 +197,10 @@ public class XmlUtils {
 			+ "<xsl:output method=\"text\"/>"
 			+ 	"<xsl:template match=\"/\">"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ 			"<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"<xsl:for-each select=\"/xsl:transform/@*\">"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
 			+ 		"</xsl:for-each>"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
 			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
@@ -223,7 +225,7 @@ public class XmlUtils {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
 		StringTokenizer st1 = new StringTokenizer(metadataString,";");
-		Map<String,String> result = new LinkedHashMap<String,String>();
+		Map<String,String> result = new LinkedHashMap<>();
 		while (st1.hasMoreTokens()) {
 			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
 			String key=st2.nextToken();
@@ -666,66 +668,6 @@ public class XmlUtils {
 		}
 		return xmlString;
 	}
-
-	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration);
-	}
-
-	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, true);
-	}
-
-	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
-		String charset;
-
-		charset=defaultEncoding;
-		if (StringUtils.isEmpty(charset)) {
-			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-
-		String firstPart = new String(source,offset,length<100?length:100,charset);
-		if (StringUtils.isEmpty(firstPart)) {
-			return null;
-		}
-		if (firstPart.startsWith("<?xml")) {
-			int endPos = firstPart.indexOf("?>")+2;
-			if (endPos>0) {
-				String declaration=firstPart.substring(6,endPos-2);
-				log.debug("parsed declaration ["+declaration+"]");
-				final String encodingTarget= "encoding=\"";
-				int encodingStart=declaration.indexOf(encodingTarget);
-				if (encodingStart>0) {
-					encodingStart+=encodingTarget.length();
-					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
-					int encodingEnd=declaration.indexOf("\"",encodingStart);
-					if (encodingEnd>0) {
-						if (useDeclarationEncoding) {
-							charset=declaration.substring(encodingStart,encodingEnd);
-						}
-						log.debug("parsed charset ["+charset+"]");
-					} else {
-						log.warn("no end in encoding attribute in declaration ["+declaration+"]");
-					}
-				} else {
-					log.warn("no encoding attribute in declaration ["+declaration+"]");
-				}
-				if (skipDeclaration) {
-					try {
-						while (Character.isWhitespace(firstPart.charAt(endPos))) {
-							endPos++;
-						}
-					} catch (IndexOutOfBoundsException e) {
-						log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
-					}
-					return new String(source,offset+endPos,length-endPos,charset);
-				}
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
-			}
-		}
-		return new String(source,offset,length,charset);
-	}
-
 
 	public static String getNamespaceClause(String namespaceDefs) {
 		String namespaceClause = "";
@@ -1626,7 +1568,7 @@ public class XmlUtils {
 
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);

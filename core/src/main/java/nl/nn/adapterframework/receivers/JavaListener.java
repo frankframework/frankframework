@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +50,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
+
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
  * Use this listener to receive messages from other adapters or a scheduler within the same Frank-application or from other components residing in the same JVM.
@@ -62,7 +64,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
@@ -78,7 +80,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 	private @Getter boolean open=false;
 	private static Map<String, JavaListener> registeredListeners;
-	private @Getter @Setter IMessageHandler<String> handler;
+	private @Getter @Setter IMessageHandler<M> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -100,7 +102,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 			open=true;
 		} catch (Exception e) {
-			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
@@ -112,53 +114,70 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			unregisterListener();
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				// Current DispatcherManager (version 1.3) doesn't have an
-				// unregister method, instead a call to register with a null
-				// value is done.
-				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), null);
+				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
 		}
 		catch (Exception e) {
-			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 
 	@Override
+	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
+		try {
+			if (context != null) {
+				context.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			}
+			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
+			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
+			return result.asString();
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert stream", e);
+		}
+	}
+
+	@Override
+	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
+		@SuppressWarnings({"unchecked", "deprecation"})
+		RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
+		Message response = processRequest(rawMessageWrapper, message, session);
+		response.closeOnCloseOf(session, this);
+		return  response;
+	}
+
+	private Message processRequest(RawMessageWrapper<M> rawMessageWrapper, Message message, Map<String, Object> context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), correlationId);
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.CORRELATION_ID_KEY) : null);
 		if (context != null) {
 			Object object = context.get("httpRequest");
 			if (object != null) {
 				if (object instanceof HttpServletRequest) {
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.securityHandlerKey, securityHandler);
+					context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 				} else {
-					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
+					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 				}
 			}
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
-			session.put(PipeLineSession.correlationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
 			try {
 				if (throwException) {
+					return handler.processRequest(this, rawMessageWrapper, message, session);
+				} else {
 					try {
-						return handler.processRequest(this, rawMessage, message, session).asString();
-					} catch (IOException e) {
-						throw new ListenerException("cannot convert stream", e);
-					}
-				}
-				try {
-					return handler.processRequest(this, rawMessage, message, session).asString();
-				} catch (ListenerException | IOException e) {
-					try {
-						return handler.formatException(null,correlationId, message, e).asString();
-					} catch (IOException e1) {
-						e.addSuppressed(e1);
-						throw new ListenerException(e);
+						return handler.processRequest(this, rawMessageWrapper, message, session);
+					} catch (ListenerException e) {
+						// Message with error contains a String so does not need to be preserved.
+						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
+						return handler.formatException(null, session.getCorrelationId(), message, e);
 					}
 				}
 			} finally {
@@ -166,7 +185,6 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 		}
 	}
-
 
 	/**
 	 * Register listener so that it can be used by a proxy
@@ -191,7 +209,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
+			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}
 		return registeredListeners;
 	}
@@ -206,20 +224,13 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// do nothing
 	}
 
-
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		// do nothing
-		return null;
-	}
-
-	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
@@ -264,8 +275,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		synchronous = b;
 	}
 
-	/** 
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+	/**
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */
@@ -282,7 +293,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	/**
-	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download 
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download
 	 * @ff.default false
 	 */
 	public void setHttpWsdl(boolean httpWsdl) {

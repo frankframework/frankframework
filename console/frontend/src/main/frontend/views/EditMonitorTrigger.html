@@ -1,0 +1,92 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight" ng-controller="EditMonitorsCtrl">
+	<uib-alert ng-repeat="alert in state" type="{{alert.type}}">{{alert.message}}</uib-alert>
+	<div class="row">
+		<div class="col-lg-12 table-responsive">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<div class="pull-right">
+						<button ui-sref="pages.monitors({configuration:selectedConfiguration,monitor:monitor})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+					</div>
+					<h4>{{$state.current.data.pageTitle}}</h4>
+				</div>
+				<div class="ibox-content">
+					<form role="form">
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Monitor</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="name" type="text" ng-model="monitor" disabled="disabled" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Type</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="adapter" ng-model="trigger.type">
+									<option value="ALARM">Alarm</option>
+									<option value="CLEARING">Clearing</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Events <small><br/>(Hint: use ctrl to multi-select)</small></label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" multiple name="events" ng-model="trigger.events">
+									<option ng-repeat="(name,event) in events">{{name}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Filtering</label>
+							<div class="col-sm-9">
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="NONE" ng-model="trigger.filter" /> None</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="ADAPTER" ng-model="trigger.filter" /> By Adapter</span>
+								<span class="form-control m-b" style="border: none;"><input icheck type="radio" name="filter" value="SOURCE" ng-model="trigger.filter" /> By Source</span>
+							</div>
+						</div>
+						<div class="form-group" ng-if="trigger.filter == 'ADAPTER'">
+							<label class="col-sm-3 control-label">Adapters</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.adapters">
+									<option ng-repeat="adapter in getAdaptersForEvents(trigger.events)">{{adapter}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group" ng-if="trigger.filter == 'SOURCE'">
+							<label class="col-sm-3 control-label">Sources</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" multiple name="adapter" ng-model="trigger.sources">
+									<option ng-repeat="source in getSourceForEvents(trigger.events)" ng-value="source.adapter+'$$'+source.source">{{source.adapter}} / {{source.source}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Severity</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="events" ng-model="trigger.severity">
+									<option ng-repeat="severity in severities">{{severity}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Threshold</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="threshold" type="number" min="0" ng-model="trigger.threshold" placeholder="Amount of triggers before sounding an alarm"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Period</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="period" type="number" min="0" ng-model="trigger.period" placeholder="Amount of triggers within a period of time"/>
+							</div>
+						</div>
+						<div class="col-lg-9 m-t-md">
+							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(trigger)">Save</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

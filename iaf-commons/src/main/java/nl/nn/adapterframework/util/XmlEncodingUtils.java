@@ -15,6 +15,13 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -263,4 +270,51 @@ public class XmlEncodingUtils {
 			|| (c >= 0xE000 && c <= 0xFFFD)
 			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
 	}
+
+	/**
+	 * Reads binary XML data and uses the XML declaration encoding to turn it into character data.
+	 */
+	public static String readXml(InputStream inputStream, String defaultCharset) throws IOException {
+		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
+		ByteOrderMark bom = bOMInputStream.getBOM();
+		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
+		return readXml(StreamUtil.streamToBytes(bOMInputStream), charsetName);
+	}
+
+	public static String readXml(byte[] source, String defaultEncoding) throws UnsupportedEncodingException {
+		String charset = StringUtils.isEmpty(defaultEncoding) ? StreamUtil.DEFAULT_INPUT_STREAM_ENCODING : defaultEncoding;
+		int length = source.length;
+
+		String firstPart = new String(source, 0, length<100?length:100, charset);
+		if (StringUtils.isEmpty(firstPart)) {
+			return null;
+		}
+
+		if (firstPart.startsWith("<?xml")) {
+			int endPos = firstPart.indexOf("?>")+2;
+			if (endPos < 2) {
+				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
+			}
+
+			String declaration=firstPart.substring(6,endPos-2);
+			log.debug("parsed declaration [{}]", declaration);
+			final String encodingTarget= "encoding=\"";
+			int encodingStart=declaration.indexOf(encodingTarget);
+			if (encodingStart>0) {
+				encodingStart+=encodingTarget.length();
+				log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
+				int encodingEnd=declaration.indexOf("\"", encodingStart);
+				if (encodingEnd > 0) {
+					charset=declaration.substring(encodingStart, encodingEnd);
+					log.debug("parsed charset []", charset);
+				} else {
+					log.warn("no end in encoding attribute in declaration [{}]", declaration);
+				}
+			} else {
+				log.warn("no encoding attribute in declaration [{}]", declaration);
+			}
+		}
+		return new String(source, charset);
+	}
+
 }

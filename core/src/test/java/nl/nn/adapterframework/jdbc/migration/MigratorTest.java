@@ -15,6 +15,7 @@ import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
@@ -102,19 +103,22 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testSQLWriterBytesResource() throws Exception {
-
+		// Arrange
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
 		assertNotNull(resource);
 
 		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
 		StringWriter writer = new StringWriter();
+
+		// Act
 		migrator.update(writer, resource);
 
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
-
+		// Assert
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
 		result = result.replaceAll("inputstreamresource.xml", "Migrator/DatabaseChangelog_plus_changes.xml");
+
 		TestAssertions.assertEqualsIgnoreCRLF(sqlChanges, result);
 	}
 
@@ -124,15 +128,15 @@ public class MigratorTest extends TransactionManagerTestBase {
 		StringBuilder string = new StringBuilder();
 		String line = buf.readLine();
 		while (line != null) {
-			if(line.startsWith("--")) {
+			if(line.startsWith("--") || "\n".equals(line)) {
 				line = buf.readLine();
 				continue;
 			}
 			string.append(line);
-			line = buf.readLine();
-			if (line != null) {
+			if (StringUtils.isNotEmpty(line)) {
 				string.append("\n");
 			}
+			line = buf.readLine();
 		}
 		return string.toString();
 	}

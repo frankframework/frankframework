@@ -141,7 +141,7 @@
 		</property>
 	</bean>
 
-	<bean name="xsltResource" class="java.lang.String" primary="true">
+	<bean name="xsltResource" class="java.lang.String">
 		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
 

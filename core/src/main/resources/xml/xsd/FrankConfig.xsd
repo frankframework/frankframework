@@ -89,6 +89,14 @@
         <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="msgLogLevel">
+      <xs:annotation>
+        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO, unless overridden by property msg.log.level.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageLogLevelAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="msgLogHidden" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the length of the message is shown in the msg log instead of the content of the message Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
@@ -298,7 +306,7 @@
     </xs:attribute>
     <xs:attribute name="forceRetryFlag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to #RETRY_FLAG_SESSION_KEY. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to retry. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
@@ -398,7 +406,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect	 * @ff.default 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -583,11 +591,6 @@
     <xs:attribute name="transformNullMessage" type="xs:string">
       <xs:annotation>
         <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="adapterToRunBeforeOnEmptyInput" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
@@ -787,7 +790,7 @@
  &lt;br/&gt;&lt;br/&gt;
  &lt;b&gt;example:&lt;/b&gt; &lt;code&gt;&lt;pre&gt;
    &amp;lt;Exits&amp;gt;
-      &amp;lt;Exit name="PipeLine#DEFAULT_SUCCESS_EXIT_NAME" state="PipeLine.ExitState#SUCCESS_EXIT_STATE" /&amp;gt;
+      &amp;lt;Exit name="READY" state="SUCCESS" /&amp;gt;
       &amp;lt;Exit name="Created" state="ERROR" code="201" empty="true" /&amp;gt;
       &amp;lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&amp;gt;
       &amp;lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&amp;gt;
@@ -812,8 +815,8 @@
  the optionally specified http status code. Each Exit should have a unique name. See Exits
  for examples.
  &lt;br/&gt;&lt;br/&gt;
- When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name PipeLine#DEFAULT_SUCCESS_EXIT_NAME and
- state PipeLine.ExitState#SUCCESS_EXIT_STATE.
+ When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
+ state SUCCESS.
  &lt;br/&gt;&lt;br/&gt;
  The name of an Exit can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a Forward within a Pipe.</xs:documentation>
     </xs:annotation>
@@ -832,7 +835,7 @@
         <xs:union memberTypes="ExitStateAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="code" type="xs:string">
+    <xs:attribute name="code" type="frankInt">
       <xs:annotation>
         <xs:documentation>HTTP statusCode e.g. &lt;code&gt;500&lt;/code&gt; Default: 200</xs:documentation>
       </xs:annotation>
@@ -1092,23 +1095,23 @@
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type">
-      <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="typeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="raised" type="frankBoolean" />
     <xs:attribute name="alarmSeverityEnum">
       <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="additionalHitCount" type="frankInt" />
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:union memberTypes="EventTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="alarmSeverity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Monitor" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitor" use="prohibited" />
@@ -1222,6 +1225,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ExchangeMailListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="FtpFileSystemListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FtpFileSystemListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -1401,27 +1413,52 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="JmsListenerBaseListener">
+        <xs:annotation>
+          <xs:documentation>Common baseclass for Pulling and Pushing JMS Listeners.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="JmsListenerBaseType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="MessageStoreListener">
         <xs:annotation>
-          <xs:documentation>Read messages from the ibisstore previously stored by a
+          <xs:documentation>Read messages from the IBISSTORE database table previously stored by a
  MessageStoreSender.
 
  Example configuration:
  &lt;code&gt;&lt;pre&gt;
-		&amp;lt;listener
-			name="MyListener"
-			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-		/&gt;
-		&amp;lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). --&gt;
-		&amp;lt;errorStorage
-			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-		/&gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
+	&amp;lt;Receiver
+		name="03 MessageStoreReceiver"
+		numThreads="4"
+		transactionAttribute="Required"
+		pollInterval="1"
+		&amp;gt;
+		&amp;lt;MessageStoreListener
+			name="03 MessageStoreListener"
+			slotId="${instance.name}/TestMessageStore"
+			statusValueInProcess="I"
+		/&amp;gt;
+	&amp;lt;/Receiver&amp;gt;
+ &lt;/pre&gt;&lt;/code&gt;
+
+ If you have a &lt;code&gt;MessageStoreListener&lt;/code&gt;, failed messages are automatically kept in database
+ table IBISSTORE. Messages are also kept after successful processing. The state of a message
+ is distinguished by the &lt;code&gt;TYPE&lt;/code&gt; field, as follows:
+ &lt;ul&gt;
+ &lt;li&gt; &lt;code&gt;M&lt;/code&gt;: The message is new. From a functional perspective, it is in the message store.
+ &lt;li&gt; &lt;code&gt;E&lt;/code&gt;: There was an error processing the message. From a functional perspective, it is in the error store.
+ &lt;li&gt; &lt;code&gt;A&lt;/code&gt;: The message was successfully processed. From a functional perspective, it is in the message log.
+ &lt;/ul&gt;
+ Another way to say this is that a &lt;code&gt;MessageStoreListener&lt;/code&gt; acts as a message log and as an error store.
+ If you have it, you do not need to add
+ a &lt;code&gt;JdbcErrorStorage&lt;/code&gt; or &lt;code&gt;JdbcMessageLog&lt;/code&gt; within the same receiver.
+ &lt;br/&gt;&lt;br/&gt;
+ See /IAF_util/IAF_DatabaseChangelog.xml for the structure of table IBISSTORE.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2187,7 +2224,7 @@
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
+        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
@@ -2224,7 +2261,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2401,6 +2438,233 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="FtpFileSystemListenerType">
+    <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.FtpFileSystemListener" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
+    <xs:attribute name="remoteDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="host" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name or ip address of remote host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port number of remote host Default: 21</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the user to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyHost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy hostname</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Proxy port Default: 1080</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyUsername" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ftpType">
+      <xs:annotation>
+        <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="FtpTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="fileType">
+      <xs:simpleType>
+        <xs:union memberTypes="FileTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="messageIsContent" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the contents of the message is send, otherwise it message contains the local filenames of the files to be send Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="passive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyTransportType" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5) Default: 4</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefCSEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Optional preferred encryption from client to server for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefSCEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Optional preferred encryption from server to client for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyFilePath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Path to private key file for sftp authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="knownHostsPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Path to file with knownhosts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="consoleKnownHostsVerifier" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(sftp) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prot">
+      <xs:annotation>
+        <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ProtAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keyboardInteractive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, keyboardinteractive is used to login Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FtpFileSystemListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FtpFileSystemListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FileSystemListenerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="FxfListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfListenerCumulativeAttributeGroup" />
@@ -2547,7 +2811,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -2572,7 +2836,7 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -2598,7 +2862,7 @@
     <xs:attribute ref="peekQuery" />
     <xs:attribute name="keyField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Primary key field of the table, used to identify messages</xs:documentation>
+        <xs:documentation>Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
@@ -2624,6 +2888,7 @@
         <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -2701,7 +2966,7 @@
     <xs:attribute ref="tableAlias" />
     <xs:attribute name="statusField" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message</xs:documentation>
+        <xs:documentation>Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="orderField" />
@@ -2774,7 +3039,7 @@
     </xs:attribute>
     <xs:attribute name="keyField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Primary key field of the table, used to identify messages Default: MESSAGEKEY</xs:documentation>
+        <xs:documentation>Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. Default: MESSAGEKEY</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
@@ -2807,7 +3072,7 @@
     </xs:attribute>
     <xs:attribute name="statusField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message Default: TYPE</xs:documentation>
+        <xs:documentation>Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField. Default: TYPE</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timestampField" type="xs:string">
@@ -2859,6 +3124,7 @@
     <xs:attribute ref="selectCondition" />
     <xs:attribute ref="peekUntransacted" />
     <xs:attribute ref="peekQuery" />
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -2963,7 +3229,11 @@
         <xs:documentation>Key of Session variable that determines requested content type, overrides produces</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="restPath" type="xs:string" />
+    <xs:attribute name="restPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="view" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Indicates whether this listener supports a view (and a link should be put in the ibis console) Default: if &lt;code&gt;method=get&lt;/code&gt; then &lt;code&gt;true&lt;/code&gt;, else &lt;code&gt;false&lt;/code&gt;</xs:documentation>
@@ -3397,15 +3667,7 @@
       </xs:element>
       <xs:element name="AmazonS3Sender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3. 
- 
- &lt;p&gt;&lt;b&gt;S3 File System specific Actions:&lt;/b&gt;&lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;createBucket&lt;/code&gt; action requires bucket name as input. Bucket region must be specified.&lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;deleteBucket&lt;/code&gt; action requires bucket name as input. &lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;copy&lt;/code&gt; action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. &lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;restore&lt;/code&gt; action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. &lt;/p&gt;
- 
- &lt;br/&gt;</xs:documentation>
+          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3592,7 +3854,7 @@
       </xs:element>
       <xs:element name="ExchangeFolderSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in a Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3651,9 +3913,10 @@
       </xs:element>
       <xs:element name="HttpSender">
         <xs:annotation>
-          <xs:documentation>Sender for the HTTP protocol using GET, POST, PUT or DELETE.
-
- Returns HTTP status code as forward name to SenderPipe.
+          <xs:documentation>Sender for the HTTP protocol using HttpMethod. By default, any response code outside the 2xx or 3xx range
+ is considered an error and the &lt;code&gt;exception&lt;/code&gt; forward of the SenderPipe is followed if present and if there
+ is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
+ are returned by this sender so they are available to the SenderPipe.
 
  &lt;p&gt;&lt;b&gt;Expected message format:&lt;/b&gt;&lt;/p&gt;
  &lt;p&gt;GET methods expect a message looking like this:
@@ -3722,14 +3985,21 @@
       </xs:element>
       <xs:element name="IbisLocalSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance.
-
- Returns exit.code as forward name to SenderPipe.
-
+          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
+ that has state nl.nn.adapterframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
+ in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
+ &lt;p/&gt;
+ &lt;p/&gt;
+ Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+ For example, if the called adapter has an exit state with code
+ &lt;code&gt;2&lt;/code&gt;, then the nl.nn.adapterframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
+ &lt;p/&gt;
+ &lt;p/&gt;
  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
  or a JavaListener.
 
- 
+
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
  A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -4104,25 +4374,28 @@
       </xs:element>
       <xs:element name="MessageStoreSender">
         <xs:annotation>
-          <xs:documentation>Send messages to the ibisstore to have them processed exactly-once by another
+          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
  adapter which will read the messages using a MessageStoreListener.
  This other adapter will process the messages asynchronously and (optionally)
  under transaction control. Duplicate messages are ignored based on the
  messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  the sender of the message can retry sending the message until a valid reply
  is received in which case it can be certain that the message is stored in the
- ibisstore.
-
+ database table IBISSTORE.
+ &lt;br/&gt;&lt;br/&gt;
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
+ acts as a message log and an error store. It can be useful however to add a message log or error store
+ to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
+ &lt;br/&gt;&lt;br/&gt;
  Example configuration:
  &lt;code&gt;&lt;pre&gt;
-		&amp;lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			&gt;
-			&amp;lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/&gt;
-		&amp;lt;/sender&gt;
+	&amp;lt;SenderPipe name="Send"&amp;gt;
+		&amp;lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&amp;gt;
+	&amp;lt;/SenderPipe&amp;gt;
  &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4576,47 +4849,52 @@
   <xs:attributeGroup name="AmazonS3SenderDeclaredAttributeGroup">
     <xs:attribute name="accessKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>access key to access to the AWS resources owned by the account</xs:documentation>
+        <xs:documentation>Access key to access to the AWS resources owned by the account</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secretKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>secret key to access to the AWS resources owned by the account</xs:documentation>
+        <xs:documentation>Secret key to access to the AWS resources owned by the account</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>alias used to obtain AWS credentials</xs:documentation>
+        <xs:documentation>Alias used to obtain AWS credentials</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="chunkedEncodingDisabled" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>setting this flag will result in disabling chunked encoding for all requests. Default: false</xs:documentation>
+        <xs:documentation>Setting this flag will result in disabling chunked encoding for all requests. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="forceGlobalBucketAccessEnabled" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>set whether the client should be configured with global bucket access enabled. Default: false</xs:documentation>
+        <xs:documentation>Set whether the client should be configured with global bucket access enabled. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="clientRegion" type="xs:string">
+    <xs:attribute name="clientRegion" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>name of the region that the client will be created from Default: eu-west-1</xs:documentation>
+        <xs:documentation>Name of the region that the client will be created from Default: eu-west-1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the bucket to access</xs:documentation>
+        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>setting proxy host</xs:documentation>
+        <xs:documentation>Proxy host</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>setting proxy port</xs:documentation>
+        <xs:documentation>Proxy port</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serviceEndpoint" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4641,7 +4919,7 @@
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [#PARAMETER_ACTION] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -4649,17 +4927,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter #PARAMETER_FILENAME is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME. If not set, the parameter #PARAMETER_DESTINATION is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=#ACTION_LIST. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -4669,32 +4947,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions #ACTION_CREATE, #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions #ACTION_WRITE1 and #ACTION_APPEND, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -4704,17 +4982,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions #ACTION_WRITE1 and #ACTION_APPEND Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for #ACTION_READ1 and #ACTION_WRITE1 action</xs:documentation>
+        <xs:documentation>Charset to be used for read and write action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions #ACTION_DELETE, #ACTION_READ_DELETE and #ACTION_MOVE</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -5031,7 +5309,7 @@
     </xs:attribute>
     <xs:attribute name="scalarExtended" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned: 
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
  &lt;ul&gt;
  &lt;li&gt;'[absent]' no row is found&lt;/li&gt;
  &lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
@@ -5068,7 +5346,7 @@
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;#UNP_STARTparamname#UNP_END&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="includeFieldDefinition" type="frankBoolean">
@@ -5331,7 +5609,7 @@
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
+        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
@@ -5368,7 +5646,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -5679,12 +5957,12 @@
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
       <xs:annotation>
-        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -5692,42 +5970,42 @@
     </xs:attribute>
     <xs:attribute name="keystoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access keystore</xs:documentation>
+        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -5735,32 +6013,32 @@
     </xs:attribute>
     <xs:attribute name="truststoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
+        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="prot">
@@ -6217,7 +6495,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6338,14 +6616,26 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltSenderDeclaredAttributeGroup" />
-    <xs:attribute ref="streamingXslt" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="styleSheetNameSessionKey" />
-    <xs:attribute ref="styleSheetCacheSize" />
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
@@ -6356,7 +6646,11 @@
         <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="disableOutputEscaping" />
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>For xpathExpression only Default: text</xs:documentation>
@@ -6365,11 +6659,32 @@
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute ref="indentXml" />
-    <xs:attribute ref="removeNamespaces" />
-    <xs:attribute ref="handleLexicalEvents" />
-    <xs:attribute ref="skipEmptyTags" />
-    <xs:attribute ref="xsltVersion" />
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="debugInput" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
@@ -6379,14 +6694,26 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.XsltSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
-    <xs:attribute ref="streamingXslt" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="styleSheetNameSessionKey" />
-    <xs:attribute ref="styleSheetCacheSize" />
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
@@ -6397,7 +6724,11 @@
         <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="disableOutputEscaping" />
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
@@ -6412,11 +6743,32 @@
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute ref="indentXml" />
-    <xs:attribute ref="removeNamespaces" />
-    <xs:attribute ref="handleLexicalEvents" />
-    <xs:attribute ref="skipEmptyTags" />
-    <xs:attribute ref="xsltVersion" />
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="debugInput" />
   </xs:attributeGroup>
   <xs:attributeGroup name="XsltSenderCumulativeAttributeGroup">
@@ -6618,7 +6970,6 @@
     <xs:attribute ref="hostField" />
     <xs:attribute ref="sequenceName" />
     <xs:attribute ref="checkTable" />
-    <xs:attribute ref="createTable" />
     <xs:attribute ref="messageFieldType" />
     <xs:attribute ref="keyFieldType" />
     <xs:attribute ref="dateFieldType" />
@@ -6645,7 +6996,6 @@
     <xs:attribute ref="hostField" />
     <xs:attribute ref="sequenceName" />
     <xs:attribute ref="checkTable" />
-    <xs:attribute ref="createTable" />
     <xs:attribute ref="messageFieldType" />
     <xs:attribute ref="keyFieldType" />
     <xs:attribute ref="dateFieldType" />
@@ -6765,17 +7115,17 @@
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The MongoDB datasource Default: JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>The MongoDB datasource Default: mongodb.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="database" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Database to connect to. Can be overridden by parameter #PARAM_DATABASE</xs:documentation>
+        <xs:documentation>Database to connect to. Can be overridden by parameter database</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collection" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Collection to act upon. Can be overridden by parameter #PARAM_COLLECTION</xs:documentation>
+        <xs:documentation>Collection to act upon. Can be overridden by parameter collection</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="action">
@@ -6788,12 +7138,12 @@
     </xs:attribute>
     <xs:attribute name="filter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter. Can contain references to parameters between #NAMED_PARAM_START and #NAMED_PARAM_END. Can be overridden by parameter #PARAM_FILTER</xs:documentation>
+        <xs:documentation>Filter. Can contain references to parameters between ?{ and }. Can be overridden by parameter filter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="limit" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter #PARAM_LIMIT. Default: 0</xs:documentation>
+        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter limit. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="countOnly" type="frankBoolean">
@@ -7769,7 +8119,8 @@
     </xs:attribute>
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s) Default: true</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
+ Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -7876,15 +8227,7 @@
       </xs:element>
       <xs:element name="AmazonS3ErrorSender">
         <xs:annotation>
-          <xs:documentation>Sender to work with Amazon S3. 
- 
- &lt;p&gt;&lt;b&gt;S3 File System specific Actions:&lt;/b&gt;&lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;createBucket&lt;/code&gt; action requires bucket name as input. Bucket region must be specified.&lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;deleteBucket&lt;/code&gt; action requires bucket name as input. &lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;copy&lt;/code&gt; action requires the destinationFileName parameter to be set which should contain the name of the destination file. Destination bucket name must be specified. &lt;/p&gt;
- &lt;p&gt;The &lt;code&gt;restore&lt;/code&gt; action restores an archived copy of an object back into Amazon S3, requires object name as input. Tier must be specified. &lt;/p&gt;
- 
- &lt;br/&gt;</xs:documentation>
+          <xs:documentation>Sender to work with Amazon S3.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8071,7 +8414,7 @@
       </xs:element>
       <xs:element name="ExchangeFolderErrorSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in a Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a FileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8130,9 +8473,10 @@
       </xs:element>
       <xs:element name="HttpErrorSender">
         <xs:annotation>
-          <xs:documentation>Sender for the HTTP protocol using GET, POST, PUT or DELETE.
-
- Returns HTTP status code as forward name to SenderPipe.
+          <xs:documentation>Sender for the HTTP protocol using HttpMethod. By default, any response code outside the 2xx or 3xx range
+ is considered an error and the &lt;code&gt;exception&lt;/code&gt; forward of the SenderPipe is followed if present and if there
+ is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
+ are returned by this sender so they are available to the SenderPipe.
 
  &lt;p&gt;&lt;b&gt;Expected message format:&lt;/b&gt;&lt;/p&gt;
  &lt;p&gt;GET methods expect a message looking like this:
@@ -8201,14 +8545,21 @@
       </xs:element>
       <xs:element name="IbisLocalErrorSender">
         <xs:annotation>
-          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance.
-
- Returns exit.code as forward name to SenderPipe.
-
+          <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
+ that has state nl.nn.adapterframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
+ in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
+ &lt;p/&gt;
+ &lt;p/&gt;
+ Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+ For example, if the called adapter has an exit state with code
+ &lt;code&gt;2&lt;/code&gt;, then the nl.nn.adapterframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+ that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
+ &lt;p/&gt;
+ &lt;p/&gt;
  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
  or a JavaListener.
 
- 
+
 
  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
  A call to another Adapter in the same IBIS instance is preferably made using the combination
@@ -8583,25 +8934,28 @@
       </xs:element>
       <xs:element name="MessageStoreErrorSender">
         <xs:annotation>
-          <xs:documentation>Send messages to the ibisstore to have them processed exactly-once by another
+          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
  adapter which will read the messages using a MessageStoreListener.
  This other adapter will process the messages asynchronously and (optionally)
  under transaction control. Duplicate messages are ignored based on the
  messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  the sender of the message can retry sending the message until a valid reply
  is received in which case it can be certain that the message is stored in the
- ibisstore.
-
+ database table IBISSTORE.
+ &lt;br/&gt;&lt;br/&gt;
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
+ acts as a message log and an error store. It can be useful however to add a message log or error store
+ to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
+ &lt;br/&gt;&lt;br/&gt;
  Example configuration:
  &lt;code&gt;&lt;pre&gt;
-		&amp;lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			&gt;
-			&amp;lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/&gt;
-		&amp;lt;/sender&gt;
+	&amp;lt;SenderPipe name="Send"&amp;gt;
+		&amp;lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&amp;gt;
+	&amp;lt;/SenderPipe&amp;gt;
  &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9087,13 +9441,31 @@
       </xs:element>
       <xs:element name="JdbcErrorStorage">
         <xs:annotation>
-          <xs:documentation>JDBC implementation of ITransactionalStorage.
-
- Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml
-
- If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
-
- &lt;br/&gt;
+          <xs:documentation>Implements a message log (&lt;code&gt;JdbcMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JdbcErrorStorage&lt;/code&gt;) that uses database
+ table IBISSTORE. A &lt;code&gt;MessageStoreSender&lt;/code&gt; and &lt;code&gt;MessageStoreListener&lt;/code&gt;
+ pair implicitly includes a message log and an error store.
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; and &lt;code&gt;MessageStoreListener&lt;/code&gt;
+ pair it is superfluous to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; or &lt;code&gt;JdbcErrorStorage&lt;/code&gt;
+ within the same sender pipe or the same receiver.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.
+ &lt;br/&gt;&lt;br/&gt;
+ Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
+ the Frank!Framework will try to create them.
+ &lt;br/&gt;&lt;br/&gt;
  N.B. Note on using XA transactions:
  If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
@@ -9112,7 +9484,22 @@
       </xs:element>
       <xs:element name="JmsErrorStorage">
         <xs:annotation>
-          <xs:documentation>JMS implementation of &lt;code&gt;ITransactionalStorage&lt;/code&gt;.</xs:documentation>
+          <xs:documentation>Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9124,25 +9511,28 @@
       </xs:element>
       <xs:element name="MessageStoreSenderErrorStorage">
         <xs:annotation>
-          <xs:documentation>Send messages to the ibisstore to have them processed exactly-once by another
+          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
  adapter which will read the messages using a MessageStoreListener.
  This other adapter will process the messages asynchronously and (optionally)
  under transaction control. Duplicate messages are ignored based on the
  messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  the sender of the message can retry sending the message until a valid reply
  is received in which case it can be certain that the message is stored in the
- ibisstore.
-
+ database table IBISSTORE.
+ &lt;br/&gt;&lt;br/&gt;
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
+ acts as a message log and an error store. It can be useful however to add a message log or error store
+ to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
+ &lt;br/&gt;&lt;br/&gt;
  Example configuration:
  &lt;code&gt;&lt;pre&gt;
-		&amp;lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			&gt;
-			&amp;lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/&gt;
-		&amp;lt;/sender&gt;
+	&amp;lt;SenderPipe name="Send"&amp;gt;
+		&amp;lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&amp;gt;
+	&amp;lt;/SenderPipe&amp;gt;
  &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9261,13 +9651,31 @@
       </xs:element>
       <xs:element name="JdbcMessageLog">
         <xs:annotation>
-          <xs:documentation>JDBC implementation of ITransactionalStorage.
-
- Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml
-
- If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
-
- &lt;br/&gt;
+          <xs:documentation>Implements a message log (&lt;code&gt;JdbcMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JdbcErrorStorage&lt;/code&gt;) that uses database
+ table IBISSTORE. A &lt;code&gt;MessageStoreSender&lt;/code&gt; and &lt;code&gt;MessageStoreListener&lt;/code&gt;
+ pair implicitly includes a message log and an error store.
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; and &lt;code&gt;MessageStoreListener&lt;/code&gt;
+ pair it is superfluous to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; or &lt;code&gt;JdbcErrorStorage&lt;/code&gt;
+ within the same sender pipe or the same receiver.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.
+ &lt;br/&gt;&lt;br/&gt;
+ Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
+ the Frank!Framework will try to create them.
+ &lt;br/&gt;&lt;br/&gt;
  N.B. Note on using XA transactions:
  If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
@@ -9286,7 +9694,22 @@
       </xs:element>
       <xs:element name="JmsMessageLog">
         <xs:annotation>
-          <xs:documentation>JMS implementation of &lt;code&gt;ITransactionalStorage&lt;/code&gt;.</xs:documentation>
+          <xs:documentation>Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
+ When a message log appears in a receiver, it also ensures that the same message is only processed
+ once, even if a related pushing listener receives the same message multiple times.
+ &lt;br/&gt;&lt;br/&gt;
+ &lt;b&gt;Error store:&lt;/b&gt; Appears in a receiver or sender pipe to store messages that could not be processed.
+ Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ this is done, the message is processed in the same way as messages received from the original source.
+ &lt;br/&gt;&lt;br/&gt;
+ How does a message log or error store see duplicate messages? The message log or error store
+ always appears in combination with a sender or listener. This sender or listener determines
+ a key based on the sent or received message. Messages with the same key are considered to
+ be the same.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9298,25 +9721,28 @@
       </xs:element>
       <xs:element name="MessageStoreSenderMessageLog">
         <xs:annotation>
-          <xs:documentation>Send messages to the ibisstore to have them processed exactly-once by another
+          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
  adapter which will read the messages using a MessageStoreListener.
  This other adapter will process the messages asynchronously and (optionally)
  under transaction control. Duplicate messages are ignored based on the
  messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
  the sender of the message can retry sending the message until a valid reply
  is received in which case it can be certain that the message is stored in the
- ibisstore.
-
+ database table IBISSTORE.
+ &lt;br/&gt;&lt;br/&gt;
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
+ acts as a message log and an error store. It can be useful however to add a message log or error store
+ to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
+ &lt;br/&gt;&lt;br/&gt;
  Example configuration:
  &lt;code&gt;&lt;pre&gt;
-		&amp;lt;sender
-			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			datasourceName="${jdbc.datasource.default}"
-			slotId="${instance.name}/ServiceName"
-			sessionKeys="key1,key2"
-			&gt;
-			&amp;lt;param name="messageId" xpathExpression="/Envelope/Header/MessageID"/&gt;
-		&amp;lt;/sender&gt;
+	&amp;lt;SenderPipe name="Send"&amp;gt;
+		&amp;lt;MessageStoreSender
+			slotId="${instance.name}/TestMessageStore"
+			onlyStoreWhenMessageIdUnique="false"
+		/&amp;gt;
+	&amp;lt;/SenderPipe&amp;gt;
  &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9697,6 +10123,7 @@
     <xs:attribute ref="soapHeaderNamespace" />
     <xs:attribute ref="soapVersion" />
     <xs:attribute ref="allowPlainXml" />
+    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
     <xs:attribute ref="schemaLocation" />
     <xs:attribute ref="noNamespaceSchemaLocation" />
@@ -9716,7 +10143,6 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="rootElementSessionKey" />
@@ -9764,6 +10190,7 @@
     <xs:attribute ref="soapHeaderNamespace" />
     <xs:attribute ref="soapVersion" />
     <xs:attribute ref="allowPlainXml" />
+    <xs:attribute ref="ignoreUnknownNamespaces" />
   </xs:attributeGroup>
   <xs:attributeGroup name="SoapValidatorCumulativeAttributeGroup">
     <xs:attributeGroup ref="SoapValidatorDeclaredAttributeGroup" />
@@ -9786,7 +10213,6 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="rootElementSessionKey" />
@@ -9844,7 +10270,7 @@
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: #INPUT_FORMAT_SESSION_KEY_PREFIX&amp;lt;name of the pipe&amp;gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputFormat &amp;lt;name of the pipe&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -9943,7 +10369,11 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
+    <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Ignore namespaces in the input message which are unknown Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="rootElementSessionKey" />
@@ -10076,7 +10506,11 @@
         <xs:union memberTypes="ModeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="cmhVersion" type="frankInt" />
+    <xs:attribute name="cmhVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="EsbSoapValidatorCumulativeAttributeGroup">
     <xs:attributeGroup ref="EsbSoapValidatorDeclaredAttributeGroup" />
@@ -10666,12 +11100,12 @@
     </xs:attribute>
     <xs:attribute name="soapNamespaceSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store auto detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: #DEFAULT_SOAP_NAMESPACE_SESSION_KEY</xs:documentation>
+        <xs:documentation>Key of session variable to store auto detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: soapNamespace</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: #DEFAULT_SOAP_HEADER_SESSION_KEY</xs:documentation>
+        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: soapHeader</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyle" type="xs:string">
@@ -11827,7 +12261,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jmsRealm" type="xs:string">
@@ -12023,32 +12457,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiSoapWrapperPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ApiStreamPipe">
-        <xs:annotation>
-          <xs:documentation>Extension to StreamPipe for API Management.
- &lt;p&gt;
- In StreamPipe for parameter &lt;code&gt;httpRequest&lt;/code&gt; and attribute
- &lt;code&gt;extractFirstStringPart=true&lt;/code&gt; the first part is returned to the pipeline.
- In this class the first part is checked. If it contains a 'MessageID' with namespace "http://www.w3.org/2005/08/addressing",
- then the message to return to the pipeline is retrieved from the MessageStore.
- &lt;/p&gt;&lt;p&gt;
- This class is created for applications which can not perform one multipart call with a business request in the first (string) part
- and one or more filestreams in the next (file) parts. Instead of one multipart call, two calls are performed:
- &lt;ol&gt;
-    &lt;li&gt;text/xml call with the business request. The API Management application returns on this call an unique messageId (which is
-     saved in the MessageStore together with the business request)&lt;/li&gt;
-    &lt;li&gt;multipart call with in the first (string) part the unique messageId and in the following (file) parts the filestreams&lt;/li&gt;
- &lt;/ol&gt;
- &lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ApiStreamPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -13829,69 +14237,6 @@
     <xs:attributeGroup ref="ApiPrincipalPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="ApiStreamPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="ApiStreamPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.api.ApiStreamPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="ApiStreamPipeDeclaredAttributeGroup">
-    <xs:attribute name="jmsRealm" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ApiStreamPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ApiStreamPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="StreamPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="StreamPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="StreamPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.StreamPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="StreamPipeDeclaredAttributeGroup">
-    <xs:attribute name="extractFirstStringPart" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="multipartXmlSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;extractfirststringpart=true&lt;/code&gt;) the session key to put the xml in with info about the stored parts Default: &lt;code&gt;multipartxml&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="checkAntiVirus" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="antiVirusPartName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan status parts Default: &lt;code&gt;antivirus_rc&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="antiVirusMessagePartName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan message parts Default: &lt;code&gt;antivirus_msg&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="antiVirusPassedMessage" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) message of antivirus scan parts which indicates the antivirus scan passed Default: &lt;code&gt;pass&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="antiVirusFailureAsSoapFault" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="antiVirusFailureReasonSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) if not empty and the antivirusfailed forward is specified and the antivirus scan did not pass, the error message (or soap fault) is stored in this session key and the first string part is returned to the pipeline</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="StreamPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="StreamPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="Base64PipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Base64PipeCumulativeAttributeGroup" />
@@ -14001,12 +14346,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jmsRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14057,25 +14397,9 @@
   </xs:attributeGroup>
   <xs:complexType name="BlobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="BlobLineIteratingPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BlobLineIteratingPipe" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="BlobLineIteratingPipeDeclaredAttributeGroup">
-    <xs:attribute name="blobCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>charset used to read and write blobs Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BlobLineIteratingPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BlobLineIteratingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:group name="IteratingPipeDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="1" maxOccurs="1" />
@@ -14328,12 +14652,12 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;#UNP_STARTparamname#UNP_END&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trimSpaces" type="frankBoolean">
@@ -14359,6 +14683,16 @@
     <xs:attribute name="avoidLocking" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobSmartGet" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14580,7 +14914,7 @@
     </xs:attribute>
     <xs:attribute name="filenamePattern" type="xs:string">
       <xs:annotation>
-        <xs:documentation>required if result is a file, the pattern for the result filename</xs:documentation>
+        <xs:documentation>required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIsContent" type="frankBoolean">
@@ -14957,7 +15291,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1 Default: 1</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively, otherwise an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNamespaces" type="frankBoolean">
@@ -15209,10 +15543,84 @@
         <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="XsltPipeCumulativeAttributeGroup" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>For xpathExpression only Default: text</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -15292,7 +15700,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;1&lt;/code&gt; xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15525,7 +15933,7 @@
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [#PARAMETER_ACTION] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -15533,17 +15941,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter #PARAMETER_FILENAME is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME. If not set, the parameter #PARAMETER_DESTINATION is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=#ACTION_LIST. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -15553,32 +15961,32 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions #ACTION_CREATE, #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions #ACTION_WRITE1 and #ACTION_APPEND, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -15588,17 +15996,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions #ACTION_WRITE1 and #ACTION_APPEND Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for #ACTION_READ1 and #ACTION_WRITE1 action</xs:documentation>
+        <xs:documentation>Charset to be used for read and write action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions #ACTION_DELETE, #ACTION_READ_DELETE and #ACTION_MOVE</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -15866,7 +16274,7 @@
     </xs:attribute>
     <xs:attribute name="returnFixedDate" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be #FIXEDDATETIME (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be 2001-12-17 09:30:47 (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getCurrentTimeStampInMillis" type="frankBoolean">
@@ -16393,6 +16801,57 @@
     <xs:attributeGroup ref="StreamLineIteratorPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StringIteratorPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="StreamPipeType">
+    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:attributeGroup ref="StreamPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.StreamPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="StreamPipeDeclaredAttributeGroup">
+    <xs:attribute name="extractFirstStringPart" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="multipartXmlSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used when &lt;code&gt;extractfirststringpart=true&lt;/code&gt;) the session key to put the xml in with info about the stored parts Default: &lt;code&gt;multipartxml&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="checkAntiVirus" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt;) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="antiVirusPartName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan status parts Default: &lt;code&gt;antivirus_rc&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="antiVirusMessagePartName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) name of antivirus scan message parts Default: &lt;code&gt;antivirus_msg&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="antiVirusPassedMessage" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) message of antivirus scan parts which indicates the antivirus scan passed Default: &lt;code&gt;pass&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="antiVirusFailureAsSoapFault" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="antiVirusFailureReasonSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used for parameter &lt;code&gt;httprequest&lt;/code&gt; and when &lt;code&gt;checkantivirus=true&lt;/code&gt;) if not empty and the antivirusfailed forward is specified and the antivirus scan did not pass, the error message (or soap fault) is stored in this session key and the first string part is returned to the pipeline</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StreamPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StreamPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Text2XmlPipeCumulativeAttributeGroup" />
@@ -16479,11 +16938,6 @@
     <xs:attribute name="directorySessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sessionkey with a directory value to extract the archive to</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="deleteOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, file is automatically deleted upon normal JVM termination Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collectResults" type="frankBoolean">
@@ -16591,7 +17045,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>specifies the version of xslt to use Default: 2</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan) Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -16642,7 +17096,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="storeForwardInSessionKey" type="xs:string">
@@ -16978,7 +17432,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -17092,7 +17546,7 @@
       <xs:element name="GalmDestination">
         <xs:annotation>
           <xs:documentation>MonitorAdapter that creates log lines for the GALM log adapter.
- 
+
  configuration is done via the AppConstants 'galm.stage' and 'galm.source',
  that in the default implemenation obtain their values from custom properties 'galm.stage' and
  appConstant 'instance.name'.</xs:documentation>
@@ -17124,7 +17578,11 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.GalmMonitorAdapter" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="MonitorAdapterBaseDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -17203,20 +17661,14 @@
   </xs:group>
   <xs:attributeGroup name="TriggerDeclaredAttributeGroup">
     <xs:attribute name="eventCode" type="xs:string" />
-    <xs:attribute name="eventCodes" type="xs:string" />
-    <xs:attribute name="severity">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="severityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="threshold" type="frankInt" />
     <xs:attribute name="period" type="frankInt" />
-    <xs:attribute name="sourceFilteringEnum">
+    <xs:attribute name="severity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="sourceFiltering">
       <xs:simpleType>
         <xs:union memberTypes="SourceFilteringAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -17420,7 +17872,9 @@
       </xs:enumeration>
       <xs:enumeration value="client">
         <xs:annotation>
-          <xs:documentation>client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session.</xs:documentation>
+          <xs:documentation>client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session.
+ The Frank application will acknowledge all messages processed correctly. The skipping of the acknowledgement of messages
+ processed in error will cause them to be redelivered, thus providing an automatic retry.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="dups">
@@ -17453,6 +17907,45 @@
       <xs:enumeration value="PEM" />
       <xs:enumeration value="JKS" />
       <xs:enumeration value="JCEKS" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FtpTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FTP" />
+      <xs:enumeration value="SFTP" />
+      <xs:enumeration value="FTPSI" />
+      <xs:enumeration value="FTPSX(TLS)" />
+      <xs:enumeration value="FTPSX(SSL)" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FileTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ASCII" />
+      <xs:enumeration value="BINARY" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ProtAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="C">
+        <xs:annotation>
+          <xs:documentation>Clear</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="S">
+        <xs:annotation>
+          <xs:documentation>Safe(SSL protocol only)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="E">
+        <xs:annotation>
+          <xs:documentation>Confidential(SSL protocol only)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="P">
+        <xs:annotation>
+          <xs:documentation>Private</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="IfsaMessageProtocolEnumAttributeValuesType">
@@ -17678,45 +18171,6 @@
       <xs:enumeration value="CORRELATIONID_FROM_MESSAGE">
         <xs:annotation>
           <xs:documentation>do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="FtpTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="FTP" />
-      <xs:enumeration value="SFTP" />
-      <xs:enumeration value="FTPSI" />
-      <xs:enumeration value="FTPSX(TLS)" />
-      <xs:enumeration value="FTPSX(SSL)" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="FileTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="ASCII" />
-      <xs:enumeration value="BINARY" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="ProtAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="C">
-        <xs:annotation>
-          <xs:documentation>Clear</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="S">
-        <xs:annotation>
-          <xs:documentation>Safe(SSL protocol only)</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="E">
-        <xs:annotation>
-          <xs:documentation>Confidential(SSL protocol only)</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="P">
-        <xs:annotation>
-          <xs:documentation>Private</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -18274,6 +18728,25 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageLogLevelAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="OFF">
+        <xs:annotation>
+          <xs:documentation>No logging</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INFO">
+        <xs:annotation>
+          <xs:documentation>Logs information from adapter level messages</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DEBUG">
+        <xs:annotation>
+          <xs:documentation>Logs information from pipe messages</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="STOPADAPTER" />
@@ -18282,7 +18755,7 @@
       <xs:enumeration value="STARTRECEIVER" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="SeverityEnumAttributeValuesType">
+  <xs:simpleType name="SeverityAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="HARMLESS" />
       <xs:enumeration value="WARNING" />
@@ -18303,7 +18776,7 @@
       <xs:enumeration value="CLEARING" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="EventTypeEnumAttributeValuesType">
+  <xs:simpleType name="EventTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="TECHNICAL" />
       <xs:enumeration value="FUNCTIONAL" />
@@ -18443,7 +18916,9 @@
   </xs:attribute>
   <xs:attribute name="destinationType">
     <xs:annotation>
-      <xs:documentation>Type of the messageing destination Default: QUEUE</xs:documentation>
+      <xs:documentation>Type of the messageing destination.
+ This function also sets the &lt;code&gt;useTopicFunctions&lt;/code&gt; field,
+ that controls whether Topic functions are used or Queue functions. Default: QUEUE</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef" />
@@ -18467,14 +18942,14 @@
   </xs:attribute>
   <xs:attribute name="queueConnectionFactoryName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Used when DestinationType = QUEUE.
+      <xs:documentation>Used when destinationType = QUEUE.
  The JNDI-name of the queueConnectionFactory to use to connect to a &lt;code&gt;queue&lt;/code&gt; if #isTransacted() returns &lt;code&gt;false&lt;/code&gt;.
  The corresponding connection factory should be configured not to support XA transactions.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="topicConnectionFactoryName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Used when DestinationType = TOPIC.
+      <xs:documentation>Used when destinationType = TOPIC.
  The JNDI-name of the connection factory to use to connect to a &lt;i&gt;topic&lt;/i&gt; if #isTransacted() returns &lt;code&gt;false&lt;/code&gt;.
  The corresponding connection factory should be configured not to support XA transactions.</xs:documentation>
     </xs:annotation>
@@ -18562,13 +19037,22 @@
       <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="sqlDialect" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="connectionsArePooled" type="frankBoolean" />
+  <xs:attribute name="connectionsArePooled" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed) Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="tableAlias" type="xs:string">
     <xs:annotation>
       <xs:documentation>Alias of the table, that can be used in selectCondition Default: t</xs:documentation>
@@ -18918,53 +19402,9 @@
   </xs:attribute>
   <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="streamingXslt" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="styleSheetCacheSize" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="disableOutputEscaping" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="indentXml" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="removeNamespaces" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="handleLexicalEvents" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
- Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="skipEmptyTags" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="xsltVersion" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>If set to &lt;code&gt;1&lt;/code&gt; xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      <xs:documentation>If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
+ Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
+ the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">
@@ -19047,11 +19487,6 @@
   <xs:attribute name="checkTable" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, checks are performed if the table exists and is properly created Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="createTable" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the table is created if it does not exist Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="messageFieldType" type="xs:string">
@@ -19234,6 +19669,12 @@
       <xs:documentation>Allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
+ this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="schemaLocation" type="xs:string">
     <xs:annotation>
       <xs:documentation>Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name).&lt;br/&gt;
@@ -19306,12 +19747,8 @@
   </xs:attribute>
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s) Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Ignore namespaces in the input message which are unknown Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
+ Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -19346,17 +19783,17 @@
   </xs:attribute>
   <xs:attribute name="itemNoSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.</xs:documentation>
+      <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="maxItems" type="frankInt">
     <xs:annotation>
-      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward #MAX_ITEMS_REACHED_FORWARD can be configured to follow Default: 0</xs:documentation>
+      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward maxItemsReached can be configured to follow Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="stopConditionXPathExpression" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Expression evaluated on each result and forwards to [#STOP_CONDITION_MET_FORWARD] forward if configured.
+      <xs:documentation>Expression evaluated on each result and forwards to [stopConditionMet] forward if configured.
  Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used.
  This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.
  Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>

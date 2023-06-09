@@ -33,14 +33,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -248,7 +248,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			}
 
 			try {
-				URL url = ClassUtils.getResourceURL(this, getAdiosDefinities());
+				URL url = ClassLoaderUtils.getResourceURL(this, getAdiosDefinities());
 				if(url == null) {
 					throw new ConfigurationException("cannot find adios definitions from resource [" + getAdiosDefinities() + "]");
 				}

@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -57,8 +58,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 
 	private FS fileSystem;
-	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
-	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
+	private FileSystemActor<F,FS> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -140,7 +140,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.addActions(specificActions);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
@@ -148,47 +148,47 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return actor.getAction();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
@@ -199,7 +199,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -209,32 +209,32 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.FileSystemActor */
+	@ReferTo(FileSystemActor.class)
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		actor.setOutputFormat(outputFormat);
 	}

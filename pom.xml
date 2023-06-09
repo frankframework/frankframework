@@ -11,16 +11,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.20.0</log4j2.version>
 
-		<jackson.version>2.14.2</jackson.version>
+		<jackson.version>2.15.1</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
-		<spring.version>5.3.26</spring.version>
-		<spring-security.version>5.8.2</spring-security.version>
+		<spring.version>5.3.27</spring.version>
+		<spring-security.version>5.8.3</spring-security.version>
 		<spring-integration.version>5.5.17</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.5</micrometer.version>
+		<micrometer.version>1.11.0</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -31,10 +31,10 @@
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.32</mysql.driver.version>
+		<mysql.driver.version>8.0.33</mysql.driver.version>
 		<mariadb.driver.version>2.7.9</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.9.0</mongodb.driver.version>
+		<mongodb.driver.version>4.9.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
@@ -96,6 +96,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>iaf-management-gateway</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -148,7 +153,17 @@
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-console</artifactId>
 				<version>${project.version}</version>
-				<type>war</type>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-frontend</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-backend</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
@@ -416,7 +431,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.11.0</version>
+				<version>2.12.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -438,6 +453,12 @@
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
 				<version>[5.9.1,)</version>
 				<scope>test</scope>
 			</dependency>
@@ -485,6 +506,10 @@
 			<plugin>
 				<groupId>org.glassfish.copyright</groupId>
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -651,7 +676,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.9</version>
+					<version>0.8.10</version>
 					<executions>
 						<execution>
 							<id>prepare-jacoco</id>
@@ -674,6 +699,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.5.0</version>
 					<configuration>
+						<source>1.8</source>
 						<doclint>none</doclint>
 						<tags>
 							<tag>
@@ -682,10 +708,10 @@
 								<head>Parameters</head>
 							</tag>
 							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
-							     The standard doclet does not properly format JavaDoc tags in this case. This
-							     can be solved with a taglet, but WeAreFrank! does not want that complexity.
-							     We therefore accept that all occurrences of ff.parameter are formatted on the
-							     same line.
+								 The standard doclet does not properly format JavaDoc tags in this case. This
+								 can be solved with a taglet, but WeAreFrank! does not want that complexity.
+								 We therefore accept that all occurrences of ff.parameter are formatted on the
+								 same line.
 
 								 The ff.parameter tag was introduced for the Frank!Doc. The Frank!Doc formats
 								 it properly.
@@ -715,11 +741,12 @@
 							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-frontend</skippedModules>
 					</configuration>
 					<executions>
 						<execution>
-							<id>attach-javadocs</id>
+							<id>attach-javadoc</id>
+							<phase>generate-sources</phase>
 							<goals>
 								<goal>jar</goal>
 							</goals>
@@ -737,7 +764,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.2.2</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
@@ -763,17 +790,16 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.4.1</version>
+					<version>1.5.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
 					</configuration>
 					<executions>
 						<execution>
-							<id>clean-and-flatten</id>
-							<phase>process-resources</phase>
+							<id>flatten</id>
+							<phase>initialize</phase>
 							<goals>
-								<goal>clean</goal>
 								<goal>flatten</goal>
 							</goals>
 						</execution>
@@ -939,7 +965,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.4.2</version>
+				<version>3.4.5</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>modules</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 			<!--
 				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
@@ -949,10 +982,16 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.5.0</version>
-				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
+						<id>default</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+					<reportSet>
 						<id>javadoc</id>
+						<inherited>false</inherited>
 						<reports>
 							<report>aggregate</report>
 						</reports>
@@ -1058,10 +1097,10 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
 				<module>webapp</module>
-				<module>ear</module>
 				<module>larva</module>
 				<module>ladybug</module>
 				<module>test</module>
@@ -1165,21 +1204,9 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.5.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
@@ -1238,8 +1265,8 @@
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
-							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
-							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+							<finalName>ibis-adapterframework-parent-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-backend,ibis-adapterframework-console-frontend</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

@@ -16,24 +16,17 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Map;
 
 public class FileMessage extends Message {
 
 	private static final long serialVersionUID = 5219660236736759665L;
 
 	public FileMessage(File file) {
-		this(file, new MessageContext());
+		this(file, null);
 	}
 
 	public FileMessage(File file, String charset) {
-		this(file, new MessageContext(charset));
-	}
-
-	public FileMessage(File file, Map<String,Object> context) {
-		super(() -> new FileInputStream(file), new MessageContext(context)
-				.withModificationTime(file.lastModified())
+		super(new SerializableFileReference(charset, file.toPath()), new MessageContext(charset).withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())
 				.withLocation(file.getAbsolutePath())

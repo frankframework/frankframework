@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,22 @@
 */
 package nl.nn.adapterframework.monitoring.events;
 
+import java.time.Instant;
+
 import org.springframework.context.ApplicationEvent;
 
+import lombok.Getter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.stream.Message;
 
 public class MonitorEvent extends ApplicationEvent {
-	private String eventCode;
+	private @Getter String eventCode;
+	private @Getter Message eventMessage;
 
-	public MonitorEvent(EventThrowing source, String eventCode) {
+	public MonitorEvent(EventThrowing source, String eventCode, Message eventMessage) {
 		super(source);
 		this.eventCode = eventCode;
+		this.eventMessage = eventMessage;
 	}
 
 	@Override
@@ -32,7 +38,11 @@ public class MonitorEvent extends ApplicationEvent {
 		return (EventThrowing) super.getSource();
 	}
 
-	public String getEventCode() {
-		return eventCode;
+	public Instant getEventTime() {
+		return Instant.ofEpochMilli(getTimestamp());
+	}
+
+	public String getEventSourceName() {
+		return getSource().getEventSourceName();
 	}
 }

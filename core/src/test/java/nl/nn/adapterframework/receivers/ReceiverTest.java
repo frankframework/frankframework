@@ -1,6 +1,23 @@
+/*
+   Copyright 2022-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
+import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitForState;
+import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitWhileInState;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -11,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -21,16 +39,16 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,11 +78,9 @@ import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IListenerConnector;
-import nl.nn.adapterframework.core.IManagable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -77,6 +93,8 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -207,28 +225,6 @@ public class ReceiverTest {
 		return mock(JdbcTransactionalStorage.class);
 	}
 
-	public void waitWhileInState(IManagable object, RunState... state) {
-		Set<RunState> states = new HashSet<>();
-		Collections.addAll(states, state);
-
-		LOG.debug("Wait while runstate of [{}] (currently in [{}]) to change to not any of [{}]", object.getName(), object.getRunState(), states);
-		await()
-				.atMost(60, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(()-> !states.contains(object.getRunState()));
-	}
-
-	public void waitForState(IManagable object, RunState... state) {
-		Set<RunState> states = new HashSet<>();
-		Collections.addAll(states, state);
-
-		LOG.debug("Wait for runstate of [{}] to go from [{}] to any of [{}]", object.getName(), object.getRunState(), states);
-		await()
-				.atMost(10, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> states.contains(object.getRunState()));
-	}
-
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
 			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
@@ -309,6 +305,7 @@ public class ReceiverTest {
 		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 
 		final int NR_TIMES_MESSAGE_OFFERED = 5;
@@ -339,7 +336,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -411,6 +408,7 @@ public class ReceiverTest {
 
 		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
+//		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 1
 
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -449,7 +447,11 @@ public class ReceiverTest {
 		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
+		ArgumentCaptor<String> messageIdCaptor = forClass(String.class);
+		ArgumentCaptor<String> correlationIdCaptor = forClass(String.class);
+		ArgumentCaptor<Serializable> messageCaptor = forClass(Serializable.class);
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
@@ -461,8 +463,8 @@ public class ReceiverTest {
 					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
 						final TransactionStatus tx = txManager.getTransaction(TRANSACTION_DEFINITION);
 						reset(errorStorage, listener);
-						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
-							.thenAnswer(invocation -> {
+						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
+								.thenAnswer(invocation -> {
 								if (tx.isRollbackOnly()) {
 									txRollbackOnlyInErrorStorage.incrementAndGet();
 									throw new SQLException("TX is rollback-only. Getting out!");
@@ -471,7 +473,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -505,6 +507,9 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
+			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
+			() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
+			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
 			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
@@ -544,9 +549,10 @@ public class ReceiverTest {
 		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> rawMessage = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 		// Act
-		int result = receiver.getDeliveryCount("dummy-message-id", jmsMessage);
+		int result = receiver.getDeliveryCount(rawMessage);
 
 		// Assert
 		assertEquals(4, result);
@@ -580,26 +586,70 @@ public class ReceiverTest {
 
 		final String messageId = "A Path";
 		Path fileMessage = Paths.get(messageId);
+		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId, null);
 
 		// Act
-		int result1 = receiver.getDeliveryCount(messageId, fileMessage);
+		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(1, result1);
 
 		// Arrange (for 2nd invocation)
 		try (PipeLineSession session = new PipeLineSession()) {
-			session.put(PipeLineSession.messageIdKey, messageId);
-			receiver.processRawMessage(listener, fileMessage, session, false);
+			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// We expected an exception here...
 		}
 
 		// Act
-		int result2 = receiver.getDeliveryCount(messageId, fileMessage);
+		int result2 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(2, result2);
+	}
+
+	@Test
+	public void testProcessRequest() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		RawMessageWrapper<String> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
+		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		PipeLine pipeLine = adapter.getPipeLine();
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		pipeLineResult.setState(ExitState.SUCCESS);
+		pipeLineResult.setResult(testMessage);
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		// start adapter
+		configuration.configure();
+		configuration.start();
+
+		waitForState(adapter, RunState.STARTED);
+		waitForState(receiver, RunState.STARTED);
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			// Act
+			Message result = receiver.processRequest(listener, rawTestMessageWrapper, testMessage, session);
+
+			// Assert
+			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
+			assertTrue(result.requiresStream(), "Result message should be a stream");
+			assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+			assertEquals("TEST", result.asString());
+		} finally {
+			configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		}
 	}
 
 	@Test
@@ -621,8 +671,8 @@ public class ReceiverTest {
 		waitForState(adapter, RunState.STARTED);
 		waitForState(receiver, RunState.STARTED);
 
-		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
+		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);

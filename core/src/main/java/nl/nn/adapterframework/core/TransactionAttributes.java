@@ -23,9 +23,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 public class TransactionAttributes implements HasTransactionAttribute {
 	protected Logger log = LogUtil.getLogger(this);

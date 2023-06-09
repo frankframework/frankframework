@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,19 +50,38 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * JDBC implementation of {@link ITransactionalStorage}.
- *
- * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml
- *
- * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
- *
- * <br/>
+ * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
+ * table IBISSTORE. A <code>MessageStoreSender</code> and <code>MessageStoreListener</code>
+ * pair implicitly includes a message log and an error store.
+ * If you have a <code>MessageStoreSender</code> and <code>MessageStoreListener</code>
+ * pair it is superfluous to add a <code>JdbcMessageLog</code> or <code>JdbcErrorStorage</code>
+ * within the same sender pipe or the same receiver.
+ * <br/><br/>
+ * <b>Message log:</b> A message log writes messages in persistent storage for logging purposes.
+ * When a message log appears in a receiver, it also ensures that the same message is only processed
+ * once, even if a related pushing listener receives the same message multiple times.
+ * <br/><br/>
+ * <b>Error store:</b> Appears in a receiver or sender pipe to store messages that could not be processed.
+ * Storing a message in the error store is the last resort of the Frank!Framework. Many types of listeners and senders
+ * offer a retry mechanism. Only if several tries have failed, then an optional transaction is not rolled
+ * back and the message is stored in the error store. Users can retry messages in an error store using the Frank!Console. When
+ * this is done, the message is processed in the same way as messages received from the original source.
+ * <br/><br/>
+ * How does a message log or error store see duplicate messages? The message log or error store
+ * always appears in combination with a sender or listener. This sender or listener determines
+ * a key based on the sent or received message. Messages with the same key are considered to
+ * be the same.
+ * <br/><br/>
+ * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
+ * the Frank!Framework will try to create them.
+ * <br/><br/>
  * N.B. Note on using XA transactions:
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
@@ -509,7 +528,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try {
 			IDbmsSupport dbmsSupport=getDbmsSupport();
 			if (log.isDebugEnabled()) {
-				log.debug("preparing insert statement ["+insertQuery+"]");
+				log.debug("preparing insert statement [{}]", insertQuery);
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
@@ -578,9 +597,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
 				String resultString = createResultString(isMessageDifferent);
-				log.warn("MessageID [" + messageId + "] already exists");
+				log.warn("MessageID [{}] already exists", messageId);
 				if (isMessageDifferent) {
-					log.warn("Message with MessageID [" + messageId + "] is not equal");
+					log.warn("Message with MessageID [{}] is not equal", messageId);
 				}
 				return resultString;
 			}
@@ -660,11 +679,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			try (ResultSet rs = stmt.executeQuery()) {
 				// if rs.next() needed as you can not simply call rs.
 				if (rs.next()) {
-					String dataBaseMessage = retrieveObject(rs, 1).toString();
+					String dataBaseMessage = retrieveObject(rs, 1).getRawMessage().toString();
 					String inputMessage = message.toString();
-					if (dataBaseMessage.equals(inputMessage)) {
-						return false;
-					}
+					return !dataBaseMessage.equals(inputMessage);
 				}
 				return true;
 			}
@@ -761,23 +778,25 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-
-
-
-	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	@SuppressWarnings("unchecked")
+	private RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream==null) {
 				return null;
 			}
 			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
-				return (S)ois.readObject();
+				Object s = ois.readObject();
+				if (s instanceof RawMessageWrapper<?>) {
+					return (RawMessageWrapper<S>) s;
+				}
+				return new RawMessageWrapper<>((S)s);
 			}
 		}
 	}
 
 
 	@Override
-	protected S retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
+	protected RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -879,6 +898,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * If set to <code>true</code>, the table is created if it does not exist
 	 * @ff.default false
 	 */
+	@Deprecated
+	@ConfigurationWarning("if you want to create and maintain database tables, please enable Liquibase")
 	public void setCreateTable(boolean b) {
 		createTable = b;
 	}

@@ -529,7 +529,13 @@ public class Misc {
 	public static String getBuildOutputDirectory() {
 		// TODO: Warning from Sonarlint of Potential NPE?
 		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
-		return urlDecode(path);
+
+		try {
+			return URLDecoder.decode(path, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("unable to parse build-output-directory using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
+			return null;
+		}
 	}
 
 	public static String getProjectBaseDir() {
@@ -548,16 +554,6 @@ public class Misc {
 			}
 		}
 		return null;
-	}
-
-	public static String urlDecode(String input) {
-		try {
-			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			// TODO: Should we perhaps just throw exception instead of swallowing and returning NULL? Most callers do not expect NULL and may throw NPE...
-			log.warn("unable to parse input using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
-			return null;
-		}
 	}
 
 	public static <T> void addToSortedListUnique(List<T> list, T item) {

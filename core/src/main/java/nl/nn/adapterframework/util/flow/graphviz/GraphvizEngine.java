@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
@@ -128,8 +128,8 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL vizWrapperURL = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
-		URL vizRenderURL = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
+		URL vizWrapperURL = ClassLoaderUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL vizRenderURL = ClassLoaderUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
 		if(vizWrapperURL == null || vizRenderURL == null)
 			throw new IOException("failed to open vizjs file for version ["+version+"]");
 		return StreamUtil.streamToString(vizWrapperURL.openStream()) + StreamUtil.streamToString(vizRenderURL.openStream());

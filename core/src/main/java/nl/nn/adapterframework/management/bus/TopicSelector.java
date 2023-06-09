@@ -23,8 +23,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TopicSelector {
 
-	public static final String TOPIC_HEADER_NAME = "topic";
-
 	BusTopic value();
-
 }

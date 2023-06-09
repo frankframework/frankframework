@@ -41,7 +41,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -60,7 +60,7 @@ public class AuthSSLContextFactory {
 		URL truststoreUrl = null;
 
 		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
-			keystoreUrl = ClassUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 			if (keystoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for keystore resource ["+keystoreOwner.getKeystore()+"]");
 			}
@@ -71,7 +71,7 @@ public class AuthSSLContextFactory {
 			}
 		}
 		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
 			if (truststoreUrl == null) {
 				throw new ConfigurationException("cannot find URL for truststore resource ["+trustoreOwner.getTruststore()+"]");
 			}
@@ -106,10 +106,10 @@ public class AuthSSLContextFactory {
 		SSLContext sslcontext;
 
 		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
-			keystoreUrl = ClassUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
 		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
 		}
 		boolean allowSelfSignedCertificates = trustoreOwner!=null && trustoreOwner.isAllowSelfSignedCertificates();
 
@@ -164,10 +164,10 @@ public class AuthSSLContextFactory {
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
 		if (keystoreOwner!=null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
-			keystoreUrl = ClassUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
 		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
+			truststoreUrl = ClassLoaderUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
 		}
 		if (keystoreUrl == null && truststoreUrl == null && (trustoreOwner==null || !trustoreOwner.isAllowSelfSignedCertificates())) {
 			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if none has been set.

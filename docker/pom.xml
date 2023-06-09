@@ -36,6 +36,30 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
 					<version>1.8</version>
+					<executions>
+						<execution>
+							<id>prepare-package</id>
+							<phase>package</phase>
+							<inherited>true</inherited>
+							<configuration>
+								<target>
+									<exec executable="docker" failonerror="true">
+										<arg value="build"/>
+										<arg value="-t"/>
+										<arg value="${config.image.tag}"/>
+										<arg value="-t"/>
+										<arg value="${config.image.repository}/${config.image.tag}"/>
+										<arg value="--build-arg"/>
+										<arg value="FF_VERSION=${revision}"/>
+										<arg value="."/>
+									</exec>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -86,6 +110,7 @@
 		<profile>
 			<id>WebSphere</id>
 			<modules>
+				<module>../ear</module>
 				<module>WebSphere</module>
 			</modules>
 		</profile>
@@ -111,7 +136,7 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>no-docker</id>
+			<id>ci</id>
 			<build>
 				<plugins>
 					<plugin>

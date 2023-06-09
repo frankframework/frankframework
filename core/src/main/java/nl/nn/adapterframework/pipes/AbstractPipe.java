@@ -32,13 +32,10 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.Mandatory;
@@ -175,14 +172,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
-
-	/**
-	 * This is where the action takes place. Pipes may only throw a PipeRunException,
-	 * to be handled by the caller of this object.
-	 */
-	@Override
-	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
-
 	@Override
 	public void start() throws PipeStartException {}
 
@@ -299,10 +288,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			eventPublisher.registerEvent(this, description);
 		}
 	}
+
 	@Override
-	public void throwEvent(String event) {
+	public void throwEvent(String event, Message message) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this ,event);
+			eventPublisher.fireEvent(this, event);
 		}
 	}
 
@@ -317,14 +307,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
 		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
-	}
-
-	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws PipeRunException {
-		try {
-			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
-		} catch (ParameterException e) {
-			throw new PipeRunException(this,"cannot determine parameter values", e);
-		}
 	}
 
 	protected <T> T getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, T attributeValue) {

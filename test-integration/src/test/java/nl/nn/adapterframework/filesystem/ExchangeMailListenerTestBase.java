@@ -25,7 +25,7 @@ import nl.nn.adapterframework.receivers.ExchangeMailListener;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase {
@@ -67,7 +67,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Override
 	public void setUp() throws Exception {
 		Properties properties=new Properties();
-		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
+		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		mailaddress = properties.getProperty("mailaddress");
 		mailaddress_fancy = properties.getProperty("mailaddress.fancy");
 		accessToken = properties.getProperty("accessToken");

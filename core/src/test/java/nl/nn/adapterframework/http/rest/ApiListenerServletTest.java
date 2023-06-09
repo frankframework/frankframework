@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden
+Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -98,12 +98,13 @@ import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -581,7 +582,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/listenerDetectMimeType";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.TEXT, MediaTypes.DETECT).build();
 
-		URL url = ClassUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 
 		// It does not need to compute the MimeType as the value should be provided by the HttpEntity
@@ -603,10 +604,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -627,10 +628,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addPart("file1", new UrlMessage(url1));
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addPart("file2", new UrlMessage(url2));
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -651,10 +652,10 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// ISO_8859_1 encoded but is since we don't set the charset, it will be parsed as UTF-8 (€ è)
 
-		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url1 = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
 
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
@@ -675,7 +676,7 @@ public class ApiListenerServletTest extends Mockito {
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
 		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
 
-		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
 
@@ -707,7 +708,7 @@ public class ApiListenerServletTest extends Mockito {
 		builder.setMtomMultipart();
 		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/xml", "UTF-8"));//explicitly sent as UTF-8, defaults to ISO-8859-1
 
-		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
 		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
 
@@ -1135,10 +1136,10 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
-		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.correlationIdKey));
+		assertTrue(session.containsKey(PipeLineSession.MESSAGE_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.MESSAGE_ID_KEY));
+		assertTrue(session.containsKey(PipeLineSession.CORRELATION_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.CORRELATION_ID_KEY));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1161,10 +1162,10 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(session.containsKey(PipeLineSession.messageIdKey));
-		assertEquals("msg1", session.get(PipeLineSession.messageIdKey));
-		assertTrue(session.containsKey(PipeLineSession.correlationIdKey));
-		assertEquals("msg2", session.get(PipeLineSession.correlationIdKey));
+		assertTrue(session.containsKey(PipeLineSession.MESSAGE_ID_KEY));
+		assertEquals("msg1", session.get(PipeLineSession.MESSAGE_ID_KEY));
+		assertTrue(session.containsKey(PipeLineSession.CORRELATION_ID_KEY));
+		assertEquals("msg2", session.get(PipeLineSession.CORRELATION_ID_KEY));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1746,18 +1747,18 @@ public class ApiListenerServletTest extends Mockito {
 		private @Setter Object responseContent = null;
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 
 		@Override
-		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			handlerInvoked = true;
 			if(session != null) {
 				context.putAll(session);

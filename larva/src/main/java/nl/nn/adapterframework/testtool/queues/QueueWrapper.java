@@ -328,7 +328,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			if (listenerMessageHandler == null) {
 				throw new NoSuchElementException("No ListenerMessageHandler found");
 			}
-			Map<?, ?> context = new HashMap<Object, Object>();
+			Map<?, ?> context = new HashMap<>();
 			ListenerMessage requestListenerMessage = (ListenerMessage)get("listenerMessage");
 			if (requestListenerMessage != null) {
 				context = requestListenerMessage.getContext();
@@ -377,6 +377,4 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		}
 		throw new SenderException("Could not perform executeRead() for queue ["+get()+"]");
 	}
-
-
 }

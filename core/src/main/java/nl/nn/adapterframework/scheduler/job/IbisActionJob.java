@@ -21,9 +21,9 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.EnumUtils;
 

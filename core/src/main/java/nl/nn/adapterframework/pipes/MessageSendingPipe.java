@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -199,7 +200,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		if (StringUtils.isNotEmpty(getStubFilename())) {
 			URL stubUrl;
 			try {
-				stubUrl = ClassUtils.getResourceURL(this, getStubFilename());
+				stubUrl = ClassLoaderUtils.getResourceURL(this, getStubFilename());
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFilename()+"]", e);
 			}
@@ -485,7 +486,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				if (sfn != null) {
 					try {
-						result = new Message(StreamUtil.resourceToString(ClassUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
+						result = new Message(StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, sfn), Misc.LINE_SEPARATOR));
 						log.info("returning result from dynamic stub [{}]", sfn);
 					} catch (Throwable e) {
 						throw new PipeRunException(this,"got exception loading result from stub [" + sfn + "]",e);
@@ -612,7 +613,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							label=labelTp.transform(input,null);
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, new MessageWrapper(input, correlationID));
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label, new MessageWrapper(input, storedMessageID, correlationID));
 
 					long messageLogEndTime = System.currentTimeMillis();
 					long messageLogDuration = messageLogEndTime - messageLogStartTime;

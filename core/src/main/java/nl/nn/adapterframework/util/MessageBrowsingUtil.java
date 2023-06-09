@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageBrowsingUtil {
@@ -39,19 +41,25 @@ public class MessageBrowsingUtil {
 			return ((Message)rawmsg).asString();
 		} else if(rawmsg instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
 			return (String)rawmsg;
-		} else {
+		} else if (listener != null) {
+			RawMessageWrapper<?> rawMessageWrapper;
+			if (rawmsg instanceof RawMessageWrapper<?>) {
+				rawMessageWrapper = (RawMessageWrapper<?>) rawmsg;
+			} else {
+				rawMessageWrapper = new RawMessageWrapper<>(rawmsg);
+			}
 			String msg = null;
-			if (listener!=null) {
-				try {
-					msg = listener.extractMessage(rawmsg, null).asString();
-				} catch (Exception e) {
-					log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage(), e);
-				}
+			try {
+				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+			} catch (Exception e) {
+				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawmsg + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
 			}
 			if (StringUtils.isEmpty(msg)) {
 				msg = Message.asString(rawmsg);
 			}
 			return msg;
+		} else {
+			return Message.asString(rawmsg);
 		}
 	}
 }

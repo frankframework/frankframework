@@ -17,55 +17,53 @@ package nl.nn.adapterframework.receivers;
 
 import jakarta.mail.Message;
 import jakarta.mail.internet.MimeBodyPart;
-
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.ImapFileSystem;
 import nl.nn.adapterframework.filesystem.MailListener;
 
 @Category("Advanced")
 public class ImapListener extends MailListener<Message, MimeBodyPart, ImapFileSystem> {
 
-	public final String IMAP_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ImapFileSystem";
-
 	@Override
 	protected ImapFileSystem createFileSystem() {
 		return new ImapFileSystem();
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setHost(String host) {
 		getFileSystem().setHost(host);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setPort(int port) {
 		getFileSystem().setPort(port);
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
 
-	/** @ff.ref nl.nn.adapterframework.filesystem.ImapFileSystem */
+	@ReferTo(ImapFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}

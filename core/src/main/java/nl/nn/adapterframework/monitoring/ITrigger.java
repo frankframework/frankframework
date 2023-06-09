@@ -16,10 +16,12 @@
 
 package nl.nn.adapterframework.monitoring;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.DisposableBean;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
@@ -34,21 +36,19 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 
 	boolean isAlarm();
 	void clearEvents();
-	void configure();
+	void configure() throws ConfigurationException;
 	boolean isConfigured();
 	void setMonitor(Monitor monitor);
 	void toXml(XmlBuilder monitor);
 
-	void setSourceFilteringEnum(SourceFiltering filtering);
-	SourceFiltering getSourceFilteringEnum();
-	String getSourceFiltering();
+	void setSourceFiltering(SourceFiltering filtering);
+	SourceFiltering getSourceFiltering();
 
-	void setEventCodes(String[] arr);
-	String[] getEventCodes();
+	void setEventCodes(List<String> events);
+	List<String> getEventCodes();
 
-	void setSeverityEnum(SeverityEnum enumeration);
-	String getSeverity();
-	SeverityEnum getSeverityEnum();
+	void setSeverity(Severity severity);
+	Severity getSeverity();
 
 	void setThreshold(int i);
 	int getThreshold();

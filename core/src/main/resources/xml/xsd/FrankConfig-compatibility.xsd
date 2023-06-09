@@ -78,6 +78,14 @@
         <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="msgLogLevel">
+      <xs:annotation>
+        <xs:documentation>Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Default: &lt;code&gt;INFO, unless overridden by property msg.log.level.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageLogLevelAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="requestReplyLogging" type="frankBoolean" />
     <xs:attribute name="msgLogHidden" type="frankBoolean">
       <xs:annotation>
@@ -95,7 +103,6 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="ListenerElementGroup" minOccurs="1" maxOccurs="1" />
         <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-        <xs:group ref="InProcessStorageElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:group ref="ErrorSenderElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:group ref="ErrorStorageElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:group ref="MessageLogElementGroup" minOccurs="0" maxOccurs="1" />
@@ -239,7 +246,7 @@
     </xs:attribute>
     <xs:attribute name="forceRetryFlag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to #RETRY_FLAG_SESSION_KEY. Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable to retry. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
@@ -310,7 +317,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect	 * @ff.default 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xslt2" type="frankBoolean" />
@@ -648,7 +655,7 @@
         <xs:union memberTypes="ExitStateAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="code" type="xs:string">
+    <xs:attribute name="code" type="frankInt">
       <xs:annotation>
         <xs:documentation>HTTP statusCode e.g. &lt;code&gt;500&lt;/code&gt; Default: 200</xs:documentation>
       </xs:annotation>
@@ -893,23 +900,23 @@
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type">
-      <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="typeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="raised" type="frankBoolean" />
     <xs:attribute name="alarmSeverityEnum">
       <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="additionalHitCount" type="frankInt" />
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:union memberTypes="EventTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="alarmSeverity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Monitor" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitor" />
@@ -1713,47 +1720,52 @@
   <xs:attributeGroup name="AmazonS3SenderDeclaredAttributeGroup">
     <xs:attribute name="accessKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>access key to access to the AWS resources owned by the account</xs:documentation>
+        <xs:documentation>Access key to access to the AWS resources owned by the account</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="secretKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>secret key to access to the AWS resources owned by the account</xs:documentation>
+        <xs:documentation>Secret key to access to the AWS resources owned by the account</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>alias used to obtain AWS credentials</xs:documentation>
+        <xs:documentation>Alias used to obtain AWS credentials</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="chunkedEncodingDisabled" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>setting this flag will result in disabling chunked encoding for all requests. Default: false</xs:documentation>
+        <xs:documentation>Setting this flag will result in disabling chunked encoding for all requests. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="forceGlobalBucketAccessEnabled" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>set whether the client should be configured with global bucket access enabled. Default: false</xs:documentation>
+        <xs:documentation>Set whether the client should be configured with global bucket access enabled. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="clientRegion" type="xs:string">
+    <xs:attribute name="clientRegion" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>name of the region that the client will be created from Default: eu-west-1</xs:documentation>
+        <xs:documentation>Name of the region that the client will be created from Default: eu-west-1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="bucketName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the bucket to access</xs:documentation>
+        <xs:documentation>Name of the bucket to access. The bucketName can also be specified by prefixing it to the object name, separated from it by |</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>setting proxy host</xs:documentation>
+        <xs:documentation>Proxy host</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>setting proxy port</xs:documentation>
+        <xs:documentation>Proxy port</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serviceEndpoint" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -1778,7 +1790,7 @@
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [#PARAMETER_ACTION] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -1786,17 +1798,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter #PARAMETER_FILENAME is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME. If not set, the parameter #PARAMETER_DESTINATION is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=#ACTION_LIST. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -1806,27 +1818,27 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions #ACTION_CREATE, #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions #ACTION_WRITE1 and #ACTION_APPEND, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="base64">
       <xs:annotation>
-        <xs:documentation>For actions #ACTION_READ1, #ACTION_WRITE1 and #ACTION_APPEND. When set the stream is base64 encoded or decoded</xs:documentation>
+        <xs:documentation>For actions read, write and append. When set the stream is base64 encoded or decoded</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DirectionAttributeValuesType variableRef" />
@@ -1835,13 +1847,13 @@
     <xs:attribute name="wildCard" type="xs:string" />
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildCard" type="xs:string" />
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -1851,17 +1863,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions #ACTION_WRITE1 and #ACTION_APPEND Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for #ACTION_READ1 and #ACTION_WRITE1 action</xs:documentation>
+        <xs:documentation>Charset to be used for read and write action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions #ACTION_DELETE, #ACTION_READ_DELETE and #ACTION_MOVE</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -2394,7 +2406,7 @@
     </xs:attribute>
     <xs:attribute name="scalarExtended" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned: 
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
  &lt;ul&gt;
  &lt;li&gt;'[absent]' no row is found&lt;/li&gt;
  &lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
@@ -2431,7 +2443,7 @@
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;#UNP_STARTparamname#UNP_END&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="includeFieldDefinition" type="frankBoolean">
@@ -2662,7 +2674,7 @@
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
+        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
@@ -2685,7 +2697,11 @@
         <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="password" type="xs:string" />
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
@@ -2705,7 +2721,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -2883,7 +2899,7 @@
     </xs:attribute>
     <xs:attribute name="actions" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Sets actions the pipe has to perform. Possible action values: 
+        <xs:documentation>Sets actions the pipe has to perform. Possible action values:
  &lt;ul&gt;
    &lt;li&gt;write: create a new file and write input to it&lt;/li&gt;
    &lt;li&gt;write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it&lt;/li&gt;
@@ -3035,6 +3051,16 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.FtpFileSystemSender" />
   </xs:complexType>
   <xs:attributeGroup name="FtpFileSystemSenderDeclaredAttributeGroup">
+    <xs:attribute name="ftpTypeDescription">
+      <xs:simpleType>
+        <xs:union memberTypes="FtpTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="protP" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) if true, the server returns data via a SSL socket Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
         <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
@@ -3089,11 +3115,6 @@
       <xs:annotation>
         <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
       </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ftpTypeDescription">
-      <xs:simpleType>
-        <xs:union memberTypes="FtpTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="ftpType">
       <xs:annotation>
@@ -3160,12 +3181,12 @@
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
       <xs:annotation>
-        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -3173,42 +3194,42 @@
     </xs:attribute>
     <xs:attribute name="keystoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access keystore</xs:documentation>
+        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -3216,37 +3237,32 @@
     </xs:attribute>
     <xs:attribute name="truststoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
+        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="protP" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) if true, the server returns data via a SSL socket Default: false</xs:documentation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="prot">
@@ -4087,7 +4103,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4220,14 +4236,26 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltSenderDeclaredAttributeGroup" />
-    <xs:attribute ref="streamingXslt" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="styleSheetNameSessionKey" />
-    <xs:attribute ref="styleSheetCacheSize" />
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
@@ -4238,7 +4266,11 @@
         <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="disableOutputEscaping" />
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
         <xs:documentation>For xpathExpression only Default: text</xs:documentation>
@@ -4247,14 +4279,35 @@
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute ref="indentXml" />
-    <xs:attribute ref="namespaceAware" />
-    <xs:attribute ref="removeNamespaces" />
-    <xs:attribute ref="handleLexicalEvents" />
-    <xs:attribute ref="skipEmptyTags" />
-    <xs:attribute ref="xsltVersion" />
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean" />
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="debugInput" />
-    <xs:attribute ref="xslt2" />
+    <xs:attribute name="xslt2" type="frankBoolean" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XsltSenderType">
@@ -4267,14 +4320,26 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.XsltSender" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
-    <xs:attribute ref="streamingXslt" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="styleSheetName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="styleSheetNameSessionKey" />
-    <xs:attribute ref="styleSheetCacheSize" />
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
@@ -4285,7 +4350,11 @@
         <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="disableOutputEscaping" />
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
         <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some other use cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.
@@ -4300,14 +4369,35 @@
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute ref="indentXml" />
-    <xs:attribute ref="namespaceAware" />
-    <xs:attribute ref="removeNamespaces" />
-    <xs:attribute ref="handleLexicalEvents" />
-    <xs:attribute ref="skipEmptyTags" />
-    <xs:attribute ref="xsltVersion" />
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean" />
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="debugInput" />
-    <xs:attribute ref="xslt2" />
+    <xs:attribute name="xslt2" type="frankBoolean" />
   </xs:attributeGroup>
   <xs:attributeGroup name="XsltSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="XsltSenderDeclaredAttributeGroup" />
@@ -4688,17 +4778,17 @@
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The MongoDB datasource Default: JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>The MongoDB datasource Default: mongodb.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="database" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Database to connect to. Can be overridden by parameter #PARAM_DATABASE</xs:documentation>
+        <xs:documentation>Database to connect to. Can be overridden by parameter database</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collection" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Collection to act upon. Can be overridden by parameter #PARAM_COLLECTION</xs:documentation>
+        <xs:documentation>Collection to act upon. Can be overridden by parameter collection</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="action">
@@ -4711,12 +4801,12 @@
     </xs:attribute>
     <xs:attribute name="filter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter. Can contain references to parameters between #NAMED_PARAM_START and #NAMED_PARAM_END. Can be overridden by parameter #PARAM_FILTER</xs:documentation>
+        <xs:documentation>Filter. Can contain references to parameters between ?{ and }. Can be overridden by parameter filter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="limit" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter #PARAM_LIMIT. Default: 0</xs:documentation>
+        <xs:documentation>Limit to number of results returned. A value of 0 means 'no limit'. Can be overridden by parameter limit. Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="countOnly" type="frankBoolean">
@@ -5928,7 +6018,8 @@
     </xs:attribute>
     <xs:attribute name="warn" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s) Default: true</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
+ Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
@@ -6074,6 +6165,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="FtpFileSystemListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FtpFileSystemListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FtpListener">
         <xs:complexType>
           <xs:complexContent>
@@ -6168,6 +6268,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="JmsListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="JmsListenerBaseListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="JmsListenerBaseType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
             </xs:extension>
           </xs:complexContent>
@@ -6463,7 +6572,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="JmsListenerBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsListenerBase" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsListenerBase" />
   </xs:complexType>
   <xs:group name="JmsListenerBaseDeclaredChildGroup">
     <xs:sequence>
@@ -6742,7 +6851,7 @@
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up start up, leave empty to use autodiscovery</xs:documentation>
+        <xs:documentation>Url of the Exchange server. Set to e.g. https://outlook.office365.com/EWS/Exchange.asmx to speed up startup, leave empty to use autodiscovery</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clientId" type="xs:string">
@@ -6760,8 +6869,16 @@
         <xs:documentation>Tenant ID that represents the tenant in which the registered application exists within Azure AD which could be found at Azure AD -&gt; App Registrations -&gt; MyApp -&gt; Overview.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="username" type="xs:string" />
-    <xs:attribute name="password" type="xs:string" />
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication to Exchange mail server. Ignored when tenantId is also specified</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias used to obtain client ID and secret or username and password for authentication to Exchange mail server.
@@ -6781,7 +6898,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
@@ -7018,6 +7135,233 @@
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="FtpFileSystemListenerType">
+    <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.FtpFileSystemListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
+    <xs:attribute name="remoteDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="host" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name or ip address of remote host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port number of remote host Default: 21</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the user to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyHost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy hostname</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Proxy port Default: 1080</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyUsername" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ftpType">
+      <xs:annotation>
+        <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="FtpTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="fileType">
+      <xs:simpleType>
+        <xs:union memberTypes="FileTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="messageIsContent" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the contents of the message is send, otherwise it message contains the local filenames of the files to be send Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="passive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyTransportType" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5) Default: 4</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefCSEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Optional preferred encryption from client to server for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefSCEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Optional preferred encryption from server to client for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyFilePath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Path to private key file for sftp authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="knownHostsPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(sftp) Path to file with knownhosts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="consoleKnownHostsVerifier" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(sftp) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prot">
+      <xs:annotation>
+        <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ProtAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keyboardInteractive" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, keyboardinteractive is used to login Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FtpFileSystemListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FtpFileSystemListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FtpListenerType">
     <xs:attributeGroup ref="FtpListenerCumulativeAttributeGroup" />
@@ -7412,7 +7756,7 @@
     </xs:attribute>
     <xs:attribute name="replyAddressFields" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of fields to try as response address Default: #REPLY_ADDRESS_FIELDS_DEFAULT</xs:documentation>
+        <xs:documentation>Comma separated list of fields to try as response address Default: replyTo,from,sender,Return-Path</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7444,7 +7788,7 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -7470,7 +7814,7 @@
     <xs:attribute ref="peekQuery" />
     <xs:attribute name="keyField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Primary key field of the table, used to identify messages</xs:documentation>
+        <xs:documentation>Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
@@ -7496,6 +7840,7 @@
         <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -7559,7 +7904,7 @@
     <xs:attribute ref="tableAlias" />
     <xs:attribute name="statusField" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message</xs:documentation>
+        <xs:documentation>Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="orderField" />
@@ -7636,7 +7981,7 @@
     </xs:attribute>
     <xs:attribute name="keyField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Primary key field of the table, used to identify messages Default: MESSAGEKEY</xs:documentation>
+        <xs:documentation>Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. Default: MESSAGEKEY</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageField" type="xs:string">
@@ -7669,7 +8014,7 @@
     </xs:attribute>
     <xs:attribute name="statusField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message Default: TYPE</xs:documentation>
+        <xs:documentation>Field containing the status of the message. For optimal performance, and index should exist that starts with this field, contains all fields that are used with a fixed value in the select condition, and end with the orderField. Default: TYPE</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="timestampField" type="xs:string">
@@ -7721,6 +8066,7 @@
     <xs:attribute ref="selectCondition" />
     <xs:attribute ref="peekUntransacted" />
     <xs:attribute ref="peekQuery" />
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -7772,7 +8118,11 @@
         <xs:documentation>Key of Session variable that determines requested content type, overrides produces</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="restPath" type="xs:string" />
+    <xs:attribute name="restPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="view" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Indicates whether this listener supports a view (and a link should be put in the ibis console) Default: if &lt;code&gt;method=get&lt;/code&gt; then &lt;code&gt;true&lt;/code&gt;, else &lt;code&gt;false&lt;/code&gt;</xs:documentation>
@@ -7999,127 +8349,6 @@
   <xs:attributeGroup name="WebServiceListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="WebServiceListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="InProcessStorageElementGroup">
-    <xs:choice>
-      <xs:element name="InProcessStorage">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-          <xs:attribute name="className" type="xs:string" use="required" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
-      <xs:group ref="InProcessStorageElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="InProcessStorageElementGroupBase">
-    <xs:choice>
-      <xs:element name="DummyInProcessStorage">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="DummyTransactionalStorageType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="EsbJmsInProcessStorage">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="EsbJmsTransactionalStorageType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="JdbcInProcessStorage">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="JdbcTransactionalStorageType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="JmsInProcessStorage">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="JmsTransactionalStorageType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="MessageStoreSenderInProcessStorage">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MessageStoreSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inProcessStorage" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="DummyTransactionalStorageType">
-    <xs:attributeGroup ref="JdbcTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" />
-  </xs:complexType>
-  <xs:complexType name="EsbJmsTransactionalStorageType">
-    <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage" />
-  </xs:complexType>
-  <xs:complexType name="JmsTransactionalStorageType">
-    <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsTransactionalStorage" />
-  </xs:complexType>
-  <xs:attributeGroup name="JmsTransactionalStorageDeclaredAttributeGroup">
-    <xs:attribute name="slotId" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="type" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
- Receiver will always set type to &lt;code&gt;E&lt;/code&gt; for errorStorage and always set type to &lt;code&gt;A&lt;/code&gt; for messageLog. SenderPipe will set type to &lt;code&gt;L&lt;/code&gt; for messageLog (when type isn't specified).&lt;br/&gt;
- See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt;E&lt;/code&gt; for errorStorage on Receiver&lt;br/&gt;&lt;code&gt;A&lt;/code&gt; for messageLog on Receiver&lt;br/&gt;&lt;code&gt;L&lt;/code&gt; for messageLog on Pipe</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JmsTransactionalStorageCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JmsTransactionalStorageDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JmsMessageBrowserCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JmsMessageBrowserDeclaredAttributeGroup">
-    <xs:attribute name="timeOut" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Timeout &lt;i&gt;in milliseconds&lt;/i&gt; for receiving a message from the queue Default: 3000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="hideRegex" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="hideMethod">
-      <xs:annotation>
-        <xs:documentation>(Only used when hideRegex is not empty) Specifies the way to hide Default: ALL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JmsMessageBrowserCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JmsMessageBrowserDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="ErrorSenderElementGroup">
     <xs:choice>
@@ -8770,6 +8999,60 @@
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:complexType name="DummyTransactionalStorageType">
+    <xs:attributeGroup ref="JdbcTransactionalStorageCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.DummyTransactionalStorage" />
+  </xs:complexType>
+  <xs:complexType name="EsbJmsTransactionalStorageType">
+    <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage" />
+  </xs:complexType>
+  <xs:complexType name="JmsTransactionalStorageType">
+    <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsTransactionalStorage" />
+  </xs:complexType>
+  <xs:attributeGroup name="JmsTransactionalStorageDeclaredAttributeGroup">
+    <xs:attribute name="slotId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Possible values are &lt;code&gt;E&lt;/code&gt; (error store), &lt;code&gt;M&lt;/code&gt; (message store), &lt;code&gt;L&lt;/code&gt; (message log for Pipe) or &lt;code&gt;A&lt;/code&gt; (message log for Receiver).&lt;br/&gt;
+ Receiver will always set type to &lt;code&gt;E&lt;/code&gt; for errorStorage and always set type to &lt;code&gt;A&lt;/code&gt; for messageLog. SenderPipe will set type to &lt;code&gt;L&lt;/code&gt; for messageLog (when type isn't specified).&lt;br/&gt;
+ See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt;E&lt;/code&gt; for errorStorage on Receiver&lt;br/&gt;&lt;code&gt;A&lt;/code&gt; for messageLog on Receiver&lt;br/&gt;&lt;code&gt;L&lt;/code&gt; for messageLog on Pipe</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JmsTransactionalStorageCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JmsTransactionalStorageDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JmsMessageBrowserCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JmsMessageBrowserDeclaredAttributeGroup">
+    <xs:attribute name="timeOut" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout &lt;i&gt;in milliseconds&lt;/i&gt; for receiving a message from the queue Default: 3000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hideRegex" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&amp;lt;=&amp;lt;party&amp;gt;).*?(?=&amp;lt;/party&amp;gt;) will replace every character between keys &amp;lt;party&amp;gt; and &amp;lt;/party&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hideMethod">
+      <xs:annotation>
+        <xs:documentation>(Only used when hideRegex is not empty) Specifies the way to hide Default: ALL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="HideMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JmsMessageBrowserCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JmsMessageBrowserDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:group name="MessageLogElementGroup">
     <xs:choice>
       <xs:element name="MessageLog">
@@ -9193,6 +9476,7 @@
     <xs:attribute ref="soapHeaderNamespace" />
     <xs:attribute ref="soapVersion" />
     <xs:attribute ref="allowPlainXml" />
+    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attributeGroup ref="Json2XmlValidatorDeclaredAttributeGroup" />
     <xs:attribute ref="schema" />
     <xs:attribute ref="schemaLocation" />
@@ -9213,7 +9497,6 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="soapNamespace" />
@@ -9268,6 +9551,7 @@
     <xs:attribute ref="soapHeaderNamespace" />
     <xs:attribute ref="soapVersion" />
     <xs:attribute ref="allowPlainXml" />
+    <xs:attribute ref="ignoreUnknownNamespaces" />
   </xs:attributeGroup>
   <xs:attributeGroup name="SoapValidatorCumulativeAttributeGroup">
     <xs:attributeGroup ref="SoapValidatorDeclaredAttributeGroup" />
@@ -9291,7 +9575,6 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="soapNamespace" />
@@ -9355,7 +9638,7 @@
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: #INPUT_FORMAT_SESSION_KEY_PREFIX&amp;lt;name of the pipe&amp;gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputFormat &amp;lt;name of the pipe&amp;gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -9454,7 +9737,11 @@
     <xs:attribute ref="useBaseImportedSchemaLocationsToIgnore" />
     <xs:attribute ref="importedNamespacesToIgnore" />
     <xs:attribute ref="warn" />
-    <xs:attribute ref="ignoreUnknownNamespaces" />
+    <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Ignore namespaces in the input message which are unknown Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="ignoreCaching" />
     <xs:attribute ref="xmlSchemaVersion" />
     <xs:attribute ref="soapNamespace" />
@@ -9594,7 +9881,11 @@
         <xs:union memberTypes="ModeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="cmhVersion" type="frankInt" />
+    <xs:attribute name="cmhVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="EsbSoapValidatorCumulativeAttributeGroup">
     <xs:attributeGroup ref="EsbSoapValidatorDeclaredAttributeGroup" />
@@ -9915,12 +10206,12 @@
     </xs:attribute>
     <xs:attribute name="soapNamespaceSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store auto detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: #DEFAULT_SOAP_NAMESPACE_SESSION_KEY</xs:documentation>
+        <xs:documentation>Key of session variable to store auto detected soapNamespace Default: If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: soapNamespace</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: #DEFAULT_SOAP_HEADER_SESSION_KEY</xs:documentation>
+        <xs:documentation>Key of session variable to store soap header Default: If configured as Pipeline Input Wrapper and direction=&lt;code&gt;unwrap&lt;/code&gt;: soapHeader</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyle" type="xs:string">
@@ -10698,7 +10989,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jmsRealm" type="xs:string">
@@ -12372,7 +12663,7 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="jmsRealm" type="xs:string">
@@ -12432,25 +12723,9 @@
         <xs:group ref="IteratingPipeCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="BlobLineIteratingPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BlobLineIteratingPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="BlobLineIteratingPipeDeclaredAttributeGroup">
-    <xs:attribute name="blobCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>charset used to read and write blobs Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BlobLineIteratingPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BlobLineIteratingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:group name="IteratingPipeDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="1" maxOccurs="1" />
@@ -12714,12 +12989,12 @@
     </xs:attribute>
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useNamedParams" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;#UNP_STARTparamname#UNP_END&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trimSpaces" type="frankBoolean">
@@ -12745,6 +13020,22 @@
     <xs:attribute name="avoidLocking" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobCharset" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+ If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobSmartGet" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -13017,7 +13308,7 @@
     </xs:attribute>
     <xs:attribute name="filenamePattern" type="xs:string">
       <xs:annotation>
-        <xs:documentation>required if result is a file, the pattern for the result filename</xs:documentation>
+        <xs:documentation>required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageIsContent" type="frankBoolean">
@@ -13602,7 +13893,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; a XSLT processor 2.0 (net.sf.saxon) will be used, supporting XPath 2.0, otherwise a XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1 Default: 1</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) XSLT processor 2.0 or 3.0 will be used, supporting XPath 2.0 or 3.0 respectively, otherwise an XSLT processor 1.0 (org.apache.xalan), supporting XPath 1.0. N.B. Be aware that setting this other than 1 might cause the input file being read as a whole in to memory, as XSLT Streaming is currently only supported by the XSLT Processor that is used for xsltVersion=1 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xslt2" type="frankBoolean" />
@@ -14203,10 +14494,87 @@
         <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the xml result of the transformation is converted back to json Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions Default: j=http://www.w3.org/2013/XSL/json</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonXsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonXsltPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="XsltPipeCumulativeAttributeGroup" />
+    <xs:attribute name="streamingXslt" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Location of stylesheet to apply to the input message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetCacheSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alternatively: XPath-expression to create stylesheet from</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Omit the XML declaration on top of the output. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="disableOutputEscaping" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>For xpathExpression only Default: text</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="indentXml" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="handleLexicalEvents" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
+ Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipEmptyTags" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xslt2" type="frankBoolean" />
+    <xs:attribute name="namespaceAware" type="frankBoolean" />
+    <xs:attribute ref="sessionKey" />
+    <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XsltPipeType">
     <xs:sequence>
@@ -14290,16 +14658,12 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;1&lt;/code&gt; xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xslt2" type="frankBoolean" />
     <xs:attribute name="namespaceAware" type="frankBoolean" />
-    <xs:attribute name="sessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="sessionKey" />
   </xs:attributeGroup>
   <xs:attributeGroup name="XsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XsltPipeDeclaredAttributeGroup" />
@@ -14585,7 +14949,7 @@
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>If parameter [#PARAMETER_ACTION] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+        <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef" />
@@ -14593,17 +14957,17 @@
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filename to operate on. If not set, the parameter #PARAMETER_FILENAME is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Filename to operate on. If not set, the parameter filename is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="destination" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Destination for #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME. If not set, the parameter #PARAMETER_DESTINATION is used. If that is not set either, the input is used</xs:documentation>
+        <xs:documentation>Destination for move, copy or rename. If not set, the parameter destination is used. If that is not set either, the input is used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="inputFolder" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Folder that is scanned for files when action=#ACTION_LIST. When not set, the root is scanned</xs:documentation>
+        <xs:documentation>Folder that is scanned for files when action=list. When not set, the root is scanned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
@@ -14613,27 +14977,27 @@
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions #ACTION_CREATE, #ACTION_MOVE, #ACTION_COPY or #ACTION_RENAME, the destination file is overwritten if it already exists Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, for actions create, move, copy or rename, the destination file is overwritten if it already exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateDays" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated each day, and this number of files is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="rotateSize" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For action=#ACTION_APPEND: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For action=append: If set to a positive number, the file is rotated when it has reached the specified size, and the number of files specified in numberOfBackups is kept. Size is specified in plain bytes, suffixes like 'K', 'M' or 'G' are not recognized. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>For the actions #ACTION_WRITE1 and #ACTION_APPEND, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>For the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="base64">
       <xs:annotation>
-        <xs:documentation>For actions #ACTION_READ1, #ACTION_WRITE1 and #ACTION_APPEND. When set the stream is base64 encoded or decoded</xs:documentation>
+        <xs:documentation>For actions read, write and append. When set the stream is base64 encoded or decoded</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DirectionAttributeValuesType variableRef" />
@@ -14642,13 +15006,13 @@
     <xs:attribute name="wildCard" type="xs:string" />
     <xs:attribute name="wildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="excludeWildCard" type="xs:string" />
     <xs:attribute name="excludeWildcard" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions #ACTION_MOVE, #ACTION_COPY, #ACTION_DELETE and #ACTION_LIST</xs:documentation>
+        <xs:documentation>Filter of files to be excluded when looking in inputFolder. Works with actions move, copy, delete and list</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="removeNonEmptyFolder" type="frankBoolean">
@@ -14658,17 +15022,17 @@
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions #ACTION_WRITE1 and #ACTION_APPEND Default: false</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt; then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Charset to be used for #ACTION_READ1 and #ACTION_WRITE1 action</xs:documentation>
+        <xs:documentation>Charset to be used for read and write action</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="deleteEmptyFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions #ACTION_DELETE, #ACTION_READ_DELETE and #ACTION_MOVE</xs:documentation>
+        <xs:documentation>If set to true then the folder will be deleted if it is empty after processing the action. Works with actions delete, readDelete and move</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="outputFormat">
@@ -15150,7 +15514,7 @@
     </xs:attribute>
     <xs:attribute name="returnFixedDate" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be #FIXEDDATETIME (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the date/time returned will always be 2001-12-17 09:30:47 (for testing purposes only). It is overridden by the value of the pipelinesession key &lt;code&gt;stub4testtool.fixeddate&lt;/code&gt; when it exists Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="getCurrentTimeStampInMillis" type="frankBoolean">
@@ -16054,7 +16418,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>specifies the version of xslt to use Default: 2</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan) Default: 2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
@@ -16121,7 +16485,7 @@
     </xs:attribute>
     <xs:attribute name="xsltVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xslt2" type="frankBoolean">
@@ -16498,7 +16862,7 @@
     <xs:attribute name="jmsRealm" type="xs:string" />
     <xs:attribute name="datasourceName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+        <xs:documentation>JNDI name of datasource to be used Default: jdbc.datasource.default</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -16656,7 +17020,11 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.GalmMonitorAdapter" />
   </xs:complexType>
   <xs:attributeGroup name="MonitorAdapterBaseDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -16741,20 +17109,14 @@
   </xs:group>
   <xs:attributeGroup name="TriggerDeclaredAttributeGroup">
     <xs:attribute name="eventCode" type="xs:string" />
-    <xs:attribute name="eventCodes" type="xs:string" />
-    <xs:attribute name="severity">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="severityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="threshold" type="frankInt" />
     <xs:attribute name="period" type="frankInt" />
-    <xs:attribute name="sourceFilteringEnum">
+    <xs:attribute name="severity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="sourceFiltering">
       <xs:simpleType>
         <xs:union memberTypes="SourceFilteringAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -17322,6 +17684,15 @@
       <xs:pattern value="[nN][uU][mM][eE][rR][iI][cC]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageLogLevelAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[oO][fF][fF]" />
+      <xs:pattern value="[iI][nN][fF][oO]" />
+      <xs:pattern value="[bB][aA][sS][iI][cC]" />
+      <xs:pattern value="[dD][eE][bB][uU][gG]" />
+      <xs:pattern value="[tT][eE][rR][sS][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][tT][oO][pP][aA][dD][aA][pP][tT][eE][rR]" />
@@ -17330,7 +17701,7 @@
       <xs:pattern value="[sS][tT][aA][rR][tT][rR][eE][cC][eE][iI][vV][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="SeverityEnumAttributeValuesType">
+  <xs:simpleType name="SeverityAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[hH][aA][rR][mM][lL][eE][sS][sS]" />
       <xs:pattern value="[wW][aA][rR][nN][iI][nN][gG]" />
@@ -17351,7 +17722,7 @@
       <xs:pattern value="[cC][lL][eE][aA][rR][iI][nN][gG]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="EventTypeEnumAttributeValuesType">
+  <xs:simpleType name="EventTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[tT][eE][cC][hH][nN][iI][cC][aA][lL]" />
       <xs:pattern value="[fF][uU][nN][cC][tT][iI][oO][nN][aA][lL]" />
@@ -17414,7 +17785,9 @@
   </xs:attribute>
   <xs:attribute name="destinationType">
     <xs:annotation>
-      <xs:documentation>Type of the messageing destination Default: QUEUE</xs:documentation>
+      <xs:documentation>Type of the messageing destination.
+ This function also sets the &lt;code&gt;useTopicFunctions&lt;/code&gt; field,
+ that controls whether Topic functions are used or Queue functions. Default: QUEUE</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef" />
@@ -17451,14 +17824,14 @@
   </xs:attribute>
   <xs:attribute name="queueConnectionFactoryName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Used when DestinationType = QUEUE.
+      <xs:documentation>Used when destinationType = QUEUE.
  The JNDI-name of the queueConnectionFactory to use to connect to a &lt;code&gt;queue&lt;/code&gt; if #isTransacted() returns &lt;code&gt;false&lt;/code&gt;.
  The corresponding connection factory should be configured not to support XA transactions.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="topicConnectionFactoryName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Used when DestinationType = TOPIC.
+      <xs:documentation>Used when destinationType = TOPIC.
  The JNDI-name of the connection factory to use to connect to a &lt;i&gt;topic&lt;/i&gt; if #isTransacted() returns &lt;code&gt;false&lt;/code&gt;.
  The corresponding connection factory should be configured not to support XA transactions.</xs:documentation>
     </xs:annotation>
@@ -17552,10 +17925,14 @@
   <xs:attribute name="jndiProperties" type="xs:string" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: JndiDataSourceFactory#DEFAULT_DATASOURCE_NAME_PROPERTY</xs:documentation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="connectionsArePooled" type="frankBoolean" />
+  <xs:attribute name="connectionsArePooled" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed) Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="urlParam" type="xs:string">
     <xs:annotation>
       <xs:documentation>Parameter that is used to obtain URL; overrides url-attribute. Default: url</xs:documentation>
@@ -17824,7 +18201,9 @@
   </xs:attribute>
   <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the status code of the HTTP response is put in specified in the sessionKey and the (error or okay) response message is returned</xs:documentation>
+      <xs:documentation>If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
+ Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
+ the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="correlationIdFieldIndex" type="frankInt">
@@ -17857,59 +18236,11 @@
       <xs:documentation>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="streamingXslt" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If true, then this sender will process the XSLT while streaming in a different thread. Can be used to switch streaming off for debugging purposes Default: set by appconstant xslt.streaming.default</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="styleSheetNameSessionKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="styleSheetCacheSize" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Size of cache of stylesheets retrieved from styleSheetNameSessionKey Default: 100</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="disableOutputEscaping" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, any output is reparsed before being handled as XML again. If not set, the stylesheet is searched for &lt;code&gt;@disable-output-escaping='yes'&lt;/code&gt; and the value is set accordingly Default: false, if not set in stylesheet</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="indentXml" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, result is pretty-printed. If not set, the value specified in the stylesheet is followed Default: false, if not set in stylesheet</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="namespaceAware" type="frankBoolean" />
-  <xs:attribute name="removeNamespaces" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; namespaces (and prefixes) in the input message are removed before transformation Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="handleLexicalEvents" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the transformer is enabled to handle lexical events, allowing it for example to process comments and to distinghuish CDATA from escaped text.
- Beware that this option can cause spurious NullPointerExceptions due to a race condition in streaming XSLT 1.0 processing in Xalan 2.7.2 Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="skipEmptyTags" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; empty tags in the output are removed after transformation Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="xsltVersion" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>If set to &lt;code&gt;1&lt;/code&gt; xslt processor 1.0 (org.apache.xalan) will be used, otherwise xslt processor 2.0 (net.sf.saxon). &lt;code&gt;0&lt;/code&gt; will auto detect Default: 0</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the input is written to the log file, at DEBUG level Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="xslt2" type="frankBoolean" />
   <xs:attribute name="userId" type="xs:string">
     <xs:annotation>
       <xs:documentation>userId on the smtphost</xs:documentation>
@@ -18190,6 +18521,11 @@
       <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="sqlDialect" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="blobCharset" type="xs:string">
     <xs:annotation>
       <xs:documentation>Charset used to read BLOB. When specified, then the BLOB will be converted into a string</xs:documentation>
@@ -18366,6 +18702,12 @@
       <xs:documentation>Allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
+ this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="schema" type="xs:string">
     <xs:annotation>
       <xs:documentation>The filename of the schema on the classpath. It is not possible to specify a namespace using this attribute. (effectively the same as noNamespaceSchemaLocation)
@@ -18445,12 +18787,8 @@
   </xs:attribute>
   <xs:attribute name="warn" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s) Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Ignore namespaces in the input message which are unknown Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
+      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about syntax problems in the configured schema('s).
+ Alternatively, warnings can be switched off using suppression properties XSD_VALIDATION_WARNINGS_SUPPRESS_KEY, XSD_VALIDATION_ERROR_SUPPRESS_KEY and XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCaching" type="frankBoolean">
@@ -18467,7 +18805,7 @@
     <xs:annotation>
       <xs:documentation>The namespace of the SOAP envelope, when this property has a value and the input message is a SOAP message,
  the content of the SOAP Body is used for validation, hence the SOAP Envelope and SOAP Body elements are not considered part of the message to validate.
- Please note that this functionality is deprecated, using SoapValidator is now the preferred solution in case a SOAP 
+ Please note that this functionality is deprecated, using SoapValidator is now the preferred solution in case a SOAP
  message needs to be validated, in other cases give this property an empty value. Default: http://schemas.xmlsoap.org/soap/envelope/</xs:documentation>
     </xs:annotation>
   </xs:attribute>
@@ -18498,17 +18836,17 @@
   </xs:attribute>
   <xs:attribute name="itemNoSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.</xs:documentation>
+      <xs:documentation>Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="maxItems" type="frankInt">
     <xs:annotation>
-      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward #MAX_ITEMS_REACHED_FORWARD can be configured to follow Default: 0</xs:documentation>
+      <xs:documentation>The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward maxItemsReached can be configured to follow Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="stopConditionXPathExpression" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Expression evaluated on each result and forwards to [#STOP_CONDITION_MET_FORWARD] forward if configured.
+      <xs:documentation>Expression evaluated on each result and forwards to [stopConditionMet] forward if configured.
  Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression &lt;code&gt;*[@finished='yes']&lt;/code&gt; can be used.
  This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use &lt;code&gt;maxItems&lt;/code&gt;.
  Previous versions documented that &lt;code&gt;position()=2&lt;/code&gt; could be used. This is not working as expected; Use maxItems instead</xs:documentation>
@@ -18548,6 +18886,11 @@
   <xs:attribute name="maxChildThreads" type="frankInt">
     <xs:annotation>
       <xs:documentation>Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use &lt;code&gt;0&lt;/code&gt; for unlimited threads Default: 0</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="sessionKey" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:simpleType name="frankBoolean">

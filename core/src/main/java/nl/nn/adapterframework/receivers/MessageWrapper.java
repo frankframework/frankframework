@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,19 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import lombok.Getter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -33,57 +36,66 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class MessageWrapper<M> implements Serializable, IMessageWrapper {
+@SuppressWarnings({"deprecation", "unchecked"})
+public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializable {
 
-	static final long serialVersionUID = -8251009650246241025L;
+	private static final long serialVersionUID = -8251009650246241025L;
 
-	private @Getter Map<String,Object> context = new LinkedHashMap<>();
 	private @Getter Message message;
-	private @Getter String id;
 
-	public MessageWrapper() {
+	protected MessageWrapper() {
+		// For Serialisation
 		super();
 	}
 
-	public MessageWrapper(Message message, String messageId) {
-		this();
-		this.message = message;
-		this.id = messageId;
-	}
-
-	public MessageWrapper(M rawMessage, IListener<M> listener) throws ListenerException {
-		this();
-		message = listener.extractMessage(rawMessage, context);
-		context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		id = listener.getIdFromRawMessage(rawMessage, context);
-	}
-
-	public void setId(String string) {
-		id = string;
-	}
-
-	public void setMessage(Message message) {
+	public MessageWrapper(@Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
+		// Ugly cast, but I don't think it is safe to leave it NULL
+		super((M)message.asObject(), messageId, correlationId);
 		this.message = message;
 	}
 
+	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message) {
+		this(rawMessageWrapper, message, rawMessageWrapper.id, rawMessageWrapper.correlationId);
+	}
+
+	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
+		super(rawMessageWrapper.getRawMessage(), messageId, correlationId);
+		this.message = message;
+		this.context.putAll(rawMessageWrapper.getContext());
+		this.context.remove(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		this.context.remove("originalRawMessage"); //PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY)
+	}
 
 	/*
 	 * this method is used by Serializable, to serialize objects to a stream.
 	 */
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		message.preserve();
-		if (message.isBinary()) {
-			if (!(message.asObject() instanceof byte[])) {
-				message = new Message(message.asByteArray(), message.getContext());
-			}
-		} else {
-			if (!(message.asObject() instanceof String)) {
-				message = new Message(message.asString(), message.getContext());
-			}
-		}
 		stream.writeObject(context);
 		stream.writeObject(id);
 		stream.writeObject(message);
+		stream.writeObject(correlationId);
 	}
 
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		context = (Map<String, Object>) stream.readObject();
+		id = (String) stream.readObject();
+		message = (Message) stream.readObject();
+		rawMessage = (M) message.asObject();
+		try {
+			correlationId = (String) stream.readObject();
+		} catch (OptionalDataException | EOFException e) {
+			// Correlation ID was not written in original serialised message
+			correlationId = null;
+		}
+
+		// Synchronise ID / CID fields with context map.
+		if (id == null) {
+			id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);
+		}
+		if (correlationId == null) {
+			correlationId = (String) context.get(PipeLineSession.CORRELATION_ID_KEY);
+		}
+		updateOrRemoveValue(PipeLineSession.MESSAGE_ID_KEY, id);
+		updateOrRemoveValue(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+	}
 }

@@ -15,7 +15,7 @@ import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 public class CmisSenderTest {
 
@@ -54,7 +54,7 @@ public class CmisSenderTest {
 	@Before
 	public void setUp() throws Exception {
 		properties=new Properties();
-		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
+		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		url=properties.getProperty("url");
 		repo=properties.getProperty("repo");
 		titanUser=properties.getProperty("titanUser");

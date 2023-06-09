@@ -80,21 +80,19 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public long getContentLength() {
-		if(message.isBinary()) {
-			return message.size();
-		}
-		return Message.MESSAGE_SIZE_UNKNOWN;
+		return message.size();
 	}
 
+	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!
 	@Override
 	public InputStream getContent() throws IOException {
-		return message.asInputStream();
+		return message.asInputStream(message.getCharset());
 	}
 
 	@Override
 	public void writeTo(OutputStream outStream) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		try (InputStream inStream = message.asInputStream()) {
+		try (InputStream inStream = getContent()) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
 			if(length < 0) {

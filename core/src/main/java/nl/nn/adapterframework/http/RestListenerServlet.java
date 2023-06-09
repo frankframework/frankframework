@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +34,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -114,9 +117,9 @@ public class RestListenerServlet extends HttpServletBase {
 			}
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");
-				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
 
-				if(result == null && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
+				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 					response.setStatus(status);
 					log.trace("aborted request with status [{}]", status);
@@ -133,7 +136,7 @@ public class RestListenerServlet extends HttpServletBase {
 				if(statusCode > 0)
 					response.setStatus(statusCode);
 
-				if (StringUtils.isEmpty(result)) {
+				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
 					contentType=messageContext.getMessage("contentType").asString();
@@ -148,8 +151,12 @@ public class RestListenerServlet extends HttpServletBase {
 					if (StringUtils.isNotEmpty(allowedMethods)) {
 						response.setHeader("Allow", allowedMethods);
 					}
-					response.getWriter().print(result);
-					log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
+
+					/*
+					 * Finalize the pipeline and write the result to the response
+					 */
+					writeToResponseStream(response, result);
+					log.trace("RestListenerServlet finished with result [{}] etag [{}] contentType [{}] contentDisposition [{}]", result, etag, contentType, contentDisposition);
 				}
 			} catch (ListenerException e) {
 				if (!response.isCommitted()) {
@@ -159,6 +166,18 @@ public class RestListenerServlet extends HttpServletBase {
 					log.warn("RestListenerServlet caught exception, response already committed",e);
 					throw new ServletException("RestListenerServlet caught exception, response already committed",e);
 				}
+			}
+		}
+	}
+
+	private static void writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		if (result.isBinary()) {
+			try (InputStream in = result.asInputStream()) {
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+			}
+		} else {
+			try (Reader reader = result.asReader()) {
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
 			}
 		}
 	}
