@@ -266,6 +266,7 @@
 			<artifactId>aspose-imaging</artifactId>
 			<!-- for some reason version 23.1 does not exist for aspose-imaging -->
 <!-- 			<version>${aspose.version}</version> -->
+			<classifier>jdk16</classifier>
 			<version>22.9</version>
 		</dependency>
 
