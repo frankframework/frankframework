@@ -33,7 +33,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	private @Getter String roleClaim;
 	private @Getter String principalNameClaim;
 
-	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalClaim) {
+	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
 	}
