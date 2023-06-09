@@ -114,6 +114,9 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		return channel;
 	}
 
+	/**
+	 * Reply converters to turn byte[] / InputStreams and Strings to something that the HTTP Inbound and Outbound gateways can understand.
+	 */
 	private List<HttpMessageConverter<?>> getMessageConverters() {
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
