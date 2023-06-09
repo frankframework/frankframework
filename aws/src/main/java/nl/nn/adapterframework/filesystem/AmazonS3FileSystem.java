@@ -40,6 +40,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
@@ -160,7 +161,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	 */
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
-		S3Object object = new LocalS3Object();
+		S3Object object = new S3Object();
 		int separatorPos = filename.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos<0) {
 			object.setBucketName(bucketName);
@@ -235,7 +236,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	private static S3Object extractS3ObjectFromSummary(S3ObjectSummary summary) {
-		S3Object object = new LocalS3Object();
+		S3Object object = new S3Object();
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(summary.getSize());
 		metadata.setLastModified(summary.getLastModified());
@@ -265,7 +266,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 						ObjectMetadata metaData = new ObjectMetadata();
 						metaData.setContentLength(file.length());
 
-						s3Client.putObject(bucketName, f.getKey(), fis, metaData);
+						try(S3Object file = f) {
+							s3Client.putObject(bucketName, file.getKey(), fis, metaData);
+						}
 					} finally {
 						isClosed = true;
 						Files.delete(file.toPath());
@@ -282,9 +285,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
+	public Message readFile(S3Object file, String charset) throws FileSystemException, IOException {
 		try {
-			S3Object file = resolve(f);
+			if(file.getObjectContent() == null) { // We have a reference but not an actual object representing the S3 bucket.
+				file = s3Client.getObject(bucketName, file.getKey()); // Fetch a new copy
+			}
 			return new S3Message(file, FileSystemUtils.getContext(this, file, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
@@ -293,19 +298,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	/**
 	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
-	 * Or returns directly when the provided S3Object is an actual representation of the S3 bucket
+	 * Updates the Metadata context but does not retrieve the actual file handle.
 	 */
-	private S3Object resolve(S3Object f) {
-		if(f instanceof LocalS3Object) {
-			return s3Client.getObject(bucketName, f.getKey());
+	private S3Object updateFileAttributes(S3Object f) {
+		if(f.getObjectMetadata().getRawMetadataValue(Headers.CONTENT_LENGTH) == null) {
+			ObjectMetadata omd = s3Client.getObjectMetadata(bucketName, f.getKey());
+			f.setObjectMetadata(omd);
 		}
 		return f;
-	}
-
-	/** Local S3 Pointer for files that are not yet resolved. */
-	private static class LocalS3Object extends S3Object {
-		// no extra or overridden methods, this class purely exists to differentiate
-		// between locally created S3Objects and actual S3 representative objects.
 	}
 
 	/** 
@@ -414,15 +414,14 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public long getFileSize(S3Object f) throws FileSystemException {
-		return resolve(f).getObjectMetadata().getContentLength();
+		updateFileAttributes(f);
+		return f.getObjectMetadata().getContentLength();
 	}
 
 	@Override
 	public Date getModificationTime(S3Object f) throws FileSystemException {
-		if(f.getKey().isEmpty()) {
-			return null;
-		}
-		return resolve(f).getObjectMetadata().getLastModified();
+		updateFileAttributes(f);
+		return f.getObjectMetadata().getLastModified();
 	}
 
 //	/**

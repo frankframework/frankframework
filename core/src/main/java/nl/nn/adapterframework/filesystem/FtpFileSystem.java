@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -111,18 +113,17 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public boolean exists(FTPFileRef file) throws FileSystemException {
-		try {
-			return findFile(file) != null;
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
+		return findFile(file) != null;
 	}
 
-	private FTPFileRef findFile(FTPFileRef file) throws IOException {
-		FTPFile[] files = null;
-		files = ftpClient.listFiles(file.getFolder(), f -> f.getName().equals(file.getFileName()));
-		if(files != null && files.length > 0) {
-			return FTPFileRef.fromFTPFile(files[0]);
+	private @Nullable FTPFileRef findFile(FTPFileRef file) throws FileSystemException {
+		try {
+			FTPFile[] files = ftpClient.listFiles(file.getFolder(), f -> f.getName().equals(file.getFileName()));
+			if(files != null && files.length > 0) {
+				return FTPFileRef.fromFTPFile(files[0]);
+			}
+		} catch(IOException e) {
+			throw new FileSystemException("unable to browse remote directory", e);
 		}
 		return null;
 	}
@@ -153,6 +154,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public Message readFile(FTPFileRef f, String charset) throws FileSystemException, IOException {
+		updateFileAttributes(f);
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
 		return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
@@ -287,6 +289,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public long getFileSize(FTPFileRef f) throws FileSystemException {
+		updateFileAttributes(f);
 		return f.getSize();
 	}
 
@@ -309,16 +312,20 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public Date getModificationTime(FTPFileRef f) throws FileSystemException {
-		try {
-			FTPFile file = findFile(f);
-			if(file != null) {
-				return file.getTimestamp().getTime();
+	public Date getModificationTime(FTPFileRef file) throws FileSystemException {
+		updateFileAttributes(file);
+		return file.getTimestamp().getTime();
+	}
+
+	private FTPFile updateFileAttributes(FTPFileRef file) throws FileSystemException {
+		if(file.getTimestamp() == null) {
+			FTPFile fetch = findFile(file);
+			if(fetch == null) {
+				throw new FileSystemException("file does not exist on remote server");
 			}
-			throw new FileSystemException("File not found");
-		} catch (IOException e) {
-			throw new FileSystemException("Could not retrieve file", e);
+			file.updateFTPFile(fetch);
 		}
+		return file;
 	}
 
 	@Override
