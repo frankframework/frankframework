@@ -9,20 +9,15 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-<!-- 	<context:component-scan use-default-filters="true" base-package="nl.nn.adapterframework.webcontrol"> -->
-<!-- 		<context:exclude-filter type="annotation" expression="nl.nn.adapterframework.lifecycle.IbisInitializer"/> -->
-<!-- 	</context:component-scan> -->
+	<context:component-scan use-default-filters="true" base-package="nl.nn.adapterframework.runner">
+	</context:component-scan>
 
-	<bean class="nl.nn.adapterframework.webcontrol.runner.CreateApiEndpointBean"/>
-
-	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
-		<property name="port" value="8080"/>
-	</bean>
+	<bean class="nl.nn.adapterframework.runner.CreateApiEndpointBean"/>
 
 	<!-- Messaging Gateway -->
-	<alias name="HttpOutboundGateway" alias="gateway"/>
-
-	<bean id="HttpOutboundGateway" class="nl.nn.adapterframework.management.gateway.HttpOutboundGateway" lazy-init="true" />
+	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
+		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
+	</bean>
 
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 </beans>

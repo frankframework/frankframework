@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol.runner;
+package nl.nn.adapterframework.runner;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,13 +21,18 @@ import java.util.Set;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 
-public class Initializer {
+/**
+ * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
+ * 
+ * @author Niels Meijer
+ */
+public class StandaloneInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication();
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
-		set.add("SpringRootContext.xml");
+		set.add("SpringBootContext.xml");
 		app.setSources(set);
 		app.run(args); //Should start a XmlServletWebServerApplicationContext
 	}
