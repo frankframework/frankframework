@@ -19,12 +19,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
 
-@Configuration
 public class WarInitializer extends SpringBootServletInitializer {
+
+	@Configuration
+	public static class WarConfiguration {
+		// NO OP
+	}
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		builder.sources(WarConfiguration.class);
+		return super.configure(builder);
+	}
 
 	@Override
 	protected WebApplicationContext run(SpringApplication application) {
