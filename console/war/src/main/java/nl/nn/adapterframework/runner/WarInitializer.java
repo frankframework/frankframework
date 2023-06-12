@@ -24,11 +24,16 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
 
+/**
+ * Spring Boot entrypoint when running as a normal WAR application.
+ * 
+ * @author Niels Meijer
+ */
 public class WarInitializer extends SpringBootServletInitializer {
 
 	@Configuration
 	public static class WarConfiguration {
-		// NO OP
+		// NO OP required for Spring Boot. Used when running an Annotation Based config, which we are not, see setSources(...) in run(SpringApplication).
 	}
 
 	@Override

@@ -20,16 +20,16 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.Resource;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
@@ -45,7 +45,6 @@ public class CreateApiEndpointBean implements ApplicationContextAware {
 
 	private @Setter ApplicationContext applicationContext;
 	//TODO scan for components instead of hardcoded ServletDispatcher
-	
 
 	@Bean
 	public ServletRegistrationBean<ServletDispatcher> createBackendServletBean() {
@@ -70,18 +69,36 @@ public class CreateApiEndpointBean implements ApplicationContextAware {
 	@Bean
 	public ResourceHttpRequestHandler resourceHttpRequestHandler() {
 		ResourceHttpRequestHandler requestHandler = new ResourceHttpRequestHandler() {
+
 			@Override
-			protected Resource getResource(HttpServletRequest request) throws IOException {
-				String path = request.getPathInfo();
-				if(StringUtils.isBlank(path) || "/".equals(path)) path = WELCOME_FILE;
+			public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+				String path = getPathMapping(request);
+				if(path == null) {
+					response.sendRedirect(request.getContextPath() + "/");
+					return;
+				}
 				request.setAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, path);
 
-				return super.getResource(request);
+				super.handleRequest(request, response);
 			}
+
 		};
 		SpringUtils.autowireByName(applicationContext, requestHandler);
 		requestHandler.setLocationValues(Arrays.asList("classpath:/META-INF/resources/iaf/gui/"));
 		return requestHandler;
+	}
+
+	/**
+	 * getPathInfo may return null, redirect to '/' when that happens.
+	 * When getPathInfo returns '/' return the WELCOME_FILE.
+	 */
+	private String getPathMapping(HttpServletRequest request) {
+		String path = request.getPathInfo();
+		if("/".equals(path)) {
+			path = WELCOME_FILE;
+		}
+
+		return path;
 	}
 
 	@Bean

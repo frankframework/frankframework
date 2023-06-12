@@ -28,9 +28,7 @@ import org.springframework.integration.http.outbound.HttpRequestExecutingMessage
 import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.web.client.ResourceAccessException;
 
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.util.SpringUtils;
