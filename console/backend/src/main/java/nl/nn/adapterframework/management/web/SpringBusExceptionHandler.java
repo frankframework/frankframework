@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.client.ResourceAccessException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -43,7 +44,8 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	public enum ManagedException {
 		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationException.class),
 		AUTHORIZATION(Status.FORBIDDEN, AccessDeniedException.class),
-		BUS_EXCEPTION(Status.INTERNAL_SERVER_ERROR, BusException.class);
+		BUS_EXCEPTION(Status.INTERNAL_SERVER_ERROR, BusException.class),
+		ACCESS_EXCEPTION(Status.SERVICE_UNAVAILABLE, ResourceAccessException.class);
 
 		private final @Getter Status status;
 		private final Class<? extends Exception> exceptionClass;

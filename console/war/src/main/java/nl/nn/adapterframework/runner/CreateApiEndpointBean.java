@@ -24,9 +24,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
@@ -34,16 +37,21 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
+import lombok.Setter;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
+import nl.nn.adapterframework.util.SpringUtils;
 
-public class CreateApiEndpointBean {
+public class CreateApiEndpointBean implements ApplicationContextAware {
 	private final Logger log = LogManager.getLogger(CreateApiEndpointBean.class);
+	private static final String WELCOME_FILE = "/index.html";
 
+	private @Setter ApplicationContext applicationContext;
 	//TODO scan for components instead of hardcoded ServletDispatcher
+	
 
 	@Bean
 	public ServletRegistrationBean<ServletDispatcher> createBackendServletBean() {
-		ServletDispatcher servlet = new ServletDispatcher();
+		ServletDispatcher servlet = SpringUtils.createBean(applicationContext, ServletDispatcher.class);
 		log.info("registering servlet [{}]", servlet::getName);
 
 		ServletRegistrationBean<ServletDispatcher> bean = new ServletRegistrationBean<>(servlet);
@@ -54,7 +62,7 @@ public class CreateApiEndpointBean {
 			bean.addInitParameter(key, val);
 		}
 		bean.setName(servlet.getName());
-		bean.addUrlMappings("/api/*");
+		bean.addUrlMappings("/iaf/api/*");
 
 		log.info("created IAF API servlet endpoint {}", bean::getUrlMappings);
 
@@ -66,25 +74,21 @@ public class CreateApiEndpointBean {
 		ResourceHttpRequestHandler requestHandler = new ResourceHttpRequestHandler() {
 			@Override
 			protected Resource getResource(HttpServletRequest request) throws IOException {
-				String path = "/META-INF/resources/iaf/gui/index.html";
+				String path = request.getPathInfo();
+				if(StringUtils.isBlank(path) || "/".equals(path)) path = WELCOME_FILE;
 				request.setAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, path);
 
 				return super.getResource(request);
 			}
 		};
-		requestHandler.setLocationValues(Arrays.asList("/", "/META-INF/resources/iaf/gui/", "classpath:/META-INF/resources/iaf/gui/"));
+		SpringUtils.autowireByName(applicationContext, requestHandler);
+		requestHandler.setLocationValues(Arrays.asList("classpath:/META-INF/resources/iaf/gui/"));
 		return requestHandler;
 	}
 
 	@Bean
 	public ServletRegistrationBean<HttpRequestHandlerServlet> createFrontendServletBean() {
-		HttpRequestHandlerServlet servlet = new HttpRequestHandlerServlet() {
-			@Override
-			protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-				// TODO Auto-generated method stub
-				super.service(request, response);
-			}
-		};
+		HttpRequestHandlerServlet servlet = new HttpRequestHandlerServlet();
 
 		ServletRegistrationBean<HttpRequestHandlerServlet> bean = new ServletRegistrationBean<>(servlet);
 
