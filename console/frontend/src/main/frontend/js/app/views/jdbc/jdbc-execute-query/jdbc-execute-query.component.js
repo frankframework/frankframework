@@ -70,5 +70,5 @@ const JdbcExecuteQueryController = function ($scope, Api, $timeout, $state, Cook
 
 appModule.component('jdbcExecuteQuery', {
 	controller: ['$scope', 'Api', '$timeout', '$state', 'Cookies', 'appConstants', JdbcExecuteQueryController],
-	templateUrl: 'js/app/views/jdbc/jdbc-execute-query/ExecuteJdbcQuery.html'
+	templateUrl: 'js/app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component.html'
 });

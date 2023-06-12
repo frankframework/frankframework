@@ -24,11 +24,11 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	ctrl.$onInit = function () {
 		var hash = $location.hash();
-		var adapterName = $state.params.adapter;
-		if (adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
-			adapterName = hash;
+		ctrl.adapterName = $state.params.adapter;
+		if (ctrl.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+			ctrl.adapterName = hash;
 		} else {
-			$location.hash(adapterName);
+			$location.hash(ctrl.adapterName);
 		}
 
 		if ($state.params.filter != "") {
@@ -62,7 +62,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 	ctrl.showContent = function (adapter) {
 		if (adapter.status == "stopped") {
 			return true;
-		} else if (adapterName != "" && adapter.name == adapterName) {
+		} else if (ctrl.adapterName != "" && adapter.name == ctrl.adapterName) {
 			$anchorScroll();
 			return true;
 		} else {

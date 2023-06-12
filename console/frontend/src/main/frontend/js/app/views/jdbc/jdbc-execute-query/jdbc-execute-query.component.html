@@ -2,8 +2,8 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="alert alert-warning" role="alert" type="warning" ng-if="error">
-        <span class="ng-binding ng-scope" ng-bind-html="error"></span>
+    <div class="alert alert-warning" role="alert" type="warning" ng-if="$ctrl.error">
+        <span class="ng-binding ng-scope" ng-bind-html="$ctrl.error"></span>
     </div>
     <div class="row">
         <div class="col-lg-12">
@@ -60,7 +60,7 @@
                                 <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
                             </div>
                             <div class="col-sm-3 m-t-md">
-                                <button ladda="$ctrl.processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit(form)">Send</button>
+                                <button ladda="$ctrl.processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit($ctrl.form)">Send</button>
                             </div>
                         </div>
                     </form>
