@@ -30,6 +30,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import nl.nn.adapterframework.util.ClassUtils;
+
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
 	public static final String HEADER_CONNECTION_FACTORY_NAME_KEY = "connectionFactory";
@@ -39,55 +41,68 @@ public class BusMessageUtils {
 
 	private static final Logger LOG = LogManager.getLogger(BusMessageUtils.class);
 
-	public static String getHeader(Message<?> message, String headerName) {
+	public static final String HEADER_PREFIX = "meta-";
+	public static final String HEADER_PREFIX_PATTERN = "meta-*";
+
+	@SuppressWarnings("unchecked")
+	private static <T> @Nullable T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
-		if(headers.containsKey(headerName)) {
-			return headers.get(headerName, String.class);
+		if(contains(headers, headerName)) {
+			Object rawValue = headers.get(HEADER_PREFIX + headerName);
+			if (rawValue == null) {
+				return null;
+			}
+
+			if (type.isAssignableFrom(rawValue.getClass())) {
+				return (T) rawValue;
+			}
+			if(rawValue instanceof String) {
+				try {
+					return ClassUtils.convertToType(type, String.valueOf(rawValue));
+				} catch (IllegalArgumentException e) {
+					throw new BusException("unable to convert header to required type", e);
+				}
+			}
+
+			LOG.warn("conversion of type [{}] not implemented", rawValue::getClass);
 		}
 		return null;
 	}
 
+	private static boolean contains(MessageHeaders headers, String headerName) {
+		return headers.get(HEADER_PREFIX + headerName) != null;
+	}
+
 	public static boolean containsHeader(Message<?> message, String headerName) {
-		return message.getHeaders().get(headerName) != null;
+		return contains(message.getHeaders(), headerName);
+	}
+
+	public static @Nullable String getHeader(Message<?> message, String headerName) {
+		return getHeader(message, headerName, String.class);
 	}
 
 	public static String getHeader(Message<?> message, String headerName, String defaultValue) {
-		MessageHeaders headers = message.getHeaders();
-		if(headers.containsKey(headerName)) {
-			String value = headers.get(headerName, String.class);
-			if(StringUtils.isNotEmpty(value)) {
-				return value;
-			}
-		}
-		return defaultValue;
+		String headerValue = getHeader(message, headerName, String.class);
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}
 
 	public static Integer getIntHeader(Message<?> message, String headerName, Integer defaultValue) {
-		MessageHeaders headers = message.getHeaders();
-		if(headers.containsKey(headerName)) {
-			try {
-				return headers.get(headerName, Integer.class);
-			} catch (IllegalArgumentException e) {
-				Object header = headers.get(headerName);
-				LOG.info("unable to parse header as integer", e);
-				return Integer.parseInt(""+header);
-			}
-		}
-		return defaultValue;
+		Integer headerValue = getHeader(message, headerName, Integer.class);
+		return headerValue != null ? headerValue : defaultValue;
 	}
 
 	public static Boolean getBooleanHeader(Message<?> message, String headerName, Boolean defaultValue) {
-		MessageHeaders headers = message.getHeaders();
-		if(headers.containsKey(headerName)) {
-			try {
-				return headers.get(headerName, Boolean.class);
-			} catch (IllegalArgumentException e) {
-				Object header = headers.get(headerName);
-				LOG.info("unable to parse header as boolean", e);
-				return Boolean.parseBoolean(""+header);
-			}
-		}
-		return defaultValue;
+		Boolean headerValue = getHeader(message, headerName, Boolean.class);
+		return headerValue != null ? headerValue : defaultValue;
+	}
+
+	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz) {
+		return getEnumHeader(message, headerName, enumClazz, null);
+	}
+
+	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz, E defaultValue) {
+		E headerValue = getHeader(message, headerName, enumClazz);
+		return headerValue != null ? headerValue : defaultValue;
 	}
 
 	/** May be anonymousUser, or a string representation of the currently logged in user. */
@@ -131,30 +146,5 @@ public class BusMessageUtils {
 			}
 		}
 		return granted;
-	}
-
-	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz) {
-		return getEnumHeader(message, headerName, enumClazz, null);
-	}
-
-	public static <E extends Enum<E>> E getEnumHeader(Message<?> message, String headerName, Class<E> enumClazz, E defaultValue) {
-		String value = getHeader(message, headerName);
-		if(StringUtils.isNotEmpty(value)) {
-			try {
-				return parseEnum(enumClazz, value);
-			} catch (IllegalArgumentException e) {
-				throw new BusException("unable to parse value ["+value+"]", e);
-			}
-		}
-		return defaultValue;
-	}
-
-	private static <E extends Enum<E>> E parseEnum(final Class<E> enumClass, final String enumName) {
-		for (final E enumValue : enumClass.getEnumConstants()) {
-			if (enumValue.name().equalsIgnoreCase(enumName)) {
-				return enumValue;
-			}
-		}
-		return null;
 	}
 }

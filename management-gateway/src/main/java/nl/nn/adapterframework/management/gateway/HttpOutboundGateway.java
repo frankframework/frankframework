@@ -42,7 +42,7 @@ public class HttpOutboundGateway<T> implements InitializingBean, ApplicationCont
 		}
 
 		handler = new HttpOutboundHandler(endpoint);
-		SpringUtils.autowireByName(applicationContext, handler);
+		SpringUtils.autowireByType(applicationContext, handler);
 	}
 
 	// T in T out.
@@ -54,7 +54,7 @@ public class HttpOutboundGateway<T> implements InitializingBean, ApplicationCont
 	// T in, no reply
 	@Override
 	public void sendAsyncMessage(Message<T> in) {
-		handler.handleMessage(in);
+		handler.handleRequestMessage(in);
 	}
 
 	@Override

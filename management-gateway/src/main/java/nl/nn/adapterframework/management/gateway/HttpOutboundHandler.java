@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.management.gateway;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
@@ -30,7 +32,10 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
+import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
@@ -50,13 +55,21 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		setOutputChannel(responseChannel);
 
 		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(getApplicationContext(), DefaultHttpHeaderMapper.class);
-		headerMapper.setOutboundHeaderNames("topic", "action");
-		headerMapper.setInboundHeaderNames("meta-*");
+		headerMapper.setOutboundHeaderNames(getRequestHeaders());
+		headerMapper.setInboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		setHeaderMapper(headerMapper);
 
 		setMessageConverters(Collections.singletonList(new ByteArrayHttpMessageConverter()));
 
 		setHttpMethodExpression(new HttpMethodExpression());
+	}
+
+	private String[] getRequestHeaders() {
+		List<String> headers = new ArrayList<>();
+		headers.add(BusAction.ACTION_HEADER_NAME);
+		headers.add(BusTopic.TOPIC_HEADER_NAME);
+		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
+		return headers.toArray(new String[0]);
 	}
 
 	private static class HttpMethodExpression extends ValueExpression<HttpMethod> {
