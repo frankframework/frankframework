@@ -44,11 +44,10 @@ public class GrayBox implements CheckpointMatcher {
 					Checkpoint firstCheckpoint = checkpoints.get(0);
 					if (checkpoint.equals(firstCheckpoint)) {
 						return true;
-					} else {
-						Checkpoint lastCheckpoint = (Checkpoint)checkpoints.get(checkpoints.size() - 1);
-						if (checkpoint.equals(lastCheckpoint)) {
-							return true;
-						}
+					}
+					Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
+					if (checkpoint.equals(lastCheckpoint)) {
+						return true;
 					}
 				}
 			}
