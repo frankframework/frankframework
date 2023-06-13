@@ -358,8 +358,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				if (StringUtils.isEmpty(getOutputSeparator())) {
 					result.append(FileUtils.getFilledArray(endIndex - startIndex, ' '));
 				}
-			}
-			else if (endIndex >= val.length()) {
+			} else if (endIndex >= val.length()) {
 				result.append(val.substring(startIndex));
 				if (StringUtils.isEmpty(getOutputSeparator())) {
 					int fillSize = endIndex - startIndex - val.length();
@@ -494,12 +493,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ParseException, ConfigurationException {
-			Date date = null;
+			Date date ;
 
 			if (inputFieldIndex < 0) {
 				date = new Date();
-			}
-			else {
+			} else {
 				if (inputFieldIndex >= inputFields.size()) {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");
 				}
@@ -535,8 +533,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				IOutputField condition = curFunction.appendValue(curFunction, result, inputFields);
 				if (condition != null)
 					return condition;
-			}
-			else {
+			} else {
 				// function is a subcondition within this condition
 				if (curFunction instanceof Condition) {
 					((Condition)curFunction).output = false;
