@@ -10,7 +10,7 @@
 	<context:property-placeholder location="classpath:application.properties"/>
 
 	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
-		<property name="port" value="8080"/>
+		<property name="port" value="${server.port}"/>
 	</bean>
 
 	<import resource="FrankConsoleContext.xml"/>

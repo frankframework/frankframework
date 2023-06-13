@@ -76,35 +76,13 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- provided dependencies will be added to the executable (Spring) WAR -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot</artifactId>
-			<version>${spring.boot.version}</version>
-			<scope>compile</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 			<version>${spring.boot.version}</version>
-			<scope>compile</scope>
-<!--
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
--
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-			-->
 		</dependency>
 
+		<!-- provided dependencies will be added to the executable (Spring) WAR -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -122,37 +100,6 @@
 	<build>
 		<defaultGoal>package spring-boot:repackage</defaultGoal>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.6.0</version>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<artifactItems>
-						<artifactItem>
-							<groupId>org.ibissource</groupId>
-							<artifactId>ibis-adapterframework-console-frontend</artifactId>
-							<version>${revision}</version>
-							<fileMappers>
-								<org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-									<pattern>^META-INF/resources/iaf/gui</pattern>
-									<replacement>./</replacement>
-								</org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-							</fileMappers>
-							<includes>META-INF/resources/iaf/gui/**</includes>
-							<outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
-						</artifactItem>
-					</artifactItems>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
