@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.FileUtils;
 
 /**
  * File listener for the Test Tool.
- * 
+ *
  * @author Jaco de Groot
  */
 public class FileListener implements IConfigurable, AutoCloseable {
@@ -85,7 +85,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	/**
 	 * Read the message from the specified file. If the file doesn't exist,
 	 * this methods waits a specified time before it attempts to read the file.
-	 * 
+	 *
 	 * @return The message read from the specified file
 	 */
 	public String getMessage() throws TimeoutException, ListenerException {
@@ -132,7 +132,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 				}
 			}
 			if (file != null && file.exists()) {
-				StringBuffer stringBuffer = new StringBuffer();
+				StringBuilder stringBuffer = new StringBuilder();
 				FileInputStream fileInputStream = null;
 				try {
 					fileInputStream = new FileInputStream(file);
@@ -197,7 +197,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 
 	/**
 	 * Set the wildcard to find the file to read the message from.
-	 * 
+	 *
 	 * @param wildcard to search for files in a directory
 	 */
 	public void setWildcard(String wildcard) {
@@ -206,7 +206,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 
 	/**
 	 * Set the time to wait in milliseconds before starting to read the file.
-	 * Set to -1 (default) to start reading the file directly.  
+	 * Set to -1 (default) to start reading the file directly.
 	 */
 	public void setWaitBeforeRead(long waitBeforeRead) {
 		this.waitBeforeRead = waitBeforeRead;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,18 +28,18 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
- * Translate a record using an outputFields description. 
- * 
- * 
+ * Translate a record using an outputFields description.
+ *
+ *
  * The {@link #setOutputFields(String) outputFields} description can contain the following functions:
- * 
+ *
  * <table border="1">
  * <tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>
  * <tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>
@@ -54,7 +54,7 @@ import org.apache.commons.lang3.StringUtils;
  * <tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr>
  * <tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr>
  * </table>
- * 
+ *
  * @author  John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
@@ -65,7 +65,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
-		StringBuffer output = new StringBuffer();
+		StringBuilder output = new StringBuilder();
 		Stack<IOutputField> conditions = new Stack<>();
 
 		for(Iterator<IOutputField> outputFieldIt = outputFields.iterator(); outputFieldIt.hasNext();) {
@@ -248,7 +248,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/*
-	 * Converts a string to a map 
+	 * Converts a string to a map
 	 */
 	private Map<String,String> convertToKeyValueMap(StringTokenizer st, char kvSep) {
 		Map<String,String> result = new HashMap<String,String>();
@@ -263,8 +263,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Added to allow usage from Configuration file without the need to modify the 
-	 * digester-rules 
+	 * Added to allow usage from Configuration file without the need to modify the
+	 * digester-rules
 	 */
 	@Deprecated
 	public void registerChild(OutputfieldsPart part) throws ConfigurationException {
@@ -284,15 +284,15 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Each function must implement this interface 
+	 * Each function must implement this interface
 	 * @author John Dekker
 	 */
 	public interface IOutputField {
-		IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws Exception;
+		IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws Exception;
 	}
 
 	/**
-	 * Copies the value of an input field to the output  
+	 * Copies the value of an input field to the output
 	 * @author John Dekker
 	 */
 	class OutputInput implements IOutputField {
@@ -314,7 +314,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			result.append(toValue(inputFields));
 			return null;
 		}
@@ -326,7 +326,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Copies a part of the value of an input field to the output  
+	 * Copies a part of the value of an input field to the output
 	 * @author John Dekker
 	 */
 	class Substring extends OutputInput {
@@ -344,7 +344,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String val = super.toValue(inputFields).trim();
 
 			if (startIndex >= val.length()) {
@@ -369,7 +369,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Align the value of an input field and wite it to the output   
+	 * Align the value of an input field and wite it to the output
 	 * @author John Dekker
 	 */
 	class OutputAlignedInput extends OutputInput {
@@ -385,7 +385,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String val = super.toValue(inputFields).trim();
 			FileUtils.align(result, val, length, leftAlign, fillchar);
 			return null;
@@ -393,7 +393,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Sends a fixed value to the output  
+	 * Sends a fixed value to the output
 	 * @author John Dekker
 	 */
 	class FixedOutput implements IOutputField {
@@ -404,14 +404,14 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
 			result.append(fixedOutput);
 			return null;
 		}
 	}
 
 	/**
-	 * Send x number of characters to the output  
+	 * Send x number of characters to the output
 	 * @author John Dekker
 	 */
 	class FixedFillOutput extends FixedOutput {
@@ -421,7 +421,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Align a fixed value and send it to the output  
+	 * Align a fixed value and send it to the output
 	 * @author John Dekker
 	 */
 	class FixedAlignedOutput extends FixedOutput {
@@ -431,7 +431,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Use the input value as the key of a lookup map and send the lookup value to the output  
+	 * Use the input value as the key of a lookup map and send the lookup value to the output
 	 * @author John Dekker
 	 */
 	class Lookup extends OutputInput {
@@ -443,7 +443,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String inVal = super.toValue(inputFields);
 			String outVal = null;
 			if (inVal != null) {
@@ -461,7 +461,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Send either a fixed date or a transformed input datevalue to the output  
+	 * Send either a fixed date or a transformed input datevalue to the output
 	 * @author John Dekker
 	 */
 	class FixedDateOutput implements IOutputField {
@@ -486,7 +486,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ParseException, ConfigurationException {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ParseException, ConfigurationException {
 			Date date = null;
 
 			if (inputFieldIndex < 0) {
@@ -504,15 +504,15 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Abstract class for condition. Only if the condition is met, output is written  
+	 * Abstract class for condition. Only if the condition is met, output is written
 	 * @author John Dekker
 	 */
 	abstract class Condition implements IOutputField {
 		private boolean output;
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws Exception {
-			// first call, check wether the condition is true or false 
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws Exception {
+			// first call, check wether the condition is true or false
 			if (this == curFunction) {
 				output = conditionIsTrue(inputFields);
 				return this;
@@ -530,7 +530,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 					return condition;
 			}
 			else {
-				// function is a subcondition within this condition 
+				// function is a subcondition within this condition
 				if (curFunction instanceof Condition) {
 					((Condition)curFunction).output = false;
 					return curFunction;
@@ -544,7 +544,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * If condition  
+	 * If condition
 	 * @author John Dekker
 	 */
 	class IfCondition extends Condition {
@@ -625,18 +625,18 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * End if marker  
+	 * End if marker
 	 * @author John Dekker
 	 */
 	class EndIfCondition implements IOutputField {
 		@Override
-		public IOutputField appendValue(IOutputField curFunction,StringBuffer result,List<String> inputFields) throws Exception {
+		public IOutputField appendValue(IOutputField curFunction,StringBuilder result,List<String> inputFields) throws Exception {
 			throw new Exception("Endif function has no corresponding if");
 		}
 	}
 
 	/**
-	 * Sends a fixed value to the output  
+	 * Sends a fixed value to the output
 	 * @author John Dekker
 	 */
 	public interface IOutputDelegate {
@@ -662,7 +662,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) {
+		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
 			String transform = delegate.transform(getInputFieldIndex(), inputFields, params);
 			result.append(transform);
 			return null;

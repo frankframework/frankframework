@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -163,15 +163,15 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pe != null && pe.isWriteToSecLog()) {
 				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
 				if (pe.getSecLogSessionKeys() != null) {
-					String sk = "";
+					StringBuilder sk = new StringBuilder();
 					StringTokenizer st = new StringTokenizer(pe.getSecLogSessionKeys(), " ,;");
 					while (st.hasMoreTokens()) {
 						if (sk.length() > 0) {
-							sk = sk + ",";
+							sk.append(",");
 						}
 						String key = st.nextToken();
 						Object value = pipeLineSession.get(key);
-						sk = sk + key + "=" + value;
+						sk.append(key).append("=").append(value);
 					}
 					secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
 				}
@@ -189,7 +189,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	}
 
 	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		int startPos = invoerString.indexOf(ME_START);
 		if (startPos == -1) {
 			return invoerString;
