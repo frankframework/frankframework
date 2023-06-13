@@ -39,7 +39,7 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 
 /**
  * Root collection for API.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */

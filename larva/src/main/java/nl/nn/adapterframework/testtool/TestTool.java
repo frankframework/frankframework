@@ -1723,7 +1723,7 @@ public class TestTool {
 		if (encoding != null) {
 			Reader inputStreamReader = null;
 			try {
-				StringBuffer stringBuffer = new StringBuffer();
+				StringBuilder stringBuffer = new StringBuilder();
 				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
@@ -2177,7 +2177,7 @@ public class TestTool {
 				if (unzipped == null) {
 					try {
 						debugMessage("Unzip", writers);
-						StringBuffer stringBuffer = new StringBuffer();
+						StringBuilder stringBuffer = new StringBuilder();
 						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
 						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
 						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
@@ -2565,7 +2565,7 @@ public class TestTool {
 	}
 
 	public static String formatString(String string, Map<String, Object> writers) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);

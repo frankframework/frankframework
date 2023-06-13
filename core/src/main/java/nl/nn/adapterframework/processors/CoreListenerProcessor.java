@@ -61,7 +61,7 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 	}
 
 	protected String getLogPrefix(ICorrelatedPullingListener<M> listener, PipeLineSession session){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Listener [" + listener.getName() + "] ");
 		if (session != null) {
 			sb.append("msgId [" + session.getMessageId() + "] ");

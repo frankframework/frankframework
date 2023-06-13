@@ -173,8 +173,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
-	private final String CONTEXT_KEY_STATUS_CODE="Http.StatusCode";
-	private final String CONTEXT_KEY_REASON_PHRASE="Http.ReasonPhrase";
+	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
+	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
@@ -570,7 +570,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return sslSocketFactory;
 	}
 
-	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
+	protected boolean appendParameters(boolean parametersAppended, StringBuilder path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 			for(ParameterValue pv : parameters) {
@@ -696,10 +696,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(e);
 		}
 
-		Message result = null;
-		int statusCode = -1;
+		Message result;
+		int statusCode;
 		boolean success;
-		String reasonPhrase = null;
+		String reasonPhrase;
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
 
 		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -727,7 +727,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			// Only give warnings for 4xx (client errors) and 5xx (server errors)
 			if (statusCode >= 400 && statusCode < 600) {
-				log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
+				log.warn(getLogPrefix()+"status ["+ statusline +"]");
 			} else {
 				log.debug(getLogPrefix()+"status ["+statusCode+"]");
 			}
@@ -749,8 +749,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			// in a sessionKey for later use in the pipeline.
 			//
 			// IMPORTANT: It is possible that poorly written implementations
-			// wont read or close the response.
-			// This will cause the connection to become stale..
+			// won't read or close the response.
+			// This will cause the connection to become stale.
 
 			if (tg.cancel()) {
 				throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
@@ -762,6 +762,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		if (isXhtml() && !Message.isEmpty(result)) {
+			// TODO: Streaming XHTML conversion for better performance with large result message?
 			String xhtml;
 			try {
 				xhtml = XmlUtils.toXhtml(result);
@@ -781,7 +782,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			result = Message.asMessage(xhtml);
 		}
 
-		if (result==null) {
+		if (result == null) {
 			result = Message.nullMessage();
 		}
 		log.debug("Storing [{}]=[{}], [{}]=[{}]", CONTEXT_KEY_STATUS_CODE, statusCode, CONTEXT_KEY_REASON_PHRASE, reasonPhrase);
@@ -956,7 +957,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/**
 	 * Proxy username
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
@@ -969,7 +970,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/**
 	 * Proxy password
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
@@ -977,7 +978,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/**
 	 * Proxy realm
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;

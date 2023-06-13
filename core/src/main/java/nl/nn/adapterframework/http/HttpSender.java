@@ -82,7 +82,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender for the HTTP protocol using {@link nl.nn.adapterframework.http.HttpSenderBase.HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
  * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
- * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
+ * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
  * are returned by this sender so they are available to the SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
@@ -175,7 +175,7 @@ public class HttpSender extends HttpSenderBase {
 			}
 		}
 
-		URI uri = null;
+		URI uri;
 		try {
 			uri = encodeQueryParameters(url);
 		} catch (UnsupportedEncodingException | URISyntaxException e) {
@@ -217,9 +217,9 @@ public class HttpSender extends HttpSenderBase {
 	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
-			StringBuffer relativePath = new StringBuffer(uri.getRawPath());
+			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
 			if (!StringUtils.isEmpty(uri.getQuery())) {
-				relativePath.append("?"+uri.getQuery());
+				relativePath.append("?").append(uri.getQuery());
 				queryParametersAppended = true;
 			}
 
@@ -245,7 +245,7 @@ public class HttpSender extends HttpSenderBase {
 				if(postType == PostType.RAW) {
 					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
 					if (parameters!=null) {
-						StringBuffer msg = new StringBuffer(messageString);
+						StringBuilder msg = new StringBuilder(messageString);
 						appendParameters(true,msg,parameters);
 						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
 							messageString=msg.substring(1);

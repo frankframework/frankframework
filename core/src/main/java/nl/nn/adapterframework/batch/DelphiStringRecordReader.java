@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  *
@@ -40,7 +40,7 @@ public class DelphiStringRecordReader extends Reader {
 	private String separator;
 	private String separatorReplacement;
 
-	private StringBuffer buffer;
+	private StringBuilder buffer;
 	private int bufferLen=0;
 	private int bufferPos=0;
 	boolean eof=false;
@@ -123,7 +123,7 @@ public class DelphiStringRecordReader extends Reader {
 	 */
 	private void fillBuffer() throws IOException {
 		int stringsRead=0;
-		buffer=new StringBuffer();
+		buffer=new StringBuilder();
 		while (!eof && (stringsPerRecord==0 || stringsRead<stringsPerRecord)) {
 			String part=readString();
 			if (part==null) {

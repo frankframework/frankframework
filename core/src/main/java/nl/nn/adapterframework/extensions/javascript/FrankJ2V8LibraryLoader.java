@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class FrankJ2V8LibraryLoader {
 			System.loadLibrary("j2v8");
 			return;
 		}
-		StringBuffer message = new StringBuffer();
+		StringBuilder message = new StringBuilder();
 		String libShortName = computeLibraryShortName();
 		String libFullName = computeLibraryFullName();
 		String ideLocation = System.getProperty("user.dir") + SEPARATOR + "jni" + SEPARATOR + computeLibraryFullName();
@@ -97,7 +97,7 @@ class FrankJ2V8LibraryLoader {
 		throw new UnsatisfiedLinkError("Could not load J2V8 library. Reasons: " + message.toString()); //$NON-NLS-1$
 	}
 
-	static boolean load(final String libName, final StringBuffer message) {
+	static boolean load(final String libName, final StringBuilder message) {
 		try {
 			if (libName.indexOf(SEPARATOR) != -1) {
 				System.load(libName);
@@ -116,7 +116,7 @@ class FrankJ2V8LibraryLoader {
 		return false;
 	}
 
-	static boolean extract(final String fileName, final String mappedName, final StringBuffer message) {
+	static boolean extract(final String fileName, final String mappedName, final StringBuilder message) {
 		FileOutputStream os = null;
 		InputStream is = null;
 		File file = new File(fileName);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,17 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import jakarta.json.stream.JsonGenerator;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
 
+import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class to construct JSON from XML events.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
@@ -75,13 +74,13 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			Map map=(Map)content;
 			content=map.values().toArray()[0];
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		toString(sb,content,indent?0:-1);
 		return sb.toString();
 //		Map config  =new HashMap<String,Object>();
 //		config.put(JsonGenerator.PRETTY_PRINTING,true);
 //		JsonGeneratorFactory gf = Json.createGeneratorFactory(config);
-//		
+//
 //		StringWriter writer = new StringWriter();
 //		JsonGenerator generator = gf.createGenerator(writer);
 //		generate(generator, null, content);
@@ -89,7 +88,7 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 //		return writer.toString();
 	}
 
-	protected void toString(StringBuffer sb, Object item, int indentLevel) {
+	protected void toString(StringBuilder sb, Object item, int indentLevel) {
 		if (item==null) {
 			sb.append("null");
 		} else if (item instanceof String) {
@@ -149,7 +148,7 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	}
 
 
-	private void newLine(StringBuffer sb, int indentLevel) {
+	private void newLine(StringBuilder sb, int indentLevel) {
 		if (indentLevel>=0)  {
 			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -752,17 +752,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 		int endNdx = 0;
 
 		// replace the named parameter with numbered parameters
-		StringBuffer formatPattern = new StringBuffer();
-		List<Object> params = new ArrayList<Object>();
+		StringBuilder formatPattern = new StringBuilder();
+		List<Object> params = new ArrayList<>();
 		int paramPosition = 0;
-		while(endNdx != -1) {
+		while(true) {
 			// get name of parameter in pattern to be substituted
 			startNdx = pattern.indexOf("{", endNdx);
 			if (startNdx == -1) {
 				formatPattern.append(pattern.substring(endNdx));
 				break;
 			}
-			else if (endNdx != -1) {
+			else {
 				formatPattern.append(pattern.substring(endNdx, startNdx));
 			}
 			int tmpEndNdx = pattern.indexOf("}", startNdx);
@@ -773,7 +773,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (endNdx == -1) {
 				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
 			}
-			//String substitutionName = pattern.substring(startNdx + 1, endNdx);
 			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
 
 			// get value
