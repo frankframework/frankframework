@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,6 +45,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventType;
@@ -57,6 +57,8 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.events.ConsoleMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -121,13 +123,13 @@ public final class ShowMonitors extends Base {
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
+		monitorMap.put("changed", monitor.getStateChanged());
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
+			EventThrowing source = monitor.getRaisedBy();
 			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {
@@ -172,7 +174,7 @@ public final class ShowMonitors extends Base {
 
 		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFilteringEnum() != SourceFiltering.NONE) {
+			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
 				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
 					String adapterName = it1.next();
 
@@ -244,15 +246,17 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Missing query parameter [action]", Status.BAD_REQUEST);
 		} else if(action.equals("clear")) {
 			try {
-				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, Severity.WARNING, null, null, null);
+				log.info("clearing monitor []", monitor::getName);
+				MonitorEvent event = new ConsoleMonitorEvent(getUserPrincipalName());
+				monitor.changeState(false, Severity.WARNING, event);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		} else if(action.equals("raise")) {
 			try {
-				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, Severity.WARNING, null, null, null);
+				log.info("raising monitor []", monitor::getName);
+				MonitorEvent event = new ConsoleMonitorEvent(getUserPrincipalName());
+				monitor.changeState(true, Severity.WARNING, event);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
@@ -262,7 +266,7 @@ public final class ShowMonitors extends Base {
 				if(key.equalsIgnoreCase("name")) {
 					monitor.setName(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("type")) {
-					monitor.setType(entry.getValue().toString());
+					monitor.setType(EnumUtils.parse(EventType.class, entry.getValue().toString()));
 				} else if(key.equalsIgnoreCase("destinations")) {
 					monitor.setDestinationSet(parseDestinations(entry.getValue()));
 				}
@@ -284,7 +288,7 @@ public final class ShowMonitors extends Base {
 		if(destinations.isEmpty()) {
 			return null;
 		}
-	
+
 		return new HashSet<>(destinations);
 	}
 
@@ -324,7 +328,11 @@ public final class ShowMonitors extends Base {
 		ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 		handleTrigger(trigger, json);
 		monitor.registerTrigger(trigger);
-		monitor.configure();
+		try {
+			monitor.configure();
+		} catch (ConfigurationException e) {
+			throw new ApiException(e);
+		}
 
 		return Response.status(Status.OK).build();
 	}
@@ -441,15 +449,15 @@ public final class ShowMonitors extends Base {
 		}
 
 		// If no parse errors have occured we can continue!
-		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
+		trigger.setEventCodes(eventList);
 		trigger.setTriggerType(type);
-		trigger.setSeverityEnum(severity);
+		trigger.setSeverity(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
 
 		trigger.clearAdapterFilters();
 		if("adapter".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.ADAPTER);
+			trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
@@ -457,7 +465,7 @@ public final class ShowMonitors extends Base {
 				trigger.registerAdapterFilter(adapterFilter);
 			}
 		} else if("source".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.SOURCE);
+			trigger.setSourceFiltering(SourceFiltering.SOURCE);
 
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
@@ -468,7 +476,7 @@ public final class ShowMonitors extends Base {
 				trigger.registerAdapterFilter(adapterFilter);
 			}
 		} else {
-			trigger.setSourceFilteringEnum(SourceFiltering.NONE);
+			trigger.setSourceFiltering(SourceFiltering.NONE);
 		}
 	}
 
@@ -529,7 +537,7 @@ public final class ShowMonitors extends Base {
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
-		monitor.setTypeEnum(type);
+		monitor.setType(type);
 		monitor.setDestinationSet(destinations);
 
 		mm.addMonitor(monitor);

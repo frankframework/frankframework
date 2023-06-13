@@ -18,6 +18,7 @@ package nl.nn.adapterframework.monitoring.events;
 import lombok.Getter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import software.amazon.awssdk.utils.StringUtils;
 
 public class ConsoleMonitorEvent extends MonitorEvent {
 
@@ -30,7 +31,7 @@ public class ConsoleMonitorEvent extends MonitorEvent {
 			private @Getter Adapter adapter = null;
 			@Override
 			public String getEventSourceName() {
-				return "Frank!Console on behalf of '"+user+"'";
+				return "Frank!Console on behalf of '"+(StringUtils.isBlank(user)?"unknown":user)+"'";
 			}
 		};
 	}

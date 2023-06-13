@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.monitoring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -13,10 +13,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -38,7 +36,7 @@ public class TriggerTest implements EventThrowing {
 	private MonitorManager manager;
 	private Monitor monitor;
 
-	@BeforeEach
+	@Before
 	public void setup() {
 		applContext = mock(ConfigurableApplicationContext.class);
 		destination = mock(IMonitorDestination.class);
@@ -191,9 +189,13 @@ public class TriggerTest implements EventThrowing {
 		assertNotNull(monitorEventCaptor.getValue());
 	}
 
-	@ParameterizedTest
-	@ValueSource(booleans = {true, false})
-	public void testTriggerAndClearConsoleEvent(boolean eventCausedByMonitor) throws Exception {
+	@Test
+	public void testTriggerAndClearConsoleEvent() throws Exception {
+		testTriggerAndClearConsoleEvent(true);
+		testTriggerAndClearConsoleEvent(false);
+	}
+
+	private void testTriggerAndClearConsoleEvent(boolean eventCausedByMonitor) throws Exception {
 		// Arrange
 		Trigger trigger = spy(Alarm.class);
 
