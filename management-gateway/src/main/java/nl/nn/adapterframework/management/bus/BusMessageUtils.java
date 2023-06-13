@@ -59,12 +59,12 @@ public class BusMessageUtils {
 			if(rawValue instanceof String) {
 				try {
 					return ClassUtils.convertToType(type, String.valueOf(rawValue));
-				} catch (IllegalArgumentException e) {
-					throw new BusException("unable to convert header to required type", e);
+				} catch (IllegalArgumentException e) {// Unable to convert something, fall back to the default value
+					LOG.warn("unable to convert header to required type", e);
 				}
+			} else {
+				LOG.warn("conversion of type [{}] not implemented", rawValue::getClass);
 			}
-
-			LOG.warn("conversion of type [{}] not implemented", rawValue::getClass);
 		}
 		return null;
 	}

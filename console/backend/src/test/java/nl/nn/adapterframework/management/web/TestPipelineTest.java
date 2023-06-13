@@ -15,7 +15,6 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
 import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
@@ -29,8 +28,9 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 		return new TestPipeline();
 	}
 
-	private static class DefaultSuccessAnswer implements Answer<Message<String>> {
-		public Message<String> answer(InvocationOnMock invocation) {
+	private static class DefaultSuccessAnswer implements Answer<JsonResponseMessage> {
+		@Override
+		public JsonResponseMessage answer(InvocationOnMock invocation) {
 			Object input = invocation.getArguments()[0];
 			JsonResponseMessage response = new JsonResponseMessage(input);
 			response.setHeader(ResponseMessageBase.STATE_KEY, "SUCCESS");
