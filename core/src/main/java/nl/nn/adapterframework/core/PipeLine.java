@@ -193,7 +193,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						pipe.registerForward(pf);
 					} else {
 						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
-						if (plexit != null) {
+						if (plexit == null) {
 							// if there is no success exit, then appearantly only error exits are configured; Just get the first configured one
 							plexit = pipeLineExits.values().iterator().next();
 						}
