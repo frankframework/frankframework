@@ -93,7 +93,7 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
@@ -104,7 +104,7 @@ public class BusTestBase {
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		gateway.sendAsyncMessage(input.build());
 	}
 

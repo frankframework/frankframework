@@ -24,10 +24,10 @@ import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
-import nl.nn.adapterframework.management.bus.IntegrationGateway;
+import nl.nn.adapterframework.management.bus.OutboundGateway;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class HttpOutboundGateway<T> implements InitializingBean, ApplicationContextAware, IntegrationGateway<T> {
+public class HttpOutboundGateway<T> implements InitializingBean, ApplicationContextAware, OutboundGateway<T> {
 
 	private HttpOutboundHandler handler;
 	private @Setter ApplicationContext applicationContext;
