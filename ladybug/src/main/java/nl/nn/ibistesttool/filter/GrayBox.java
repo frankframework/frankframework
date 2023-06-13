@@ -40,7 +40,7 @@ public class GrayBox implements CheckpointMatcher {
 				return true;
 			} else {
 				List<Checkpoint> checkpoints = report.getCheckpoints();
-				if (checkpoints.size() > 0) {
+				if (!checkpoints.isEmpty()) {
 					Checkpoint firstCheckpoint = (Checkpoint)checkpoints.get(0);
 					if (checkpoint.equals(firstCheckpoint)) {
 						return true;
