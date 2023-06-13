@@ -124,8 +124,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
-				// templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
-				// controller: 'StatusCtrl as status',
 				component: 'status',
 				reloadOnSearch: false,
 				data: {
@@ -193,7 +191,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.configuration', {
 				url: "/configurations?name&loaded",
-				templateUrl: "js/app/views/configuration/ShowConfiguration.html",
+				component: 'configurationsOverview',
 				reloadOnSearch: false,
 				data: {
 					pageTitle: 'Configurations',
@@ -206,7 +204,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.upload_configuration', {
 				url: "/configurations/upload",
-				templateUrl: "js/app/views/configuration/configurations-upload/ManageConfigurationsUpload.html",
+				templateUrl: "js/app/views/configurations/configurations-upload/ManageConfigurationsUpload.html",
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Upload',
@@ -214,7 +212,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configurations', {
 				url: "/configurations/manage",
-				templateUrl: "js/app/views/configuration/configurations-manage/ManageConfigurations.html",
+				templateUrl: "js/app/views/configurations/configurations-manage/ManageConfigurations.html",
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
@@ -222,7 +220,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configuration_details', {
 				url: "/configurations/manage/:name",
-				templateUrl: "js/app/views/configuration/configurations-manage/configurations-manage-details/ManageConfigurationDetails.html",
+				templateUrl: "js/app/views/configurations/configurations-manage/configurations-manage-details/ManageConfigurationDetails.html",
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
