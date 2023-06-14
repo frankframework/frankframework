@@ -72,6 +72,19 @@ const JdbcBrowseTablesController = function ($scope, Api, $timeout, $state, appC
             ctrl.query = "";
             ctrl.processingMessage = false;
         }, false);
+
+        ctrl.reset = function () {
+            console.log("here", ctrl.form)
+            ctrl.query = "";
+            ctrl.error = "";
+            if (!ctrl.form) return;
+            if (ctrl.form.table) ctrl.form.table = "";
+            if (ctrl.form.where) ctrl.form.where = "";
+            if (ctrl.form.order) ctrl.form.order = "";
+            if (ctrl.form.numberOfRowsOnly) ctrl.form.numberOfRowsOnly = "";
+            if (ctrl.form.minRow) ctrl.form.minRow = "";
+            if (ctrl.form.maxRow) ctrl.form.maxRow = "";
+        };
     };
 };
 

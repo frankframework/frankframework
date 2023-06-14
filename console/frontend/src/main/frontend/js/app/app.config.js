@@ -260,7 +260,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_queue', {
 				url: "/jms/browse-queue",
-				templateUrl: "js/app/views/jms/jms-browse-queue/BrowseJmsQueue.html",
+				component: "jmsBrowseQueue",
 				data: {
 					pageTitle: 'Browse JMS Queue',
 					breadcrumbs: 'JMS > Browse Queue'
