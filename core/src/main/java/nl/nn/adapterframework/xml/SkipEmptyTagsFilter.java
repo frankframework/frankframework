@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2022 WeAreFrank!
+   Copyright 2019, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	private boolean nonWhitespaceCharactersSeen=false;
 	private boolean elementSkipped;
 
-	private StringBuffer pendingWhitespace = new StringBuffer();
+	private StringBuilder pendingWhitespace = new StringBuilder();
 
 	public SkipEmptyTagsFilter(ContentHandler handler) {
 		super(handler);

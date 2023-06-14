@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2002, 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,22 +32,22 @@ import org.w3c.dom.Text;
  * Input must be of type <code>org.w3c.dom.Element</code> or
  * <code>org.w3c.dom.Document</code>; output will be of type
  * <code>java.lang.String</code>.
- * 
+ *
  * @author leeuwt
- * 
+ *
  *         Change History Author Date Version Details Tim N. van der Leeuw
  *         30-07-2002 1.0 Initial release Tim N. van der Leeuw 14-08-2002 1.1
  *         Use base-class AbstractTranformer.
- * 
+ *
  */
 public class XmlToLabelFormat {
 
 	/**
 	 * Method makeTagLabel. Makes a label for the rekenbox from the tag-name and
 	 * optional volgnummer-attribute of the element.
-	 * 
+	 *
 	 * <P>
-	 * 
+	 *
 	 * @param parentLabel
 	 *                    <P>
 	 *                    Label of the parent-tags. This is prefixed to the label of
@@ -55,14 +55,14 @@ public class XmlToLabelFormat {
 	 * @param el
 	 *                    <P>
 	 *                    Element of which the label needs to be constructed.
-	 * 
+	 *
 	 * @return String
 	 *         <P>
 	 *         The constructed label.
-	 * 
+	 *
 	 */
 	static String makeTagLabel(String parentLabel, Element el) {
-		StringBuffer tag = new StringBuffer(60);
+		StringBuilder tag = new StringBuilder(60);
 
 		if(parentLabel.length() > 0) {
 			tag.append(parentLabel).append(".");
@@ -90,8 +90,8 @@ public class XmlToLabelFormat {
 		return c;
 	}
 
-	static StringBuffer getTextValue(Element el) {
-		StringBuffer sb = new StringBuffer(1024);
+	static StringBuilder getTextValue(Element el) {
+		StringBuilder sb = new StringBuilder(1024);
 		NodeList nl = el.getChildNodes();
 		for(int i = 0; i < nl.getLength(); ++i) {
 			Node n = nl.item(i);
@@ -102,7 +102,7 @@ public class XmlToLabelFormat {
 		return sb;
 	}
 
-	static void convertTagsToLabels(StringBuffer buf, String parentLabel, Collection elements) {
+	static void convertTagsToLabels(StringBuilder buf, String parentLabel, Collection elements) {
 		Collection children;
 		String tagLabel;
 
@@ -116,7 +116,7 @@ public class XmlToLabelFormat {
 				buf.append(tagLabel).append(" : #SAMENGESTELD\n");
 				convertTagsToLabels(buf, tagLabel, children);
 			} else {
-				StringBuffer text = getTextValue(el);
+				StringBuilder text = getTextValue(el);
 				if(text != null && text.length() > 0) {
 					buf.append(tagLabel).append(" :").append(text.toString()).append("\n"); // JDK1.4 needs no converstion text.toString()
 				}
@@ -129,15 +129,15 @@ public class XmlToLabelFormat {
 	 * must be of type <code>org.w3c.dom.Element</code> or
 	 * <code>org.w3c.dom.Document</code>; output will be of type
 	 * <code>java.lang.String</code>.
-	 * 
+	 *
 	 */
 	public static String doTransformation(/* Message message, Map scratchpad, */ Object data) {
 		Document doc;
 		Element el;
-		StringBuffer buf;
+		StringBuilder buf;
 		Collection c;
 
-		buf = new StringBuffer(10 * 1024);
+		buf = new StringBuilder(10 * 1024);
 		if(data instanceof Document) {
 			doc = (Document) data;
 			el = doc.getDocumentElement();

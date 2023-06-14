@@ -19,39 +19,34 @@
 				<version>1.12.1</version>
 				<executions>
 					<execution>
-						<id>download npm</id>
-						<phase>initialize</phase>
+						<id>install node and npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
+						<phase>generate-resources</phase>
 					</execution>
 					<execution>
-						<id>run npm install</id>
-						<phase>initialize</phase>
+						<id>npm install</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
+						<phase>generate-resources</phase>
 						<configuration>
 							<arguments>install</arguments>
 						</configuration>
 					</execution>
-
 					<execution>
-						<id>run npm build</id>
-						<phase>generate-resources</phase>
+						<id>webpack build</id>
 						<goals>
-							<goal>npm</goal>
+							<goal>webpack</goal>
 						</goals>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
+						<phase>generate-resources</phase>
 					</execution>
 				</executions>
 				<configuration>
 					<nodeVersion>v16.20.0</nodeVersion>
 					<workingDirectory>src/main/frontend</workingDirectory>
 					<installDirectory>target</installDirectory>
-					<srcdir>src/main/frontend</srcdir>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -116,13 +111,13 @@
 						<version>1.12.1</version>
 						<executions>
 							<execution>
-								<id>run npm build</id>
-								<phase>generate-resources</phase>
+								<id>webpack build</id>
 								<goals>
-									<goal>npm</goal>
+									<goal>webpack</goal>
 								</goals>
+								<phase>generate-sources</phase>
 								<configuration>
-									<arguments>run build:prod</arguments>
+									<arguments>--mode production</arguments>
 								</configuration>
 							</execution>
 						</executions>

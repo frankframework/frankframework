@@ -240,8 +240,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		if (ftpClient != null && ftpClient.isConnected()) {
 			LOG.debug("closing ftp client");
 			try {
-				ftpClient.quit();
-				LOG.debug(ftpClient.getReplyString());
 				ftpClient.disconnect();
 			}
 			catch(Exception e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package nl.nn.adapterframework.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -482,7 +480,7 @@ public class CalendarParser {
 	 * @param needSpace <tt>true</tt> if a space character should be inserted before
 	 *                  any data
 	 */
-	private static void appendTimeString(StringBuffer buf, Calendar cal, boolean needSpace) {
+	private static void appendTimeString(StringBuilder buf, Calendar cal, boolean needSpace) {
 		final int hour = cal.get(Calendar.HOUR_OF_DAY);
 		final int minute = cal.get(Calendar.MINUTE);
 		final int second = cal.get(Calendar.SECOND);
@@ -710,7 +708,7 @@ public class CalendarParser {
 						if(finalList == null) {
 							numSaved++;
 						} else {
-							StringBuffer dst = new StringBuffer();
+							StringBuilder dst = new StringBuilder();
 							dst.append(tmpList[j].charAt(0));
 							dst.append("DT");
 							finalList[numSaved++] = dst.toString();
@@ -1605,7 +1603,7 @@ public class CalendarParser {
 		final int calDay = cal.get(Calendar.DATE);
 
 		boolean needSpace = false;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		if(calMonth >= 0 && calMonth < MONTHS.length) {
 			if(needSpace) {
@@ -1653,7 +1651,7 @@ public class CalendarParser {
 		final int calDay = cal.get(Calendar.DATE);
 
 		boolean needSpace = false;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		if(calDay > 0) {
 			if(needSpace) {
@@ -1698,7 +1696,7 @@ public class CalendarParser {
 		final int calMonth = cal.get(Calendar.MONTH);
 		final int calDay = cal.get(Calendar.DATE);
 
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		buf.append(calYear);
 		buf.append('-');

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Process execution utilities.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.8
  */
@@ -39,13 +39,13 @@ public class ProcessUtil {
 	private static Logger log = LogUtil.getLogger(ProcessUtil.class);
 
 	private static String readStream(InputStream stream) throws IOException {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 
 		BufferedReader bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 		String line = null;
 		// read() instead of readLine() results in JVM core dumps (this
 		// also happens when using InputStream or BufferedInputStream)
-		// using WebSphere Studio Application Developer (Windows) 
+		// using WebSphere Studio Application Developer (Windows)
 		// Version: 5.1.2, Build id: 20040506_1735
 		while ((line = bufferedReader.readLine()) != null) {
 			result.append(line + "\n");
@@ -85,7 +85,7 @@ public class ProcessUtil {
 		return executeCommand(splitUpCommandString(command),timeout);
 	}
 	/**
-	 * Execute a command as a process in the operating system. 
+	 * Execute a command as a process in the operating system.
 	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
 	public static String executeCommand(List command, int timeout) throws TimeoutException, SenderException {

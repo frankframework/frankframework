@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -385,7 +385,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		List<String> list = new ArrayList<>();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
 
-		StringBuffer sb = new StringBuffer(toSeparate);
+		StringBuilder sb = new StringBuilder(toSeparate);
 		for (int i = 0; i < sb.length(); i++) {
 			if(sb.charAt(i) == ' ')
 				sb.deleteCharAt(i);

@@ -352,10 +352,10 @@ public abstract class ClassUtils {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
 
-	private static void appendFieldsAndMethods(StringBuffer result, Object o, String type, Class<?> c) {
+	private static void appendFieldsAndMethods(StringBuilder result, Object o, String type, Class<?> c) {
 		Field[] fields = c.getDeclaredFields();
 		Method[] methods = c.getDeclaredMethods();
-		result.append(type+ " "+c.getName()+" #fields ["+fields.length+"] #methods ["+methods.length+"]");
+		result.append(type).append(" ").append(c.getName()).append(" #fields [").append(fields.length).append("] #methods [").append(methods.length).append("]");
 		if (fields.length>0 || methods.length>0) {
 			result.append(" {\n");
 			for (int i=0; i<fields.length; i++) {
@@ -384,7 +384,7 @@ public abstract class ClassUtils {
 			return null;
 		}
 
-		StringBuffer result = new StringBuffer(nameOf(o)+"\n");
+		StringBuilder result = new StringBuilder(nameOf(o)+"\n");
 		Class<?> c=o.getClass();
 		Class<?>[] interfaces = c.getInterfaces();
 		for (int i=0;i<interfaces.length; i++) {

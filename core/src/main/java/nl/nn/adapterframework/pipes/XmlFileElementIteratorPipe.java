@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	private class ItemCallbackCallingHandler extends DefaultHandler {
 
 		private ItemCallback callback;
-		private StringBuffer elementBuffer = new StringBuffer();
-		private List<String> elements = new ArrayList<String>();
+		private StringBuilder elementBuffer = new StringBuilder();
+		private List<String> elements = new ArrayList<>();
 		private boolean sElem = false;
 		private Exception rootException = null;
 		private int startLength;

@@ -34,6 +34,7 @@
 	<bean id="inboundGateway" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassname" value="${management.gateway.inbound.class}" />
 	</bean>
+	<alias name="inboundGateway" alias="outboundGateway"/> <!-- when running in the same WAR the inbound is the outbound-gateway -->
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>

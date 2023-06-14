@@ -53,7 +53,7 @@ public class TibcoLogJmsListener extends JmsListener {
 		List list = Collections.list(enumeration);
 		Collections.sort(list);
 		Iterator it = list.iterator();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		long creationTimes = 0;
 		int severity = 0;
 		String severityStr = null;
