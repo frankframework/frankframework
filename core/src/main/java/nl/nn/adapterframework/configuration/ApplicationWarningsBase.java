@@ -53,15 +53,15 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	}
 
 	public int size() {
-		return warnings.size();
+		return getWarnings().size();
 	}
 
 	public String get(int i) {
-		return warnings.get(i);
+		return getWarnings().get(i);
 	}
 
 	public boolean isEmpty() {
-		return warnings.isEmpty();
+		return getWarnings().isEmpty();
 	}
 
 	@Override
@@ -77,6 +77,10 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	}
 
 	public final List<String> getWarnings() {
+		if(warnings == null) {
+			return Collections.emptyList();
+		}
+
 		return Collections.unmodifiableList(warnings);
 	}
 
