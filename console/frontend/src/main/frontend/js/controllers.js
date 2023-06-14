@@ -11,7 +11,6 @@ import './app/views/environment-variables/environment-variables.controller';
 import './app/views/error/error.controller';
 import './app/views/ibisstore-summary/ibisstore-summary.controller';
 import './app/views/inlinestore/inlinestore.controller';
-import './app/views/jdbc/jdbc-browse-tables/jdbc-browse-tables.controller';
 import './app/views/jms/jms-browse-queue/jms-browse-queue.controller';
 import './app/views/jms/jms-send-message/jms-send-message.controller';
 import './app/views/liquibase/liquibase.controller';

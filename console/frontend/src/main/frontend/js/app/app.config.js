@@ -338,7 +338,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_tables', {
 				url: "/jdbc/browse-tables",
-				templateUrl: "js/app/views/jdbc/jdbc-browse-tables/BrowseJdbcTable.html",
+				component: "jdbcBrowseTables",
 				data: {
 					pageTitle: 'Browse JDBC Tables',
 					breadcrumbs: 'JDBC > Browse Tables'
