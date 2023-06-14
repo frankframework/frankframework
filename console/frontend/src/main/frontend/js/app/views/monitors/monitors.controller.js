@@ -1,11 +1,13 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', 'Misc', function ($scope, Api, $state, Misc) {
+appModule.controller('ShowMonitorsCtrl', ['$scope', 'Api', '$state', 'Misc', '$rootScope', function ($scope, Api, $state, Misc, $rootScope) {
 
 	$scope.selectedConfiguration = null;
 	$scope.monitors = [];
 	$scope.destinations = [];
 	$scope.eventTypes = [];
+
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
 
 	$scope.changeConfiguration = function (name) {
 		$scope.selectedConfiguration = name;

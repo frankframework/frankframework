@@ -6,6 +6,9 @@ appModule.controller('AddScheduleCtrl', ['$scope', 'Api', function ($scope, Api)
 		$scope.state.push({ type: type, message: message });
 	};
 
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
+	$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
+
 	$scope.selectedConfiguration = "";
 	$scope.form = {
 		name: "",

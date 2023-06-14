@@ -1,8 +1,9 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('ShowConfigurationCtrl', ['$scope', 'Api', '$state', '$location', function ($scope, Api, $state, $location) {
+appModule.controller('ShowConfigurationCtrl', ['$scope', 'Api', '$state', '$location', '$rootScope', function ($scope, Api, $state, $location, $rootScope) {
 	$scope.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
 	$scope.loadedConfiguration = ($state.params.loaded != undefined && $state.params.loaded == false);
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
 
 	$scope.update = function () {
 		getConfiguration();

@@ -9,6 +9,9 @@ appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', funct
 	$scope.editMode = true;
 	$scope.selectedConfiguration = "";
 
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
+	$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
+
 	$scope.form = {
 		name: "",
 		group: "",
