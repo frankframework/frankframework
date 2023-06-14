@@ -11,4 +11,5 @@ import './app/views/configurations/configurations-overview/configurations-overvi
 import './app/views/configurations/configurations-upload/configurations-upload.component';
 import './app/views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import './app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
+import './app/views/liquibase/liquibase.component';
 import './app/views/status/status.component';

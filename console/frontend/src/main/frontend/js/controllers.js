@@ -13,7 +13,6 @@ import './app/views/ibisstore-summary/ibisstore-summary.controller';
 import './app/views/inlinestore/inlinestore.controller';
 import './app/views/jms/jms-browse-queue/jms-browse-queue.controller';
 import './app/views/jms/jms-send-message/jms-send-message.controller';
-import './app/views/liquibase/liquibase.controller';
 import './app/views/loading/loading.controller';
 import './app/views/logging/logging.controller';
 import './app/views/logging/logging-manage/logging-manage.controller';

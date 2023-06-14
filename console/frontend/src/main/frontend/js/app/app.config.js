@@ -414,7 +414,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.liquibase', {
 				url: "/liquibase",
-				templateUrl: "js/app/views/liquibase/ShowLiquibaseScript.html",
+				component: "liquibase",
 				data: {
 					pageTitle: 'Liquibase Script',
 					breadcrumbs: 'JDBC > Liquibase Script'
