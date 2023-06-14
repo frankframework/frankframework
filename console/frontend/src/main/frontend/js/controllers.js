@@ -1794,6 +1794,9 @@ angular.module('iaf.beheerconsole')
 	$scope.compileURL = function(apiListener) {
 		return $scope.rootURL + "iaf/api/webservices/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
 	}
+	$scope.compileConfiguration = function(configuration) {
+		return $scope.rootURL + "iaf/api/webservices/openapi.json?configuration=" + encodeURI(configuration);
+	}
 	Api.Get("webservices", function(data) {
 		$.extend($scope, data);
 	});

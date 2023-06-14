@@ -54,11 +54,14 @@ public final class Webservices extends FrankApiBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/webservices/openapi.json")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getOpenApiSpec(@QueryParam("uri") String uri) {
+	public Response getOpenApiSpec(@QueryParam("uri") String uri, @QueryParam("configuration") String configuration) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(this, BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.addHeader("type", "openapi");
 		if(StringUtils.isNotBlank(uri)) {
 			request.addHeader("uri", uri);
+		}
+		if(StringUtils.isNotBlank(configuration)) {
+			request.addHeader("configuration", configuration);
 		}
 		return callSyncGateway(request);
 	}

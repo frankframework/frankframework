@@ -20,7 +20,8 @@
             "method": "POST",
             "uriPattern": "/api-uri-pattern",
             "receiver": "ReceiverName2",
-            "adapter": "ApiTestAdapter"
+            "adapter": "ApiTestAdapter",
+            "configuration": "TestConfiguration"
         }
     ]
 }
