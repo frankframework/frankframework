@@ -37,7 +37,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 
 		// Assert
 		Message message = messageCapture.getValue();
-		String result = "<event hostname=\"XXX\" monitor=\"monitor-name\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\"/>";
+		String result = "<event hostname=\"XXX\" monitor=\"monitor-name\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" event=\"MONITOR_EVENT_CODE\"/>";
 		assertEquals(result, ignoreHostname(message.asString()));
 	}
 
@@ -58,7 +58,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 
 		// Assert
 		Message message = messageCapture.getValue();
-		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\">\n"
+		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" event=\"MONITOR_EVENT_CODE\">\n"
 				+ "	<message><![CDATA[<ik>ben<xml/></ik>]]></message>\n"
 				+ "</event>";
 		assertEquals(result, ignoreHostname(message.asString()));
