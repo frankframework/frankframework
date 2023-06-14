@@ -99,7 +99,7 @@ public final class ShowMonitors extends Base {
 			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
 		}
 
-		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> monitors = new ArrayList<>();
 		for(int i = 0; i < mm.getMonitors().size(); i++) {
 			Monitor monitor = mm.getMonitor(i);
 
@@ -107,7 +107,7 @@ public final class ShowMonitors extends Base {
 		}
 
 		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", new Boolean(mm.isEnabled()));
+		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
@@ -115,15 +115,15 @@ public final class ShowMonitors extends Base {
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {
-		Map<String, Object> monitorMap = new HashMap<String, Object>();
+		Map<String, Object> monitorMap = new HashMap<>();
 		monitorMap.put("name", monitor.getName());
 		monitorMap.put("type", monitor.getType());
 		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
+		monitorMap.put("lastHit", monitor.getLastHit() != null ? monitor.getLastHit().toEpochMilli() : null);
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChanged());
+		monitorMap.put("changed", monitor.getStateChanged() != null ? monitor.getStateChanged().toEpochMilli() : null);
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {
@@ -142,7 +142,7 @@ public final class ShowMonitors extends Base {
 			monitorMap.put("alarm", alarm);
 		}
 
-		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
 		for(ITrigger trigger : listOfTriggers) {
 
@@ -164,7 +164,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
-		Map<String, Object> triggerMap = new HashMap<String, Object>();
+		Map<String, Object> triggerMap = new HashMap<>();
 
 		triggerMap.put("type", trigger.getTriggerType().name());
 		triggerMap.put("events", trigger.getEventCodes());
@@ -417,7 +417,7 @@ public final class ShowMonitors extends Base {
 		Severity severity = null;
 		int threshold = 0;
 		int period = 0;
-		String filter = null;
+		SourceFiltering filter = null;
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
 
@@ -440,7 +440,7 @@ public final class ShowMonitors extends Base {
 					throw new ApiException("period must be a positive number");
 				}
 			} else if(key.equalsIgnoreCase("filter")) {
-				filter = entry.getValue().toString();
+				filter = EnumUtils.parse(SourceFiltering.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
 				adapters = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
@@ -456,17 +456,18 @@ public final class ShowMonitors extends Base {
 		trigger.setPeriod(period);
 
 		trigger.clearAdapterFilters();
-		if("adapter".equals(filter)) {
-			trigger.setSourceFiltering(SourceFiltering.ADAPTER);
 
+		trigger.setSourceFiltering(filter);
+		if(filter == SourceFiltering.ADAPTER) {
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else if("source".equals(filter)) {
-			trigger.setSourceFiltering(SourceFiltering.SOURCE);
-
+		} else if(filter == SourceFiltering.SOURCE) {
+			if(sources == null) {
+				throw new ApiException("no sources specified!");
+			}
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
@@ -475,8 +476,6 @@ public final class ShowMonitors extends Base {
 				}
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else {
-			trigger.setSourceFiltering(SourceFiltering.NONE);
 		}
 	}
 
