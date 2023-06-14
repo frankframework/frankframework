@@ -64,7 +64,7 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 		eventXml.addAttribute("source", event.getEventSourceName());
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
-		eventXml.addAttribute("eventname", eventCode);
+		eventXml.addAttribute("event", eventCode);
 		if(!Message.isNull(event.getEventMessage())) {
 			try {
 				XmlBuilder messageBuilder = new XmlBuilder("message");
