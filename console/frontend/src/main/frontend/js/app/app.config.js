@@ -1,6 +1,6 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import configurationsManageDetailsStateController from "./views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
+import configurationsManageDetailsStateController from "./views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
 import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
 import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";

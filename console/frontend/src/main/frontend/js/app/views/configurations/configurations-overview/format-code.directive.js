@@ -1,4 +1,4 @@
-import { appModule } from "../../app.module";
+import { appModule } from "../../../app.module";
 
 appModule.directive('formatCode', ['$location', '$timeout', function ($location, $timeout) {
 	return {

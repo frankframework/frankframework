@@ -93,5 +93,12 @@ module.exports = {
         },
       },
     ]
-  }
+  },
+	devServer: {
+		port: 4200,
+		open: true,
+		proxy: {
+			'/*/iaf/api': 'http://localhost:8080',
+		},
+	},
 };

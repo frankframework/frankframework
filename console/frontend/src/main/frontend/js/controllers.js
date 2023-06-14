@@ -4,8 +4,8 @@ import './app/components/pages/information-modal/cookie-modal.controller';
 import './app/components/pages/information-modal/information-modal.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
-import './app/views/configuration/configurations-manage/configurations-manage.controller';
-import './app/views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details.controller';
+import './app/views/configurations/configurations-manage/configurations-manage.controller';
+import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.controller';
 import './app/views/connections/connections.controller';
 import './app/views/environment-variables/environment-variables.controller';
 import './app/views/error/error.controller';
