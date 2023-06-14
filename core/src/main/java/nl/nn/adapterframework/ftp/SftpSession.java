@@ -133,9 +133,9 @@ public class SftpSession implements IConfigurable {
 
 			Session sftpSession = jsch.getSession(credentialFactory.getUsername(), host, port);
 
-			if (StringUtils.isNotEmpty(getPassword())) {
+			if (StringUtils.isNotEmpty(credentialFactory.getPassword())) {
 				sftpSession.setConfig("PreferredAuthentications", "password");
-				sftpSession.setPassword(getPassword());
+				sftpSession.setPassword(credentialFactory.getPassword());
 			} else {
 				sftpSession.setConfig("PreferredAuthentications", "publickey");
 			}
