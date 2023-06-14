@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 
@@ -25,6 +24,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.IMonitorDestination;
@@ -161,7 +161,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertFalse(getMonitorManager().getMonitor(1).isRaised()),
 				() -> assertEquals("newName", getMonitorManager().getMonitor(1).getName()),
 				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(1).getType()),
-				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(201, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
 				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(1).getDestinationsAsString())
 			);
@@ -183,7 +183,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals("raise".equals(state), getMonitorManager().getMonitor(0).isRaised()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 	}
@@ -206,7 +206,7 @@ public class TestMonitoring extends BusTestBase {
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals("newName", getMonitorManager().getMonitor(0).getName()),
 				() -> assertEquals(EventType.TECHNICAL, getMonitorManager().getMonitor(0).getType()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload()),
 				() -> assertEquals("mockDestination", getMonitorManager().getMonitor(0).getDestinationsAsString())
 			);
@@ -225,7 +225,7 @@ public class TestMonitoring extends BusTestBase {
 		// Assert
 		assertAll(
 			() -> assertEquals(0, getMonitorManager().getMonitors().size()),
-			() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+			() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 			() -> assertEquals("no-content", response.getPayload())
 		);
 	}
@@ -281,7 +281,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
@@ -317,7 +317,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
@@ -353,7 +353,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals(1, getMonitorManager().getMonitor(0).getTriggers().size()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 
@@ -404,7 +404,7 @@ public class TestMonitoring extends BusTestBase {
 		assertAll(
 				() -> assertEquals(1, getMonitorManager().getMonitors().size()),
 				() -> assertEquals(0, getMonitorManager().getMonitor(0).getTriggers().size()),
-				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, "meta-status", 0)),
+				() -> assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0)),
 				() -> assertEquals("no-content", response.getPayload())
 			);
 	}
