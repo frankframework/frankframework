@@ -20,7 +20,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +65,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -83,15 +87,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Ensure that a proper string is returned in those cases too.
 	 */
 	@SneakyThrows
+	@Nullable
 	public String getMessageId() {
 		return getString(MESSAGE_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
 	@SneakyThrows
+	@Nullable
 	public String getCorrelationId() {
 		return getString(CORRELATION_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
+	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if(obj != null) {
@@ -136,17 +143,17 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (map == null) {
 			return;
 		}
-		if (messageId!=null) {
+		if (messageId != null) {
 			map.put(MESSAGE_ID_KEY, messageId);
 		}
-		if (correlationId!=null) {
+		if (correlationId != null) {
 			map.put(CORRELATION_ID_KEY, correlationId);
 		}
-		if (tsReceived==null) {
-			tsReceived=new Date();
+		if (tsReceived == null) {
+			tsReceived = new Date();
 		}
 		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
-		if (tsSent!=null) {
+		if (tsSent != null) {
 			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
 		}
 	}
@@ -157,9 +164,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
-		if (securityHandler==null) {
-			securityHandler=(ISecurityHandler)get(SECURITY_HANDLER_KEY);
-			if (securityHandler==null) {
+		if (securityHandler == null) {
+			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
+			if (securityHandler == null) {
 				throw new NotImplementedException("no securityhandler found in PipeLineSession");
 			}
 		}
@@ -176,11 +183,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return handler.getPrincipal(this);
 	}
 
+	@Nullable
 	private String getString(String key) {
 		try {
 			return getMessage(key).asString();
 		} catch(Exception e) {
-			return get(key).toString();
+			if (containsKey(key)) {
+				return get(key).toString();
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -211,7 +223,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
-		return this.getString(key).equalsIgnoreCase("true");
+		return "true".equalsIgnoreCase(this.getString(key));
 	}
 
 	/**
@@ -219,6 +231,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param key the referenced key
 	 * @return Boolean
 	 */
+	@Nullable
 	public Boolean getBoolean(String key) {
 		Object ob = this.get(key);
 		if (ob == null) return null;
@@ -226,7 +239,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
-		return this.getString(key).equalsIgnoreCase("true");
+		return "true".equalsIgnoreCase(this.getString(key));
 	}
 
 	/**
@@ -242,7 +255,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Integer) {
 			return (Integer) ob;
 		}
-		return Integer.parseInt(this.getString(key));
+		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
 	}
 
 	/**
@@ -258,7 +271,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Long) {
 			return (Long) ob;
 		}
-		return Long.parseLong(this.getString(key));
+		return Long.parseLong(Objects.requireNonNull(this.getString(key)));
 	}
 
 	/**
@@ -274,7 +287,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Double) {
 			return (Double) ob;
 		}
-		return Double.parseDouble(this.getString(key));
+		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {

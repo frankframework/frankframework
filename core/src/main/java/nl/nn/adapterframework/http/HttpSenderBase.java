@@ -764,8 +764,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (isXhtml() && !Message.isEmpty(result)) {
 			// TODO: Streaming XHTML conversion for better performance with large result message?
 			String xhtml;
-			try {
-				xhtml = XmlUtils.toXhtml(result);
+			try (Message m = result){
+				xhtml = XmlUtils.toXhtml(m);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
