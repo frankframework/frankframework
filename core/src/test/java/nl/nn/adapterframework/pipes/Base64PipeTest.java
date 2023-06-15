@@ -562,7 +562,7 @@ public class Base64PipeTest extends StreamingPipeTestBase<Base64Pipe> {
 
 		PipeRunResult prr;
 		try (PipeLineSession ignored = session) {
-			prr = doPipe(pipe, input, session);
+			prr = pipe.doPipe(input,session);
 		}
 		assertFalse("After Base64Pipe, input message should no longer be scheduled for close on close of session", session.isScheduledForCloseOnExit(input));
 		return prr;

@@ -8,7 +8,7 @@ import java.io.InputStream;
  * ensure that after closing of stream, all operations fail. This is to make sure that we do not, in tests, read
  * from streams in messages that have been closed.
  */
-class ThrowingAfterCloseInputStream extends InputStream {
+public class ThrowingAfterCloseInputStream extends InputStream {
 	private boolean closed = false;
 	private final InputStream delegate;
 
