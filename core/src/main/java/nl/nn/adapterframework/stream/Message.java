@@ -736,7 +736,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
-		if (context == null || context.isEmpty() || !log.isDebugEnabled()) {
+		if (context.isEmpty() || !log.isDebugEnabled()) {
 			return;
 		}
 		writer.write("context:\n");
