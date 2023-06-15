@@ -127,6 +127,9 @@ public class Misc {
 
 	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
 		Object value=from.get(key);
+		if (value == null) {
+			return;
+		}
 		Message message = Message.asMessage(value);
 		if (from instanceof PipeLineSession) {
 			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);

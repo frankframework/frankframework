@@ -376,12 +376,12 @@ public class Message implements Serializable, Closeable {
 		resourcesToClose.add(resource);
 	}
 
-	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
+	public void closeOnCloseOf(@Nonnull PipeLineSession session, INamedObject requester) {
 		closeOnCloseOf(session, ClassUtils.nameOf(requester));
 	}
 
-	public void closeOnCloseOf(PipeLineSession session, String requester) {
-		if (!(request instanceof InputStream || request instanceof Reader || request instanceof SerializableFileReference) || isScheduledForCloseOnExitOf(session)) {
+	public void closeOnCloseOf(@Nonnull PipeLineSession session, String requester) {
+		if (this.request == null || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
 		log.debug("registering Message [{}] for close on exit", this);
@@ -400,15 +400,15 @@ public class Message implements Serializable, Closeable {
 		session.scheduleCloseOnSessionExit(this, request.toString() + " requested by " + requester);
 	}
 
-	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
+	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
 		return session.isScheduledForCloseOnExit(this);
 	}
 
-	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
+	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
 	}
 
-	private void onExceptionClose(Exception e) {
+	private void onExceptionClose(@Nonnull Exception e) {
 		try {
 			close();
 		} catch (Exception e2) {

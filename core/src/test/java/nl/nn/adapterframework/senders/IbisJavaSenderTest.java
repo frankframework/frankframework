@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -96,7 +97,7 @@ public class IbisJavaSenderTest {
 		assertEquals("MESSAGE", result.getResult().asString());
 		assertTrue(pipeLineSession.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]");
 		assertEquals("parameter-value", pipeLineSession.get("my-parameter"));
-		assertTrue(pipeLineSession.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
+		assertFalse(pipeLineSession.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
 		assertNull(pipeLineSession.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]");
 	}
 

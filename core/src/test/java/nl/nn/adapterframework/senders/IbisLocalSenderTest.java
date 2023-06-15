@@ -164,7 +164,7 @@ class IbisLocalSenderTest {
 			assertEquals("parameter-value", result.getResult().asString());
 			assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]");
 			assertEquals("parameter-value", session.get("my-parameter"));
-			assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
+			assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
 			assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]");
 		}
 	}
