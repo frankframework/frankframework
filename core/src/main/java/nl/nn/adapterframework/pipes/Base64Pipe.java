@@ -129,7 +129,7 @@ public class Base64Pipe extends StreamingPipe {
 		}
 		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
 		message.unscheduleFromCloseOnExitOf(session);
-
+		result.closeOnCloseOf(session, this);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 

@@ -95,6 +95,9 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 					input.closeOnCloseOf(session, pipe);
 				}
 				prr = pipe.doPipe(input,session);
+
+				// Before session closes, unschedule result from close-on-close.
+				prr.getResult().unscheduleFromCloseOnExitOf(session);
 			}
 		}
 		assertNotNull(prr);
