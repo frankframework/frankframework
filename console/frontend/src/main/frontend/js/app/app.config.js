@@ -191,7 +191,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.configuration', {
 				url: "/configurations?name&loaded",
-				component: 'configurationsOverview',
+				component: 'configurationsShow',
 				reloadOnSearch: false,
 				data: {
 					pageTitle: 'Configurations',
@@ -204,7 +204,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.upload_configuration', {
 				url: "/configurations/upload",
-				templateUrl: "js/app/views/configurations/configurations-upload/ManageConfigurationsUpload.html",
+				component: 'configurationsUpload',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Upload',
