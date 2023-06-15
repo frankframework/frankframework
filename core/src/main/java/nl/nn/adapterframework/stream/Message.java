@@ -38,7 +38,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -84,12 +83,12 @@ public class Message implements Serializable, Closeable {
 	private Object request;
 	private @Getter String requestClass;
 
-	private @Getter Map<String, Object> context;
+	private @Getter @Nonnull MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Map<String, Object> context, Object request, Class<?> requestClass) {
+	private Message(@Nonnull MessageContext context, Object request, Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -97,46 +96,46 @@ public class Message implements Serializable, Closeable {
 		} else {
 			this.request = request;
 		}
-		this.context = context != null ? context : new MessageContext();
+		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 
-	private Message(Map<String, Object> context, Object request) {
+	private Message(@Nonnull MessageContext context, Object request) {
 		this(context, request, request != null ? request.getClass() : null);
 	}
 
-	public Message(String request, Map<String, Object> context) {
+	public Message(String request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(String request) {
-		this(request, null);
+		this(new MessageContext(), request);
 	}
 
 	public Message(byte[] request, String charset) {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(byte[] request, Map<String, Object> context) {
+	public Message(byte[] request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(byte[] request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
-	public Message(Reader request, Map<String, Object> context) {
+	public Message(Reader request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(Reader request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream, Exception> request, Map<String, Object> context, Class<?> requestClass) {
+	protected Message(ThrowingSupplier<InputStream, Exception> request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -147,7 +146,7 @@ public class Message implements Serializable, Closeable {
 	 * @param context {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
-	protected Message(SerializableFileReference request, MessageContext context, Class<?> requestClass) {
+	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -155,27 +154,27 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(InputStream request, Map<String, Object> context) {
+	public Message(InputStream request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(InputStream request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
-	public Message(Node request, Map<String, Object> context) {
+	public Message(Node request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(Node request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
 	public static Message nullMessage() {
-		return nullMessage(null);
+		return nullMessage(new MessageContext());
 	}
 
-	public static Message nullMessage(MessageContext context) {
+	public static Message nullMessage(@Nonnull MessageContext context) {
 		return new Message(context, null, null);
 	}
 
@@ -737,7 +736,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void toStringPrefix(Writer writer) throws IOException {
-		if (context == null || context.isEmpty() || !log.isDebugEnabled()) {
+		if (context.isEmpty() || !log.isDebugEnabled()) {
 			return;
 		}
 		writer.write("context:\n");
@@ -806,7 +805,7 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
 		}
-		return new Message(null, object);
+		return new Message(new MessageContext(), object);
 	}
 
 	public static InputSource asInputSource(Object object) throws IOException {
