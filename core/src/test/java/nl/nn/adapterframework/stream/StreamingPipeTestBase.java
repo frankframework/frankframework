@@ -80,20 +80,10 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 				throw new PipeRunException(pipe,"cannot convert input",e);
 			}
 		} else {
-//			if (classic) {
-				prr = pipe.doPipe(input,session);
-//			} else {
-//				prr = pipe.doPipe(input, session, nextPipe);
-//			}
+			prr = pipe.doPipe(input,session);
 		}
 		assertNotNull(prr);
 		assertNotNull(prr.getPipeForward());
-//		if (capProvider!=null) {
-//			Object capResult = capProvider.getCap().getPipeRunResult().getResult().asObject();
-//			assertNotNull("target outputstream has not been written to", capResult);
-//			assertEquals("PipeResult must be equal to result of cap", capResult, prr.getResult().asObject());
-//			assertEquals(1,capProvider.getCap().getCloseCount());
-//		}
 		return prr;
 	}
 
