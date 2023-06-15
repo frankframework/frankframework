@@ -49,15 +49,15 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	}
 
 	public int size() {
-		return getWarnings().size();
+		return warnings.size();
 	}
 
 	public String get(int i) {
-		return getWarnings().get(i);
+		return warnings.get(i);
 	}
 
 	public boolean isEmpty() {
-		return getWarnings().isEmpty();
+		return warnings.isEmpty();
 	}
 
 	@Override
