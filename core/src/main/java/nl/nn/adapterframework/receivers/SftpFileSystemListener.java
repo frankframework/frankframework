@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.monitoring;
+package nl.nn.adapterframework.receivers;
 
-/**
- * Interface exposed to objects to be monitored, to throw their events to; To be implemented by code that handles event.
- *  
- * @author  Gerrit van Brakel
- * @since   4.9
- */
-public interface EventHandler {
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.SftpFileSystem;
+import nl.nn.adapterframework.ftp.SftpFileRef;
+import nl.nn.adapterframework.ftp.SftpFileSystemDelegator;
 
-	public void registerEvent(EventThrowing source, String eventCode);
-	public void fireEvent(EventThrowing source, String eventCode);
+public class SftpFileSystemListener extends FileSystemListener<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
+
+	@Override
+	public SftpFileSystem createFileSystem() {
+		return SftpFileSystemDelegator.super.createFileSystem();
+	}
 
 }

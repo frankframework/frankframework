@@ -41,7 +41,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.extensions.ifsa.jms.IfsaFacade;
-import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
+import nl.nn.adapterframework.extensions.ifsa.jms.IfsaListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -202,7 +202,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		String BIF = (String)session.get(getBifNameSessionKey());
 		if (StringUtils.isEmpty(BIF)) {
-			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+			BIF=(String)session.get(IfsaListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
 		try {
 			return new SenderResult(sendMessage(message.asString(), params, BIF,null));

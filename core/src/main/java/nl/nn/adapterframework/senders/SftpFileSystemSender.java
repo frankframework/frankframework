@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.compression;
+package nl.nn.adapterframework.senders;
 
-import nl.nn.adapterframework.collection.ICollectingElement;
-import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.filesystem.SftpFileSystem;
+import nl.nn.adapterframework.ftp.SftpFileRef;
+import nl.nn.adapterframework.ftp.SftpFileSystemDelegator;
 
-public interface IZipWritingElement extends ICollectingElement<ZipWriter>, IConfigurable {
+public class SftpFileSystemSender extends FileSystemSender<SftpFileRef, SftpFileSystem> implements SftpFileSystemDelegator {
 
-	String getCharset();
-	boolean isCompleteFileHeader();
-	boolean isCloseInputstreamOnExit();
-	boolean isCloseOutputstreamOnExit();
-
+	public SftpFileSystemSender() {
+		setFileSystem(new SftpFileSystem());
+	}
 }

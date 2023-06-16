@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsListener;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import java.util.Map;
+
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.jms.JmsListener;
 
 /**
  * Extension of JmsListener which only stores IFSA variables with their value to simulate IFSA.
@@ -31,28 +32,27 @@ import java.util.Map;
 public class IfsaSimulatorJmsListener extends JmsListener {
 
 	@Override
-    protected String retrieveIdFromMessage(Message message, Map threadContext) throws ListenerException {
-		String cid = super.retrieveIdFromMessage(message, threadContext);
+	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 
 		String ifsa_bif_id = null;
 		String ifsa_source = null;
 		String ifsa_node_id = null;
 		String ifsa_destination = null;
 		try{
-			ifsa_bif_id = message.getStringProperty("ifsa_bif_id");
-			ifsa_source = message.getStringProperty("ifsa_source");
-			ifsa_node_id = message.getStringProperty("ifsa_node_id");
-			ifsa_destination = message.getStringProperty("ifsa_destination");
+			ifsa_bif_id = rawMessage.getStringProperty("ifsa_bif_id");
+			ifsa_source = rawMessage.getStringProperty("ifsa_source");
+			ifsa_node_id = rawMessage.getStringProperty("ifsa_node_id");
+			ifsa_destination = rawMessage.getStringProperty("ifsa_destination");
 		} catch (JMSException ignore) {
 			log.debug("error getting IFSA jms properties", ignore);
 		}
 
-		threadContext.put("ifsa_bif_id",ifsa_bif_id);
-		threadContext.put("ifsa_source",ifsa_source);
-		threadContext.put("ifsa_node_id",ifsa_node_id);
-		threadContext.put("ifsa_destination",ifsa_destination);
-
-		return cid;
+		messageProperties.put("ifsa_bif_id",ifsa_bif_id);
+		messageProperties.put("ifsa_source",ifsa_source);
+		messageProperties.put("ifsa_node_id",ifsa_node_id);
+		messageProperties.put("ifsa_destination",ifsa_destination);
+		return messageProperties;
 	}
 
 }

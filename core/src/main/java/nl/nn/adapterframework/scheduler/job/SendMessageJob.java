@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -28,6 +27,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 public class SendMessageJob extends JobDef {
 	private IbisLocalSender localSender = null;
@@ -61,7 +61,7 @@ public class SendMessageJob extends JobDef {
 			Message message = new Message((getMessage()==null) ? "" : getMessage());
 			PipeLineSession session = new PipeLineSession();
 			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
-			session.put(PipeLineSession.correlationIdKey, UUIDUtil.createSimpleUUID());
+			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
 			localSender.sendMessageOrThrow(message, session);
 		}
 		catch (SenderException e) {

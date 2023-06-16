@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
 
 /**
- * The <code>ITransactionalStorage</code> is responsible for storing and 
+ * The <code>ITransactionalStorage</code> is responsible for storing and
  * retrieving-back messages under transaction control.
  * @see nl.nn.adapterframework.receivers.Receiver
  * @author  Gerrit van Brakel
@@ -47,7 +47,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 
 	/**
 	 * Store the message, returns storageKey.
-	 * 
+	 *
 	 * The messageId should be unique.
 	 */
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;

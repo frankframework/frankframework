@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -35,10 +35,12 @@ import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -102,21 +104,21 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
-		String id = super.retrieveIdFromMessage(message, threadContext);
+	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
-				propertyNames = message.getPropertyNames();
+				propertyNames = rawMessage.getPropertyNames();
 			} catch (JMSException e) {
 				log.debug("ignoring JMSException in getPropertyName()", e);
 			}
-			while (propertyNames.hasMoreElements()) {
+			while (propertyNames != null && propertyNames.hasMoreElements()) {
 				String propertyName = (String) propertyNames.nextElement ();
 				if (propertyName.startsWith("ae_")) {
 					try {
-						Object object = message.getObjectProperty(propertyName);
-						threadContext.put(propertyName, object);
+						Object object = rawMessage.getObjectProperty(propertyName);
+						messageProperties.put(propertyName, object);
 					} catch (JMSException e) {
 						log.debug("ignoring JMSException in getObjectProperty()", e);
 					}
@@ -125,53 +127,49 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 
 		try {
-			TextMessage textMessage = (TextMessage) message;
+			TextMessage textMessage = (TextMessage) rawMessage;
 			String soapMessage = textMessage.getText();
 
-			if(getxPathLogMap().size() > 0) {
-				String xPathLogKeys = "";
-				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
-				while(it.hasNext()) {
-					Map.Entry<String, String> pair = it.next();
-					String sessionKey = pair.getKey();
-					String xPath = pair.getValue();
-					String result = getResultFromxPath(soapMessage, xPath);
-					if(result.length() > 0) {
-						threadContext.put(sessionKey, result);
-						xPathLogKeys = xPathLogKeys + "," + sessionKey; // Only pass items that have been found, otherwise logs will clutter with NULL.
-					}
+			if(!getxPathLogMap().isEmpty()) {
+				StringBuilder xPathLogKeys = new StringBuilder();
+				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+				String sessionKey = pair.getKey();
+				String xPath = pair.getValue();
+				String result = getResultFromxPath(soapMessage, xPath);
+				if (!result.isEmpty()) {
+					messageProperties.put(sessionKey, result);
+					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
 				}
-				threadContext.put("xPathLogKeys", xPathLogKeys);
+			}
+				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);
 		}
-		return id;
+		return messageProperties;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
 		String found = "";
-		if(message != null && message.length() > 0) {
-			if(XmlUtils.isWellFormed(message)) {
-				try {
-					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
-					found = test.transform(message, null);
+		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
+			try {
+				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), 0);
+				found = test.transform(message, null);
 
-					//xPath not found and message length is 0 but not null nor ""
-					if(found.length() == 0) found = "";
-				} catch (Exception e) {
-					log.debug("could not evaluate xpath expression",e);
-				}
+				//xPath not found and message length is 0 but not null nor ""
+				if(found.isEmpty()) found = "";
+			} catch (Exception e) {
+				log.debug("could not evaluate xpath expression",e);
 			}
 		}
 		return found;
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessage, pipeLineSession);
 		if (getMessageProtocol() == MessageProtocol.RR) {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {
 				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
 			}

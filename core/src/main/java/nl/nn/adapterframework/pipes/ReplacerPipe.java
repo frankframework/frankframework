@@ -60,8 +60,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 			}
 			log.info("finds [{}] replaces with [{}]", getFind(), getReplace());
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
-				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
-				replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
+				find = find != null ? find.replace(lineSeparatorSymbol, System.getProperty("line.separator")) : null;
+				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.getProperty("line.separator")) : null;
 			}
 		}
 		if (isReplaceNonXmlChars()) {
@@ -73,28 +73,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected static String replace(String target, String from, String to) {
-		// target is the original string
-		// from   is the string to be replaced
-		// to     is the string which will used to replace
-		if (target == null) return target;
-		int start = target.indexOf(from);
-		if (start == -1)
-			return target;
-		int lf = from.length();
-		char[] targetChars = target.toCharArray();
-		StringBuffer buffer = new StringBuffer();
-		int copyFrom = 0;
-		while (start != -1) {
-			buffer.append(targetChars, copyFrom, start - copyFrom);
-			buffer.append(to);
-			copyFrom = start + lf;
-			start = target.indexOf(from, copyFrom);
-		}
-		buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
-		return buffer.toString();
-	}
-
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String input;
@@ -103,8 +81,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
+		if (StringUtils.isEmpty(input)) {
+			return new PipeRunResult(getSuccessForward(), input);
+		}
+
 		if (StringUtils.isNotEmpty(getFind())) {
-			input = replace(input,getFind(),getReplace());
+			input = input.replace(getFind(), getReplace());
 		}
 		if (isReplaceNonXmlChars()) {
 			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
@@ -184,4 +166,3 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 }
-

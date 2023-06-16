@@ -46,7 +46,7 @@ public class MatchUtils {
 	}
 
 	public static String mapToString(Map<String,String> map) {
-		StringBuffer buf=new StringBuffer();
+		StringBuilder buf=new StringBuilder();
 		for (String key:map.keySet()) {
 			buf.append(key).append('=');
 			if (map.containsKey(key)) {

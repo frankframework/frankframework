@@ -21,13 +21,15 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
@@ -162,9 +164,9 @@ public abstract class MessageUtils {
 			}
 			return null;
 		} finally {
-			Map<String, Object> context = message.getContext();
+			MessageContext context = message.getContext();
 			if(context != null) {
-				context.put(MessageContext.METADATA_CHARSET, charsetName);
+				context.withCharset(charsetName);
 			}
 		}
 	}
@@ -190,7 +192,7 @@ public abstract class MessageUtils {
 	}
 
 	public static boolean isMimeType(Message message, MimeType compareTo) {
-		Map<String, Object> context = message.getContext();
+		MessageContext context = message.getContext();
 		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 		return (mimeType != null && mimeType.includes(compareTo));
 	}
@@ -214,7 +216,7 @@ public abstract class MessageUtils {
 			return null;
 		}
 
-		Map<String, Object> context = message.getContext();
+		MessageContext context = message.getContext();
 		MimeType mimeType = getMimeType(message);
 		if(mimeType != null) {
 			return mimeType;
@@ -236,7 +238,7 @@ public abstract class MessageUtils {
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			mimeType = MimeType.valueOf(tikaMediaType.toString());
-			context.put(MessageContext.METADATA_MIMETYPE, mimeType);
+			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
 				if(charset != null) {
@@ -246,10 +248,8 @@ public abstract class MessageUtils {
 			return mimeType;
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
+			return null;
 		}
-
-		LOG.info("unable to determine mimetype");
-		return null;
 	}
 
 	/**
@@ -257,13 +257,68 @@ public abstract class MessageUtils {
 	 */
 	public static String generateMD5Hash(Message message) {
 		try {
-			message.preserve();
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
 			try (InputStream inputStream = message.asInputStream()) {
 				return DigestUtils.md5DigestAsHex(inputStream);
 			}
 		} catch (IllegalStateException | IOException e) {
-			LOG.warn("unable to read Message or write the etag", e);
+			LOG.warn("unable to read Message or write the MD5 hash", e);
+			return null;
 		}
-		return null;
+	}
+
+	/**
+	 * Resource intensive operation, preserves the message and calculates an CRC32 checksum over the entire message.
+	 */
+	public static Long generateCRC32(Message message) {
+		try {
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
+			CRC32 checksum = new CRC32();
+			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
+				long size = IOUtils.consume(inputStream);
+				message.getContext().withSize(size);
+			}
+			return checksum.getValue();
+		} catch (IOException e) {
+			LOG.warn("unable to read Message", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Resource intensive operation, calculates the binary size of a Message.
+	 */
+	public static long computeSize(Message message) {
+		try {
+			long size = message.size();
+			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+				return size;
+			}
+
+			if(!message.isRepeatable()) {
+				message.preserve();
+			}
+
+			// Preserving the message might make reading the size known. If so, there is no need to compute it.
+			size = message.size();
+			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+				return size;
+			}
+
+			try (InputStream inputStream = message.asInputStream()) {
+				long computedSize = IOUtils.consume(inputStream);
+				message.getContext().withSize(computedSize);
+				return computedSize;
+			}
+		} catch (IOException e) {
+			LOG.warn("unable to read Message", e);
+			return Message.MESSAGE_SIZE_UNKNOWN;
+		}
 	}
 }

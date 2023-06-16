@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- * 
+ *
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
@@ -160,9 +160,9 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets header of mail object if header exists
-	 * @param mail 
-	 * @param personalization 
-	 * @param headers 
+	 * @param mail {@link Mail} address to send to
+	 * @param personalization {@link Personalization} options of the mail
+	 * @param headers Mail headers, as {@link Collection<Node>}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
 		if (headers != null && !headers.isEmpty()) {
@@ -236,10 +236,10 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	/**
-	 * Sets recipients, sender and replyto to mail object 
+	 * Sets recipients, sender and replyto to mail object
 	 */
 	private void setEmailAddresses(Mail mail, GridMailSession gridMailSession, EMail from, EMail replyTo) throws SenderException {
-		gridMailSession.setRecipientsOnMessage(new StringBuffer());
+		gridMailSession.setRecipientsOnMessage(new StringBuilder());
 
 		Email fromEmail = new Email();
 		if (from != null && from.getAddress() != null && !from.getAddress().isEmpty()) {

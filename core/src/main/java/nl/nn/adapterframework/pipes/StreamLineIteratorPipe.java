@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PeekableDataIterator;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ReaderLineIterator;
@@ -57,7 +57,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	@Override
 	protected String getItem(IDataIterator<String> it) throws SenderException {
-		StringBuffer item = new StringBuffer(it.next());
+		StringBuilder item = new StringBuilder(it.next());
 		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
 			String peeked = ((PeekableDataIterator<String>)it).peek();
 			while (peeked!=null &&

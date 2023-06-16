@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,11 +88,11 @@ public class Afm2EdiFactSender implements ISender {
 		}
 	}
 
-	private void appendArray(char[] aArray, StringBuffer aRes) {
+	private void appendArray(char[] aArray, StringBuilder aRes) {
 		String aStr = new String(aArray);
 		appendString(aStr, aRes);
 	}
-	private void appendString(String aStr, StringBuffer aRes) {
+	private void appendString(String aStr, StringBuilder aRes) {
 		if (aStr != null) {
 			String lHlpStr = aStr.trim();  //TODO: checken of dit wel klopt, stond zo in originele EvdW-code
 			if (aStr.length() > 1) {
@@ -125,7 +125,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
-	private void closeList(StringBuffer aRes, int regelTeller) {
+	private void closeList(StringBuilder aRes, int regelTeller) {
 		// UNT
 		char untRegel[] = new char[21];
 		for (int i = 0; i < 21; i++)
@@ -148,7 +148,7 @@ public class Afm2EdiFactSender implements ISender {
 			Node lHlpNode = tpNr.item(0);
 			setTpnummer(getWaardeForNode(lHlpNode));
 		}
-		StringBuffer resultaat = new StringBuffer();
+		StringBuilder resultaat = new StringBuilder();
 		//start
 		this.appendArray(getInitResultaat(), resultaat);
 		//docs
@@ -236,7 +236,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
-	private StringBuffer HandleList(NodeList aList, StringBuffer aRes) {
+	private StringBuilder HandleList(NodeList aList, StringBuilder aRes) {
 		if (aList != null) {
 			if (aList.getLength() > 0) {
 				for (int i = 0; i <= aList.getLength() - 1; i++) {
@@ -251,7 +251,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return aRes;
 	}
-	private int HandleSubList(NodeList aList, StringBuffer aRes, int regelTeller) {
+	private int HandleSubList(NodeList aList, StringBuilder aRes, int regelTeller) {
 		String lHlp = "";
 		if (aList != null) {
 			for (int i = 0; i <= aList.getLength() - 1; i++) {

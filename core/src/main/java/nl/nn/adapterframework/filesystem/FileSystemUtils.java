@@ -25,7 +25,8 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import nl.nn.adapterframework.util.UUIDUtil;
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
 public class FileSystemUtils {
@@ -274,12 +276,10 @@ public class FileSystemUtils {
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
-			Iterator<F> it = ds.iterator();
-			while(it.hasNext()) {
-				F f=it.next();
-				String filename=fileSystem.getName(f);
-				if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
-					if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"]");
+			for (F f : ds) {
+				String filename = fileSystem.getName(f);
+				if (filename != null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime() < threshold) {
+					if (log.isDebugEnabled()) log.debug("deleting file [" + filename + "]");
 					fileSystem.deleteFile(f);
 				}
 			}
@@ -288,15 +288,13 @@ public class FileSystemUtils {
 		}
 	}
 
+	@Nonnull
 	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
 		DirectoryStream<F> ds = fileSystem.listFiles(folder);
 		if (ds==null) {
-			return null;
+			return Stream.empty();
 		}
 		Iterator<F> it = ds.iterator();
-		if (it==null) {
-			return null;
-		}
 
 		WildCardFilter wildcardfilter =  StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);
 		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);

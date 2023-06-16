@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,21 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.doc;
 
-import java.util.Map;
+import static java.lang.annotation.ElementType.TYPE;
 
-import nl.nn.adapterframework.stream.Message;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Target;
 
-/**
- * Interface for message wrappers.
- * 
- * @author  Gerrit van Brakel
- * @since   4.7
- */
-public interface IMessageWrapper {
-
-	public Map<String,Object> getContext();
-	public String getId();
-	public Message getMessage();
+@Target(TYPE)
+@Documented
+public @interface ExcludeFromType {
+	public Class<?>[] value();
 }

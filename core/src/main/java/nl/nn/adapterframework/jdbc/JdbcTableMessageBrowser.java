@@ -25,6 +25,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -97,11 +98,12 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws JdbcException, SQLException {
+	protected RawMessageWrapper<M> retrieveObject(ResultSet rs, int columnIndex) throws JdbcException, SQLException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
-		return (M)rs.getString(columnIndex);
+		// TODO: Fix the types used in MessageBrowsers
+		return (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex));
 	}
 
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {

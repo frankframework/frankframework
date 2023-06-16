@@ -75,7 +75,7 @@ public class PipeLineSessionTest {
 		Date tsSent = cal2.getTime();
 
 		//Should set the value as a String
-		PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+		PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
 
 		assertEquals(tsReceived, session.getTsReceived());
 		assertEquals(tsSent, session.getTsSent());
@@ -159,10 +159,10 @@ public class PipeLineSessionTest {
 	public void ladybugStubMessageIDTest() {
 		String messageId = "I am a messageID!";
 
-		session.put(PipeLineSession.messageIdKey, messageId); //key inserted as String
+		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId); //key inserted as String
 		assertEquals(messageId, session.getMessageId());
 
-		session.put(PipeLineSession.messageIdKey, Message.asMessage(messageId)); //key inserted as Message
+		session.put(PipeLineSession.MESSAGE_ID_KEY, Message.asMessage(messageId)); //key inserted as Message
 		assertEquals(messageId, session.getMessageId());
 	}
 
@@ -170,10 +170,10 @@ public class PipeLineSessionTest {
 	public void ladybugStubCorrelationIDTest() {
 		String correlationId = "I am something else";
 
-		session.put(PipeLineSession.correlationIdKey, correlationId); //key inserted as String
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId); //key inserted as String
 		assertEquals(correlationId, session.getCorrelationId());
 
-		session.put(PipeLineSession.correlationIdKey, Message.asMessage(correlationId)); //key inserted as Message
+		session.put(PipeLineSession.CORRELATION_ID_KEY, Message.asMessage(correlationId)); //key inserted as Message
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 }

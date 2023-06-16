@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2022 WeAreFrank!
+   Copyright 2019, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -457,7 +457,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		this.timeout = timeout;
 	}
 
-	/** 
+	/**
 	 * When this name is used, it will be followed by a number which is equal to the node's position
 	 * @ff.default attachment
 	 */
@@ -515,7 +515,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			from = new EMail(getDefaultFrom(),"from");
 		}
 
-		public void setRecipientsOnMessage(StringBuffer logBuffer) throws SenderException {
+		public void setRecipientsOnMessage(StringBuilder logBuffer) throws SenderException {
 			boolean recipientsFound = false;
 			List<EMail> emailList = getRecipientList();
 			for (EMail recipient : emailList) {

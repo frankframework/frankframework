@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.queues.Queue;
@@ -99,7 +100,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger logger = LogUtil.getLogger(TestTool.class);
+	private static final Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
@@ -114,7 +115,7 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	private static AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -152,6 +153,7 @@ public class TestTool {
 			try {
 				timeout = Integer.parseInt(paramGlobalTimeout);
 			} catch(NumberFormatException e) {
+				// Ignore error, use default
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
@@ -175,7 +177,7 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
-		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
+		if (paramLogLevel != null && LOG_LEVEL_ORDER.contains("[" + paramLogLevel + "]")) {
 			logLevel = paramLogLevel;
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
@@ -192,8 +194,8 @@ public class TestTool {
 			writers.put("autoscroll", autoScroll);
 			writers.put("usehtmlbuffer", "false");
 			writers.put("uselogbuffer", "true");
-			writers.put("messagecounter", new Integer(0));
-			writers.put("scenariocounter", new Integer(1));
+			writers.put("messagecounter", 0);
+			writers.put("scenariocounter", 1);
 		} else {
 			silentOut = out;
 		}
@@ -204,15 +206,17 @@ public class TestTool {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
 		debugMessage("Initialize scenarios root directories", writers);
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		List<String> scenariosRootDirectories = new ArrayList<>();
+		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
 				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
-		if (scenariosRootDirectories.size() == 0) {
+		if (scenariosRootDirectories.isEmpty()) {
 			debugMessage("Stop logging to logbuffer", writers);
-			writers.put("uselogbuffer", "stop");
+			if (writers != null) {
+				writers.put("uselogbuffer", "stop");
+			}
 			errorMessage("No scenarios root directories found", writers);
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
@@ -225,6 +229,7 @@ public class TestTool {
 			try {
 				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
 			} catch(NumberFormatException e) {
+				// Ignore the error, use default
 			}
 		}
 
@@ -311,7 +316,7 @@ public class TestTool {
 											writeHtml("<div class='odd'>", writers, false);
 											evenStep = true;
 										}
-										String step = (String)iterator.next();
+										String step = iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
 										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
@@ -1212,21 +1217,19 @@ public class TestTool {
 		boolean remainingMessagesFound = false;
 		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-				JmsSender jmsSender = (JmsSender)((Map<?, ?>)queues.get(queueName)).get("jmsSender");
+				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
 				jmsSender.close();
 				debugMessage("Closed jms sender '" + queueName + "'", writers);
 			}
 		}
 		debugMessage("Close jms listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map<?, ?>)queues.get(queueName)).get("jmsListener");
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
 				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					remainingMessagesFound = true;
 				}
@@ -1235,11 +1238,10 @@ public class TestTool {
 			}
 		}
 		debugMessage("Close jdbc connections", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String name = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String name = entry.getKey();
 			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
-				Map<?, ?> querySendersInfo = (Map<?, ?>)queues.get(name);
+				Queue querySendersInfo = entry.getValue();
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
 					try {
@@ -1250,7 +1252,7 @@ public class TestTool {
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
-						session.put(PipeLineSession.correlationIdKey, correlationId);
+						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 
@@ -1340,8 +1342,8 @@ public class TestTool {
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
 		while (!empty) {
-			javax.jms.Message rawMessage = null;
-			Message message = null;
+			RawMessageWrapper<javax.jms.Message> rawMessage = null;
+			Message message;
 			Map<String, Object> threadContext = null;
 			try {
 				threadContext = pullingJmsListener.openThread();
@@ -1436,16 +1438,16 @@ public class TestTool {
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map jmsListenerInfo = (Map)queues.get(queueName);
+		Map<String, Object> jmsListenerInfo = queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
-		Map threadContext = null;
+		Map<String, Object> threadContext = null;
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			javax.jms.Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
-				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
+				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.
 				jmsListenerInfo.put("correlationId", correlationId);
 			}
 		} catch(ListenerException e) {
@@ -1514,18 +1516,19 @@ public class TestTool {
 	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
-		Map listenerInfo = (Map)queues.get(queueName);
+		Map listenerInfo = queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = null;
-			Long timeout = Long.parseLong(""+parameterTimeout);
+			ListenerMessage listenerMessage;
+			Long timeout;
 			try {
 				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
 				debugMessage("Timeout set to '" + timeout + "'", writers);
 			} catch (Exception e) {
+				timeout = (long)parameterTimeout;
 			}
 			try {
 				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
@@ -1566,7 +1569,7 @@ public class TestTool {
 	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map querySendersInfo = (Map)queues.get(queueName);
+		Map querySendersInfo = queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
 		if (waitBeforeRead != null) {
@@ -1582,7 +1585,7 @@ public class TestTool {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
 				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.correlationIdKey, correlationId);
+				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
@@ -1603,7 +1606,7 @@ public class TestTool {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
 				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.correlationIdKey, correlationId);
+				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -1720,7 +1723,7 @@ public class TestTool {
 		if (encoding != null) {
 			Reader inputStreamReader = null;
 			try {
-				StringBuffer stringBuffer = new StringBuffer();
+				StringBuilder stringBuffer = new StringBuilder();
 				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
@@ -2174,7 +2177,7 @@ public class TestTool {
 				if (unzipped == null) {
 					try {
 						debugMessage("Unzip", writers);
-						StringBuffer stringBuffer = new StringBuffer();
+						StringBuilder stringBuffer = new StringBuilder();
 						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
 						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
 						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
@@ -2562,7 +2565,7 @@ public class TestTool {
 	}
 
 	public static String formatString(String string, Map<String, Object> writers) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);

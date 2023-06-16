@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -527,7 +528,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try {
 			IDbmsSupport dbmsSupport=getDbmsSupport();
 			if (log.isDebugEnabled()) {
-				log.debug("preparing insert statement ["+insertQuery+"]");
+				log.debug("preparing insert statement [{}]", insertQuery);
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
@@ -596,9 +597,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
 				String resultString = createResultString(isMessageDifferent);
-				log.warn("MessageID [" + messageId + "] already exists");
+				log.warn("MessageID [{}] already exists", messageId);
 				if (isMessageDifferent) {
-					log.warn("Message with MessageID [" + messageId + "] is not equal");
+					log.warn("Message with MessageID [{}] is not equal", messageId);
 				}
 				return resultString;
 			}
@@ -678,11 +679,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			try (ResultSet rs = stmt.executeQuery()) {
 				// if rs.next() needed as you can not simply call rs.
 				if (rs.next()) {
-					String dataBaseMessage = retrieveObject(rs, 1).toString();
+					String dataBaseMessage = retrieveObject(rs, 1).getRawMessage().toString();
 					String inputMessage = message.toString();
-					if (dataBaseMessage.equals(inputMessage)) {
-						return false;
-					}
+					return !dataBaseMessage.equals(inputMessage);
 				}
 				return true;
 			}
@@ -779,23 +778,25 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-
-
-
-	private S retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	@SuppressWarnings("unchecked")
+	private RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream==null) {
 				return null;
 			}
 			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
-				return (S)ois.readObject();
+				Object s = ois.readObject();
+				if (s instanceof RawMessageWrapper<?>) {
+					return (RawMessageWrapper<S>) s;
+				}
+				return new RawMessageWrapper<>((S)s);
 			}
 		}
 	}
 
 
 	@Override
-	protected S retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
+	protected RawMessageWrapper<S> retrieveObject(ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {

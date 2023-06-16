@@ -481,13 +481,13 @@ public class FileUtils {
 
 	public static List<String> getListFromNames(String[] names) {
 		if (names == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		return Arrays.asList(names);
 	}
 
 	public static String getNamesFromArray(String[] names, char seperator) {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
 			if (result.length() > 0)
@@ -501,7 +501,7 @@ public class FileUtils {
 		if (filenames == null)
 			return "";
 
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
 			String name = (String)nameIterator.next();
 			if (result.length() > 0)
@@ -515,12 +515,12 @@ public class FileUtils {
 	 * methods to create a fixed length string from a value
 	 */
 	public static String align(String val, int length, boolean leftAlign, char fillchar) {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		align(result, val, length, leftAlign, fillchar);
 		return result.toString();
 	}
 
-	public static void align(StringBuffer result, String val, int length, boolean leftAlign, char fillchar) {
+	public static void align(StringBuilder result, String val, int length, boolean leftAlign, char fillchar) {
 		if (val.length() > length) {
 			result.append(val.substring(0, length));
 		} else if (val.length() == length) {
@@ -602,7 +602,7 @@ public class FileUtils {
 
 	static public String encodeFileName(String fileName) {
 		String mark = "-_.+=";
-		StringBuffer encodedFileName = new StringBuffer();
+		StringBuilder encodedFileName = new StringBuilder();
 		int len = fileName.length();
 		for (int i = 0; i < len; i++) {
 			char c = fileName.charAt(i);

@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function ($scope, Api, Misc) {
+appModule.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', '$rootScope', function ($scope, Api, Misc, $rootScope) {
 	$scope.form = {};
 	$scope.file = null;
 
@@ -13,11 +13,14 @@ appModule.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function (
 			}
 		}
 	}
-	findFirstAvailabeConfiguration();
-	$scope.$on('configurations', findFirstAvailabeConfiguration);
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; findFirstAvailabeConfiguration(); });
 
 	$scope.download = function () {
 		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/");
+	};
+
+	$scope.updateFile = function (file) {
+		$scope.file = file;
 	};
 
 	$scope.generateSql = false;

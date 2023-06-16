@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
 import org.junit.Before;
@@ -12,19 +13,20 @@ import org.junit.Before;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
+import nl.nn.adapterframework.util.FilenameUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
-	private String username = "";
-	private String password = "";
-	private String host = "";
-	private String remoteDirectory = "";
-	private int port = 21;
-	
-	private FtpSession ftpSession;
-	
-	public FtpFileSystemTestHelper(String username, String password, String host, String remoteDirectory,
-			int port) {
+	private final String username;
+	private final String password;
+	private final String host;
+	private final int port;
+	private final String remoteDirectory;
+
+	private FTPClient ftpClient;
+
+	public FtpFileSystemTestHelper(String username, String password, String host, String remoteDirectory, int port) {
 		this.username = username;
 		this.password = password;
 		this.host = host;
@@ -42,30 +44,30 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	@After
 	public void tearDown() throws Exception {
-		ftpSession.closeClient();
-		ftpSession = null;
+		FtpSession.close(ftpClient);
 	}
 
 	private void cleanFolder() {
 		try {
-			FTPFile[] files = ftpSession.ftpClient.listFiles();
+			FTPFile[] files = ftpClient.listFiles();
 			for (FTPFile o : files) {
 				if (o.isDirectory() && !o.getName().equals(".") && !o.getName().equals("..")) {
-					FTPFile[] filesInFolder = ftpSession.ftpClient.listFiles(o.getName());
+					FTPFile[] filesInFolder = ftpClient.listFiles(o.getName());
 					for (FTPFile ftpFile : filesInFolder) {
-						ftpSession.ftpClient.deleteFile(o.getName()+"/"+ftpFile.getName());
+						ftpClient.deleteFile(o.getName()+"/"+ftpFile.getName());
 					}
-					ftpSession.ftpClient.removeDirectory(o.getName());
+					ftpClient.removeDirectory(o.getName());
 				} else {
-					ftpSession.ftpClient.deleteFile(o.getName());
+					ftpClient.deleteFile(o.getName());
 				}
 			}
 		} catch (IOException e) {
-			System.err.println(e);
+			LogUtil.getLogger(this).error("unable to clean folder", e);
 		}
 	}
+
 	private void open() throws FileSystemException, ConfigurationException {
-		ftpSession = new FtpSession(); 
+		FtpSession ftpSession = new FtpSession();
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
 		ftpSession.setHost(host);
@@ -73,27 +75,33 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.configure();
 
 		try {
-			ftpSession.openClient(remoteDirectory);
+			ftpClient = ftpSession.openClient(remoteDirectory);
 		} catch (FtpConnectException e) {
 			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
 		}
 	}
+
 	@Override
 	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
 		try {
 			String path = folder != null ? folder + "/" + filename : filename;
-			FTPFile[] files = ftpSession.ftpClient.listFiles(path, f -> f.getName().equals(filename));
+			FTPFile[] files = ftpClient.listFiles(path, f -> fileNameFilter(f, filename));
 			return files.length > 0;
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
+	// FTPFile might return a name with folder prefix.
+	private static boolean fileNameFilter(FTPFile file, String match) {
+		return FilenameUtils.getName(file.getName()).equals(match);
+	}
+
 	@Override
 	public void _deleteFile(String folder, String filename) throws FileSystemException {
 		try {
 			String path = folder != null ? folder + "/" + filename : filename;
-			ftpSession.ftpClient.deleteFile(path);
+			ftpClient.deleteFile(path);
 		} catch (IOException e) {
 			throw new FileSystemException("", e);
 		}
@@ -104,7 +112,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 			@Override
 			public void close() throws IOException {
 				super.close();
-				ftpSession.ftpClient.completePendingCommand();
+				ftpClient.completePendingCommand();
 			}
 		};
 		return fos;
@@ -113,22 +121,22 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	@Override
 	public OutputStream _createFile(String folder, String filename) throws IOException, FileSystemException {
 		String path = folder != null ? folder + "/" + filename : filename;
-		OutputStream out = ftpSession.ftpClient.storeFileStream(path);
+		OutputStream out = ftpClient.storeFileStream(path);
 		return completePendingCommand(out);
 	}
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws IOException, FileSystemException {
 		String path = folder != null ? folder + "/" + filename : filename;
-		InputStream is = ftpSession.ftpClient.retrieveFileStream(path);
-		ftpSession.ftpClient.completePendingCommand();
+		InputStream is = ftpClient.retrieveFileStream(path);
+		ftpClient.completePendingCommand();
 		return is;
 	}
 
 	@Override
 	public void _createFolder(String filename) throws FileSystemException {
 		try {
-			ftpSession.ftpClient.makeDirectory(filename);
+			ftpClient.makeDirectory(filename);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot create directory", e);
 		}
@@ -136,13 +144,12 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public boolean _folderExists(String folder) throws Exception {
-		String pwd = null;
 		try {
-			pwd = ftpSession.ftpClient.printWorkingDirectory();
+			String pwd = ftpClient.printWorkingDirectory();
 			try {
-				return ftpSession.ftpClient.changeWorkingDirectory(pwd + "/" + folder);
+				return ftpClient.changeWorkingDirectory(pwd + "/" + folder);
 			} finally {
-				ftpSession.ftpClient.changeWorkingDirectory(pwd);
+				ftpClient.changeWorkingDirectory(pwd);
 			}
 		} catch (IOException e) {
 			throw new FileSystemException(e);
@@ -151,6 +158,6 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		ftpSession.ftpClient.rmd(folderName);
+		ftpClient.rmd(folderName);
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations
+ * 
+ * @author Niels Meijer
  *
  */
 public class FTPFileRef extends FTPFile {
@@ -69,6 +71,18 @@ public class FTPFileRef extends FTPFile {
 	@Override
 	public String toString() {
 		return "file-ref name["+super.getName()+"] folder["+getFolder()+"]";
+	}
+
+	public void updateFTPFile(FTPFile ftpFile) {
+		setGroup(ftpFile.getGroup());
+		setHardLinkCount(ftpFile.getHardLinkCount());
+		setLink(ftpFile.getLink());
+		setName(ftpFile.getName());
+		setRawListing(ftpFile.getRawListing());
+		setSize(ftpFile.getSize());
+		setTimestamp(ftpFile.getTimestamp());
+		setType(ftpFile.getType());
+		setUser(ftpFile.getUser());
 	}
 
 	/**

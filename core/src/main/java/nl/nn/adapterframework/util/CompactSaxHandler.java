@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ public class CompactSaxHandler extends DefaultHandler {
 	private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
 
-	private StringBuffer messageBuffer = new StringBuffer();
-	private StringBuffer charBuffer = new StringBuffer();
-	private StringBuffer namespaceBuffer = new StringBuffer();
+	private StringBuilder messageBuffer = new StringBuilder();
+	private StringBuilder charBuffer = new StringBuilder();
+	private StringBuilder namespaceBuffer = new StringBuilder();
 	private List<String> elements = new ArrayList<>();
 	private Map<String,Object> context = null;
 
@@ -51,7 +51,7 @@ public class CompactSaxHandler extends DefaultHandler {
 
 		printCharBuffer();
 
-		StringBuffer attributeBuffer = new StringBuffer();
+		StringBuilder attributeBuffer = new StringBuilder();
 		for (int i = 0; i < attributes.getLength(); i++) {
 			attributeBuffer.append(" ");
 			attributeBuffer.append(attributes.getQName(i));

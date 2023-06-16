@@ -71,7 +71,7 @@ public class MessageContentBody implements ContentBody {
 	@Override
 	public void writeTo(OutputStream out) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		try (InputStream inStream = message.asInputStream()) {
+		try (InputStream inStream = message.asInputStream(getCharset())) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
 			if(length < 0) {
@@ -101,10 +101,7 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public long getContentLength() {
-		if(message.isBinary()) {
-			return message.size();
-		}
-		return Message.MESSAGE_SIZE_UNKNOWN;
+		return message.size();
 	}
 
 	@Override

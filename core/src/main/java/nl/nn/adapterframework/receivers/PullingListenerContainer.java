@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.receivers;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -227,10 +226,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
 					threadContext = listener.openThread();
-					if (threadContext == null) {
-						threadContext = new HashMap<>();
-					}
-					M rawMessage = null;
+					RawMessageWrapper<M> rawMessage = null;
 					TransactionStatus txStatus = null;
 					int deliveryCount=0;
 					boolean messageHandled = false;
@@ -248,7 +244,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (messageAvailable) {
 									// Start a transaction if the entire processing is transacted, or
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
-									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
+									if (receiver.isTransacted() || (inProcessStateManager != null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED)) {
 										txStatus = txManager.getTransaction(txNew);
 										log.trace("Transaction Started, Get Message from Listener");
 									}
@@ -317,9 +313,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 
 						try {
+							messageId = rawMessage.getId();
 							if (receiver.getMaxRetries()>=0) {
-								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
-								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
+								deliveryCount = receiver.getDeliveryCount(rawMessage);
 							}
 							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
 								try (PipeLineSession session = new PipeLineSession()) {
@@ -327,12 +323,9 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								}
 							} else {
-								String correlationId = (String) threadContext.get(PipeLineSession.correlationIdKey);
 								Instant receivedDate = Instant.now();
 								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
-								final M rawMessageFinal = rawMessage;
-								final Map<String,Object> threadContextFinal = threadContext;
-								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
+								receiver.moveInProcessToError(rawMessage, threadContext, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
 							messageHandled = true;
@@ -412,7 +405,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			}
 		}
 
-		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
+		private void rollBack(TransactionStatus txStatus, RawMessageWrapper<M> rawMessage, String reason) throws ListenerException {
 			if (log.isDebugEnabled()) {
 				String stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
 					.map(StackTraceElement::toString)

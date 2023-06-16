@@ -1,7 +1,9 @@
-import './app/components/logout/logout.controller';
-import './app/components/pages/feedback-modal/feedback-modal.controller';
-import './app/components/pages/information-modal/cookie-modal.controller';
-import './app/components/pages/information-modal/information-modal.controller';
+/**
+ * MainCtrl - controller
+ * Used on all pages except login/logout
+ *
+ */
+import Pace from 'pace-js'
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/configurations/configurations-manage/configurations-manage.controller';

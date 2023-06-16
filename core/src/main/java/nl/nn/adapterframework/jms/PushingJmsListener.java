@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.util.Map;
+
 import javax.jms.Destination;
+import javax.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,9 +35,12 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
+
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
@@ -79,14 +85,14 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
+public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
 
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
 
-	private @Getter @Setter IListenerConnector<javax.jms.Message> jmsConnector;
-	private @Getter @Setter IMessageHandler<javax.jms.Message> handler;
-	private @Getter @Setter Receiver<javax.jms.Message> receiver;
+	private @Getter @Setter IListenerConnector<Message> jmsConnector;
+	private @Getter @Setter IMessageHandler<Message> handler;
+	private @Getter @Setter Receiver<Message> receiver;
 	private @Getter @Setter IbisExceptionListener exceptionListener;
 
 
@@ -140,12 +146,16 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public IListenerConnector<javax.jms.Message> getListenerPortConnector() {
+	public IListenerConnector<Message> getListenerPortConnector() {
 		return jmsConnector;
 	}
 
-
-
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+		Map<String, Object> messageProperties = extractMessageProperties(rawMessage);
+		session.putAll(messageProperties);
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
 
 	@Override
 	public boolean isThreadCountReadable() {
@@ -206,9 +216,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public int getDeliveryCount(javax.jms.Message rawMessage) {
+	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
 		try {
-			javax.jms.Message message=rawMessage;
+			Message message=rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not

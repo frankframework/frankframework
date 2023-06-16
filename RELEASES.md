@@ -16,11 +16,15 @@ Upcoming (7.9)
  - Session variable 'exitcode' has been renamed to 'exitCode'.
 - Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
   This is in cases where a received (JMS) correlationId is used to send a response.
-- The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
-- The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
+- The ZipWriterPipe and ZipWriterSender have undergone major changes. In order to help the upgrading processes they both have a backwardsCompatibility attribute to revert to the old behavior. Please migrate away from this as soon as possible.
+    - The ZipWriterPipe with action=WRITE does no longer has its input as its response, but rather a null message. If necessary, the previous behavior can be obtained by setting preserveInput=true.
+    - The ZipWriterSender with no content parameter does no longer has its input as its response, but rather a null message.
+    - The ZipWriterPipe CLOSE action will now return the ZIP archive! It is no longer required to create a file first (with action OPEN) nor is it required to specify a filename on the OPEN action.
+
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
 - Larva default timeout has been decreased to 10s, and to 2s for local tests
+- 
 
 
 7.8-RC1
