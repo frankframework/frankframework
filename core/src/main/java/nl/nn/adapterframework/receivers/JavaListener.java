@@ -131,11 +131,18 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try {
+			String messageId;
 			if (context != null) {
 				context.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+				messageId = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);
+			} else {
+				messageId = null;
 			}
-			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
-			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
+			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, messageId, correlationId);
+			Message result;
+			try (PipeLineSession session = new PipeLineSession(context != null ? context : Collections.emptyMap())) {
+				result = processRequest(rawMessageWrapper, new Message(rawMessage), session);
+			}
 			return result.asString();
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
@@ -144,45 +151,40 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	@Override
 	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
-		@SuppressWarnings({"unchecked", "deprecation"})
-		RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
+		MessageWrapper<M> rawMessageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
 		Message response = processRequest(rawMessageWrapper, message, session);
 		response.closeOnCloseOf(session, this);
 		return  response;
 	}
 
-	private Message processRequest(RawMessageWrapper<M> rawMessageWrapper, Message message, Map<String, Object> context) throws ListenerException {
+	private Message processRequest(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.CORRELATION_ID_KEY) : null);
-		if (context != null) {
-			Object object = context.get("httpRequest");
-			if (object != null) {
-				if (object instanceof HttpServletRequest) {
-					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
-				} else {
-					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
-				}
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), session.get(PipeLineSession.CORRELATION_ID_KEY));
+		Object object = session.get("httpRequest");
+		if (object != null) {
+			if (object instanceof HttpServletRequest) {
+				ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
+				session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+			} else {
+				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 			}
 		}
-		try (PipeLineSession session = new PipeLineSession(context)) {
-			try {
-				if (throwException) {
+		try {
+			if (throwException) {
+				return handler.processRequest(this, rawMessageWrapper, message, session);
+			} else {
+				try {
 					return handler.processRequest(this, rawMessageWrapper, message, session);
-				} else {
-					try {
-						return handler.processRequest(this, rawMessageWrapper, message, session);
-					} catch (ListenerException e) {
-						// Message with error contains a String so does not need to be preserved.
-						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-						return handler.formatException(null, session.getCorrelationId(), message, e);
-					}
+				} catch (ListenerException e) {
+					// Message with error contains a String so does not need to be preserved.
+					// (Trying to preserve means dealing with extra IOException for which there is no reason here)
+					return handler.formatException(null, session.getCorrelationId(), message, e);
 				}
-			} finally {
-				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
 			}
+		} finally {
+			Misc.copyContext(getReturnedSessionKeys(), session, session, this);
 		}
 	}
 

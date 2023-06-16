@@ -227,12 +227,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
-		try (PipeLineSession context = new PipeLineSession()) {
+		try (PipeLineSession nestedSession = new PipeLineSession(session)) {
 			if (paramList!=null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
 					if (paramValues!=null) {
-						context.putAll(paramValues);
+						nestedSession.putAll(paramValues);
 					}
 				} catch (ParameterException e) {
 					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
@@ -254,17 +254,17 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
-						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, context, threadLifeCycleEventListener);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, nestedSession, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, context, threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, nestedSession, threadLifeCycleEventListener);
 						result = new SenderResult(message);
 					}
 				} else {
 					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
-					result = new SenderResult(serviceClient.processRequest(message, context));
+					result = new SenderResult(serviceClient.processRequest(message, nestedSession));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -274,19 +274,19 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} finally {
 				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+					Misc.copyContext(getReturnedSessionKeys(), nestedSession, session, this);
 				}
 			}
 
-			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			ExitState exitState = (ExitState)nestedSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = nestedSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 
 			String forwardName = Objects.toString(exitCode, null);
 			result.setForwardName(forwardName);
 			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
 			result.setErrorMessage("exitState="+exitState);
 
-			result.getResult().unscheduleFromCloseOnExitOf(context);
+			result.getResult().unscheduleFromCloseOnExitOf(nestedSession);
 			result.getResult().closeOnCloseOf(session, this);
 
 			return result;

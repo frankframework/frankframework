@@ -57,7 +57,7 @@ class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().unregisterServiceClient(SERVICE_NAME);
 	}
 
-	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
+	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener<?> listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
 		IsolatedServiceCaller serviceCaller = configuration.createBean(IsolatedServiceCaller.class);
 		IbisLocalSender ibisLocalSender = configuration.createBean(IbisLocalSender.class);
 		ibisLocalSender.setCheckDependency(true);
@@ -67,6 +67,7 @@ class IbisLocalSenderTest {
 		ibisLocalSender.setSynchronous(!callIsolated || callSynchronous);
 
 		if (callByServiceName) {
+			//noinspection deprecation
 			ibisLocalSender.setServiceName(listener.getServiceName());
 		} else {
 			ibisLocalSender.setJavaListener(listener.getName());
@@ -77,14 +78,14 @@ class IbisLocalSenderTest {
 		return ibisLocalSender;
 	}
 
-	private static void registerWithServiceDispatcher(JavaListener listener) throws ListenerException {
+	private static void registerWithServiceDispatcher(JavaListener<?> listener) throws ListenerException {
 		ServiceClient serviceClient = listener::processRequest;
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), serviceClient);
 	}
 
 	private Message createVirtualInputStream(long streamSize) {
 		InputStream virtualInputStream = new InputStream() {
-			LongAdder bytesRead = new LongAdder();
+			final LongAdder bytesRead = new LongAdder();
 
 			@Override
 			public int read() throws IOException {
@@ -119,8 +120,9 @@ class IbisLocalSenderTest {
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
-		PipeLine pipeline = createPipeLine(configuration, asyncCounterResult, asyncCompletionSemaphore);
-		JavaListener listener = setupJavaListener(configuration, pipeline, callByServiceName);
+		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
+		PipeLine pipeline = createPipeLine(testPipe, configuration);
+		JavaListener<?> listener = setupJavaListener(configuration, pipeline, callByServiceName);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, callIsolated, callSynchronous);
 
 		log.info("*>>> Starting Configuration");
@@ -132,8 +134,12 @@ class IbisLocalSenderTest {
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
+		PipeLineSession.updateListenerParameters(session, "m-id", "c-id", null, null);
+
 		log.info("**>>> Calling Local Sender");
-		SenderResult result = ibisLocalSender.sendMessage(createVirtualInputStream(EXPECTED_BYTE_COUNT), session);
+		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
+		message.closeOnCloseOf(session, ibisLocalSender);
+		SenderResult result = ibisLocalSender.sendMessage(message, session);
 
 		long localCounterResult = countStreamSize(result.getResult());
 		log.info("***>>> Done reading result message");
@@ -144,7 +150,9 @@ class IbisLocalSenderTest {
 		assertAll(
 			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes.")
+			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
+			() -> assertEquals("m-id", testPipe.recordedMessageId, msgPrefix + "Message ID should be passed to nested session"),
+			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
 		);
 	}
 
@@ -288,23 +296,7 @@ class IbisLocalSenderTest {
 		return listener;
 	}
 
-	private PipeLine createPipeLine(TestConfiguration configuration, AtomicLong asyncCounterResult, Semaphore asyncCompletionSemaphore) throws ConfigurationException {
-		IPipe testPipe = new EchoPipe() {
-			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
-				try {
-					log.info("{}: start reading virtual stream", Thread.currentThread().getName());
-					long counter = countStreamSize(message);
-					asyncCounterResult.set(counter);
-					// Return a stream from message which will be read by caller, testing that stream is not closed.
-					return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
-				} finally {
-					asyncCompletionSemaphore.release();
-					log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());
-				}
-			}
-		};
-		testPipe.setName("read-stream");
+	private PipeLine createPipeLine(IPipe testPipe, TestConfiguration configuration) throws ConfigurationException {
 		PipeLine pl = configuration.createBean(PipeLine.class);
 		pl.setFirstPipe("read-stream");
 		pl.addPipe(testPipe);
@@ -317,6 +309,12 @@ class IbisLocalSenderTest {
 		plp.setPipeProcessor(new CorePipeProcessor());
 		pl.setPipeLineProcessor(plp);
 		return pl;
+	}
+
+	private TestPipe createTestPipe(final AtomicLong asyncCounterResult, final Semaphore asyncCompletionSemaphore) {
+		TestPipe testPipe = new TestPipe(asyncCounterResult, asyncCompletionSemaphore);
+		testPipe.setName("read-stream");
+		return testPipe;
 	}
 
 	private static long countStreamSize(Message message) {
@@ -356,5 +354,34 @@ class IbisLocalSenderTest {
 		parameter.setSessionKey(name);
 		parameter.configure();
 		sender.addParameter(parameter);
+	}
+
+	private class TestPipe extends EchoPipe {
+		private final AtomicLong asyncCounterResult;
+		private final Semaphore asyncCompletionSemaphore;
+
+		String recordedMessageId;
+		String recordedCorrelationId;
+
+		public TestPipe(final AtomicLong asyncCounterResult, final Semaphore asyncCompletionSemaphore) {
+			this.asyncCounterResult = asyncCounterResult;
+			this.asyncCompletionSemaphore = asyncCompletionSemaphore;
+		}
+
+		@Override
+		public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			try {
+				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
+				recordedMessageId = session.getMessageId();
+				recordedCorrelationId = session.getCorrelationId();
+				long counter = countStreamSize(message);
+				asyncCounterResult.set(counter);
+				// Return a stream from message which will be read by caller, testing that stream is not closed.
+				return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
+			} finally {
+				asyncCompletionSemaphore.release();
+				log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());
+			}
+		}
 	}
 }
