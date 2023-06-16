@@ -87,17 +87,24 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 			// (and thus any messages attached) after running the pipe so that reading the result message
 			// will verify the original input-stream of the input-message is not used beyond due-date.
 			try (PipeLineSession ignored = session) {
+				Message messageToSend;
 				if (input != null) {
 					if (input.asObject() instanceof InputStream) {
 						input.unscheduleFromCloseOnExitOf(session);
-						input = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+						messageToSend = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+					} else {
+						messageToSend = input;
 					}
-					input.closeOnCloseOf(session, pipe);
+					messageToSend.closeOnCloseOf(session, pipe);
+				} else {
+					messageToSend = null;
 				}
-				prr = pipe.doPipe(input,session);
+				prr = pipe.doPipe(messageToSend,session);
 
 				// Before session closes, unschedule result from close-on-close.
-				prr.getResult().unscheduleFromCloseOnExitOf(session);
+				if (prr != null && prr.getResult() != null) {
+					prr.getResult().unscheduleFromCloseOnExitOf(session);
+				}
 			}
 		}
 		assertNotNull(prr);
