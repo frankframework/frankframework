@@ -19,6 +19,10 @@ appModule.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', '$rootScop
 		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/");
 	};
 
+	$scope.updateFile = function (file) {
+		$scope.file = file;
+	}
+
 	$scope.generateSql = false;
 	$scope.submit = function (formData) {
 		if (!formData) formData = {};

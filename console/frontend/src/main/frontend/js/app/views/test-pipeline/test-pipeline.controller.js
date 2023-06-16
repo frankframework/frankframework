@@ -45,6 +45,10 @@ appModule.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', '$rootScope'
 
 	}
 
+	$scope.updateFile = function (file) {
+		$scope.file = file;
+	}
+
 	$scope.submit = function (formData) {
 		$scope.result = "";
 		$scope.state = [];

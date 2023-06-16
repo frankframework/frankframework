@@ -12,10 +12,10 @@ const InputFileUploadController = function ($element) {
 
 	ctrl.handleFile = function (files) {
 		if (files.length == 0) {
-			ctrl.onUpdateFile(null);
+			ctrl.onUpdateFile({ file: null });
 			return;
 		}
-		ctrl.onUpdateFile(files[0]); //Can only parse 1 file!
+		ctrl.onUpdateFile({ file: files[0] }); //Can only parse 1 file!
 	}
 }
 
