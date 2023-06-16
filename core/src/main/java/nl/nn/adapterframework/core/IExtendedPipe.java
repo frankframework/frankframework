@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Locker;
 
 /**
@@ -104,7 +105,10 @@ public interface IExtendedPipe extends IPipe {
 	public void registerEvent(String description);
 
 	/** Throw an event for flexible monitoring. */
-	public void throwEvent(String event);
+	default void throwEvent(String event) {
+		throwEvent(event, null);
+	}
+	public void throwEvent(String event, Message eventMessage);
 
 	public boolean hasSizeStatistics();
 

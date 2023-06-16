@@ -20,6 +20,6 @@ package nl.nn.adapterframework.monitoring;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public enum SeverityEnum {
+public enum Severity {
 	HARMLESS, WARNING, CRITICAL, FATAL;
 }

@@ -965,13 +965,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug(getLogPrefix()+"has no errorSender, errorStorage or knownProcessStates, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 			return;
 		}
-		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 		log.debug(getLogPrefix()+"moves message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		TransactionStatus txStatus = null;
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (Exception e) {
 			log.error(getLogPrefix()+"Exception preparing to move input message with id [" + originalMessageId + "] to error sender", e);
+			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT); //fire event, just in case
 			// no use trying again to send message on errorSender, will cause same exception!
 			return;
 		}
@@ -980,7 +980,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			if (errorSender!=null) {
 				message = messageSupplier.get();
-				errorSender.sendMessage(message, null);
+				errorSender.sendMessage(message, null); //Moet deze geen session hebben!?
+				throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
 			}
 			if (errorStorage!=null) {
 				Serializable sobj;
@@ -1008,6 +1009,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						}
 					}
 				}
+				if(message == null && rawMessage instanceof Message) {
+					message = (Message) rawMessage;
+				}
+				throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
 				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
 			}
 			txManager.commit(txStatus);
@@ -1617,14 +1622,17 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getEventSourceName() {
 		return getLogPrefix().trim();
 	}
-	protected void registerEvent(String eventCode) {
+	private void registerEvent(String eventCode) {
 		if (eventPublisher != null) {
 			eventPublisher.registerEvent(this, eventCode);
 		}
 	}
 	protected void throwEvent(String eventCode) {
+		throwEvent(eventCode, null);
+	}
+	private void throwEvent(String eventCode, Message eventMessage) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this, eventCode);
+			eventPublisher.fireEvent(this, eventCode, eventMessage);
 		}
 	}
 

@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,17 +45,20 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.EventType;
 import nl.nn.adapterframework.monitoring.ITrigger;
 import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.events.ConsoleMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -97,7 +99,7 @@ public final class ShowMonitors extends Base {
 			return Response.status(Status.OK).type(MediaType.APPLICATION_XML).entity(xml).build();
 		}
 
-		List<Map<String, Object>> monitors = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> monitors = new ArrayList<>();
 		for(int i = 0; i < mm.getMonitors().size(); i++) {
 			Monitor monitor = mm.getMonitor(i);
 
@@ -105,29 +107,29 @@ public final class ShowMonitors extends Base {
 		}
 
 		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", new Boolean(mm.isEnabled()));
-		returnMap.put("eventTypes", EnumUtils.getEnumList(EventTypeEnum.class));
+		returnMap.put("enabled", mm.isEnabled());
+		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
 		return Response.status(Status.OK).type(MediaType.APPLICATION_JSON).entity(returnMap).build();
 	}
 
 	private Map<String, Object> mapMonitor(Monitor monitor) {
-		Map<String, Object> monitorMap = new HashMap<String, Object>();
+		Map<String, Object> monitorMap = new HashMap<>();
 		monitorMap.put("name", monitor.getName());
 		monitorMap.put("type", monitor.getType());
 		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
+		monitorMap.put("lastHit", monitor.getLastHit() != null ? monitor.getLastHit().toEpochMilli() : null);
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
+		monitorMap.put("changed", monitor.getStateChanged() != null ? monitor.getStateChanged().toEpochMilli() : null);
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
+			EventThrowing source = monitor.getRaisedBy();
 			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {
@@ -140,7 +142,7 @@ public final class ShowMonitors extends Base {
 			monitorMap.put("alarm", alarm);
 		}
 
-		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> triggers = new ArrayList<>();
 		List<ITrigger> listOfTriggers = monitor.getTriggers();
 		for(ITrigger trigger : listOfTriggers) {
 
@@ -162,7 +164,7 @@ public final class ShowMonitors extends Base {
 	}
 
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
-		Map<String, Object> triggerMap = new HashMap<String, Object>();
+		Map<String, Object> triggerMap = new HashMap<>();
 
 		triggerMap.put("type", trigger.getTriggerType().name());
 		triggerMap.put("events", trigger.getEventCodes());
@@ -172,7 +174,7 @@ public final class ShowMonitors extends Base {
 
 		if(trigger.getAdapterFilters() != null) {
 			Map<String, List<String>> sources = new HashMap<>();
-			if(trigger.getSourceFilteringEnum() != SourceFiltering.NONE) {
+			if(trigger.getSourceFiltering() != SourceFiltering.NONE) {
 				for(Iterator<String> it1 = trigger.getAdapterFilters().keySet().iterator(); it1.hasNext();) {
 					String adapterName = it1.next();
 
@@ -244,15 +246,17 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Missing query parameter [action]", Status.BAD_REQUEST);
 		} else if(action.equals("clear")) {
 			try {
-				log.info("clearing monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), false, SeverityEnum.WARNING, null, null, null);
+				log.info("clearing monitor []", monitor::getName);
+				MonitorEvent event = new ConsoleMonitorEvent(getUserPrincipalName());
+				monitor.changeState(false, Severity.WARNING, event);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
 		} else if(action.equals("raise")) {
 			try {
-				log.info("raising monitor [" + monitor.getName() + "]");
-				monitor.changeState(new Date(), true, SeverityEnum.WARNING, null, null, null);
+				log.info("raising monitor []", monitor::getName);
+				MonitorEvent event = new ConsoleMonitorEvent(getUserPrincipalName());
+				monitor.changeState(true, Severity.WARNING, event);
 			} catch (MonitorException e) {
 				throw new ApiException("Failed to change monitor state", e);
 			}
@@ -262,7 +266,7 @@ public final class ShowMonitors extends Base {
 				if(key.equalsIgnoreCase("name")) {
 					monitor.setName(entry.getValue().toString());
 				} else if(key.equalsIgnoreCase("type")) {
-					monitor.setType(entry.getValue().toString());
+					monitor.setType(EnumUtils.parse(EventType.class, entry.getValue().toString()));
 				} else if(key.equalsIgnoreCase("destinations")) {
 					monitor.setDestinationSet(parseDestinations(entry.getValue()));
 				}
@@ -284,7 +288,7 @@ public final class ShowMonitors extends Base {
 		if(destinations.isEmpty()) {
 			return null;
 		}
-	
+
 		return new HashSet<>(destinations);
 	}
 
@@ -324,7 +328,11 @@ public final class ShowMonitors extends Base {
 		ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 		handleTrigger(trigger, json);
 		monitor.registerTrigger(trigger);
-		monitor.configure();
+		try {
+			monitor.configure();
+		} catch (ConfigurationException e) {
+			throw new ApiException(e);
+		}
 
 		return Response.status(Status.OK).build();
 	}
@@ -361,7 +369,7 @@ public final class ShowMonitors extends Base {
 			}
 		}
 
-		returnMap.put("severities", EnumUtils.getEnumList(SeverityEnum.class));
+		returnMap.put("severities", EnumUtils.getEnumList(Severity.class));
 		returnMap.put("events", mm.getEvents());
 
 		EntityTag etag = new EntityTag(returnMap.hashCode() + "");
@@ -406,10 +414,10 @@ public final class ShowMonitors extends Base {
 	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
 		TriggerType type = null;
-		SeverityEnum severity = null;
+		Severity severity = null;
 		int threshold = 0;
 		int period = 0;
-		String filter = null;
+		SourceFiltering filter = null;
 		List<String> adapters = null;
 		Map<String, List<String>> sources = null;
 
@@ -420,7 +428,7 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("type")) {
 				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("severity")) {
-				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
+				severity = EnumUtils.parse(Severity.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
 				threshold = (Integer.parseInt("" + entry.getValue()));
 				if(threshold < 0) {
@@ -432,7 +440,7 @@ public final class ShowMonitors extends Base {
 					throw new ApiException("period must be a positive number");
 				}
 			} else if(key.equalsIgnoreCase("filter")) {
-				filter = entry.getValue().toString();
+				filter = EnumUtils.parse(SourceFiltering.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("adapters") && entry.getValue() instanceof List<?>) {
 				adapters = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("sources") && entry.getValue() instanceof Map<?, ?>) {
@@ -441,24 +449,25 @@ public final class ShowMonitors extends Base {
 		}
 
 		// If no parse errors have occured we can continue!
-		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
+		trigger.setEventCodes(eventList);
 		trigger.setTriggerType(type);
-		trigger.setSeverityEnum(severity);
+		trigger.setSeverity(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
 
 		trigger.clearAdapterFilters();
-		if("adapter".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.ADAPTER);
 
+		trigger.setSourceFiltering(filter);
+		if(filter == SourceFiltering.ADAPTER) {
 			for(String adapter : adapters) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(adapter);
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else if("source".equals(filter)) {
-			trigger.setSourceFilteringEnum(SourceFiltering.SOURCE);
-
+		} else if(filter == SourceFiltering.SOURCE) {
+			if(sources == null) {
+				throw new ApiException("no sources specified!");
+			}
 			for(Map.Entry<String, List<String>> entry : sources.entrySet()) {
 				AdapterFilter adapterFilter = new AdapterFilter();
 				adapterFilter.setAdapter(entry.getKey());
@@ -467,8 +476,6 @@ public final class ShowMonitors extends Base {
 				}
 				trigger.registerAdapterFilter(adapterFilter);
 			}
-		} else {
-			trigger.setSourceFilteringEnum(SourceFiltering.NONE);
 		}
 	}
 
@@ -505,7 +512,7 @@ public final class ShowMonitors extends Base {
 	public Response addMonitor(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
 
 		String name = null;
-		EventTypeEnum type = null;
+		EventType type = null;
 		Set<String> destinations = null;
 
 		for(Entry<String, Object> entry : json.entrySet()) {
@@ -514,7 +521,7 @@ public final class ShowMonitors extends Base {
 				name = entry.getValue().toString();
 			}
 			else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(EventTypeEnum.class, entry.getValue().toString());
+				type = EnumUtils.parse(EventType.class, entry.getValue().toString());
 			}
 			else if(key.equalsIgnoreCase("destinations")) {
 				destinations = parseDestinations(entry);
@@ -529,7 +536,7 @@ public final class ShowMonitors extends Base {
 
 		Monitor monitor = new Monitor();
 		monitor.setName(name);
-		monitor.setTypeEnum(type);
+		monitor.setType(type);
 		monitor.setDestinationSet(destinations);
 
 		mm.addMonitor(monitor);

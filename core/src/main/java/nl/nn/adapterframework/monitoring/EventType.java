@@ -16,14 +16,11 @@
 package nl.nn.adapterframework.monitoring;
 
 /**
- * Interface exposed to objects to be monitored, to throw their events to; To be implemented by code that handles event.
- *  
+ * Enumeration of Event Types for monitoring.
+ * 
  * @author  Gerrit van Brakel
- * @since   4.9
+ * @since   4.7
  */
-public interface EventHandler {
-
-	public void registerEvent(EventThrowing source, String eventCode);
-	public void fireEvent(EventThrowing source, String eventCode);
-
+public enum EventType {
+	TECHNICAL, FUNCTIONAL, HEARTBEAT, CLEARING;
 }

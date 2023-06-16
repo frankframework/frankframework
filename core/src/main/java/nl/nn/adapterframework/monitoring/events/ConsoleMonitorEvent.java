@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,24 @@
 */
 package nl.nn.adapterframework.monitoring.events;
 
+import lombok.Getter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import software.amazon.awssdk.utils.StringUtils;
 
-public class RegisterMonitorEvent extends MonitorEvent {
+public class ConsoleMonitorEvent extends MonitorEvent {
 
-	public RegisterMonitorEvent(EventThrowing source, String eventCode) {
-		super(source, eventCode, null);
+	public ConsoleMonitorEvent(String user) {
+		super(getSource(user), "CONSOLE", null);
 	}
 
+	private static EventThrowing getSource(String user) {
+		return new EventThrowing() {
+			private @Getter Adapter adapter = null;
+			@Override
+			public String getEventSourceName() {
+				return "Frank!Console on behalf of '"+(StringUtils.isBlank(user)?"unknown":user)+"'";
+			}
+		};
+	}
 }
