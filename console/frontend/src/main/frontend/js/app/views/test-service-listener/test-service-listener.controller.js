@@ -14,11 +14,7 @@ appModule.controller('TestServiceListenerCtrl', ['$scope', 'Api', 'Alert', funct
 
 	$scope.updateFile = function (file) {
 		$scope.file = file;
-	}
-
-	$scope.updateFile = function (file) {
-		$scope.file = file;
-	}
+	};
 
 	$scope.submit = function (formData) {
 		$scope.result = "";

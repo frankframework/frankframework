@@ -12,7 +12,7 @@ appModule.controller('SendJmsMessageCtrl', ['$scope', 'Api', function ($scope, A
 
 	$scope.updateFile = function (file) {
 		$scope.file = file;
-	}
+	};
 
 	$scope.submit = function (formData) {
 		$scope.processing = true;
