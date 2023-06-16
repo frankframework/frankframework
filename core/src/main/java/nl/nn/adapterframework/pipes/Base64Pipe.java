@@ -118,13 +118,16 @@ public class Base64Pipe extends StreamingPipe {
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
 		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
-		if (getOutputTypeEnum()==OutputTypes.STRING) {
+		if (getOutputTypeEnum() == OutputTypes.STRING) {
 			try {
-				result = new Message(result.asReader());
+				result = new Message(result.asReader(), result.copyContext());
 			} catch (IOException e) {
 				throw new PipeRunException(this,"cannot open stream", e);
 			}
 		}
+		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
+		message.unscheduleFromCloseOnExitOf(session);
+		result.closeOnCloseOf(session, this);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
@@ -132,11 +135,11 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection() == Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
 		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
-		if (getOutputTypeEnum()==OutputTypes.STRING) {
-			targetStream = new WriterOutputStream(target.asWriter(), outputCharset !=null? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		if (getOutputTypeEnum() == OutputTypes.STRING) {
+			targetStream = new WriterOutputStream(target.asWriter(), outputCharset != null ? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} else {
 			targetStream = target.asStream(outputCharset);
 		}
