@@ -15,33 +15,53 @@
 */
 package nl.nn.ibistesttool.filter;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import nl.nn.testtool.Checkpoint;
 
 /**
+ * Only show senders that communicate with another system
+ * 
  * @author Jaco de Groot
  */
 public class BlackBox extends GrayBox {
+	private Set<String> SENDERS_TO_HIDE = new HashSet<>(Arrays.asList(
+			// Also in stub4testtool.xsl
+			"nl.nn.adapterframework.jdbc.ResultSet2FileSender",
+			"nl.nn.adapterframework.jdbc.DirectQuerySender",
+			"nl.nn.adapterframework.jdbc.FixedQuerySender",
+			"nl.nn.adapterframework.jdbc.XmlQuerySender",
+			"nl.nn.adapterframework.senders.DelaySender",
+			"nl.nn.adapterframework.senders.EchoSender",
+			"nl.nn.adapterframework.senders.IbisLocalSender",
+			"nl.nn.adapterframework.senders.LogSender",
+			"nl.nn.adapterframework.senders.ParallelSenders",
+			"nl.nn.adapterframework.senders.SenderSeries",
+			"nl.nn.adapterframework.senders.SenderWrapper",
+			"nl.nn.adapterframework.senders.XsltSender",
+			"nl.nn.adapterframework.senders.FixedResultSender",
+			"nl.nn.adapterframework.senders.JavascriptSender",
+			"nl.nn.adapterframework.jdbc.MessageStoreSender",
+			"nl.nn.adapterframework.senders.ReloadSender",
+			"nl.nn.adapterframework.compression.ZipWriterSender",
+			"nl.nn.adapterframework.senders.LocalFileSystemSender",
+			// Not in stub4testtool.xsl
+			"nl.nn.adapterframework.senders.XmlValidatorSender"));
 
 	@Override
-	protected boolean match(Checkpoint checkpoint) {
+	protected boolean isSender(Checkpoint checkpoint) {
 		if (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ")
-				// Also in stub4testtool.xsl
-				&& !"nl.nn.adapterframework.jdbc.DirectQuerySender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.jdbc.FixedQuerySender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.DelaySender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.EchoSender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.IbisLocalSender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.LogSender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.ParallelSenders".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.SenderSeries".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.SenderWrapper".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.XsltSender".equals(checkpoint.getSourceClassName())
-				// Not in stub4testtool.xsl
-				&& !"nl.nn.adapterframework.senders.FixedResultSender".equals(checkpoint.getSourceClassName())
-				&& !"nl.nn.adapterframework.senders.XmlValidatorSender".equals(checkpoint.getSourceClassName())) {
+				&& !SENDERS_TO_HIDE.contains(checkpoint.getSourceClassName())) {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
+		return isSender(checkpoint);
 	}
 
 }

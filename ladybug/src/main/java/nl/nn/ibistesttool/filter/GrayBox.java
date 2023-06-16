@@ -16,12 +16,15 @@
 package nl.nn.ibistesttool.filter;
 
 import java.util.List;
+import java.util.ListIterator;
 
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.filter.CheckpointMatcher;
 
 /**
+ * Only show senders and pipelines (within these senders) (show only the pipeline checkpoints, not it's children)
+ * 
  * @author Jaco de Groot
  */
 public class GrayBox implements CheckpointMatcher {
@@ -30,35 +33,48 @@ public class GrayBox implements CheckpointMatcher {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
 				 || checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
-			for (int i = checkpoints.indexOf(checkpoint) - 1; i > 1; i--) {
-				if (checkpoints.get(i).getType() == Checkpoint.TYPE_STARTPOINT) {
-					return match(report, checkpoints.get(i));
+			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
+			while (iterator.previousIndex() > 1) {
+				Checkpoint previous = iterator.previous();
+				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
+					return isSender(previous);
 				}
 			}
+			return false;
 		} else {
-			if (match(checkpoint)) {
-				return true;
-			} else {
-				List<Checkpoint> checkpoints = report.getCheckpoints();
-				if (!checkpoints.isEmpty()) {
-					Checkpoint firstCheckpoint = checkpoints.get(0);
-					if (checkpoint.equals(firstCheckpoint)) {
-						return true;
-					}
-					Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
-					if (checkpoint.equals(lastCheckpoint)) {
-						return true;
-					}
-				}
-			}
+			return isSenderOrPipelineOrFirstOrLastCheckpoint(report, checkpoint);
+		}
+	}
+
+	protected boolean isSender(Checkpoint checkpoint) {
+		if (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ")) {
+			return true;
 		}
 		return false;
 	}
 
-	protected boolean match(Checkpoint checkpoint) {
-		if (checkpoint.getName() != null &&
-				(checkpoint.getName().startsWith("Sender ") || checkpoint.getName().startsWith("Pipeline "))) {
+	private boolean isSenderOrPipelineOrFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
+		return isSenderOrPipeline(checkpoint) || isFirstOrLastCheckpoint(report, checkpoint);
+	}
+
+	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
+		if (isSender(checkpoint) || (checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline "))) {
 			return true;
+		}
+		return false;
+	}
+
+	private boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
+		List<Checkpoint> checkpoints = report.getCheckpoints();
+		if (!checkpoints.isEmpty()) {
+			Checkpoint firstCheckpoint = checkpoints.get(0);
+			if (checkpoint.equals(firstCheckpoint)) {
+				return true;
+			}
+			Checkpoint lastCheckpoint = checkpoints.get(checkpoints.size() - 1);
+			if (checkpoint.equals(lastCheckpoint)) {
+				return true;
+			}
 		}
 		return false;
 	}
