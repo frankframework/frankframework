@@ -272,7 +272,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
-				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 					Misc.copyContext(getReturnedSessionKeys(), nestedSession, session, this);
 				}
