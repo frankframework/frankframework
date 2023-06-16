@@ -3,6 +3,7 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
@@ -69,12 +70,27 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
-	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
-		return pipe.doPipe(input, session);
-	}
 
 	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(pipe, Message.asMessage(input), session);
+	}
+
+	@SuppressWarnings("deprecation")
+	protected PipeRunResult doPipe(final P pipe, final Message input, final PipeLineSession session) throws PipeRunException {
+		if (input != null && input.asObject() instanceof InputStream) {
+			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session
+			// (and thus any messages attached) after running the pipe so that reading the result message
+			// will verify the original input-stream of the input-message is not used beyond due-date.
+			// Do not close session when input message did not have a stream, due to some tests depending on
+			// an open session after running the pipe.
+			try (PipeLineSession ignored = session) {
+				input.unscheduleFromCloseOnExitOf(session);
+				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+				wrappedInput.closeOnCloseOf(session, pipe);
+				return pipe.doPipe(wrappedInput, session);
+			}
+		}
+		return pipe.doPipe(input, session);
 	}
 
 	/**
