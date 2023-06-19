@@ -20,15 +20,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
-		<!--  copy META-INF/services from the core module so it can be found by application servers -->
-		<!--
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-			<classifier>services</classifier>
-			<type>war</type>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-larva</artifactId>
@@ -48,6 +39,11 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-aws</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- jboss-logging is required for Narayana -->
