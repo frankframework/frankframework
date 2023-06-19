@@ -52,7 +52,7 @@ public class BlackBox extends GrayBox {
 
 	@Override
 	protected boolean isSender(Checkpoint checkpoint) {
-		if (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ")
+		return (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ") ...
 				&& !SENDERS_TO_HIDE.contains(checkpoint.getSourceClassName())) {
 			return true;
 		}
