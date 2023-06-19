@@ -29,7 +29,7 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
 							<div class="col-sm-5">
-								<input-file-upload accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."/>
+								<input-file-upload file="file" on-update-file="updateFile(file)" accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."/>
 							</div>
 						</div>
 						<div class="row form-group">
