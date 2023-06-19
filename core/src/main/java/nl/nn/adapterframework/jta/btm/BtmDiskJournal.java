@@ -47,8 +47,8 @@ public class BtmDiskJournal extends DiskJournal {
 	private static final String FORCE_ERR_MSG = "cannot force log writing, disk logger is not open";
 	private static final String COLLECT_ERR_MSG = "cannot collect dangling records, disk logger is not open";
 	private static final AtomicInteger ERROR_COUNT = new AtomicInteger(0);
-	private static final int MAX_ERROR_COUNT = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 500);
-	private static AtomicLong lastRecovery = new AtomicLong(0);
+	private static final int MAX_ERROR_COUNT = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 50);
+	private static final AtomicLong LAST_RECOVERY = new AtomicLong(0);
 
 	@Override
 	public void log(int status, Uid gtrid, Set<String> uniqueNames) throws IOException {
@@ -97,7 +97,7 @@ public class BtmDiskJournal extends DiskJournal {
 
 	private synchronized void recover(IOException e) throws IOException {
 		Long now = Instant.now().getEpochSecond();
-		Long last = lastRecovery.getAndSet(now);
+		Long last = LAST_RECOVERY.getAndSet(now);
 		if(now - last > 3600) {
 			log.debug("resetting FileChannel exception count");
 			ERROR_COUNT.set(0);
