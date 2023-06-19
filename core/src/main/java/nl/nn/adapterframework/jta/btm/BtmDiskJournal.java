@@ -95,7 +95,7 @@ public class BtmDiskJournal extends DiskJournal {
 		}
 	}
 
-	private void recover(IOException e) throws IOException {
+	private synchronized void recover(IOException e) throws IOException {
 		Long now = Instant.now().getEpochSecond();
 		Long last = lastRecovery.getAndSet(now);
 		if(now - last > 3600) {
