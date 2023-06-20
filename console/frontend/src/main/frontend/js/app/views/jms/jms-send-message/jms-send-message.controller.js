@@ -10,6 +10,10 @@ appModule.controller('SendJmsMessageCtrl', ['$scope', 'Api', function ($scope, A
 
 	$scope.file = null;
 
+	$scope.updateFile = function (file) {
+		$scope.file = file;
+	};
+
 	$scope.submit = function (formData) {
 		$scope.processing = true;
 		if (!formData) return;
