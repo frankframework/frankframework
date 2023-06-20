@@ -59,7 +59,6 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
-						m.toStringPrefix(writer);
 						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
