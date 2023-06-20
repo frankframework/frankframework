@@ -91,6 +91,19 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			Poller.getAll().changeInterval(appConstants["console.pollerInterval"]);
 		});
 
+		$rootScope.updateConfigurations = function (configurations) {
+			const updatedConfigurations = [];
+			for (var i in configurations) {
+				var config = configurations[i];
+				if (config.name.startsWith("IAF_"))
+					updatedConfigurations.unshift(config);
+				else
+					updatedConfigurations.push(config);
+			}
+			$rootScope.$broadcast('configurations', updatedConfigurations);
+			$rootScope.configurations = updatedConfigurations;
+		}
+
 		Hooks.register("init:once", function () {
 			/* Check IAF version */
 			console.log("Checking IAF version with remote...");
@@ -319,7 +332,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				}
 
 				Api.Get("server/configurations", function (data) {
-					ctrl.updateConfigurations(data);
+					$rootScope.updateConfigurations(data);
 				});
 				Hooks.call("init", false);
 			}, function (message, statusCode, statusText) {
@@ -371,19 +384,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 	ctrl.addException = function (configuration, message) {
 		ctrl.addAlert("danger", configuration, message);
 	};
-
-	ctrl.updateConfigurations = function (configurations) {
-		const updatedConfigurations = [];
-		for (var i in configurations) {
-			var config = configurations[i];
-			if (config.name.startsWith("IAF_"))
-				updatedConfigurations.unshift(config);
-			else
-				updatedConfigurations.push(config);
-		}
-		$rootScope.$broadcast('configurations', updatedConfigurations);
-		$rootScope.configurations = updatedConfigurations;
-	}
 
 	ctrl.getProcessStateIcon = function (processState) {
 		switch (processState) {

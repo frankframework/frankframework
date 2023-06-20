@@ -1,18 +1,30 @@
 import { appModule } from "../../../../app.module";
 
-appModule.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', 'Toastr', function ($scope, $state, Api, Debug, Misc, $interval, SweetAlert, Toastr) {
-	$scope.loading = false;
+const ConfigurationsManageDetailsController = function ($scope, $state, Api, Debug, Misc, $interval, SweetAlert, Toastr) {
+	const ctrl = this;
 
-	var promise = $interval(function () {
+	ctrl.loading = false;
+
+	ctrl.$onInit = function () {
+		if ($state.params && $state.params.name && $state.params.name != "")
+			$state.$current.data.breadcrumbs = "Configurations > Manage > " + $state.params.name;
+		else
+			$state.go("pages.manage_configurations");
+
+		ctrl.configuration = $state.params.name;
+
+		var promise = $interval(function () {
+			update();
+		}, 30000);
+		$scope.$on('$destroy', function () {
+			$interval.cancel(promise);
+		});
 		update();
-	}, 30000);
-	$scope.$on('$destroy', function () {
-		$interval.cancel(promise);
-	});
 
-	$scope.configuration = $state.params.name;
+	};
+
 	function update() {
-		$scope.loading = true;
+		ctrl.loading = true;
 		Api.Get("configurations/" + $state.params.name + "/versions", function (data) {
 			for (const x in data) {
 				var configs = data[x];
@@ -21,15 +33,16 @@ appModule.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api
 				}
 			}
 
-			$scope.versions = data;
-			$scope.loading = false;
+			ctrl.versions = data;
+			ctrl.loading = false;
 		});
 	};
-	update();
-	$scope.download = function (config) {
+
+	ctrl.download = function (config) {
 		window.open(Misc.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version) + "/download");
 	};
-	$scope.deleteConfig = function (config) {
+	
+	ctrl.deleteConfig = function (config) {
 		var message = "";
 		if (config.version) {
 			message = "Are you sure you want to remove version '" + config.version + "'?";
@@ -46,9 +59,9 @@ appModule.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api
 		});
 	};
 
-	$scope.activate = function (config) {
-		for (const x in $scope.versions) {
-			var configs = $scope.versions[x];
+	ctrl.activate = function (config) {
+		for (const x in ctrl.versions) {
+			var configs = ctrl.versions[x];
 			if (configs.version != config.version)
 				configs.actived = false;
 		}
@@ -59,11 +72,16 @@ appModule.controller('ManageConfigurationDetailsCtrl', ['$scope', '$state', 'Api
 		});
 	};
 
-	$scope.scheduleReload = function (config) {
+	ctrl.scheduleReload = function (config) {
 		Api.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { autoreload: config.autoreload }, function (data) {
 			Toastr.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
 		}, function () {
 			update();
 		});
 	};
-}]);
+}
+
+appModule.component('configurationsManageDetails', {
+	controller: ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', 'Toastr', ConfigurationsManageDetailsController],
+	templateUrl: "js/app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component.html",
+});

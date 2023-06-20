@@ -1,6 +1,5 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import configurationsManageDetailsStateController from "./views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
 import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
 import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";
@@ -212,7 +211,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configurations', {
 				url: "/configurations/manage",
-				templateUrl: "js/app/views/configurations/configurations-manage/ManageConfigurations.html",
+				component: 'configurationsManage',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
@@ -220,7 +219,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configuration_details', {
 				url: "/configurations/manage/:name",
-				templateUrl: "js/app/views/configurations/configurations-manage/configurations-manage-details/ManageConfigurationDetails.html",
+				component: 'configurationsManageDetails',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
@@ -228,7 +227,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				params: {
 					name: "",
 				},
-				controller: configurationsManageDetailsStateController
 			})
 			.state('pages.logging_show', {
 				url: "/logging?directory&file",
