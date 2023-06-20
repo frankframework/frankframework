@@ -17,7 +17,6 @@ package nl.nn.adapterframework.runner;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
@@ -36,36 +35,17 @@ import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import lombok.Setter;
-import nl.nn.adapterframework.management.web.ServletDispatcher;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class CreateApiEndpointBean implements ApplicationContextAware {
-	private final Logger log = LogManager.getLogger(CreateApiEndpointBean.class);
+public class ConsoleFrontendBean implements ApplicationContextAware {
+	private final Logger log = LogManager.getLogger(ConsoleFrontendBean.class);
 	private static final String WELCOME_FILE = "/index.html";
 
 	private @Setter ApplicationContext applicationContext;
-	//TODO scan for components instead of hardcoded ServletDispatcher
 
-	@Bean
-	public ServletRegistrationBean<ServletDispatcher> createBackendServletBean() {
-		ServletDispatcher servlet = SpringUtils.createBean(applicationContext, ServletDispatcher.class);
-		log.info("registering servlet [{}]", servlet::getName);
-
-		ServletRegistrationBean<ServletDispatcher> bean = new ServletRegistrationBean<>(servlet);
-		Map<String, String> initParams = servlet.getParameters();
-		for(Map.Entry<String, String> entry : initParams.entrySet()) {
-			String key = entry.getKey();
-			String val = entry.getValue();
-			bean.addInitParameter(key, val);
-		}
-		bean.setName(servlet.getName());
-		bean.addUrlMappings("/iaf/api/*");
-
-		log.info("created IAF API servlet endpoint {}", bean::getUrlMappings);
-
-		return bean;
-	}
-
+	/**
+	 * Spring MVC Bean that allows file retrieval from (classpath) jars and static resources (META-INF/resources).
+	 */
 	@Bean
 	public ResourceHttpRequestHandler resourceHttpRequestHandler() {
 		ResourceHttpRequestHandler requestHandler = new ResourceHttpRequestHandler() {
@@ -115,6 +95,10 @@ public class CreateApiEndpointBean implements ApplicationContextAware {
 		return bean;
 	}
 
+	/**
+	 * Spring Boot requires a mapping to delegate traffic coming from an URI path to a servlet.
+	 * Since the console (frontend) runs on the root of the path, map /** directly.
+	 */
 	@Bean
 	public SimpleUrlHandlerMapping sampleServletMapping() {
 		SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();

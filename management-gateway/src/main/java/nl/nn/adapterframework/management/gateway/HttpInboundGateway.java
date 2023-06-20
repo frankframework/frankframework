@@ -83,7 +83,9 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		gateway.setRequestChannel(getRequestChannel(applicationContext));
 		gateway.setErrorChannel(getErrorChannel(applicationContext));
 		gateway.setMessageConverters(getMessageConverters());
-		gateway.setErrorOnTimeout(true);
+		gateway.setErrorOnTimeout(false);
+		gateway.setRequestTimeout(0L);
+		gateway.setReplyTimeout(0L);
 
 		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext, DefaultHttpHeaderMapper.class);
 		headerMapper.setInboundHeaderNames(getRequestHeaders());

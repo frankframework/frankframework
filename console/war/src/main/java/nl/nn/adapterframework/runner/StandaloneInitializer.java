@@ -28,13 +28,14 @@ import org.springframework.boot.WebApplicationType;
  */
 public class StandaloneInitializer {
 
+	// Should start a XmlServletWebServerApplicationContext.
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication();
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		Set<String> set = new HashSet<>();
 		set.add("SpringBootContext.xml");
 		app.setSources(set);
-		app.run(args); //Should start a XmlServletWebServerApplicationContext
+		app.run(args);
 	}
 
 }

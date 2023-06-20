@@ -15,6 +15,7 @@
 	<properties>
 		<spring-security.version>5.8.2</spring-security.version>
 		<spring.boot.version>2.7.8</spring.boot.version>
+		<m2eclipse.wtp.contextRoot>iaf-console</m2eclipse.wtp.contextRoot>
 	</properties>
 
 	<dependencies>

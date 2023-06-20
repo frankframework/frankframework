@@ -117,6 +117,8 @@ public class TestPipeline extends FrankApiBase {
 		Object payload = response.getPayload();
 		if(payload instanceof String) {
 			return (String) payload;
+		} else if(payload instanceof byte[]) {
+			return new String((byte[]) payload);
 		} else if(payload instanceof InputStream) {
 			try {
 				return StreamUtil.streamToString((InputStream) payload);

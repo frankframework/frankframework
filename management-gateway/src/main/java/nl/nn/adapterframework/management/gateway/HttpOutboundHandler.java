@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.gateway;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.expression.EvaluationContext;
@@ -24,6 +23,8 @@ import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.http.outbound.HttpRequestExecutingMessageHandler;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
@@ -59,9 +61,22 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		headerMapper.setInboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		setHeaderMapper(headerMapper);
 
-		setMessageConverters(Collections.singletonList(new ByteArrayHttpMessageConverter()));
+		setMessageConverters(getMessageConverters());
 
 		setHttpMethodExpression(new HttpMethodExpression());
+	}
+
+	/**
+	 * Reply converters to turn byte[] / InputStreams and Strings to something that the HTTP Inbound and Outbound gateways can understand.
+	 */
+	private List<HttpMessageConverter<?>> getMessageConverters() {
+		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
+		stringHttpMessageConverter.setWriteAcceptCharset(false);
+		messageConverters.add(stringHttpMessageConverter);
+		messageConverters.add(new InputStreamHttpMessageConverter());
+		messageConverters.add(new ByteArrayHttpMessageConverter());
+		return messageConverters;
 	}
 
 	private String[] getRequestHeaders() {

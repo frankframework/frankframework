@@ -11,7 +11,8 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<bean class="nl.nn.adapterframework.runner.CreateApiEndpointBean"/>
+	<bean class="nl.nn.adapterframework.runner.ConsoleFrontendBean"/>
+	<bean class="nl.nn.adapterframework.runner.ConsoleBackendBean"/>
 
 	<!-- Messaging Gateway -->
 	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
