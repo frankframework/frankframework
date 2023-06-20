@@ -1143,17 +1143,6 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>aws</id>
-			<activation>
-				<property>
-					<name>!no-aws</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aws</module>
-			</modules>
-		</profile>
-		<profile>
 			<id>proprietary</id>
 			<activation>
 				<property>
