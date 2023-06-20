@@ -34,7 +34,7 @@ public class GrayBox implements CheckpointMatcher {
 				 || checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
-			while (iterator.previousIndex() > 1) {
+			while (iterator.hasPrevious()) {
 				Checkpoint previous = iterator.previous();
 				if (previous.getType() == Checkpoint.TYPE_STARTPOINT && previous.getLevel() < checkpoint.getLevel()) {
 					return isSender(previous);
