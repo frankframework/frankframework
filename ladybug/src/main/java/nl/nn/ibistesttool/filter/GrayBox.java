@@ -58,10 +58,7 @@ public class GrayBox implements CheckpointMatcher {
 	}
 
 	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
-		if (isSender(checkpoint) || (checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline "))) {
-			return true;
-		}
-		return false;
+		return (isSender(checkpoint) || (checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ")));
 	}
 
 	private boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
