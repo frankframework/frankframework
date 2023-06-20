@@ -227,7 +227,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
-		try (PipeLineSession nestedSession = new PipeLineSession(session)) {
+		try (PipeLineSession nestedSession = new PipeLineSession()) {
+			if (session.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
+				nestedSession.put(PipeLineSession.CORRELATION_ID_KEY, session.get(PipeLineSession.CORRELATION_ID_KEY));
+			}
 			if (paramList!=null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
@@ -235,7 +238,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						nestedSession.putAll(paramValues);
 					}
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
 				}
 			}
 			final ServiceClient serviceClient;
@@ -274,8 +277,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} finally {
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					Misc.copyContext(getReturnedSessionKeys(), nestedSession, session, this);
 				}
+				Misc.copyContext(getReturnedSessionKeys(), nestedSession, session, this);
 			}
 
 			ExitState exitState = (ExitState)nestedSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
