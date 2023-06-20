@@ -101,7 +101,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 
 	@Test
 	public void testPipelineUnknownResponse() throws Exception {
-		doAnswer((e)->{return new GenericMessage<>("dummy data".getBytes());}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
+		doAnswer((e)->{return new GenericMessage<>(123L);}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
