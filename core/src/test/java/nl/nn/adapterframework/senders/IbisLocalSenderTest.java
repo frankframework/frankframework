@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +39,6 @@ import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -48,7 +46,7 @@ import nl.nn.adapterframework.util.RunState;
 
 class IbisLocalSenderTest {
 	public static final String SERVICE_NAME = "TEST-SERVICE";
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	public static final long EXPECTED_BYTE_COUNT = 1_000L;
 
@@ -79,8 +77,7 @@ class IbisLocalSenderTest {
 	}
 
 	private static void registerWithServiceDispatcher(JavaListener<?> listener) throws ListenerException {
-		ServiceClient serviceClient = listener::processRequest;
-		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), serviceClient);
+		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), listener);
 	}
 
 	private Message createVirtualInputStream(long streamSize) {
@@ -88,7 +85,7 @@ class IbisLocalSenderTest {
 			final LongAdder bytesRead = new LongAdder();
 
 			@Override
-			public int read() throws IOException {
+			public int read() {
 				if (bytesRead.longValue() >= streamSize) {
 					log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
 					return -1;
@@ -169,11 +166,38 @@ class IbisLocalSenderTest {
 			SenderResult result = sender.sendMessage(message, session);
 
 			// Assert
-			assertEquals("parameter-value", result.getResult().asString());
-			assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]");
-			assertEquals("parameter-value", session.get("my-parameter"));
-			assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
-			assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]");
+			assertAll(
+				() -> assertEquals("parameter-value", result.getResult().asString()),
+				() -> assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]"),
+				() -> assertEquals("parameter-value", session.get("my-parameter")),
+				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
+				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
+				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'")
+			);
+		}
+	}
+
+	@Test
+	public void testSendMessageReturnSessionKeysWhenNoneConfigured() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
+		sender.setReturnedSessionKeys(null);
+
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("my-parameter", "parameter-value");
+			Message message = new Message("my-parameter");
+
+			// Act
+			SenderResult result = sender.sendMessage(message, session);
+
+			// Assert
+			assertAll(
+				() -> assertEquals("parameter-value", result.getResult().asString()),
+				() -> assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]"),
+				() -> assertEquals("parameter-value", session.get("my-parameter")),
+				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
+			);
 		}
 	}
 
@@ -268,10 +292,10 @@ class IbisLocalSenderTest {
 		}
 	}
 
-	private JavaListener setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
+	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		Receiver<String> receiver = new Receiver<>();
-		JavaListener listener = configuration.createBean(JavaListener.class);
+		JavaListener<String> listener = configuration.createBean(JavaListener.class);
 		listener.setName("TEST");
 		listener.setServiceName(SERVICE_NAME);
 		receiver.setName("TEST");
@@ -333,7 +357,10 @@ class IbisLocalSenderTest {
 	}
 
 	private static IbisLocalSender createIbisLocalSenderWithDummyServiceClient() throws ListenerException, ConfigurationException {
-		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> session.getMessage(message.asObject().toString())));
+		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
+			session.put("key-not-configured-for-copy", "dummy-value");
+			return session.getMessage(message.asObject().toString());
+		}));
 		IbisLocalSender sender = new IbisLocalSender();
 		sender.setServiceName(SERVICE_NAME);
 		sender.setSynchronous(true);
@@ -341,9 +368,7 @@ class IbisLocalSenderTest {
 		sender.setReturnedSessionKeys("my-parameter,this-doesnt-exist");
 
 		addParameter("my-parameter", sender);
-
 		addParameter(PipeLineSession.EXIT_STATE_CONTEXT_KEY, sender);
-
 		addParameter(PipeLineSession.EXIT_CODE_CONTEXT_KEY, sender);
 
 		return sender;
