@@ -19,11 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -35,6 +38,9 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+
+import org.yaml.snakeyaml.Yaml;
+
 /**
  * Singleton class that has the constant values for this application. <br/>
  * <p>When an instance is created, it tries to load the properties file specified
@@ -292,8 +298,10 @@ public final class AppConstants extends Properties implements Serializable {
 
 				for (URL url : resources) {
 					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
-						load(reader);
+						CheckURL(reader, url);
 						log.info("Application constants loaded from url [{}]", url::toString);
+					} catch (URISyntaxException e) {
+						throw new RuntimeException(e);
 					}
 				}
 
@@ -467,5 +475,73 @@ public final class AppConstants extends Properties implements Serializable {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
+	}
+
+	/**
+	 * Decides whether a property or yaml needs to be loaded
+	 * @param reader    the reader
+	 * @param url 		the url
+	 */
+	public void CheckURL(Reader reader, URL url) throws URISyntaxException, IOException {
+		if (url.toURI().toString().contains(".properties")){
+			load(reader);
+		}
+		else if (url.toURI().toString().contains(".yaml")){
+			loadYaml(reader);
+		}
+	}
+
+	/**
+	 * Loads and parses a yaml file.
+	 * Uses the {@link #RecursiveYaml(String, Object)} method.
+	 * @param reader    the reader
+	 */
+	public void loadYaml(Reader reader) {
+		Yaml yaml = new Yaml();
+		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
+		obj.entrySet().forEach(entry -> {
+			try {
+				RecursiveYaml(entry.getKey(), entry.getValue());
+			} catch (IOException | URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	/**
+	 * Recursively traverses the object; When string is found will put it in the properties.
+	 * @param key    	Key of the property
+	 * @param value 	Value of the property
+	 */
+	public void RecursiveYaml(String key, Object value) throws IOException, URISyntaxException {
+
+		// If the value is a string, will split the key / value pair and put.
+		if (value instanceof String) {
+			String[] strings = ((String) value).split(" ");
+			for (String pair : strings) {
+				String[] split = pair.split(":");
+				put(key + "." + split[0], split[1]);
+			}
+		}
+
+		// Due to how the parser works, Arraylist encapsulates the map.
+		// Therefore, key doesn't need to be updated, only the value.
+		else if (value instanceof ArrayList){
+			for (int i = 0; i < ((ArrayList) value).size(); i++) {
+				RecursiveYaml(key, ((ArrayList) value).get(i));
+			}
+		}
+
+		// If the value is a map, will recursively call the method.
+		// Key will be added to the 'keychain'.
+		else if (value instanceof Map){
+			((Map<?, ?>) value).entrySet().forEach(entry -> {
+				try {
+					RecursiveYaml(key + "." + entry.getKey(), entry.getValue());
+				} catch (IOException | URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		}
 	}
 }

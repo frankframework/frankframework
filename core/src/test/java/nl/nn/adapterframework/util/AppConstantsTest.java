@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -182,6 +185,23 @@ public class AppConstantsTest {
 	@Test
 	public void testUtf8EncodedPropertyFile() {
 		assertEquals("‘’", constants.getProperty("encoding.utf8"));
+	}
+
+	@Test
+	public void testYAML() throws IOException {
+		URL url = getClass().getResource("/AppConstants/yamlProperties.yaml");
+		InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is);
+
+		AppConstants yamlConstants = AppConstants.getInstance();
+		yamlConstants.loadYaml(reader);
+
+		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
+		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
+		assertEquals("false", yamlConstants.get("Dit.Is.YamlTest3"));
+
+		assertEquals("200", yamlConstants.get("Ook.Is.YamlTest1"));
+		assertEquals("MRU", yamlConstants.get("Ook.Is.YamlTest2"));
+		assertEquals("true", yamlConstants.get("Ook.Is.YamlTest3"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {

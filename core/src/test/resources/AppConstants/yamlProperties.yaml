@@ -1,0 +1,10 @@
+Dit:
+  - Is:
+      YamlTest1:100
+      YamlTest2:LRU
+      YamlTest3:false
+Ook:
+  - Is:
+      YamlTest1:200
+      YamlTest2:MRU
+      YamlTest3:true
