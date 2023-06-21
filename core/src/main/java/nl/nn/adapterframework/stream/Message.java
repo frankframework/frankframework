@@ -735,30 +735,19 @@ public class Message implements Serializable, Closeable {
 		return size() == 0;
 	}
 
-	public void toStringPrefix(Writer writer) throws IOException {
+	private void toStringPrefix(StringBuilder writer) {
 		if (context.isEmpty() || !log.isDebugEnabled()) {
 			return;
 		}
-		writer.write("context:\n");
+		writer.append("context:\n");
 		for (Entry<String, Object> entry : context.entrySet()) {
+			Object value = entry.getValue();
 			if ("authorization".equalsIgnoreCase(entry.getKey())) {
-				String value = StringUtil.hide((String) entry.getValue());
-				writer.write(entry.getKey() + ": " + value + "\n");
-				continue;
+				value = StringUtil.hide((String) value);
 			}
-			writer.write(entry.getKey() + ": " + entry.getValue() + "\n");
+			writer.append(entry.getKey()).append(": ").append(value).append("\n");
 		}
-		writer.write("value:\n");
-	}
-
-	public String toStringPrefix() {
-		StringWriter result = new StringWriter();
-		try {
-			toStringPrefix(result);
-		} catch (IOException e) {
-			result.write("cannot write toStringPrefix: " + e.getMessage());
-		}
-		return result.toString();
+		writer.append("value:\n");
 	}
 
 	/**
@@ -766,17 +755,13 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Override
 	public String toString() {
-		StringWriter result = new StringWriter();
+		StringBuilder result = new StringBuilder();
 
-		try {
-			toStringPrefix(result);
-			if (request == null) {
-				result.write("null");
-			} else {
-				result.write(getRequestClass() + " " + getId() + ": [" + request.toString() + "]");
-			}
-		} catch (IOException e) {
-			result.write("cannot write toString: " + e.getMessage());
+		toStringPrefix(result);
+		if (request == null) {
+			result.append("null");
+		} else {
+			result.append(getRequestClass()).append(" ").append(getId()).append(": [").append(request).append("]");
 		}
 
 		return result.toString();

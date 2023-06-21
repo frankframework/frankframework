@@ -65,7 +65,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					return new ToStringResult(writer.toString(), null, m.getRequestClass());
 				}
-				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
+				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
 			}
 			return super.toString(m.asObject(), charset);
 		}
