@@ -13,9 +13,9 @@
 
 		<jackson.version>2.15.2</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
-		<spring.version>5.3.27</spring.version>
+		<spring.version>5.3.28</spring.version>
 		<spring-security.version>5.8.3</spring-security.version>
-		<spring-integration.version>5.5.17</spring-integration.version>
+		<spring-integration.version>5.5.18</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
@@ -583,7 +583,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.2</version>
+					<version>3.4.0</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
 						<archive>
@@ -600,7 +600,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.3.0</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -1097,6 +1097,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
@@ -1104,9 +1105,11 @@
 				<module>larva</module>
 				<module>ladybug</module>
 				<module>test</module>
-				<module>akamai</module>
 				<module>example</module>
-				<module>credentialProvider</module>
+				<module>akamai</module>
+				<module>aws</module>
+				<module>cmis</module>
+				<module>aspose</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1118,39 +1121,6 @@
 			</activation>
 			<modules>
 				<module>docker</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>cmis</id>
-			<activation>
-				<property>
-					<name>!no-cmis</name>
-				</property>
-			</activation>
-			<modules>
-				<module>cmis</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aspose</id>
-			<activation>
-				<property>
-					<name>!no-aspose</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aspose</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aws</id>
-			<activation>
-				<property>
-					<name>!no-aws</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aws</module>
 			</modules>
 		</profile>
 		<profile>
