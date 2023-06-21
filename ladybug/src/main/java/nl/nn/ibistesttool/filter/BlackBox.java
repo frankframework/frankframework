@@ -27,7 +27,7 @@ import nl.nn.testtool.Checkpoint;
  * @author Jaco de Groot
  */
 public class BlackBox extends GrayBox {
-	private Set<String> SENDERS_TO_HIDE = new HashSet<>(Arrays.asList(
+	private static final Set<String> SENDERS_TO_HIDE = new HashSet<>(Arrays.asList(
 			// Also in stub4testtool.xsl
 			"nl.nn.adapterframework.jdbc.ResultSet2FileSender",
 			"nl.nn.adapterframework.jdbc.DirectQuerySender",
@@ -52,8 +52,7 @@ public class BlackBox extends GrayBox {
 
 	@Override
 	protected boolean isSender(Checkpoint checkpoint) {
-		return (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ")
-				&& !SENDERS_TO_HIDE.contains(checkpoint.getSourceClassName()));
+		return super.isSender(checkpoint) && !SENDERS_TO_HIDE.contains(checkpoint.getSourceClassName());
 	}
 
 	@Override

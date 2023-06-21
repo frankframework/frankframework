@@ -31,7 +31,7 @@ public class GrayBox implements CheckpointMatcher {
 
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == Checkpoint.TYPE_INPUTPOINT || checkpoint.getType() == Checkpoint.TYPE_OUTPUTPOINT
-				 || checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
+				|| checkpoint.getType() == Checkpoint.TYPE_INFOPOINT) {
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 			ListIterator<Checkpoint> iterator = report.getCheckpoints().listIterator(checkpoints.indexOf(checkpoint));
 			while (iterator.hasPrevious()) {
@@ -47,10 +47,11 @@ public class GrayBox implements CheckpointMatcher {
 	}
 
 	protected boolean isSender(Checkpoint checkpoint) {
-		if (checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ")) {
-			return true;
-		}
-		return false;
+		return checkpoint.getName() != null && checkpoint.getName().startsWith("Sender ");
+	}
+
+	protected boolean isPipeline(Checkpoint checkpoint) {
+		return checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ");
 	}
 
 	private boolean isSenderOrPipelineOrFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
@@ -58,7 +59,7 @@ public class GrayBox implements CheckpointMatcher {
 	}
 
 	protected boolean isSenderOrPipeline(Checkpoint checkpoint) {
-		return (isSender(checkpoint) || (checkpoint.getName() != null && checkpoint.getName().startsWith("Pipeline ")));
+		return isSender(checkpoint) || isPipeline(checkpoint);
 	}
 
 	private boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
