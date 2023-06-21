@@ -133,9 +133,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		try {
 			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-			MessageWrapper<M> messageWrapper = new MessageWrapper<>(Message.asMessage(rawMessage), null, correlationId);
-			Message result = processRequest(messageWrapper, processContext);
-			return result.asString();
+			try (Message message = Message.asMessage(rawMessage);
+				 Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext);) {
+					return result.asString();
+			}
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
 		}
