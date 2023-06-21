@@ -1097,6 +1097,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
@@ -1104,9 +1105,11 @@
 				<module>larva</module>
 				<module>ladybug</module>
 				<module>test</module>
-				<module>akamai</module>
 				<module>example</module>
-				<module>credentialProvider</module>
+				<module>akamai</module>
+				<module>aws</module>
+				<module>cmis</module>
+				<module>aspose</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1118,39 +1121,6 @@
 			</activation>
 			<modules>
 				<module>docker</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>cmis</id>
-			<activation>
-				<property>
-					<name>!no-cmis</name>
-				</property>
-			</activation>
-			<modules>
-				<module>cmis</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aspose</id>
-			<activation>
-				<property>
-					<name>!no-aspose</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aspose</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aws</id>
-			<activation>
-				<property>
-					<name>!no-aws</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aws</module>
 			</modules>
 		</profile>
 		<profile>

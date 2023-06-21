@@ -24,7 +24,13 @@ Upcoming (7.9)
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
 - Larva default timeout has been decreased to 10s, and to 2s for local tests
-- 
+- The CMIS, Aspose and AWS modules have been added to our webapp artifact. The servlet endpoints are disabled by default.
+    - In order to enable the CMIS endpoints either of the following properties must be set:
+    `servlet.AtomPub10.enabled=true`,
+    `servlet.AtomPub11.enabled=true`,
+    `servlet.WebServices10.enabled=true`,
+    `servlet.WebServices11.enabled=true` or 
+    `servlet.BrowserBinding.enabled=true`
 
 
 7.8-RC1
