@@ -48,6 +48,9 @@ import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -80,14 +83,24 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		gateway.setRequestChannel(getRequestChannel(applicationContext));
 		gateway.setErrorChannel(getErrorChannel(applicationContext));
 		gateway.setMessageConverters(getMessageConverters());
-		gateway.setErrorOnTimeout(true);
+		gateway.setErrorOnTimeout(false);
+		gateway.setRequestTimeout(0L);
+		gateway.setReplyTimeout(0L);
 
 		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(applicationContext, DefaultHttpHeaderMapper.class);
-		headerMapper.setInboundHeaderNames("topic", "action");
-		headerMapper.setOutboundHeaderNames("meta-*");
+		headerMapper.setInboundHeaderNames(getRequestHeaders());
+		headerMapper.setOutboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		gateway.setHeaderMapper(headerMapper);
 
 		gateway.start();
+	}
+
+	private String[] getRequestHeaders() {
+		List<String> headers = new ArrayList<>();
+		headers.add(BusAction.ACTION_HEADER_NAME);
+		headers.add(BusTopic.TOPIC_HEADER_NAME);
+		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
+		return headers.toArray(new String[0]);
 	}
 
 	private void addRequestContextFilter() {

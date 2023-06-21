@@ -23,10 +23,10 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.MimeType;
 
 public abstract class ResponseMessageBase<T> implements Message<T> {
-	public static final String STATUS_KEY = "meta-status";
-	public static final String MIMETYPE_KEY = "meta-type";
-	public static final String CONTENT_DISPOSITION_KEY = "meta-contentdisposition";
-	public static final String STATE_KEY = "meta-state";
+	public static final String STATUS_KEY = "status";
+	public static final String MIMETYPE_KEY = "type";
+	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";
+	public static final String STATE_KEY = "state";
 
 	private T payload;
 	private Map<String, Object> headers = new HashMap<>();
@@ -42,21 +42,21 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 		if(status < 200 || status > 599) {
 			throw new IllegalArgumentException("Status code ["+status+"] must be between 200 and 599");
 		}
-		headers.put(STATUS_KEY, status);
+		setHeader(STATUS_KEY, String.valueOf(status));
 	}
 
 	protected void setMimeType(MimeType mimeType) {
 		if(mimeType != null) {
-			headers.put(MIMETYPE_KEY, mimeType.toString());
+			setHeader(MIMETYPE_KEY, mimeType.toString());
 		}
 	}
 
 	public void setFilename(String filename) {
-		headers.put(CONTENT_DISPOSITION_KEY, "attachment; filename=\""+filename+"\"");
+		setHeader(CONTENT_DISPOSITION_KEY, "attachment; filename=\""+filename+"\"");
 	}
 
 	public void setHeader(String key, String value) {
-		headers.put(key, value);
+		headers.put(BusMessageUtils.HEADER_PREFIX+key, value);
 	}
 
 	@Override

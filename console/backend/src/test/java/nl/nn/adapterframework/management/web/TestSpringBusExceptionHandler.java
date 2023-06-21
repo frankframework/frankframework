@@ -5,11 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.web.client.HttpClientErrorException;
 
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -17,7 +20,7 @@ import nl.nn.adapterframework.management.bus.BusException;
 public class TestSpringBusExceptionHandler {
 	private SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
 	public enum TestExceptionType {
-		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION
+		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION, CLIENT_EXCEPTION
 	}
 
 	private MessageHandlingException createException(TestExceptionType type) {
@@ -41,6 +44,8 @@ public class TestSpringBusExceptionHandler {
 			return new AccessDeniedException("Access Denied");
 		case AUTHENTICATION:
 			return new AuthenticationCredentialsNotFoundException("An Authentication object was not found in the SecurityContext");
+		case CLIENT_EXCEPTION:
+			return HttpClientErrorException.create(HttpStatus.NOT_FOUND, "custom status text ignored", HttpHeaders.EMPTY, "http body ignored".getBytes(), null);
 		case MESSAGE_WITH_CAUSE:
 		default:
 			return new BusException("message with a cause", cause);
@@ -116,5 +121,19 @@ public class TestSpringBusExceptionHandler {
 		assertEquals(403, response.getStatus());
 		String json = ApiExceptionTest.toJsonString(response.getEntity());
 		assertEquals("Access Denied", json);
+	}
+
+	@Test
+	public void testExceptionWithCustomMessage() {
+		// Arrange
+		MessageHandlingException e = createException(TestExceptionType.CLIENT_EXCEPTION);
+
+		// Act
+		Response response = handler.toResponse(e);
+
+		// Assert
+		assertEquals(503, response.getStatus());
+		String json = ApiExceptionTest.toJsonString(response.getEntity());
+		assertEquals("404 - Not Found", json);
 	}
 }

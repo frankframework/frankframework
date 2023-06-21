@@ -38,7 +38,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -156,7 +155,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -170,7 +169,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -198,7 +197,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -212,7 +211,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
