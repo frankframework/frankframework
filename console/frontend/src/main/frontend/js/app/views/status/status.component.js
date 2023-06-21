@@ -150,7 +150,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	function startPollingForConfigurationStateChanges(callback) {
 		Poller.add("server/configurations", function (configurations) {
-			ctrl.updateConfigurations(configurations);
+			$rootScope.updateConfigurations(configurations);
 
 			var ready = true;
 			for (var i in configurations) {

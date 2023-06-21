@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function ($scope, Api, $stateParams) {
+appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', '$rootScope', function ($scope, Api, $stateParams, $rootScope) {
 	$scope.state = [];
 	$scope.addLocalAlert = function (type, message) {
 		$scope.state.push({ type: type, message: message });

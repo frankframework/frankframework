@@ -1,6 +1,5 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import configurationsManageDetailsStateController from "./views/configuration/configurations-manage/configurations-manage-details/configurations-manage-details-state.controller";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
 import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
 import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";
@@ -124,8 +123,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.status', {
 				url: "/status?configuration&filter&search",
-				// templateUrl: "js/app/views/status/ShowConfigurationStatus.html",
-				// controller: 'StatusCtrl as status',
 				component: 'status',
 				reloadOnSearch: false,
 				data: {
@@ -193,7 +190,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.configuration', {
 				url: "/configurations?name&loaded",
-				templateUrl: "js/app/views/configuration/ShowConfiguration.html",
+				component: 'configurationsShow',
 				reloadOnSearch: false,
 				data: {
 					pageTitle: 'Configurations',
@@ -206,7 +203,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.upload_configuration', {
 				url: "/configurations/upload",
-				templateUrl: "js/app/views/configuration/configurations-upload/ManageConfigurationsUpload.html",
+				component: 'configurationsUpload',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Upload',
@@ -214,7 +211,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configurations', {
 				url: "/configurations/manage",
-				templateUrl: "js/app/views/configuration/configurations-manage/ManageConfigurations.html",
+				component: 'configurationsManage',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
@@ -222,7 +219,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.manage_configuration_details', {
 				url: "/configurations/manage/:name",
-				templateUrl: "js/app/views/configuration/configurations-manage/configurations-manage-details/ManageConfigurationDetails.html",
+				component: 'configurationsManageDetails',
 				data: {
 					pageTitle: 'Manage Configurations',
 					breadcrumbs: 'Configurations > Manage',
@@ -230,7 +227,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				params: {
 					name: "",
 				},
-				controller: configurationsManageDetailsStateController
 			})
 			.state('pages.logging_show', {
 				url: "/logging?directory&file",
@@ -383,7 +379,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_editTrigger', {
 				url: "/monitors/:monitor/triggers/:trigger?configuration",
-				templateUrl: "js/app/views/monitors-add-edit/EditMonitorTrigger.html",
+				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
 				data: {
 					pageTitle: 'Edit Trigger',
 					breadcrumbs: 'Monitors > Triggers > Edit'
@@ -396,7 +392,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_addTrigger', {
 				url: "/monitors/:monitor/triggers/new?configuration",
-				templateUrl: "js/app/views/monitors-add-edit/EditMonitorTrigger.html",
+				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
 				data: {
 					pageTitle: 'Add Trigger',
 					breadcrumbs: 'Monitors > Triggers > Add'
