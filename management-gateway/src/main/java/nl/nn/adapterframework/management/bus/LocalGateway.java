@@ -45,4 +45,10 @@ public class LocalGateway<T> extends MessagingGatewaySupport implements Outbound
 	public void sendAsyncMessage(Message<T> in) {
 		super.send(in);
 	}
+
+	/* must (re-)throw exceptions and not publish them to a dead-letter-queue. */
+	@Override
+	public MessageChannel getErrorChannel() {
+		return null;
+	}
 }
