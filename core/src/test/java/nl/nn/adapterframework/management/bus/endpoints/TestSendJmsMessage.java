@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.integration.support.MessageBuilder;
 
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.management.bus.BusAction;

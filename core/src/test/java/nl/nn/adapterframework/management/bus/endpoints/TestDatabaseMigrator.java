@@ -16,7 +16,6 @@ import java.util.zip.ZipInputStream;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 
