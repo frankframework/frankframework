@@ -31,7 +31,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
 
 /**
@@ -50,19 +49,17 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		AUTHORIZATION(AccessDeniedException.class, Status.FORBIDDEN), // Authorization exception
 		BUS_EXCEPTION(BusException.class, Status.BAD_REQUEST), // Managed BUS exception
 		BACKEND_UNAVAILABLE(ResourceAccessException.class, Status.SERVICE_UNAVAILABLE), // Server doesn't exist
-		REQUEST_EXCEPTION(HttpClientErrorException.class, Status.BAD_REQUEST, ManagedException::convertHttpClientError); // Server refused connection
+		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError); // Server refused connection
 
-		private final @Getter Status status;
 		private final Class<? extends Throwable> exceptionClass;
 		private final Function<Throwable, Response> messageConverter;
 
 		private ManagedException(final Class<? extends Throwable> exceptionClass, final Status status) {
-			this(exceptionClass, status, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
+			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
 		}
 
 		@SuppressWarnings("unchecked")
-		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Status status, final Function<T, Response> messageConverter) {
-			this.status = status;
+		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, Response> messageConverter) {
 			this.exceptionClass = exceptionClass;
 			this.messageConverter = (Function<Throwable, Response>) messageConverter;
 		}
