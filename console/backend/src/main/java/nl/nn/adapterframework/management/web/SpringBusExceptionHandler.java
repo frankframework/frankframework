@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
 */
 package nl.nn.adapterframework.management.web;
 
+import java.util.function.Function;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
@@ -25,8 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
-import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusException;
 
 /**
@@ -41,16 +45,27 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 	private Logger log = LogManager.getLogger(this);
 
 	public enum ManagedException {
-		AUTHENTICATION(Status.UNAUTHORIZED, AuthenticationException.class),
-		AUTHORIZATION(Status.FORBIDDEN, AccessDeniedException.class),
-		BUS_EXCEPTION(Status.INTERNAL_SERVER_ERROR, BusException.class);
+		AUTHENTICATION(AuthenticationException.class, Status.UNAUTHORIZED), //Authentication exception
+		AUTHORIZATION(AccessDeniedException.class, Status.FORBIDDEN), // Authorization exception
+		BUS_EXCEPTION(BusException.class, Status.BAD_REQUEST), // Managed BUS exception
+		BACKEND_UNAVAILABLE(ResourceAccessException.class, Status.SERVICE_UNAVAILABLE), // Server doesn't exist
+		REQUEST_EXCEPTION(HttpClientErrorException.class, ManagedException::convertHttpClientError); // Server refused connection
 
-		private final @Getter Status status;
-		private final Class<? extends Exception> exceptionClass;
+		private final Class<? extends Throwable> exceptionClass;
+		private final Function<Throwable, Response> messageConverter;
 
-		private ManagedException(Status status, Class<? extends Exception> exceptionClass) {
-			this.status = status;
+		private ManagedException(final Class<? extends Throwable> exceptionClass, final Status status) {
+			this(exceptionClass, e -> ApiException.formatExceptionResponse(e.getMessage(), status));
+		}
+
+		@SuppressWarnings("unchecked")
+		private <T extends Throwable> ManagedException(final Class<T> exceptionClass, final Function<T, Response> messageConverter) {
 			this.exceptionClass = exceptionClass;
+			this.messageConverter = (Function<Throwable, Response>) messageConverter;
+		}
+
+		public Response toResponse(Throwable cause) {
+			return messageConverter.apply(cause);
 		}
 
 		public static ManagedException parse(Throwable cause) {
@@ -61,6 +76,17 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 			}
 			return null;
 		}
+
+		/**
+		 * Returns the StatusCode + reason phrase for the given status code.
+		 */
+		private static Response convertHttpClientError(HttpClientErrorException e) {
+			Status status = Status.fromStatusCode(e.getRawStatusCode());
+			if(Family.SERVER_ERROR == status.getFamily() || status == Status.NOT_FOUND) {
+				return ApiException.formatExceptionResponse(status.getStatusCode() + " - " + status.getReasonPhrase(), status);
+			}
+			return ApiException.formatExceptionResponse(e.getResponseBodyAsString(), status);
+		}
 	}
 
 	@Override
@@ -69,7 +95,7 @@ public class SpringBusExceptionHandler implements ExceptionMapper<MessageHandlin
 		for(int i = 0; i < 5 && cause != null; i++) {
 			ManagedException mex = ManagedException.parse(cause);
 			if(mex != null) { //If a ManagedException is found, throw it directly
-				return ApiException.formatExceptionResponse(cause.getMessage(), mex.getStatus());
+				return mex.toResponse(cause);
 			}
 			cause = cause.getCause();
 		}

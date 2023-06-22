@@ -78,7 +78,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSession(Map<String, Object> t) {
+	/**
+	 * Create new PipeLineSession from existing map or session. This may not be null!
+	 *
+	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
+	 */
+	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
 	}
 

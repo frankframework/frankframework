@@ -59,14 +59,13 @@ public class MessageEncoder extends MessageEncoderImpl {
 					}
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
-						m.toStringPrefix(writer);
 						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
 					return new ToStringResult(writer.toString(), null, m.getRequestClass());
 				}
-				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
+				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass());
 			}
 			return super.toString(m.asObject(), charset);
 		}

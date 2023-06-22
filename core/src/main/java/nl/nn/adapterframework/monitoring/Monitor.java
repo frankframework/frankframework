@@ -40,6 +40,20 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
+ * <p>Example configuration:</p>
+ * <pre><code>
+ * {@literal
+ * <monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
+ *    <trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING">
+ *        <event>Receiver Shutdown</event>
+ *    </trigger>
+ *    <trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING">
+ *        <event>Receiver Shutdown</event>
+ *    </trigger>
+ * </monitor>
+ * }
+ * 
+ * </code></pre>
  * @author  Gerrit van Brakel
  * @since   4.9
  * 

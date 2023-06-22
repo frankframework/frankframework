@@ -34,19 +34,18 @@ import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
- * Pipe that creates a ZipStream.
+ * Pipe that creates a ZIP archive (on action close).
+ * <p>
+ * A chain of zipWriterPipes can be used to create a ZIP archive. You can use the pipe with different actions (see specified below).
+ * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
+ * </p>
+ * 
+ * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
+ * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
  *
- * For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>
- * <li>String specifying a filename</li>
- * <li>OutputStream</li>
- * <li>HttpResponse</li>
- * </ul>
- *
- * @ff.parameter filename with action=open: the filename if the input is a HttpResponse; with action=write: the entryfilename
- * @ff.parameter contents only for action=write: contents of the zipentry, If not specified, the input is used.
- *
- * @author  Gerrit van Brakel
- * @since   4.9.10
+ * @author Gerrit van Brakel
+ * @author Niels Meijer
+ * @since  7.9
  */
 public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry> {
 
