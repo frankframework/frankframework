@@ -46,7 +46,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
-	private static int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
+	private static final int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -165,9 +165,7 @@ public abstract class MessageUtils {
 			return null;
 		} finally {
 			MessageContext context = message.getContext();
-			if(context != null) {
-				context.withCharset(charsetName);
-			}
+			context.withCharset(charsetName);
 		}
 	}
 
@@ -175,7 +173,7 @@ public abstract class MessageUtils {
 	 * Returns the {@link MimeType} if present in the {@link MessageContext}.
 	 */
 	public static MimeType getMimeType(Message message) {
-		if(Message.isEmpty(message) || message.getContext() == null) {
+		if(Message.isEmpty(message) || message.getContext().isEmpty()) {
 			return null;
 		}
 
