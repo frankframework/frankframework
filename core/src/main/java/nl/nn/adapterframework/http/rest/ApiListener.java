@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
 
@@ -40,9 +43,6 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -147,8 +147,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	@Override
-	public Message processRequest(Message message, PipeLineSession requestContext) throws ListenerException {
-		Message result = super.processRequest(message, requestContext);
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
+		Message result = super.processRequest(message, session);
 
 		//Return null when super.processRequest() returns an empty string
 		if(Message.isEmpty(result)) {

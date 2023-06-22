@@ -1,7 +1,10 @@
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.testutil.mock.WaitUtils.waitForState;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.pipes.EchoPipe;
@@ -81,6 +85,7 @@ public class JavaListenerTest {
 
 	JavaListener<String> setupJavaListener() {
 		JavaListener<String> listener = spy(configuration.createBean(JavaListener.class));
+		listener.setReturnedSessionKeys("copy-this,this-doesnt-exist");
 		return listener;
 	}
 
@@ -97,7 +102,14 @@ public class JavaListenerTest {
 		pl.setFirstPipe("dummy");
 		pl.setPipeLineProcessor(pipeLineProcessor);
 
-		EchoPipe pipe = new EchoPipe();
+		EchoPipe pipe = new EchoPipe() {
+			@Override
+			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+				session.put("key-not-configured-for-copy", "dummy");
+				session.put("copy-this", "return-value");
+				return super.doPipe(message, session);
+			}
+		};
 		pipe.setName("dummy");
 		pl.addPipe(pipe);
 
@@ -174,6 +186,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
+		//noinspection deprecation
 		assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
 		assertEquals("TEST", result.asString());
 	}
@@ -192,7 +205,7 @@ public class JavaListenerTest {
 		startAdapter();
 
 		// Act / Assert
-		assertThrows(ListenerException.class,() -> listener.processRequest(testMessage, session));
+		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
 	}
 
 	@Test
@@ -215,5 +228,95 @@ public class JavaListenerTest {
 		String resultString = result.asString();
 		assertTrue(resultString.contains("FAILED PIPE"), "Result message should contain string 'FAILED PIPE'");
 		assertTrue(resultString.startsWith("<errorMessage"), "Result message should start with string '<errorMessage'");
+	}
+
+	@Test
+	public void testProcessRequestWithReturnSessionKeys() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		session.put("copy-this", "original-value");
+
+		// start adapter
+		startAdapter();
+
+		// Act
+		listener.processRequest(testMessage, session);
+
+		// Assert
+		assertAll(
+			() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+			() -> assertEquals("return-value", session.get("copy-this")),
+			() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
+			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
+		);
+	}
+
+	@Test
+	public void testProcessRequestWithReturnSessionKeysWhenNoneConfigured() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
+		listener.setReturnedSessionKeys(null);
+		session.put("copy-this", "original-value");
+
+		// start adapter
+		startAdapter();
+
+		// Act
+		listener.processRequest(testMessage, session);
+
+		// Assert
+		assertAll(
+				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy'"),
+				() -> assertEquals("dummy", session.get("key-not-configured-for-copy")),
+				() -> assertEquals("return-value", session.get("copy-this")),
+				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
+		);
+	}
+
+	@Test
+	public void testProcessRequestStringWithReturnSessionKeys() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		HashMap context = new HashMap<>();
+		context.put("copy-this", "original-value");
+
+		// start adapter
+		startAdapter();
+
+		// Act
+		listener.processRequest("correlation-id", rawTestMessage, context);
+
+		// Assert
+		assertAll(
+			() -> assertFalse(context.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+			() -> assertEquals("return-value", context.get("copy-this")),
+			() -> assertTrue(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
+		);
+	}
+
+	@Test
+	public void testProcessRequestStringWithReturnSessionKeysWhenNoneConfigured() throws Exception {
+		// Arrange
+		String rawTestMessage = "TEST";
+		HashMap context = new HashMap<>();
+		context.put("copy-this", "original-value");
+		listener.setReturnedSessionKeys(null);
+
+		// start adapter
+		startAdapter();
+
+		// Act
+		listener.processRequest("correlation-id", rawTestMessage, context);
+
+		// Assert
+		assertAll(
+			() -> assertTrue(context.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy'"),
+			() -> assertEquals("dummy", context.get("key-not-configured-for-copy")),
+			() -> assertEquals("return-value", context.get("copy-this")),
+			() -> assertFalse(context.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
+		);
 	}
 }
