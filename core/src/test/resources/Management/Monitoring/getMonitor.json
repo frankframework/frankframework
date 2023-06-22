@@ -24,5 +24,13 @@
             ]
         }
     ],
-    "changed": null
+    "events": {
+    },
+    "changed": null,
+    "severities": [
+        "HARMLESS",
+        "WARNING",
+        "CRITICAL",
+        "FATAL"
+    ]
 }

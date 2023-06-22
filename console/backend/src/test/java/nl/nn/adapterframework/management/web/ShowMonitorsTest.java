@@ -109,6 +109,27 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 	}
 
 	@Test
+	public void testAddTrigger() {
+		// Arrange
+		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
+		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
+		String jsonInput = "{\"type\":\"ALARM\",\"filter\":\"NONE\",\"events\":[\"Receiver Configured\"],\"severity\":\"HARMLESS\",\"threshold\":1,\"period\":2}";
+
+		// Act
+		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/configurations/TestConfiguration/monitors/monitorName/triggers", jsonInput);
+
+		// Assert
+		Message<?> request = requestMessage.getValue().build();
+		assertAll(
+				() -> assertEquals(200, response.getStatus()),
+				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
+				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
+				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
+				() -> assertEquals(jsonInput, request.getPayload())
+			);
+	}
+
+	@Test
 	public void testUpdateTrigger() throws Exception {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
