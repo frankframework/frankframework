@@ -15,7 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 
@@ -29,6 +28,7 @@ import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
@@ -220,7 +220,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("configuration", getConfiguration().getName());
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -235,7 +235,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("useIncludes", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-with-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -250,7 +250,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("indent", false);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -265,7 +265,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("zip", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/octet-stream", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 		InputStream payload = (InputStream) response.getPayload();
 
 		String wsdl = null;

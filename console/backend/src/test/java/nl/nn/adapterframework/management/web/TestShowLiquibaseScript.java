@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 
 public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScript>{
@@ -35,7 +36,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
 			assertEquals("DOWNLOAD", headers.get("action"));
-			assertEquals("IAF_Util", headers.get("configuration"));
+			assertEquals("IAF_Util", BusMessageUtils.getHeader(msg, "configuration"));
 
 			return msg;
 		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
@@ -69,7 +70,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
 			assertEquals("DOWNLOAD", headers.get("action"));
-			assertEquals("test123", headers.get("configuration"));
+			assertEquals("test123", BusMessageUtils.getHeader(msg, "configuration"));
 
 			return msg;
 		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
@@ -90,7 +91,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 			MessageHeaders headers = msg.getHeaders();
 			assertEquals("JDBC_MIGRATION", headers.get("topic"));
 			assertEquals("UPLOAD", headers.get("action"));
-			assertEquals("script.xml", headers.get("filename"));
+			assertEquals("script.xml", BusMessageUtils.getHeader(msg, "filename"));
 
 			return msg;
 		}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));

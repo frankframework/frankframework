@@ -37,10 +37,6 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	@Override
 	public void afterPropertiesSet() {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
-
-		if(warnings == null) {
-			warnings = new LinkedList<>();
-		}
 	}
 
 	protected void addWarnings(List<String> warnings) {
@@ -49,7 +45,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	@Override
 	public void destroy() throws Exception {
-		warnings = null;
+		warnings.clear();
 	}
 
 	public int size() {

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.management.web;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,12 +70,11 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-
 		if(!isEnabled) {
 			return;
 		}
 
-		log.debug("initialize IAFAPI servlet");
+		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);
 
 		if(StringUtils.isNotEmpty(allowedCorsOrigins)) {
@@ -97,6 +97,12 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 		if(!isEnabled) {
+			try {
+				response.sendError(404, "api backend not enabled");
+			} catch (IOException e) {
+				log.debug("unable to send 404 error to client", e);
+			}
+
 			return;
 		}
 
