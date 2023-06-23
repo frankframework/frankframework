@@ -1352,11 +1352,11 @@
 			<id>alternateBuildDir</id>
 			<activation>
 				<property>
-					<name>alt.build.dir</name>
+					<name>build.dir</name>
 				</property>
 			</activation>
 			<build>
-				<directory>${alt.build.dir}</directory>
+				<directory>${build.dir}</directory>
 			</build>
 		</profile>
 	</profiles>
