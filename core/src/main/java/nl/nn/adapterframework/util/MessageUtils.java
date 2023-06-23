@@ -46,7 +46,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
-	private static final int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
+	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -116,7 +116,7 @@ public abstract class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeDecodingCharset(Message message) throws IOException {
-		return computeDecodingCharset(message, charsetConfidenceLevel);
+		return computeDecodingCharset(message, CHARSET_CONFIDENCE_LEVEL);
 	}
 
 	/**
