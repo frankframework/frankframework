@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		if(str == null || str.isEmpty())
 			return "";
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
 		String line = null;

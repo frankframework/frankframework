@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class JavascriptSender extends SenderSeries {
 	private @Getter JavaScriptEngines engine = JavaScriptEngines.J2V8;
 
 	/** ES6's let/const declaration Pattern. */
-	private Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
+	private final Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
 
 	private String fileInput;
 
@@ -186,7 +186,7 @@ public class JavascriptSender extends SenderSeries {
 		Matcher m = es6VarPattern.matcher(source);
 		StringBuffer sb = new StringBuffer();
 		while(m.find()) {
-			StringBuffer buf = new StringBuffer(m.group());
+			StringBuilder buf = new StringBuilder(m.group());
 			buf.replace(m.start(1) - m.start(), m.end(1) - m.start(), "var");
 			m.appendReplacement(sb, buf.toString());
 		}

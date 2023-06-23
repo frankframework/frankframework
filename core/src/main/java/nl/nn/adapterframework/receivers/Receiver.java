@@ -1039,7 +1039,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
 			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
-			MessageWrapper<M> messageWrapper = new MessageWrapper<>(rawMessage, message, messageId, correlationId);
+			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 			Message result = processMessageInAdapter(messageWrapper, session, -1, false, false);
 			result.unscheduleFromCloseOnExitOf(session);
 			return result;

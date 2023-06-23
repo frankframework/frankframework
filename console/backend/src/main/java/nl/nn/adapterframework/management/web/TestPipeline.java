@@ -117,6 +117,8 @@ public class TestPipeline extends FrankApiBase {
 		Object payload = response.getPayload();
 		if(payload instanceof String) {
 			return (String) payload;
+		} else if(payload instanceof byte[]) {
+			return new String((byte[]) payload);
 		} else if(payload instanceof InputStream) {
 			try {
 				return StreamUtil.streamToString((InputStream) payload);
@@ -165,7 +167,7 @@ public class TestPipeline extends FrankApiBase {
 				Message<?> response = sendSyncMessage(builder);
 				result.append(name);
 				result.append(": ");
-				result.append(response.getHeaders().get(ResponseMessageBase.STATE_KEY));
+				result.append(BusMessageUtils.getHeader(response, ResponseMessageBase.STATE_KEY));
 				result.append("\n");
 			}
 			archive.closeEntry();

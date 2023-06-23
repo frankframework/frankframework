@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public class XComSender extends SenderWithParametersBase {
 
 				// read the output of the process
 				BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
-				StringBuffer output = new StringBuffer();
+				StringBuilder output = new StringBuilder();
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					output.append(line);
@@ -176,7 +176,7 @@ public class XComSender extends SenderWithParametersBase {
 
 	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
 		try {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 
 			sb.append(xcomtcp). append(" -c1");
 

@@ -22,6 +22,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -39,6 +40,9 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 		String userPrincipalName = BusMessageUtils.getUserPrincipalName();
 		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
 
+		if(action == null) {
+			throw new BusException("no (valid) action specified");
+		}
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);
 	}
 }

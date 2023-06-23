@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -165,9 +164,9 @@ public abstract class MessageUtils {
 			}
 			return null;
 		} finally {
-			Map<String, Object> context = message.getContext();
+			MessageContext context = message.getContext();
 			if(context != null) {
-				context.put(MessageContext.METADATA_CHARSET, charsetName);
+				context.withCharset(charsetName);
 			}
 		}
 	}
@@ -193,7 +192,7 @@ public abstract class MessageUtils {
 	}
 
 	public static boolean isMimeType(Message message, MimeType compareTo) {
-		Map<String, Object> context = message.getContext();
+		MessageContext context = message.getContext();
 		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 		return (mimeType != null && mimeType.includes(compareTo));
 	}
@@ -217,7 +216,7 @@ public abstract class MessageUtils {
 			return null;
 		}
 
-		Map<String, Object> context = message.getContext();
+		MessageContext context = message.getContext();
 		MimeType mimeType = getMimeType(message);
 		if(mimeType != null) {
 			return mimeType;
@@ -239,7 +238,7 @@ public abstract class MessageUtils {
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
 			mimeType = MimeType.valueOf(tikaMediaType.toString());
-			context.put(MessageContext.METADATA_MIMETYPE, mimeType);
+			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
 				if(charset != null) {
@@ -283,7 +282,7 @@ public abstract class MessageUtils {
 			CRC32 checksum = new CRC32();
 			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
 				long size = IOUtils.consume(inputStream);
-				message.getContext().put(MessageContext.METADATA_SIZE, size);
+				message.getContext().withSize(size);
 			}
 			return checksum.getValue();
 		} catch (IOException e) {
@@ -314,7 +313,7 @@ public abstract class MessageUtils {
 
 			try (InputStream inputStream = message.asInputStream()) {
 				long computedSize = IOUtils.consume(inputStream);
-				message.getContext().put(MessageContext.METADATA_SIZE, computedSize);
+				message.getContext().withSize(computedSize);
 				return computedSize;
 			}
 		} catch (IOException e) {

@@ -29,7 +29,7 @@ public interface ServiceClient {
 	 * to a {@link nl.nn.adapterframework.core.IListener} implementation.
 	 *
 	 * @param message {@link Message} to process
-	 * @param session {@link PipeLineSession} of the request
+	 * @param session {@link PipeLineSession} of the request.
 	 * @return Resulting {@link Message}.
 	 * @throws ListenerException Thrown if an exception occurs.
 	 */

@@ -68,6 +68,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -285,7 +286,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	private class Samba2Message extends Message {
 
-		public Samba2Message(File file, Map<String,Object> context) {
+		public Samba2Message(File file, MessageContext context) {
 			super(() -> {
 				InputStream is = file.getInputStream();
 				FilterInputStream fis = new FilterInputStream(is) {

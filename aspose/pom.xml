@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>3.23.2</version>
+			<version>3.23.3</version>
 		</dependency>
 
 		<!-- Tika library -->
@@ -206,6 +206,10 @@
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.jcip</groupId>
+					<artifactId>jcip-annotations</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

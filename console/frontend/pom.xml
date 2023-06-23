@@ -11,7 +11,7 @@
 	<name>Frank Console Frontend</name>
 
 	<build>
-		<defaultGoal>process-resources</defaultGoal>
+		<defaultGoal>generate-resources</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -19,39 +19,34 @@
 				<version>1.12.1</version>
 				<executions>
 					<execution>
-						<id>download npm</id>
-						<phase>initialize</phase>
+						<id>install node and npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
+						<phase>generate-resources</phase>
 					</execution>
 					<execution>
-						<id>run npm install</id>
-						<phase>initialize</phase>
+						<id>npm install</id>
 						<goals>
 							<goal>npm</goal>
 						</goals>
+						<phase>generate-resources</phase>
 						<configuration>
 							<arguments>install</arguments>
 						</configuration>
 					</execution>
-
 					<execution>
-						<id>run npm build</id>
-						<phase>generate-resources</phase>
+						<id>webpack build</id>
 						<goals>
-							<goal>npm</goal>
+							<goal>webpack</goal>
 						</goals>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
+						<phase>generate-resources</phase>
 					</execution>
 				</executions>
 				<configuration>
 					<nodeVersion>v16.20.0</nodeVersion>
 					<workingDirectory>src/main/frontend</workingDirectory>
 					<installDirectory>target</installDirectory>
-					<srcdir>src/main/frontend</srcdir>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -76,20 +71,93 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<packagingExcludes>.gitignore</packagingExcludes>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+			<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.github.eirslett</groupId>
+										<artifactId>frontend-maven-plugin</artifactId>
+										<versionRange>[1.12,)</versionRange>
+										<goals>
+											<goal>install-node-and-npm</goal>
+											<goal>webpack</goal>
+											<goal>npm</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.commonjava.maven.plugins</groupId>
+										<artifactId>directory-maven-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>directory-of</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.glassfish.copyright</groupId>
+					<artifactId>glassfish-copyright-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>Check-CopyRight-Notice</id>
+							<configuration>
+								<skip>true</skip>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>verify-code-style</id>
+							<configuration>
+								<skip>true</skip>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>enforce-lib-ban</id>
+							<configuration>
+								<skip>true</skip>
+							</configuration>
+						</execution>
+						<execution>
+							<id>enforce-classpath-lib-ban</id>
+							<configuration>
+								<skip>true</skip>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<reporting>
@@ -116,13 +184,13 @@
 						<version>1.12.1</version>
 						<executions>
 							<execution>
-								<id>run npm build</id>
-								<phase>generate-resources</phase>
+								<id>webpack build</id>
 								<goals>
-									<goal>npm</goal>
+									<goal>webpack</goal>
 								</goals>
+								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>run build:prod</arguments>
+									<arguments>--mode production</arguments>
 								</configuration>
 							</execution>
 						</executions>

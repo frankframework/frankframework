@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
@@ -62,7 +64,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -75,7 +77,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSession(Map<String, Object> t) {
+	/**
+	 * Create new PipeLineSession from existing map or session. This may not be null!
+	 *
+	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
+	 */
+	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
 	}
 

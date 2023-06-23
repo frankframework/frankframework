@@ -30,7 +30,7 @@ public class TestBlobs extends JdbcTestBase {
 
 	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {
 		String tenChars="0123456789";
-		StringBuffer block = new StringBuffer(blockSize);
+		StringBuilder block = new StringBuilder(blockSize);
 		for (int i=0; i<(blockSize+9)/10; i++) {
 			block.append(tenChars);
 		}
@@ -40,7 +40,7 @@ public class TestBlobs extends JdbcTestBase {
 	}
 
 	public static String getBigString(int numBlocks, int blockSize) {
-		StringBuffer result = new StringBuffer(numBlocks*blockSize);
+		StringBuilder result = new StringBuilder(numBlocks*blockSize);
 		getBigString(numBlocks, blockSize, s -> result.append(s));
 		return result.toString();
 	}
