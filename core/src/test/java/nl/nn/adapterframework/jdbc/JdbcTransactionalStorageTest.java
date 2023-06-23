@@ -120,7 +120,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
 				ResultSet rs = statement.executeQuery();
 				if(rs.next()) {
-					String result = storage.retrieveObject(rs, 9).getRawMessage();
+					String result = storage.retrieveObject("dummy", rs, 9).getRawMessage();
 					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
@@ -223,7 +223,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if(rs.next()) {
-					String result = storage.retrieveObject(rs, 1).getRawMessage();
+					String result = storage.retrieveObject("dummy", rs, 1).getRawMessage();
 					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
