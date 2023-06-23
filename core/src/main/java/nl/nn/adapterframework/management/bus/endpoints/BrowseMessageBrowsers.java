@@ -262,8 +262,8 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		if(availableTargetStates != null && availableTargetStates.contains(targetState)) {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(processState);
 			try {
-				// TODO: Instead of creating here wrapper, can the message-browser return that?
-				if (receiver.changeProcessState(new RawMessageWrapper(store.browseMessage(messageId), messageId, null), targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
+				RawMessageWrapper rawMessage = store.browseMessage(messageId);
+				if (receiver.changeProcessState(rawMessage, targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
 					throw new BusException("could not move message ["+messageId+"]");
 				}
 			} catch (ListenerException e) {
@@ -315,9 +315,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			throw new BusException("no MessageBrowser found");
 		}
 
-		String msg = null;
+		String msg;
 		try {
-			Object rawmsg = messageBrowser.browseMessage(messageId);
+			RawMessageWrapper<?> rawmsg = messageBrowser.browseMessage(messageId);
 			msg = MessageBrowsingUtil.getMessageText(rawmsg, listener);
 		} catch(ListenerException | IOException e) {
 			throw new BusException("unable to find or read message ["+messageId+"]", e);

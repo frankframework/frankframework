@@ -820,8 +820,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 
 	@Override
-	public S getMessage(String storageKey) throws ListenerException {
-		S result = browseMessage(storageKey);
+	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
+		RawMessageWrapper<S> result = browseMessage(storageKey);
 		deleteMessage(storageKey);
 		return result;
 	}

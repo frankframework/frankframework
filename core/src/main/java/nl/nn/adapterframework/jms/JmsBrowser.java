@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * Basic browser of JMS Messages.
@@ -32,9 +33,8 @@ public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
-		// TODO: Need to sort out the return types of MessageBrowsers
-		return browseJmsMessage(messageId);
+	public RawMessageWrapper<M> browseMessage(String messageId) throws ListenerException {
+		return new RawMessageWrapper<>(browseJmsMessage(messageId), messageId, null);
 	}
 
 }

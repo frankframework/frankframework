@@ -371,7 +371,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);
@@ -380,8 +380,9 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					// TODO: Fix the return types in MessageBrowsers
-					return retrieveObject(rs, 2).getRawMessage();
+					RawMessageWrapper<M> rawMessageWrapper = retrieveObject(rs, 2);
+					rawMessageWrapper.getContext().put("key", storageKey);
+					return rawMessageWrapper;
 				}
 			}
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly

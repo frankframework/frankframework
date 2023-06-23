@@ -7,13 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -107,7 +108,10 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 			while(iterator.hasNext()) {
 				IMessageBrowsingIteratorItem item = iterator.next();
 				String storageKey = item.getId();
-				F file = browser.browseMessage(storageKey);
+				RawMessageWrapper<F> rawMessageWrapper = browser.browseMessage(storageKey);
+				assertEquals(item.getId(), rawMessageWrapper.getId());
+				assertEquals(item.getId(), rawMessageWrapper.getContext().get("key"));
+				F file = rawMessageWrapper.getRawMessage();
 				items.put(item.getOriginalId(), fileSystem.getName(file));
 			}
 		}

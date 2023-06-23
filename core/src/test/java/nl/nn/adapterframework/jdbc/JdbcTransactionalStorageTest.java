@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
@@ -81,7 +82,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
-		String data = storage.browseMessage(storageKey);
+		RawMessageWrapper<String> rawMessageWrapper = storage.browseMessage(storageKey);
+		String data = rawMessageWrapper.getRawMessage();
+		assertEquals(storageKey, rawMessageWrapper.getContext().get("key"));
 		assertEquals(message, data);
 	}
 
@@ -134,7 +137,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
-		Object o = storage.browseMessage(storageKey);
+		RawMessageWrapper<?> ro = storage.browseMessage(storageKey);
+		Object o = ro.getRawMessage();
+		assertEquals(storageKey, ro.getId());
 		assertNotNull(o);
 		assertEquals(message, o);
 
@@ -238,7 +243,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		}
 
-		String result = storage.getMessage(key);
+		String result = storage.getMessage(key).getRawMessage();
 		assertEquals(message,result);
 	}
 
@@ -260,7 +265,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			assertEquals("label", item.getLabel());
 		}
 
-		String result = storage.getMessage(key);
+		String result = storage.getMessage(key).getRawMessage();
 		assertEquals(message,result);
 	}
 

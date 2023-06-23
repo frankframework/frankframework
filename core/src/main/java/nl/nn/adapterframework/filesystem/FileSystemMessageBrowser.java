@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> implements IMessageBrowser<F> {
@@ -95,9 +96,12 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	}
 
 	@Override
-	public F browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<F> browseMessage(String storageKey) throws ListenerException {
 		try {
-			return fileSystem.toFile(folder, storageKey);
+			F file = fileSystem.toFile(folder, storageKey);
+			RawMessageWrapper<F> result = new RawMessageWrapper<>(file, storageKey, null);
+			result.getContext().put("key", storageKey);
+			return result;
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
