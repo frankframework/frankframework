@@ -14,6 +14,7 @@ import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -110,7 +111,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 				String storageKey = item.getId();
 				RawMessageWrapper<F> rawMessageWrapper = browser.browseMessage(storageKey);
 				assertEquals(item.getId(), rawMessageWrapper.getId());
-				assertEquals(item.getId(), rawMessageWrapper.getContext().get("key"));
+				assertEquals(item.getId(), rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_KEY_KEY));
 				F file = rawMessageWrapper.getRawMessage();
 				items.put(item.getOriginalId(), fileSystem.getName(file));
 			}

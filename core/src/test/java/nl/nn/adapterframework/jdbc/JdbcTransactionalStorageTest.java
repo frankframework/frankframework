@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
@@ -84,7 +85,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		RawMessageWrapper<String> rawMessageWrapper = storage.browseMessage(storageKey);
 		String data = rawMessageWrapper.getRawMessage();
-		assertEquals(storageKey, rawMessageWrapper.getContext().get("key"));
+		assertEquals(storageKey, rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_KEY_KEY));
 		assertEquals(message, data);
 	}
 

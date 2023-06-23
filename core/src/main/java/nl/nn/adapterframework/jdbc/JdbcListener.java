@@ -57,8 +57,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
 
-	public static final String STORAGE_KEY_KEY="key";
-
 	private @Getter String selectQuery;
 	private @Getter String peekQuery;
 
@@ -290,7 +288,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
 			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
-			mw.getContext().put(STORAGE_KEY_KEY, key);
+			mw.getContext().put(PipeLineSession.STORAGE_KEY_KEY, key);
 			return mw;
 		} catch (SQLException | IOException e) {
 			throw new JdbcException(e);
@@ -300,7 +298,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
 
 		Map<String, Object> mwContext = rawMessage.getContext();
-		String key = (String) mwContext.get(STORAGE_KEY_KEY);
+		String key = (String) mwContext.get(PipeLineSession.STORAGE_KEY_KEY);
 		if (StringUtils.isNotEmpty(key)) {
 			return key;
 		}

@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -105,7 +106,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
-			messageWrapper.getContext().put("key", storageKey);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);
@@ -117,7 +118,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
-			messageWrapper.getContext().put("key", storageKey);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);
