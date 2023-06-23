@@ -22,6 +22,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.integration.IntegrationPatternType;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
@@ -30,11 +31,11 @@ import nl.nn.adapterframework.util.SpringUtils;
 /**
  * Allows the creation of outbound integration gateways.
  */
-public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationContextAware, FactoryBean<IntegrationGateway<T>> {
+public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway<T>> {
 
 	private Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
-	private IntegrationGateway<T> gateway;
+	private OutboundGateway<T> gateway;
 
 	private static final String GATEWAY_CLASS_KEY = "management.gateway.outbound.class";
 	private @Setter String gatewayClassname = null;
@@ -49,23 +50,28 @@ public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationC
 
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 
-		if(!IntegrationGateway.class.isAssignableFrom(gatewayClass)) {
+		if(!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
 			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
 		}
 
-		gateway = (IntegrationGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
+		gateway = (OutboundGateway<T>) SpringUtils.createBean(applicationContext, gatewayClass);
+		IntegrationPatternType type = gateway.getIntegrationPatternType();
+		if(IntegrationPatternType.outbound_gateway != type) {
+			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] must be of an Outbound Gateway");
+		}
+
 		log.info("created gateway [{}]", gateway);
 	}
 
 	@Override
-	public IntegrationGateway<T> getObject() {
+	public OutboundGateway<T> getObject() {
 		return gateway;
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public Class<? extends IntegrationGateway> getObjectType() {
-		return (this.gateway != null ? this.gateway.getClass() : IntegrationGateway.class);
+	public Class<? extends OutboundGateway> getObjectType() {
+		return (this.gateway != null ? this.gateway.getClass() : OutboundGateway.class);
 	}
 
 	@Override

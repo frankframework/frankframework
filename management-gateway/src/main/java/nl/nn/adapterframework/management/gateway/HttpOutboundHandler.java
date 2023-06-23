@@ -15,13 +15,16 @@
 */
 package nl.nn.adapterframework.management.gateway;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.http.outbound.HttpRequestExecutingMessageHandler;
@@ -30,7 +33,12 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
+import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
@@ -49,13 +57,34 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		setOutputChannel(responseChannel);
 
 		DefaultHttpHeaderMapper headerMapper = SpringUtils.createBean(getApplicationContext(), DefaultHttpHeaderMapper.class);
-		headerMapper.setOutboundHeaderNames("topic", "action");
-		headerMapper.setInboundHeaderNames("meta-*");
+		headerMapper.setOutboundHeaderNames(getRequestHeaders());
+		headerMapper.setInboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		setHeaderMapper(headerMapper);
 
-		setMessageConverters(Collections.singletonList(new ByteArrayHttpMessageConverter()));
+		setMessageConverters(getMessageConverters());
 
 		setHttpMethodExpression(new HttpMethodExpression());
+	}
+
+	/**
+	 * Reply converters to turn byte[] / InputStreams and Strings to something that the HTTP Inbound and Outbound gateways can understand.
+	 */
+	private List<HttpMessageConverter<?>> getMessageConverters() {
+		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(StreamUtil.DEFAULT_CHARSET);
+		stringHttpMessageConverter.setWriteAcceptCharset(false);
+		messageConverters.add(stringHttpMessageConverter);
+		messageConverters.add(new InputStreamHttpMessageConverter());
+		messageConverters.add(new ByteArrayHttpMessageConverter());
+		return messageConverters;
+	}
+
+	private String[] getRequestHeaders() {
+		List<String> headers = new ArrayList<>();
+		headers.add(BusAction.ACTION_HEADER_NAME);
+		headers.add(BusTopic.TOPIC_HEADER_NAME);
+		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
+		return headers.toArray(new String[0]);
 	}
 
 	private static class HttpMethodExpression extends ValueExpression<HttpMethod> {
@@ -77,14 +106,14 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	@SuppressWarnings("rawtypes")
 	public Message handleRequestMessage(Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
+
 		if(response instanceof Message) {
 			return (Message) response;
 		}
 		if(response instanceof MessageBuilder) {
 			return ((MessageBuilder) response).build();
 		}
-
-		throw new IllegalStateException("unknown response type ["+((response != null) ? response.getClass().getCanonicalName() : "null")+"]");
+		throw new BusException("unknown response type ["+((response != null) ? response.getClass().getCanonicalName() : "null")+"]");
 	}
 
 	@Override

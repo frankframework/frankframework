@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.stream;
 
 import java.nio.file.Path;
-import java.util.Map;
 
 public class PathMessage extends Message {
 
@@ -26,11 +25,11 @@ public class PathMessage extends Message {
 		this(path, new MessageContext());
 	}
 
-	public PathMessage(Path path, Map<String,Object> context) {
+	public PathMessage(Path path, MessageContext context) {
 		this(path, context, false);
 	}
 
-	private PathMessage(Path path, Map<String,Object> context, boolean removeOnClose) {
+	private PathMessage(Path path, MessageContext context, boolean removeOnClose) {
 		super(new SerializableFileReference(path, removeOnClose), new MessageContext(context)
 				.withModificationTime(path.toFile().lastModified())
 				.withSize(path.toFile().length())

@@ -19,18 +19,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.integration.MessageTimeoutException;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageDeliveryException;
+
+import nl.nn.adapterframework.management.bus.BusException;
 
 /**
  * Converter which (when used in combination with a PublishSubscribeChannel) retrieves
  * the payload from the response message, logs the exception, and returns a sanitized
- * exception message with status code 400.
+ * exception message with status code 400/500.
  */
 public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler {
 	private final Logger log = LogManager.getLogger(ErrorMessageConverter.class);
-	private static final HttpStatus ERROR_STATUS = HttpStatus.BAD_REQUEST;
 
 	public ErrorMessageConverter() {
 		setRequiresReply(true);
@@ -38,15 +39,24 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 
 	@Override
 	protected Object handleRequestMessage(Message<?> requestMessage) {
-		String body = null;
 		if(requestMessage.getPayload() instanceof Exception) {
 			Exception e = (Exception) requestMessage.getPayload();
-			if(!(e instanceof MessageTimeoutException)) {
-				body = e.getMessage();
-			}
 			log.error("an error occurred while handling frank-management-bus request", e);
+
+			if(e instanceof MessageDeliveryException) { //hide timeouts
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
+			// For the correct mapping the status code should match SpringBusExceptionHandler.BusException
+			// And to make the Exception more readable, return the cause's message.
+			if(e.getCause() instanceof BusException) {
+				return new ResponseEntity<>(e.getCause().getMessage(), HttpStatus.BAD_REQUEST);
+			}
+
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<String>(body, ERROR_STATUS);
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 }

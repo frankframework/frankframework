@@ -25,6 +25,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.springframework.messaging.MessageHandlingException;
+
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusTopic;
 
@@ -74,6 +76,8 @@ public class ServerStatistics extends FrankApiBase {
 			response.put("status", Response.Status.INTERNAL_SERVER_ERROR);
 			response.put("error", "unable to connect to backend system: "+e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+		} catch (MessageHandlingException e) {
+			throw e; //Spring gateway exchange exceptions are handled by the SpringBusExceptionHandler
 		} catch (Exception e) {
 			throw new ApiException(e);
 		}
