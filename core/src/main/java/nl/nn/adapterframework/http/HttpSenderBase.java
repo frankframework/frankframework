@@ -37,12 +37,11 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
-import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -85,7 +84,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends HttpSessionBase implements ISenderWithParameters {
+public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
@@ -93,10 +92,6 @@ public abstract class HttpSenderBase extends HttpSessionBase implements ISenderW
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-
-	private @Getter @Setter String name;
-	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String url;
 	private @Getter String urlParam = "url";
@@ -224,7 +219,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements ISenderW
 	@Override
 	public void open() throws SenderException {
 		try {
-			super.open();
+			super.start();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"unable to create HttpClient", e);
 		}
@@ -240,7 +235,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements ISenderW
 
 	@Override
 	public void close() {
-		super.close();
+		super.stop();
 
 		if (transformerPool!=null) {
 			transformerPool.close();

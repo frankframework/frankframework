@@ -55,13 +55,14 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.CanShareResource;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -128,8 +129,13 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author	Niels Meijer
  * @since	7.0
  */
-public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDestination, HasKeystore, HasTruststore {
+public abstract class HttpSessionBase implements IConfigurable, HasKeystore, HasTruststore, CanShareResource<CloseableHttpClient> {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter String name;
+	private @Getter @Setter ApplicationContext applicationContext;
+	private String sharedResource;
 
 	/* CONNECTION POOL */
 	private @Getter int timeout = 10000;
@@ -141,7 +147,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
-	private @Getter CloseableHttpClient httpClient;
+	private CloseableHttpClient httpClient;
 
 	/* SECURITY */
 	private @Getter String authAlias;
@@ -188,10 +194,8 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 	private @Getter boolean ignoreRedirects=false;
 	private @Getter String protocol=null;
 
-	private @Getter String baseUrl;
 	private boolean disableCookies = false;
 
-	protected URI baseUri;
 	private CredentialFactory credentials;
 	private CredentialFactory user_cf;
 	private CredentialFactory client_cf;
@@ -219,6 +223,11 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if(StringUtils.isNotBlank(sharedResource)) {
+			log.info("skipping configure, loading shared resource [{}]", sharedResource);
+			return;
+		}
+
 		/**
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
@@ -231,15 +240,6 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
-		}
-
-		try {
-			if (StringUtils.isEmpty(getBaseUrl())) {
-				throw new ConfigurationException("url must be specified, either as attribute, or as parameter");
-			}
-			baseUri = getURI(getBaseUrl());
-		} catch (URISyntaxException e) {
-			throw new ConfigurationException("cannot interpret url ["+getBaseUrl()+"]", e);
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
@@ -285,12 +285,13 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 				return isFollowRedirects();
 			}
 		});
+
+		configureConnectionManager();
 	}
 
-	public void open() throws IbisException {
+	public void configureConnectionManager() {
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
-		PoolingHttpClientConnectionManager connectionManager;
 		int timeToLive = getConnectionTimeToLive();
 		if (timeToLive<=0) {
 			timeToLive = -1;
@@ -302,7 +303,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 			.register("https", sslSocketFactory)
 			.build();
 
-		connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
+		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, null, null, null, timeToLive, TimeUnit.SECONDS);
 		log.debug("created PoolingHttpClientConnectionManager with custom SSLConnectionSocketFactory");
 
 		connectionManager.setMaxTotal(getMaxConnections());
@@ -315,14 +316,32 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 
 		httpClientBuilder.setConnectionManager(connectionManager);
 		httpClientBuilder.evictIdleConnections((long) getConnectionIdleTimeout(), TimeUnit.SECONDS);
-
-		httpClient = httpClientBuilder.build();
 	}
 
-	public void close() {
+	@Override
+	public void setSharedResourceName(String sharedResource) {
+		this.sharedResource = sharedResource;
+	}
+
+	@Override
+	public void start() {
+		if(StringUtils.isNotBlank(sharedResource)) {
+			httpClient = getSharedResource(sharedResource);
+		} else {
+			httpClient = httpClientBuilder.build();
+		}
+	}
+
+	@Override
+	public CloseableHttpClient getSharedResource() {
+		return httpClient;
+	}
+
+	@Override
+	public void stop() {
 		//Close the HttpClient and ConnectionManager to release resources and potential open connections
 		if(httpClient != null) {
-			try {
+			try { //The first one to call close wins.
 				httpClient.close();
 			} catch (IOException e) {
 				log.warn("unable to close HttpClient", e);
@@ -421,16 +440,6 @@ public abstract class HttpSessionBase implements IConfigurable, HasPhysicalDesti
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
 		return httpClient.execute(targetHost, httpRequestBase, httpClientContext);
-	}
-
-	@Override
-	public String getPhysicalDestinationName() {
-		return getBaseUrl();
-	}
-
-	/** URL or base of URL to be used */
-	public void setBaseUrl(String url) {
-		baseUrl = url;
 	}
 
 	/**

@@ -30,7 +30,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;

@@ -1,10 +1,19 @@
 <configuration>
+
+	<ShareableResources>
+		<ShareableResource name="SharedHttpSession" className="nl.nn.adapterframework.http.HttpSession"
+			allowSelfSignedCertificates="true"
+			verifyHostname="false"
+			timeout="1000"
+			authAlias="${framework.api.user.alias}"
+		/>
+	</ShareableResources>
+
 	<Include ref="./ConfigurationWebServiceListenerSender.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderAddress.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderAttachments.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderServiceNamespaceURI.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderNoSoap.xml"/>
-	
 	<Include ref="./ConfigurationApiListener.xml"/>
 	<Include ref="./ConfigurationHttpListenerSender.xml"/>
 	<Include ref="./ConfigurationRestListener.xml"/>

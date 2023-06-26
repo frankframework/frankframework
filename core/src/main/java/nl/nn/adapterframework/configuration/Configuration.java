@@ -48,6 +48,7 @@ import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -362,6 +363,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return inState(BootState.STARTED) && super.isRunning();
 	}
 
+	private boolean inState(BootState state) {
+		return getState() == state;
+	}
+
 	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
@@ -588,6 +593,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
+	}
+
+	public void setShareableResources(ShareableResources resource) {
+		//Dummy Frank!Doc setter
 	}
 
 	/**

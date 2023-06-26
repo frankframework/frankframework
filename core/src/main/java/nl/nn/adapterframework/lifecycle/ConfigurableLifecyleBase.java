@@ -23,12 +23,29 @@ public abstract class ConfigurableLifecyleBase implements ConfigurableLifecycle 
 	protected final Logger log = LogUtil.getLogger(this);
 	private BootState state = BootState.STOPPED;
 
-	@Override
+	/**
+	 * Calling configure() should set the state to STARTING, 
+	 * calling start() should set the state to STARTED
+	 *
+	 */
+	public enum BootState {
+		STARTING, STARTED, STOPPING, STOPPED;
+	}
+
 	public BootState getState() {
 		return state;
 	}
 
 	protected void updateState(BootState state) {
 		this.state = state;
+	}
+
+	public boolean inState(BootState state) {
+		return getState() == state;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return inState(BootState.STARTED);
 	}
 }

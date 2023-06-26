@@ -27,9 +27,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
 					firstBodyPartName="request"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -46,12 +44,10 @@
 			</exits>
 			<pipe name="LocalHttp">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-						methodType="POST"
-						url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
-						firstBodyPartName="request"
-						allowSelfSignedCertificates="true"
-						verifyHostname="false"
-						authAlias="${framework.api.user.alias}"
+					methodType="POST"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
+					firstBodyPartName="request"
+					sharedResourceName="SharedHttpSession"
 				/>
 			</pipe>
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe">

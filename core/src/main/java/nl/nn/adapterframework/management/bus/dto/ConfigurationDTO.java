@@ -24,7 +24,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
