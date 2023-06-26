@@ -1323,5 +1323,16 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile><!-- https://stackoverflow.com/a/12598554/17193564 -->
+			<id>alternateBuildDir</id>
+			<activation>
+				<property>
+					<name>build.dir</name>
+				</property>
+			</activation>
+			<build>
+				<directory>${build.dir}</directory>
+			</build>
+		</profile>
 	</profiles>
 </project>
