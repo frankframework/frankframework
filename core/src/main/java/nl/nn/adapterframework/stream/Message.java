@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
@@ -170,10 +171,12 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(), request);
 	}
 
+	@Nonnull
 	public static Message nullMessage() {
 		return nullMessage(new MessageContext());
 	}
 
+	@Nonnull
 	public static Message nullMessage(@Nonnull MessageContext context) {
 		return new Message(context, null, null);
 	}
@@ -692,10 +695,12 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a String. Has the side effect of preserving the input as a String.
 	 */
+	@Nullable
 	public String asString() throws IOException {
 		return asString(null);
 	}
 
+	@Nullable
 	public String asString(String decodingCharset) throws IOException {
 		if (request == null) {
 			return null;

@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -43,7 +46,6 @@ import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -109,15 +111,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter String logIntermediaryResults = null;
 	private @Getter String hideRegex = null;
 
-	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
+	private Map<String, PipeForward> pipeForwards = new HashMap<>();
 	private ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
 
-	private DummyNamedObject inSizeStatDummyObject=null;
-	private DummyNamedObject outSizeStatDummyObject=null;
+	private DummyNamedObject inSizeStatDummyObject;
+	private DummyNamedObject outSizeStatDummyObject;
 
 	public AbstractPipe() {
 		inSizeStatDummyObject = new DummyNamedObject();
@@ -231,32 +233,34 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * <li>All pipe names with their (identical) path</li>
 	 * </ul>
 	 */
-	public PipeForward findForward(String forward){
-		if (StringUtils.isNotEmpty(forward)) {
-			if (pipeForwards.containsKey(forward)) {
-				return pipeForwards.get(forward);
-			}
-			if (pipeLine!=null) {
-				PipeForward result = pipeLine.getGlobalForwards().get(forward);
-				if (result == null) {
-					IPipe pipe = pipeLine.getPipe(forward);
-					if (pipe!=null) {
-						result = new PipeForward(forward, forward);
-					}
-				}
-				if (result == null) {
-					PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
-					if (exit!=null) {
-						result = new PipeForward(forward, forward);
-					}
-				}
-				if (result!=null) {
-					pipeForwards.put(forward, result);
-				}
-				return result;
+	@Nullable
+	public PipeForward findForward(@Nullable String forward){
+		if (StringUtils.isEmpty(forward)) {
+			return null;
+		}
+		if (pipeForwards.containsKey(forward)) {
+			return pipeForwards.get(forward);
+		}
+		if (pipeLine == null) {
+			return null;
+		}
+		PipeForward result = pipeLine.getGlobalForwards().get(forward);
+		if (result == null) {
+			IPipe pipe = pipeLine.getPipe(forward);
+			if (pipe!=null) {
+				result = new PipeForward(forward, forward);
 			}
 		}
-		return null;
+		if (result == null) {
+			PipeLineExit exit = pipeLine.getPipeLineExits().get(forward);
+			if (exit != null) {
+				result = new PipeForward(forward, forward);
+			}
+		}
+		if (result != null) {
+			pipeForwards.put(forward, result);
+		}
+		return result;
 	}
 
 	@Override
@@ -298,7 +302,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	@Override
 	public Adapter getAdapter() {
-		if (getPipeLine()!=null) {
+		if (getPipeLine() != null) {
 			return getPipeLine().getAdapter();
 		}
 		return null;
@@ -307,11 +311,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
 		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
-	}
-
-	protected <T> T getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, T attributeValue) {
-		T result = pvl!=null ? (T)pvl.get(parameterName) : null;
-		return result!=null ? result : attributeValue;
 	}
 
 	/**
