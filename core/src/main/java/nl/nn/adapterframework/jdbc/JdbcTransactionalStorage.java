@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+import static nl.nn.adapterframework.functional.FunctionalUtil.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +55,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
+import nl.nn.adapterframework.functional.FunctionalUtil;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;

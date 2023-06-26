@@ -853,7 +853,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	// TODO: MessageBrowsers do not return type M, figure out how to fix this.
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
@@ -1007,9 +1006,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		if (rawMessageWrapper instanceof MessageWrapper) {
 			sobj = (MessageWrapper<?>) rawMessageWrapper;
-		} else if (rawMessageWrapper.getRawMessage() instanceof Serializable) {
-			// TODO: Branch not actually touched in any tests. Perhaps we should rather store always a MessageWrapper, not the raw message, so we keep extra meta data?
-			sobj = (Serializable) rawMessageWrapper.getRawMessage();
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
 		}

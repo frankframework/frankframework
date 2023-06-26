@@ -49,7 +49,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private @Getter String selectCondition;
 	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
 
-	private Map<ProcessState, String> statusValues = new HashMap<>(); // TODO What Sonar Likes
+	private final Map<ProcessState, String> statusValues = new HashMap<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
