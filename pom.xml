@@ -14,7 +14,7 @@
 		<jackson.version>2.15.2</jackson.version>
 		<cxf.version>3.5.5</cxf.version>
 		<spring.version>5.3.28</spring.version>
-		<spring-security.version>5.8.3</spring-security.version>
+		<spring-security.version>5.8.4</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
