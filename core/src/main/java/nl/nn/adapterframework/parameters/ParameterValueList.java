@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -89,6 +92,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	 * should not be used in combination with {@link ParameterValueList#iterator()}!
 	 */
 	@Deprecated
+	@Nullable
 	public ParameterValue remove(String name) {
 		ParameterValue pv = map.remove(name);
 		if(pv != null) {
@@ -97,6 +101,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return pv;
 	}
 
+	@Nonnull
 	private Map<String, ParameterValue> getParameterValueMap() {
 		return Collections.unmodifiableMap(map);
 	}
@@ -104,6 +109,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	/**
 	 * Returns a Map of value objects which may be a subset of the ParameterList when multiple parameters exist with the same name!
 	 */
+	@Nonnull
 	public Map<String, Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
