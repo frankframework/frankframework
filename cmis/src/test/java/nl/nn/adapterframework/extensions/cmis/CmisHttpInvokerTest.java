@@ -50,7 +50,7 @@ public class CmisHttpInvokerTest extends Mockito {
 
 					//Mock all requests
 					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
-					when(sender.getHttpClient()).thenReturn(httpClient);
+					when(sender.getLocalResource()).thenReturn(httpClient);
 
 					return sender;
 				} catch (Throwable t) {

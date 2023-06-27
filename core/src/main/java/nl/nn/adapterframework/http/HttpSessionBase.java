@@ -289,7 +289,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 		configureConnectionManager();
 	}
 
-	public void configureConnectionManager() {
+	public void configureConnectionManager() throws ConfigurationException {
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
 		int timeToLive = getConnectionTimeToLive();
@@ -419,7 +419,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 	}
 
 	@Nonnull
-	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() {
+	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws ConfigurationException {
 		SSLConnectionSocketFactory sslSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
@@ -427,7 +427,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
 			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
 		} catch (Exception e) {
-			throw new IllegalStateException("cannot create or initialize SocketFactory", e);
+			throw new ConfigurationException("cannot create or initialize SocketFactory", e);
 		}
 
 		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
@@ -439,7 +439,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
-		return httpClient.execute(targetHost, httpRequestBase, httpClientContext);
+		return getLocalResource().execute(targetHost, httpRequestBase, httpClientContext);
 	}
 
 	/**
