@@ -17,8 +17,6 @@ import './app/views/loading/loading.controller';
 import './app/views/logging/logging.controller';
 import './app/views/logging/logging-manage/logging-manage.controller';
 import './app/views/login/login.controller';
-import './app/views/monitors/monitors.controller';
-import './app/views/monitors/monitors-add-edit/monitors-add-edit.controller';
 import './app/views/notifications/notifications.controller';
 import './app/views/scheduler/scheduler.controller';
 import './app/views/scheduler/scheduler-add/scheduler-add.controller';
