@@ -30,7 +30,6 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
@@ -105,8 +104,8 @@ public class HealthCheck extends BusEndpointBase {
 		List<String> errors = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
-			BootState state = config.getState();
-			if(state != BootState.STARTED) {
+			RunState state = config.getState();
+			if(state != RunState.STARTED) {
 				if(config.getConfigurationException() != null) {
 					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
 				} else {

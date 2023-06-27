@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Container for jobs that are scheduled for periodic execution.
@@ -48,11 +49,11 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
-		updateState(BootState.STARTING);
+		updateState(RunState.STARTING);
 
 		for (IJob jobdef : getSchedulesList()) {
 			try {
@@ -69,7 +70,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void start() {
-		if(!inState(BootState.STARTING)) {
+		if(!inState(RunState.STARTING)) {
 			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
@@ -94,7 +95,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 			log.error("could not start scheduler", e);
 		}
 
-		updateState(BootState.STARTED);
+		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -102,10 +103,10 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void stop() {
-		if(!inState(BootState.STARTED)) {
+		if(!inState(RunState.STARTED)) {
 			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
 		}
-		updateState(BootState.STOPPING);
+		updateState(RunState.STOPPING);
 
 		log.info("stopping all jobs in ScheduleManager [{}]", ()->this);
 		List<IJob> scheduledJobs = getSchedulesList();
@@ -120,12 +121,12 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 			}
 		}
 
-		updateState(BootState.STOPPED);
+		updateState(RunState.STOPPED);
 	}
 
 	@Override
 	public void close() throws Exception {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			stop(); //Call this just in case...
 		}
 
@@ -140,7 +141,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 * or from outside the configuration through the Frank!Console.
 	 */
 	public void registerScheduledJob(IJob job) {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
 		}
 

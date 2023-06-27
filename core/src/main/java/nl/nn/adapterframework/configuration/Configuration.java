@@ -48,7 +48,6 @@ import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -88,7 +88,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
 
-	private @Getter BootState state = BootState.STOPPED;
+	private @Getter RunState state = RunState.STOPPED;
 
 	private @Getter String version;
 	private @Getter IbisManager ibisManager;
@@ -235,7 +235,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		super.start();
-		state = BootState.STARTED;
+		state = RunState.STARTED;
 	}
 
 	/**
@@ -247,7 +247,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
 		}
-		state = BootState.STARTING;
+		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
 
 		try {
@@ -264,7 +264,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 				((ConfigurableLifecycle) lifecycle).configure();
 			}
 		} catch (ConfigurationException e) {
-			state = BootState.STOPPED;
+			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
@@ -314,11 +314,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void close() {
 		try {
-			state = BootState.STOPPING;
+			state = RunState.STOPPING;
 			super.close();
 		} finally {
 			configured = false;
-			state = BootState.STOPPED;
+			state = RunState.STOPPED;
 		}
 	}
 
@@ -355,15 +355,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isUnloadInProgressOrDone() {
-		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
+		return inState(RunState.STOPPING) || inState(RunState.STOPPED);
 	}
 
 	@Override
 	public boolean isRunning() {
-		return inState(BootState.STARTED) && super.isRunning();
+		return inState(RunState.STARTED) && super.isRunning();
 	}
 
-	private boolean inState(BootState state) {
+	private boolean inState(RunState state) {
 		return getState() == state;
 	}
 
@@ -481,7 +481,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
-			if(state == BootState.STARTING && !getName().equals(name)) {
+			if(state == RunState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 			setBeanName(name);
@@ -497,7 +497,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Protected
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
-			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
+			if(state == RunState.STARTING && this.version != null && !this.version.equals(version)) {
 				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
 			}
 

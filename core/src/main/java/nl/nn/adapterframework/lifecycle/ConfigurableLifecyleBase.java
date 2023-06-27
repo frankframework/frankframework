@@ -18,34 +18,32 @@ package nl.nn.adapterframework.lifecycle;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunState;
 
+/**
+ * Base class which looks at the {@link RunState} of the component before changing it's {@link ConfigurableLifecycle Lifecycle} state.
+ * <br/>
+ * Calling configure() should set the state to STARTING.
+ * Calling start() should set the state to STARTED.
+ */
 public abstract class ConfigurableLifecyleBase implements ConfigurableLifecycle {
 	protected final Logger log = LogUtil.getLogger(this);
-	private BootState state = BootState.STOPPED;
+	private RunState state = RunState.STOPPED;
 
-	/**
-	 * Calling configure() should set the state to STARTING, 
-	 * calling start() should set the state to STARTED
-	 *
-	 */
-	public enum BootState {
-		STARTING, STARTED, STOPPING, STOPPED;
-	}
-
-	public BootState getState() {
+	public RunState getState() {
 		return state;
 	}
 
-	protected void updateState(BootState state) {
+	protected void updateState(RunState state) {
 		this.state = state;
 	}
 
-	public boolean inState(BootState state) {
+	public boolean inState(RunState state) {
 		return getState() == state;
 	}
 
 	@Override
 	public boolean isRunning() {
-		return inState(BootState.STARTED);
+		return inState(RunState.STARTED);
 	}
 }

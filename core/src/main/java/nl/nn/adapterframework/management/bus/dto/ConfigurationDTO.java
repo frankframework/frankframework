@@ -24,10 +24,10 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase.BootState;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
+import nl.nn.adapterframework.util.RunState;
 
 @JsonInclude(Include.NON_NULL)
 public class ConfigurationDTO {
@@ -37,7 +37,7 @@ public class ConfigurationDTO {
 	private final @Getter String version;
 	private @Getter Boolean stubbed;
 	private @Getter Boolean loaded = null;
-	private @Getter BootState state;
+	private @Getter RunState state;
 	private @Getter String type;
 	private @Getter String exception = null;
 
