@@ -15,11 +15,21 @@
 */
 package nl.nn.adapterframework.core;
 
+import org.springframework.context.Phased;
+
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 
-public interface ShareableResource<T> extends IConfigurable, ConfigurableLifecycle {
+public interface ShareableResource<T> extends IConfigurable, ConfigurableLifecycle, Phased {
 	public static final String SHARED_RESOURCE_PREFIX = "shared$$";
 
 	/** Retrieve the shared resource so {@link CanShareResource} holders can use it */
 	T getSharedResource();
+
+	/**
+	 * By default give this the lowest Phase, so it's started first and stopped last.
+	 */
+	@Override
+	default int getPhase() {
+		return Integer.MIN_VALUE;
+	}
 }

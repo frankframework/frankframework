@@ -6,6 +6,10 @@
 			verifyHostname="false"
 			timeout="1000"
 			authAlias="${framework.api.user.alias}"
+			proxyHost="${proxy.host}"
+			proxyPort="${proxy.port}"
+			proxyUsername="${proxy.username}"
+			proxyPassword="${proxy.password}" 
 		/>
 	</ShareableResources>
 

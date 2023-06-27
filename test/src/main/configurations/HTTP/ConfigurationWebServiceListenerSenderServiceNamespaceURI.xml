@@ -64,9 +64,7 @@
 					serviceNamespace="urn:ws:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -116,10 +114,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -129,10 +124,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -173,10 +165,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -186,10 +175,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -200,10 +186,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -214,10 +197,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -229,10 +209,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -244,10 +221,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -257,10 +231,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -271,10 +242,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -285,10 +253,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />

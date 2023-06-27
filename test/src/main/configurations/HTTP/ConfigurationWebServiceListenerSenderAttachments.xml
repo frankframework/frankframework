@@ -100,10 +100,8 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					firstBodyPartName="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
 					postType="MTOM"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -141,11 +139,9 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					firstBodyPartName="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
 					postType="MTOM"
 					multipartXmlSessionKey="multipart"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -167,9 +163,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -201,9 +195,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>

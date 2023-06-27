@@ -47,11 +47,10 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
+					methodType="POST"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					postType="FORMDATA"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
@@ -158,9 +157,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToServlet="true"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -200,9 +197,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceName="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -265,9 +260,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param"
-					authAlias="${framework.api.user.alias}"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
+					sharedResourceName="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
