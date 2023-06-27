@@ -33,7 +33,6 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -69,8 +68,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter SortOrder order = null;
-	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
-	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
+	private final String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private final String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
 
 	protected String deleteQuery;

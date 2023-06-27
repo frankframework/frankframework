@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import static nl.nn.adapterframework.functional.FunctionalUtil.*;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +55,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.functional.FunctionalUtil;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
@@ -722,12 +721,14 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		try {
 			try (Connection conn = getConnection()) {
 				return storeMessage(conn, messageId, correlationId, receivedDate, comments, label, message);
-			} catch (Exception e) {
+			} catch (SenderException e) {
 				if (itx != null) {
 					itx.setRollbackOnly();
 				}
-				if (e instanceof SenderException) {
-					throw (SenderException) e;
+				throw e;
+			} catch (Exception e) {
+				if (itx != null) {
+					itx.setRollbackOnly();
 				}
 				throw new SenderException("cannot serialize message", e);
 			}
