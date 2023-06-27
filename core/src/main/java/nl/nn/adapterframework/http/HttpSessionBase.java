@@ -333,7 +333,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 	}
 
 	@Override
-	public CloseableHttpClient getSharedResource() {
+	public CloseableHttpClient getLocalResource() {
 		return httpClient;
 	}
 

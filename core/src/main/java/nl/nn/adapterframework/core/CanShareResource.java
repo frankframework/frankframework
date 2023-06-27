@@ -36,10 +36,10 @@ public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycl
 	}
 
 	/** Retrieve the local resource */
-	T getSharedResource();
+	T getLocalResource();
 
 	@Override
 	default boolean isRunning() {
-		return getSharedResource() != null;
+		return getLocalResource() != null;
 	}
 }

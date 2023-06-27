@@ -19,9 +19,13 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.Lifecycle;
 
 import nl.nn.adapterframework.core.ShareableResource;
 
+/**
+ * Registers the newly created bean directly in Spring, which will manage it's {@link Lifecycle}.
+ */
 public class ShareableResourceFactory extends AbstractSpringPoweredDigesterFactory {
 
 	@Override
@@ -29,7 +33,6 @@ public class ShareableResourceFactory extends AbstractSpringPoweredDigesterFacto
 		return null;
 	}
 
-	/** Registers the newly created bean directly in Spring, which will manage it's lifecycle. */
 	@Override
 	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
 		Object object = super.createObject(attrs);

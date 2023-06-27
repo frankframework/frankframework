@@ -24,4 +24,8 @@ import nl.nn.adapterframework.core.ShareableResource;
  */
 public class HttpSession extends HttpSessionBase implements ShareableResource<CloseableHttpClient> {
 
+	@Override
+	public CloseableHttpClient getSharedResource() {
+		return getLocalResource();
+	}
 }
