@@ -595,7 +595,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
-	public void setShareableResources(ShareableResources resource) {
+	public void setSharedResources(SharedResources resource) {
 		//Dummy Frank!Doc setter
 	}
 

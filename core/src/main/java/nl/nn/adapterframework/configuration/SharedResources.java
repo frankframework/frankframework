@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.core.SharedResource;
 
-public class ShareableResources {
+public class SharedResources {
 
-	public void registerShareableResource(ShareableResource<?> resource) {
+	public void registerSharedResource(SharedResource<?> resource) {
 		//This method only exists for the FrankDoc;
 	}
 

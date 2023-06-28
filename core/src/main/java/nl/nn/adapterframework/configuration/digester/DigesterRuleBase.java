@@ -39,7 +39,7 @@ import nl.nn.adapterframework.core.CanUseSharedResource;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.core.SharedResource;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.IbisActionJob;
 import nl.nn.adapterframework.scheduler.job.Job;
@@ -168,9 +168,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		handleBean();
 
 		if(top instanceof CanUseSharedResource && map.containsKey("sharedResourceName")) {
-			String sharedResourceName = ShareableResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
+			String sharedResourceName = SharedResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
 			if(applicationContext.containsBean(sharedResourceName)) {
-				ShareableResource<?> container = applicationContext.getBean(sharedResourceName, ShareableResource.class);
+				SharedResource<?> container = applicationContext.getBean(sharedResourceName, SharedResource.class);
 				dontSetSharedResourceAttributes(container, map);
 			} else {
 				addLocalWarning("shared resource ["+map.get("sharedResourceName")+"] does not exist");
@@ -187,7 +187,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/** Check if attribute-'map' contains attributes (methods) that also exist in 'sharedResource'. */
-	private void dontSetSharedResourceAttributes(ShareableResource<?> sharedResource, Map<String, String> map) {
+	private void dontSetSharedResourceAttributes(SharedResource<?> sharedResource, Map<String, String> map) {
 		PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(sharedResource.getClass());
 		for(PropertyDescriptor pd : pds) {
 			String attributeName = pd.getName();

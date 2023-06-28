@@ -17,12 +17,12 @@ package nl.nn.adapterframework.http;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 
-import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.core.SharedResource;
 
 /**
- * Shared HTTPSession, implements ShareableResource so it can be set in the Configuration.xml
+ * Shared HTTPSession, implements {@link SharedResource} so it can be set in the Configuration.xml
  */
-public class HttpSession extends HttpSessionBase implements ShareableResource<CloseableHttpClient> {
+public class HttpSession extends HttpSessionBase implements SharedResource<CloseableHttpClient> {
 
 	@Override
 	public CloseableHttpClient getSharedResource() {

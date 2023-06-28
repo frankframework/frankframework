@@ -21,12 +21,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.Lifecycle;
 
-import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.core.SharedResource;
 
 /**
  * Registers the newly created bean directly in Spring, which will manage it's {@link Lifecycle}.
  */
-public class ShareableResourceFactory extends AbstractSpringPoweredDigesterFactory {
+public class SharedResourceFactory extends AbstractSpringPoweredDigesterFactory {
 
 	@Override
 	public String getSuggestedBeanName() {
@@ -37,8 +37,8 @@ public class ShareableResourceFactory extends AbstractSpringPoweredDigesterFacto
 	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
 		Object object = super.createObject(attrs);
 
-		if(!(object instanceof ShareableResource)) {
-			throw new IllegalStateException("bean must be of type ShareableResource");
+		if(!(object instanceof SharedResource)) {
+			throw new IllegalStateException("bean must be of type Shared Resource");
 		}
 
 		String objectName = attrs.get("name");
@@ -46,10 +46,10 @@ public class ShareableResourceFactory extends AbstractSpringPoweredDigesterFacto
 			throw new IllegalStateException("Shared Resource must have a name");
 		}
 
-		String beanName = ShareableResource.SHARED_RESOURCE_PREFIX + objectName;
+		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + objectName;
 
 		if(getApplicationContext().containsBean(beanName)) {
-			throw new IllegalStateException("shareable resource ["+objectName+"] already exists");
+			throw new IllegalStateException("shared resource ["+objectName+"] already exists");
 		}
 
 		ConfigurableBeanFactory configurableListableBeanFactory = (ConfigurableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();

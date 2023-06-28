@@ -1,7 +1,7 @@
 <configuration>
 
-	<ShareableResources>
-		<ShareableResource name="SharedHttpSession" className="nl.nn.adapterframework.http.HttpSession"
+	<SharedResources>
+		<SharedResource name="SharedHttpSession" className="nl.nn.adapterframework.http.HttpSession"
 			allowSelfSignedCertificates="true"
 			verifyHostname="false"
 			timeout="1000"
@@ -11,7 +11,7 @@
 			proxyUsername="${proxy.username}"
 			proxyPassword="${proxy.password}" 
 		/>
-	</ShareableResources>
+	</SharedResources>
 
 	<Include ref="./ConfigurationWebServiceListenerSender.xml"/>
 	<Include ref="./ConfigurationWebServiceListenerSenderAddress.xml"/>

@@ -16,10 +16,10 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.CanUseSharedResource;
-import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.core.SharedResource;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
-public class ShareableResourceFactoryTest {
+public class SharedResourceFactoryTest {
 
 	private static final String TEST_RESOURCE_NAME = "mySharedDummyResource";
 	private static final String TEST_RESOURCE_VALUE = "mySharedDummyResource";
@@ -27,7 +27,7 @@ public class ShareableResourceFactoryTest {
 	@Test
 	public void testLowercaseClassname() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
 			Digester digester = mock(Digester.class);
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
@@ -41,7 +41,7 @@ public class ShareableResourceFactoryTest {
 	@Test
 	public void testNoBeanName() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
 			Digester digester = mock(Digester.class);
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
@@ -54,7 +54,7 @@ public class ShareableResourceFactoryTest {
 	@Test
 	public void testBeanRegisteredWithConfiguration() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
 			Digester digester = mock(Digester.class);
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
@@ -62,8 +62,8 @@ public class ShareableResourceFactoryTest {
 			attributes.put("className", SharedClass.class.getTypeName());
 			Object sharedResource = factory.createObject(attributes);
 
-			assertTrue(config.containsBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
-			assertEquals(sharedResource, config.getBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
 			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource());
 			assertEquals(TEST_RESOURCE_VALUE, config.createBean(DummyClass.class).getSharedResource(TEST_RESOURCE_NAME));
 		}
@@ -72,7 +72,7 @@ public class ShareableResourceFactoryTest {
 	@Test
 	public void testSharedResourceWithWrongType() throws Exception {
 		try (TestConfiguration config = new TestConfiguration()) {
-			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			SharedResourceFactory factory = config.createBean(SharedResourceFactory.class);
 			Digester digester = mock(Digester.class);
 			factory.setDigester(digester);
 			Map<String, String> attributes = new HashMap<>();
@@ -80,8 +80,8 @@ public class ShareableResourceFactoryTest {
 			attributes.put("className", SharedClass.class.getTypeName());
 			Object sharedResource = factory.createObject(attributes);
 
-			assertTrue(config.containsBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
-			assertEquals(sharedResource, config.getBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); //SharedClass
+			assertTrue(config.containsBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(SharedResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); //SharedClass
 
 			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); //String
 
@@ -91,7 +91,7 @@ public class ShareableResourceFactoryTest {
 		}
 	}
 
-	public static class SharedClass extends DummyClass implements ShareableResource<String> {
+	public static class SharedClass extends DummyClass implements SharedResource<String> {
 
 		@Override
 		public String getSharedResource() {

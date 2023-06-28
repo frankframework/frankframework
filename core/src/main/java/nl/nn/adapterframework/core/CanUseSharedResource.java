@@ -27,9 +27,9 @@ public interface CanUseSharedResource<T> extends IConfigurable, ConfigurableLife
 	/** Retrieve the shared resource from Spring */
 	@SuppressWarnings("unchecked")
 	default @Nonnull T getSharedResource(String sharedResourceName) {
-		String beanName = ShareableResource.SHARED_RESOURCE_PREFIX + sharedResourceName;
+		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + sharedResourceName;
 		if(getApplicationContext().containsBean(beanName)) {
-			ShareableResource<?> container = getApplicationContext().getBean(beanName, ShareableResource.class);
+			SharedResource<?> container = getApplicationContext().getBean(beanName, SharedResource.class);
 			Object resource = container.getSharedResource();
 
 			if(getObjectType() != null && !getObjectType().isAssignableFrom(resource.getClass())) {
