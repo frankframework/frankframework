@@ -69,7 +69,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenReturn(httpResponse);
 
 		WebServiceSender sender = spy(new WebServiceSender());
-		when(sender.getLocalResource()).thenReturn(httpClient);
+		when(sender.getHttpClient()).thenReturn(httpClient);
 
 		//Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");

@@ -40,8 +40,10 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.CanShareResource;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -85,7 +87,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters {
+public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanShareResource<CloseableHttpClient> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
@@ -93,6 +95,8 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
+
+	private @Setter String sharedResourceRef;
 
 	private @Getter String url;
 	private @Getter String urlParam = "url";
@@ -145,7 +149,10 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
+		if(StringUtils.isBlank(sharedResourceRef)) {
+			log.info("configuring local HttpSession");
+			super.configure();
+		}
 
 		if (paramList!=null) {
 			paramList.configure();
@@ -220,7 +227,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	@Override
 	public void open() throws SenderException {
 		try {
-			super.start();
+			start();
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"unable to create HttpClient", e);
 		}
@@ -238,6 +245,16 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	public Class<CloseableHttpClient> getObjectType() {
 		return CloseableHttpClient.class;
 	}
+
+	@Override
+	public void start() {
+		if(StringUtils.isNotBlank(sharedResourceRef)) {
+			setHttpClient(getSharedResource(sharedResourceRef));
+		} else {
+			buildHttpClient();
+		}
+	}
+
 	@Override
 	public void close() {
 		super.stop();

@@ -78,7 +78,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		super.open();
 		httpSession.start();
 
-		CloseableHttpClient httpClient = httpSession.getLocalResource();
+		CloseableHttpClient httpClient = httpSession.getHttpClient();
 		if(httpClient == null)
 			throw new SenderException("no HttpClient found, did it initialize properly?");
 

@@ -98,7 +98,7 @@ public class OAuthAccessTokenManager {
 		TokenRequest request = createRequest(credentials);
 		HttpRequestBase apacheHttpRequest = convertToApacheHttpRequest(request.toHTTPRequest());
 
-		CloseableHttpClient apacheHttpClient = httpSession.getLocalResource();
+		CloseableHttpClient apacheHttpClient = httpSession.getHttpClient();
 		TimeoutGuard tg = new TimeoutGuard(1+httpSession.getTimeout()/1000, "token retrieval") {
 
 			@Override

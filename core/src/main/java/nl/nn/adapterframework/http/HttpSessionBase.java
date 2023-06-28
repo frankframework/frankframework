@@ -61,8 +61,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.CanShareResource;
-import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -72,6 +70,7 @@ import nl.nn.adapterframework.http.authentication.HttpAuthenticationException;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
 import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -129,13 +128,12 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author	Niels Meijer
  * @since	7.0
  */
-public abstract class HttpSessionBase implements IConfigurable, HasKeystore, HasTruststore, CanShareResource<CloseableHttpClient> {
+public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
-	private String sharedResource;
 
 	/* CONNECTION POOL */
 	private @Getter int timeout = 10000;
@@ -147,7 +145,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 	private @Getter int connectionIdleTimeout = 10; // [s]
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
-	private CloseableHttpClient httpClient;
+	private @Getter CloseableHttpClient httpClient;
 
 	/* SECURITY */
 	private @Getter String authAlias;
@@ -223,11 +221,6 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(StringUtils.isNotBlank(sharedResource)) {
-			log.info("skipping configure, loading shared resource [{}]", sharedResource);
-			return;
-		}
-
 		/**
 		 * TODO find out if this really breaks proxy authentication or not.
 		 */
@@ -319,29 +312,28 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 	}
 
 	@Override
-	public void setSharedResourceName(String sharedResource) {
-		this.sharedResource = sharedResource;
-	}
-
-	@Override
 	public void start() {
-		if(StringUtils.isNotBlank(sharedResource)) {
-			httpClient = getSharedResource(sharedResource);
-		} else {
-			httpClient = httpClientBuilder.build();
-		}
+		buildHttpClient();
+	}
+
+	protected void buildHttpClient() {
+		httpClient = httpClientBuilder.build();
+	}
+
+	protected void setHttpClient(CloseableHttpClient httpClient) {
+		this.httpClient = httpClient;
 	}
 
 	@Override
-	public CloseableHttpClient getLocalResource() {
-		return httpClient;
+	public boolean isRunning() {
+		return getHttpClient() != null;
 	}
 
 	@Override
 	public void stop() {
 		//Close the HttpClient and ConnectionManager to release resources and potential open connections
 		if(httpClient != null) {
-			try { //The first one to call close wins.
+			try {
 				httpClient.close();
 			} catch (IOException e) {
 				log.warn("unable to close HttpClient", e);
@@ -439,7 +431,7 @@ public abstract class HttpSessionBase implements IConfigurable, HasKeystore, Has
 
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
-		return getLocalResource().execute(targetHost, httpRequestBase, httpClientContext);
+		return getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
 	}
 
 	/**

@@ -105,6 +105,7 @@ public class ShareableResourceFactoryTest {
 		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 		private @Getter @Setter String name;
 		private @Getter @Setter ApplicationContext applicationContext;
+		private @Getter @Setter String localResource;
 
 		@Override
 		public void configure() throws ConfigurationException {
@@ -122,18 +123,18 @@ public class ShareableResourceFactoryTest {
 		}
 
 		@Override
-		public void setSharedResourceName(String sharedResourceName) {
+		public void setSharedResourceRef(String sharedResourceName) {
 			// Nothing to set
-		}
-
-		@Override
-		public String getLocalResource() {
-			return TEST_RESOURCE_VALUE;
 		}
 
 		@Override
 		public Class<String> getObjectType() {
 			return String.class;
+		}
+
+		@Override
+		public boolean isRunning() {
+			return false;
 		}
 	}
 
@@ -142,6 +143,7 @@ public class ShareableResourceFactoryTest {
 		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 		private @Getter @Setter String name;
 		private @Getter @Setter ApplicationContext applicationContext;
+		private @Getter @Setter Boolean localResource;
 
 		@Override
 		public void configure() throws ConfigurationException {
@@ -159,23 +161,18 @@ public class ShareableResourceFactoryTest {
 		}
 
 		@Override
-		public Boolean getSharedResource(String sharedResourceName) {
-			return CanShareResource.super.getSharedResource(sharedResourceName);
-		}
-
-		@Override
-		public void setSharedResourceName(String sharedResourceName) {
+		public void setSharedResourceRef(String sharedResourceName) {
 			// Nothing to set
-		}
-
-		@Override
-		public Boolean getLocalResource() {
-			return false;
 		}
 
 		@Override
 		public Class<Boolean> getObjectType() {
 			return Boolean.class;
+		}
+
+		@Override
+		public boolean isRunning() {
+			return false;
 		}
 	}
 }

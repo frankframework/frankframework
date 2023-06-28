@@ -26,11 +26,7 @@ public class HttpSession extends HttpSessionBase implements ShareableResource<Cl
 
 	@Override
 	public CloseableHttpClient getSharedResource() {
-		return getLocalResource();
+		return getHttpClient();
 	}
 
-	@Override
-	public Class<CloseableHttpClient> getObjectType() {
-		return CloseableHttpClient.class;
-	}
 }

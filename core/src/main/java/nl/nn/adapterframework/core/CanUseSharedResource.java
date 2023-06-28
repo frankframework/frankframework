@@ -22,7 +22,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 
 public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycle {
 
-	void setSharedResourceName(String sharedResourceName);
+	void setSharedResourceRef(String sharedResourceName);
 
 	/** Retrieve the shared resource from Spring */
 	@SuppressWarnings("unchecked")
@@ -34,11 +34,11 @@ public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycl
 
 			if(getObjectType() != null && !getObjectType().isAssignableFrom(resource.getClass())) {
 				// our own 'ClassCastException'
-				throw new IllegalStateException("Shared Resource ["+beanName+"] may not be used here");
+				throw new IllegalStateException("Shared Resource ["+sharedResourceName+"] may not be used here");
 			}
 			return (T) resource;
 		}
-		throw new IllegalArgumentException("Shared Resource ["+beanName+"] does not exist");
+		throw new IllegalArgumentException("Shared Resource ["+sharedResourceName+"] does not exist");
 	}
 
 	/**
@@ -47,12 +47,4 @@ public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycl
 	 */
 	@Nullable
 	Class<T> getObjectType();
-
-	/** Retrieve the local resource */
-	T getLocalResource();
-
-	@Override
-	default boolean isRunning() {
-		return getLocalResource() != null;
-	}
 }

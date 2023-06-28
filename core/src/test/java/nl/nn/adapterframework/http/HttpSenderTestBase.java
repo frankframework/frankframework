@@ -49,7 +49,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 		//Mock all requests
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
 
-		when(sender.getLocalResource()).thenReturn(httpClient);
+		when(sender.getHttpClient()).thenReturn(httpClient);
 
 		//Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");
