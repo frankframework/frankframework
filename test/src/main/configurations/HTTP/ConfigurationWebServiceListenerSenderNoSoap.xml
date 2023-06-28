@@ -34,7 +34,7 @@
 					soap="false"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>

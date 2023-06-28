@@ -50,7 +50,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					postType="FORMDATA"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
@@ -157,7 +157,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param" streamResultToServlet="true"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -197,7 +197,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -260,7 +260,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>

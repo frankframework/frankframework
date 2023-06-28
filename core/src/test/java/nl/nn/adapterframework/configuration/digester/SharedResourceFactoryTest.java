@@ -95,7 +95,7 @@ public class SharedResourceFactoryTest {
 
 		@Override
 		public String getSharedResource() {
-			return getLocalResource();
+			return TEST_RESOURCE_VALUE;
 		}
 
 	}

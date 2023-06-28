@@ -101,7 +101,7 @@
 					firstBodyPartName="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
 					postType="MTOM"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -141,7 +141,7 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
 					postType="MTOM"
 					multipartXmlSessionKey="multipart"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -163,7 +163,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -195,7 +195,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>

@@ -61,7 +61,7 @@
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -109,7 +109,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -118,7 +118,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -158,7 +158,7 @@
 				name="send2ws_no_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -167,7 +167,7 @@
 				name="send2ws_forward_timeout">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -177,7 +177,7 @@
 				name="send2ws_forward_exception">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -187,7 +187,7 @@
 				name="send2ws_with_forwards">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -198,7 +198,7 @@
 				name="send2ws_multiple_with_forwards" removeXmlDeclarationInResults="true">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -209,7 +209,7 @@
 				name="send2ws_no_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -218,7 +218,7 @@
 				name="send2ws_forward_timeout_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -228,7 +228,7 @@
 				name="send2ws_forward_exception_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -238,7 +238,7 @@
 				name="send2ws_with_forwards_resultOnTimeOut" resultOnTimeOut="&lt;receiver_timed_out/&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />

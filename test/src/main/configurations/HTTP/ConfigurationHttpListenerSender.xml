@@ -27,7 +27,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
 					firstBodyPartName="request"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -47,7 +47,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
 					firstBodyPartName="request"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 			</pipe>
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe">
@@ -84,7 +84,7 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
 					firstBodyPartName="request"
-					sharedResourceName="SharedHttpSession"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
