@@ -30,9 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.StorageClass;
 
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import nl.nn.adapterframework.util.EnumUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,11 +46,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
@@ -96,7 +98,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter Integer proxyPort = null;
 	private @Getter int maxConnections = 50;
 
-	private @Getter String storageClass = null;
+	private @Getter StorageClass storageClass = StorageClass.Standard;
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -275,9 +277,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 						try(S3Object file = f) {
 							PutObjectRequest por = new PutObjectRequest(bucketName, file.getKey(), fis, metaData);
-							if(StringUtils.isNotEmpty(getStorageClass())){
-								por.setStorageClass(getStorageClass());
-							}
+							por.setStorageClass(getStorageClass());
 							s3Client.putObject(por);
 						}
 					} finally {
@@ -378,9 +378,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
 		CopyObjectRequest cor = new CopyObjectRequest(bucketName, source.getKey(), bucketName, destination.getKey());
-		if(StringUtils.isNotEmpty(getStorageClass())){
-			cor.setStorageClass(getStorageClass());
-		}
+		cor.setStorageClass(getStorageClass());
 		s3Client.copyObject(cor);
 		s3Client.deleteObject(bucketName, source.getKey());
 		return destination;
@@ -393,9 +391,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 		String destinationFile = destinationFolder+"/"+getName(f);
 		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
-		if(StringUtils.isNotEmpty(getStorageClass())){
-			cor.setStorageClass(getStorageClass());
-		}
+		cor.setStorageClass(getStorageClass());
 		s3Client.copyObject(cor);
 		return toFile(destinationFile);
 	}
@@ -677,7 +673,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	/** S3 Storage Class, for more information see https://aws.amazon.com/s3/storage-classes/ */
 	public void setStorageClass(String storageClass) {
-		this.storageClass = storageClass;
+		this.storageClass = EnumUtils.parse(StorageClass.class, storageClass);
 	}
 
 	/** Maximum concurrent connections towards S3 */
