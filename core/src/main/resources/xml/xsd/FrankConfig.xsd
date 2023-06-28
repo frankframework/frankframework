@@ -1145,13 +1145,13 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="adapterfilter" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
-  <xs:complexType name="ShareableResourcesType">
+  <xs:complexType name="SharedResourcesType">
     <xs:sequence>
-      <xs:group ref="ShareableResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="SharedResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.ShareableResources" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.SharedResources" use="prohibited" />
     <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="shareableResources" use="prohibited" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="ConfigurationType">
@@ -1168,7 +1168,7 @@
       <xs:element name="SapSystems" minOccurs="0" maxOccurs="1" type="SapSystemsType" />
       <xs:element name="JmsRealms" minOccurs="0" maxOccurs="1" type="JmsRealmsType" />
       <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
-      <xs:element name="ShareableResources" minOccurs="0" maxOccurs="1" type="ShareableResourcesType" />
+      <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
     </xs:sequence>
   </xs:group>
   <xs:group name="ListenerElementGroup">
@@ -6178,13 +6178,15 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="resultStatusCodeSessionKey" />
+    <xs:attribute ref="sharedResourceRef" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="HttpSenderBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="HttpSenderBaseDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="HttpSessionBaseDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="HttpSessionBaseDeclaredAttributeGroup">
-    <xs:attribute ref="sharedResource" />
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
@@ -6245,11 +6247,71 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HttpSessionBaseDeclaredAttributeGroup">
+    <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
+        <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="maxConnections" />
+    <xs:attribute ref="maxExecuteRetries" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="tokenEndpoint" />
+    <xs:attribute ref="tokenExpiry" />
+    <xs:attribute ref="clientAlias" />
+    <xs:attribute ref="clientId" />
+    <xs:attribute ref="clientSecret" />
+    <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="proxyHost" />
+    <xs:attribute ref="proxyPort" />
+    <xs:attribute ref="proxyAuthAlias" />
+    <xs:attribute ref="proxyUsername" />
+    <xs:attribute ref="proxyPassword" />
+    <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
+    <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute name="name" type="xs:string" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -7316,7 +7378,12 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="resultStatusCodeSessionKey" />
-    <xs:attribute ref="sharedResource" />
+    <xs:attribute ref="sharedResourceRef" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
@@ -7372,11 +7439,6 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -17726,26 +17788,29 @@
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Clearing" use="prohibited" />
   </xs:complexType>
-  <xs:group name="ShareableResourceElementGroup">
+  <xs:group name="SharedResourceElementGroup">
     <xs:choice>
-      <xs:element name="ShareableResource">
+      <xs:element name="SharedResource">
         <xs:complexType>
           <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="shareableResource" use="prohibited" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="sharedResource" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
-      <xs:group ref="ShareableResourceElementGroupBase" />
+      <xs:group ref="SharedResourceElementGroupBase" />
     </xs:choice>
   </xs:group>
-  <xs:group name="ShareableResourceElementGroupBase">
+  <xs:group name="SharedResourceElementGroupBase">
     <xs:choice>
-      <xs:element name="HttpSessionShareableResource">
+      <xs:element name="HttpSessionSharedResource">
+        <xs:annotation>
+          <xs:documentation>Shared HTTPSession, implements SharedResource so it can be set in the Configuration.xml</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="HttpSessionType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="shareableResource" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="sharedResource" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -17753,9 +17818,81 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="HttpSessionType">
-    <xs:attributeGroup ref="HttpSessionBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="HttpSessionCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.HttpSession" use="prohibited" />
   </xs:complexType>
+  <xs:attributeGroup name="HttpSessionDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HttpSessionCumulativeAttributeGroup">
+    <xs:attributeGroup ref="HttpSessionDeclaredAttributeGroup" />
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="maxConnections" />
+    <xs:attribute ref="maxExecuteRetries" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="tokenEndpoint" />
+    <xs:attribute ref="tokenExpiry" />
+    <xs:attribute ref="clientAlias" />
+    <xs:attribute ref="clientId" />
+    <xs:attribute ref="clientSecret" />
+    <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="proxyHost" />
+    <xs:attribute ref="proxyPort" />
+    <xs:attribute ref="proxyAuthAlias" />
+    <xs:attribute ref="proxyUsername" />
+    <xs:attribute ref="proxyPassword" />
+    <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
+    <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:attributeGroup name="ConfigurationDeclaredAttributeGroup">
     <xs:attribute name="autoStart" type="frankBoolean">
       <xs:annotation>
@@ -19279,7 +19416,7 @@
  the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="sharedResource" type="xs:string" />
+  <xs:attribute name="sharedResourceRef" type="xs:string" />
   <xs:attribute name="maxConnections" type="frankInt">
     <xs:annotation>
       <xs:documentation>The maximum number of concurrent connections Default: 10</xs:documentation>

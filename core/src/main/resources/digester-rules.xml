@@ -10,8 +10,8 @@
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
-	<rule pattern="configuration/sharedResources" registerMethod="setSharedResources" factory="null" />
-	<rule pattern="*/sharedResource" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/>
+	<rule pattern="configuration/sharedResources" registerMethod="setSharedResources" beanClass="nl.nn.adapterframework.configuration.SharedResources" />
+	<rule pattern="*/sharedResource" registerMethod="registerSharedResource" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/>
 
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.SapSystems"/>
 	<rule pattern="*/sapSystem" registerMethod="registerSapSystem" beanClass="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>

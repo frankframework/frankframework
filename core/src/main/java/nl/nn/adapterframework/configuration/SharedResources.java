@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.SharedResource;
 public class SharedResources {
 
 	public void registerSharedResource(SharedResource<?> resource) {
-		//This method only exists for the FrankDoc;
+		//This method only exists for the FrankDoc
 	}
 
 }
