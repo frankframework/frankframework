@@ -1,0 +1,181 @@
+package nl.nn.adapterframework.configuration.digester;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.digester3.Digester;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.CanShareResource;
+import nl.nn.adapterframework.core.ShareableResource;
+import nl.nn.adapterframework.testutil.TestConfiguration;
+
+public class ShareableResourceFactoryTest {
+
+	private static final String TEST_RESOURCE_NAME = "mySharedDummyResource";
+	private static final String TEST_RESOURCE_VALUE = "mySharedDummyResource";
+
+	@Test
+	public void testLowercaseClassname() throws Exception {
+		try (TestConfiguration config = new TestConfiguration()) {
+			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			Digester digester = mock(Digester.class);
+			factory.setDigester(digester);
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("name", TEST_RESOURCE_NAME);
+			attributes.put("classname", SharedClass.class.getTypeName());
+			IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createObject(attributes));
+			assertEquals("invalid attribute [classname]. Did you mean [className]?", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testNoBeanName() throws Exception {
+		try (TestConfiguration config = new TestConfiguration()) {
+			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			Digester digester = mock(Digester.class);
+			factory.setDigester(digester);
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("className", SharedClass.class.getTypeName());
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createObject(attributes));
+			assertEquals("Shared Resource must have a name", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testBeanRegisteredWithConfiguration() throws Exception {
+		try (TestConfiguration config = new TestConfiguration()) {
+			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			Digester digester = mock(Digester.class);
+			factory.setDigester(digester);
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("name", TEST_RESOURCE_NAME);
+			attributes.put("className", SharedClass.class.getTypeName());
+			Object sharedResource = factory.createObject(attributes);
+
+			assertTrue(config.containsBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource());
+			assertEquals(TEST_RESOURCE_VALUE, config.createBean(DummyClass.class).getSharedResource(TEST_RESOURCE_NAME));
+		}
+	}
+
+	@Test
+	public void testSharedResourceWithWrongType() throws Exception {
+		try (TestConfiguration config = new TestConfiguration()) {
+			ShareableResourceFactory factory = config.createBean(ShareableResourceFactory.class);
+			Digester digester = mock(Digester.class);
+			factory.setDigester(digester);
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("name", TEST_RESOURCE_NAME);
+			attributes.put("className", SharedClass.class.getTypeName());
+			Object sharedResource = factory.createObject(attributes);
+
+			assertTrue(config.containsBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME));
+			assertEquals(sharedResource, config.getBean(ShareableResource.SHARED_RESOURCE_PREFIX+TEST_RESOURCE_NAME)); //SharedClass
+
+			assertEquals(TEST_RESOURCE_VALUE, ((SharedClass) sharedResource).getSharedResource()); //String
+
+			DummyClass2 dummyClass2 = config.createBean(DummyClass2.class);
+			IllegalStateException e = assertThrows(IllegalStateException.class, () -> dummyClass2.getSharedResource(TEST_RESOURCE_NAME));
+			assertEquals("Shared Resource [mySharedDummyResource] may not be used here", e.getMessage());
+		}
+	}
+
+	public static class SharedClass extends DummyClass implements ShareableResource<String> {
+
+		@Override
+		public String getSharedResource() {
+			return getLocalResource();
+		}
+
+	}
+
+	public static class DummyClass implements CanShareResource<String> {
+
+		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+		private @Getter @Setter String name;
+		private @Getter @Setter ApplicationContext applicationContext;
+
+		@Override
+		public void configure() throws ConfigurationException {
+			//Nothing to configure
+		}
+
+		@Override
+		public void start() {
+			//Nothing to start
+		}
+
+		@Override
+		public void stop() {
+			//Nothing to stop
+		}
+
+		@Override
+		public void setSharedResourceName(String sharedResourceName) {
+			// Nothing to set
+		}
+
+		@Override
+		public String getLocalResource() {
+			return TEST_RESOURCE_VALUE;
+		}
+
+		@Override
+		public Class<String> getObjectType() {
+			return String.class;
+		}
+	}
+
+	public static class DummyClass2 implements CanShareResource<Boolean> {
+
+		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+		private @Getter @Setter String name;
+		private @Getter @Setter ApplicationContext applicationContext;
+
+		@Override
+		public void configure() throws ConfigurationException {
+			//Nothing to configure
+		}
+
+		@Override
+		public void start() {
+			//Nothing to start
+		}
+
+		@Override
+		public void stop() {
+			//Nothing to stop
+		}
+
+		@Override
+		public Boolean getSharedResource(String sharedResourceName) {
+			return CanShareResource.super.getSharedResource(sharedResourceName);
+		}
+
+		@Override
+		public void setSharedResourceName(String sharedResourceName) {
+			// Nothing to set
+		}
+
+		@Override
+		public Boolean getLocalResource() {
+			return false;
+		}
+
+		@Override
+		public Class<Boolean> getObjectType() {
+			return Boolean.class;
+		}
+	}
+}

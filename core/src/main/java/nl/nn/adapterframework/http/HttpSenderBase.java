@@ -37,6 +37,7 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -233,6 +234,10 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 		}
 	}
 
+	@Override
+	public Class<CloseableHttpClient> getObjectType() {
+		return CloseableHttpClient.class;
+	}
 	@Override
 	public void close() {
 		super.stop();

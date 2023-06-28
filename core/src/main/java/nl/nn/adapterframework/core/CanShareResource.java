@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 
@@ -24,16 +25,28 @@ public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycl
 	void setSharedResourceName(String sharedResourceName);
 
 	/** Retrieve the shared resource from Spring */
+	@SuppressWarnings("unchecked")
 	default @Nonnull T getSharedResource(String sharedResourceName) {
 		String beanName = ShareableResource.SHARED_RESOURCE_PREFIX + sharedResourceName;
 		if(getApplicationContext().containsBean(beanName)) {
 			ShareableResource<?> container = getApplicationContext().getBean(beanName, ShareableResource.class);
-			ShareableResource<T> resource = (ShareableResource<T>) container;
-			return resource.getSharedResource();
-			//TODO Handle exceptions
+			Object resource = container.getSharedResource();
+
+			if(getObjectType() != null && !getObjectType().isAssignableFrom(resource.getClass())) {
+				// our own 'ClassCastException'
+				throw new IllegalStateException("Shared Resource ["+beanName+"] may not be used here");
+			}
+			return (T) resource;
 		}
 		throw new IllegalArgumentException("Shared Resource ["+beanName+"] does not exist");
 	}
+
+	/**
+	 * Used to validate the expected type so now unexpected ClassCastExceptions can occur.
+	 * May be NULL in which case this check will be skipped and the SharedResource will be returned regardless.
+	 */
+	@Nullable
+	Class<T> getObjectType();
 
 	/** Retrieve the local resource */
 	T getLocalResource();

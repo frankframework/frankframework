@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
+import java.beans.PropertyDescriptor;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
@@ -35,13 +35,16 @@ import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.CanShareResource;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.ShareableResource;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.IbisActionJob;
 import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
@@ -67,15 +70,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
 	 */
 	protected String getObjectName() {
-		Object o = getBean();
-		String result = ClassUtils.getUserClass(o).getSimpleName();
-		if (o instanceof INamedObject) { //This assumes that setName has already been called
-			String named = ((INamedObject) o).getName();
-			if (StringUtils.isNotEmpty(named)) {
-				return result + " [" + named + "]";
-			}
-		}
-		return result;
+		return ClassUtils.nameOf(getBean());
 	}
 
 	/**
@@ -135,7 +130,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * @return the resolved class of the current object
 	 */
 	protected final Class<?> getBeanClass() {
-		return ClassUtils.getUserClass(getBean());
+		return org.springframework.util.ClassUtils.getUserClass(getBean());
 	}
 
 	/**
@@ -156,7 +151,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
 			String name = map.remove("name");
 			if(StringUtils.isNotEmpty(name)) {
-				BeanUtils.setProperty(top, "name", name);
+				ClassUtils.invokeSetter(top, "setName", name);
 			}
 		}
 
@@ -172,12 +167,33 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		handleBean();
 
+		if(top instanceof CanShareResource && map.containsKey("sharedResourceName")) {
+			String sharedResourceName = ShareableResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
+			if(applicationContext.containsBean(sharedResourceName)) {
+				ShareableResource<?> container = applicationContext.getBean(sharedResourceName, ShareableResource.class);
+				dontSetSharedResourceAttributes(container, map);
+			} else {
+				addLocalWarning("shared resource ["+map.get("sharedResourceName")+"] does not exist");
+			}
+		}
+
 		for (Entry<String, String> entry : map.entrySet()) {
 			String attribute = entry.getKey();
 			if (log.isTraceEnabled()) {
 				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
 			handleAttribute(attribute, entry.getValue(), map);
+		}
+	}
+
+	/** Check if attribute-'map' contains attributes (methods) that also exist in 'sharedResource'. */
+	private void dontSetSharedResourceAttributes(ShareableResource<?> sharedResource, Map<String, String> map) {
+		PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(sharedResource.getClass());
+		for(PropertyDescriptor pd : pds) {
+			String attributeName = pd.getName();
+			if(map.containsKey(attributeName)) {
+				addLocalWarning("ignoring attribute ["+attributeName+"] as it is managed by the shared resource ["+sharedResource.getName()+"]");
+			}
 		}
 	}
 
