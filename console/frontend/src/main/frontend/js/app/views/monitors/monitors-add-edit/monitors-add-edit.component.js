@@ -21,16 +21,14 @@ const MonitorsAddEditController = function ($scope, Api, $state) {
 			ctrl.loading = false;
 		});
 
-		var url;
-
 		if ($state.params.configuration == "" || $state.params.monitor == "") {
 			$state.go('pages.monitors');
 		} else {
 			ctrl.selectedConfiguration = $state.params.configuration;
 			ctrl.monitor = $state.params.monitor;
 			ctrl.triggerId = $state.params.trigger || "";
-			url = "configurations/" + ctrl.selectedConfiguration + "/monitors/" + ctrl.monitor + "/triggers/" + ctrl.triggerId;
-			Api.Get(url, function (data) {
+			ctrl.url = "configurations/" + ctrl.selectedConfiguration + "/monitors/" + ctrl.monitor + "/triggers/" + ctrl.triggerId;
+			Api.Get(ctrl.url, function (data) {
 				$.extend(ctrl, data);
 				calculateEventSources();
 				if (data.trigger && data.trigger.sources) {
@@ -104,11 +102,11 @@ const MonitorsAddEditController = function ($scope, Api, $state) {
 			}
 		}
 		if (ctrl.triggerId && ctrl.triggerId > -1) {
-			Api.Put(url, trigger, function (returnData) {
+			Api.Put(ctrl.url, trigger, function (returnData) {
 				$state.go('pages.monitors', $state.params);
 			});
 		} else {
-			Api.Post(url, JSON.stringify(trigger), function (returnData) {
+			Api.Post(ctrl.url, JSON.stringify(trigger), function (returnData) {
 				$state.go('pages.monitors', $state.params);
 			});
 		}
