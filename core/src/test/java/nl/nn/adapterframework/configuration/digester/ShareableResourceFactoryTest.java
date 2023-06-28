@@ -15,7 +15,7 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.CanShareResource;
+import nl.nn.adapterframework.core.CanUseSharedResource;
 import nl.nn.adapterframework.core.ShareableResource;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
@@ -100,7 +100,7 @@ public class ShareableResourceFactoryTest {
 
 	}
 
-	public static class DummyClass implements CanShareResource<String> {
+	public static class DummyClass implements CanUseSharedResource<String> {
 
 		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 		private @Getter @Setter String name;
@@ -138,7 +138,7 @@ public class ShareableResourceFactoryTest {
 		}
 	}
 
-	public static class DummyClass2 implements CanShareResource<Boolean> {
+	public static class DummyClass2 implements CanUseSharedResource<Boolean> {
 
 		private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 		private @Getter @Setter String name;

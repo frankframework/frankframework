@@ -43,7 +43,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.CanShareResource;
+import nl.nn.adapterframework.core.CanUseSharedResource;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -87,7 +87,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanShareResource<CloseableHttpClient> {
+public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<CloseableHttpClient> {
 
 	private static final String CONTEXT_KEY_STATUS_CODE = "Http.StatusCode";
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";

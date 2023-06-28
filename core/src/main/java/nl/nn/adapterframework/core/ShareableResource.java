@@ -22,7 +22,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 public interface ShareableResource<T> extends IConfigurable, ConfigurableLifecycle, Phased {
 	public static final String SHARED_RESOURCE_PREFIX = "shared$$";
 
-	/** Retrieve the shared resource so {@link CanShareResource} holders can use it */
+	/** Retrieve the shared resource so {@link CanUseSharedResource} holders can use it */
 	T getSharedResource();
 
 	/**

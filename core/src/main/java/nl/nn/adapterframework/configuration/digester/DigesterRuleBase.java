@@ -35,7 +35,7 @@ import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-import nl.nn.adapterframework.core.CanShareResource;
+import nl.nn.adapterframework.core.CanUseSharedResource;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
@@ -167,7 +167,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		handleBean();
 
-		if(top instanceof CanShareResource && map.containsKey("sharedResourceName")) {
+		if(top instanceof CanUseSharedResource && map.containsKey("sharedResourceName")) {
 			String sharedResourceName = ShareableResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
 			if(applicationContext.containsBean(sharedResourceName)) {
 				ShareableResource<?> container = applicationContext.getBean(sharedResourceName, ShareableResource.class);

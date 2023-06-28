@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 
-public interface CanShareResource<T> extends IConfigurable, ConfigurableLifecycle {
+public interface CanUseSharedResource<T> extends IConfigurable, ConfigurableLifecycle {
 
 	void setSharedResourceRef(String sharedResourceName);
 
