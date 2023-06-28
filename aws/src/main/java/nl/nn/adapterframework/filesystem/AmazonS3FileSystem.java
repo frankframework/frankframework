@@ -30,10 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.amazonaws.services.s3.model.StorageClass;
-
-import nl.nn.adapterframework.util.EnumUtils;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.AmazonServiceException;
@@ -55,6 +51,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.StorageClass;
 
 import lombok.Getter;
 import nl.nn.adapterframework.aws.AwsUtil;
@@ -62,6 +59,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
