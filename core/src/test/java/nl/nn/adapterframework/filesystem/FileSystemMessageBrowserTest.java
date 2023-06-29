@@ -111,7 +111,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 				String storageKey = item.getId();
 				RawMessageWrapper<F> rawMessageWrapper = browser.browseMessage(storageKey);
 				assertEquals(item.getId(), rawMessageWrapper.getId());
-				assertEquals(item.getId(), rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_KEY_KEY));
+				assertEquals(item.getId(), rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY));
 				F file = rawMessageWrapper.getRawMessage();
 				items.put(item.getOriginalId(), fileSystem.getName(file));
 			}

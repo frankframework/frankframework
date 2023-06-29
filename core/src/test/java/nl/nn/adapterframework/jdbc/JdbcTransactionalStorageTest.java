@@ -85,7 +85,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		RawMessageWrapper<String> rawMessageWrapper = storage.browseMessage(storageKey);
 		String data = rawMessageWrapper.getRawMessage();
-		assertEquals(storageKey, rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_KEY_KEY));
+		assertEquals(storageKey, rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY));
 		assertEquals(message, data);
 	}
 

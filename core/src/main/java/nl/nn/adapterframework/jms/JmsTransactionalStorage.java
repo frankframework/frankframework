@@ -106,7 +106,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
-			messageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);
@@ -118,7 +118,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
-			messageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);

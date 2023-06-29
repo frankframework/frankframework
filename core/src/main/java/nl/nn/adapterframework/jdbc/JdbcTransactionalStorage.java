@@ -712,63 +712,32 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			throw new SenderException("correlationId cannot be null");
 		}
 
-		IbisTransaction itx;
-		if (txManager != null) {
-			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
-		} else {
-			itx = null;
-		}
+		IbisTransaction itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
 		try {
 			try (Connection conn = getConnection()) {
 				return storeMessage(conn, messageId, correlationId, receivedDate, comments, label, message);
 			} catch (SenderException e) {
-				if (itx != null) {
-					itx.setRollbackOnly();
-				}
+				itx.setRollbackOnly();
 				throw e;
 			} catch (Exception e) {
-				if (itx != null) {
-					itx.setRollbackOnly();
-				}
+				itx.setRollbackOnly();
 				throw new SenderException("cannot serialize message", e);
 			}
 		} finally {
-			if (itx != null) {
-				itx.complete();
-			}
+			itx.complete();
 		}
 
 	}
 
 	public String storeMessage(@Nonnull Connection conn, @Nonnull String messageId, @Nonnull String correlationId, @Nonnull Date receivedDate, @Nullable String comments, @Nullable String label, @Nonnull S message) throws SenderException {
-		String result;
 		try {
-			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
-			String storedMessageId;
-			if (messageId.length() > MAXIDLEN) {
-				storedMessageId = messageId.substring(0, MAXIDLEN);
-			} else {
-				storedMessageId = messageId;
-			}
-			String storedCorrelationId;
-			if (correlationId.length() > MAXCIDLEN) {
-				storedCorrelationId = correlationId.substring(0, MAXCIDLEN);
-			} else {
-				storedCorrelationId = correlationId;
-			}
-			String storedComments;
-			if (comments != null && comments.length() > MAXCOMMENTLEN) {
-				storedComments = comments.substring(0, MAXCOMMENTLEN);
-			} else {
-				storedComments = comments;
-			}
-			String storedLabel;
-			if (label != null && label.length() > MAXLABELLEN) {
-				storedLabel = label.substring(0, MAXLABELLEN);
-			} else {
-				storedLabel = label;
-			}
-			result = storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
+			final Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
+			final String storedMessageId = StringUtils.truncate(messageId, MAXIDLEN);
+			final String storedCorrelationId = StringUtils.truncate(correlationId, MAXCIDLEN);
+			final String storedComments = StringUtils.truncate(comments, MAXCOMMENTLEN);
+			final String storedLabel = StringUtils.truncate(label, MAXLABELLEN);
+
+			final String result = storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
 			if (result == null) {
 				return retrieveKey(conn, storedMessageId, storedCorrelationId, receivedDateTime);
 			}
@@ -790,11 +759,11 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					return (MessageWrapper<S>) s;
 				} else if (s instanceof Message) {
 					MessageWrapper<S> messageWrapper = new MessageWrapper<>((Message) s, storageKey, null);
-					messageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
+					messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return messageWrapper;
 				} else {
 					RawMessageWrapper<S> rawMessageWrapper = new RawMessageWrapper<>((S) s, storageKey, null);
-					rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
+					rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return rawMessageWrapper;
 				}
 			}

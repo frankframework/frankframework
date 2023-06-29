@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.LogUtil;
@@ -100,7 +101,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		try {
 			F file = fileSystem.toFile(folder, storageKey);
 			RawMessageWrapper<F> result = new RawMessageWrapper<>(file, storageKey, null);
-			result.getContext().put("key", storageKey);
+			result.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return result;
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);

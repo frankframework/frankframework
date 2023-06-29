@@ -1121,6 +1121,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				// then the management of the errorStorage is left to the listener.
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
+				//noinspection unchecked
 				processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				return;
 			}
@@ -1131,6 +1132,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			try {
 				try {
 					msg = errorStorage.getMessage(storageKey);
+					//noinspection ReassignedVariable
 					processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();

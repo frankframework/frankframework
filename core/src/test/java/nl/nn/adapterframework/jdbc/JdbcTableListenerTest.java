@@ -475,7 +475,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 				}
 				String key = "10";
 				RawMessageWrapper<String> rawMessage = new RawMessageWrapper<>(key, key, key);
-				rawMessage.getContext().put(PipeLineSession.STORAGE_KEY_KEY, key);
+				rawMessage.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 				rawMessage1 = listener.changeProcessState(conn, rawMessage, ProcessState.ERROR, "test");
 				if (mainThreadFirst) {
 					waitBeforeUpdate.release();

@@ -105,7 +105,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		//noinspection unchecked
 		RawMessageWrapper<M> rawMessageWrapper = (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
-		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_KEY_KEY, storageKey);
+		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 		return rawMessageWrapper;
 	}
 
