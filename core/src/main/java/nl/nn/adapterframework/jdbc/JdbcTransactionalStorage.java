@@ -613,8 +613,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			}
 			// retrieve the key
 			String newKey;
-			try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery);
-				 ResultSet rs = stmt.executeQuery()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery); ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					throw new SenderException("could not retrieve key of stored message");
 				}
@@ -639,7 +638,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 					}
 					dbmsSupport.updateBlob(rs, 1, blobHandle);
 					return "<id>" + newKey + "</id>";
-
 				}
 			}
 		} else {
@@ -660,7 +658,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private boolean isMessageDifferent(Connection conn, String messageId, S message) {
 		int paramPosition=0;
 
-		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)){
+		try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery2)) {
 			stmt.clearParameters();
 			JdbcUtil.setParameter(stmt, ++paramPosition, messageId, getDbmsSupport().isParameterTypeMatchRequired());
 			// executing query, getting message as response in a result set.
