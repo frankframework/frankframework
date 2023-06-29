@@ -525,15 +525,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
-		PreparedStatement stmt = null;
-		try {
-			IDbmsSupport dbmsSupport = getDbmsSupport();
-			log.debug("preparing insert statement [{}]", insertQuery);
-			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-				stmt = conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-			} else {
-				stmt = conn.prepareStatement(insertQuery);
-			}
+		IDbmsSupport dbmsSupport = getDbmsSupport();
+		log.debug("preparing insert statement [{}]", insertQuery);
+		int updateCount;
+		try (PreparedStatement stmt = dbmsSupport.mustInsertEmptyBlobBeforeData() ? conn.prepareStatement(insertQuery) : conn.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);) {
 			stmt.clearParameters();
 			int parPos = 0;
 
@@ -577,7 +572,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				int blobColumnIndex = ++parPos;
-				Object blobHandle=dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
+				Object blobHandle = dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
 				try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
 					oos.writeObject(message);
 				}
@@ -607,63 +602,57 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				stmt.setString(++parPos, getSlotId());
 			}
 			stmt.execute();
-			int updateCount = stmt.getUpdateCount();
+			updateCount = stmt.getUpdateCount();
 			if (log.isDebugEnabled()) {
-				log.debug("update count for insert statement: "+updateCount);
+				log.debug("update count for insert statement: " + updateCount);
 			}
-			if (updateCount > 0) {
-				if (log.isDebugEnabled()) {
-					log.debug("preparing select statement ["+selectKeyQuery+"]");
+		}
+		if (updateCount > 0) {
+			if (log.isDebugEnabled()) {
+				log.debug("preparing select statement [{}]", selectKeyQuery);
+			}
+			// retrieve the key
+			String newKey;
+			try (PreparedStatement stmt = conn.prepareStatement(selectKeyQuery);
+				 ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					throw new SenderException("could not retrieve key of stored message");
 				}
-				stmt.close();
-				stmt = conn.prepareStatement(selectKeyQuery);
-				// retrieve the key
-				String newKey;
-				try (ResultSet rs = stmt.executeQuery()) {
-					if (!rs.next()) {
-						throw new SenderException("could not retrieve key of stored message");
-					}
-					newKey = rs.getString(1);
-				}
+				newKey = rs.getString(1);
+			}
 
-				// and update the blob
-				if (log.isDebugEnabled()) {
-					log.debug("preparing update statement ["+updateBlobQuery+"]");
-				}
-				stmt.close();
-				stmt = conn.prepareStatement(updateBlobQuery);
+			// and update the blob
+			if (log.isDebugEnabled()) {
+				log.debug("preparing update statement [{}]", updateBlobQuery);
+			}
+			try (PreparedStatement stmt = conn.prepareStatement(updateBlobQuery);){
 				stmt.clearParameters();
-				stmt.setString(1,newKey);
+				stmt.setString(1, newKey);
 
 				try (ResultSet rs = stmt.executeQuery()) {
 					if (!rs.next()) {
-						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
+						throw new SenderException("could not retrieve row for stored message [" + messageId + "]");
 					}
-					Object blobHandle=dbmsSupport.getBlobHandle(rs, 1);
+					Object blobHandle = dbmsSupport.getBlobHandle(rs, 1);
 					try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, rs, 1, isBlobsCompressed()))) {
 						oos.writeObject(message);
 					}
 					dbmsSupport.updateBlob(rs, 1, blobHandle);
-					return "<id>" + newKey+ "</id>";
+					return "<id>" + newKey + "</id>";
 
-				}
-			} else {
-				if (isOnlyStoreWhenMessageIdUnique()) {
-					boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
-					String resultString = createResultString(isMessageDifferent);
-					log.warn("MessageID [" + messageId + "] already exists");
-					if (isMessageDifferent) {
-						log.warn("Message with MessageID [" + messageId + "] is not equal");
-					}
-					return resultString;
-				} else {
-					throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
 				}
 			}
-
-		} finally {
-			if (stmt!=null) {
-				stmt.close();
+		} else {
+			if (isOnlyStoreWhenMessageIdUnique()) {
+				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
+				String resultString = createResultString(isMessageDifferent);
+				log.warn("MessageID [{}] already exists", messageId);
+				if (isMessageDifferent) {
+					log.warn("Message with MessageID [{}] is not equal", messageId);
+				}
+				return resultString;
+			} else {
+				throw new SenderException("update count for update statement not greater than 0 ["+updateCount+"]");
 			}
 		}
 	}
@@ -729,6 +718,19 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	}
 
+	/**
+	 * Stores a message in the database and retrieves the value of the primary key for the record just inserted.
+	 *
+	 * @param conn the database connection
+	 * @param messageId the ID of the message
+	 * @param correlationId the correlation ID of the message
+	 * @param receivedDate the date when the message was received
+	 * @param comments additional comments for the message (optional)
+	 * @param label the label for the message (optional)
+	 * @param message the message object to be stored
+	 * @return the value of the primary key for the inserted record
+	 * @throws SenderException if there is an error storing the message
+	 */
 	public String storeMessage(@Nonnull Connection conn, @Nonnull String messageId, @Nonnull String correlationId, @Nonnull Date receivedDate, @Nullable String comments, @Nullable String label, @Nonnull S message) throws SenderException {
 		try {
 			final Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
