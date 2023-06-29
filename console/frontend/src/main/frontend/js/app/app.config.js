@@ -368,7 +368,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors', {
 				url: "/monitors?configuration",
-				templateUrl: "js/app/views/monitors/ShowMonitors.html",
+				component: 'monitors',
 				data: {
 					pageTitle: 'Monitors',
 					breadcrumbs: 'Monitors'
@@ -379,7 +379,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_editTrigger', {
 				url: "/monitors/:monitor/triggers/:trigger?configuration",
-				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
+				component: 'monitorsAddEdit',
 				data: {
 					pageTitle: 'Edit Trigger',
 					breadcrumbs: 'Monitors > Triggers > Edit'
@@ -392,7 +392,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_addTrigger', {
 				url: "/monitors/:monitor/triggers/new?configuration",
-				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
+				component: 'monitorsAddEdit',
 				data: {
 					pageTitle: 'Add Trigger',
 					breadcrumbs: 'Monitors > Triggers > Add'
