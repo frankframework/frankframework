@@ -194,6 +194,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean ignoreRedirects=false;
 	private @Getter String protocol=null;
+	private SSLConnectionSocketFactory sslSocketFactory;
 
 	private boolean disableCookies = false;
 
@@ -275,12 +276,14 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
 		}
+		httpClientBuilder.evictIdleConnections((long) getConnectionIdleTimeout(), TimeUnit.SECONDS);
+
+		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
 		configureRedirectStrategy();
-		configureConnectionManager();
 	}
 
-	// The redirect strategy used to only redirect GET, DELETE and HEAD.
+	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */
 	private void configureRedirectStrategy() {
 		if(isFollowRedirects()) {
 			httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy(new String[] { HttpGet.METHOD_NAME, HttpHead.METHOD_NAME, HttpDelete.METHOD_NAME }));
@@ -289,15 +292,17 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		}
 	}
 
-	public void configureConnectionManager() throws ConfigurationException {
-		// In order to support multiThreading and connectionPooling
-		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
+	/** 
+	 * In order to support multiThreading and connectionPooling.
+	 * The connectionManager has to be initialized with a sslSocketFactory.
+	 * The pool must be re-created once closed.
+	 */
+	public void configureConnectionManager() {
 		int timeToLive = getConnectionTimeToLive();
 		if (timeToLive<=0) {
 			timeToLive = -1;
 		}
 
-		SSLConnectionSocketFactory sslSocketFactory = getSSLConnectionSocketFactory();
 		Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 			.register("http", PlainConnectionSocketFactory.getSocketFactory())
 			.register("https", sslSocketFactory)
@@ -315,7 +320,6 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
-		httpClientBuilder.evictIdleConnections((long) getConnectionIdleTimeout(), TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -324,6 +328,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	protected void buildHttpClient() {
+		configureConnectionManager();
 		httpClient = httpClientBuilder.build();
 	}
 
