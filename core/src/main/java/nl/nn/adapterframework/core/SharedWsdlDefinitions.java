@@ -21,7 +21,10 @@ import java.util.Map;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 
-public class SharedResources<R> {
+/**
+ * This exists because WSDL Definitions can grow dramatically in size when they include a few xsd's.
+ */
+public class SharedWsdlDefinitions<R> {
 
 	private Map<String, R> resources = new HashMap<>();
 
