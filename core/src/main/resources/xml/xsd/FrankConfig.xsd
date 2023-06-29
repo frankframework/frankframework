@@ -1148,6 +1148,7 @@
   <xs:complexType name="SharedResourcesType">
     <xs:sequence>
       <xs:group ref="SharedResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="HttpSession" minOccurs="0" maxOccurs="unbounded" type="HttpSessionType" />
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.SharedResources" use="prohibited" />
     <xs:attribute ref="active" />

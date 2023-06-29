@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.SharedResource;
+import nl.nn.adapterframework.http.HttpSession;
 
 public class SharedResources {
 
@@ -23,4 +24,7 @@ public class SharedResources {
 		//This method only exists for the FrankDoc
 	}
 
+	public void addHttpSession(HttpSession resource) {
+		//Hack to directly use the HttpSession element in configurations
+	}
 }

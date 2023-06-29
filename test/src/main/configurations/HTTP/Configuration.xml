@@ -1,7 +1,8 @@
 <configuration>
 
 	<SharedResources>
-		<SharedResource name="SharedHttpSession" className="nl.nn.adapterframework.http.HttpSession"
+		<HttpSession
+			name="SharedHttpSession"
 			allowSelfSignedCertificates="true"
 			verifyHostname="false"
 			timeout="1000"

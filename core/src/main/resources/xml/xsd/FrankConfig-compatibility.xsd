@@ -938,6 +938,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="SharedResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="HttpSession" minOccurs="0" maxOccurs="unbounded" type="HttpSessionType" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.SharedResources" use="prohibited" />

@@ -37,6 +37,9 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
@@ -226,11 +229,6 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		 */
 //		httpClientBuilder.disableAuthCaching();
 
-		Builder requestConfigBuilder = RequestConfig.custom();
-		requestConfigBuilder.setConnectTimeout(getTimeout());
-		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
-		requestConfigBuilder.setSocketTimeout(getTimeout());
-
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
@@ -248,6 +246,13 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 			throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
+
+
+		RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setConnectTimeout(getTimeout());
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
+		requestConfigBuilder.setSocketTimeout(getTimeout());
+
 		HttpHost proxy = null;
 		CredentialFactory pcf = null;
 		if (StringUtils.isNotEmpty(getProxyHost())) {
@@ -271,15 +276,17 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 			httpClientBuilder.disableCookieManagement();
 		}
 
-		// The redirect strategy used to only redirect GET, DELETE and HEAD.
-		httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy() {
-			@Override
-			protected boolean isRedirectable(String method) {
-				return isFollowRedirects();
-			}
-		});
-
+		configureRedirectStrategy();
 		configureConnectionManager();
+	}
+
+	// The redirect strategy used to only redirect GET, DELETE and HEAD.
+	private void configureRedirectStrategy() {
+		if(isFollowRedirects()) {
+			httpClientBuilder.setRedirectStrategy(new DefaultRedirectStrategy(new String[] { HttpGet.METHOD_NAME, HttpHead.METHOD_NAME, HttpDelete.METHOD_NAME }));
+		} else {
+			httpClientBuilder.disableRedirectHandling();
+		}
 	}
 
 	public void configureConnectionManager() throws ConfigurationException {
