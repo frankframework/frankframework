@@ -273,14 +273,14 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				$interval(updateTime, 1000);
 				updateTime();
 
-				appService.instanceName = data.instance.name;
-				angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
-
 				appService.dtapStage = data["dtap.stage"];
 				ctrl.dtapStage = data["dtap.stage"];
 				ctrl.dtapSide = data["dtap.side"];
 				// appService.userName = data["userName"];
 				ctrl.userName = data["userName"];
+
+				appService.updateInstanceName(data.instance.name);
+				angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
 
 				if (appService.dtapStage == "LOC") {
 					Debug.setLevel(3);

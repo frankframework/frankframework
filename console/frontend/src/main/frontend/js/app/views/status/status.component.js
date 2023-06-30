@@ -47,7 +47,6 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 		$rootScope.$on('configurations', ctrl.check4StubbedConfigs);
 		$rootScope.$on('summaries', function () {
-			alert("summaries broadcast");
 			ctrl.adapterSummary = appService.adapterSummary;
 			ctrl.receiverSummary = appService.receiverSummary;
 			ctrl.messageSummary = appService.messageSummary;

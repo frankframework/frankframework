@@ -1,6 +1,6 @@
 import { appModule } from "./app.module";
 
-appModule.factory('appService', ['$rootScope', function ($rootScope){
+appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $state){
 	const service = {};
 
 	service.adapters = {};
@@ -45,8 +45,13 @@ appModule.factory('appService', ['$rootScope', function ($rootScope){
 		service.messageLog = messageLog;
 		$rootScope.$broadcast('messageLog', messageLog);
 	}
-	
+
 	service.instanceName = "";
+	service.updateInstanceName = function (instanceName) {
+		service.instanceName = instanceName;
+		$rootScope.$broadcast('instanceName', instanceName);
+	}
+
 	service.dtapStage = "";
 
 	service.updateConfigurations = function (configurations) {
