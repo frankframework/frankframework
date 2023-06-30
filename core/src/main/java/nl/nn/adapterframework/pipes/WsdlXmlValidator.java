@@ -89,7 +89,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
-	private @Setter SharedWsdlDefinitions<Definition> sharedWsdlDefinitions;
+	private @Setter SharedWsdlDefinitions sharedWsdlDefinitions;
 	private Definition definition;
 
 
