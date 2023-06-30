@@ -87,7 +87,7 @@ public class SharedResourceFactoryTest {
 
 			DummyClass2 dummyClass2 = config.createBean(DummyClass2.class);
 			IllegalStateException e = assertThrows(IllegalStateException.class, () -> dummyClass2.getSharedResource(TEST_RESOURCE_NAME));
-			assertEquals("Shared Resource [mySharedDummyResource] may not be used here", e.getMessage());
+			assertEquals("Shared Resource ["+TEST_RESOURCE_NAME+"] may not be used here", e.getMessage());
 		}
 	}
 
