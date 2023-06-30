@@ -27,39 +27,35 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageBrowsingUtil {
-	private static Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
+	private static final Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static String getMessageText(Object rawmsg, IListener listener) throws IOException {
-		if (rawmsg == null) {
+	public static String getMessageText(RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
+		if (rawMessageWrapper == null || rawMessageWrapper.getRawMessage() == null) {
 			return null;
 		}
 
-		if(rawmsg instanceof MessageWrapper) {
-			MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-			return msgsgs.getMessage().asString();
-		} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-			return ((Message)rawmsg).asString();
-		} else if(rawmsg instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
-			return (String)rawmsg;
+		if(rawMessageWrapper instanceof MessageWrapper) {
+			MessageWrapper<?> messageWrapper = (MessageWrapper<?>) rawMessageWrapper;
+			return messageWrapper.getMessage().asString();
+		}
+		Object rawMessage = rawMessageWrapper.getRawMessage();
+		if(rawMessage instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+			return ((Message)rawMessage).asString();
+		} else if(rawMessage instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
+			return (String)rawMessage;
 		} else if (listener != null) {
-			RawMessageWrapper<?> rawMessageWrapper;
-			if (rawmsg instanceof RawMessageWrapper<?>) {
-				rawMessageWrapper = (RawMessageWrapper<?>) rawmsg;
-			} else {
-				rawMessageWrapper = new RawMessageWrapper<>(rawmsg);
-			}
 			String msg = null;
 			try {
 				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
 			} catch (Exception e) {
-				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawmsg + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
+				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawMessageWrapper + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
 			}
 			if (StringUtils.isEmpty(msg)) {
-				msg = Message.asString(rawmsg);
+				msg = Message.asString(rawMessage);
 			}
 			return msg;
 		} else {
-			return Message.asString(rawmsg);
+			return Message.asString(rawMessage);
 		}
 	}
 }

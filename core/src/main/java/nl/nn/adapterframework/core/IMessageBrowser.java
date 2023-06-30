@@ -17,6 +17,8 @@ package nl.nn.adapterframework.core;
 
 import java.util.Date;
 
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 
 /**
  * @author  Gerrit van Brakel
@@ -24,9 +26,9 @@ import java.util.Date;
  */
 public interface IMessageBrowser<M> extends IXAEnabled {
 
-	public enum SortOrder { NONE, ASC, DESC }
+	enum SortOrder { NONE, ASC, DESC }
 
-	public enum StorageType {
+	enum StorageType {
 		NONE(null),
 		ERRORSTORAGE("E"),
 		MESSAGELOG_PIPE("L"),
@@ -45,7 +47,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		}
 	}
 
-	public enum HideMethod {
+	enum HideMethod {
 		/** to mask the entire string */
 		ALL,
 		/** to only mask the first half of the string */
@@ -68,31 +70,29 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 	 * Check if the storage contains message with the given original messageId
 	 * (as passed to storeMessage).
 	 */
-	public boolean containsMessageId(String originalMessageId) throws ListenerException;
-	public boolean containsCorrelationId(String correlationId) throws ListenerException;
+	boolean containsMessageId(String originalMessageId) throws ListenerException;
+	boolean containsCorrelationId(String correlationId) throws ListenerException;
 
 	/**
 	 * Retrieves the message, but does not delete.
 	 *
-	 * TODO: Can this return a RawMessageWrapper?
 	 */
-	public M browseMessage(String storageKey) throws ListenerException;
+	RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException;
 	/**
 	 * Deletes the message.
 	 */
-	public void deleteMessage(String storageKey) throws ListenerException;
-	public int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
+	void deleteMessage(String storageKey) throws ListenerException;
+	int getMessageCount() throws ListenerException; // may return -1 when the count cannot be determined
 
 	/** Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys &lt;party&gt; and &lt;/party&gt; */
-	public void setHideRegex(String hideRegex);
-	public String getHideRegex();
+	void setHideRegex(String hideRegex);
+	String getHideRegex();
 
 	/**
 	 * (Only used when hideRegex is not empty) Specifies the way to hide
 	 * @ff.default ALL
 	 */
-	public void setHideMethod(HideMethod hideMethod);
-	public HideMethod getHideMethod();
-
+	void setHideMethod(HideMethod hideMethod);
+	HideMethod getHideMethod();
 
 }

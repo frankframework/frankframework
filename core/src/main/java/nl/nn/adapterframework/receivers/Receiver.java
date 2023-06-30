@@ -853,7 +853,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@Override
-	// TODO: MessageBrowsers do not return type M, figure out how to fix this.
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
@@ -1007,9 +1006,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		if (rawMessageWrapper instanceof MessageWrapper) {
 			sobj = (MessageWrapper<?>) rawMessageWrapper;
-		} else if (rawMessageWrapper.getRawMessage() instanceof Serializable) {
-			// TODO: Branch not actually touched in any tests. Perhaps we should rather store always a MessageWrapper, not the raw message, so we keep extra meta data?
-			sobj = (Serializable) rawMessageWrapper.getRawMessage();
 		} else {
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
 		}
@@ -1124,7 +1120,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 				// then the management of the errorStorage is left to the listener.
 				IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
-				RawMessageWrapper<?> msg = new RawMessageWrapper<>(errorStorageBrowser.browseMessage(storageKey), storageKey, null);
+				RawMessageWrapper<?> msg = errorStorageBrowser.browseMessage(storageKey);
+				//noinspection unchecked
 				processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				return;
 			}
@@ -1134,7 +1131,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			try {
 				try {
-					msg = new RawMessageWrapper<>(errorStorage.getMessage(storageKey), storageKey, null);
+					msg = errorStorage.getMessage(storageKey);
+					//noinspection ReassignedVariable
 					processRawMessage((RawMessageWrapper<M>) msg, session, -1, true, false);
 				} catch (Throwable t) {
 					itx.setRollbackOnly();
