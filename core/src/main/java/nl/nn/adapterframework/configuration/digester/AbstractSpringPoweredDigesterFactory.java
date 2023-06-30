@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 	private DigesterRule rule = null;
 
 	protected AbstractSpringPoweredDigesterFactory() {

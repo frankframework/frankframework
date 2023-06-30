@@ -1804,6 +1804,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return currentRunState==someRunState;
 	}
 
+	//TODO move this to RunState
 	public boolean isStopped() {
 		RunState currentRunState = runState.getRunState();
 		switch (currentRunState) {
