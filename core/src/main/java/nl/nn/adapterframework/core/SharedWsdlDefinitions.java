@@ -18,18 +18,20 @@ package nl.nn.adapterframework.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.wsdl.Definition;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 
 /**
  * This exists because WSDL Definitions can grow dramatically in size when they include a few xsd's.
  */
-public class SharedWsdlDefinitions<R> {
+public class SharedWsdlDefinitions {
 
-	private Map<String, R> resources = new HashMap<>();
+	private Map<String, Definition> resources = new HashMap<>();
 
-	public synchronized R getOrCompute(String name, ThrowingFunction<String, R, ConfigurationException> creator) throws ConfigurationException {
-		R result = resources.get(name);
+	public synchronized Definition getOrCompute(String name, ThrowingFunction<String, Definition, ConfigurationException> creator) throws ConfigurationException {
+		Definition result = resources.get(name);
 		if (result==null) {
 			result = creator.apply(name);
 			resources.put(name, result);

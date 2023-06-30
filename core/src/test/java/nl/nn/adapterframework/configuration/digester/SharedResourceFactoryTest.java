@@ -21,8 +21,8 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class SharedResourceFactoryTest {
 
-	private static final String TEST_RESOURCE_NAME = "mySharedDummyResource";
-	private static final String TEST_RESOURCE_VALUE = "mySharedDummyResource";
+	private static final String TEST_RESOURCE_NAME = "mySharedDummyResourceName";
+	private static final String TEST_RESOURCE_VALUE = "mySharedDummyResourceValue";
 
 	@Test
 	public void testLowercaseClassname() throws Exception {
