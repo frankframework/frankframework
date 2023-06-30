@@ -13,7 +13,7 @@
 		<cxf.version>3.5.5</cxf.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
-		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
+		<jboss-logging.version>3.5.2.Final</jboss-logging.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.1</frankdoc.version>
