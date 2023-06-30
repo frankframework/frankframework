@@ -1,6 +1,6 @@
 import { appModule } from "./app.module";
 
-const AppController = function ($scope, $rootScope, authService, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout) {
+const AppController = function ($scope, $rootScope, authService, appConstants, Api, Hooks, $state, $location, Poller, Notification, dateFilter, $interval, Idle, $http, Misc, $uibModal, Session, Debug, SweetAlert, $timeout, appService) {
 	const ctrl = this;
 
 	ctrl.$state = $state;
@@ -19,34 +19,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		angular.element(".main").show();
 		angular.element(".loading").remove();
 		/* state controller end */
-
-		$rootScope.adapters = {};
-		$rootScope.alerts = [];
-
-		$rootScope.adapterSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			error: 0
-		};
-		$rootScope.receiverSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			error: 0
-		};
-		$rootScope.messageSummary = {
-			info: 0,
-			warn: 0,
-			error: 0
-		};
-
-		$rootScope.lastUpdated = 0;
-		$rootScope.timeout = null;
-
-		$rootScope.configurations = [];
 
 		Pace.on("done", ctrl.initializeFrankConsole);
 		$scope.$on('initializeFrankConsole', ctrl.initializeFrankConsole);
@@ -91,19 +63,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			Poller.getAll().changeInterval(appConstants["console.pollerInterval"]);
 		});
 
-		$rootScope.updateConfigurations = function (configurations) {
-			const updatedConfigurations = [];
-			for (var i in configurations) {
-				var config = configurations[i];
-				if (config.name.startsWith("IAF_"))
-					updatedConfigurations.unshift(config);
-				else
-					updatedConfigurations.push(config);
-			}
-			$rootScope.$broadcast('configurations', updatedConfigurations);
-			$rootScope.configurations = updatedConfigurations;
-		}
-
 		Hooks.register("init:once", function () {
 			/* Check IAF version */
 			console.log("Checking IAF version with remote...");
@@ -130,7 +89,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			});
 
 			Poller.add("server/warnings", function (configurations) {
-				$rootScope.alerts = []; //Clear all old alerts
+				appService.updateAlerts([]); //Clear all old alerts
 
 				configurations['All'] = { messages: configurations.messages };
 				delete configurations.messages;
@@ -162,7 +121,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 					}
 				}
 
-				$rootScope.messageLog = configurations;
+				appService.updateMessageLog(configurations);
 			}, true, 60000);
 
 			var raw_adapter_data = {};
@@ -170,7 +129,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				for (const adapterName in raw_adapter_data) { //Check if any old adapters should be removed
 					if (!allAdapters[adapterName]) {
 						delete raw_adapter_data[adapterName];
-						delete $rootScope.adapters[adapterName];
+						delete appService.adapters[adapterName];
 						Debug.log("removed adapter [" + adapterName + "]");
 					}
 				}
@@ -227,13 +186,14 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 							adapter.status = "stopped";
 						}
 
-						$rootScope.adapters[adapter.name] = adapter;
+						appService.adapters[adapter.name] = adapter;
 
-						$rootScope.updateAdapterSummary();
+						appService.updateAdapterSummary();
 						Hooks.call("adapterUpdated", adapter);
 						//					$scope.$broadcast('adapterUpdated', adapter);
 					}
 				}
+				appService.updateAdapters(appService.adapters);
 			};
 
 			//Get base information first, then update it with more details
@@ -313,16 +273,16 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				$interval(updateTime, 1000);
 				updateTime();
 
-				$rootScope.instanceName = data.instance.name;
+				appService.instanceName = data.instance.name;
 				angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
 
-				$rootScope.dtapStage = data["dtap.stage"];
+				appService.dtapStage = data["dtap.stage"];
 				ctrl.dtapStage = data["dtap.stage"];
 				ctrl.dtapSide = data["dtap.side"];
-				// $rootScope.userName = data["userName"];
+				// appService.userName = data["userName"];
 				ctrl.userName = data["userName"];
 
-				if ($rootScope.dtapStage == "LOC") {
+				if (appService.dtapStage == "LOC") {
 					Debug.setLevel(3);
 				}
 
@@ -332,7 +292,7 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 				}
 
 				Api.Get("server/configurations", function (data) {
-					$rootScope.updateConfigurations(data);
+					appService.updateConfigurations(data);
 				});
 				Hooks.call("init", false);
 			}, function (message, statusCode, statusText) {
@@ -371,12 +331,13 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		var line = message.match(/line \[(\d+)\]/);
 		var isValidationAlert = message.indexOf("Validation") !== -1;
 		var link = (line && !isValidationAlert) ? { name: configuration, '#': 'L' + line[1] } : undefined;
-		$rootScope.alerts.push({
+		appService.alerts.push({
 			link: link,
 			type: type,
 			configuration: configuration,
 			message: message
 		});
+		appService.updateAlerts(appService.alerts);
 	};
 	ctrl.addWarning = function (configuration, message) {
 		ctrl.addAlert("warning", configuration, message);
@@ -398,76 +359,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 			case "Hold":
 				return "fa-pause-circle";
 		}
-	};
-	$rootScope.getProcessStateIconColor = function (processState) {
-		switch (processState) {
-			case "Available":
-				return "success";
-			case "InProcess":
-				return "success";
-			case "Done":
-				return "success";
-			case "Error":
-				return "danger";
-			case "Hold":
-				return "warning";
-		}
-	};
-
-	$rootScope.updateAdapterSummary = function (configurationName) {
-		var updated = (new Date().getTime());
-		if (updated - 3000 < $rootScope.lastUpdated && !configurationName) { //3 seconds
-			clearTimeout($rootScope.timeout);
-			$rootScope.timeout = setTimeout($rootScope.updateAdapterSummary, 1000);
-			return;
-		}
-		if (configurationName == undefined)
-			configurationName = $state.params.configuration;
-
-		var adapterSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			exception_starting: 0,
-			exception_stopping: 0,
-			error: 0
-		};
-		var receiverSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			exception_starting: 0,
-			exception_stopping: 0,
-			error: 0
-		};
-		var messageSummary = {
-			info: 0,
-			warn: 0,
-			error: 0
-		};
-
-		var allAdapters = $rootScope.adapters;
-		for (const adapterName in allAdapters) {
-			var adapter = allAdapters[adapterName];
-
-			if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
-				adapterSummary[adapter.state]++;
-				for (const i in adapter.receivers) {
-					receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
-				}
-				for (const i in adapter.messages) {
-					var level = adapter.messages[i].level.toLowerCase();
-					messageSummary[level]++;
-				}
-			}
-		}
-
-		$rootScope.adapterSummary = adapterSummary;
-		$rootScope.receiverSummary = receiverSummary;
-		$rootScope.messageSummary = messageSummary;
-		$rootScope.lastUpdated = updated;
 	};
 
 	ctrl.openInfoModel = function () {
@@ -495,6 +386,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 }
 
 appModule.component('app', {
-	controller: ['$scope', '$rootScope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', AppController],
+	controller: ['$scope', '$rootScope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', 'appService', AppController],
 	templateUrl: 'js/app/app.component.html'
 });

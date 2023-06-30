@@ -1,3 +1,5 @@
+import './app/app.service';
+
 import './app/components/pages/sidebar.service';
 
 import './app/services/alert.service';

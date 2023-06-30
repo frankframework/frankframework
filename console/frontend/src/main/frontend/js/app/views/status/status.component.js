@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $state, Misc, $anchorScroll, $location, $http) {
+const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $state, Misc, $anchorScroll, $location, $http, appService) {
 	const ctrl = this;
 
 	ctrl.filter = {
@@ -45,15 +45,18 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 			ctrl.updateConfigurationFlowDiagram(ctrl.selectedConfiguration);
 		});
 
-		$rootScope.$watch('configurations', ctrl.check4StubbedConfigs);
-		$rootScope.$watch('adapterSummary', function () { ctrl.adapterSummary = $rootScope.adapterSummary; });
-		$rootScope.$watch('receiverSummary', function () { ctrl.receiverSummary = $rootScope.receiverSummary; });
-		$rootScope.$watch('messageSummary', function () { ctrl.messageSummary = $rootScope.messageSummary; });
-		$rootScope.$watch('alerts', function () { ctrl.alerts = $rootScope.alerts; }, true);
-		$rootScope.$watch('messageLog', function () { ctrl.messageLog = $rootScope.messageLog; });
-		$rootScope.$watch('adapters', function () { ctrl.adapters = $rootScope.adapters; });
+		$rootScope.$on('configurations', ctrl.check4StubbedConfigs);
+		$rootScope.$on('summaries', function () {
+			alert("summaries broadcast");
+			ctrl.adapterSummary = appService.adapterSummary;
+			ctrl.receiverSummary = appService.receiverSummary;
+			ctrl.messageSummary = appService.messageSummary;
+		});
+		$rootScope.$on('alerts', function () { ctrl.alerts = appService.alerts; }, true);
+		$rootScope.$on('messageLog', function () { ctrl.messageLog = appService.messageLog; });
+		$rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
 
-		ctrl.getProcessStateIconColor = $rootScope.getProcessStateIconColor;
+		ctrl.getProcessStateIconColor = appService.getProcessStateIconColor;
 
 		if ($state.params.configuration != "All")
 			ctrl.changeConfiguration($state.params.configuration);
@@ -150,7 +153,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	function startPollingForConfigurationStateChanges(callback) {
 		Poller.add("server/configurations", function (configurations) {
-			$rootScope.updateConfigurations(configurations);
+			appService.updateConfigurations(configurations);
 
 			var ready = true;
 			for (var i in configurations) {
@@ -187,9 +190,9 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 	}
 
 	ctrl.check4StubbedConfigs = function () {
-		ctrl.configurations = $rootScope.configurations;
-		for (var i in $rootScope.configurations) {
-			var config = $rootScope.configurations[i];
+		ctrl.configurations = appService.configurations;
+		for (var i in appService.configurations) {
+			var config = appService.configurations[i];
 			ctrl.isConfigStubbed[config.name] = config.stubbed;
 			ctrl.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
 		}
@@ -201,7 +204,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	ctrl.changeConfiguration = function (name) {
 		ctrl.selectedConfiguration = name;
-		$rootScope.updateAdapterSummary(name);
+		appService.updateAdapterSummary(name);
 		ctrl.updateQueryParams();
 		ctrl.updateConfigurationFlowDiagram(name);
 	};
@@ -234,6 +237,6 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 };
 
 appModule.component('status', {
-	controller: ['$scope', '$rootScope', 'Api', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http', StatusController],
+	controller: ['$scope', '$rootScope', 'Api', 'Poller', '$filter', '$state', 'Misc', '$anchorScroll', '$location', '$http', 'appService', StatusController],
 	templateUrl: 'js/app/views/status/status.component.html',
 });
