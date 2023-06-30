@@ -17,8 +17,11 @@ package nl.nn.adapterframework.jta.btm;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.JournalRecord;
 import bitronix.tm.utils.Uid;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * This class exists to ensure the DiskJournal is accessible when updating the TransactionLog
@@ -42,6 +46,9 @@ public class BtmDiskJournal extends DiskJournal {
 	private static final String LOG_ERR_MSG = "cannot write log, disk logger is not open";
 	private static final String FORCE_ERR_MSG = "cannot force log writing, disk logger is not open";
 	private static final String COLLECT_ERR_MSG = "cannot collect dangling records, disk logger is not open";
+	private static final AtomicInteger ERROR_COUNT = new AtomicInteger(0);
+	private static final int MAX_ERROR_COUNT = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 50);
+	private static final AtomicLong LAST_RECOVERY = new AtomicLong(0);
 
 	@Override
 	public void log(int status, Uid gtrid, Set<String> uniqueNames) throws IOException {
@@ -88,10 +95,23 @@ public class BtmDiskJournal extends DiskJournal {
 		}
 	}
 
-	private void recover(IOException e) throws IOException {
-		log.error("FileChannel exception, attempting to recover DiskJournal", e);
+	private synchronized void recover(IOException e) throws IOException {
+		Long now = Instant.now().getEpochSecond();
+		Long last = LAST_RECOVERY.getAndSet(now);
+		if(now - last > 3600) {
+			log.debug("resetting FileChannel exception count");
+			ERROR_COUNT.set(0);
+		}
+
+		int errorCount = ERROR_COUNT.incrementAndGet();
 
 		close();
+		if(errorCount > MAX_ERROR_COUNT) {
+			log.warn("FileChannel exception but too many retries, aborting");
+			throw e;
+		}
+
+		log.error("FileChannel exception, attempt [{}] to recover DiskJournal", errorCount, e);
 		open();
 	}
 }

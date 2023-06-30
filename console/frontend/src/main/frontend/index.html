@@ -17,7 +17,7 @@
 
 <body ng-class="{'gray-bg': ($state.current.name.indexOf('pages.')===1) }" id="page-top">
 
-<div class="loading" style="z-index: 999; position: fixed; top: 0; bottom: 0; left: 0; background: #f8f8f8; right: 0; padding-top: 100px;">
+<div class="loading" style="z-index: 999; position: fixed; top: 0; bottom: 0; left: 0; background: #f8f8f8; right: 0; padding-top: 100px; display: none;">
 	<div class="middle-box text-center loginscreen  animated fadeInDown">
 		<div>
 			<div>
@@ -36,7 +36,7 @@
 
 <toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container>
 
-<div ui-view style="display:none;" class="main"></div>
+<ui-view style="display:none;" class="main"></ui-view>
 
 <script type="text/javascript" nonce="ffVersion">var ff_version = "<%=_.now()%>";</script>
 

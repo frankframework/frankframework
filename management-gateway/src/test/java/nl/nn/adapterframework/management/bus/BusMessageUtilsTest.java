@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -64,8 +63,8 @@ public class BusMessageUtilsTest {
 	public void getIntegerHeaderTest() {
 		assertAll(
 				() -> assertEquals(123, BusMessageUtils.getIntHeader(TEST_MESSAGE, "intHeader", 456)),
-				() -> assertThrows(NumberFormatException.class, ()->BusMessageUtils.getIntHeader(TEST_MESSAGE, "emptyHeader", 456)),
-				() -> assertNull(BusMessageUtils.getIntHeader(TEST_MESSAGE, "nullHeader", 456)),
+				() -> assertEquals(456, BusMessageUtils.getIntHeader(TEST_MESSAGE, "emptyHeader", 456)),
+				() -> assertEquals(456, BusMessageUtils.getIntHeader(TEST_MESSAGE, "nullHeader", 456)),
 				() -> assertEquals(456, BusMessageUtils.getIntHeader(TEST_MESSAGE, "doesNotExist", 456)),
 				() -> assertNull(BusMessageUtils.getIntHeader(TEST_MESSAGE, "doesNotExist", null))
 		);
@@ -77,8 +76,8 @@ public class BusMessageUtilsTest {
 				() -> assertTrue(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "booleanHeader1", true)),
 				() -> assertFalse(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "booleanHeader2", true)),
 				() -> assertFalse(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "emptyHeader", false)),
-				() -> assertFalse(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "emptyHeader", true)), // contains header, can't parse -> false
-				() -> assertNull(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "nullHeader", true)),
+				() -> assertTrue(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "emptyHeader", true)), // contains header, can't parse -> uses default
+				() -> assertTrue(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "nullHeader", true)),
 				() -> assertNull(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "doesNotExist", null)),
 				() -> assertTrue(BusMessageUtils.getBooleanHeader(TEST_MESSAGE, "doesNotExist", true))
 		);

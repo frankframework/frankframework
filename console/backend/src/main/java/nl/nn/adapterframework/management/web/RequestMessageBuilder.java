@@ -16,19 +16,19 @@
 package nl.nn.adapterframework.management.web;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.ws.rs.core.UriInfo;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.JacksonUtils;
@@ -40,6 +40,8 @@ public class RequestMessageBuilder {
 	private final @Getter BusTopic topic;
 	private final @Getter BusAction action;
 	private Object payload = "NONE";
+
+	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
 	public RequestMessageBuilder(FrankApiBase base, BusTopic topic) {
 		this(base, topic, null);
@@ -83,6 +85,8 @@ public class RequestMessageBuilder {
 	}
 
 	public Message<?> build() {
+		SEC_LOG.always().log(createLogMessage());
+
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
@@ -90,26 +94,19 @@ public class RequestMessageBuilder {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
 
-		UriInfo uriInfo = base.getUriInfo();
-		URI uri = uriInfo.getRequestUri();
-		if(uri != null) {
-			builder.setHeader("request-uri", uri.toString());
-		}
-		builder.setHeader("request-method", base.getServletRequest().getMethod());
-
-		if(uriInfo.getQueryParameters() != null && !uriInfo.getQueryParameters().isEmpty()) {
-			builder.setHeader("request-query", uriInfo.getQueryParameters());
-		}
-		if(uriInfo.getPathParameters() != null && !uriInfo.getPathParameters().isEmpty()) {
-			builder.setHeader("request-path", uriInfo.getPathParameters());
-		}
-
-		builder.setHeader("issuedBy", HttpUtils.getExtendedCommandIssuedBy(base.getServletRequest()));
 
 		for(Entry<String, Object> customHeader : customHeaders.entrySet()) {
-			builder.setHeader(customHeader.getKey(), customHeader.getValue());
+			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();
+			builder.setHeader(key, customHeader.getValue());
 		}
 
 		return builder.build();
+	}
+
+	private String createLogMessage() {
+		StringBuilder securityLogLine = new StringBuilder("created request from URI [");
+		securityLogLine.append(base.getServletRequest().getMethod()).append(":").append(base.getUriInfo().getRequestUri());
+		securityLogLine.append("] issued by").append(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
+		return securityLogLine.toString();
 	}
 }

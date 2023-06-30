@@ -24,7 +24,7 @@ public class PipeForwards {
 
 	private @Getter List<PipeForward> forwards = new LinkedList<>();
 
-	/** 
+	/**
 	 * Global forwards.
 	 */
 	public void registerForward(PipeForward forward) {
