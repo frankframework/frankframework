@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -59,16 +57,13 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
-		String sessionKeyString;
-		try {
-			sessionKeyString = session.getMessage(sessionKey).asString();
-		} catch (IOException e1) {
+		Integer sessionKeyInteger = session.getInteger(sessionKey);
+		if (sessionKeyInteger == null) {
 			throw new PipeRunException(this, "unable to determine sessionkey from pipeline session");
 		}
-		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 		int incrementBy = increment;
 		ParameterList pl = getParameterList();
-		if(pl != null && pl.size() > 0) {
+		if(pl != null && !pl.isEmpty()) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
 				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
@@ -79,9 +74,9 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
-		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
+		session.put(sessionKey, sessionKeyInteger + incrementBy + "");
 
-		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyString, getSessionKey());
+		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyInteger + incrementBy, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

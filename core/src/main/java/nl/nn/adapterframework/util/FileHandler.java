@@ -207,8 +207,8 @@ public class FileHandler implements IScopeProvider {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
 				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-				String contentType = session.getMessage("contentType").asString();
-				String contentDisposition = session.getMessage("contentDisposition").asString();
+				String contentType = session.getString("contentType");
+				String contentDisposition = session.getString("contentDisposition");
 				if (StringUtils.isNotEmpty(contentType)) {
 					response.setHeader("Content-Type", contentType);
 				}
@@ -283,7 +283,7 @@ public class FileHandler implements IScopeProvider {
 	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
-			name = session.getMessage(filenameSessionKey).asString();
+			name = session.getString(filenameSessionKey);
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);

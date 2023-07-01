@@ -219,7 +219,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = session.getMessage(getSoapHeaderSessionKey()).asString();
+						soapHeader = session.getString(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
@@ -259,7 +259,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private String determineSoapNamespace(PipeLineSession session) throws IOException {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
-			String savedSoapNamespace = session.getMessage(getSoapNamespaceSessionKey()).asString();
+			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
 			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
 				soapNamespace = savedSoapNamespace;
 			} else {
@@ -391,7 +391,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default username for WebServiceSecurity
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setWssUserName(String string) {
 		wssUserName = string;
@@ -399,7 +399,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default password for WebServiceSecurity
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setWssPassword(String string) {
 		wssPassword = string;

@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -206,14 +208,19 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
+	@Nonnull
 	private String getActualServiceName(PipeLineSession session) throws SenderException {
 		if (isJavaListener()) {
-			final String actualJavaListenerName;
+			String actualJavaListenerName;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
 				try {
-					actualJavaListenerName = session.getMessage(getJavaListenerSessionKey()).asString();
-				} catch (IOException e) {
-					throw new SenderException("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					actualJavaListenerName = session.getString(getJavaListenerSessionKey());
+				} catch (Exception e) {
+					log.warn("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					actualJavaListenerName = null;
+				}
+				if (actualJavaListenerName == null) {
+					throw new SenderException("unable to resolve session key [" + getJavaListenerSessionKey() + "]");
 				}
 			} else {
 				actualJavaListenerName = getJavaListener();
@@ -234,9 +241,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			if (paramList!=null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
-					if (paramValues!=null) {
-						subAdapterSession.putAll(paramValues);
-					}
+					subAdapterSession.putAll(paramValues);
 				} catch (ParameterException e) {
 					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
 				}

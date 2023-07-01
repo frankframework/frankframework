@@ -209,14 +209,13 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	protected TransformerPool getTransformerPoolToUse(PipeLineSession session) throws SenderException, IOException, ConfigurationException {
 		TransformerPool poolToUse = transformerPool;
 		if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
-			Message styleSheetNameToUse = session.getMessage(styleSheetNameSessionKey);
-			if (!Message.isEmpty(styleSheetNameToUse )) {
-				String styleSheetNameFromSessionKey = styleSheetNameToUse.asString();
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameFromSessionKey)) {
-					dynamicTransformerPoolMap.put(styleSheetNameFromSessionKey, poolToUse = TransformerPool.configureTransformer(this, null, null, styleSheetNameFromSessionKey, null, true, getParameterList()));
+			String styleSheetNameToUse = session.getString(styleSheetNameSessionKey);
+			if (StringUtils.isNotEmpty(styleSheetNameToUse )) {
+				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(this, null, null, styleSheetNameToUse, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
-					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameFromSessionKey);
+					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
 				}
 			}
 			if (poolToUse == null) {

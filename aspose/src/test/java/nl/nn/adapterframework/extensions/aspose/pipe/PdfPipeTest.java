@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +33,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.xpath.operations.String;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -152,7 +152,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
-		return session.getMessage("documents").asString();
+		return session.getString("documents");
 	}
 
 	public String applyIgnores(String input){

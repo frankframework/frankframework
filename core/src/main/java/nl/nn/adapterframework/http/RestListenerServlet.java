@@ -139,7 +139,7 @@ public class RestListenerServlet extends HttpServletBase {
 				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=messageContext.getMessage("contentType").asString();
+					contentType=messageContext.getString("contentType");
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}

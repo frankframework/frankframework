@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
@@ -79,7 +79,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
-				maxRecords = Integer.parseInt(session.getMessage(getMaxRecordsSessionKey()).asString());
+				maxRecords = Integer.parseInt(session.getString(getMaxRecordsSessionKey()));
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
 			}
@@ -156,7 +156,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		setFilenameSessionKey(filenameSessionKey);
 	}
 
-	/** 
+	/**
 	 * Key of session variable that contains the name of the file to use.
 	 * @ff.mandatory
 	 */
@@ -164,7 +164,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		this.filenameSessionKey = filenameSessionKey;
 	}
 
-	/** 
+	/**
 	 * If set <code>true</code> and the file already exists, the resultset rows are written to the end of the file.
 	 * @ff.default false
 	 */
@@ -173,8 +173,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	/**
-	 * If set (and &gt;=0), this session key contains the maximum number of records which are processed. 
-	 * If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed 
+	 * If set (and &gt;=0), this session key contains the maximum number of records which are processed.
+	 * If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed
 	 */
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;

@@ -136,16 +136,14 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=getReturnString();
-		String filename = getFilename();
+		String filename;
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
-			try {
-				filename = session.getMessage(getFilenameSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
-			}
+			filename = session.getString(getFilenameSessionKey());
+		} else {
+			filename = getFilename();
 		}
 		if (StringUtils.isNotEmpty(filename)) {
-			URL resource = null;
+			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {

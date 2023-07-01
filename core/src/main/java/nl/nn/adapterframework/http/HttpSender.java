@@ -26,7 +26,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -371,7 +370,7 @@ public class HttpSender extends HttpSenderBase {
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = session.getMessage(sessionKey + "Name").asString();
+							fileName = session.getString(sessionKey + "Name");
 						}
 						if(fileName != null) {
 							log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
@@ -385,7 +384,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
+			String multipartXml = session.getString(getMultipartXmlSessionKey());
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
@@ -397,12 +396,11 @@ public class HttpSender extends HttpSenderBase {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.isEmpty()) {
+				if (parts.isEmpty()) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
-					Iterator<Node> iter = parts.iterator();
-					while (iter.hasNext()) {
-						Element partElement = (Element) iter.next();
+					for (final Node part : parts) {
+						Element partElement = (Element) part;
 						entity.addPart(elementToFormBodyPart(partElement, session));
 					}
 				}
@@ -458,7 +456,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
-					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
+					String fileName = session.getString(getStreamResultToFileNameSessionKey());
 					File file = new File(fileName);
 					StreamUtil.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);

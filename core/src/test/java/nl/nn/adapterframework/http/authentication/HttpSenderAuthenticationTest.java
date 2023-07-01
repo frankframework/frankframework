@@ -70,7 +70,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -85,7 +85,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -98,7 +98,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -116,7 +116,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -132,7 +132,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -158,7 +158,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -175,7 +175,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -192,7 +192,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -209,7 +209,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -222,7 +222,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("401", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -238,7 +238,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.open();
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -256,7 +256,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -275,7 +275,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -297,7 +297,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendRepeatableMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -354,7 +354,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendRepeatableMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
 
@@ -413,7 +413,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendNonRepeatableMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertEquals("{}", result.asString());
 	}
 
@@ -464,10 +464,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		tokenServer.setScenarioState(tokenServer.SCENARIO_CONNECTION_RESET, tokenServer.SCENARIO_STATE_RESET_CONNECTION);
 
 		Message result = sendMessage();
-		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
 	}
-
-
-
 }
