@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +34,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.xpath.operations.String;
 import org.junit.Assert;
 import org.junit.Test;
 

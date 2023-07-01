@@ -70,16 +70,14 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	@Override
 	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		int counter = 0;
-		String fileName = null;
-		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
-		} catch(IOException e) {
-			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+		String fileName = session.getString(getFilenameSessionKey());
+		if (fileName == null) {
+			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
-				maxRecords = Integer.parseInt(session.getString(getMaxRecordsSessionKey()));
+				maxRecords = session.getInteger(getMaxRecordsSessionKey());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
 			}
@@ -89,10 +87,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			try (ResultSet resultset = statement.executeQuery()) {
-				boolean eor = false;
-				if (maxRecords==0) {
-					eor = true;
-				}
+				boolean eor = maxRecords == 0;
 				while (!eor && resultset.next()) {
 					counter++;
 					processResultSet(resultset, fos, counter);
@@ -121,9 +116,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			throw new SenderException(getLogPrefix() + "got Exception resolving parameter", e);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got IOException", e);
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", sqle);
-		} catch (JdbcException e) {
+		} catch (SQLException | JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
 		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));

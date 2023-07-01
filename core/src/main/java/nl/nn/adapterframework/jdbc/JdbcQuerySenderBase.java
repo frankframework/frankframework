@@ -345,8 +345,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-						String contentType = session.getMessage("contentType").asString();
-						String contentDisposition = session.getMessage("contentDisposition").asString();
+						String contentType = session.getString("contentType");
+						String contentDisposition = session.getString("contentDisposition");
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 					} else {
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);

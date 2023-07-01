@@ -267,9 +267,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	/**
-	 * Retrieves a <code>Boolean</code> value from the PipeLineSession
+	 * Retrieves an <code>Integer</code> value from the PipeLineSession
 	 * @param key the referenced key
-	 * @return Boolean
+	 * @return Integer
 	 */
 	@Nullable
 	public Integer getInteger(String key) {
