@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class MessageStoreListenerTest extends JdbcTestBase {
 
@@ -249,7 +250,9 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		Object o = browser.browseMessage(storageKey);
+		RawMessageWrapper<?> ro = browser.browseMessage(storageKey);
+		assertEquals(storageKey, ro.getId());
+		Object o = ro.getRawMessage();
 		if (o instanceof MessageWrapper) {
 			MessageWrapper mw = (MessageWrapper)o;
 			assertEquals(message, mw.getMessage().asString());

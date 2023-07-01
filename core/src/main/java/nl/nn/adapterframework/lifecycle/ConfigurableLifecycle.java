@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,24 +28,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public interface ConfigurableLifecycle extends Lifecycle {
 
 	/**
-	 * Calling configure() should set the state to STARTING, 
-	 * calling start() should set the state to STARTED
-	 *
+	 * Configure this component.
+	 * <p>In the case of a container, this will propagate the start signal to all
+	 * components that apply.</p>
+	 * @throws ConfigurationException in case it was not able to configure the component.
 	 */
-	public enum BootState {
-		STARTING, STARTED, STOPPING, STOPPED;
-	}
-
-	public BootState getState();
-
-	public default boolean inState(BootState state) {
-		return getState() == state;
-	}
-
-	@Override
-	public default boolean isRunning() {
-		return inState(BootState.STARTED);
-	}
-
 	public void configure() throws ConfigurationException;
 }

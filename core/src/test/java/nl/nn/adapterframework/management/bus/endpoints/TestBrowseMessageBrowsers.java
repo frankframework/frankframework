@@ -344,15 +344,15 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 
-	public String messageMock(InvocationOnMock invocation) {
+	public RawMessageWrapper<String> messageMock(InvocationOnMock invocation) {
 		String id = (String) invocation.getArguments()[0];
 		switch (id) {
 		case "1":
-			return JSON_MESSAGE;
+			return new RawMessageWrapper<>(JSON_MESSAGE, id, null);
 		case "2":
-			return XML_MESSAGE;
+			return new RawMessageWrapper<>(XML_MESSAGE, id, null);
 		default:
-			return "<xml>"+id+"</xml>";
+			return new RawMessageWrapper<>("<xml>"+id+"</xml>", id, null);
 		}
 	}
 

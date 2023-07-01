@@ -21,6 +21,7 @@ import java.util.Date;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * The <code>ITransactionalStorage</code> is responsible for storing and
@@ -40,28 +41,26 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 * Prepares the object for operation. After this
 	 * method is called the storeMessage() and retrieveMessage() methods may be called
 	 */
-	public void open() throws Exception;
-	public void close();
+	void open() throws Exception;
+	void close();
 
-	public void configure() throws ConfigurationException;
+	void configure() throws ConfigurationException;
 
 	/**
 	 * Store the message, returns storageKey.
 	 *
 	 * The messageId should be unique.
 	 */
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
+	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	public S getMessage(String storageKey) throws ListenerException;
-
+	RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException;
 
 	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
-	public void setSlotId(String string);
-	public String getSlotId();
-
+	void setSlotId(String string);
+	String getSlotId();
 
 	/**
 	 * Possible values are <code>E</code> (error store), <code>M</code> (message store), <code>L</code> (message log for Pipe) or <code>A</code> (message log for Receiver).<br/>
@@ -69,6 +68,6 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 * See {@link MessageStoreSender} for type <code>M</code>.
 	 * @ff.default <code>E</code> for errorStorage on Receiver<br/><code>A</code> for messageLog on Receiver<br/><code>L</code> for messageLog on Pipe
 	 */
-	public void setType(String string);
-	public String getType();
+	void setType(String string);
+	String getType();
 }

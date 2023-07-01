@@ -67,6 +67,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
@@ -656,13 +657,13 @@ public class ReceiverTest {
 	public void testManualRetryWithMessageStoreListener() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener<String> listener = setupMessageStoreListener();
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
-		when(errorStorage.getMessage(any())).thenReturn(testMessage);
+		when(errorStorage.getMessage(any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
 
 		// start adapter
 		configuration.configure();

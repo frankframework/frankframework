@@ -332,7 +332,6 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 			if ((rawMessage instanceof IFSATextMessage || rawMessage instanceof IFSAPoisonMessage) &&
 				 JtaUtil.inTransaction()
 				) {
-				// TODO: Cleanup rawMessageWrapper creation, and storing of original raw message
 				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, rawMessage);
 
 				Map<String, Object> messageContext = extractMessageProperties((IFSAMessage) rawMessage);
