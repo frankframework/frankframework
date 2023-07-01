@@ -17,7 +17,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 public interface ISqlTranslator {
 
-	public boolean canConvert(String from, String to);
+	boolean canConvert(String from, String to);
 
 	/**
 	 * Translates the given query to the target language.
@@ -26,6 +26,6 @@ public interface ISqlTranslator {
 	 * @param original Original query to be translated.
 	 * @return Translated query.
 	 */
-	public String translate(String original);
+	String translate(String original);
 
 }

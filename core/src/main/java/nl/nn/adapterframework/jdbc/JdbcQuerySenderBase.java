@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -52,7 +54,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -297,51 +298,35 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
+
 	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
 			}
 		} catch (SQLException e) {
-			log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
+			log.warn("{}got exception closing SQL statement", getLogPrefix(), e);
 		}
 		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
-			log.warn(new SenderException(getLogPrefix() + "got exception closing result SQL statement",e ));
+			log.warn("{}got exception closing result SQL statement", getLogPrefix(), e);
 		}
 	}
 
-
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
-			try {
-				return executeStatementSet(queryExecutionContext, message, session, next);
-			} finally {
-				closeStatementSet(queryExecutionContext, session);
-			}
-		} catch (SenderException|TimeoutException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new SenderException(e);
-		}
-	}
-
-
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			switch(queryExecutionContext.getQueryType()) {
 				case SELECT:
-					Object blobSessionVar=null;
-					Object clobSessionVar=null;
-					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-						blobSessionVar=session.getMessage(getBlobSessionKey()).asObject();
+					Object blobSessionVar = null;
+					Object clobSessionVar = null;
+					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+						blobSessionVar = session.getMessage(getBlobSessionKey()).asObject();
 					}
-					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-						clobSessionVar=session.getMessage(getClobSessionKey()).asObject();
+					if (StringUtils.isNotEmpty(getClobSessionKey())) {
+						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
@@ -353,12 +338,12 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:session.getMessage(getBlobSessionKey())));
+						return new PipeRunResult(null, executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
 					}
 					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:session.getMessage(getClobSessionKey())));
+						return new PipeRunResult(null, executeUpdateClobQuery(statement, session.getMessage(getClobSessionKey())));
 					}
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:

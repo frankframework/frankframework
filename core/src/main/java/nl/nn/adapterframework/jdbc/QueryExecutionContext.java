@@ -25,8 +25,8 @@ import nl.nn.adapterframework.parameters.ParameterList;
 public class QueryExecutionContext {
 
 	private String query;
-	private QueryType queryType;
-	private ParameterList parameterList;
+	private final QueryType queryType;
+	private final ParameterList parameterList;
 	private Connection connection;
 	private PreparedStatement statement;
 	private PreparedStatement resultQueryStatement;
@@ -48,9 +48,6 @@ public class QueryExecutionContext {
 
 	public QueryType getQueryType() {
 		return queryType;
-	}
-	public void setQueryType(QueryType queryType) {
-		this.queryType = queryType;
 	}
 
 	public ParameterList getParameterList() {

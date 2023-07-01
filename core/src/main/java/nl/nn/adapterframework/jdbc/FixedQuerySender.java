@@ -80,30 +80,26 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		}
 	}
 
-
 	@Override
 	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) throws SenderException {
 		try {
 			super.closeStatementSet(blockHandle, session);
-		} finally {
+		} catch (Exception e) {
+			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
+		}
+		if (blockHandle.getJdbcSession() != null) {
 			try {
-				if (blockHandle.getJdbcSession()!=null) {
-					try {
-						blockHandle.getJdbcSession().close();
-					} catch (Exception e) {
-						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
-					}
-				}
-			} finally {
-				try {
-					closeConnectionForSendMessage(blockHandle.getConnection(), session);
-				} catch (JdbcException | TimeoutException e) {
-					throw new SenderException("cannot close connection", e);
-				}
+				blockHandle.getJdbcSession().close();
+			} catch (Exception e) {
+				log.warn("{} cannot return connection to repeatable read", getLogPrefix(), e);
 			}
 		}
+		try {
+			closeConnectionForSendMessage(blockHandle.getConnection(), session);
+		} catch (JdbcException | TimeoutException e) {
+			log.warn("cannot close connection", e);
+		}
 	}
-
 
 	@Override
 	protected QueryExecutionContext prepareStatementSet(QueryExecutionContext blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
@@ -131,12 +127,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			closeBlock(blockHandle, session);
 		}
 	}
-
-	@Override
-	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
-	}
-
 
 	/** The SQL query text to be excecuted each time sendMessage() is called
 	 * @ff.mandatory

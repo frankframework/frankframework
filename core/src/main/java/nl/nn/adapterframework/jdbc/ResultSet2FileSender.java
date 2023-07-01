@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +53,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	private @Getter boolean append = false;
 	private @Getter String maxRecordsSessionKey;
 
-	protected byte[] eolArray=null;
+	protected byte[] eolArray = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -68,8 +71,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		int counter = 0;
+	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
 		String fileName = session.getString(getFilenameSessionKey());
 		if (fileName == null) {
 			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
@@ -83,6 +85,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			}
 		}
 
+		int counter = 0;
 		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);

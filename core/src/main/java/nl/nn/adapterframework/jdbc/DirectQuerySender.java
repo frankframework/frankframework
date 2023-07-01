@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * Messages are expected to contain sql-text.
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
@@ -123,4 +124,18 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		}
 	}
 
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+		try (JdbcSession jdbcSession = isAvoidLocking() ? getDbmsSupport().prepareSessionForNonLockingRead(connection) : null) {
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
+			try {
+				return executeStatementSet(queryExecutionContext, message, session, next);
+			} finally {
+				closeStatementSet(queryExecutionContext, session);
+			}
+		} catch (SenderException|TimeoutException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
 }
