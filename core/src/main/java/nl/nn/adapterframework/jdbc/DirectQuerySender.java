@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -126,7 +128,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try (JdbcSession jdbcSession = isAvoidLocking() ? getDbmsSupport().prepareSessionForNonLockingRead(connection) : null) {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message, session);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session, next);
 			} finally {
@@ -136,6 +138,18 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException(e);
+		}
+	}
+
+	protected QueryExecutionContext prepareStatementSet(Connection connection, Message message, PipeLineSession session) throws SenderException {
+		try {
+			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
+			if (getBatchSize()>0) {
+				result.getStatement().clearBatch();
+			}
+			return result;
+		} catch (JdbcException | ParameterException | SQLException e) {
+			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
 }

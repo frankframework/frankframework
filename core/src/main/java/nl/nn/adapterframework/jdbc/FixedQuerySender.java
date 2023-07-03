@@ -16,12 +16,14 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -71,7 +73,17 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
-			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			QueryExecutionContext res;
+			try {
+				QueryExecutionContext result1 = getQueryExecutionContext(connection, null, session);
+				if (getBatchSize()>0) {
+					result1.getStatement().clearBatch();
+				}
+				res = result1;
+			} catch (JdbcException | ParameterException | SQLException e) {
+				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+			}
+			QueryExecutionContext result = res;
 			JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
 			result.setJdbcSession(jdbcSession);
 			return result;
@@ -99,11 +111,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		} catch (JdbcException | TimeoutException e) {
 			log.warn("cannot close connection", e);
 		}
-	}
-
-	@Override
-	protected QueryExecutionContext prepareStatementSet(QueryExecutionContext blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
-		return blockHandle;
 	}
 
 	@Override

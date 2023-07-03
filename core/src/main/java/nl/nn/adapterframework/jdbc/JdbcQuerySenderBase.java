@@ -277,6 +277,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		return connection;
 	}
+
 	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled() && connection!=null) {
 			try {
@@ -284,18 +285,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} catch (SQLException e) {
 				log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 			}
-		}
-	}
-
-	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
-		try {
-			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
-			if (getBatchSize()>0) {
-				result.getStatement().clearBatch();
-			}
-			return result;
-		} catch (JdbcException|ParameterException|SQLException e) {
-			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
 
@@ -307,6 +296,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (SQLException e) {
 			log.warn("{}got exception closing SQL statement", getLogPrefix(), e);
 		}
+		//noinspection EmptyTryBlock
 		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
