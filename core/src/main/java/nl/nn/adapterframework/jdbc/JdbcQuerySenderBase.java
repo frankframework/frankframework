@@ -313,9 +313,11 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					Object blobSessionVar = null;
 					Object clobSessionVar = null;
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+						//noinspection deprecation
 						blobSessionVar = session.getMessage(getBlobSessionKey()).asObject();
 					}
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
+						//noinspection deprecation
 						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
 					if (isStreamResultToServlet()) {
