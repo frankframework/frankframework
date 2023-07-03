@@ -206,6 +206,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	ctrl.closeAlert = function (index) {
 		$rootScope.alerts.splice(index, 1);
+		appService.updateAlerts(appService.alerts);
 	};
 
 	ctrl.changeConfiguration = function (name) {

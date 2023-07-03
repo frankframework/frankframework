@@ -8,6 +8,7 @@ appModule.directive('formatCode', ['$location', '$timeout', function ($location,
 			element.addClass("line-numbers");
 			element.addClass("language-markup");
 			element.append(code);
+			let initHash = $location.hash();
 
 			var watch = $scope.$watch(attributes.formatCode, function (text) {
 				if (text && text != '') {
@@ -17,11 +18,11 @@ appModule.directive('formatCode', ['$location', '$timeout', function ($location,
 					addOnClickEvent(code);
 
 					// If hash anchor has been set upon init
-					let hash = $location.hash();
-					let el = angular.element("#" + hash);
+					// let hash = $location.hash();
+					let el = angular.element("#" + initHash);
 					if (el) {
 						el.addClass("line-selected");
-						let lineNumber = Math.max(0, parseInt(hash.substr(1)) - 15);
+						let lineNumber = Math.max(0, parseInt(initHash.substr(1)) - 15);
 						$timeout(function () {
 							let lineElement = angular.element("#L" + lineNumber)[0];
 							if (lineElement) {
