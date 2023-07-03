@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
+import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
 
@@ -84,6 +86,17 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ "</soapenv:Body>"
 				+ "</soapenv:Envelope>";
 		val.validate(soapFault, session);
+	}
+
+	@Test
+	public void testXpath() {
+		XmlValidatorContentHandler handler = new XmlValidatorContentHandler(null, null, null, null);
+		List<String> path = new ArrayList<>();
+		assertEquals("/", handler.getXpath(path));
+		path.add("soap");
+		assertEquals("/soap", handler.getXpath(path));
+		path.add("element");
+		assertEquals("/soap/element", handler.getXpath(path));
 	}
 
 	@Test

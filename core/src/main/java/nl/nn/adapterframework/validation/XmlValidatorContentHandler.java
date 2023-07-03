@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -197,15 +198,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	public String getXpath(List<String> path) {
-		StringBuilder xpath = new StringBuilder("/");
-//		Iterator<String> it = path.iterator();
-//		if (it.hasNext()) {
-//			xpath.append(it.next());
-//		}
-//		while (it.hasNext()) {
-//			xpath.append('/').append(it.next());
-//		}
-		return xpath.toString();
+		return path.stream().collect(Collectors.joining("/", "/", ""));
 	}
 
 	public static class IllegalRootElementException extends SAXException {
