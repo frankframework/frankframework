@@ -15,12 +15,11 @@
 */
 package nl.nn.adapterframework.validation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -40,7 +39,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private static final int MAX_NAMESPACE_WARNINGS = 5;
 
 	// state
-	private Stack<String> elements = new Stack<>();
+	private List<String> elements = new ArrayList<>();
 
 	private final Set<String> validNamespaces;
 	private final RootValidations rootValidations;
@@ -138,12 +137,13 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	// If the stack contains 'Fault', sub elements of 'Fault' do not contain a namespace
 	private boolean isInSoapFault() {
-		return (elements.size() > 2 && elements.subList(2, 3).contains("Fault"));
+		return (elements.size() > 2 && "Fault".equals(elements.get(2)));
 	}
 
 	@Override
 	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
-		elements.pop();
+		int level = elements.size() -1;
+		elements.remove(level);
 	}
 
 	@Override
@@ -198,13 +198,13 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	public String getXpath(List<String> path) {
 		StringBuilder xpath = new StringBuilder("/");
-		Iterator<String> it = path.iterator();
-		if (it.hasNext()) {
-			xpath.append(it.next());
-		}
-		while (it.hasNext()) {
-			xpath.append('/').append(it.next());
-		}
+//		Iterator<String> it = path.iterator();
+//		if (it.hasNext()) {
+//			xpath.append(it.next());
+//		}
+//		while (it.hasNext()) {
+//			xpath.append('/').append(it.next());
+//		}
 		return xpath.toString();
 	}
 
