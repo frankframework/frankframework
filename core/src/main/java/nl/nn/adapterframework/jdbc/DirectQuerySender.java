@@ -83,7 +83,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	@Override
 	public Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			return super.getConnectionForSendMessage(null);
+			return getConnectionForSendMessage();
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get Connection",e);
 		}
@@ -94,17 +94,12 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		try {
 			super.closeConnectionForSendMessage(connection, session);
 		} catch (JdbcException | TimeoutException e) {
-			throw new SenderException("cannot close Connection",e);
+			throw new SenderException("cannot close Connection", e);
 		}
 	}
 
 	@Override
-	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeoutException {
-		return blockHandle;
-	}
-
-	@Override
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
 		// postpone close to closeBlock()
 	}
 

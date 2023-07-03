@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -271,7 +272,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeoutException {
+	protected Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled()) {
 			return getConnectionWithTimeout(getTimeout());
 		}
@@ -279,7 +280,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
-		if (isConnectionsArePooled() && connection!=null) {
+		if (isConnectionsArePooled() && connection != null) {
 			try {
 				connection.close();
 			} catch (SQLException e) {
@@ -392,7 +393,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) throws SenderException {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
+			log.debug("{}Adjusting list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
 
 		StringBuilder buffer = new StringBuilder();
@@ -412,18 +413,18 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position ["	+ startPos + "] in ["+ query+ "]");
+				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ query+ "]");
 				buffer.append(messageChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
 				String namedParam = query.substring(startPos + UNP_START.length(),endPos);
 				Parameter param = oldParameterList.findParameter(namedParam);
-				if (param!=null) {
+				if (param != null) {
 					parameterList.add(param);
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
-					log.warn(getLogPrefix() + "Parameter ["	+ namedParam + "] is not found");
+					log.warn(getLogPrefix() + "Parameter [" + namedParam + "] is not found");
 					buffer.append(messageChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
@@ -433,23 +434,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusted list of parameters [" + parameterListToString(parameterList) + "]");
+			log.debug( "{}Adjusted list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
 
 		return buffer.toString();
 	}
 
 	private String parameterListToString(ParameterList parameterList) {
-		String parameterListString = "";
-		for (int i = 0; i < parameterList.size(); i++) {
-			String key = parameterList.getParameter(i).getName();
-			if (i ==0) {
-				parameterListString = key;
-			} else {
-				parameterListString = parameterListString + ", " + key;
-			}
-		}
-		return parameterListString;
+		return parameterList.stream()
+				.map(Parameter::getName)
+				.collect(Collectors.joining(", "));
 	}
 
 	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException, JMSException {

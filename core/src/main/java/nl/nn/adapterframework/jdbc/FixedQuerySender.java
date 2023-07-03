@@ -72,7 +72,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			Connection connection = getConnectionForSendMessage(null);
+			Connection connection = getConnectionForSendMessage();
 			QueryExecutionContext res;
 			try {
 				QueryExecutionContext result1 = getQueryExecutionContext(connection, null, session);
