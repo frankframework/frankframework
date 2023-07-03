@@ -362,8 +362,8 @@ public class Message implements Serializable, Closeable {
 				} catch (Exception e) {
 					log.warn("Could not close request", e);
 				}
+				request = null;
 			}
-			request = null;
 		} finally {
 			if (resourcesToClose != null) {
 				resourcesToClose.forEach(r -> {
