@@ -45,6 +45,13 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 			ctrl.updateConfigurationFlowDiagram(ctrl.selectedConfiguration);
 		});
 
+		ctrl.check4StubbedConfigs();
+		ctrl.adapterSummary = appService.adapterSummary;
+		ctrl.receiverSummary = appService.receiverSummary;
+		ctrl.messageSummary = appService.messageSummary;
+		ctrl.alerts = appService.alerts;
+		ctrl.messageLog = appService.messageLog;
+		ctrl.adapters = appService.adapters;
 		$rootScope.$on('configurations', ctrl.check4StubbedConfigs);
 		$rootScope.$on('summaries', function () {
 			ctrl.adapterSummary = appService.adapterSummary;
@@ -134,7 +141,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 		Poller.getAll().stop();
 		Api.Put("configurations/" + ctrl.selectedConfiguration, { "action": "reload" }, function () {
-			startPollingForConfigurationStateChanges(function () {
+			ctrl.startPollingForConfigurationStateChanges(function () {
 				Poller.getAll().start();
 			});
 		});
@@ -144,13 +151,13 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		Poller.getAll().stop();
 		Api.Put("configurations", { "action": "reload" }, function () {
 			ctrl.reloading = false;
-			startPollingForConfigurationStateChanges(function () {
+			ctrl.startPollingForConfigurationStateChanges(function () {
 				Poller.getAll().start();
 			});
 		});
 	};
 
-	function startPollingForConfigurationStateChanges(callback) {
+	ctrl.startPollingForConfigurationStateChanges = function(callback) {
 		Poller.add("server/configurations", function (configurations) {
 			appService.updateConfigurations(configurations);
 
