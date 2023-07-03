@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.validation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -40,8 +40,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private static final int MAX_NAMESPACE_WARNINGS = 5;
 
 	// state
-	private int level = -1;
-	private List<String> elements = new ArrayList<String>();
+	private Stack<String> elements = new Stack<>();
 
 	private final Set<String> validNamespaces;
 	private final RootValidations rootValidations;
@@ -109,15 +108,12 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 								}
 							} else {
 								String message = null;
-								if (invalidRootNamespaces != null) {
-									List<String> invalidNamespaces = invalidRootNamespaces.get(path);
-									if (invalidNamespaces != null && invalidNamespaces.contains(namespaceURI)) {
-										message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
-										if (xmlValidatorErrorHandler != null) {
-											xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
-										} else {
-											throw new UnknownNamespaceException(message);
-										}
+								if (invalidRootNamespaces != null && !rootValidation.isNamespaceAllowedOnElement(invalidRootNamespaces, namespaceURI, lName)) {
+									message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
+									if (xmlValidatorErrorHandler != null) {
+										xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
+									} else {
+										throw new UnknownNamespaceException(message);
 									}
 								}
 								rootElementsFound.add(rootValidation);
@@ -134,15 +130,20 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				}
 			}
 		}
-		level++;
 		elements.add(lName);
-		checkNamespaceExistance(namespaceURI);
+		if(!isInSoapFault()) {
+			checkNamespaceExistance(namespaceURI);
+		}
+	}
+
+	// If the stack contains 'Fault', sub elements of 'Fault' do not contain a namespace
+	private boolean isInSoapFault() {
+		return (elements.size() > 2 && elements.subList(2, 3).contains("Fault"));
 	}
 
 	@Override
 	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
-		elements.remove(level);
-		level--;
+		elements.pop();
 	}
 
 	@Override

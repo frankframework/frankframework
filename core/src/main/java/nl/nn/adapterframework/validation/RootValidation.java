@@ -18,12 +18,12 @@ package nl.nn.adapterframework.validation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.util.LogUtil;
@@ -33,21 +33,17 @@ public class RootValidation {
 
 	private List<String> rootValidation;
 
-	private RootValidation() {
-	}
-
 	public RootValidation(String... rootElement) {
-		this();
 		rootValidation = Arrays.asList(rootElement);
 	}
 
-	public void check(IConfigurationAware source, Set<IXSD> xsds) throws ConfigurationException {
+	public void check(IConfigurationAware source, Set<IXSD> xsds) {
 		boolean found = false;
 		String validElements = rootValidation.get(rootValidation.size() - 1);
 		List<String> validElementsAsList = Arrays.asList(validElements.split(","));
 		for (String validElement : validElementsAsList) {
 			if (StringUtils.isNotEmpty(validElement)) {
-				List<String> allRootTags = new ArrayList<String>();
+				List<String> allRootTags = new ArrayList<>();
 				for (IXSD xsd : xsds) {
 					for (String rootTag : xsd.getRootTags()) {
 						allRootTags.add(rootTag);
@@ -82,4 +78,13 @@ public class RootValidation {
 		return rootValidation.get(getPathLength()-1);
 	}
 
+	public boolean isNamespaceAllowedOnElement(Map<List<String>, List<String>> invalidRootNamespaces, String namespaceURI, String localName) {
+		List<String> invalidNamespaces = invalidRootNamespaces.get(getPath());
+		return invalidNamespaces == null || !invalidNamespaces.contains(namespaceURI);
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder(getClass().getSimpleName()).append(" ").append(rootValidation).toString();
+	}
 }
