@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 @SupportsOutputStreaming
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 
-	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
+	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
 	private FS fileSystem;
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_INCREMENT = "increment";
 
-	private @Getter String sessionKey=null;
-	private @Getter int increment=1;
+	private @Getter String sessionKey = null;
+	private @Getter int increment = 1;
 
 	@Override
 	public void configure() throws ConfigurationException {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.PasswordHash;
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class PasswordHashPipe extends FixedForwardPipe {
-	private static String FAILURE_FORWARD_NAME = "failure";
+	private static final String FAILURE_FORWARD_NAME = "failure";
 	private String hashSessionKey;
 	private int rounds = 40000;
 	private String roundsSessionKey = null;
