@@ -545,11 +545,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
-				try {
-					return session.getMessage(schemaSessionKey).asString();
-				} catch(IOException e) {
-					throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
-				}
+				return session.getString(schemaSessionKey);
 			}
 			throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}

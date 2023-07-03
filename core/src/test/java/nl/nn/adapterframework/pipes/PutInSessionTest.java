@@ -29,7 +29,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		String expected = message;
 		doPipe(pipe, message, session);
 
-		assertEquals(expected, session.getMessage("hola").asString());
+		assertEquals(expected, session.getString("hola"));
 	}
 
 	@Test
@@ -38,7 +38,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.setValue("val");
 		pipe.configure();
 		doPipe(pipe, "notimportant", session);
-		assertEquals("val", session.getMessage("hola").asString());
+		assertEquals("val", session.getString("hola"));
 	}
 
 	@Test
@@ -50,10 +50,10 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.configure();
 		pipe.doPipe(null, session);
 
-		assertEquals("value", session.getMessage("sessionKey").asString());
-		assertEquals("test", session.getMessage("param").asString());
+		assertEquals("value", session.getString("sessionKey"));
+		assertEquals("test", session.getString("param"));
 	}
-	
+
 	@Test
 	public void testParamFromConfiguredSessionKey() throws Exception {
 		pipe.setValue("value");
@@ -63,10 +63,10 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.configure();
 		pipe.doPipe(null, session);
 
-		assertEquals("value", session.getMessage("sessionKey").asString());
-		assertEquals("value", session.getMessage("param").asString());
+		assertEquals("value", session.getString("sessionKey"));
+		assertEquals("value", session.getString("param"));
 	}
-	
+
 	@Test
 	public void testWithOneParam() throws Exception {
 		pipe.addParameter(new Parameter("param", "test"));
@@ -74,7 +74,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.configure();
 		pipe.doPipe(null, session);
 
-		assertEquals("test", session.getMessage("param").asString());
+		assertEquals("test", session.getString("param"));
 	}
 
 }

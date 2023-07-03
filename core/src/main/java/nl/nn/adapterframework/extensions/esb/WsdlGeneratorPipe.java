@@ -60,7 +60,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());
-		if (fileInSession == null) {
+		if (Message.isNull(fileInSession)) {
 			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");
 		}
 
@@ -69,7 +69,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 		try (InputStream inputStream = fileInSession.asInputStream()){
 			tempDirectoryBase = FileUtils.getTempDirectory("WsdlGeneratorPipe");
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
+			fileName = session.getString(getFilenameSessionKey());
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, tempDirectoryBase);
 			} else {

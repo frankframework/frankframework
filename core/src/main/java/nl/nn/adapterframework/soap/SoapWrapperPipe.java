@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -219,7 +219,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = session.getMessage(getSoapHeaderSessionKey()).asString();
+						soapHeader = session.getString(getSoapHeaderSessionKey());
 					}
 				}
 				if (soapBodyTp != null) {
@@ -259,7 +259,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private String determineSoapNamespace(PipeLineSession session) throws IOException {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
-			String savedSoapNamespace = session.getMessage(getSoapNamespaceSessionKey()).asString();
+			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
 			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
 				soapNamespace = savedSoapNamespace;
 			} else {
@@ -391,7 +391,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default username for WebServiceSecurity
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setWssUserName(String string) {
 		wssUserName = string;
@@ -399,7 +399,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default password for WebServiceSecurity
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setWssPassword(String string) {
 		wssPassword = string;

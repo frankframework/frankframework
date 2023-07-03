@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ import nl.nn.adapterframework.util.FileUtils;
 /**
  * Pipe for moving files to another directory.
  *
- * 
+ *
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
- * 
+ *
  * @deprecated Please use LocalFileSystemPipe with action="move"
  */
 @Deprecated
@@ -95,7 +95,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 					if (StringUtils.isEmpty(getMove2fileSessionKey())) {
 						dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
 					} else {
-						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getMessage(getMove2fileSessionKey()).asString()));
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getString(getMove2fileSessionKey())));
 					}
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
@@ -115,12 +115,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (StringUtils.isEmpty(getWildcardSessionKey())) {
 					wc = getWildcard();
 				} else {
-					wc = session.getMessage(getWildcardSessionKey()).asString();
+					wc = session.getString(getWildcardSessionKey());
 				}
 				//WildCardFilter filter = new WildCardFilter(wc);
 				//File[] srcFiles = srcFile.listFiles(filter);
 				File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
-				int count = (srcFiles == null ? 0 : srcFiles.length);
+				int count = srcFiles.length;
 				if (count==0) {
 					log.info("no files with wildcard [{}] found in directory [{}]", wc, srcFile.getAbsolutePath());
 				}

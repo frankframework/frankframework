@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,10 +86,10 @@ public class XmlIf extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward = "";
-		PipeForward pipeForward = null;
+		String forward;
+		PipeForward pipeForward;
 
-		String sInput = null;
+		String sInput;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (Message.isEmpty(message)) {
 				sInput="";
@@ -99,17 +99,19 @@ public class XmlIf extends AbstractPipe {
 				} catch (IOException e) {
 					throw new PipeRunException(this, "cannot open stream", e);
 				}
+				if (sInput == null) {
+					throw new PipeRunException(this, "Input message is empty");
+				}
 			}
 		} else {
 			log.debug("taking input from sessionKey [{}]", getSessionKey());
-			try {
-				sInput=session.getMessage(getSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to resolve session key ["+getSessionKey()+"]", e);
+			sInput=session.getString(getSessionKey());
+			if (sInput == null) {
+				throw new PipeRunException(this, "unable to resolve session key ["+getSessionKey()+"]");
 			}
 		}
 
-		if (tp!=null) {
+		if (tp != null) {
 			try {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();

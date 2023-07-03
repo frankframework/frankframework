@@ -210,7 +210,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			} else {
 				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = pipeLineSession.getMessage(movedElementSessionKey).asString();
+					String movedElementValue = pipeLineSession.getString(movedElementSessionKey);
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {

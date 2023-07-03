@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -100,26 +100,22 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 	public DocumentFormat getOutputFormat(PipeLineSession session, boolean responseMode) throws PipeRunException {
 		DocumentFormat format=null;
-		try {
-			if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
-				String outputFormat = session.getMessage(getOutputFormatSessionKey()).asString();
-				if (StringUtils.isNotEmpty(outputFormat)) {
-					format=EnumUtils.parse(DocumentFormat.class, outputFormat);
-				}
+		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
+			String outputFormat = session.getString(getOutputFormatSessionKey());
+			if (StringUtils.isNotEmpty(outputFormat)) {
+				format=EnumUtils.parse(DocumentFormat.class, outputFormat);
 			}
-			if (format==null && isAutoFormat() && responseMode && session.containsKey(getInputFormatSessionKey())) {
-				String inputFormat = session.getMessage(getInputFormatSessionKey()).asString().toLowerCase();
-				if (inputFormat.contains("json")) {
-					format = DocumentFormat.JSON;
-				} else if (inputFormat.contains("xml")) {
-					format = DocumentFormat.XML;
-				}
+		}
+		if (format==null && isAutoFormat() && responseMode && session.containsKey(getInputFormatSessionKey())) {
+			String inputFormat = session.getString(getInputFormatSessionKey()).toLowerCase();
+			if (inputFormat.contains("json")) {
+				format = DocumentFormat.JSON;
+			} else if (inputFormat.contains("xml")) {
+				format = DocumentFormat.XML;
 			}
-			if (format==null) {
-				format=getOutputFormat();
-			}
-		} catch(IOException e) {
-			throw new PipeRunException(this, "cannot get output format", e);
+		}
+		if (format==null) {
+			format=getOutputFormat();
 		}
 		return format;
 	}
@@ -405,7 +401,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	/** 
+	/**
 	 * Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response
 	 * @ff.default {@value #INPUT_FORMAT_SESSION_KEY_PREFIX}&lt;name of the pipe&gt;
 	 */

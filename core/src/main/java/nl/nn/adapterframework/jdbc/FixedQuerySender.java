@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -70,8 +72,18 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			Connection connection = getConnectionForSendMessage(null);
-			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
+			Connection connection = getConnectionForSendMessage();
+			QueryExecutionContext res;
+			try {
+				QueryExecutionContext result1 = getQueryExecutionContext(connection, null, session);
+				if (getBatchSize()>0) {
+					result1.getStatement().clearBatch();
+				}
+				res = result1;
+			} catch (JdbcException | ParameterException | SQLException e) {
+				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+			}
+			QueryExecutionContext result = res;
 			JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
 			result.setJdbcSession(jdbcSession);
 			return result;
@@ -80,34 +92,25 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 		}
 	}
 
-
 	@Override
 	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) throws SenderException {
 		try {
 			super.closeStatementSet(blockHandle, session);
-		} finally {
+		} catch (Exception e) {
+			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
+		}
+		if (blockHandle.getJdbcSession() != null) {
 			try {
-				if (blockHandle.getJdbcSession()!=null) {
-					try {
-						blockHandle.getJdbcSession().close();
-					} catch (Exception e) {
-						throw new SenderException(getLogPrefix() + "cannot return connection to repeatable read", e);
-					}
-				}
-			} finally {
-				try {
-					closeConnectionForSendMessage(blockHandle.getConnection(), session);
-				} catch (JdbcException | TimeoutException e) {
-					throw new SenderException("cannot close connection", e);
-				}
+				blockHandle.getJdbcSession().close();
+			} catch (Exception e) {
+				log.warn("{} cannot return connection to repeatable read", getLogPrefix(), e);
 			}
 		}
-	}
-
-
-	@Override
-	protected QueryExecutionContext prepareStatementSet(QueryExecutionContext blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
-		return blockHandle;
+		try {
+			closeConnectionForSendMessage(blockHandle.getConnection(), session);
+		} catch (JdbcException | TimeoutException e) {
+			log.warn("cannot close connection", e);
+		}
 	}
 
 	@Override
@@ -131,12 +134,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			closeBlock(blockHandle, session);
 		}
 	}
-
-	@Override
-	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
-	}
-
 
 	/** The SQL query text to be excecuted each time sendMessage() is called
 	 * @ff.mandatory

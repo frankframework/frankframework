@@ -159,6 +159,7 @@ public abstract class ClassUtils {
 	/**
 	 * returns the className of the object, without the package name.
 	 */
+	@Nonnull
 	public static String nameOf(Object o) {
 		String tail=null;
 		if (o instanceof INamedObject) {
@@ -173,6 +174,7 @@ public abstract class ClassUtils {
 	/**
 	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
 	 */
+	@Nonnull
 	public static String classNameOf(Object o) {
 		if (o==null) {
 			return "<null>";
