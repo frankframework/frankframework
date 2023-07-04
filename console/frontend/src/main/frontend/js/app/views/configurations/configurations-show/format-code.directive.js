@@ -18,7 +18,7 @@ appModule.directive('formatCode', ['$location', '$timeout', function ($location,
 					addOnClickEvent(code);
 
 					// If hash anchor has been set upon init
-					// let hash = $location.hash();
+					$location.hash(initHash);
 					let el = angular.element("#" + initHash);
 					if (el) {
 						el.addClass("line-selected");
