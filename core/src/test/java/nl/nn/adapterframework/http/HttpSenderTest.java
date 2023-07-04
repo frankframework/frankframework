@@ -1116,9 +1116,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setKeystoreType(KeystoreType.JKS);
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
 
-		SenderException e = assertThrows(SenderException.class, sender::open);
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertThat(e.getMessage(), Matchers.containsString("cannot create or initialize SocketFactory"));
 	}
 
@@ -1152,9 +1151,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
 
-		SenderException e = assertThrows(SenderException.class, sender::open);
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertThat(e.getMessage(), Matchers.containsString("cannot create or initialize SocketFactory"));
 	}
 

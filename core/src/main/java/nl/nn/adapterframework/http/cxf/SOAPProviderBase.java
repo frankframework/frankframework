@@ -189,7 +189,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			SOAPMessage soapMessage = createSOAPMessage(response, soapProtocol);
 
 			try {
-				String multipartXml = pipelineSession.getMessage(attachmentXmlSessionKey).asString();
+				String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
 				log.debug(getLogPrefix(messageId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 				if (StringUtils.isNotEmpty(multipartXml)) {
 					Element partsElement;
@@ -202,22 +202,21 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						throw new WebServiceException(m, e);
 					}
 					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-					if (parts==null || parts.isEmpty()) {
+					if (parts.isEmpty()) {
 						log.warn(getLogPrefix(messageId)+"no part(s) in multipart xml [" + multipartXml + "]");
 					}
 					else {
-						Iterator<Node> iter = parts.iterator();
-						while (iter.hasNext()) {
-							Element partElement = (Element) iter.next();
+						for (final Node part : parts) {
+							Element partElement = (Element) part;
 
-							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
+							if (StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
 								log.info("multipart xml attribute name is no longer used!");
 							}
 
 							String partSessionKey = partElement.getAttribute("sessionKey");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
-							if(!partObject.isNull()) {
+							if (!partObject.isNull()) {
 								String mimeType = partElement.getAttribute("mimeType");
 								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
 								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(new MessageDataSource(partObject, mimeType));
@@ -225,9 +224,9 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 								soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug(getLogPrefix(messageId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");
+								log.debug(getLogPrefix(messageId) + "appended filepart [" + partSessionKey + "] key [" + partSessionKey + "]");
 							} else {
-								log.debug(getLogPrefix(messageId)+"skipping filepart ["+partSessionKey+"] key ["+partSessionKey+"], content is <NULL>");
+								log.debug(getLogPrefix(messageId) + "skipping filepart [" + partSessionKey + "] key [" + partSessionKey + "], content is <NULL>");
 							}
 						}
 					}

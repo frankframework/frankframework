@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -128,11 +127,7 @@ public class XmlSwitch extends AbstractPipe {
 		String forward="";
 		PipeForward pipeForward = null;
 		if(StringUtils.isNotEmpty(getForwardNameSessionKey())) {
-			try {
-				forward = session.getMessage(getForwardNameSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "cannot open stream", e);
-			}
+			forward = session.getString(getForwardNameSessionKey());
 		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
 			try {
 				Map<String,Object> parametervalues = null;
@@ -150,11 +145,7 @@ public class XmlSwitch extends AbstractPipe {
 				throw new PipeRunException(this, "got exception on transformation", e);
 			}
 		} else if(StringUtils.isNotEmpty(getSessionKey())) {
-			try {
-				forward = session.getMessage(getSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "cannot open stream", e);
-			}
+			forward = session.getString(getSessionKey());
 		}
 		log.debug("determined forward [{}]", forward);
 

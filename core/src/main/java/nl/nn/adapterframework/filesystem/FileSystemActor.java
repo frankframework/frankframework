@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -315,12 +317,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public Message doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
+	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException, TimeoutException {
 		FileSystemAction action = null;
 		try {
-			if(input != null) {
-				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
-			}
+			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 
 			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {

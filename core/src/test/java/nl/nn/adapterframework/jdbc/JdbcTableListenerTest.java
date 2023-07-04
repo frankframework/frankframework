@@ -41,6 +41,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -474,7 +475,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 				}
 				String key = "10";
 				RawMessageWrapper<String> rawMessage = new RawMessageWrapper<>(key, key, key);
-				rawMessage.getContext().put(JdbcListener.STORAGE_KEY_KEY, key);
+				rawMessage.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 				rawMessage1 = listener.changeProcessState(conn, rawMessage, ProcessState.ERROR, "test");
 				if (mainThreadFirst) {
 					waitBeforeUpdate.release();

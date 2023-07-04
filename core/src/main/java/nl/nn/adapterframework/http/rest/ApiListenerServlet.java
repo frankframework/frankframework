@@ -597,7 +597,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+					String contentDisposition = messageContext.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
 						log.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);

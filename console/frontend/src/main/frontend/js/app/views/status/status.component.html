@@ -139,9 +139,9 @@
                         <div class="ibox-left">
                             <span style="font-weight:700;margin-right:4px;">Filter:</span>
                             <div class="btn-group state">
-                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
-                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
-                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
+                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
+                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
+                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
                             </div>
                         </div>
                         <div class="ibox-stretch">

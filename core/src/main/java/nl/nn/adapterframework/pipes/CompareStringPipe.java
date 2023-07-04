@@ -109,7 +109,7 @@ public class CompareStringPipe extends AbstractPipe {
 		try {
 			if (operand1 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey1())) {
-					operand1 = session.getMessage(getSessionKey1()).asString();
+					operand1 = session.getString(getSessionKey1());
 				}
 				if (operand1 == null) {
 					operand1 = message.asString();
@@ -122,7 +122,7 @@ public class CompareStringPipe extends AbstractPipe {
 		try {
 			if (operand2 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey2())) {
-					operand2 = session.getMessage(getSessionKey2()).asString();
+					operand2 = session.getString(getSessionKey2());
 				}
 				if (operand2 == null) {
 					operand2 = message.asString();

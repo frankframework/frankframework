@@ -20,7 +20,7 @@ public abstract class ConcurrentManagedTransactionTester extends ConcurrentActio
 	@Override
 	public void initAction() throws Exception {
 		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
-		mainItx = IbisTransaction.getTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
+		mainItx = new IbisTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
 	}
 
 	@Override

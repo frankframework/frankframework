@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
@@ -31,8 +32,6 @@ import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Puts the system date/time under a key in the {@link PipeLineSession pipeLineSession}.
@@ -105,12 +104,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		else {
 			if (isReturnFixedDate()) {
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
-				String fixedDateTime = null;
-				try {
-					fixedDateTime = session.getMessage(FIXEDDATE_STUB4TESTTOOL_KEY).asString();
-				} catch (IOException e1) {
-					throw new PipeRunException(this, "unable to determine ["+FIXEDDATE_STUB4TESTTOOL_KEY+"] from pipeline session");
-				}
+				String fixedDateTime = session.getString(FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = FIXEDDATETIME;
 				}
@@ -181,10 +175,10 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 
 	/**
-	 * Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in 
-	 * this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the 
+	 * Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in
+	 * this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the
 	 * timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
-	 * <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use 
+	 * <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use
 	 * &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link Parameter}.
 	 * @ff.default -1
 	 */
@@ -214,4 +208,3 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		return getCurrentTimeStampInMillis;
 	}
 }
-

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	public J getJmsMessage(String messageId) throws ListenerException {
 		Session session=null;
-		J msg = null;
+		J msg;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
@@ -250,4 +250,3 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 }
-

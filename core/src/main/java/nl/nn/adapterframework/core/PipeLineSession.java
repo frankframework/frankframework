@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
 	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
 	public static final String CORRELATION_ID_KEY   = "cid";       // conversationId, e.g. JmsCorrelationID.
+	public static final String STORAGE_ID_KEY       = "key";
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
@@ -144,10 +145,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and
 	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */
-	public static void updateListenerParameters(Map<String, Object> map, String messageId, String correlationId, Date tsReceived, Date tsSent) {
-		if (map == null) {
-			return;
-		}
+	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Date tsReceived, @Nullable Date tsSent) {
 		if (messageId != null) {
 			map.put(MESSAGE_ID_KEY, messageId);
 		}
@@ -189,14 +187,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	@Nullable
-	private String getString(String key) {
-		try {
-			return getMessage(key).asString();
-		} catch(Exception e) {
-			if (containsKey(key)) {
-				return get(key).toString();
-			} else {
-				return null;
+	@SneakyThrows
+	public String getString(@Nonnull String key) {
+		Object obj = get(key);
+		if (obj == null) {
+			return null;
+		} else if (obj instanceof String) {
+			return (String) obj;
+		} else if (obj instanceof Number) {
+			return obj.toString();
+		} else {
+			try (Message message = Message.asMessage(obj)) {
+				return message.asString();
 			}
 		}
 	}
@@ -208,7 +210,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return String
 	 */
-	public String get(String key, String defaultValue) {
+	@Nullable
+	public String get(@Nonnull String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 
 		if (ob == null) return defaultValue;
@@ -257,8 +260,27 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
+		if(ob instanceof Number) {
+			return ((Number) ob).intValue();
+		}
+		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
+	}
+
+	/**
+	 * Retrieves an <code>Integer</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @return Integer
+	 */
+	@Nullable
+	public Integer getInteger(String key) {
+		Object ob = this.get(key);
+		if (ob == null) return null;
+
 		if(ob instanceof Integer) {
 			return (Integer) ob;
+		}
+		if(ob instanceof Number) {
+			return ((Number) ob).intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
 	}
@@ -273,8 +295,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Long) {
-			return (Long) ob;
+		if(ob instanceof Number) {
+			return ((Number) ob).longValue();
 		}
 		return Long.parseLong(Objects.requireNonNull(this.getString(key)));
 	}
@@ -289,8 +311,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Double) {
-			return (Double) ob;
+		if(ob instanceof Number) {
+			return ((Number) ob).doubleValue();
 		}
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * Implements a message log (<code>JmsMessageLog</code>) or error store (<code>JmsErrorStorage</code>) that uses JMS technology.
@@ -46,7 +48,7 @@ import nl.nn.adapterframework.doc.ReferTo;
  * always appears in combination with a sender or listener. This sender or listener determines
  * a key based on the sent or received message. Messages with the same key are considered to
  * be the same.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.1
  */
@@ -100,20 +102,24 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 	}
 
 	@Override
-	public S browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<S> browseMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
-			return (S) msg.getObject();
+			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
 
 	@Override
-	public S getMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
-			return (S) msg.getObject();
+			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

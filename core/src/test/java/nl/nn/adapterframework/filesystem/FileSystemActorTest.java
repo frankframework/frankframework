@@ -24,7 +24,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -44,7 +43,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	protected FS fileSystem;
 	protected IConfigurable owner;
-	private PipeLineSession session;
 	protected Message result;
 
 	private final String lineSeparator = System.getProperty("line.separator");
@@ -999,7 +997,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for (int i=0;i<numOfWrites;i++) {
 			session.put("fileSystemActorWriteActionWithBackupKey", contents+i);
 			ParameterValueList pvl= params.getValues(message, session);
-			Message result = actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, session);
 
 			String stringResult = result.asString();
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
@@ -1064,7 +1062,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendWriteLineSeparatorTest", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			Message result = actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
@@ -1103,7 +1101,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		for(int i=0; i<numOfWrites; i++) {
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
-			Message result = actor.doAction(message, pvl, null);
+			Message result = actor.doAction(message, pvl, session);
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
@@ -1797,22 +1795,4 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorRenameActionTest() throws Exception {
 		fileSystemActorRenameActionTest(false);
 	}
-
-//	@Test
-////	@Ignore("MockFileSystem.exists appears not to work properly")
-//	public void fileSystemActorRenameActionTestDestinationExists() throws Exception {
-//		exception.expectMessage("destination exists");
-//		fileSystemActorRenameActionTest(true);
-//	}
-
-
-
-	protected ParameterValueList createParameterValueList(ParameterList paramList, Message input, PipeLineSession session) throws ParameterException {
-		if (paramList==null) {
-			return null;
-		}
-		return paramList.getValues(input, session);
-	}
-
-
 }

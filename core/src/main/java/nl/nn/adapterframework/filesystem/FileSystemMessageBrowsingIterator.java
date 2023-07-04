@@ -22,6 +22,7 @@ import java.util.Iterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIterator {
 
@@ -44,7 +45,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	@Override
 	public IMessageBrowsingIteratorItem next() throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, iterator.next(), messageIdPropertyKey);
+		return new FileSystemMessageBrowsingIteratorItem<>(fileSystem, new RawMessageWrapper<>(iterator.next()), messageIdPropertyKey);
 	}
 
 	@Override
