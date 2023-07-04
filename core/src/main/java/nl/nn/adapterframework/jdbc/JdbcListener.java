@@ -40,7 +40,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -170,9 +169,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
-			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {
-				return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
-			}
+			return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}

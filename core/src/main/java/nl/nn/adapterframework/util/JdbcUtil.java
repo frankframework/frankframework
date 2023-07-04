@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -872,7 +872,7 @@ public class JdbcUtil {
 				if (columnsCount == 1) {
 					return rs.getObject(1);
 				}
-				List<Object> resultList = new ArrayList<Object>();
+				List<Object> resultList = new ArrayList<>();
 				for (int i = 1; i <= columnsCount; i++) {
 					resultList.add(rs.getObject(i));
 				}
@@ -888,9 +888,11 @@ public class JdbcUtil {
 			return "";
 		}
 		StringBuilder sb = new StringBuilder();
-		for (int i=0; i<parameterValues.size(); i++) {
-			sb.append("param" + i + " [");
-			sb.append(parameterValues.getParameterValue(i).getValue() + "]");
+		for (int i = 0; i < parameterValues.size(); i++) {
+			sb.append("param").append(i)
+					.append(" [")
+					.append(parameterValues.getParameterValue(i).getValue())
+					.append("]");
 		}
 		return sb.toString();
 	}
@@ -925,13 +927,8 @@ public class JdbcUtil {
 				}
 				break;
 			case DATETIME:
-				if (value == null) {
-					statement.setNull(parameterIndex, Types.TIMESTAMP);
-				} else {
-					statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
-				}
-				break;
 			case TIMESTAMP:
+			case XMLDATETIME:
 				if (value == null) {
 					statement.setNull(parameterIndex, Types.TIMESTAMP);
 				} else {
@@ -943,13 +940,6 @@ public class JdbcUtil {
 					statement.setNull(parameterIndex, Types.TIME);
 				} else {
 					statement.setTime(parameterIndex, new java.sql.Time(((Date) value).getTime()));
-				}
-				break;
-			case XMLDATETIME:
-				if (value == null) {
-					statement.setNull(parameterIndex, Types.TIMESTAMP);
-				} else {
-					statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
 				}
 				break;
 			case NUMBER:
@@ -973,10 +963,10 @@ public class JdbcUtil {
 					statement.setBoolean(parameterIndex, (Boolean) value);
 				}
 				break;
+			//noinspection deprecation
 			case INPUTSTREAM:
 			case BINARY:
-				try {
-					Message message = Message.asMessage(value);
+				try (Message message = Message.asMessage(value)) {
 					long len = message.size();
 					if(message.requiresStream()) {
 						if(len != -1) {
@@ -993,8 +983,7 @@ public class JdbcUtil {
 				}
 				break;
 			case CHARACTER:
-				try {
-					Message message = Message.asMessage(value);
+				try (Message message = Message.asMessage(value)) {
 					long len = message.size();
 					if(message.requiresStream()) {
 						if(len != -1) {
@@ -1010,6 +999,7 @@ public class JdbcUtil {
 					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
 				}
 				break;
+			//noinspection deprecation
 			case BYTES:
 				try {
 					statement.setBytes(parameterIndex, Message.asByteArray(value));
@@ -1018,8 +1008,8 @@ public class JdbcUtil {
 				}
 				break;
 			default:
-				try {
-					setParameter(statement, parameterIndex, Message.asMessage(value).asString(), parameterTypeMatchRequired);
+				try (Message message = Message.asMessage(value)) {
+					setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
 				} catch (IOException e) {
 					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
 				}

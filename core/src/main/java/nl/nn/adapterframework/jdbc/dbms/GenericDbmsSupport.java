@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -304,27 +304,25 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
 		Blob blob = rs.getBlob(column);
-		if (blob==null) {
+		if (blob == null) {
 			return null;
 		}
 		return blob.getBinaryStream();
 	}
+
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
 		Blob blob = rs.getBlob(column);
-		if (blob==null) {
+		if (blob == null) {
 			return null;
 		}
 		return blob.getBinaryStream();
 	}
-
-
 
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
-
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
@@ -334,10 +332,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new JdbcException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
 		log.warn("don't know how to perform prepareQueryTextForWorkQueueReading for this database type, doing a guess...");
-		return selectQuery+" FOR UPDATE";
+		return selectQuery + " FOR UPDATE";
 	}
 
 	@Override
@@ -352,17 +350,13 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
-		String query="select * from "+tableName+" where ROWNUM=1";
+		String query = "select * from " + tableName + " where ROWNUM=1";
 		return query;
 	}
 
 	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		return selectQuery;
-	}
-	@Override
-	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
-		return null;
 	}
 
 
