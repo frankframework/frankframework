@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -137,16 +136,14 @@ public class FixedResultPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result=getReturnString();
-		String filename = getFilename();
+		String filename;
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
-			try {
-				filename = session.getMessage(getFilenameSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
-			}
+			filename = session.getString(getFilenameSessionKey());
+		} else {
+			filename = getFilename();
 		}
 		if (StringUtils.isNotEmpty(filename)) {
-			URL resource = null;
+			URL resource;
 			try {
 				resource = ClassLoaderUtils.getResourceURL(this, filename);
 			} catch (Throwable e) {
@@ -167,7 +164,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom()) && result != null) {
-			result = StringUtil.replace(result, getReplaceFrom(), getReplaceTo());
+			result = result.replace(getReplaceFrom(), getReplaceTo());
 		}
 		if (!getParameterList().isEmpty()) {
 			try {
@@ -179,7 +176,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 					} else {
 						replaceFrom="${"+pv.getName()+"}";
 					}
-					result= StringUtil.replace(result, replaceFrom, pv.asStringValue(""));
+					String to = pv.asStringValue("");
+					result= result.replace(replaceFrom, to);
 				}
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, "exception extracting parameters", e);

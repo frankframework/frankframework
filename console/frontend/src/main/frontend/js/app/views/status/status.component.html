@@ -139,9 +139,9 @@
                         <div class="ibox-left">
                             <span style="font-weight:700;margin-right:4px;">Filter:</span>
                             <div class="btn-group state">
-                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
-                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
-                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
+                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
+                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
+                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
                             </div>
                         </div>
                         <div class="ibox-stretch">
@@ -268,7 +268,7 @@
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='started'">
                                             <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
-                                            <button style="float:right;" title="Stop adapter" ng-click="stopAdapter(adapter)" class="btn btn-xs danger-hover" type="button"><i class="fa fa-stop"></i></button>
+                                            <button style="float:right;" title="Stop adapter" ng-click="$ctrl.stopAdapter(adapter)" class="btn btn-xs danger-hover" type="button"><i class="fa fa-stop"></i></button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='stopping'">
                                             <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
@@ -276,7 +276,7 @@
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='stopped'">
                                             <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
-                                            <button style="float:right;" title="Start adapter" ng-click="startAdapter(adapter)" class="btn btn-xs primary-hover" type="button"><i class="fa fa-play"></i></button>
+                                            <button style="float:right;" title="Start adapter" ng-click="$ctrl.startAdapter(adapter)" class="btn btn-xs primary-hover" type="button"><i class="fa fa-play"></i></button>
                                         </td>
                                         <td class="col-md-6" ng-if="adapter.state =='error'">
                                             <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>

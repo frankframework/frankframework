@@ -299,7 +299,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
+								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch(Exception e) {
 								log.warn("unable to validate jwt",e);
@@ -519,7 +519,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
-				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
 
 				/*
 				 * Do the actual request processing by the ApiListener
@@ -597,7 +597,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+					String contentDisposition = messageContext.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
 						log.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);

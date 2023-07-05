@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -32,6 +34,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
@@ -76,24 +79,28 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) {
-		return null;
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
+
 	@Override
-	public Message extractMessage(Message rawMessage, Map<String, Object> threadContext) {
-		return rawMessage;
+	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
+		return rawMessage.getRawMessage();
 	}
+
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// descendants can override this method when specific actions are required
 	}
 
 	@Override
 	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
-		Message message = extractMessage(rawMessage, session);
+		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+		// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
+		Message message = extractMessage(rawMessageWrapper, session);
 		try {
-			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+session.getCorrelationId()+"]");
-			return handler.processRequest(this, rawMessage, message, session);
+			log.debug("PushingListenerAdapter.processRequest() for correlationId [{}]", session::getCorrelationId);
+			return handler.processRequest(this, rawMessageWrapper, message, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");

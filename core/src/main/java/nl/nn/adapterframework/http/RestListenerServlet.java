@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ import nl.nn.adapterframework.util.StreamUtil;
 @IbisInitializer
 public class RestListenerServlet extends HttpServletBase {
 	protected Logger log=LogUtil.getLogger(this);
-	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
-	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private final String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private final String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private RestServiceDispatcher sd=null;
 
@@ -139,7 +139,7 @@ public class RestListenerServlet extends HttpServletBase {
 				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=messageContext.getMessage("contentType").asString();
+					contentType=messageContext.getString("contentType");
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}

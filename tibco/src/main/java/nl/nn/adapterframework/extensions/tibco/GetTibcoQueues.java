@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
@@ -279,7 +278,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qTimestamp.setCdataValue(DateUtils.format(msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
 						qMessageXml.addSubElement(qTimestamp);
 
-						StringBuffer sb = new StringBuffer("");
+						StringBuilder sb = new StringBuilder("");
 						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
 							String propertyName = (String) propertyNames .nextElement();

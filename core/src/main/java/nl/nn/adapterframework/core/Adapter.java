@@ -661,7 +661,7 @@ public class Adapter implements IAdapter, NamedBean {
 					String xPathResult = (String) pipeLineSession.get(logName);
 					additionalLogging.append(" and ");
 					additionalLogging.append(logName);
-					additionalLogging.append(" [" + xPathResult + "]");
+					additionalLogging.append(" [").append(xPathResult).append("]");
 				}
 			}
 

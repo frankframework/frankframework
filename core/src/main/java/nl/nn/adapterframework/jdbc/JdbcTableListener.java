@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IProvidesMessageBrowsers;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * Database Listener that operates on a table having at least a key and a status field.
@@ -48,7 +49,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	private @Getter String selectCondition;
 	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
 
-	private Map<ProcessState, String> statusValues = new HashMap<>();
+	private final Map<ProcessState, String> statusValues = new HashMap<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -70,42 +71,40 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
 			throw new ConfigurationException("must specify statusValueProcessed");
 		}
-		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
-		setSelectQuery("SELECT "+getKeyField() +
-								(StringUtils.isNotEmpty(getMessageIdField())?","+getMessageIdField():"")+(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
-								(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"") +
-						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
-						" WHERE "+getStatusField()+
-						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
-						"='"+getStatusValue(ProcessState.AVAILABLE)+"'":
-						" NOT IN ('"+getStatusValue(ProcessState.ERROR)+"','"+getStatusValue(ProcessState.DONE)+(StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD))?"','"+getStatusValue(ProcessState.HOLD):"")+"')")+
-						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND ("+getSelectCondition()+")": "") +
-						(StringUtils.isNotEmpty(getOrderField())? " ORDER BY "+getOrderField():""));
+		setSelectQuery("SELECT " + getKeyField() +
+								(StringUtils.isNotEmpty(getMessageIdField()) ? "," + getMessageIdField() : "") + (StringUtils.isNotEmpty(getCorrelationIdField()) ? "," + getCorrelationIdField() : "") +
+								(StringUtils.isNotEmpty(getMessageField()) ? "," + getMessageField() : "") +
+						" FROM " + getTableName() + (StringUtils.isNotBlank(tableAlias) ? " " + tableAlias.trim() : "") +
+						" WHERE " + getStatusField() +
+						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE)) ?
+						"='" + getStatusValue(ProcessState.AVAILABLE) + "'" :
+						" NOT IN ('"+getStatusValue(ProcessState.ERROR) + "','" + getStatusValue(ProcessState.DONE) + (StringUtils.isNotEmpty(getStatusValue(ProcessState.HOLD)) ? "','" + getStatusValue(ProcessState.HOLD) : "") + "')") +
+						(StringUtils.isNotEmpty(getSelectCondition()) ? " AND (" + getSelectCondition() + ")" : "") +
+						(StringUtils.isNotEmpty(getOrderField()) ? " ORDER BY " + getOrderField() : ""));
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, "dummy query to register status value in JdbcListener")); // must have set updateStatusQueries before calling super.configure()
 		super.configure();
 		statusValues.forEach((state, value) -> setUpdateStatusQuery(state, createUpdateStatusQuery(value, null))); // set proper updateStatusQueries using createUpdateStatusQuery() after configure has been called();
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
-			ConfigurationWarnings.add(this, log, "Database ["+getDbmsSupport().getDbmsName()+"] needs statusValueInProcess to run in multiple threads");
+			ConfigurationWarnings.add(this, log, "Database [" + getDbmsSupport().getDbmsName() + "] needs statusValueInProcess to run in multiple threads");
 		}
-
 	}
 
 	protected String createUpdateStatusQuery(String fieldValue, String additionalSetClause) {
-		return "UPDATE "+getTableName()+
-				" SET "+getStatusField()+"='"+fieldValue+"'"+
-				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
-				(StringUtils.isNotEmpty(getCommentField())?","+getCommentField()+"=?":"")+
-				(StringUtils.isNotEmpty(additionalSetClause)?","+additionalSetClause:"")+
-				" WHERE "+getStatusField()+"!='"+fieldValue+"' AND "+getKeyField()+"=?";
+		return "UPDATE " + getTableName() +
+				" SET " + getStatusField() + "='" + fieldValue + "'" +
+				(StringUtils.isNotEmpty(getTimestampField()) ? "," + getTimestampField() + "=" + getDbmsSupport().getSysDate():"") +
+				(StringUtils.isNotEmpty(getCommentField()) ? "," + getCommentField() + "=?" : "") +
+				(StringUtils.isNotEmpty(additionalSetClause) ? "," + additionalSetClause : "") +
+				" WHERE " + getStatusField() + "!='" + fieldValue + "' AND " + getKeyField() + "=?";
 	}
 
 	@Override
-	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
+	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
-		String key=getKeyFromRawMessage(rawMessage);
+		String key = getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();
-		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?')+1).contains("?")) {
-			if (getMaxCommentLength()>=0 && reason!=null && reason.length()>getMaxCommentLength()) {
+		if (StringUtils.isNotEmpty(getCommentField()) && query.substring(query.indexOf('?') + 1).contains("?")) {
+			if (getMaxCommentLength() >= 0 && reason != null && reason.length() > getMaxCommentLength()) {
 				parameters.add(reason.substring(0, getMaxCommentLength()));
 			} else {
 				parameters.add(reason);

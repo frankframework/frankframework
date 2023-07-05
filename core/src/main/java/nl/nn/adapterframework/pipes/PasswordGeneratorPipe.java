@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
-		StringBuffer resultSb=new StringBuffer();
+		StringBuilder resultSb=new StringBuilder();
 		resultSb.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
 		resultSb.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
 		resultSb.append(getRandomElementsOfString(getSigns(), numOfSigns));
@@ -96,7 +96,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 	protected  String getRandomElementsOfString(String input, int count){
-		StringBuffer resultSb=new StringBuffer();
+		StringBuilder resultSb=new StringBuilder();
 		for (int i=0; i<count;i++){
 			int rnd;
 			if (useSecureRandom)
@@ -117,8 +117,8 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 			clist.add(""+input.charAt(n));
 		}
 		Collections.shuffle(clist);
-		StringBuffer resultSb=new StringBuffer();
-		String currentChar=null;
+		StringBuilder resultSb=new StringBuilder();
+		String currentChar;
 		for (Iterator t=clist.iterator();t.hasNext();){
 			currentChar=(String)t.next();
 			resultSb.append(currentChar);

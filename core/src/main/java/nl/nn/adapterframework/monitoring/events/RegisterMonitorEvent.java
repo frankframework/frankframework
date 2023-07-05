@@ -20,7 +20,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 public class RegisterMonitorEvent extends MonitorEvent {
 
 	public RegisterMonitorEvent(EventThrowing source, String eventCode) {
-		super(source, eventCode);
+		super(source, eventCode, null);
 	}
 
 }

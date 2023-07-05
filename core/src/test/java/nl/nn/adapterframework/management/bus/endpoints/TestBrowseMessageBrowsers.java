@@ -1,3 +1,18 @@
+/*
+   Copyright 2019-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +38,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -45,6 +59,7 @@ import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
 import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -140,7 +155,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -154,7 +169,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -182,7 +197,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -196,7 +211,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", response.getHeaders().get(ResponseMessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, ResponseMessageBase.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -301,7 +316,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public String changeProcessState(String message, ProcessState toState, String reason) throws ListenerException {
+		public RawMessageWrapper<String> changeProcessState(RawMessageWrapper<String> message, ProcessState toState, String reason) throws ListenerException {
 			return message;
 		}
 
@@ -329,15 +344,15 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 
-	public String messageMock(InvocationOnMock invocation) {
+	public RawMessageWrapper<String> messageMock(InvocationOnMock invocation) {
 		String id = (String) invocation.getArguments()[0];
 		switch (id) {
 		case "1":
-			return JSON_MESSAGE;
+			return new RawMessageWrapper<>(JSON_MESSAGE, id, null);
 		case "2":
-			return XML_MESSAGE;
+			return new RawMessageWrapper<>(XML_MESSAGE, id, null);
 		default:
-			return "<xml>"+id+"</xml>";
+			return new RawMessageWrapper<>("<xml>"+id+"</xml>", id, null);
 		}
 	}
 

@@ -24,9 +24,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * A Pipe represents an action to take in a {@link PipeLine}.
- * 
+ *
  * @author Johan Verrips
- * 
+ *
  * @ff.defaultElement nl.nn.adapterframework.pipes.SenderPipe
  */
 @FrankDocGroup(order = 10, name = "Pipes")
@@ -70,7 +70,8 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @throws ConfigurationException 
+	 *
+	 * @throws ConfigurationException If the forward target cannot be registered.
 	 * @see PipeLine
 	 * @see PipeForward
 	 */
@@ -90,7 +91,7 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	void stop();
 
 	/**
-	 * returns <code>true</code> if the pipe or one of its children use the named session variable. 
+	 * returns <code>true</code> if the pipe or one of its children use the named session variable.
 	 * Callers can use this to determine if a message needs to be preserved.
 	 */
 	boolean consumesSessionVariable(String sessionKey);

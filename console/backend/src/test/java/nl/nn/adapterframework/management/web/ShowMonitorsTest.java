@@ -3,6 +3,7 @@ package nl.nn.adapterframework.management.web;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -26,6 +27,7 @@ import jakarta.json.JsonStructure;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -89,7 +91,7 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		// Arrange
 		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
-		String jsonInput = "{\"type\":\"FUNCTIONAL\",\"state\":\"edit\",\"destinations\":[\"mockDestination\"]}";
+		String jsonInput = "{\"type\":\"FUNCTIONAL\",\"action\":\"edit\",\"destinations\":[\"mockDestination\"]}";
 
 		// Act
 		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/configurations/TestConfiguration/monitors/monitorName", jsonInput);
@@ -100,9 +102,30 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 				() -> assertEquals(200, response.getStatus()),
 				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
 				() -> assertEquals("MANAGE", request.getHeaders().get("action")),
-				() -> assertEquals("edit", request.getHeaders().get("state")),
-				() -> assertEquals("monitorName", request.getHeaders().get("monitor")),
+				() -> assertEquals("edit", BusMessageUtils.getHeader(request, "state")),
+				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
 				() -> assertEquals("{\"type\":\"FUNCTIONAL\",\"destinations\":[\"mockDestination\"]}", request.getPayload())
+			);
+	}
+
+	@Test
+	public void testAddTrigger() {
+		// Arrange
+		ArgumentCaptor<RequestMessageBuilder> requestMessage = ArgumentCaptor.forClass(RequestMessageBuilder.class);
+		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(requestMessage.capture());
+		String jsonInput = "{\"type\":\"ALARM\",\"filter\":\"NONE\",\"events\":[\"Receiver Configured\"],\"severity\":\"HARMLESS\",\"threshold\":1,\"period\":2}";
+
+		// Act
+		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/configurations/TestConfiguration/monitors/monitorName/triggers", jsonInput);
+
+		// Assert
+		Message<?> request = requestMessage.getValue().build();
+		assertAll(
+				() -> assertEquals(200, response.getStatus()),
+				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
+				() -> assertEquals("UPLOAD", request.getHeaders().get("action")),
+				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
+				() -> assertEquals(jsonInput, request.getPayload())
 			);
 	}
 
@@ -122,8 +145,9 @@ public class ShowMonitorsTest extends FrankApiTestBase<ShowMonitors> {
 		Message<?> request = requestMessage.getValue().build();
 		assertAll(
 				() -> assertEquals(200, response.getStatus()),
-				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()), () -> assertEquals("monitorName", request.getHeaders().get("monitor")),
-				() -> assertEquals(0, request.getHeaders().get("trigger")),
+				() -> assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString()),
+				() -> assertEquals("monitorName", BusMessageUtils.getHeader(request, "monitor")),
+				() -> assertNull(BusMessageUtils.getHeader(request, "trigger")),
 				() -> assertEquals("MANAGE", request.getHeaders().get("action")),
 				() -> assertEquals(jsonPretty(jsonInput), jsonPretty(String.valueOf(request.getPayload())))
 			);

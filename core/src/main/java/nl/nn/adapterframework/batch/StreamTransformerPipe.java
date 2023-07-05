@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -401,7 +401,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		String rawRecord = null;
 		int linenumber = 0;
 		int counter = 0;
-		StringBuffer sb = null;
+		StringBuilder sb = null;
 		List<String> prevParsedRecord = null;
 		IRecordHandler prevHandler = null;
 
@@ -441,7 +441,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 						// If blocks does not contain a previous block, it never existed, or has been removed by closing the block.
 						// In both cases a new block has just started
 						if (!blocks.containsKey(originalBlockKey)) {
-							sb = new StringBuffer();
+							sb = new StringBuilder();
 						}
 						if (sb.length()>0) {
 							sb.append(System.getProperty("line.separator"));

@@ -27,13 +27,15 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+	<bean id="cxf" class="nl.nn.adapterframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
 
-	<bean id="inboundGateway" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
-		<property name="gatewayClassname" value="${management.gateway.inbound.class}" />
+	<bean id="inboundGatewayFactory" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
+		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
 	</bean>
+	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
+	<alias name="nl.nn.adapterframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>

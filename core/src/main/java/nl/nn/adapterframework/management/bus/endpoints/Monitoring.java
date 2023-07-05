@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.Severity;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.monitoring.events.ConsoleMonitorEvent;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JacksonUtils;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -100,7 +101,7 @@ public class Monitoring extends BusEndpointBase {
 			return getTrigger(mm, trigger);
 		}
 
-		return getMonitor(monitor, showConfigAsXml);
+		return getMonitor(mm, monitor, showConfigAsXml);
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
@@ -110,17 +111,22 @@ public class Monitoring extends BusEndpointBase {
 
 		MonitorManager mm = getMonitorManager(configurationName);
 
+		Monitor monitor;
 		if(name != null) {
-			Monitor monitor = getMonitor(mm, name);
+			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
 			monitor.registerTrigger(trigger);
-			monitor.configure();
 		} else {
-			Monitor monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
+			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
 			mm.addMonitor(monitor);
+		}
+
+		try {
 			monitor.configure();
+		} catch (ConfigurationException e) {
+			throw new BusException("unable to (re)configure Monitor", e);
 		}
 
 		return EmptyResponseMessage.created();
@@ -160,7 +166,7 @@ public class Monitoring extends BusEndpointBase {
 			ITrigger trigger = getTrigger(monitor, triggerId);
 			updateTrigger(trigger, message);
 		} else {
-			String state = BusMessageUtils.getHeader(message, "state", "edit");
+			String state = BusMessageUtils.getHeader(message, "state", "edit"); // raise / clear / edit
 			if("edit".equals(state)) {
 				updateMonitor(monitor, message);
 			} else {
@@ -215,7 +221,8 @@ public class Monitoring extends BusEndpointBase {
 	private void changeMonitorState(Monitor monitor, boolean raiseMonitor) {
 		try {
 			log.info("{} monitor [{}]", ()->((raiseMonitor)?"raising":"clearing"), monitor::getName);
-			monitor.changeState(new Date(), raiseMonitor, Severity.WARNING, null, null, null);
+			String userPrincipalName = BusMessageUtils.getUserPrincipalName();
+			monitor.changeState(raiseMonitor, Severity.WARNING, new ConsoleMonitorEvent(userPrincipalName));
 		} catch (MonitorException e) {
 			throw new BusException("Failed to change monitor state", e);
 		}
@@ -265,13 +272,17 @@ public class Monitoring extends BusEndpointBase {
 		return new JsonResponseMessage(returnMap);
 	}
 
-	private Message<String> getMonitor(Monitor monitor, boolean showConfigAsXml) {
+	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
 			String xml = monitor.toXml().toXML();
 			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
 		}
 
 		Map<String, Object> monitorInfo = mapMonitor(monitor);
+
+		monitorInfo.put("severities", EnumUtils.getEnumList(Severity.class));
+		monitorInfo.put("events", manager.getEvents());
+
 		return new JsonResponseMessage(monitorInfo);
 	}
 
@@ -280,17 +291,17 @@ public class Monitoring extends BusEndpointBase {
 		monitorMap.put("name", monitor.getName());
 		monitorMap.put("type", monitor.getType());
 		monitorMap.put("destinations", monitor.getDestinationSet());
-		monitorMap.put("lastHit", monitor.getLastHit());
+		monitorMap.put("lastHit", monitor.getLastHit() != null ? monitor.getLastHit().toEpochMilli() : null);
 
 		boolean isRaised = monitor.isRaised();
 		monitorMap.put("raised", isRaised);
-		monitorMap.put("changed", monitor.getStateChangeDt());
+		monitorMap.put("changed", monitor.getStateChanged() != null ? monitor.getStateChanged().toEpochMilli() : null);
 		monitorMap.put("hits", monitor.getAdditionalHitCount());
 
 		if(isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getAlarmSource();
+			EventThrowing source = monitor.getRaisedBy();
 			if(source != null) {
 				String name = "";
 				if(source.getAdapter() != null) {

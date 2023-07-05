@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 
 	@Override
 	public Map<String, String> getParameters() {
-		Map<String, String> returnMap = new HashMap<String, String>();
+		Map<String, String> returnMap = new HashMap<>();
 		returnMap.put(PARAM_CMIS_VERSION, getCmisVersion());
 
 		return returnMap;
@@ -45,5 +45,11 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
+	}
+
+	/** Disabled by default, set servlet.WebServices10.enabled=true or servlet.WebServices11.enabled=true to enable this endpoint. */
+	@Override
+	public boolean isEnabled() {
+		return false;
 	}
 }

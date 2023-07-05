@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -125,17 +125,16 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 			String serviceName;
 			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = session.getMessage(getServiceNameSessionKey()).asString();
+				serviceName = session.getString(getServiceNameSessionKey());
 			} else {
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : session.getMessage(PipeLineSession.correlationIdKey).asString();
+			String correlationID = session==null ? null : session.getCorrelationId();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), (HashMap) context);
 			if (isMultipartResponse()) {
 				return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
 			}
-
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {

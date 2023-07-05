@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class CredentialFactory {
 		}
 	}
 
-	public static CredentialFactory getInstance() {
+	public static synchronized CredentialFactory getInstance() {
 		if (self==null) {
 			self=new CredentialFactory();
 		}

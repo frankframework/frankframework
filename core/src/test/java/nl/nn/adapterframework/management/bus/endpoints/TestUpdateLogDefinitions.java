@@ -2,6 +2,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -9,13 +10,14 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
@@ -95,9 +97,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	public void reconfigureLogDefinitionsEmptyHeader() throws Exception {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("reconfigure", "");
-		Message<?> response = callSyncGateway(request);
-
-		assertEquals(204, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("reconfigure", "true");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
 	}
 
 	@Test
@@ -145,6 +145,6 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("level", "debug");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
 	}
 }

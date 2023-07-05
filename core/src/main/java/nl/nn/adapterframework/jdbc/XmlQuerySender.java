@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *                                          - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default
  *                                          - decimalSeparator [0..1] only applicable for type=number
  *                                          - groupingSeparator [0..1] only applicable for type=number
- *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
+ *                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
  *         - where [0..1]
  *         - order [0..1]
  * <br/>
@@ -70,7 +70,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *        - query
  * <br/>
  * </pre></code><br/>
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
@@ -400,7 +400,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				return executeSelectQuery(statement,null,null, null, null).getResult();
 			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
 				//TODO: alles tussen -- en newline nog weggooien
-				StringBuffer result = new StringBuffer();
+				StringBuilder result = new StringBuilder();
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
@@ -588,7 +588,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
-					//if (column.getParameter() instanceof String) 
+					//if (column.getParameter() instanceof String)
 					log.debug("parm [" + var + "] is a String with value [" + column.getParameter().toString() + "]");
 					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired());
 					var++;

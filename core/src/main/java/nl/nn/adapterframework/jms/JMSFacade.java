@@ -56,7 +56,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -653,7 +652,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
-				log.warn("queue ["+messageProducer.getDestination()+"] doesn't exist");
+				log.warn("queue [{}] doesn't exist", messageProducer.getDestination());
 				return null;
 			}
 			throw e;
@@ -731,63 +730,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 */
-	public Message extractMessage(Object rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
-//		TextMessage message = null;
+	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		Message message;
-/*
-		try {
-			message = (TextMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-			return null;
-		}
-		rawMessageText= message.getText();
-*/
-		if (rawMessage instanceof IMessageWrapper) {
-			message = ((IMessageWrapper)rawMessage).getMessage();
-		} else if (rawMessage instanceof TextMessage) {
-			message = new Message(((TextMessage)rawMessage).getText(),getContext((TextMessage)rawMessage));
-		} else if (rawMessage instanceof BytesMessage) {
-			BytesMessage bytesMsg = (BytesMessage)rawMessage;
-			InputStream input = new InputStream() {
 
-				@Override
-				public int read() throws IOException {
-					try {
-						return bytesMsg.readByte();
-					} catch (JMSException e) {
-						throw new IOException("Cannot read JMS message", e);
-					}
-				}
-
-				@Override
-				public int read(byte[] b) throws IOException {
-					try {
-						return bytesMsg.readBytes(b);
-					} catch (JMSException e) {
-						throw new IOException("Cannot read JMS message", e);
-					}
-				}
-
-				@Override
-				public int read(byte[] b, int off, int len) throws IOException {
-					try {
-						byte[] readbuf = new byte[len];
-						int result = bytesMsg.readBytes(readbuf);
-						if (result>0) {
-							System.arraycopy(readbuf, 0, b, off, result);
-						}
-						return result;
-					} catch (JMSException e) {
-						throw new IOException("Cannot read JMS message", e);
-					}
-				}
-			};
-			message = new Message(new BufferedInputStream(input),getContext((BytesMessage)rawMessage));
-		} else if (rawMessage == null) {
+		if (jmsMessage instanceof TextMessage) {
+			message = new Message(((TextMessage) jmsMessage).getText(), getContext(jmsMessage));
+		} else if (jmsMessage instanceof BytesMessage) {
+			BytesMessage bytesMsg = (BytesMessage) jmsMessage;
+			InputStream input = new BytesMessageInputStream(bytesMsg);
+			message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
+		} else if (jmsMessage == null) {
 			message = Message.nullMessage();
 		} else {
-			message = Message.asMessage(rawMessage);
+			message = Message.asMessage(jmsMessage);
 		}
 		if (!soap) {
 			return message;
@@ -821,22 +776,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		if (useTopicFunctions) {
-			sb.append("[topicName=" + destinationName + "]");
-			sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
+			sb.append("[topicName=").append(destinationName).append("]");
+			sb.append("[topicConnectionFactoryName=").append(topicConnectionFactoryName).append("]");
 		} else {
-			sb.append("[queueName=" + destinationName + "]");
-			sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
+			sb.append("[queueName=").append(destinationName).append("]");
+			sb.append("[queueConnectionFactoryName=").append(queueConnectionFactoryName).append("]");
 		}
 		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-		sb.append("[ackMode=" + getAcknowledgeModeEnum() + "]");
-		sb.append("[persistent=" + isPersistent() + "]");
-		sb.append("[transacted=" + transacted + "]");
+		sb.append("[ackMode=").append(getAcknowledgeModeEnum()).append("]");
+		sb.append("[persistent=").append(isPersistent()).append("]");
+		sb.append("[transacted=").append(transacted).append("]");
 		return sb.toString();
 	}
 
-	/**
-	 * The name of the destination, this may be a <code>queue</code> or <code>topic</code> name.
-	 */
 	/** Name of the JMS destination (queue or topic) to use */
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;

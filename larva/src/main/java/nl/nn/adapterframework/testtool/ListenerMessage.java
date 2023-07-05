@@ -33,7 +33,7 @@ public class ListenerMessage {
 	}
 
 	public String getCorrelationId() {
-		return (String)context.get(PipeLineSession.correlationIdKey);
+		return (String)context.get(PipeLineSession.CORRELATION_ID_KEY);
 	}
 
 }

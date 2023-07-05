@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class PdfPipe extends FixedForwardPipe {
 					// Get main document to attach attachments
 					Message mainPdf = session.getMessage(getMainDocumentSessionKey());
 					// Get file name of attachment
-					String fileNameToAttach = session.getMessage(getFilenameToAttachSessionKey()).asString();
+					String fileNameToAttach = session.getString(getFilenameToAttachSessionKey());
 
 					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, fileNameToAttach + ".pdf", getCharset());
 
@@ -148,7 +148,7 @@ public class PdfPipe extends FixedForwardPipe {
 					session.put(getMainDocumentSessionKey(), result);
 					return new PipeRunResult(getSuccessForward(), result);
 				case CONVERT:
-					String filename = session.getMessage(FILENAME_SESSION_KEY).asString();
+					String filename = session.getString(FILENAME_SESSION_KEY);
 					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
@@ -182,7 +182,7 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * session key that contains the filename to be attached. Only used when the action is set to 'combine' 
+	 * session key that contains the filename to be attached. Only used when the action is set to 'combine'
 	 * @ff.default defaultFileNameToAttachSessionKey
 	 */
 	public void setFilenameToAttachSessionKey(String filenameToAttachSessionKey) {

@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
+import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
 
@@ -64,6 +66,39 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}
 
+	@Test // when a Soap Fault is returned, it should also pass the validator. It's a XML native element, but has to be supplied as body regardless.
+	public void testSoapFaultResponse() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(SIMPLE);
+		val.setSoapBody("TradePriceRequest,TradePrice,Fault");
+		val.setTargetNamespace("");
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		String soapFault = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+				+ "<soapenv:Body>"
+				+ "  <soapenv:Fault>\n"
+				+ "    <faultcode>soapenv:Server</faultcode>\n"
+				+ "    <faultstring>test</faultstring>\n"
+				+ "  </soapenv:Fault>\n"
+				+ "</soapenv:Body>"
+				+ "</soapenv:Envelope>";
+		val.validate(soapFault, session);
+	}
+
+	@Test
+	public void testXpath() {
+		XmlValidatorContentHandler handler = new XmlValidatorContentHandler(null, null, null, null);
+		List<String> path = new ArrayList<>();
+		assertEquals("/", handler.getXpath(path));
+		path.add("soap");
+		assertEquals("/soap", handler.getXpath(path));
+		path.add("element");
+		assertEquals("/soap/element", handler.getXpath(path));
+	}
+
 	@Test
 	public void testSoapInputBodyFromSoapAction() throws Exception {
 		WsdlXmlValidator val = pipe;
@@ -82,7 +117,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ "		</impl:add>\n"
 				+ "	</s:Body>\n"
 				+ "</s:Envelope>", session);
-		
+
 		session.put("SOAPAction", "sub");
 		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
 				+ "	<s:Header/>\n"
@@ -382,7 +417,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
-		
+
 		assertEquals("success", forward.getName());
 	}
 
@@ -398,7 +433,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
 		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
-		
+
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
 	}
@@ -415,7 +450,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
-		
+
 		assertEquals("success", forward.getName());
 	}
 
@@ -431,7 +466,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
 		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
-		
+
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
 	}

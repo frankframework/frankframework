@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -33,7 +32,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderBase implements ISender, ApplicationContextAware {
+public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -63,11 +62,6 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return true;
-	}
-
 	/**
 	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
 	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
@@ -77,12 +71,6 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 	protected String getLogPrefix() {
 		return ClassUtils.nameOf(this) + " ";
 	}
-
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return false;
-	}
-
 
 	/** name of the sender */
 	@Override

@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -150,7 +152,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
 					&& (loops == -1 || loops > 0)) {
-				JavaListener listener = JavaListener.getListener(getJavaListener());
+				JavaListener<?> listener = JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
@@ -206,14 +208,19 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
+	@Nonnull
 	private String getActualServiceName(PipeLineSession session) throws SenderException {
 		if (isJavaListener()) {
-			final String actualJavaListenerName;
+			String actualJavaListenerName;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
 				try {
-					actualJavaListenerName = session.getMessage(getJavaListenerSessionKey()).asString();
-				} catch (IOException e) {
-					throw new SenderException("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					actualJavaListenerName = session.getString(getJavaListenerSessionKey());
+				} catch (Exception e) {
+					log.warn("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					actualJavaListenerName = null;
+				}
+				if (actualJavaListenerName == null) {
+					throw new SenderException("unable to resolve session key [" + getJavaListenerSessionKey() + "]");
 				}
 			} else {
 				actualJavaListenerName = getJavaListener();
@@ -227,15 +234,16 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
-		try (PipeLineSession context = new PipeLineSession()) {
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			if (session.getCorrelationId() != null) {
+				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, session.getCorrelationId());
+			}
 			if (paramList!=null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
-					if (paramValues!=null) {
-						context.putAll(paramValues);
-					}
+					subAdapterSession.putAll(paramValues);
 				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
 				}
 			}
 			final ServiceClient serviceClient;
@@ -254,17 +262,17 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
-						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, context, threadLifeCycleEventListener);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, context, threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 						result = new SenderResult(message);
 					}
 				} else {
 					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
-					result = new SenderResult(serviceClient.processRequest(message, context));
+					result = new SenderResult(serviceClient.processRequest(message, subAdapterSession));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -272,21 +280,21 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
-				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
+				Misc.copyContext(getReturnedSessionKeys(), subAdapterSession, session, this);
 			}
 
-			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 
 			String forwardName = Objects.toString(exitCode, null);
 			result.setForwardName(forwardName);
 			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
 			result.setErrorMessage("exitState="+exitState);
 
-			result.getResult().unscheduleFromCloseOnExitOf(context);
+			result.getResult().unscheduleFromCloseOnExitOf(subAdapterSession);
 			result.getResult().closeOnCloseOf(session, this);
 
 			return result;

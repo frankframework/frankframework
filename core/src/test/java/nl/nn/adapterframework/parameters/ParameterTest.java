@@ -1066,8 +1066,8 @@ public class ParameterTest {
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
 
-			MatchUtils.assertXmlEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
-			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
+			MatchUtils.assertXmlEquals(testMessageChild1, session.getString("xmlMessageChild"));
+			assertEquals("X", session.getString("xmlMessageChild2"));
 		}
 	}
 

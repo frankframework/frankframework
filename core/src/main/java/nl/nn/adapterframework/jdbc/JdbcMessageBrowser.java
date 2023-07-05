@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -67,8 +68,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter SortOrder order = null;
-	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
-	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
+	private final String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private final String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
 
 	protected String deleteQuery;
@@ -299,7 +300,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	protected abstract M retrieveObject(ResultSet rs, int columnIndex) throws SQLException, JdbcException;
+	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -370,19 +371,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
-
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					return retrieveObject(rs, 2);
+					return retrieveObject(storageKey, rs, 2);
 				}
 			}
-		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly
+		} catch (ListenerException e) { // Don't catch ListenerExceptions, unnecessarily and ugly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
@@ -392,15 +392,15 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private class JdbcMessageBrowserIteratorItem implements IMessageBrowsingIteratorItem {
 
-		private Connection conn;
-		private ResultSet rs;
-		private boolean closeOnRelease;
+		private final Connection conn;
+		private final ResultSet rs;
+		private final boolean closeOnRelease;
 
 		public JdbcMessageBrowserIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
 			super();
-			this.conn=conn;
-			this.rs=rs;
-			this.closeOnRelease=closeOnRelease;
+			this.conn = conn;
+			this.rs = rs;
+			this.closeOnRelease = closeOnRelease;
 		}
 
 		public String fieldValue(String field) throws ListenerException {

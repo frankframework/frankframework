@@ -1,3 +1,18 @@
+/*
+   Copyright 2021-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertEquals;
@@ -21,6 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
@@ -66,7 +83,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
-		String data = storage.browseMessage(storageKey);
+		RawMessageWrapper<String> rawMessageWrapper = storage.browseMessage(storageKey);
+		String data = rawMessageWrapper.getRawMessage();
+		assertEquals(storageKey, rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY));
 		assertEquals(message, data);
 	}
 
@@ -101,7 +120,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
 				ResultSet rs = statement.executeQuery();
 				if(rs.next()) {
-					String result = storage.retrieveObject(rs, 9);
+					String result = storage.retrieveObject("dummy", rs, 9).getRawMessage();
 					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
@@ -119,7 +138,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
-		Object o = storage.browseMessage(storageKey);
+		RawMessageWrapper<?> ro = storage.browseMessage(storageKey);
+		Object o = ro.getRawMessage();
+		assertEquals(storageKey, ro.getId());
 		assertNotNull(o);
 		assertEquals(message, o);
 
@@ -202,7 +223,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if(rs.next()) {
-					String result = storage.retrieveObject(rs, 1);
+					String result = storage.retrieveObject("dummy", rs, 1).getRawMessage();
 					assertEquals(message,result);
 				} else {
 					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
@@ -223,7 +244,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		}
 
-		String result = storage.getMessage(key);
+		String result = storage.getMessage(key).getRawMessage();
 		assertEquals(message,result);
 	}
 
@@ -245,7 +266,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 			assertEquals("label", item.getLabel());
 		}
 
-		String result = storage.getMessage(key);
+		String result = storage.getMessage(key).getRawMessage();
 		assertEquals(message,result);
 	}
 

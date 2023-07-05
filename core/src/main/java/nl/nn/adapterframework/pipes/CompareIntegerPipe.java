@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
@@ -28,8 +30,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe that compares the two integer values.
@@ -112,13 +112,11 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 		if (operand == null) {
 			if (StringUtils.isNotEmpty(sessionkey)) {
-				try {
-					operand = Integer.parseInt(session.getMessage(sessionkey).asString());
-				} catch (Exception e) {
-					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
+				operand = session.getInteger(sessionkey);
+				if (operand == null) {
+					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]");
 				}
-			}
-			if (operand == null) {
+			} else {
 				try {
 					operand = new Integer(message.asString());
 				} catch (Exception e) {

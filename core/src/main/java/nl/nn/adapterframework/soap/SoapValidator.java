@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
-import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 
 /**
@@ -51,9 +50,10 @@ public class SoapValidator extends Json2XmlValidator {
 	private @Getter String soapHeaderNamespace = "";
 	private @Getter SoapVersion soapVersion = SoapVersion.SOAP11;
 	private @Getter boolean allowPlainXml = false;
-	public static final String SOAP_ENVELOPE = "Envelope";
-	public static final String SOAP_BODY = "Body";
-	public static final String SOAP_HEADER = "Header";
+
+	private static final String SOAP_ENVELOPE_ELEMENT_NAME = "Envelope";
+	private static final String SOAP_BODY_ELEMENT_NAME = "Body";
+	private static final String SOAP_HEADER_ELEMENT_NAME = "Header";
 
 	protected boolean addSoapEnvelopeToSchemaLocation = true;
 
@@ -62,7 +62,7 @@ public class SoapValidator extends Json2XmlValidator {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
 			//super.setRoot("Envelope,"+soapBody);
-			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE+","+soapBody));
+			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME+","+soapBody));
 		} else {
 			super.setRoot(getRoot());
 		}
@@ -74,17 +74,18 @@ public class SoapValidator extends Json2XmlValidator {
 		}
 
 		if (!isAllowPlainXml()) {
-			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, soapBody));
+			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
-				addResponseRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
+				addResponseRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, outputSoapBody));
 			}
-			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
-			List<String> invalidRootNamespaces = new ArrayList<>();
+			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
+
+			List<String> soapRootNamespaces = new ArrayList<>();
 			for (String namespace:soapVersion.getNamespaces()) {
-				invalidRootNamespaces.add(namespace);
+				soapRootNamespaces.add(namespace);
 			}
-			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, soapBody), invalidRootNamespaces);
-			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_HEADER, soapHeader), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody), soapRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
 		}
 		super.configure();
 	}
@@ -92,9 +93,9 @@ public class SoapValidator extends Json2XmlValidator {
 	@Override
 	protected RootValidations createRootValidation(String messageRoot) {
 		if (isAllowPlainXml()) {
-			return new RootValidations(SOAP_ENVELOPE+","+messageRoot); // cannot test for messageRoot in SOAP message with current rootvalidation structure
+			return new RootValidations(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME+","+messageRoot)); // cannot test for messageRoot in SOAP message with current rootvalidation structure
 		}
-		return new RootValidations(SOAP_ENVELOPE, SOAP_BODY, messageRoot);
+		return new RootValidations(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, messageRoot));
 	}
 
 	@Override
@@ -125,7 +126,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@Override
 	public String getRoot() {
-		return SOAP_ENVELOPE;
+		return SOAP_ENVELOPE_ELEMENT_NAME;
 	}
 
 	/**

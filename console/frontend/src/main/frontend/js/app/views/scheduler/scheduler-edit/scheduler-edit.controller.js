@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function ($scope, Api, $stateParams) {
+appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', '$rootScope', function ($scope, Api, $stateParams, $rootScope) {
 	$scope.state = [];
 	$scope.addLocalAlert = function (type, message) {
 		$scope.state.push({ type: type, message: message });
@@ -8,6 +8,9 @@ appModule.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', funct
 	var url = "schedules/" + $stateParams.group + "/jobs/" + $stateParams.name;
 	$scope.editMode = true;
 	$scope.selectedConfiguration = "";
+
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
+	$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
 
 	$scope.form = {
 		name: "",

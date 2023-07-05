@@ -30,7 +30,7 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload File</label>
 							<div class="col-sm-5">
-								<input-file-upload file="file" on-update-file="$ctrl.updateFile" accept=".zip,.jar"/>
+								<input-file-upload file="file" on-update-file="$ctrl.updateFile(file)" accept=".zip,.jar"/>
 							</div>
 							<div class="col-sm-1">
 								<label class="control-label label-height-30 pull-right">Encoding</label>
@@ -65,7 +65,7 @@
 								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
 							</div>
 							<div class="col-sm-3 m-t-md">
-								<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit(form)">Send</button>
+								<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit($ctrl.form)">Send</button>
 							</div>
 						</div>
 					</form>

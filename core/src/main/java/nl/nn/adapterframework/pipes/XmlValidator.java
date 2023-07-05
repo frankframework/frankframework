@@ -545,11 +545,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
-				try {
-					return session.getMessage(schemaSessionKey).asString();
-				} catch(IOException e) {
-					throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
-				}
+				return session.getString(schemaSessionKey);
 			}
 			throw new PipeRunException(null, "cannot retrieve xsd from session variable [" + schemaSessionKey + "]");
 		}
@@ -616,7 +612,12 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return responseRootValidations;
 	}
 
-	public void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
+	/**
+	 * 
+	 * @param path to the element from where to start validating namespaces
+	 * @param invalidRootNamespaces XML namespace that is not allowed on the current element
+	 */
+	protected void addInvalidRootNamespaces(List<String> path, List<String> invalidRootNamespaces) {
 		if (this.invalidRootNamespaces == null) {
 			this.invalidRootNamespaces = new LinkedHashMap<>();
 		}

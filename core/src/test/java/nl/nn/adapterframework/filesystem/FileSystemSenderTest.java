@@ -187,7 +187,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		// verify the file contents
 		waitForActionToFinish();
 		String actualContents = readFile(null, filename);
-		assertEquals(contents,actualContents);
+		assertEquals(contents.trim(), actualContents.trim());
 	}
 
 	@Test

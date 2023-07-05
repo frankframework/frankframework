@@ -38,11 +38,11 @@ import nl.nn.adapterframework.util.AppConstants;
 
 
 /**
- * Factory for {@link JmsMessagingSource}s, to share them for JMS Objects that can use the same. 
- * 
+ * Factory for {@link JmsMessagingSource}s, to share them for JMS Objects that can use the same.
+ *
  * JMS related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same connectionFactoryName.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.4
  */
@@ -92,9 +92,9 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		// see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
 		if (jmsFacade.useJms102()) {
 			if (connectionFactory instanceof QueueConnectionFactory) {
-				connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory)connectionFactory);
+				connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory) connectionFactory);
 			} else if (connectionFactory instanceof TopicConnectionFactory) {
-				connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory)connectionFactory);
+				connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory) connectionFactory);
 			}
 		} else {
 			connectionFactory = new ConnectionFactoryWrapper(connectionFactory);
@@ -138,8 +138,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	//Wrapping seems WebsShere specific, shouldn't this be done by the QueueConnectionFactoryFactory
-	private class ConnectionFactoryWrapper implements ConnectionFactory {
-		private ConnectionFactory wrapped;
+	private static class ConnectionFactoryWrapper implements ConnectionFactory {
+		private final ConnectionFactory wrapped;
 
 		public ConnectionFactoryWrapper(ConnectionFactory connectionFactory) {
 			super();
@@ -157,8 +157,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 	}
 
-	private class QueueConnectionFactoryWrapper implements QueueConnectionFactory {
-		private QueueConnectionFactory wrapped;
+	private static class QueueConnectionFactoryWrapper implements QueueConnectionFactory {
+		private final QueueConnectionFactory wrapped;
 
 		public QueueConnectionFactoryWrapper(QueueConnectionFactory connectionFactory) {
 			super();
@@ -186,8 +186,8 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 	}
 
-	private class TopicConnectionFactoryWrapper implements TopicConnectionFactory {
-		private TopicConnectionFactory wrapped;
+	private static class TopicConnectionFactoryWrapper implements TopicConnectionFactory {
+		private final TopicConnectionFactory wrapped;
 
 		public TopicConnectionFactoryWrapper(TopicConnectionFactory connectionFactory) {
 			super();

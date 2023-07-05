@@ -27,12 +27,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IHasProcessState;
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPeekableListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -53,10 +55,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener<M extends Object> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
-
-	public static final String CORRELATION_ID_KEY="cid";
-	public static final String STORAGE_KEY_KEY="key";
+public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
 
 	private @Getter String selectQuery;
 	private @Getter String peekQuery;
@@ -141,13 +140,14 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
 	}
 
@@ -179,7 +179,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 	@Override
-	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);
@@ -192,7 +192,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
-	protected M getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -217,24 +217,32 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
-	private String getValueOrDefaultIfColumnDoesNotExistInTable(ResultSet rs, String columnName, String defaultValue) {
+	/**
+	 * Get column value from {@link ResultSet}, or the default if either the column-name is empty (unconfigured) or if
+	 * the result-set does not contain a column of this name.
+	 *
+	 * @param rs The {@link ResultSet} from which to get the column.
+	 * @param columnName The name of the column, can be {@code null} or empty.
+	 * @param defaultValue Default value for the column if column name was empty, or not present in the {@code ResultSet}. Can be {@code null}.
+	 * @return Value from the {@code ResultSet}, or the default.
+	 * @throws SQLException Propagates the {@link SQLException} which may be thrown from the {@link ResultSet}.
+	 */
+	private String getColumnValueOrDefault(ResultSet rs, String columnName, String defaultValue) throws SQLException {
 		if (StringUtils.isEmpty(columnName)) {
 			return defaultValue;
 		}
+		int index;
 		try {
-			int index = rs.findColumn(columnName);
-			if (index>0) {
-				return rs.getString(index);
-			}
+			index = rs.findColumn(columnName);
 		} catch (SQLException e) {
-			// ignore exception, assume columnName does not exist
+			// Assume the cause of exception is that the column does not exist in this ResultSet and return default
+			return defaultValue;
 		}
-		return null; // do not return defaultValue, as the column probably exists, but not in this result set
+		return rs.getString(index);
 	}
 
 	/**
-	 * This wonderful little method returns either a {@link String} or a {@link MessageWrapper} (but never an instance
-	 * of type {@code <M>}.
+	 * This method returns a {@link MessageWrapper} containing contents of the message stored in the database.
 	 *
 	 * @param rs JDBC {@link ResultSet} from which to extract message data.
 	 * @return Either a {@link String} being the message key, or a {@link MessageWrapper}.
@@ -245,99 +253,79 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected M extractRawMessage(ResultSet rs) throws JdbcException {
+	protected MessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+		// TODO: This needs to be reviewed, if all complications are needed. Some branches are never touched in tests.
 		try {
-			M result; // Type M for Mystery (see casts below when assigning a value to result)
-			String key=rs.getString(getKeyField());
-
-			if (StringUtils.isNotEmpty(getMessageField()) || StringUtils.isNotEmpty(getMessageIdField()) || StringUtils.isNotEmpty(getCorrelationIdField())) {
-				Message message;
-				if (StringUtils.isNotEmpty(getMessageField())) {
-					switch (getMessageFieldType()) {
-						case CLOB:
-							message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
-							break;
-						case BLOB:
-							if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
-								message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
-							} else {
-								try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
-									message=new Message(blobStream);
-									message.preserve();
-								}
+			String key = rs.getString(getKeyField());
+			Message message;
+			if (StringUtils.isNotEmpty(getMessageField())) {
+				switch (getMessageFieldType()) {
+					case CLOB:
+						// TESTCOVERAGE: Untested branch
+						message = new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+						break;
+					case BLOB:
+						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
+							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
+						} else {
+							// TESTCOVERAGE: Untested branch
+							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
+								message = new Message(blobStream);
+								message.preserve();
 							}
-							break;
-						case STRING:
-							message=new Message(rs.getString(getMessageField()));
-							break;
-						default:
-							throw new IllegalArgumentException("Illegal messageFieldType ["+getMessageFieldType()+"]");
-					}
-				} else {
-					message = new Message(key);
+						}
+						break;
+					case STRING:
+						message = new Message(rs.getString(getMessageField()));
+						break;
+					default:
+						throw new IllegalArgumentException("Illegal messageFieldType [" + getMessageFieldType() + "]");
 				}
-				// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
-				MessageWrapper<?> mw = new MessageWrapper<Object>();
-				String messageId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getMessageIdField(), key);
-				String correlationId = getValueOrDefaultIfColumnDoesNotExistInTable(rs, getCorrelationIdField(), messageId);
-				mw.setId(messageId);
-				mw.getContext().put(CORRELATION_ID_KEY, correlationId);
-				mw.getContext().put(STORAGE_KEY_KEY, key);
-				mw.setMessage(message);
-				result=(M)mw;
 			} else {
-				result = (M)key;
+				message = new Message(key);
 			}
-			return result;
+			// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
+			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
+			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
+			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
+			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
+			return mw;
 		} catch (SQLException | IOException e) {
 			throw new JdbcException(e);
 		}
 	}
 
-	@Override
-	public String getIdFromRawMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		String key;
-		String mid;
-		String cid;
-		if (rawMessage instanceof IMessageWrapper) {
-			mid = ((IMessageWrapper)rawMessage).getId();
-			Map<String,Object> mwContext = ((IMessageWrapper)rawMessage).getContext();
-			cid = (String)mwContext.get(CORRELATION_ID_KEY);
-			key = (String)mwContext.get(STORAGE_KEY_KEY);
-			if (StringUtils.isEmpty(key)) {
-				key = mid; // backward compatibility
+	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) throws ListenerException {
+
+		Map<String, Object> mwContext = rawMessage.getContext();
+		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
+		if (StringUtils.isNotEmpty(key)) {
+			return key;
+		}
+
+		// TESTCOVERAGE: TODO: Below code appears untouched in our unit tests and IAF-Test but might be needed for some stored messages?
+		if (rawMessage.getId() != null) {
+			return rawMessage.getId();
+		} else if (rawMessage instanceof MessageWrapper) {
+			try {
+				return ((MessageWrapper<M>) rawMessage).getMessage().asString();
+			} catch (IOException e) {
+				throw new ListenerException(e);
 			}
+		} else if (rawMessage.getRawMessage() != null) {
+			return rawMessage.getRawMessage().toString();
 		} else {
-			key = (String)rawMessage;
-			mid = key;
-			cid = mid;
+			throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
 		}
-		if (threadContext!=null) {
-			PipeLineSession.setListenerParameters(threadContext, mid, cid, null, null);
-			threadContext.put(STORAGE_KEY_KEY, key);
-		}
-		return mid;
-	}
-
-	protected String getKeyFromRawMessage(M rawMessage) throws ListenerException {
-		Map<String,Object> context = new HashMap<>();
-		getIdFromRawMessage(rawMessage, context); // populate context with storage key
-		return (String)context.get(STORAGE_KEY_KEY);
 	}
 
 	@Override
-	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		Message message;
-		if (rawMessage instanceof IMessageWrapper) {
-			message = ((IMessageWrapper)rawMessage).getMessage();
-		} else {
-			message = Message.asMessage(rawMessage);
-		}
-		return message;
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// required action already done via ChangeProcessState()
 	}
 
@@ -352,7 +340,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	}
 
 	@Override
-	public M changeProcessState(M rawMessage, ProcessState toState, String reason) throws ListenerException {
+	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
 			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
@@ -368,7 +356,7 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 		}
 	}
 
-	protected M changeProcessState(Connection connection, M rawMessage, ProcessState toState, String reason) throws ListenerException {
+	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
 		return execute(connection, query, key) ? rawMessage : null;

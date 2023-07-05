@@ -57,10 +57,27 @@ public class ShowMonitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
+	@POST
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addMonitor(@PathParam("configuration") String configurationName, Map<String, Object> json) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+
+		// Map 'monitor' to 'name', so it matches the DTO.
+		String monitor = String.valueOf(json.remove("monitor"));
+		json.put("name", monitor);
+		builder.setJsonPayload(json);
+
+		return callSyncGateway(builder);
+	}
+
+
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}")
-	@Produces()
 	public Response getMonitor(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @DefaultValue("false") @QueryParam("xml") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
@@ -79,9 +96,9 @@ public class ShowMonitors extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
 
-		String state = String.valueOf(json.remove("state"));
+		Object state = json.remove("action");
 		if(state != null) {
-			builder.addHeader("state", state);
+			builder.addHeader("state", String.valueOf(state));
 		}
 		builder.setJsonPayload(json);
 
@@ -99,6 +116,18 @@ public class ShowMonitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
+
+	@GET
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
+	@Path("/{monitorName}/triggers")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
+		builder.addHeader(MONITOR_HEADER, monitorName);
+		return callSyncGateway(builder, true);
+	}
+
 	@POST
 	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	@Path("/{monitorName}/triggers")
@@ -113,11 +142,12 @@ public class ShowMonitors extends FrankApiBase {
 		return callSyncGateway(builder);
 	}
 
+
 	@GET
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/{monitorName}/triggers/{triggerId}")
+	@Path("/{monitorName}/triggers/{trigger}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getTriggers(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("triggerId") Integer id) {
+	public Response getTrigger(@PathParam("configuration") String configurationName, @PathParam("monitorName") String monitorName, @PathParam("trigger") Integer id) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
@@ -149,23 +179,6 @@ public class ShowMonitors extends FrankApiBase {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
 		builder.addHeader(MONITOR_HEADER, monitorName);
 		builder.addHeader(TRIGGER_HEADER, id);
-		return callSyncGateway(builder);
-	}
-
-	@POST
-	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
-	@Path("/")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response addMonitor(@PathParam("configuration") String configurationName, Map<String, Object> json) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.MONITORING, BusAction.UPLOAD);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configurationName);
-
-		// Map 'monitor' to 'name', so it matches the DTO.
-		String monitor = String.valueOf(json.remove("monitor"));
-		json.put("name", monitor);
-		builder.setJsonPayload(json);
-
 		return callSyncGateway(builder);
 	}
 }

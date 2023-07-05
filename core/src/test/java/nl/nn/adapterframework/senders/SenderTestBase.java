@@ -18,12 +18,11 @@ package nl.nn.adapterframework.senders;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
@@ -46,8 +45,8 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 	public void setUp() throws Exception {
 		super.setUp();
 		session = new PipeLineSession();
-		session.put(PipeLineSession.messageIdKey, testMessageId);
-		session.put(PipeLineSession.correlationIdKey, testCorrelationId);
+		session.put(PipeLineSession.MESSAGE_ID_KEY, testMessageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, testCorrelationId);
 		sender = createSender();
 		getConfiguration().autowireByType(sender);
 	}

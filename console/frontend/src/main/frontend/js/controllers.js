@@ -4,8 +4,6 @@ import './app/components/pages/information-modal/cookie-modal.controller';
 import './app/components/pages/information-modal/information-modal.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
-import './app/views/configurations/configurations-manage/configurations-manage.controller';
-import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.controller';
 import './app/views/connections/connections.controller';
 import './app/views/environment-variables/environment-variables.controller';
 import './app/views/error/error.controller';
@@ -13,8 +11,6 @@ import './app/views/loading/loading.controller';
 import './app/views/logging/logging.controller';
 import './app/views/logging/logging-manage/logging-manage.controller';
 import './app/views/login/login.controller';
-import './app/views/monitors/monitors.controller';
-import './app/views/monitors/monitors-add-edit/monitors-add-edit.controller';
 import './app/views/notifications/notifications.controller';
 import './app/views/scheduler/scheduler.controller';
 import './app/views/scheduler/scheduler-add/scheduler-add.controller';

@@ -1,3 +1,18 @@
+/*
+   Copyright 2022-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.receivers;
 
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
@@ -13,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -51,6 +67,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.TransactionDefinition;
@@ -289,6 +306,7 @@ public class ReceiverTest {
 		doReturn(receiver.getMaxDeliveries() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 
 		final int NR_TIMES_MESSAGE_OFFERED = 5;
@@ -319,7 +337,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -391,6 +409,7 @@ public class ReceiverTest {
 
 		final JtaTransactionManager txManager = configuration.getBean(JtaTransactionManager.class);
 		txManager.setDefaultTimeout(1);
+//		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 1
 
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
@@ -429,10 +448,11 @@ public class ReceiverTest {
 		doAnswer(invocation -> rolledBackTXCounter.get() + 1).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> messageWrapper = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
-		ArgumentCaptor<String> messageIdCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> correlationIdCaptor = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<Serializable> messageCaptor = ArgumentCaptor.forClass(Serializable.class);
+		ArgumentCaptor<String> messageIdCaptor = forClass(String.class);
+		ArgumentCaptor<String> correlationIdCaptor = forClass(String.class);
+		ArgumentCaptor<Serializable> messageCaptor = forClass(Serializable.class);
 
 		final Semaphore semaphore = new Semaphore(0);
 		Thread mockListenerThread = new Thread("mock-listener-thread") {
@@ -454,7 +474,7 @@ public class ReceiverTest {
 								return String.valueOf(count);
 							});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, jmsMessage, session, false);
+							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							LOG.warn("Caught exception in Receiver:", e);
@@ -489,7 +509,7 @@ public class ReceiverTest {
 		// Assert
 		assertAll(
 			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
-			() -> assertEquals("dummy-message-id", correlationIdCaptor.getValue(), "Correlation ID does not match"),
+			() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
 			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
 			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
 			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
@@ -530,9 +550,10 @@ public class ReceiverTest {
 		doAnswer(invocation -> 5).when(jmsMessage).getIntProperty("JMSXDeliveryCount");
 		doReturn(Collections.emptyEnumeration()).when(jmsMessage).getPropertyNames();
 		doReturn("message").when(jmsMessage).getText();
+		RawMessageWrapper<javax.jms.Message> rawMessage = new RawMessageWrapper<>(jmsMessage, "dummy-message-id", "dummy-cid");
 
 		// Act
-		int result = receiver.getDeliveryCount("dummy-message-id", jmsMessage);
+		int result = receiver.getDeliveryCount(rawMessage);
 
 		// Assert
 		assertEquals(4, result);
@@ -566,23 +587,24 @@ public class ReceiverTest {
 
 		final String messageId = "A Path";
 		Path fileMessage = Paths.get(messageId);
+		RawMessageWrapper<Path> rawMessageWrapper = new RawMessageWrapper<>(fileMessage, messageId, null);
 
 		// Act
-		int result1 = receiver.getDeliveryCount(messageId, fileMessage);
+		int result1 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(1, result1);
 
 		// Arrange (for 2nd invocation)
 		try (PipeLineSession session = new PipeLineSession()) {
-			session.put(PipeLineSession.messageIdKey, messageId);
-			receiver.processRawMessage(listener, fileMessage, session, false);
+			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// We expected an exception here...
 		}
 
 		// Act
-		int result2 = receiver.getDeliveryCount(messageId, fileMessage);
+		int result2 = receiver.getDeliveryCount(rawMessageWrapper);
 
 		// Assert
 		assertEquals(2, result2);
@@ -592,6 +614,7 @@ public class ReceiverTest {
 	public void testProcessRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
+		RawMessageWrapper<String> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
 		Message testMessage = Message.asMessage(new StringReader(rawTestMessage));
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
@@ -618,7 +641,7 @@ public class ReceiverTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			// Act
-			Message result = receiver.processRequest(listener, rawTestMessage, testMessage, session);
+			Message result = receiver.processRequest(listener, rawTestMessageWrapper, testMessage, session);
 
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
@@ -634,13 +657,13 @@ public class ReceiverTest {
 	public void testManualRetryWithMessageStoreListener() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener<String> listener = setupMessageStoreListener();
 		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
-		when(errorStorage.getMessage(any())).thenReturn(testMessage);
+		when(errorStorage.getMessage(any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
 
 		// start adapter
 		configuration.configure();
@@ -649,8 +672,8 @@ public class ReceiverTest {
 		waitForState(adapter, RunState.STARTED);
 		waitForState(receiver, RunState.STARTED);
 
-		ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-		ArgumentCaptor<PipeLineSession> sessionCaptor = ArgumentCaptor.forClass(PipeLineSession.class);
+		ArgumentCaptor<Message> messageCaptor = forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCaptor = forClass(PipeLineSession.class);
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);

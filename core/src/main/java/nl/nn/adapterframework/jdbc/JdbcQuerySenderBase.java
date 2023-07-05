@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -52,7 +55,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -270,14 +272,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeoutException {
+	protected Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled()) {
 			return getConnectionWithTimeout(getTimeout());
 		}
 		return connection;
 	}
+
 	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
-		if (isConnectionsArePooled() && connection!=null) {
+		if (isConnectionsArePooled() && connection != null) {
 			try {
 				connection.close();
 			} catch (SQLException e) {
@@ -286,79 +289,54 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected QueryExecutionContext prepareStatementSet(H blockHandle, Connection connection, Message message, PipeLineSession session) throws SenderException {
-		try {
-			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
-			if (getBatchSize()>0) {
-				result.getStatement().clearBatch();
-			}
-			return result;
-		} catch (JdbcException|ParameterException|SQLException e) {
-			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-		}
-	}
 	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
 			}
 		} catch (SQLException e) {
-			log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
+			log.warn("{}got exception closing SQL statement", getLogPrefix(), e);
 		}
+		//noinspection EmptyTryBlock
 		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
-			log.warn(new SenderException(getLogPrefix() + "got exception closing result SQL statement",e ));
+			log.warn("{}got exception closing result SQL statement", getLogPrefix(), e);
 		}
 	}
 
-
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
-			try {
-				return executeStatementSet(queryExecutionContext, message, session, next);
-			} finally {
-				closeStatementSet(queryExecutionContext, session);
-			}
-		} catch (SenderException|TimeoutException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new SenderException(e);
-		}
-	}
-
-
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			switch(queryExecutionContext.getQueryType()) {
 				case SELECT:
-					Object blobSessionVar=null;
-					Object clobSessionVar=null;
-					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-						blobSessionVar=session.getMessage(getBlobSessionKey()).asObject();
+					Object blobSessionVar = null;
+					Object clobSessionVar = null;
+					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+						//noinspection deprecation
+						blobSessionVar = session.getMessage(getBlobSessionKey()).asObject();
 					}
-					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-						clobSessionVar=session.getMessage(getClobSessionKey()).asObject();
+					if (StringUtils.isNotEmpty(getClobSessionKey())) {
+						//noinspection deprecation
+						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-						String contentType = session.getMessage("contentType").asString();
-						String contentDisposition = session.getMessage("contentDisposition").asString();
+						String contentType = session.getString("contentType");
+						String contentDisposition = session.getString("contentDisposition");
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
 					} else {
 						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
 					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateBlobQuery(statement,session==null?null:session.getMessage(getBlobSessionKey())));
+						return new PipeRunResult(null, executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
 					}
 					return new PipeRunResult(null, executeUpdateBlobQuery(statement, message));
 				case UPDATECLOB:
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						return new PipeRunResult(null, executeUpdateClobQuery(statement,session==null?null:session.getMessage(getClobSessionKey())));
+						return new PipeRunResult(null, executeUpdateClobQuery(statement, session.getMessage(getClobSessionKey())));
 					}
 					return new PipeRunResult(null, executeUpdateClobQuery(statement, message));
 				case PACKAGE:
@@ -415,7 +393,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) throws SenderException {
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ parameterListToString(parameterList) + "]");
+			log.debug("{}Adjusting list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
 
 		StringBuilder buffer = new StringBuilder();
@@ -435,18 +413,18 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			int endPos = query.indexOf(UNP_END, startPos + UNP_START.length());
 
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position ["	+ startPos + "] in ["+ query+ "]");
+				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ query+ "]");
 				buffer.append(messageChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
 				String namedParam = query.substring(startPos + UNP_START.length(),endPos);
 				Parameter param = oldParameterList.findParameter(namedParam);
-				if (param!=null) {
+				if (param != null) {
 					parameterList.add(param);
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
-					log.warn(getLogPrefix() + "Parameter ["	+ namedParam + "] is not found");
+					log.warn(getLogPrefix() + "Parameter [" + namedParam + "] is not found");
 					buffer.append(messageChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
@@ -456,23 +434,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() + "Adjusted list of parameters [" + parameterListToString(parameterList) + "]");
+			log.debug( "{}Adjusted list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
 
 		return buffer.toString();
 	}
 
 	private String parameterListToString(ParameterList parameterList) {
-		String parameterListString = "";
-		for (int i = 0; i < parameterList.size(); i++) {
-			String key = parameterList.getParameter(i).getName();
-			if (i ==0) {
-				parameterListString = key;
-			} else {
-				parameterListString = parameterListString + ", " + key;
-			}
-		}
-		return parameterListString;
+		return parameterList.stream()
+				.map(Parameter::getName)
+				.collect(Collectors.joining(", "));
 	}
 
 	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException, JMSException {

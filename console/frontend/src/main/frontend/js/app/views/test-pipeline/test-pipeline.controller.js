@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function ($scope, Api, Alert) {
+appModule.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', '$rootScope', function ($scope, Api, Alert, $rootScope) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.selectedConfiguration = "";
@@ -8,6 +8,9 @@ appModule.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function ($s
 	$scope.addNote = function (type, message, removeQueue) {
 		$scope.state.push({ type: type, message: message });
 	};
+
+	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
+	$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
 
 	$scope.processingMessage = false;
 
@@ -41,6 +44,10 @@ appModule.controller('TestPipelineCtrl', ['$scope', 'Api', 'Alert', function ($s
 		}
 
 	}
+
+	$scope.updateFile = function (file) {
+		$scope.file = file;
+	};
 
 	$scope.submit = function (formData) {
 		$scope.result = "";

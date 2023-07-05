@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
@@ -39,15 +43,16 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
-	public static final String originalMessageKey="originalMessage";
-	public static final String messageIdKey="mid";           // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
-	public static final String correlationIdKey="cid";       // conversationId, e.g. JmsCorrelationID.
+	public static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
+	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
+	public static final String CORRELATION_ID_KEY   = "cid";       // conversationId, e.g. JmsCorrelationID.
+	public static final String STORAGE_ID_KEY       = "key";
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
-	public static final String securityHandlerKey="securityHandler";
+	public static final String SECURITY_HANDLER_KEY ="securityHandler";
 
 	public static final String HTTP_REQUEST_KEY    = "servletRequest";
 	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
@@ -61,7 +66,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -74,7 +79,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(initialCapacity, loadFactor);
 	}
 
-	public PipeLineSession(Map<String, Object> t) {
+	/**
+	 * Create new PipeLineSession from existing map or session. This may not be null!
+	 *
+	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
+	 */
+	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
 	}
 
@@ -83,15 +93,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Ensure that a proper string is returned in those cases too.
 	 */
 	@SneakyThrows
+	@Nullable
 	public String getMessageId() {
-		return getString(messageIdKey); // Allow Ladybug to wrap it in a Message
+		return getString(MESSAGE_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
 	@SneakyThrows
+	@Nullable
 	public String getCorrelationId() {
-		return getString(correlationIdKey); // Allow Ladybug to wrap it in a Message
+		return getString(CORRELATION_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
+	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if(obj != null) {
@@ -129,33 +142,34 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	/**
-	 * Convenience method to set required parameters from listeners
+	 * Convenience method to set required parameters from listeners. Will not update messageId and
+	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */
-	public static void setListenerParameters(Map<String, Object> map, String messageId, String correlationId, Date tsReceived, Date tsSent) {
-		if (messageId!=null) {
-			map.put(messageIdKey, messageId);
+	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Date tsReceived, @Nullable Date tsSent) {
+		if (messageId != null) {
+			map.put(MESSAGE_ID_KEY, messageId);
 		}
-		if (correlationId!=null) {
-			map.put(correlationIdKey, correlationId);
+		if (correlationId != null) {
+			map.put(CORRELATION_ID_KEY, correlationId);
 		}
-		if (tsReceived==null) {
-			tsReceived=new Date();
+		if (tsReceived == null) {
+			tsReceived = new Date();
 		}
 		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
-		if (tsSent!=null) {
+		if (tsSent != null) {
 			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
 		}
 	}
 
 	public void setSecurityHandler(ISecurityHandler handler) {
 		securityHandler = handler;
-		put(securityHandlerKey, handler);
+		put(SECURITY_HANDLER_KEY, handler);
 	}
 
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
-		if (securityHandler==null) {
-			securityHandler=(ISecurityHandler)get(securityHandlerKey);
-			if (securityHandler==null) {
+		if (securityHandler == null) {
+			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
+			if (securityHandler == null) {
 				throw new NotImplementedException("no securityhandler found in PipeLineSession");
 			}
 		}
@@ -172,11 +186,20 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return handler.getPrincipal(this);
 	}
 
-	private String getString(String key) {
-		try {
-			return getMessage(key).asString();
-		} catch(Exception e) {
-			return get(key).toString();
+	@Nullable
+	@SneakyThrows
+	public String getString(@Nonnull String key) {
+		Object obj = get(key);
+		if (obj == null) {
+			return null;
+		} else if (obj instanceof String) {
+			return (String) obj;
+		} else if (obj instanceof Number) {
+			return obj.toString();
+		} else {
+			try (Message message = Message.asMessage(obj)) {
+				return message.asString();
+			}
 		}
 	}
 
@@ -187,7 +210,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return String
 	 */
-	public String get(String key, String defaultValue) {
+	@Nullable
+	public String get(@Nonnull String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 
 		if (ob == null) return defaultValue;
@@ -207,7 +231,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
-		return this.getString(key).equalsIgnoreCase("true");
+		return "true".equalsIgnoreCase(this.getString(key));
 	}
 
 	/**
@@ -215,6 +239,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param key the referenced key
 	 * @return Boolean
 	 */
+	@Nullable
 	public Boolean getBoolean(String key) {
 		Object ob = this.get(key);
 		if (ob == null) return null;
@@ -222,7 +247,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Boolean) {
 			return (Boolean) ob;
 		}
-		return this.getString(key).equalsIgnoreCase("true");
+		return "true".equalsIgnoreCase(this.getString(key));
 	}
 
 	/**
@@ -235,10 +260,29 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
+		if(ob instanceof Number) {
+			return ((Number) ob).intValue();
+		}
+		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
+	}
+
+	/**
+	 * Retrieves an <code>Integer</code> value from the PipeLineSession
+	 * @param key the referenced key
+	 * @return Integer
+	 */
+	@Nullable
+	public Integer getInteger(String key) {
+		Object ob = this.get(key);
+		if (ob == null) return null;
+
 		if(ob instanceof Integer) {
 			return (Integer) ob;
 		}
-		return Integer.parseInt(this.getString(key));
+		if(ob instanceof Number) {
+			return ((Number) ob).intValue();
+		}
+		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
 	}
 
 	/**
@@ -251,10 +295,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Long) {
-			return (Long) ob;
+		if(ob instanceof Number) {
+			return ((Number) ob).longValue();
 		}
-		return Long.parseLong(this.getString(key));
+		return Long.parseLong(Objects.requireNonNull(this.getString(key)));
 	}
 
 	/**
@@ -267,10 +311,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Double) {
-			return (Double) ob;
+		if(ob instanceof Number) {
+			return ((Number) ob).doubleValue();
 		}
-		return Double.parseDouble(this.getString(key));
+		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {

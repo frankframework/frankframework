@@ -160,12 +160,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		try (InputStream in = getInputStream(message, session)) {
 			File targetDirectory = this.dir;
 			if (StringUtils.isEmpty(getDirectory())) {
-				String directory;
-				try {
-					directory = session.getMessage(getDirectorySessionKey()).asString();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot resolve ["+getDirectorySessionKey()+"] session key", e);
-				}
+				String directory = session.getString(getDirectorySessionKey());
 				if (StringUtils.isEmpty(directory)) {
 					if (!isCollectFileContents()) {
 						throw new PipeRunException(this, "directorySessionKey is empty");

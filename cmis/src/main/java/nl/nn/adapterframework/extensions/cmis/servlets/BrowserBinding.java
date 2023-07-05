@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 
 	@Override
 	public Map<String, String> getParameters() {
-		Map<String, String> returnMap = new HashMap<String, String>();
+		Map<String, String> returnMap = new HashMap<>();
 		returnMap.put(PARAM_CALL_CONTEXT_HANDLER, "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
 
 		return returnMap;
@@ -44,5 +44,11 @@ public class BrowserBinding extends CmisBrowserBindingServlet implements Dynamic
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
+	}
+
+	/** Disabled by default, set servlet.BrowserBinding.enabled=true to enable this endpoint. */
+	@Override
+	public boolean isEnabled() {
+		return false;
 	}
 }

@@ -48,6 +48,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.IbisMessageListenerContainer;
 import nl.nn.adapterframework.jms.PushingJmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
@@ -274,7 +275,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				listener.checkTransactionManagerValidity();
 				pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY, session);
 				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
-				getReceiver().processRawMessage(listener, message, pipeLineSession, false);
+				RawMessageWrapper<Message> rawMessage = listener.wrapRawMessage(message, pipeLineSession);
+				getReceiver().processRawMessage(listener, rawMessage, pipeLineSession, false);
 				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 			} catch (ListenerException e) {
 				if (txStatus != null) {
@@ -371,4 +373,3 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 
 }
-

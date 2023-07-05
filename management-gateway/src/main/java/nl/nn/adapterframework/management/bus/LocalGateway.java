@@ -23,7 +23,7 @@ import org.springframework.messaging.MessageChannel;
  * A Spring Integration Gateway in it's most simplistic form.
  * Put's messages on their respective Channels.
  */
-public class LocalGateway<T> extends MessagingGatewaySupport implements IntegrationGateway<T> {
+public class LocalGateway<T> extends MessagingGatewaySupport implements OutboundGateway<T> {
 
 	@Override
 	protected void onInit() {
@@ -46,4 +46,9 @@ public class LocalGateway<T> extends MessagingGatewaySupport implements Integrat
 		super.send(in);
 	}
 
+	/* must (re-)throw exceptions and not publish them to a dead-letter-queue. */
+	@Override
+	public MessageChannel getErrorChannel() {
+		return null;
+	}
 }

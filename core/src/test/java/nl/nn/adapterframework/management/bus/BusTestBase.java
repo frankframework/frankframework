@@ -1,17 +1,19 @@
 package nl.nn.adapterframework.management.bus;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
 
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.support.DefaultMessageBuilderFactory;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -93,7 +95,7 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
@@ -104,7 +106,7 @@ public class BusTestBase {
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		IntegrationGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		gateway.sendAsyncMessage(input.build());
 	}
 
@@ -113,12 +115,35 @@ public class BusTestBase {
 	}
 
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
-		DefaultMessageBuilderFactory factory = getParentContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
-		MessageBuilder<T> builder = factory.withPayload(payload);
+		MessageBuilder<T> builder = spy(new MessageBuilder<>(payload));
 		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
 			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
+
 		return builder;
+	}
+
+	public static class MessageBuilder<T> {
+		private final T payload;
+		private Map<String, Object> headers = new HashMap<>();
+		public MessageBuilder(T payload) {
+			this.payload = payload;
+		}
+
+		public <T> T getHeader(String key, Class<T> clazz) {
+			return (T) headers.get(key);
+		}
+
+		public void setHeader(String headerName, Object headerValue) {
+			if(!"topic".equals(headerName) && !"action".equals(headerName)) {
+				headerName = "meta-"+headerName;
+			}
+			headers.put(headerName, headerValue);
+		}
+
+		public Message<T> build() {
+			return new GenericMessage<>(payload, headers);
+		}
 	}
 }

@@ -24,7 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -97,11 +99,14 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws JdbcException, SQLException {
+	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException, SQLException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
-		return (M)rs.getString(columnIndex);
+		//noinspection unchecked
+		RawMessageWrapper<M> rawMessageWrapper = (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
+		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+		return rawMessageWrapper;
 	}
 
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public class CompareStringPipe extends AbstractPipe {
 		try {
 			if (operand1 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey1())) {
-					operand1 = session.getMessage(getSessionKey1()).asString();
+					operand1 = session.getString(getSessionKey1());
 				}
 				if (operand1 == null) {
 					operand1 = message.asString();
@@ -122,7 +122,7 @@ public class CompareStringPipe extends AbstractPipe {
 		try {
 			if (operand2 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey2())) {
-					operand2 = session.getMessage(getSessionKey2()).asString();
+					operand2 = session.getString(getSessionKey2());
 				}
 				if (operand2 == null) {
 					operand2 = message.asString();
@@ -202,7 +202,7 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 
 		char[] sourceArray = source.toCharArray();
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		int srcPos = 0;
 
 		while (start != -1 && stop != -1) {

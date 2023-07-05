@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class MessageBrowsingFilter {
 	private String type = null;
@@ -150,7 +151,7 @@ public class MessageBrowsingFilter {
 	}
 
 	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException, IOException {
-		Object rawmsg = messageBrowser.browseMessage(messageId);
+		RawMessageWrapper<?> rawmsg = messageBrowser.browseMessage(messageId);
 		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}
 
