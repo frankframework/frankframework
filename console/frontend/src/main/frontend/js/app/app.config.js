@@ -344,7 +344,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.security_items', {
 				url: "/security-items",
-				templateUrl: "js/app/views/security-items/ShowSecurityItems.html",
+				component: "securityItems",
 				data: {
 					pageTitle: 'Security Items',
 					breadcrumbs: 'Security Items'

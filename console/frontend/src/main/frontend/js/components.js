@@ -12,6 +12,7 @@ import './app/views/configurations/configurations-manage/configurations-manage-d
 import './app/views/configurations/configurations-show/configurations-show.component';
 import './app/views/configurations/configurations-upload/configurations-upload.component';
 import './app/views/environment-variables/environment-variables.component';
+import './app/views/security-items/security-items.component';
 import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 import './app/views/monitors/monitors.component';
 import './app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
