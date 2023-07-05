@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -298,10 +297,8 @@ public final class AppConstants extends Properties implements Serializable {
 
 				for (URL url : resources) {
 					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
-						CheckURL(reader, url);
+						loadResource(reader, url);
 						log.info("Application constants loaded from url [{}]", url::toString);
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
 					}
 				}
 
@@ -482,18 +479,24 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param reader    the reader
 	 * @param url 		the url
 	 */
-	public void CheckURL(Reader reader, URL url) throws URISyntaxException, IOException {
-		if (url.toURI().toString().contains(".properties")){
-			load(reader);
-		}
-		else if (url.toURI().toString().contains(".yaml")){
-			loadYaml(reader);
+	public void loadResource(Reader reader, URL url) throws IOException {
+		String extension = FilenameUtils.getExtension(url.toString());
+
+		switch (extension) {
+			case "properties":
+				load(reader);
+				break;
+			case "yaml":
+				loadYaml(reader);
+				break;
+			default:
+				throw new IllegalArgumentException("Extension not supported: " + extension);
 		}
 	}
 
 	/**
 	 * Loads and parses a yaml file.
-	 * Uses the {@link #RecursiveYaml(String, Object)} method.
+	 * Uses the {@link #recursiveYaml(String, Object)} method.
 	 * @param reader    the reader
 	 */
 	public void loadYaml(Reader reader) {
@@ -501,9 +504,9 @@ public final class AppConstants extends Properties implements Serializable {
 		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
 		obj.entrySet().forEach(entry -> {
 			try {
-				RecursiveYaml(entry.getKey(), entry.getValue());
-			} catch (IOException | URISyntaxException e) {
-				throw new RuntimeException(e);
+				recursiveYaml(entry.getKey(), entry.getValue());
+			} catch (IOException e) {
+				log.error("Recursion failed, unable to load yaml properties", e);
 			}
 		});
 	}
@@ -513,7 +516,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param key    	Key of the property
 	 * @param value 	Value of the property
 	 */
-	public void RecursiveYaml(String key, Object value) throws IOException, URISyntaxException {
+	public void recursiveYaml(String key, Object value) throws IOException {
 
 		// If the value is a string, will split the key / value pair and put.
 		if (value instanceof String) {
@@ -528,20 +531,16 @@ public final class AppConstants extends Properties implements Serializable {
 		// Therefore, key doesn't need to be updated, only the value.
 		else if (value instanceof ArrayList){
 			for (int i = 0; i < ((ArrayList) value).size(); i++) {
-				RecursiveYaml(key, ((ArrayList) value).get(i));
+				recursiveYaml(key, ((ArrayList) value).get(i));
 			}
 		}
 
 		// If the value is a map, will recursively call the method.
 		// Key will be added to the 'keychain'.
 		else if (value instanceof Map){
-			((Map<?, ?>) value).entrySet().forEach(entry -> {
-				try {
-					RecursiveYaml(key + "." + entry.getKey(), entry.getValue());
-				} catch (IOException | URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
-			});
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+				recursiveYaml(key + "." + entry.getKey(), entry.getValue());
+			}
 		}
 	}
 }
