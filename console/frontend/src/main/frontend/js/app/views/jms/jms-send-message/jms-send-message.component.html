@@ -1,9 +1,9 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="SendJmsMessageCtrl">
-	<div class="alert alert-warning" role="alert" type="warning" ng-if="error">
-		<span class="ng-binding ng-scope" ng-bind-html="error"></span>
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="alert alert-warning" role="alert" type="warning" ng-if="$ctrl.error">
+		<span class="ng-binding ng-scope" ng-bind-html="$ctrl.error"></span>
 	</div>
 	<div class="row">
 		<div class="col-lg-12">
@@ -16,59 +16,59 @@
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
 							<div class="col-sm-7 col-md-9">
-								<select class="form-control" name="connectionFactory" ng-model="form.connectionFactory">
-									<option ng-repeat="connectionFactory in connectionFactories" selected="{{$first ? 'selected' : ''}}">{{connectionFactory}}</option>
+								<select class="form-control" name="connectionFactory" ng-model="$ctrl.form.connectionFactory">
+									<option ng-repeat="connectionFactory in $ctrl.connectionFactories" selected="{{$first ? 'selected' : ''}}">{{connectionFactory}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Destination Name</label>
 							<div class="col-sm-7 col-md-9">
-								<input class="form-control" name="destination" type="text" ng-model="form.destination"/>
+								<input class="form-control" name="destination" type="text" ng-model="$ctrl.form.destination"/>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
 							<div class="col-sm-7 col-md-9">
-								<select class="form-control" name="type" ng-model="form.type">
-									<option ng-repeat="type in destinationTypes">{{type}}</option>
+								<select class="form-control" name="type" ng-model="$ctrl.form.type">
+									<option ng-repeat="type in $ctrl.destinationTypes">{{type}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="row form-group" title="Name of the queue the reply is expected on.">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Reply To</label>
 							<div class="col-sm-7 col-md-9">
-								<input class="form-control" name="replyTo" type="text" ng-model="form.replyTo"/>
+								<input class="form-control" name="replyTo" type="text" ng-model="$ctrl.form.replyTo"/>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Persistent</label>
 							<div class="col-sm-7 col-md-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="persistent" ng-model="form.persistent" /></span>
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="persistent" ng-model="$ctrl.form.persistent" /></span>
 							</div>
 						</div>
 						<div class="row form-group" title="In case it is checked, it will operate in rr mode. Expected reply will be created either on the queue specified in 'Reply To', or on a dynamically generated temporary queue">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Synchronous</label>
 							<div class="col-sm-7 col-md-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="synchronous" ng-model="form.synchronous" /></span>
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="synchronous" ng-model="$ctrl.form.synchronous" /></span>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
 							<div class="col-sm-7 col-md-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="lookupDestination" ng-model="form.lookupDestination" /></span>
+								<span class="form-control" style="border: none;"><input icheck type="checkbox" name="lookupDestination" ng-model="$ctrl.form.lookupDestination" /></span>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Message Property</label>
 							<div class="col-sm-7 col-md-3">
-								<input class="form-control" name="propertyKey" type="text" ng-model="form.propertyKey"/>
+								<input class="form-control" name="propertyKey" type="text" ng-model="$ctrl.form.propertyKey"/>
 							</div>
 							<div class="hidden-xs hidden-sm col-md-1">
 								<label class="control-label label-height-30 pull-right">Value</label>
 							</div>
 							<div class="hidden-xs hidden-sm col-md-5">
-								<input class="form-control" name="propertyValue" type="text" ng-model="form.propertyValue"/>
+								<input class="form-control" name="propertyValue" type="text" ng-model="$ctrl.form.propertyValue"/>
 							</div>
 						</div>
 						<div class="row form-group hidden-md hidden-lg">
@@ -76,13 +76,13 @@
 								<label class="control-label label-height-30">Value</label>
 							</div>
 							<div class="col-sm-7">
-								<input class="form-control" name="propertyValue" type="text" ng-model="form.propertyValue"/>
+								<input class="form-control" name="propertyValue" type="text" ng-model="$ctrl.form.propertyValue"/>
 							</div>
 						</div>
 						<div class="row form-group">
 							<label class="col-sm-5 col-md-3 control-label label-height-30">Message</label>
 							<div class="col-sm-7 col-md-9">
-								<textarea class="form-control" name="message" rows="5" style="resize:none;" ng-model="form.message"></textarea>
+								<textarea class="form-control" name="message" rows="5" style="resize:none;" ng-model="$ctrl.form.message"></textarea>
 							</div>
 						</div>
 						<div class="row form-group">
@@ -94,7 +94,7 @@
 								<label class="control-label label-height-30 pull-right">Encoding</label>
 							</div>
 							<div class="hidden-xs hidden-sm col-md-3">
-								<input class="form-control" name="encoding" type="text" ng-model="form.encoding"/>
+								<input class="form-control" name="encoding" type="text" ng-model="$ctrl.form.encoding"/>
 							</div>
 						</div>
 						<div class="row form-group hidden-md hidden-lg">
@@ -102,15 +102,15 @@
 								<label class="control-label label-height-30">Encoding</label>
 							</div>
 							<div class="col-sm-7">
-								<input class="form-control" name="encoding" type="text" ng-model="form.encoding"/>
+								<input class="form-control" name="encoding" type="text" ng-model="$ctrl.form.encoding"/>
 							</div>
 						</div>
 						<div class="row form-group">
 							<div class="col-xs-5 col-md-3 m-t-md">
-								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
 							</div>
 							<div class="col-xs-5 col-md-3 m-t-md">
-								<button ladda="processing" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+								<button ladda="processing" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit($ctrl.form)">Send</button>
 							</div>
 						</div>
 					</form>

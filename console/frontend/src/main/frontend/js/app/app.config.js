@@ -252,7 +252,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.send_message', {
 				url: "/jms/send-message",
-				templateUrl: "js/app/views/jms/jms-send-message/SendJmsMessage.html",
+				component: "jmsSendMessage",
 				data: {
 					pageTitle: 'Send JMS Message',
 					breadcrumbs: 'JMS > Send Message'
@@ -406,7 +406,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.ibisstore_summary', {
 				url: "/ibisstore-summary",
-				templateUrl: "js/app/views/ibisstore-summary/ShowIbisstoreSummary.html",
+				component: "ibisStoreSummary",
 				data: {
 					pageTitle: 'Ibisstore Summary',
 					breadcrumbs: 'JDBC > Ibisstore Summary'
