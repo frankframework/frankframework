@@ -9,7 +9,6 @@ import './app/views/configurations/configurations-manage/configurations-manage-d
 import './app/views/connections/connections.controller';
 import './app/views/environment-variables/environment-variables.controller';
 import './app/views/error/error.controller';
-import './app/views/inlinestore/inlinestore.controller';
 import './app/views/loading/loading.controller';
 import './app/views/logging/logging.controller';
 import './app/views/logging/logging-manage/logging-manage.controller';

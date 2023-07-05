@@ -362,7 +362,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.inlinestore_overview', {
 				url: "/inlinestores/overview",
-				templateUrl: "js/app/views/inlinestore/ShowInlineMessageStoreOverview.html",
+				component: "inlineStore",
 				data: {
 					pageTitle: 'InlineStore Overview',
 					breadcrumbs: 'InlineStore Overview'
