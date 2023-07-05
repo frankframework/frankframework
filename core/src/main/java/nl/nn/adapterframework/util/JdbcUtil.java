@@ -716,21 +716,21 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
-			applyParameters(dbmsSupport, stmt, parameterValues);
+			applyParameters(dbmsSupport, stmt, parameterValues, session);
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues) throws JdbcException {
+	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(dbmsSupport, stmt, parameterValues);
+			applyParameters(dbmsSupport, stmt, parameterValues, session);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;
@@ -766,21 +766,21 @@ public class JdbcUtil {
 
 	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, PipeLineSession session) throws SQLException, JdbcException, ParameterException {
 		if (parameters != null) {
-			applyParameters(dbmsSupport,statement, parameters.getValues(message, session));
+			applyParameters(dbmsSupport,statement, parameters.getValues(message, session), session);
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
+	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters, PipeLineSession session) throws SQLException, JdbcException {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
-				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired);
+				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired, session);
 			}
 		}
 	}
 
 
-	public static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired) throws SQLException, JdbcException {
+	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, JdbcException {
 		String paramName=pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
@@ -833,7 +833,9 @@ public class JdbcUtil {
 			//noinspection deprecation
 			case INPUTSTREAM:
 			case BINARY:
-				try (Message message = Message.asMessage(value)) {
+				try {
+					Message message = Message.asMessage(value);
+					message.closeOnCloseOf(session, "JDBC Blob Parameter");
 					long len = message.size();
 					if(message.requiresStream()) {
 						if(len != -1) {
@@ -850,7 +852,9 @@ public class JdbcUtil {
 				}
 				break;
 			case CHARACTER:
-				try (Message message = Message.asMessage(value)) {
+				try {
+					Message message = Message.asMessage(value);
+					message.closeOnCloseOf(session, "JDBC Clob Parameter");
 					long len = message.size();
 					if(message.requiresStream()) {
 						if(len != -1) {
@@ -875,7 +879,9 @@ public class JdbcUtil {
 				}
 				break;
 			default:
-				try (Message message = Message.asMessage(value)) {
+				try {
+					Message message = Message.asMessage(value);
+					message.closeOnCloseOf(session, "JDBC Parameter");
 					setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
 				} catch (IOException e) {
 					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);

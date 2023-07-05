@@ -33,6 +33,7 @@ import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
 
 import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -237,14 +238,14 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testGetDateTimeLiteral() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO "+TEST_TABLE+"(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3,"+dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()),4)+","+dbmsSupport.getDatetimeLiteral(new Date())+")");
-		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=1", null);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=1", null, new PipeLineSession());
 		System.out.println("result:"+result);
 	}
 
 	@Test
 	public void testSysDate() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO "+TEST_TABLE+"(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3,"+dbmsSupport.getSysDate()+","+dbmsSupport.getSysDate()+")");
-		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=2", null);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=2", null, new PipeLineSession());
 		System.out.println("result:"+result);
 	}
 

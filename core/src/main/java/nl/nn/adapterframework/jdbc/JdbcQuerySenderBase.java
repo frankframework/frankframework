@@ -649,7 +649,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			try {
 				PreparedStatement statement=queryExecutionContext.getStatement();
 				if (queryExecutionContext.getParameterList() != null) {
-					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), Message.nullMessage(), session);
 				}
 				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
 					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
@@ -798,7 +798,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					int ri = 1;
 					if (parameterList != null) {
 						ParameterValueList parameters = parameterList.getValues(message, session);
-						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
+						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters, session);
 						ri = parameters.size() + 1;
 					}
 					cstmt.registerOutParameter(ri, Types.VARCHAR);

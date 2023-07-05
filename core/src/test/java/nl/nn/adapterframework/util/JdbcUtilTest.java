@@ -107,7 +107,7 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues);
+		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
 
 		// Arrange
 		query = "SELECT COUNT(*) FROM TEMP";
@@ -148,7 +148,7 @@ public class JdbcUtilTest {
 		params.add(ParameterBuilder.create().withValue("3").withType(ParameterType.INTEGER));
 
 		// Act
-		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params));
+		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
 
 		// Assert
 		assertEquals("just a third text", listResult.get(0));
@@ -158,7 +158,7 @@ public class JdbcUtilTest {
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		long result = (Long) JdbcUtil.executeQuery(dbmsSupport, connection, query, null);
+		long result = (Long) JdbcUtil.executeQuery(dbmsSupport, connection, query, null, session);
 
 		// Assert
 		assertEquals(5, result);
@@ -183,13 +183,13 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues);
+		JdbcUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
 
 		// Assert
 		ParameterList resultParams = new ParameterList();
 		resultParams.add(ParameterBuilder.create().withValue("1").withType(ParameterType.INTEGER));
 
-		List<Object> result = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams));
+		List<Object> result = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
 
 		Clob clob = (Clob) result.get(0);
 		Blob blob = (Blob) result.get(1);
