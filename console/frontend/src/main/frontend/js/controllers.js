@@ -5,7 +5,6 @@ import './app/components/pages/information-modal/information-modal.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/connections/connections.controller';
-import './app/views/environment-variables/environment-variables.controller';
 import './app/views/error/error.controller';
 import './app/views/ibisstore-summary/ibisstore-summary.controller';
 import './app/views/inlinestore/inlinestore.controller';

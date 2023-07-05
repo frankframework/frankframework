@@ -320,7 +320,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.environment_variables', {
 				url: "/environment-variables",
-				templateUrl: "js/app/views/environment-variables/ShowEnvironmentVariables.html",
+				component: "environmentVariables",
 				data: {
 					pageTitle: 'Environment Variables',
 					breadcrumbs: 'Environment Variables'
