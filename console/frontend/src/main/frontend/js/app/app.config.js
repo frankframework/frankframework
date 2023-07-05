@@ -282,7 +282,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.webservices', {
 				url: "/webservices",
-				templateUrl: "js/app/views/webservices/Webservices.html",
+				component: "webservices",
 				data: {
 					pageTitle: 'Webservices',
 					breadcrumbs: 'Webservices'

@@ -26,4 +26,3 @@ import './app/views/storage/storage-list/storage-list.controller';
 import './app/views/storage/storage-view/storage-view.controller';
 import './app/views/test-pipeline/test-pipeline.controller';
 import './app/views/test-service-listener/test-service-listener.controller';
-import './app/views/webservices/webservices.controller';
