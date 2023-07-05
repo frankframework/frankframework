@@ -295,7 +295,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						break;
 					case JWT:
-						String authorizationHeader = request.getHeader("Authorization");
+						String authorizationHeader = request.getHeader(listener.getJwtHeader());
 						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
