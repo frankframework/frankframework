@@ -33,12 +33,7 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
 							<div class="col-sm-5">
-<<<<<<<< HEAD:console/frontend/src/main/frontend/js/app/views/liquibase/liquibase.component.html
-								<input-file-upload accept=".zip,.xml"
-									title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files." />
-========
-								<input-file-upload file="file" on-update-file="updateFile(file)" accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."/>
->>>>>>>> master:console/frontend/src/main/frontend/js/app/views/liquibase/ShowLiquibaseScript.html
+								<input-file-upload file="file" on-update-file="$ctrl.updateFile(file)" accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."/>
 							</div>
 						</div>
 						<div class="row form-group">
