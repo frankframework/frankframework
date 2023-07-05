@@ -15,6 +15,8 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 		$rootScope.$broadcast('alerts', alerts);
 	}
 
+	service.startupError = null;
+
 	service.adapterSummary = {
 		started: 0,
 		stopped: 0,
