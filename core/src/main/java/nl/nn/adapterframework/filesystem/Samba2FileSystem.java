@@ -18,30 +18,20 @@ package nl.nn.adapterframework.filesystem;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosPrincipal;
-import javax.security.auth.login.LoginContext;
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -53,11 +43,15 @@ import com.hierynomus.mssmb2.SMB2CreateOptions;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.protocol.commons.EnumWithValue;
+import com.hierynomus.protocol.commons.Factory;
 import com.hierynomus.protocol.commons.buffer.Buffer.BufferException;
 import com.hierynomus.protocol.transport.TransportException;
 import com.hierynomus.smbj.SMBClient;
+import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
-import com.hierynomus.smbj.auth.GSSAuthenticationContext;
+import com.hierynomus.smbj.auth.Authenticator;
+import com.hierynomus.smbj.auth.NtlmAuthenticator;
+import com.hierynomus.smbj.auth.SpnegoAuthenticator;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.Directory;
@@ -66,27 +60,34 @@ import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.filesystem.smb.SambaFileSystemUtils;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
- *
- * @author alisihab
+ * Possible error codes:
+ * <br/>
+ * Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
+ * Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
+ * 
+ * @author Ali Sihab
+ * @author Niels Meijer
  *
  */
 public class Samba2FileSystem extends FileSystemBase<String> implements IWritableFileSystem<String> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
 
-	private static final String SPNEGO_OID = "1.3.6.1.5.5.2";
-	private static final String KERBEROS5_OID = "1.2.840.113554.1.2.2";
-
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;
-	private @Getter String authenticationDomain = null;
+	private String hostname;
+	private int port;
+
+	private @Getter String domainName = null;
 	private @Getter String kdc = null;
 	private @Getter String realm = null;
+
 	private @Getter String username = null;
 	private @Getter String password = null;
 	private @Getter String authAlias = null;
@@ -99,8 +100,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	private DiskShare diskShare;
 
 	public enum Samba2AuthType {
-		NTLM,
-		SPNEGO
+		NTLM, SPNEGO, ANONYMOUS
 	}
 
 	@Override
@@ -108,22 +108,44 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		if (StringUtils.isEmpty(getShare())) {
 			throw new ConfigurationException("server share endpoint is required");
 		}
+
+		switch (authType) {
+		case NTLM:
+			if(StringUtils.isBlank(domainName)) {
+				throw new ConfigurationException("attribute domainName is required for NTLM authentication");
+			}
+			break;
+		case SPNEGO:
+			if(StringUtils.isBlank(kdc) || StringUtils.isBlank(realm)) {
+				throw new ConfigurationException("attribute kdc and realm are both required for SPNEGO authentication");
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
 	public void open() throws FileSystemException {
 		try {
-			AuthenticationContext auth = authenticate();
-			client = new SMBClient();
-			connection = client.connect(authenticationDomain); //TODO: can this be null!?
+			List<Factory.Named<Authenticator>> authenticators = new ArrayList<>();
+			authenticators.add(new SpnegoAuthenticator.Factory());
+			authenticators.add(new NtlmAuthenticator.Factory());
+			SmbConfig config = SmbConfig.builder().withAuthenticators(authenticators).build();
+			client = new SMBClient(config);
+
+			connection = client.connect(hostname, port);
 			if(connection.isConnected()) {
 				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
 			}
-			session = connection.authenticate(auth);
+
+			AuthenticationContext authContext = createAuthenticationContext();
+			log.debug("creating connection using authentication context [{}]", authContext::getClass);
+			session = connection.authenticate(authContext);
 			if(session == null) {
-				throw new FileSystemException("Cannot create session for alias [" +
-						authAlias + "] / user ["+username+"] on domain ["+authenticationDomain+"]");
+				throw new FileSystemException("Cannot create session for " + authContext);
 			}
+
 			diskShare = (DiskShare) session.connectShare(getShare());
 			if(diskShare == null) {
 				throw new FileSystemException("Cannot connect to the share ["+ getShare() +"]");
@@ -159,61 +181,26 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}
 	}
 
-	private AuthenticationContext authenticate() throws FileSystemException {
-		CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-		if (StringUtils.isNotEmpty(credentialFactory.getUsername())) {
-			switch(authType) {
-				case NTLM:
-					String cfPassword = credentialFactory.getPassword();
-					char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
-					return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getAuthenticationDomain());
-				case SPNEGO:
-					if(!StringUtils.isEmpty(getKdc()) && !StringUtils.isEmpty(getRealm())) {
-						System.setProperty("java.security.krb5.kdc", getKdc());
-						System.setProperty("java.security.krb5.realm", getRealm());
-					}
+	private @Nonnull AuthenticationContext createAuthenticationContext() throws FileSystemException {
+		CredentialFactory credentialFactory = new CredentialFactory(authAlias, username, password);
+		if(StringUtils.isNotEmpty(credentialFactory.getUsername())) {
+			switch (authType) {
+			case NTLM:
+				String cfPassword = credentialFactory.getPassword();
+				char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
+				return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getDomainName());
+			case SPNEGO:
+				if(!StringUtils.isEmpty(kdc) && !StringUtils.isEmpty(realm)) {
+					System.setProperty("java.security.krb5.kdc", kdc);
+					System.setProperty("java.security.krb5.realm", realm);
+				}
 
-					HashMap<String, String> loginParams = new HashMap<>();
-					loginParams.put("principal", credentialFactory.getUsername());
-					LoginContext lc;
-					try {
-						lc = new LoginContext(credentialFactory.getUsername(), null,
-								new UsernameAndPasswordCallbackHandler(credentialFactory.getUsername(), credentialFactory.getPassword()),
-								new KerberosLoginConfiguration(loginParams));
-						lc.login();
-
-						Subject subject = lc.getSubject();
-						KerberosPrincipal krbPrincipal = subject.getPrincipals(KerberosPrincipal.class).iterator().next();
-
-						Oid spnego = new Oid(SPNEGO_OID);
-						Oid kerberos5 = new Oid(KERBEROS5_OID);
-
-						final GSSManager manager = GSSManager.getInstance();
-
-						final GSSName name = manager.createName(krbPrincipal.toString(), GSSName.NT_USER_NAME);
-						Set<Oid> mechs = new HashSet<>(Arrays.asList(manager.getMechsForName(name.getStringNameType())));
-						final Oid mech;
-
-						if (mechs.contains(kerberos5)) {
-							mech = kerberos5;
-						} else if (mechs.contains(spnego)) {
-							mech = spnego;
-						} else {
-							throw new IllegalArgumentException("No mechanism found");
-						}
-
-						GSSCredential creds = Subject.doAs(subject, (PrivilegedExceptionAction<GSSCredential>) () -> manager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, mech, GSSCredential.INITIATE_ONLY));
-
-						return new GSSAuthenticationContext(krbPrincipal.getName(), krbPrincipal.getRealm(), subject, creds);
-					} catch (Exception e) {
-						if(e.getMessage().contains("Cannot locate default realm")) {
-							throw new FileSystemException("Please fill the kdc and realm field or provide krb5.conf file including realm",e);
-						}
-						throw new FileSystemException(e);
-					}
+				return SambaFileSystemUtils.createGSSAuthenticationContext(credentialFactory);
+			case ANONYMOUS:
+				return AuthenticationContext.anonymous();
 			}
 		}
-		return null;
+		return AuthenticationContext.anonymous();
 	}
 
 	@Override
@@ -288,8 +275,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 		public Samba2Message(File file, MessageContext context) {
 			super(() -> {
-				InputStream is = file.getInputStream();
-				FilterInputStream fis = new FilterInputStream(is) {
+				return new FilterInputStream(file.getInputStream()) {
 
 					boolean isOpen = true;
 					@Override
@@ -301,7 +287,6 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 						file.close();
 					}
 				};
-				return fis;
 
 			}, context, file.getClass());
 		}
@@ -395,10 +380,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 		Set<AccessMask> accessMaskSet = new HashSet<>();
 		accessMaskSet.add(accessMask);
-		File file;
-
-		file = diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition, createOptions);
-		return file;
+		return diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition, createOptions);
 	}
 
 	private Directory getFolder(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
@@ -408,9 +390,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		Set<AccessMask> accessMaskSet = new HashSet<>();
 		accessMaskSet.add(accessMask);
 
-		Directory file;
-		file = diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
-		return file;
+		return diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
 	}
 
 	@Override
@@ -430,7 +410,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	@Override
 	public String getName(String f) {
-		return f;
+		return FilenameUtils.getName(f);
 	}
 
 	@Override
@@ -461,10 +441,10 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "domain ["+getAuthenticationDomain()+"] share ["+getShare()+"]";
+		return "host "+authType.name()+":["+hostname+"/"+getShare()+"]";
 	}
 
-	/** the destination, aka smb://xxx/yyy share */
+	/** @ff.optional the destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		this.share = share;
 	}
@@ -484,32 +464,41 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		this.authAlias = authAlias;
 	}
 
-	/** domain, in case the user account is bound to a domain */
-	public void setAuthenticationDomain(String domain) {
-		this.authenticationDomain = domain;
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute authenticationDomain instead")
-	public void setDomain(String domain) {
-		setAuthenticationDomain(domain);
+	/** NTLM: logon domain */
+	public void setDomainName(String domain) {
+		this.domainName = domain;
 	}
 
 	/**
-	 * Type of the authentication either 'NTLM' or 'SPNEGO'
+	 * Type of the authentication either 'NTLM' or 'SPNEGO'.
+	 * When setting SPNEGO, the host must use the FQDN, and must be registered on the KDC with a valid SPN.
 	 * @ff.default SPNEGO
 	 */
 	public void setAuthType(Samba2AuthType authType) {
 		this.authType = authType;
 	}
 
-	/** Kerberos Domain Controller, as set in java.security.krb5.kdc */
+	/** Key Distribution Center, typically hosted on a domain controller.
+	 * Stored in <code>java.security.krb5.kdc</code> */
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
 
-	/** Kerberos Realm, as set in java.security.krb5.realm */
+	/**
+	 * Kerberos Realm, case sensitive. Typically upper case and the same as the domain name.
+	 * An Active Directory domain acts as a Kerberos Realm.
+	 * Stored in <code>java.security.krb5.realm</code>
+	 */
 	public void setRealm(String realm) {
 		this.realm = realm;
+	}
+
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 	/**
@@ -527,7 +516,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		private String prefix;
 
 		public FilesIterator(String parent, List<FileIdBothDirectoryInformation> list) {
-			prefix = parent != null ? parent + "\\" : "";
+			prefix = parent != null ? parent + "\\" : ""; //TODO path separator
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
 				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {

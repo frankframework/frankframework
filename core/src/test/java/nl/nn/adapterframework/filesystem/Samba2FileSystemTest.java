@@ -12,7 +12,7 @@ public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSyste
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new Samba2FileSystemTestHelper(shareName, userName, password, host, port, kdc, realm);
+		return new Samba2FileSystemTestHelper(host, port, shareName, userName, password, domain);
 	}
 
 
@@ -22,8 +22,8 @@ public class Samba2FileSystemTest extends FileSystemTest<String, Samba2FileSyste
 		result.setShare(shareName);
 		result.setUsername(userName);
 		result.setPassword(password);
-		result.setDomain(host);
-		//result.setPort(port);
+		result.setHostname(host);
+		result.setPort(port);
 		result.setKdc(kdc);
 		result.setRealm(realm);
 		return result;
