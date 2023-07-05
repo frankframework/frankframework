@@ -22,7 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
-import nl.nn.adapterframework.pipes.ThrowingAfterCloseInputStream;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
 
 @RunWith(Parameterized.class)
 public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends PipeTestBase<P> {

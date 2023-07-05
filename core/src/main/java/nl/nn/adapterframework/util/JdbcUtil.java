@@ -35,6 +35,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
@@ -291,12 +292,13 @@ public class JdbcUtil {
 			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
 		}
 	}
+
 	public static void streamBlob(final InputStream blobIntputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
-		OutputStream outputStream= getOutputStream(target);
-		if (outputStream!=null) {
+		OutputStream outputStream = getOutputStream(target);
+		if (outputStream != null) {
 			if (blobBase64Direction == Direction.DECODE){
 				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
@@ -343,7 +345,7 @@ public class JdbcUtil {
 			throw new NullPointerException("cannot stream Clob to null object");
 		}
 		Writer writer = getWriter(target);
-		if (writer !=null) {
+		if (writer != null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
 				StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			}
@@ -352,8 +354,8 @@ public class JdbcUtil {
 			}
 			return;
 		}
-		OutputStream outputStream= getOutputStream(target);
-		if (outputStream!=null) {
+		OutputStream outputStream = getOutputStream(target);
+		if (outputStream != null) {
 			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
 				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
 					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000);
@@ -593,69 +595,54 @@ public class JdbcUtil {
 		}
 	}
 
-	private static String displayParameters(String param1, String param2) {
-		return (param1==null?"":(" param1 ["+param1+"]"+(param2==null?"":(" param2 ["+param2+"]"))));
-	}
-	private static String displayParameters(int param1, String param2, String param3) {
-		return " param1 ["+param1+"]"+(param2==null?"":(" param2 ["+param2+"]"+(param3==null?"":(" param3 ["+param3+"]"))));
-	}
-	private static String displayParameters(int param1, int param2, String param3, String param4) {
-		return " param1 ["+param1+"] param2 ["+param2+"]"+(param3==null?"":(" param3 ["+param3+"]"+(param4==null?"":(" param4 ["+param4+"]"))));
-	}
-	private static String displayParameters(int param1, int param2, int param3, String param4, String param5) {
-		return " param1 ["+param1+"] param2 ["+param2+"] param3 ["+param3+"]"+(param4==null?"":(" param4 ["+param4+"]"+(param5==null?"":(" param5 ["+param5+"]"))));
+	private static String displayParameters(Object... params) {
+		StringBuilder sb = new StringBuilder(1024);
+		for (int i = 0; i < params.length; i++) {
+			sb.append(" param").append(i + 1).append(" [").append(params[i]).append("]");
+		}
+		return sb.toString();
 	}
 
+	private static void applyParameters(PreparedStatement stmt, Object... params) throws SQLException {
+		for (int i = 0; i < params.length; i++) {
+			Object param = params[i];
+			if (param == null) continue;
 
-	private static void applyParameters(PreparedStatement stmt, String param1, String param2) throws SQLException {
-		if (param1!=null) {
-			//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2));
-			stmt.setString(1,param1);
-			if (param2!=null) {
-				stmt.setString(2,param2);
-			}
+			int sqlType = deriveSqlType(param);
+			stmt.setObject(i + 1, param, sqlType);
 		}
 	}
-	private static void applyParameters(PreparedStatement stmt, int param1, String param2, String param3) throws SQLException {
-		//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3));
-		stmt.setInt(1,param1);
-		if (param2!=null) {
-			stmt.setString(2,param2);
-			if (param3!=null) {
-				stmt.setString(3,param3);
-			}
+
+	private static int deriveSqlType(final Object param) {
+		// NB: So far this is not exhaustive, but previously only INTEGER and VARCHAR were supported, so for now this should do.
+		int sqlType;
+		if (param instanceof Integer) {
+			sqlType = Types.INTEGER;
+		} else if (param instanceof Long) {
+			sqlType = Types.BIGINT;
+		} else if (param instanceof Float) {
+			sqlType = Types.NUMERIC;
+		} else if (param instanceof Double) {
+			sqlType = Types.NUMERIC;
+		} else if (param instanceof Timestamp) {
+			sqlType = Types.TIMESTAMP;
+		} else if (param instanceof Time) {
+			sqlType = Types.TIME;
+		} else if (param instanceof java.sql.Date) {
+			sqlType = Types.DATE;
+		} else {
+			sqlType = Types.VARCHAR;
 		}
-	}
-	private static void applyParameters(PreparedStatement stmt, int param1, int param2, String param3, String param4) throws SQLException {
-		// if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3,param4));
-		stmt.setInt(1,param1);
-		stmt.setInt(2,param2);
-		if (param3!=null) {
-			stmt.setString(3,param3);
-			if (param4!=null) {
-				stmt.setString(4,param4);
-			}
-		}
-	}
-	private static void applyParameters(PreparedStatement stmt, int param1, int param2, int param3, String param4, String param5) throws SQLException {
-		//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3,param4,param5));
-		stmt.setInt(1,param1);
-		stmt.setInt(2,param2);
-		stmt.setInt(3,param3);
-		if (param4!=null) {
-			stmt.setString(4,param4);
-			if (param5!=null) {
-				stmt.setString(5,param5);
-			}
-		}
+		return sqlType;
 	}
 
 	/**
 	 * executes query that returns a string. Returns null if no results are found.
 	 */
-	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+	public static String executeStringQuery(Connection connection, String query, Object... params) throws JdbcException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;
@@ -663,7 +650,7 @@ public class JdbcUtil {
 				return rs.getString(1);
 			}
 		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+			throw new JdbcException("could not obtain value using query [" + query + "]" + displayParameters(params), e);
 		}
 	}
 
@@ -677,24 +664,17 @@ public class JdbcUtil {
 				return getBlobAsString(dbmsSupport, rs, 1, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, true, false);
 			}
 		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+			throw new JdbcException("could not obtain value using query [" + query + "]", e);
 		}
-	}
-
-	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
-		return executeIntQuery(connection,query,null,null);
-	}
-	public static int executeIntQuery(Connection connection, String query, String param) throws JdbcException {
-		return executeIntQuery(connection,query,param,null);
 	}
 
 	/**
 	 * executes query that returns an integer. Returns -1 if no results are found.
 	 */
-	public static int executeIntQuery(Connection connection, String query, String param1, String param2) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
+	public static int executeIntQuery(Connection connection, String query, Object... params) throws JdbcException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2);
+			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return -1;
@@ -702,52 +682,7 @@ public class JdbcUtil {
 				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2),e);
-		}
-	}
-
-	public static int executeIntQuery(Connection connection, String query, int param) throws JdbcException {
-		return executeIntQuery(connection,query,param,null,null);
-	}
-	public static int executeIntQuery(Connection connection, String query, int param1, String param2) throws JdbcException {
-		return executeIntQuery(connection,query,param1,param2,null);
-	}
-
-	public static int executeIntQuery(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2,param3);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					return -1;
-				}
-				return rs.getInt(1);
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2,param3),e);
-		}
-	}
-
-
-	public static int executeIntQuery(Connection connection, String query, int param1, int param2) throws JdbcException {
-		return executeIntQuery(connection,query,param1,param2,null,null);
-	}
-	public static int executeIntQuery(Connection connection, String query, int param1, int param2, String param3) throws JdbcException {
-		return executeIntQuery(connection,query,param1,param2,param3,null);
-	}
-
-	public static int executeIntQuery(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2,param3,param4);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					return -1;
-				}
-				return rs.getInt(1);
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
+			throw new JdbcException("could not obtain value using query [" + query + "]" + displayParameters(params), e);
 		}
 	}
 
@@ -761,63 +696,14 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void executeStatement(Connection connection, String query) throws JdbcException {
-		executeStatement(connection,query,null,null);
-	}
-	public static void executeStatement(Connection connection, String query, String param) throws JdbcException {
-		executeStatement(connection,query,param,null);
-	}
-
-	public static void executeStatement(Connection connection, String query, String param1, String param2) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
+	public static void executeStatement(Connection connection, String query, Object... params) throws JdbcException {
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2);
+			applyParameters(stmt, params);
 			stmt.execute();
 		} catch (Exception e) {
-			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2),e);
+			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(params), e);
 		}
-	}
-
-	public static void executeStatement(Connection connection, String query, int param) throws JdbcException {
-		executeStatement(connection,query,param,null,null);
-	}
-	public static void executeStatement(Connection connection, String query, int param1, String param2) throws JdbcException {
-		executeStatement(connection,query,param1,param2,null);
-	}
-
-	public static void executeStatement(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2,param3);
-			stmt.execute();
-		} catch (Exception e) {
-			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3),e);
-		}
-	}
-
-	public static void executeStatement(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
-
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2,param3,param4);
-			stmt.execute();
-		} catch (Exception e) {
-			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
-		}
-	}
-
-	public static void executeStatement(Connection connection, String query, int param1, int param2, int param3, String param4, String param5) throws JdbcException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5));
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			applyParameters(stmt,param1,param2,param3,param4,param5);
-			stmt.execute();
-		} catch (Exception e) {
-			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5),e);
-		}
-	}
-
-	public static String selectAllFromTable(IDbmsSupport dbmsSupport, Connection conn, String tableName) throws SQLException {
-		return selectAllFromTable(dbmsSupport, conn, tableName, null);
 	}
 
 	public static String selectAllFromTable(IDbmsSupport dbmsSupport, Connection conn, String tableName, String orderBy) throws SQLException {
@@ -827,25 +713,6 @@ public class JdbcUtil {
 				DB2XMLWriter db2xml = new DB2XMLWriter();
 				return db2xml.getXML(dbmsSupport, rs);
 			}
-		}
-	}
-
-	public static List<List<Object>> executeObjectListListQuery(Connection connection, String query, int columnsCount) throws JdbcException {
-		List<List<Object>> objectListList = new ArrayList<List<Object>>();
-		if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			try (ResultSet rs = stmt.executeQuery()) {
-				while (rs.next()) {
-					List<Object> objectList = new ArrayList<Object>();
-					for (int i=1; i<=columnsCount; i++) {
-						objectList.add(rs.getObject(i));
-					}
-					objectListList.add(objectList);
-				}
-				return objectListList;
-			}
-		} catch (Exception e) {
-			throw new JdbcException("could not obtain value using query ["+query+"]",e);
 		}
 	}
 
@@ -905,7 +772,7 @@ public class JdbcUtil {
 
 	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters) throws SQLException, JdbcException {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
-		if (parameters!=null) {
+		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired);
 			}
