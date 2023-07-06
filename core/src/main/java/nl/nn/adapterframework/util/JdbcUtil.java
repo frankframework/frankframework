@@ -1027,6 +1027,7 @@ public class JdbcUtil {
 		case Types.FLOAT:
 		case Types.REAL:
 		case Types.SMALLINT:
+		case Types.TINYINT:
 			return true;
 		default:
 			return false;
