@@ -282,7 +282,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.webservices', {
 				url: "/webservices",
-				templateUrl: "js/app/views/webservices/Webservices.html",
+				component: "webservices",
 				data: {
 					pageTitle: 'Webservices',
 					breadcrumbs: 'Webservices'
@@ -320,7 +320,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.environment_variables', {
 				url: "/environment-variables",
-				templateUrl: "js/app/views/environment-variables/ShowEnvironmentVariables.html",
+				component: "environmentVariables",
 				data: {
 					pageTitle: 'Environment Variables',
 					breadcrumbs: 'Environment Variables'
@@ -344,7 +344,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.security_items', {
 				url: "/security-items",
-				templateUrl: "js/app/views/security-items/ShowSecurityItems.html",
+				component: "securityItems",
 				data: {
 					pageTitle: 'Security Items',
 					breadcrumbs: 'Security Items'
