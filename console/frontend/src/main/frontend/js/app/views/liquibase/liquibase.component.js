@@ -1,17 +1,19 @@
 import { appModule } from "../../app.module";
 
-const LiquibaseController = function ($scope, Api, Misc) {
+const LiquibaseController = function ($rootScope, Api, Misc) {
     const ctrl = this;
 
     ctrl.form = {};
     ctrl.file = null;
     ctrl.generateSql = false;
-    
+
     ctrl.$onInit = function () {
         let findFirstAvailabeConfiguration = function () {
+			ctrl.configurations = $rootScope.configurations();
+
             for (let i in ctrl.configurations) {
                 let configuration = ctrl.configurations[i];
-    
+
                 if (configuration.jdbcMigrator) {
                     ctrl.form.configuration = configuration.name;
                     break;
@@ -20,7 +22,7 @@ const LiquibaseController = function ($scope, Api, Misc) {
         };
 
         findFirstAvailabeConfiguration();
-        $scope.$on('configurations', findFirstAvailabeConfiguration);
+		$rootScope.$on('configurations', findFirstAvailabeConfiguration);
     };
 
     ctrl.download = function () {
@@ -52,6 +54,6 @@ const LiquibaseController = function ($scope, Api, Misc) {
 };
 
 appModule.component('liquibase', {
-    controller: ['$scope', 'Api', 'Misc', LiquibaseController],
+	controller: ['$rootScope', 'Api', 'Misc', LiquibaseController],
     templateUrl: 'js/app/views/liquibase/liquibase.component.html'
 });

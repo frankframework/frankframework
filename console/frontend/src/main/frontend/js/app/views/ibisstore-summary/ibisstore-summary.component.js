@@ -1,13 +1,13 @@
 import { appModule } from "../../app.module";
 
-const ibisStoreSummaryController = function ($scope, Api, $location, appConstants) {
+const ibisStoreSummaryController = function ($rootScope, Api, $location, appConstants) {
     const ctrl = this;
 
     ctrl.datasources = {};
     ctrl.form = {};
 
     ctrl.$onInit = function () {
-        $scope.$on('appConstants', function () {
+		$rootScope.$on('appConstants', function () {
             ctrl.form.datasource = appConstants['jdbc.datasource.default'];
         });
 
@@ -18,11 +18,11 @@ const ibisStoreSummaryController = function ($scope, Api, $location, appConstant
 
         if ($location.search() && $location.search().datasource != null) {
             var datasource = $location.search().datasource;
-            fetch(datasource);
+			ctrl.fetch(datasource);
         };
     };
 
-    function fetch(datasource) {
+	ctrl.fetch = function(datasource) {
         Api.Post("jdbc/summary", JSON.stringify({ datasource: datasource }), function (data) {
             ctrl.error = "";
             $.extend(ctrl, data);
@@ -38,7 +38,7 @@ const ibisStoreSummaryController = function ($scope, Api, $location, appConstant
 
         if (!formData.datasource) formData.datasource = ctrl.datasources[0] || false;
         $location.search('datasource', formData.datasource);
-        fetch(formData.datasource);
+		ctrl.fetch(formData.datasource);
     };
 
     ctrl.reset = function () {
@@ -49,6 +49,6 @@ const ibisStoreSummaryController = function ($scope, Api, $location, appConstant
 };
 
 appModule.component('ibisStoreSummary', {
-    controller: ['$scope', 'Api', '$location', 'appConstants', ibisStoreSummaryController],
+	controller: ['$rootScope', 'Api', '$location', 'appConstants', ibisStoreSummaryController],
     templateUrl: 'js/app/views/ibisstore-summary/ibisstore-summary.component.html'
 });
