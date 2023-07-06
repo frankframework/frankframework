@@ -50,6 +50,7 @@ import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
+import com.hierynomus.mssmb2.SMB2Dialect;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.protocol.commons.EnumWithValue;
@@ -76,7 +77,6 @@ import nl.nn.adapterframework.util.LogUtil;
 public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	protected Logger log = LogUtil.getLogger(this);
-	private boolean listHiddenFiles = false;
 	private SMBClient client = null;
 	private Connection connection;
 	private Session session;
@@ -107,30 +107,27 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		System.out.println("");
 	}
 
-	private void open() throws FileSystemException {
-		try {
-			AuthenticationContext auth = new AuthenticationContext(userName, password.toCharArray(), domain);
-			List<Factory.Named<Authenticator>> authenticators = new ArrayList<>();
-			authenticators.add(new NtlmAuthenticator.Factory());
-			authenticators.add(new SpnegoAuthenticator.Factory());
-			SmbConfig config = SmbConfig.builder()
-					.withAuthenticators(authenticators)
-					.build();
-			client = new SMBClient(config);
-			connection = client.connect(host, port); //unknown host exception 
-			if(connection.isConnected()) {
-				log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
-			}
-			session = connection.authenticate(auth);
-			if(session == null) {
-				throw new FileSystemException("Cannot create session for user ["+userName+"] on domain ["+domain+"]");
-			}
-			diskShare = (DiskShare) session.connectShare(shareName);
-			if(diskShare == null) {
-				throw new FileSystemException("Cannot connect to the share ["+ shareName +"]");
-			}
-		} catch (IOException e) {
-			throw new FileSystemException("Cannot connect to samba server", e);
+	private void open() throws Exception {
+		AuthenticationContext auth = new AuthenticationContext(userName, password.toCharArray(), domain);
+		List<Factory.Named<Authenticator>> authenticators = new ArrayList<>();
+		authenticators.add(new NtlmAuthenticator.Factory());
+		authenticators.add(new SpnegoAuthenticator.Factory());
+		SmbConfig config = SmbConfig.builder()
+				.withAuthenticators(authenticators)
+				.withDialects(SMB2Dialect.SMB_3_1_1)
+				.build();
+		client = new SMBClient(config);
+		connection = client.connect(host, port); //unknown host exception 
+		if(connection.isConnected()) {
+			log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
+		}
+		session = connection.authenticate(auth);
+		if(session == null) {
+			throw new FileSystemException("Cannot create session for user ["+userName+"] on domain ["+domain+"]");
+		}
+		diskShare = (DiskShare) session.connectShare(shareName);
+		if(diskShare == null) {
+			throw new FileSystemException("Cannot connect to the share ["+ shareName +"]");
 		}
 	}
 
@@ -159,7 +156,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public boolean _fileExists(String folder, String filename) throws Exception {
-		String path = folder + "/" + filename;
+		String path = (folder != null) ? folder + "/" + filename : filename;
 		boolean exists = diskShare.fileExists(path);
 		return exists;
 	}
@@ -172,7 +169,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFile(String folder, String filename) throws Exception {
-		String path = folder + "/" + filename;
+		String path = (folder != null) ? folder + "/" + filename : filename;
 		diskShare.rm(path);
 	}
 
@@ -181,7 +178,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		String path = folder + "/" + filename;
+		String path = (folder != null) ? folder + "/" + filename : filename;
 		final File file = diskShare.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
 				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
 		OutputStream out = file.getOutputStream();
@@ -202,7 +199,8 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public InputStream _readFile(String folder, String filename) throws Exception {
-		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
+		String path = (folder != null) ? folder + "/" + filename : filename;
+		final File file = getFile(path, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();
 		FilterInputStream fis = new FilterInputStream(is) {
 			boolean isOpen = true;
@@ -243,11 +241,10 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _createFolder(String folderName) throws Exception {
-		if (folderExists(folderName)) {
-			throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
-		} else {
+		if (!folderExists(folderName)) {
 			diskShare.mkdir(folderName);
 		}
+//		throw new FileSystemException("Create directory for [" + folderName + "] has failed. Directory already exists.");
 	}
 
 	@Override
