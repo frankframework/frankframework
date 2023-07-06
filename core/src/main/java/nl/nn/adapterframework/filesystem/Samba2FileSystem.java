@@ -18,6 +18,7 @@ package nl.nn.adapterframework.filesystem;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -268,27 +269,30 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	@Override
 	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
-		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), FileSystemUtils.getContext(this, filename, charset));
+		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
+		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
+		return new Samba2Message(file, context);
 	}
 
-	private class Samba2Message extends Message {
+	private static class Samba2Message extends Message {
 
 		public Samba2Message(File file, MessageContext context) {
-			super(() -> {
-				return new FilterInputStream(file.getInputStream()) {
+			super(wrap(file), context);
+		}
 
-					boolean isOpen = true;
-					@Override
-					public void close() throws IOException {
-						if(isOpen) {
-							super.close();
-							isOpen=false;
-						}
-						file.close();
+		private static InputStream wrap(File file) {
+			return new FilterInputStream(file.getInputStream()) {
+
+				boolean isOpen = true;
+				@Override
+				public void close() throws IOException {
+					if(isOpen) {
+						super.close();
+						isOpen=false;
 					}
-				};
-
-			}, context, file.getClass());
+					file.close();
+				}
+			};
 		}
 	}
 
@@ -300,6 +304,8 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	@Override
 	public String renameFile(String source, String destination) throws FileSystemException {
 		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			//TODO replace / with \\
+			destination = destination.replace("/", "\\");
 			file.rename(destination, true);
 		}
 		return destination;
