@@ -761,6 +761,29 @@ public class JdbcUtil {
 		}
 	}
 
+	/**
+	 * Executes the given SQL statement. The statement can be any SQL statement that does not return a result set.
+	 * Each object in the array is mapped to its most appropriate JDBC type, however not all types are supported. Column types are not considered,
+	 * only the class of each parameter.
+	 * <p>
+	 *     Supported Java types and JDBC Type mapping:
+	 *     <table>
+	 *         <tr><th>{@link java.lang.Integer}</th> <td>{@link Types#INTEGER}</td></tr>
+	 *         <tr><th>{@link java.lang.Long}</th> <td>{@link Types#BIGINT}</td></tr>
+	 *         <tr><th>{@link java.lang.Float}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link java.lang.Double}</th> <td>{@link Types#NUMERIC}</td></tr>
+	 *         <tr><th>{@link java.sql.Timestamp}</th> <td>{@link Types#TIMESTAMP}</td></tr>
+	 *         <tr><th>{@link java.sql.Time}</th> <td>{@link Types#TIME}</td></tr>
+	 *         <tr><th>{@link java.sql.Date}</th> <td>{@link Types#DATE}</td></tr>
+	 *         <tr><th>{@link java.lang.String}</th> <td>{@link Types#VARCHAR}</td></tr>
+	 *     </table>
+	 * </p>
+	 *
+	 * @param connection The JDBC {@link Connection} on which to execute the statement.
+	 * @param query The SQL statement, as a string.
+	 * @param params The statement parameters, see above.
+	 * @throws JdbcException if there is an error in statement execution or parameter mapping.
+	 */
 	public static void executeStatement(Connection connection, String query, Object... params) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
