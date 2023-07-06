@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 public class QueryExecutionContext {
@@ -30,7 +29,6 @@ public class QueryExecutionContext {
 	private Connection connection;
 	private PreparedStatement statement;
 	private PreparedStatement resultQueryStatement;
-	private JdbcSession jdbcSession;
 	protected int iteration;
 
 	public QueryExecutionContext(String query, QueryType queryType, ParameterList parameterList) {
@@ -73,12 +71,5 @@ public class QueryExecutionContext {
 	}
 	public void setResultQueryStatement(PreparedStatement resultQueryStatement) {
 		this.resultQueryStatement = resultQueryStatement;
-	}
-
-	public void setJdbcSession(JdbcSession jdbcSession) {
-		this.jdbcSession = jdbcSession;
-	}
-	public JdbcSession getJdbcSession() {
-		return jdbcSession;
 	}
 }

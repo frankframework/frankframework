@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Pipe that batch-transforms the lines in a BLOB.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("BatchBlobTransformerPipe: Not tested and maintained, please look for alternatives if you use BatchBlobTransformerPipe inform WeAreFrank! that there are no suitable alternatives for your use-case")
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);
-		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
 		PreparedStatement statement=queryExecutionContext.getStatement();
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		JdbcUtil.applyParameters(dbmsSupport, statement, queryExecutionContext.getParameterList(), message, session);

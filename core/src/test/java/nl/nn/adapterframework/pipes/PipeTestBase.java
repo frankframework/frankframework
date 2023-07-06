@@ -18,6 +18,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
 import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
