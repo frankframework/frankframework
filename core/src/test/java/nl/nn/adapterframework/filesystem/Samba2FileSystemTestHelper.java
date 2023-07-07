@@ -63,7 +63,6 @@ import com.hierynomus.smbj.auth.NtlmAuthenticator;
 import com.hierynomus.smbj.auth.SpnegoAuthenticator;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
-import com.hierynomus.smbj.share.Directory;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
@@ -100,11 +99,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	public void setUp() throws Exception {
 		open();
+		cleanFolder();
 	}
 
 	@Override
 	public void tearDown() throws Exception {
-		System.out.println("");
+		close();
 	}
 
 	private void open() throws Exception {
@@ -152,6 +152,10 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	private void cleanFolder() throws Exception {
+		_deleteFolder(null);
 	}
 
 	@Override
@@ -283,18 +287,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		File file;
 
 		file = diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition, createOptions);
-		return file;
-	}
-
-	private Directory getFolder(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
-		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
-		shareAccess.addAll(SMB2ShareAccess.ALL);
-
-		Set<AccessMask> accessMaskSet = new HashSet<AccessMask>();
-		accessMaskSet.add(accessMask);
-
-		Directory file;
-		file = diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
+		log.debug("resolved name [{}] to [{}]", filename, file);
 		return file;
 	}
 }

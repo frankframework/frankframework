@@ -18,8 +18,9 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Pipe extends FileSystemPipe<String, Samba2FileSystem> implements SambaFileSystemDelegator {
+public class Samba2Pipe extends FileSystemPipe<SmbFileRef, Samba2FileSystem> implements SambaFileSystemDelegator {
 
 	public Samba2Pipe() {
 		setFileSystem(new Samba2FileSystem());

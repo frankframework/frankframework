@@ -302,7 +302,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getParentFolder(FTPFileRef file) throws FileSystemException {
+	public String getParentFolder(FTPFileRef file) {
 		return file.getFolder();
 	}
 

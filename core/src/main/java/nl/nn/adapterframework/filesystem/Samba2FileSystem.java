@@ -24,10 +24,12 @@ import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -37,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
+import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
@@ -55,17 +58,17 @@ import com.hierynomus.smbj.auth.NtlmAuthenticator;
 import com.hierynomus.smbj.auth.SpnegoAuthenticator;
 import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
-import com.hierynomus.smbj.share.Directory;
+import com.hierynomus.smbj.share.DiskEntry;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.filesystem.smb.SambaFileSystemUtils;
+import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  * Possible error codes:
@@ -77,7 +80,7 @@ import nl.nn.adapterframework.util.FilenameUtils;
  * @author Niels Meijer
  *
  */
-public class Samba2FileSystem extends FileSystemBase<String> implements IWritableFileSystem<String> {
+public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
 
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
@@ -205,54 +208,46 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public String toFile(String filename) throws FileSystemException {
-		return filename;
+	public SmbFileRef toFile(String filename) throws FileSystemException {
+		return toFile(null, filename);
 	}
 
 	@Override
-	public String toFile(String folder, String filename) throws FileSystemException {
-		return toFile(folder+"/"+filename);
+	public SmbFileRef toFile(String folder, String filename) throws FileSystemException {
+		SmbFileRef smbFile = new SmbFileRef();
+		smbFile.setName(filename);
+		smbFile.setFolder(folder);
+		return smbFile;
 	}
 
 	@Override
-	public DirectoryStream<String> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SmbFileRef> listFiles(String folder) throws FileSystemException {
 		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, diskShare.list(folder)));
 	}
 
 	@Override
-	public boolean exists(String f) throws FileSystemException {
-		return isFolder(f) ? diskShare.folderExists(f) : diskShare.fileExists(f);
+	public boolean exists(SmbFileRef f) throws FileSystemException {
+		return diskShare.fileExists(f.getName());
 	}
 
 	@Override
-	public OutputStream createFile(String f) throws FileSystemException, IOException {
+	public OutputStream createFile(SmbFileRef f) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		final File file = diskShare.openFile(f, accessMask, null, SMB2ShareAccess.ALL,
-				SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		OutputStream out = file.getOutputStream();
-		FilterOutputStream fos = new FilterOutputStream(out) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
-		return fos;
+		final File file = diskShare.openFile(f.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+		return wrapOutputStream(file);
 	}
 
 	@Override
-	public OutputStream appendFile(String f) throws FileSystemException, IOException {
+	public OutputStream appendFile(SmbFileRef f) throws FileSystemException, IOException {
 		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
-		OutputStream out = file.getOutputStream();
-		FilterOutputStream fos = new FilterOutputStream(out) {
+		return wrapOutputStream(file);
+	}
+
+	private static OutputStream wrapOutputStream(File file) {
+		return new FilterOutputStream(file.getOutputStream()) {
 
 			boolean isOpen = true;
 			@Override
@@ -264,69 +259,69 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				file.close();
 			}
 		};
-		return fos;
+	}
+
+	private static InputStream wrapInputStream(File file) {
+		return new FilterInputStream(file.getInputStream()) {
+
+			boolean isOpen = true;
+			@Override
+			public void close() throws IOException {
+				if(isOpen) {
+					super.close();
+					isOpen=false;
+				}
+				file.close();
+			}
+		};
 	}
 
 	@Override
-	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
+	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
 		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
-		return new Samba2Message(file, context);
-	}
-
-	private static class Samba2Message extends Message {
-
-		public Samba2Message(File file, MessageContext context) {
-			super(wrap(file), context);
-		}
-
-		private static InputStream wrap(File file) {
-			return new FilterInputStream(file.getInputStream()) {
-
-				boolean isOpen = true;
-				@Override
-				public void close() throws IOException {
-					if(isOpen) {
-						super.close();
-						isOpen=false;
-					}
-					file.close();
-				}
-			};
-		}
+		return new Message(wrapInputStream(file), context);
 	}
 
 	@Override
-	public void deleteFile(String f) throws FileSystemException {
-		diskShare.rm(f);
+	public void deleteFile(SmbFileRef f) throws FileSystemException {
+		diskShare.rm(f.getName());
 	}
 
 	@Override
-	public String renameFile(String source, String destination) throws FileSystemException {
+	public SmbFileRef renameFile(SmbFileRef source, SmbFileRef destination) throws FileSystemException {
 		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			//TODO replace / with \\
-			destination = destination.replace("/", "\\");
-			file.rename(destination, true);
+			file.rename(destination.getName(), true);
 		}
 		return destination;
 	}
 
 	@Override
-	public String moveFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFileRef moveFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = toFile(destinationFolder, f);
-			file.rename(destination, false);
+			SmbFileRef destination = toFile(destinationFolder, f.getName());
+			if(exists(destination)) {
+				throw new FileSystemException("target already exists");
+			}
+
+			file.rename(destination.getName(), false);
 			return destination;
+		} catch (SMBApiException e) {
+			throw new FileSystemException("unable to move file", e);
 		}
 	}
 
 	@Override
-	public String copyFile(String f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+	public SmbFileRef copyFile(SmbFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
+		}
+
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = toFile(destinationFolder, f);
-			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
+			SmbFileRef destination = toFile(destinationFolder, f.getFilename());
+			try (File destinationFile = getFile(destination, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_CREATE)) { //TODO FILE_OVERWRITE
 				file.remoteCopyTo(destinationFile);
-			} catch (TransportException | BufferException e) {
+			} catch (TransportException | BufferException | SMBApiException e) {
 				throw new FileSystemException("cannot copy file ["+f+"] to ["+destinationFolder+"]",e);
 			}
 			return destination;
@@ -334,27 +329,22 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalFileProperties(String f) {
-		return null;
-	}
-
-	public boolean isFolder(String f) throws FileSystemException {
-		try {
-			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
-		}catch(SMBApiException e) {
-			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
-				return false;
-			}
-			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
-				return false;
-			}
-			throw new FileSystemException(e);
+	public Map<String, Object> getAdditionalFileProperties(SmbFileRef f) {
+		Map<String, Object> attributes = new HashMap<>();
+		FileAllInformation attrs = getFileAttributes(f);
+		if(attrs != null) {
+			attributes.put("ctime", attrs.getBasicInformation().getCreationTime());
+			attributes.put("atime", attrs.getBasicInformation().getLastAccessTime());
+			attributes.put("fileAttributes", attrs.getBasicInformation().getFileAttributes());
+			attributes.put("nameInformation", attrs.getNameInformation());
+			attributes.put("rawListing", attrs.toString());
 		}
+		return attributes;
 	}
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		return isFolder(toFile(folder));
+		return diskShare.folderExists(folder);
 	}
 
 	@Override
@@ -377,72 +367,61 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}
 	}
 
-	private File getFile(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
-		Set<SMB2ShareAccess> shareAccess = new HashSet<>();
-		shareAccess.addAll(SMB2ShareAccess.ALL);
-
+	private File getFile(SmbFileRef file, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
 		Set<SMB2CreateOptions> createOptions = new HashSet<>();
 		createOptions.add(SMB2CreateOptions.FILE_WRITE_THROUGH);
 
-		Set<AccessMask> accessMaskSet = new HashSet<>();
-		accessMaskSet.add(accessMask);
-		return diskShare.openFile(filename, accessMaskSet, null, shareAccess, createDisposition, createOptions);
-	}
-
-	private Directory getFolder(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
-		Set<SMB2ShareAccess> shareAccess = new HashSet<>();
-		shareAccess.addAll(SMB2ShareAccess.ALL);
-
-		Set<AccessMask> accessMaskSet = new HashSet<>();
-		accessMaskSet.add(accessMask);
-
-		return diskShare.openDirectory(filename, accessMaskSet, null, shareAccess, createDisposition, null);
+		return diskShare.openFile(file.getName(), EnumSet.of(accessMask), null, SMB2ShareAccess.ALL, createDisposition, createOptions);
 	}
 
 	@Override
-	public long getFileSize(String f) throws FileSystemException {
-		long size;
-		if (isFolder(f)) {
-			try (Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-				size = dir.getFileInformation().getStandardInformation().getAllocationSize();
-				return size;
+	public long getFileSize(SmbFileRef f) throws FileSystemException {
+		getFileAttributes(f);
+		return f.getAttributes().getStandardInformation().getEndOfFile();
+	}
+
+	private FileAllInformation getFileAttributes(SmbFileRef f) {
+		if(f.getAttributes() == null) {
+			try {
+				f.setAttributes(getAttributes(f));
+			} catch (SMBApiException e) {
+				log.warn("unable to fetch file attributes for [{}]", f.getName(), e);
 			}
 		}
-		try (File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-			size = file.getFileInformation().getStandardInformation().getAllocationSize();
-			return size;
+		return f.getAttributes();
+	}
+
+	private FileAllInformation getAttributes(SmbFileRef file) throws SMBApiException {
+		Set<AccessMask> accessMaskSet = new HashSet<>();
+		accessMaskSet.add(AccessMask.FILE_READ_ATTRIBUTES);
+
+		try (DiskEntry entry = diskShare.open(file.getName(), accessMaskSet, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OPEN, null)) {
+			return entry.getFileInformation();
 		}
 	}
 
 	@Override
-	public String getName(String f) {
-		return FilenameUtils.getName(f);
+	public String getName(SmbFileRef file) {
+		if(file == null) {
+			return null;
+		}
+		return file.getFilename();
 	}
 
 	@Override
-	public String getParentFolder(String f) {
-		String filePath = f;
-		if(filePath.endsWith("\\")) {
-			filePath = filePath.substring(0, filePath.lastIndexOf("\\"));
-		}
-		return filePath.substring(0, f.lastIndexOf("\\"));
+	public String getParentFolder(SmbFileRef f) {
+		return f.getFolder();
 	}
 
 	@Override
-	public String getCanonicalName(String f) throws FileSystemException {
-		return f;
+	public String getCanonicalName(SmbFileRef f) {
+		return f.getName(); //Should include folder structure if known
 	}
 
 	@Override
-	public Date getModificationTime(String f) throws FileSystemException {
-		if (isFolder(f)) {
-			try (Directory dir = getFolder(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-				return dir.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-			}
-		}
-		try (File file = getFile(f, AccessMask.FILE_READ_ATTRIBUTES, SMB2CreateDisposition.FILE_OPEN)) {
-			return file.getFileInformation().getBasicInformation().getLastWriteTime().toDate();
-		}
+	public Date getModificationTime(SmbFileRef f) throws FileSystemException {
+		getFileAttributes(f);
+		return f.getAttributes().getBasicInformation().getChangeTime().toDate();
 	}
 
 	@Override
@@ -515,41 +494,45 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		this.listHiddenFiles = listHiddenFiles;
 	}
 
-	class FilesIterator implements Iterator<String> {
+	class FilesIterator implements Iterator<SmbFileRef> {
 
-		private List<FileIdBothDirectoryInformation> files;
+		private List<SmbFileRef> files;
 		private int i = 0;
-		private String prefix;
 
-		public FilesIterator(String parent, List<FileIdBothDirectoryInformation> list) {
-			prefix = parent != null ? parent + "\\" : ""; //TODO path separator
+		public FilesIterator(String folder, List<FileIdBothDirectoryInformation> list) {
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
 				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
-					boolean isHidden = EnumWithValue.EnumUtils.isSet(info.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
+					SmbFileRef file = new SmbFileRef(info.getFileName());
+					file.setFolder(folder);
 					try {
-						FileStandardInformation fai = diskShare.getFileInformation(prefix + info.getFileName()).getStandardInformation();
-						boolean accessible = !fai.isDeletePending();
-						boolean isDirectory = fai.isDirectory();
-						if (accessible && !isDirectory) {
-							if (isListHiddenFiles()) {
-								files.add(info);
-							} else {
-								if (!isHidden) {
-									files.add(info);
-								}
-							}
+						FileAllInformation fileinfo = getAttributes(file);
+						file.setAttributes(fileinfo);
+
+						if (isFileAndAccessable(file) && allowHiddenFile(file)) {
+							files.add(file);
 						}
 					} catch (SMBApiException e) {
-						if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
-							log.debug("delete pending for file ["+ info.getFileName()+"]");
+						if(NtStatus.STATUS_DELETE_PENDING.equals(NtStatus.valueOf(e.getStatusCode()))) {
+							log.debug("delete pending for file ["+ file.getName()+"]");
 						} else {
 							throw e;
 						}
 					}
-
 				}
 			}
+		}
+
+		private boolean isFileAndAccessable(SmbFileRef file) {
+			FileStandardInformation fai = file.getAttributes().getStandardInformation();
+			boolean accessible = !fai.isDeletePending();
+			boolean isDirectory = fai.isDirectory();
+			return accessible && !isDirectory;
+		}
+
+		private boolean allowHiddenFile(SmbFileRef file) {
+			boolean isHidden = EnumWithValue.EnumUtils.isSet(file.getAttributes().getBasicInformation().getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_HIDDEN);
+			return (isListHiddenFiles() || !isHidden);
 		}
 
 		@Override
@@ -558,16 +541,20 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 		}
 
 		@Override
-		public String next() {
-			return prefix + files.get(i++).getFileName();
+		public SmbFileRef next() {
+			if(!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			return files.get(i++);
 		}
 
 		@Override
 		public void remove() {
+			SmbFileRef file = files.get(i++);
 			try {
-				deleteFile(prefix + files.get(i++).getFileName());
+				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.error("Unable to close disk share after deleting the file",e);
+				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
 			}
 		}
 	}

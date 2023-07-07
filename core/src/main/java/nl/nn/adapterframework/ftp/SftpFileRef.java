@@ -56,11 +56,7 @@ public class SftpFileRef {
 
 	public void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
-			if(this.folder != null) {
-				this.folder = FilenameUtils.normalize(folder + "/" + this.folder, true);
-			} else {
-				this.folder = folder;
-			}
+			this.folder = FilenameUtils.normalize(folder, true);
 		}
 	}
 

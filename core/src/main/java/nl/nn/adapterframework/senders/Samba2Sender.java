@@ -18,8 +18,9 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Sender extends FileSystemSender<String, Samba2FileSystem> implements SambaFileSystemDelegator {
+public class Samba2Sender extends FileSystemSender<SmbFileRef, Samba2FileSystem> implements SambaFileSystemDelegator {
 
 	public Samba2Sender() {
 		setFileSystem(new Samba2FileSystem());
