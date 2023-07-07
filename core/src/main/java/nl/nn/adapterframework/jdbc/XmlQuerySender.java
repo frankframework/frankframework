@@ -313,8 +313,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.SELECT, null);
-			PreparedStatement statement = getStatement(connection, queryExecutionContext);
+			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement,null,null, session, next);
@@ -357,10 +356,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
-			PreparedStatement statement = getStatement(connection, queryExecutionContext);
+			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command ["+query+"]", e);
 		}
@@ -392,8 +390,7 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private Message sql(Connection connection, String query, String type) throws SenderException, JdbcException {
 		try {
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
-			PreparedStatement statement = getStatement(connection, queryExecutionContext);
+			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
@@ -404,12 +401,11 @@ public class XmlQuerySender extends DirectQuerySender {
 				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
 				while (stringTokenizer.hasMoreTokens()) {
 					String q = stringTokenizer.nextToken();
-					queryExecutionContext = new QueryExecutionContext(q, QueryType.OTHER, null);
-					statement = getStatement(connection, queryExecutionContext);
+					statement = getStatement(connection, q, QueryType.OTHER);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
 					} else {
-						result.append(executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null).asString());
+						result.append(executeOtherQuery(connection, statement, q, null, null, null, null).asString());
 					}
 				}
 				return new Message(result.toString());
@@ -438,13 +434,13 @@ public class XmlQuerySender extends DirectQuerySender {
 					Column column = iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						QueryExecutionContext queryExecutionContext;
+						QueryType queryType;
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
-							queryExecutionContext = new QueryExecutionContext(query, QueryType.UPDATEBLOB, null);
+							queryType = QueryType.UPDATEBLOB;
 						} else {
-							queryExecutionContext = new QueryExecutionContext(query, QueryType.UPDATECLOB, null);
+							queryType = QueryType.UPDATECLOB;
 						}
-						PreparedStatement statement = getStatement(connection, queryExecutionContext);
+						PreparedStatement statement = getStatement(connection, query, queryType);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -456,11 +452,10 @@ public class XmlQuerySender extends DirectQuerySender {
 				}
 				return new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 			}
-			QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, QueryType.OTHER, null);
-			PreparedStatement statement = getStatement(connection, queryExecutionContext);
+			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, queryExecutionContext.getQuery(), null, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}

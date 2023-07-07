@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.function.Consumer;
@@ -20,7 +21,6 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @Ignore("Tests for Blobs take too much time and memory to test regularly")
@@ -123,13 +123,12 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingDbmsSupport(int numOfBlocks, int blockSize) throws Exception {
 		String block = getBigString(1,blockSize);
 		String query = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
-		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			Object blobInsertHandle = dbmsSupport.getBlobHandle(stmt, 1);
 			try (OutputStream blobStream = dbmsSupport.getBlobOutputStream(stmt, 1, blobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {
-					blobStream.write(block.getBytes("UTF-8"));
+					blobStream.write(block.getBytes(StandardCharsets.UTF_8));
 				}
 			}
 			dbmsSupport.applyBlobParameter(stmt, 1, blobInsertHandle);

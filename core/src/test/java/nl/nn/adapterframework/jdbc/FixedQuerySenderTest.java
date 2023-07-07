@@ -93,9 +93,14 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		Message result = sendMessage("dummy");
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 
+		sender.close();
+
 		sender.setQuery("SELECT tVARCHAR FROM "+JdbcTestBase.TEST_TABLE+" WHERE tKEY='3'");
 		sender.setQueryType("select");
 		sender.setScalar(true);
+
+		sender.configure();
+		sender.open();
 
 		result = sendMessage("dummy");
 

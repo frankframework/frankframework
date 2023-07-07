@@ -32,6 +32,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -188,12 +189,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	protected abstract String getQuery(Message message) throws SenderException;
 
-	protected final PreparedStatement getStatement(Connection con, QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
-		return prepareQuery(con, queryExecutionContext);
-	}
-
-	private PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
-		return con.prepareStatement(query,columnsReturned);
+	protected String getConvertedQuery(Message message) throws SenderException {
+		try {
+			String result = convertQuery(getQuery(message));
+			if (log.isDebugEnabled()) log.debug("converted result query into [" + result + "]");
+			return result;
+		} catch (JdbcException | SQLException e) {
+			throw new SenderException("Cannot convert result query",e);
+		}
 	}
 
 	@Override
@@ -220,23 +223,36 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, QueryExecutionContext queryExecutionContext) throws SQLException, JdbcException {
-		String query = convertQuery(queryExecutionContext.getQuery());
+	protected final PreparedStatement getStatement(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
+		return prepareQuery(con, query, queryType);
+	}
+
+	protected PreparedStatement prepareQuery(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws SQLException, JdbcException {
+		String adaptedQuery = query;
 		if (isLockRows()) {
-			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
+			adaptedQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, adaptedQuery, getLockWait());
 		}
 		if (isAvoidLocking()) {
-			query = getDbmsSupport().prepareQueryTextForNonLockingRead(query);
+			adaptedQuery = getDbmsSupport().prepareQueryTextForNonLockingRead(adaptedQuery);
 		}
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
+			log.debug(getLogPrefix() +"preparing statement for query ["+ adaptedQuery +"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned != null) {
-			return prepareQueryWithColumnsReturned(con, query, columnsReturned);
+			return prepareQueryWithColumnsReturned(con, adaptedQuery, columnsReturned);
 		}
-		boolean resultSetUpdatable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
-		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+		boolean resultSetUpdatable = isLockRows() || queryType == QueryType.UPDATEBLOB || queryType == QueryType.UPDATECLOB;
+		int resultSetConcurrency = resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY;
+		return prepareQueryWithResultSet(con, adaptedQuery, resultSetConcurrency);
+	}
+
+	protected static PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final int resultSetConcurrency) throws SQLException {
+		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+	}
+
+	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
+		return con.prepareStatement(query,columnsReturned);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
@@ -253,21 +269,21 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
-		String query = getQuery(message);
+		String query = getConvertedQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList);
-		queryExecutionContext.setConnection(connection);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-		PreparedStatement statement = getStatement(connection, queryExecutionContext);
+		PreparedStatement statement = getStatement(connection, query, getQueryTypeEnum());
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
-		queryExecutionContext.setStatement(statement);
 		statement.setQueryTimeout(getTimeout());
+		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
-			queryExecutionContext.setResultQueryStatement(connection.prepareStatement(convertedResultQuery));
+			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
+		} else {
+			resultQueryStatement = null;
 		}
-		return queryExecutionContext;
+		return new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
 	}
 
 
@@ -344,10 +360,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					Message result = executeOtherQuery(queryExecutionContext, message, session);
 					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
 						int[] results=statement.executeBatch();
-						int numRowsAffected=0;
-						for (int i:results) {
-							numRowsAffected+=i;
-						}
+						int numRowsAffected = Arrays.stream(results).sum();
 						result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 						statement.clearBatch();
 						queryExecutionContext.iteration=0;
