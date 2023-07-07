@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -237,17 +238,17 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
 		final File file = diskShare.openFile(f.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		return wrapOutputStream(file);
+		return wrapOutputStream(file, file.getOutputStream());
 	}
 
 	@Override
 	public OutputStream appendFile(SmbFileRef f) throws FileSystemException, IOException {
 		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
-		return wrapOutputStream(file);
+		return wrapOutputStream(file, file.getOutputStream(true));
 	}
 
-	private static OutputStream wrapOutputStream(File file) {
-		return new FilterOutputStream(file.getOutputStream()) {
+	private static OutputStream wrapOutputStream(Closeable file, OutputStream stream) {
+		return new FilterOutputStream(stream) {
 
 			boolean isOpen = true;
 			@Override
@@ -319,7 +320,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			SmbFileRef destination = toFile(destinationFolder, f.getFilename());
-			try (File destinationFile = getFile(destination, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_CREATE)) { //TODO FILE_OVERWRITE
+			try (File destinationFile = getFile(destination, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_SUPERSEDE)) {
 				file.remoteCopyTo(destinationFile);
 			} catch (TransportException | BufferException | SMBApiException e) {
 				throw new FileSystemException("cannot copy file ["+f+"] to ["+destinationFolder+"]",e);
