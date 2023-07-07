@@ -91,7 +91,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) throws SenderException {
 		try {
-			super.closeStatementSet(blockHandle, session);
+			super.closeStatementSet(blockHandle);
 		} catch (Exception e) {
 			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
 		}
@@ -103,7 +103,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	protected void closeStatementSet(QueryExecutionContext statementSet, PipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext statementSet) {
 		// postpone close to closeBlock()
 	}
 

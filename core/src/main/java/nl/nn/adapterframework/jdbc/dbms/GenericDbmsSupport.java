@@ -34,12 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
@@ -564,50 +566,51 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return new SqlTranslator(source, target);
 	}
 
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			String translatorKey = sqlDialectFrom+"->"+getDbmsName();
-			ISqlTranslator translator = sqlTranslators.get(translatorKey);
-			if (translator==null) {
-				if (sqlTranslators.containsKey(sqlDialectFrom)) {
-					// if translator==null, but the key is present in the map,
-					// then we already tried to setup this translator, and did not succeed.
-					// No need to try again.
-					warnConvertQuery(sqlDialectFrom);
-					return;
-				}
-				try {
-					translator = createTranslator(sqlDialectFrom, getDbmsName());
-				} catch (IllegalArgumentException e) {
-					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(translatorKey, null);
-					return;
-				} catch (Exception e) {
-					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
-				}
+	@Nullable
+	protected ISqlTranslator getSqlTranslator(@Nonnull String sqlDialectFrom) throws JdbcException {
+		String translatorKey = sqlDialectFrom+"->"+getDbmsName();
+		if (!sqlTranslators.containsKey(translatorKey)) {
+			try {
+				ISqlTranslator translator = createTranslator(sqlDialectFrom, getDbmsName());
 				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
-					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
-					return;
+					sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
+					return null;
 				}
 				sqlTranslators.put(translatorKey, translator);
+				return translator;
+			} catch (IllegalArgumentException e) {
+				sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
+				return null;
+			} catch (Exception e) {
+				throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
 			}
-			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-			StringBuilder convertedQueries = null;
-			for (String singleQuery : multipleQueries) {
-				String convertedQuery = translator.translate(singleQuery);
-				if (convertedQuery != null) {
-					if (convertedQueries==null) {
-						convertedQueries = new StringBuilder();
-					} else {
-						convertedQueries.append("\n");
-					}
-					convertedQueries.append(convertedQuery);
-				}
-			}
-			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
+		return sqlTranslators.get(translatorKey);
+	}
+
+	@Override
+	@Nonnull
+	public String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, JdbcException {
+		if (!isQueryConversionRequired(sqlDialectFrom)) {
+			return query;
+		}
+		ISqlTranslator translator = getSqlTranslator(sqlDialectFrom);
+		if (translator == null) {
+			warnConvertQuery(sqlDialectFrom);
+			return query;
+		}
+		List<String> multipleQueries = splitQuery(query);
+		StringBuilder convertedQueries = new StringBuilder();
+		for (String singleQuery : multipleQueries) {
+			String convertedQuery = translator.translate(singleQuery);
+			if (convertedQuery != null) {
+				if (convertedQueries.length() > 0) {
+					convertedQueries.append("\n");
+				}
+				convertedQueries.append(convertedQuery);
+			}
+		}
+		return convertedQueries.toString();
 	}
 
 	protected void warnConvertQuery(String sqlDialectFrom) {

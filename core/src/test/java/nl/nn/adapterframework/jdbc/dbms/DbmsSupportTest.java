@@ -252,10 +252,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testNumericAsDouble() throws Exception {
 		String number = "1234.5678";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (3,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
+		String query = "INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (3,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setDouble(1, Double.parseDouble(number));
 			stmt.execute();
 		}
@@ -270,11 +270,11 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testNumericAsFloat() throws Exception {
 		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
-		Float number = new Float(1234.5677);
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (4,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
+		float number = 1234.5677F;
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER) VALUES (4,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setFloat(1, number);
 			stmt.execute();
 		}
@@ -313,10 +313,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
 
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			JdbcUtil.setParameter(stmt, 1, number, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 2, date, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 3, datetime, dbmsSupport.isParameterTypeMatchRequired());
@@ -394,9 +394,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteClobInOneStep() throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TCLOB) VALUES (12,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (12,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setString(1, clobContents);
 			stmt.execute();
 		}
@@ -509,9 +509,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteBlobInOneStep() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (24,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (24,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
@@ -544,9 +544,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB,TCLOB) VALUES (24,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.setString(2, clobContents);
 			stmt.execute();

@@ -18,17 +18,18 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 public class QueryExecutionContext {
 
-	private String query;
-	private final QueryType queryType;
-	private final ParameterList parameterList;
-	private Connection connection;
-	private PreparedStatement statement;
-	private PreparedStatement resultQueryStatement;
+	@Getter private String query;
+	@Getter private final QueryType queryType;
+	@Getter private final ParameterList parameterList;
+	@Getter private Connection connection;
+	@Getter private PreparedStatement statement;
+	@Getter private PreparedStatement resultQueryStatement;
 	protected int iteration;
 
 	public QueryExecutionContext(String query, QueryType queryType, ParameterList parameterList) {
@@ -37,38 +38,18 @@ public class QueryExecutionContext {
 		this.parameterList = parameterList;
 	}
 
-	public String getQuery() {
-		return query;
-	}
 	public void setQuery(String query) {
 		this.query = query;
 	}
 
-	public QueryType getQueryType() {
-		return queryType;
-	}
-
-	public ParameterList getParameterList() {
-		return parameterList;
-	}
-
-	public Connection getConnection() {
-		return connection;
-	}
 	public void setConnection(Connection connection) {
 		this.connection = connection;
 	}
 
-	public PreparedStatement getStatement() {
-		return statement;
-	}
 	public void setStatement(PreparedStatement statement) {
 		this.statement = statement;
 	}
 
-	public PreparedStatement getResultQueryStatement() {
-		return resultQueryStatement;
-	}
 	public void setResultQueryStatement(PreparedStatement resultQueryStatement) {
 		this.resultQueryStatement = resultQueryStatement;
 	}

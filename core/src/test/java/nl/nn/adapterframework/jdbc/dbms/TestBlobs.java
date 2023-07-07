@@ -93,9 +93,8 @@ public class TestBlobs extends JdbcTestBase {
 	public void testWriteAndReadBlobUsingSetBytes(int numBlocks, int blockSize) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
 		String query = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
-		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
@@ -125,8 +124,8 @@ public class TestBlobs extends JdbcTestBase {
 		String block = getBigString(1,blockSize);
 		String query = "INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (20,?)";
 		QueryExecutionContext context = new QueryExecutionContext(query, QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			Object blobInsertHandle = dbmsSupport.getBlobHandle(stmt, 1);
 			try (OutputStream blobStream = dbmsSupport.getBlobOutputStream(stmt, 1, blobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {

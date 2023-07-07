@@ -201,28 +201,27 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		super.open();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try {
-				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), QueryType.SELECT, null);
-				convertQuery(resultContext);
-				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
-				convertedResultQuery = resultContext.getQuery();
+				convertedResultQuery = convertQuery(getResultQuery());
+				if (log.isDebugEnabled()) log.debug("converted result query into [" + convertedResultQuery + "]");
 			} catch (JdbcException | SQLException e) {
 				throw new SenderException("Cannot convert result query",e);
 			}
 		}
 	}
 
-	protected void convertQuery(QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + queryExecutionContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
-			}
-			getDbmsSupport().convertQuery(queryExecutionContext, getSqlDialect());
+	@Nonnull
+	protected String convertQuery(@Nonnull String query) throws JdbcException, SQLException {
+		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+			return query;
 		}
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+		}
+		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
 	protected PreparedStatement prepareQuery(Connection con, QueryExecutionContext queryExecutionContext) throws SQLException, JdbcException {
-		convertQuery(queryExecutionContext);
-		String query = queryExecutionContext.getQuery();
+		String query = convertQuery(queryExecutionContext.getQuery());
 		if (isLockRows()) {
 			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
 		}
@@ -236,8 +235,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (columnsReturned != null) {
 			return prepareQueryWithColumnsReturned(con, query, columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
-		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdateable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+		boolean resultSetUpdatable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
+		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
@@ -289,7 +288,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext queryExecutionContext) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
@@ -368,7 +367,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", t);
 		} finally {
-			closeStatementSet(queryExecutionContext, session);
+			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {

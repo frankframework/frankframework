@@ -517,8 +517,8 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 		@Override
 		public void initAction(Connection conn) throws Exception {
-			context = new QueryExecutionContext("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TINT!=3 AND TKEY=10", QueryType.OTHER, null);
-			dbmsSupport.convertQuery(context, "Oracle");
+			String query = "UPDATE " + TEST_TABLE + " SET TINT=3 WHERE TINT!=3 AND TKEY=10";
+			context = new QueryExecutionContext(dbmsSupport.convertQuery(query, "Oracle"), QueryType.OTHER, null);
 			connection.setAutoCommit(false);
 		}
 

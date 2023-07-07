@@ -27,8 +27,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -134,7 +135,8 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws JdbcException;
 
-	void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException;
+	@Nonnull
+	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, JdbcException;
 
 	ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException;
 	ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException;
