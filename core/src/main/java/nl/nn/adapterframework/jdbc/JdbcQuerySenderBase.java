@@ -259,7 +259,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
-		String query = getQuery(message);
+		String query = getConvertedQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
