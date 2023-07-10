@@ -47,30 +47,17 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	private @Getter String query=null;
 	private @Getter int batchSize;
 
-	private String convertedQuery;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getQuery())) {
 			throw new ConfigurationException(getLogPrefix()+"query must be specified");
 		}
-		try {
-			convertedQuery = convertQuery(getQuery());
-			if (log.isDebugEnabled()) log.debug("converted result query into [" + convertedQuery + "]");
-		} catch (JdbcException | SQLException e) {
-			throw new ConfigurationException("Cannot convert result query",e);
-		}
 	}
 
 	@Override
 	protected String getQuery(Message message) {
 		return getQuery();
-	}
-
-	@Override
-	protected String getConvertedQuery(Message message) throws SenderException {
-		return convertedQuery;
 	}
 
 	@Override

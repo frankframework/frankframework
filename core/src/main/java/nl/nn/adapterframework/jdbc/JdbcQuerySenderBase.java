@@ -189,16 +189,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	protected abstract String getQuery(Message message) throws SenderException;
 
-	protected String getConvertedQuery(Message message) throws SenderException {
-		try {
-			String result = convertQuery(getQuery(message));
-			if (log.isDebugEnabled()) log.debug("converted result query into [" + result + "]");
-			return result;
-		} catch (JdbcException | SQLException e) {
-			throw new SenderException("Cannot convert result query",e);
-		}
-	}
-
 	@Override
 	public void open() throws SenderException {
 		super.open();
@@ -228,7 +218,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	protected PreparedStatement prepareQuery(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws SQLException, JdbcException {
-		String adaptedQuery = query;
+		String adaptedQuery = convertQuery(query);
 		if (isLockRows()) {
 			adaptedQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, adaptedQuery, getLockWait());
 		}
@@ -269,7 +259,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
-		String query = getConvertedQuery(message);
+		String query = getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
