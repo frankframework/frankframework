@@ -60,6 +60,8 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 	private static final int DefaultThreadPoolInit = 25;
 	private static final int DefaultThreadPoolMax = 50;
 
+	private static SMBServer smbServer;
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(getTestDirectoryFS());
@@ -81,8 +83,6 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 			throw new IllegalStateException("invalid path");
 		}
 	}
-
-	private static SMBServer smbServer;
 
 	@Override
 	@BeforeEach
