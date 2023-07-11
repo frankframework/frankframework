@@ -16,12 +16,15 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class StringUtilTest {
+	private static final Logger LOG = LogManager.getLogger(StringUtil.class);
 
 	/**
 	 * Method: concatStrings(String part1, String separator, String part2)
@@ -199,8 +202,8 @@ class StringUtilTest {
 		// Act
 		List<String> result = StringUtil.split(input, delimiters);
 
-		System.out.println("input: [" + escapeUnprintable(input) + "]");
-		System.out.println("result [" + String.join("|", result) + "]");
+		LOG.debug("input: [{}]", ()->escapeUnprintable(input));
+		LOG.debug("result [{}]", ()->String.join("|", result));
 
 		// Assert
 		assertIterableEquals(expected, result);

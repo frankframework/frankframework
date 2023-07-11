@@ -234,7 +234,7 @@ public class StringUtil {
 				.collect(Collectors.toList());
 	}
 
-	private final static Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
 
 	/**
 	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
