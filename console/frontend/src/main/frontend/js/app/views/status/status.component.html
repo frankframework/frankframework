@@ -131,7 +131,7 @@
                             <div class="text-center">
                                 <button ng-if="$ctrl.selectedConfiguration != 'All' && !$ctrl.reloading && !$ctrl.isConfigReloading[$ctrl.selectedConfiguration]" title="Reload Configuration" ng-click="$ctrl.reloadConfiguration()" class="btn btn-info btn-xs" id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
                                 <button ng-if="$ctrl.selectedConfiguration != 'All' && !$ctrl.reloading && $ctrl.isConfigReloading[$ctrl.selectedConfiguration]" disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                                <button ng-if="$ctrl.selectedConfiguration == 'All' && !$ctrl.reloading" title="Full Reload" ng-click="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
+                                <button ng-if="$ctrl.selectedConfiguration == 'All' && !$ctrl.reloading" title="Full Reload" ng-click="$ctrl.fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
                                 <button ng-if="$ctrl.reloading" disabled="disabled" title="Full Reload in process" class="btn btn-danger btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
                                 <button ng-if="$ctrl.configurationFlowDiagram" title="Show Adapter References" ng-click="$ctrl.showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
                             </div>

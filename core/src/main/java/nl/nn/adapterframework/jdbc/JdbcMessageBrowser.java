@@ -34,7 +34,6 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -305,16 +304,14 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	@Override
 	public int getMessageCount() throws ListenerException {
 		try (Connection conn = getConnection()) {
-			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {
-				try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
-					applyStandardParameters(stmt, false, false);
-					try (ResultSet rs =  stmt.executeQuery()) {
-						if (!rs.next()) {
-							log.warn(getLogPrefix()+"no message count found");
-							return 0;
-						}
-						return rs.getInt(1);
+			try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
+				applyStandardParameters(stmt, false, false);
+				try (ResultSet rs =  stmt.executeQuery()) {
+					if (!rs.next()) {
+						log.warn(getLogPrefix()+"no message count found");
+						return 0;
 					}
+					return rs.getInt(1);
 				}
 			}
 		} catch (Exception e) {

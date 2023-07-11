@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-appModule.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', '$rootScope', function ($scope, Api, appConstants, $rootScope) {
+appModule.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants', '$rootScope', 'appService', function ($scope, Api, appConstants, $rootScope, appService) {
 	$scope.variables = {};
 	$scope.searchFilter = "";
 
@@ -10,7 +10,8 @@ appModule.controller('EnvironmentVariablesCtrl', ['$scope', 'Api', 'appConstants
 		$scope.configProperties = $scope.appConstants[name];
 	};
 
-	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
+	$scope.configurations = appService.configurations;
+	$rootScope.$on('configurations', function () { $scope.configurations = appService.configurations; });
 
 	$scope.configProperties = [];
 	$scope.environmentProperties = [];

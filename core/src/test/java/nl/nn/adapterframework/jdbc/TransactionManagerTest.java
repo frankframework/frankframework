@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
@@ -19,10 +18,8 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 	}
 	private void checkNumberOfLines(int expected, String query) throws JdbcException, SQLException {
 		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(query);
-		try (JdbcSession session = dbmsSupport.prepareSessionForNonLockingRead(connection)) {
-			int count = JdbcUtil.executeIntQuery(connection, preparedQuery);
-			assertEquals("number of lines in table", expected, count);
-		}
+		int count = JdbcUtil.executeIntQuery(connection, preparedQuery);
+		assertEquals("number of lines in table", expected, count);
 	}
 
 	@Test

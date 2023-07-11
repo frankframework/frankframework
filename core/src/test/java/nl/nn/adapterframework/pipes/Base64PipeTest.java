@@ -37,6 +37,7 @@ import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @SuppressWarnings("deprecation")
