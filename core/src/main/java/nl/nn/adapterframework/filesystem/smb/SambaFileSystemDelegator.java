@@ -54,7 +54,7 @@ public interface SambaFileSystemDelegator {
 		getFileSystem().setPassword(passwd);
 	}
 
-	@Deprecated
+	/** DEPRECATED */ // cannot use deprecated tag because of Spring AnnotationUtils.
 	@ConfigurationWarning("please use domainName instead")
 	default void setDomain(String domain) {
 		getFileSystem().setDomainName(domain);

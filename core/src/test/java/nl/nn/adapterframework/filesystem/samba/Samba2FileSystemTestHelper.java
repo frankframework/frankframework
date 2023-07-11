@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.samba;
 
 import static com.hierynomus.msfscc.FileAttributes.FILE_ATTRIBUTE_DIRECTORY;
 
@@ -50,7 +50,6 @@ import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2CreateOptions;
-import com.hierynomus.mssmb2.SMB2Dialect;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.protocol.commons.EnumWithValue;
@@ -66,6 +65,8 @@ import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -112,12 +113,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		List<Factory.Named<Authenticator>> authenticators = new ArrayList<>();
 		authenticators.add(new NtlmAuthenticator.Factory());
 		authenticators.add(new SpnegoAuthenticator.Factory());
+
 		SmbConfig config = SmbConfig.builder()
 				.withAuthenticators(authenticators)
-				.withDialects(SMB2Dialect.SMB_3_1_1)
 				.build();
 		client = new SMBClient(config);
-		connection = client.connect(host, port); //unknown host exception 
+		connection = client.connect(host, port);
 		if(connection.isConnected()) {
 			log.debug("successfully created connection to ["+connection.getRemoteHostname()+"]");
 		}

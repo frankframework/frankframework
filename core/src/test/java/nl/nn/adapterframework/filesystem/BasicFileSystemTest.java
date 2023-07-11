@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
@@ -586,6 +587,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.deleteFile(f);
 
 		String parentFolder = fileSystem.getParentFolder(f);
+		parentFolder = FilenameUtils.normalizeNoEndSeparator(parentFolder);
 
 		assertThat(parentFolder, StringEndsWith.endsWith(folderName));
 	}

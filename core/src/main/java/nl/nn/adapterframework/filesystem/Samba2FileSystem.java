@@ -72,6 +72,9 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
+ * 
+ * Uses the SMB 2 and 3 protocol
+ * 
  * Possible error codes:
  * <br/>
  * Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
