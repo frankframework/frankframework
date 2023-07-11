@@ -63,6 +63,7 @@ public class MonitorTest {
 		manager.registerDestination(destination);
 		monitor.setDestinations(destination.getName());
 		Message message = new Message("very important message");
+		message.getContext().put("special-key", 123);
 		configuration.configure();
 
 		// Act
@@ -74,7 +75,9 @@ public class MonitorTest {
 		assertEquals(result, ignoreHostname(capturedMessage.asString()));
 		PipeLineSession session = sessionCapture.getValue();
 		assertTrue(session.containsKey(PipeLineSession.ORIGINAL_MESSAGE_KEY));
-		assertEquals(message.asString(), session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY).asString());
+		Message originalMessage = session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		assertEquals(message.asString(), originalMessage.asString());
+		assertEquals(123, originalMessage.getContext().get("special-key"));
 	}
 
 	private String ignoreHostname(String result) {
