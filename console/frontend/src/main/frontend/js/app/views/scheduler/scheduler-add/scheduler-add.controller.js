@@ -1,13 +1,15 @@
 import { appModule } from "../../../app.module";
 
-appModule.controller('AddScheduleCtrl', ['$scope', 'Api', '$rootScope', function ($scope, Api, $rootScope) {
+appModule.controller('AddScheduleCtrl', ['$scope', 'Api', '$rootScope', 'appService', function ($scope, Api, $rootScope, appService) {
 	$scope.state = [];
 	$scope.addLocalAlert = function (type, message) {
 		$scope.state.push({ type: type, message: message });
 	};
 
-	$rootScope.$watch('configurations', function () { $scope.configurations = $rootScope.configurations; });
-	$rootScope.$watch('adapters', function () { $scope.adapters = $rootScope.adapters; });
+	$scope.configurations = appService.configurations;
+	$scope.adapters = appService.adapters;
+	$rootScope.$on('configurations', function () { $scope.configurations = appService.configurations; });
+	$rootScope.$on('adapters', function () { $scope.adapters = appService.adapters; });
 
 	$scope.selectedConfiguration = "";
 	$scope.form = {

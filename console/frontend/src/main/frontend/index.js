@@ -48,6 +48,8 @@ import 'sweetalert/lib/sweet-alert.css';
 import './css/plugins/iCheck/custom.css';
 import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';
+import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+import 'prismjs/plugins/line-highlight/prism-line-highlight.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
 import './css/plugins/iCheck/custom.css';

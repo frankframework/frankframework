@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 
@@ -73,19 +72,16 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Connection connection = getConnectionForSendMessage();
-			QueryExecutionContext res;
+			QueryExecutionContext result;
 			try {
-				QueryExecutionContext result1 = getQueryExecutionContext(connection, null, session);
+				QueryExecutionContext result1 = getQueryExecutionContext(connection, null);
 				if (getBatchSize()>0) {
 					result1.getStatement().clearBatch();
 				}
-				res = result1;
+				result = result1;
 			} catch (JdbcException | ParameterException | SQLException e) {
 				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
-			QueryExecutionContext result = res;
-			JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null;
-			result.setJdbcSession(jdbcSession);
 			return result;
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get StatementSet",e);
@@ -95,16 +91,9 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	@Override
 	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) throws SenderException {
 		try {
-			super.closeStatementSet(blockHandle, session);
+			super.closeStatementSet(blockHandle);
 		} catch (Exception e) {
 			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
-		}
-		if (blockHandle.getJdbcSession() != null) {
-			try {
-				blockHandle.getJdbcSession().close();
-			} catch (Exception e) {
-				log.warn("{} cannot return connection to repeatable read", getLogPrefix(), e);
-			}
 		}
 		try {
 			closeConnectionForSendMessage(blockHandle.getConnection(), session);
@@ -114,7 +103,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	protected void closeStatementSet(QueryExecutionContext statementSet, PipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext statementSet) {
 		// postpone close to closeBlock()
 	}
 
