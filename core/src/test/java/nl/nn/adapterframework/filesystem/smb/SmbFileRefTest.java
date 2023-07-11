@@ -1,10 +1,8 @@
-package nl.nn.adapterframework.filesystem.samba;
+package nl.nn.adapterframework.filesystem.smb;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
 public class SmbFileRefTest {
 

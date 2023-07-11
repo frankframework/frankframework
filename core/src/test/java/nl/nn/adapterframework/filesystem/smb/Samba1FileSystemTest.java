@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem.samba;
+package nl.nn.adapterframework.filesystem.smb;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;

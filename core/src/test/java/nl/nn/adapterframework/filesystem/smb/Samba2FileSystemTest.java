@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem.samba;
+package nl.nn.adapterframework.filesystem.smb;
 
 import org.junit.jupiter.api.Disabled;
 
@@ -6,7 +6,6 @@ import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
-import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
 @Disabled
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
