@@ -15,6 +15,7 @@ import './app/views/environment-variables/environment-variables.component';
 import './app/views/security-items/security-items.component';
 import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 import './app/views/monitors/monitors.component';
+import './app/views/notifications/notifications.component';
 import './app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import './app/views/status/status.component';
 import './app/views/webservices/webservices.component';

@@ -178,7 +178,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.notifications', {
 				url: "/notifications",
-				templateUrl: "js/app/views/notifications/notifications.html",
+				component: "notifications",
 				data: {
 					pageTitle: 'Notifications',
 					breadcrumbs: 'Notifications'
@@ -186,7 +186,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				params: {
 					id: 0,
 				},
-				controller: 'NotificationsCtrl'
 			})
 			.state('pages.configuration', {
 				url: "/configurations?name&loaded",
