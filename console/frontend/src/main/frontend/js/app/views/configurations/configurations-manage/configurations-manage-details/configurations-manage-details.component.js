@@ -13,17 +13,17 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 
 		ctrl.configuration = $state.params.name;
 
-		var promise = $interval(function () {
-			update();
+		ctrl.promise = $interval(function () {
+			ctrl.update();
 		}, 30000);
-		$scope.$on('$destroy', function () {
-			$interval.cancel(promise);
-		});
-		update();
-
+		ctrl.update();
 	};
 
-	function update() {
+	ctrl.$onDestroy = function () {
+		$interval.cancel(ctrl.promise);
+	};
+
+	ctrl.update = function() {
 		ctrl.loading = true;
 		Api.Get("configurations/" + $state.params.name + "/versions", function (data) {
 			for (const x in data) {
@@ -41,7 +41,7 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 	ctrl.download = function (config) {
 		window.open(Misc.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version) + "/download");
 	};
-	
+
 	ctrl.deleteConfig = function (config) {
 		var message = "";
 		if (config.version) {
@@ -53,7 +53,7 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 			if (imSure) {
 				Api.Delete("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), function () {
 					Toastr.success("Successfully removed version '" + config.version + "'");
-					update();
+					ctrl.update();
 				});
 			}
 		});
@@ -68,7 +68,7 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 		Api.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { activate: config.active }, function (data) {
 			Toastr.success("Successfully changed startup config to version '" + config.version + "'");
 		}, function () {
-			update();
+			ctrl.update();
 		});
 	};
 
@@ -76,7 +76,7 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 		Api.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { autoreload: config.autoreload }, function (data) {
 			Toastr.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
 		}, function () {
-			update();
+			ctrl.update();
 		});
 	};
 }

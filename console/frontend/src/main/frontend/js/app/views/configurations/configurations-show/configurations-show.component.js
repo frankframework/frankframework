@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const ConfigurationsShowController = function ($scope, Api, $state, $location, $rootScope) {
+const ConfigurationsShowController = function ($scope, Api, $state, $location, $rootScope, appService) {
 	const ctrl = this;
 
 	ctrl.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
@@ -8,19 +8,20 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 	ctrl.anchor = $location.hash();
 
 	ctrl.$onInit = function () {
-		$rootScope.$watch('configurations', function () { ctrl.configurations = $rootScope.configurations; });
-		getConfiguration();
+		ctrl.configurations = appService.configurations;
+		$rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.getConfiguration();
 	};
 
 	ctrl.update = function () {
-		getConfiguration();
+		ctrl.getConfiguration();
 	};
 
 	ctrl.changeConfiguration = function (name) {
 		ctrl.selectedConfiguration = name;
 		$location.hash(''); //clear the hash from the url
 		ctrl.anchor = null; //unset hash anchor
-		getConfiguration();
+		ctrl.getConfiguration();
 	};
 
 	ctrl.updateQueryParams = function () {
@@ -47,7 +48,7 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 		}
 	}
 
-	const getConfiguration = function () {
+	ctrl.getConfiguration = function () {
 		ctrl.updateQueryParams();
 		var uri = "configurations";
 		if (ctrl.selectedConfiguration != "All") uri += "/" + ctrl.selectedConfiguration;
@@ -63,6 +64,6 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 };
 
 appModule.component('configurationsShow', {
-	controller: ['$scope', 'Api', '$state', '$location', '$rootScope', ConfigurationsShowController],
+	controller: ['$scope', 'Api', '$state', '$location', '$rootScope', 'appService', ConfigurationsShowController],
 	templateUrl: 'js/app/views/configurations/configurations-show/configurations-show.component.html',
 });

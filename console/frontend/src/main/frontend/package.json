@@ -7,7 +7,7 @@
     "build": "webpack",
     "build:prod": "webpack --mode production",
     "serve": "webpack serve",
-    "watch": "webpack --watch --config webpack.dev.js",
+    "serve:test": "webpack serve --config webpack.iaf-test.js",
     "watch:prod": "webpack --mode production --watch"
   },
   "dependencies": {

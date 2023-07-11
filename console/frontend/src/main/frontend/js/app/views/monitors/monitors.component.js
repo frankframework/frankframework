@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const MonitorsController = function (Api, $state, Misc, $rootScope) {
+const MonitorsController = function (Api, $state, Misc, $rootScope, appService) {
 	const ctrl = this;
 
 	ctrl.selectedConfiguration = null;
@@ -10,17 +10,25 @@ const MonitorsController = function (Api, $state, Misc, $rootScope) {
 	ctrl.totalRaised = 0;
 
 	ctrl.$onInit = function () {
-		//Wait for the 'configurations' field to be populated to change the monitoring page
-		$rootScope.$watch('configurations', function (configs) {
-			ctrl.configurations = $rootScope.configurations;
+		ctrl.configurations = appService.configurations;
+		$rootScope.$on('configurations', function () {
+			ctrl.configurations = appService.configurations;
 
-			if (configs) {
-				var configName = $state.params.configuration; //See if the configuration query param is populated
-				if (!configName) configName = configs[0].name; //Fall back to the first configuration
-				ctrl.changeConfiguration(configName); //Update the view
+			if (ctrl.configurations.length > 0) {
+				ctrl.updateConfigurations();
 			}
 		});
+		
+		if (ctrl.configurations.length > 0) {
+			ctrl.updateConfigurations();
+		}
 	};
+
+	ctrl.updateConfigurations = function(){
+		var configName = $state.params.configuration; //See if the configuration query param is populated
+		if (!configName) configName = ctrl.configurations[0].name; //Fall back to the first configuration
+		ctrl.changeConfiguration(configName); //Update the view
+	}
 
 	ctrl.changeConfiguration = function (name) {
 		ctrl.selectedConfiguration = name;
@@ -98,6 +106,6 @@ const MonitorsController = function (Api, $state, Misc, $rootScope) {
 };
 
 appModule.component('monitors', {
-	controller: ['Api', '$state', 'Misc', '$rootScope', MonitorsController],
+	controller: ['Api', '$state', 'Misc', '$rootScope', 'appService', MonitorsController],
 	templateUrl: 'js/app/views/monitors/monitors.component.html',
 });
