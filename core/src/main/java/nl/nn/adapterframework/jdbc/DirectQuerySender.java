@@ -126,7 +126,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 			try {
 				return executeStatementSet(queryExecutionContext, message, session, next);
 			} finally {
-				closeStatementSet(queryExecutionContext, session);
+				closeStatementSet(queryExecutionContext);
 			}
 		} catch (SenderException|TimeoutException e) {
 			throw e;

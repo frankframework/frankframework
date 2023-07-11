@@ -32,6 +32,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -188,56 +189,60 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	 */
 	protected abstract String getQuery(Message message) throws SenderException;
 
-	protected final PreparedStatement getStatement(Connection con, QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
-		return prepareQuery(con, queryExecutionContext);
-	}
-
-	private PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
-		return con.prepareStatement(query,columnsReturned);
-	}
-
 	@Override
 	public void open() throws SenderException {
 		super.open();
 		if (StringUtils.isNotEmpty(getResultQuery())) {
 			try {
-				QueryExecutionContext resultContext = new QueryExecutionContext(getResultQuery(), QueryType.SELECT, null);
-				convertQuery(resultContext);
-				if (log.isDebugEnabled()) log.debug("converted result query into [" + resultContext.getQuery() + "]");
-				convertedResultQuery = resultContext.getQuery();
+				convertedResultQuery = convertQuery(getResultQuery());
+				if (log.isDebugEnabled()) log.debug("converted result query into [" + convertedResultQuery + "]");
 			} catch (JdbcException | SQLException e) {
 				throw new SenderException("Cannot convert result query",e);
 			}
 		}
 	}
 
-	protected void convertQuery(QueryExecutionContext queryExecutionContext) throws JdbcException, SQLException {
-		if (StringUtils.isNotEmpty(getSqlDialect()) && !getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix() + "converting query [" + queryExecutionContext.getQuery().trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
-			}
-			getDbmsSupport().convertQuery(queryExecutionContext, getSqlDialect());
-		}
-	}
-
-	protected PreparedStatement prepareQuery(Connection con, QueryExecutionContext queryExecutionContext) throws SQLException, JdbcException {
-		convertQuery(queryExecutionContext);
-		String query = queryExecutionContext.getQuery();
-		if (isLockRows()) {
-			query = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, query, getLockWait());
-		}
-		if (isAvoidLocking()) {
-			query = getDbmsSupport().prepareQueryTextForNonLockingRead(query);
+	@Nonnull
+	protected String convertQuery(@Nonnull String query) throws JdbcException, SQLException {
+		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+			return query;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
+			log.debug(getLogPrefix() + "converting query [" + query.trim() + "] from [" + getSqlDialect() + "] to [" + getDbmsSupport().getDbmsName() + "]");
+		}
+		return getDbmsSupport().convertQuery(query, getSqlDialect());
+	}
+
+	protected final PreparedStatement getStatement(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
+		return prepareQuery(con, query, queryType);
+	}
+
+	protected PreparedStatement prepareQuery(@Nonnull Connection con, @Nonnull String query, @Nullable QueryType queryType) throws SQLException, JdbcException {
+		String adaptedQuery = convertQuery(query);
+		if (isLockRows()) {
+			adaptedQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, adaptedQuery, getLockWait());
+		}
+		if (isAvoidLocking()) {
+			adaptedQuery = getDbmsSupport().prepareQueryTextForNonLockingRead(adaptedQuery);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() +"preparing statement for query ["+ adaptedQuery +"]");
 		}
 		String[] columnsReturned = getColumnsReturnedList();
 		if (columnsReturned != null) {
-			return prepareQueryWithColumnsReturned(con, query, columnsReturned);
+			return prepareQueryWithColumnsReturned(con, adaptedQuery, columnsReturned);
 		}
-		boolean resultSetUpdateable = isLockRows() || queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB || queryExecutionContext.getQueryType()==QueryType.UPDATECLOB;
-		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdateable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+		boolean resultSetUpdatable = isLockRows() || queryType == QueryType.UPDATEBLOB || queryType == QueryType.UPDATECLOB;
+		int resultSetConcurrency = resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY;
+		return prepareQueryWithResultSet(con, adaptedQuery, resultSetConcurrency);
+	}
+
+	protected static PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final int resultSetConcurrency) throws SQLException {
+		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+	}
+
+	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
+		return con.prepareStatement(query,columnsReturned);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
@@ -258,17 +263,17 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
 			query = adjustQueryAndParameterListForNamedParameters(newParameterList, query);
 		}
-		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList);
-		queryExecutionContext.setConnection(connection);
 		log.debug(getLogPrefix() + "obtaining prepared statement to execute");
-		PreparedStatement statement = getStatement(connection, queryExecutionContext);
+		PreparedStatement statement = getStatement(connection, query, getQueryTypeEnum());
 		log.debug(getLogPrefix() + "obtained prepared statement to execute");
-		queryExecutionContext.setStatement(statement);
 		statement.setQueryTimeout(getTimeout());
+		PreparedStatement resultQueryStatement;
 		if (convertedResultQuery != null) {
-			queryExecutionContext.setResultQueryStatement(connection.prepareStatement(convertedResultQuery));
+			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
+		} else {
+			resultQueryStatement = null;
 		}
-		return queryExecutionContext;
+		return new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
 	}
 
 
@@ -289,7 +294,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected void closeStatementSet(QueryExecutionContext queryExecutionContext, PipeLineSession session) {
+	protected void closeStatementSet(QueryExecutionContext queryExecutionContext) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
@@ -345,10 +350,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					Message result = executeOtherQuery(queryExecutionContext, message, session);
 					if (getBatchSize()>0 && ++queryExecutionContext.iteration>=getBatchSize()) {
 						int[] results=statement.executeBatch();
-						int numRowsAffected=0;
-						for (int i:results) {
-							numRowsAffected+=i;
-						}
+						int numRowsAffected = Arrays.stream(results).sum();
 						result = new Message("<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>");
 						statement.clearBatch();
 						queryExecutionContext.iteration=0;
@@ -368,7 +370,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", t);
 		} finally {
-			closeStatementSet(queryExecutionContext, session);
+			closeStatementSet(queryExecutionContext);
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
