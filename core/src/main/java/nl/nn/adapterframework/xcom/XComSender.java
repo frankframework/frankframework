@@ -19,9 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,6 +36,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * XCom client voor het versturen van files via XCom.
@@ -145,11 +144,12 @@ public class XComSender extends SenderWithParametersBase {
 				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 
 				// read the output of the process
-				BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
 				StringBuilder output = new StringBuilder();
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					output.append(line);
+				try (BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()))) {
+					String line;
+					while ((line = br.readLine()) != null) {
+						output.append(line);
+					}
 				}
 
 				// wait until the process is completely finished
@@ -159,8 +159,8 @@ public class XComSender extends SenderWithParametersBase {
 					log.warn(getLogPrefix()+"has been interrupted", e);
 				}
 
-				log.debug("output for " + localFile.getName() + " = " + output.toString());
-				log.debug(localFile.getName() + " exits with " + p.exitValue());
+				log.debug("output for {} = {}", localFile::getName, output::toString);
+				log.debug(localFile.getName() + "{} exits with {}", localFile::getName, p::exitValue);
 
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
@@ -207,15 +207,15 @@ public class XComSender extends SenderWithParametersBase {
 			if (fileOption!=null)
 				sb.append(" FILE_OPTION=").append(fileOption.name());
 			if (queue != null)
-				sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
+				sb.append(" QUEUE=").append(queue ? "YES" : "NO");
 			if (tracelevel != null)
 				sb.append(" TRACE=").append(tracelevel.intValue());
 			if (truncation != null)
-				sb.append(" TRUNCATION=").append(truncation.booleanValue() ? "YES" : "NO");
+				sb.append(" TRUNCATION=").append(truncation ? "YES" : "NO");
 			if (! StringUtils.isEmpty(port))
-				sb.append(" PORT=" + port);
+				sb.append(" PORT=").append(port);
 			if (! StringUtils.isEmpty(logfile))
-				sb.append(" XLOGFILE=" + logfile);
+				sb.append(" XLOGFILE=").append(logfile);
 			if (compress!=null)
 				sb.append(" COMPRESS=").append(compress.name());
 			if (codeflag!=null)
@@ -235,12 +235,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	private List<String> getFileList(String message) {
-		StringTokenizer st = new StringTokenizer(message, ";");
-		List<String> list = new LinkedList<>();
-		while (st.hasMoreTokens()) {
-			list.add(st.nextToken());
-		}
-		return list;
+		return StringUtil.split(message, ";");
 	}
 
 	/** one of create, append or replace */

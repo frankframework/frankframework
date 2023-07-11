@@ -17,7 +17,7 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,6 +38,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -163,17 +164,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pe != null && pe.isWriteToSecLog()) {
 				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
 				if (pe.getSecLogSessionKeys() != null) {
-					StringBuilder sk = new StringBuilder();
-					StringTokenizer st = new StringTokenizer(pe.getSecLogSessionKeys(), " ,;");
-					while (st.hasMoreTokens()) {
-						if (sk.length() > 0) {
-							sk.append(",");
-						}
-						String key = st.nextToken();
-						Object value = pipeLineSession.get(key);
-						sk.append(key).append("=").append(value);
-					}
-					secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
+					secLogMsg = secLogMsg + " sessionKeys [" +
+							StringUtil.splitToStream(pe.getSecLogSessionKeys(), " ,;")
+									.map(key -> key + "=" + pipeLineSession.get(key))
+									.collect(Collectors.joining(","))
+							+ "]";
 				}
 				secLog.info(secLogMsg);
 			}

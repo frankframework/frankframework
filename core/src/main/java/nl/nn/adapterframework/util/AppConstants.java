@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -192,19 +194,41 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
-	 * Uses the {@link #getResolvedProperty(String)} method.
-	 * Can be used to process lists of values.
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using the {@link #getResolvedProperty(String)} method. If the resolved property value is null, an empty list is returned.
+	 *
+	 * @param key the key of the property value to retrieve
+	 * @return a list of string values associated with the specified key, or an empty list if the resolved property is null
 	 */
-	public StringTokenizer getTokenizedProperty(String key) {
-		return new StringTokenizer(getResolvedProperty(key), ",");
+	public List<String> getListProperty(String key) {
+		String resolvedProperty = getResolvedProperty(key);
+		if (resolvedProperty == null) {
+			return Collections.emptyList();
+		}
+		return StringUtil.split(resolvedProperty);
 	}
+
+	/**
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string values provided as "defaults".
+	 *
+	 * @param key the key of the property value to retrieve
+	 * @param defaults the default list of string values to return if the resolved property is null
+	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null
+	 */
+	public List<String> getListProperty(String key, @Nonnull String defaults) {
+		String list = getResolvedProperty(key);
+		if (list != null) {
+			return StringUtil.split(list);
+		}
+		return StringUtil.split(defaults);
+	}
+
 	/**
 	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
 	 * Can be used to process lists of values.
 	 */
-	public StringTokenizer getTokenizedProperty(String key, String defaults) {
+	@Deprecated
+	public StringTokenizer getTokenizedProperty(String key, @Nonnull String defaults) {
 		String list = getResolvedProperty(key);
 		if (list==null)
 			list = defaults;
@@ -263,9 +287,8 @@ public final class AppConstants extends Properties implements Serializable {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
-		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String theFilename = tokenizer.nextToken().trim();
+		List<String> fileNameList = StringUtil.split(filename);
+		for (final String theFilename : fileNameList) {
 			try {
 				if(classLoader == null) {
 					throw new IllegalStateException("no classloader found!");

@@ -19,10 +19,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -37,6 +35,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -52,18 +51,18 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *    </trigger>
  * </monitor>
  * }
- * 
+ *
  * </code></pre>
  * @author  Gerrit van Brakel
  * @since   4.9
- * 
+ *
  * @version 2.0
  * @author Niels Meijer
  */
 @FrankDocGroup(name = "Monitoring")
 public class Monitor implements IConfigurable, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter String name;
 	private @Getter @Setter EventType type = EventType.TECHNICAL;
@@ -80,8 +79,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 
 	private MonitorManager manager = null;
 
-	private List<ITrigger> triggers = new ArrayList<>();
-	private Set<String> destinations = new HashSet<>();
+	private final List<ITrigger> triggers = new ArrayList<>();
+	private final Set<String> destinations = new HashSet<>();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	@Override
@@ -93,11 +92,10 @@ public class Monitor implements IConfigurable, DisposableBean {
 		}
 
 		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
-		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
-			ITrigger trigger = it.next();
-			if(!trigger.isConfigured()) {
+		for (ITrigger trigger : triggers) {
+			if (!trigger.isConfigured()) {
 				trigger.configure();
-				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
+				((ConfigurableApplicationContext) applicationContext).addApplicationListener(trigger);
 			}
 		}
 	}
@@ -155,9 +153,8 @@ public class Monitor implements IConfigurable, DisposableBean {
 	}
 
 	protected void clearEvents(boolean alarm) {
-		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
-			ITrigger trigger = it.next();
-			if (trigger.isAlarm()!=alarm) {
+		for (ITrigger trigger : triggers) {
+			if (trigger.isAlarm() != alarm) {
 				trigger.clearEvents();
 			}
 		}
@@ -178,8 +175,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType().name());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		for (Iterator<ITrigger> it=triggers.iterator();it.hasNext();) {
-			ITrigger trigger=it.next();
+		for (ITrigger trigger : triggers) {
 			trigger.toXml(monitor);
 		}
 		return monitor;
@@ -200,10 +196,7 @@ public class Monitor implements IConfigurable, DisposableBean {
 	//Digester setter
 	public void setDestinations(String newDestinations) {
 		destinations.clear();
-		StringTokenizer st=new StringTokenizer(newDestinations,",");
-		while (st.hasMoreTokens()) {
-			destinations.add(st.nextToken());
-		}
+		destinations.addAll(StringUtil.split(newDestinations));
 	}
 
 	public Set<String> getDestinationSet() {

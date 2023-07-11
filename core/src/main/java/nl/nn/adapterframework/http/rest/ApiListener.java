@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.http.rest;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,6 +41,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -283,17 +282,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
 	 */
 	public void setAuthenticationRoles(String authRoles) {
-		List<String> roles = new ArrayList<>();
-		if (StringUtils.isNotEmpty(authRoles)) {
-			StringTokenizer st = new StringTokenizer(authRoles, ",;");
-			while (st.hasMoreTokens()) {
-				String authRole = st.nextToken();
-				if(!roles.contains(authRole))
-					roles.add(authRole);
-			}
-		}
-
-		this.authenticationRoles = roles;
+		this.authenticationRoles = StringUtil.split(authRoles, ",;");
 	}
 	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;

@@ -16,10 +16,8 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
@@ -132,11 +130,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 
 	public void extractSessionKeyList() {
 		if (sessionKeys != null) {
-			sessionKeysList = new ArrayList<>();
-			StringTokenizer stringTokenizer = new StringTokenizer(sessionKeys, ",");
-			while (stringTokenizer.hasMoreElements()) {
-				sessionKeysList.add(stringTokenizer.nextToken());
-			}
+			sessionKeysList = StringUtil.split(sessionKeys);
 		}
 	}
 

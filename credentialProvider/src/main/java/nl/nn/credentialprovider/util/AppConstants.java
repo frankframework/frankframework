@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.util.Environment;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
 
 
 /**
@@ -186,26 +186,6 @@ public final class AppConstants extends Properties implements Serializable {
 	}
 
 	/**
-	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
-	 * Uses the {@link #getResolvedProperty(String)} method.
-	 * Can be used to process lists of values.
-	 */
-	public StringTokenizer getTokenizedProperty(String key) {
-		return new StringTokenizer(getResolvedProperty(key), ",");
-	}
-	/**
-	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
-	 * Uses the {@link #getResolvedProperty(String)} method.
-	 * Can be used to process lists of values.
-	 */
-	public StringTokenizer getTokenizedProperty(String key, String defaults) {
-		String list = getResolvedProperty(key);
-		if (list==null)
-			list = defaults;
-		return new StringTokenizer(list, ",");
-	}
-
-	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
 	 */
 	public Properties getAppConstants(String keyBase) {
@@ -258,24 +238,22 @@ public final class AppConstants extends Properties implements Serializable {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
-		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String theFilename = tokenizer.nextToken().trim();
+		List<String> fileNameList = StringUtil.split(filename);
+		for (final String theFilename : fileNameList) {
 			try {
-				ClassLoader cl = classLoader;
-				if(classLoader == null) {
+				if (classLoader == null) {
 					throw new IllegalStateException("no classloader found!");
 				}
-				List<URL> resources = Collections.list(cl.getResources(theFilename));
-				if(resources.isEmpty()) {
-					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
-						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
+				List<URL> resources = Collections.list(classLoader.getResources(theFilename));
+				if (resources.isEmpty()) {
+					if (APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
+						String msg = APP_CONSTANTS_PROPERTIES_FILE + " file not found, unable to initalize AppConstants";
 						log.severe(msg);
 						throw new MissingResourceException(msg, this.getClass().getSimpleName(), APP_CONSTANTS_PROPERTIES_FILE);
 					}
 					//An additional file to load properties from cannot be found
-					if(log.isLoggable(Level.FINE)) {
-						log.fine("cannot find resource ["+theFilename+"] in classloader ["+cl.getClass().getSimpleName()+"] to load additional properties from, ignoring");
+					if (log.isLoggable(Level.FINE)) {
+						log.fine("cannot find resource [" + theFilename + "] in classloader [" + classLoader.getClass().getSimpleName() + "] to load additional properties from, ignoring");
 					}
 				}
 
@@ -283,7 +261,7 @@ public final class AppConstants extends Properties implements Serializable {
 				Collections.reverse(resources);
 
 				for (URL url : resources) {
-					try(InputStream is = url.openStream()) {
+					try (InputStream is = url.openStream()) {
 						load(is);
 						log.info("Application constants loaded from url [" + url.toString() + "]");
 					}
@@ -294,7 +272,7 @@ public final class AppConstants extends Properties implements Serializable {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
 					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
-					if (StringUtils.isNotEmpty(loadFileSuffix)){
+					if (StringUtils.isNotEmpty(loadFileSuffix)) {
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
 						load(classLoader, loadFile, false);
@@ -308,7 +286,7 @@ public final class AppConstants extends Properties implements Serializable {
 							+ "_"
 							+ suffix
 							+ (StringUtils.isEmpty(extension) ? "" : "."
-									+ extension);
+							+ extension);
 					load(classLoader, suffixedFilename, false);
 				}
 			} catch (IOException e) {

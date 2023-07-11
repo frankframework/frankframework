@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +44,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -93,10 +93,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		credentialFactory = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
 
 		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
-			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
-			while (st.hasMoreTokens()) {
-				allowedDomains.add(st.nextToken());
-			}
+			allowedDomains.addAll(StringUtil.split(getDomainWhitelist()));
 		}
 
 		super.configure();
