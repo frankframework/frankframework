@@ -19,7 +19,7 @@
 		<frankdoc.version>1.1</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.1.214</h2.driver.version>
+		<h2.driver.version>2.2.220</h2.driver.version>
 		<db2.driver.version>11.5.8.0</db2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
