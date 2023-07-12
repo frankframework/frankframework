@@ -17,5 +17,8 @@ import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 import './app/views/monitors/monitors.component';
 import './app/views/notifications/notifications.component';
 import './app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
+import './app/views/scheduler/scheduler.component';
+import './app/views/scheduler/scheduler-add/scheduler-add.component';
+import './app/views/scheduler/scheduler-edit/scheduler-edit.component';
 import './app/views/status/status.component';
 import './app/views/webservices/webservices.component';

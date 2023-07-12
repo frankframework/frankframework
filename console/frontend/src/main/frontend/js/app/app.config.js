@@ -289,7 +289,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.scheduler', {
 				url: "/scheduler",
-				templateUrl: "js/app/views/scheduler/ShowScheduler.html",
+				component: "scheduler",
 				data: {
 					pageTitle: 'Scheduler',
 					breadcrumbs: 'Scheduler'
@@ -297,21 +297,19 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.add_schedule', {
 				url: "/scheduler/new",
-				templateUrl: "js/app/views/scheduler/AddEditSchedule.html",
+				component: "schedulerAdd",
 				data: {
 					pageTitle: 'Add Schedule',
 					breadcrumbs: 'Scheduler > Add Schedule'
 				},
-				controller: 'AddScheduleCtrl'
 			})
 			.state('pages.edit_schedule', {
 				url: "/scheduler/edit/:group/:name",
-				templateUrl: "js/app/views/scheduler/AddEditSchedule.html",
+				component: "schedulerEdit",
 				data: {
 					pageTitle: 'Edit Schedule',
 					breadcrumbs: 'Scheduler > Edit Schedule'
 				},
-				controller: 'EditScheduleCtrl',
 				params: {
 					name: "",
 					group: ""

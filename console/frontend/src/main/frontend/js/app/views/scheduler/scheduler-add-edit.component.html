@@ -1,0 +1,100 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+	<uib-alert ng-repeat="alert in $ctrl.state" type="{{alert.type}}">{{alert.message}}</uib-alert>
+	<div class="row">
+		<div class="col-lg-12 table-responsive">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<div class="pull-right">
+						<button ui-sref="pages.scheduler" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+					</div>
+					<h4>{{$state.current.data.pageTitle}}</h4>
+				</div>
+				<div class="ibox-content">
+					<form role="form">
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Schedule Name</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="name" type="text" ng-model="$ctrl.form.name" ng-disabled="editMode" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Job Group</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="group" type="text" ng-model="$ctrl.form.group" ng-disabled="jobGroup"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Configuration</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="configuration" ng-model="$ctrl.selectedConfiguration">
+									<option ng-repeat="config in $ctrl.configurations" ng-value="config.name">{{config.name}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Select an adapter</label>
+							<div class="col-sm-9">
+								<select class="form-control m-b" name="adapter" ng-model="$ctrl.form.adapter" ng-disabled="$ctrl.selectedConfiguration ==''">
+									<option ng-repeat="adapter in $ctrl.adapters | configurationFilter:this | withJavaListener" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Select a listener</label>
+							<div class="col-sm-9" ng-if="!$ctrl.form.adapter">
+								<input class="form-control m-b" disabled="disabled" value="Select an adapter first.."/>
+							</div>
+							<div class="col-sm-9" ng-if="$ctrl.form.adapter">
+								<select class="form-control m-b" name="receiver" ng-model="$ctrl.form.listener">
+									<option ng-repeat="receiver in $ctrl.adapters[$ctrl.form.adapter].receivers" ng-if="receiver.listener.class.startsWith('JavaListener')" ng-value="receiver.listener.name">{{receiver.listener.name}}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group" title="Quartz CRON Expression to specify execution times. Overrides Interval">
+							<label class="col-sm-3 control-label">CRON Expression</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="cron" type="text" ng-disabled="$ctrl.form.interval!=''" ng-model="$ctrl.form.cron"/>
+							</div>
+						</div>
+						<div class="form-group" title="Interval between executions. Only used when NO cron expression specified">
+							<label class="col-sm-3 control-label">Interval</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="interval" type="text" ng-disabled="$ctrl.form.cron!=''" ng-model="$ctrl.form.interval"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label label-height-30">Message</label>
+							<div class="col-sm-9">
+								<textarea class="form-control m-b" name="message" rows="5" style="resize:none;" ng-model="$ctrl.form.message"></textarea>
+							</div>
+						</div>
+						<div class="form-group" title="At most 255 chars (optional)">
+							<label class="col-sm-3 control-label">Description</label>
+							<div class="col-sm-9">
+								<input class="form-control m-b" name="description" type="text" ng-model="$ctrl.form.description" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Contains Locker</label>
+							<div class="col-sm-1">
+								<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="$ctrl.form.locker" /></span>
+							</div>
+							<div class="col-sm-8">
+								<input class="form-control m-b" name="lockkey" type="text" ng-model="$ctrl.form.lockkey" placeholder="leave blank for default key"/>
+							</div>
+						</div>
+						<div class="col-lg-3 m-t-md">
+							<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
+						</div>
+						<div class="col-lg-9 m-t-md">
+							<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit($ctrl.form)">Save</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
