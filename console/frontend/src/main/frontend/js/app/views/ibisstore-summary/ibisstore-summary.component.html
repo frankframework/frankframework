@@ -1,9 +1,9 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight" ng-controller="IBISstoreSummaryCtrl">
-    <div class="alert alert-warning" role="alert" type="warning" ng-if="error">
-        <span class="ng-binding ng-scope" ng-bind-html="error"></span>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="alert alert-warning" role="alert" type="warning" ng-if="$ctrl.error">
+        <span class="ng-binding ng-scope" ng-bind-html="$ctrl.error"></span>
     </div>
 	<div class="row">
 		<div class="col-lg-12">
@@ -16,24 +16,24 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Datasource</label>
 							<div class="col-sm-9">
-								<select class="form-control" name="datasource" ng-model="form.datasource">
-									<option ng-repeat="datasource in datasources">{{datasource}}</option>
+								<select class="form-control" name="datasource" ng-model="$ctrl.form.datasource">
+									<option ng-repeat="datasource in $ctrl.datasources">{{datasource}}</option>
 								</select>
 							</div>
 						</div>
 						<div class="row form-group">
 							<div class="col-sm-3 m-t-md">
-								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+								<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
 							</div>
 							<div class="col-sm-3 m-t-md">
-								<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+								<button class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="$ctrl.submit($ctrl.form)">Send</button>
 							</div>
 						</div>
 					</form>
 				</div>
 			</div>
 		</div>
-		<div class="col-lg-12" ng-if="result">
+		<div class="col-lg-12" ng-if="$ctrl.result">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<h4>Result</h4>
@@ -53,7 +53,7 @@
 									<th title="number of messages in this slot on this date">#</th>
 								</tr>
 							</thead>
-							<tbody ng-repeat="t in result">
+							<tbody ng-repeat="t in $ctrl.result">
 								<tr ng-repeat="s in t.slots">
 									<td ng-if="$index===0" rowspan="{{t.slotcount}}" title="{{t.name}}">{{t.type}}</td>
 									<td ng-if="$index===0" rowspan="{{t.slotcount}}">{{t.msgcount}}</td>

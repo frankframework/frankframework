@@ -245,16 +245,16 @@ public abstract class JdbcTestBase {
 	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
-		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		log.debug("executing translated query ["+context.getQuery()+"]");
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+
+		log.debug("executing translated query [{}]", translatedQuery);
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
-				return  connection.prepareStatement(context.getQuery());
+				return  connection.prepareStatement(translatedQuery);
 			}
-			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
-		JdbcUtil.executeStatement(connection, context.getQuery());
+		JdbcUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
 

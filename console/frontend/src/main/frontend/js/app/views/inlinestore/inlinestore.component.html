@@ -1,10 +1,9 @@
 <!-- Angular ui-router hack-->
 <div ui-view></div>
 
-<div class="wrapper wrapper-content animated fadeInRight"
-	ng-controller="InlineStoreOverviewCtrl">
+<div class="wrapper wrapper-content animated fadeInRight">
 	<div class="row">
-		<div class="col-lg-12" ng-if="result">
+		<div class="col-lg-12" ng-if="$ctrl.result">
 			<div class="ibox float-e-margins">
 				<div class="ibox-title">
 					<h4>InlineStore Overview</h4>
@@ -21,7 +20,7 @@
 									<th title="number of messages">#</th>
 								</tr>
 							</thead>
-							<tbody ng-repeat="(name, stateItem) in result" ng-if="stateItem.items.length > 0">
+							<tbody ng-repeat="(name, stateItem) in $ctrl.result" ng-if="stateItem.items.length > 0">
 								<tr ng-repeat="item in stateItem.items" ng-init="innerIndex=$index">
 									<td ng-if="$index===0" rowspan="0">{{name}}</td>
 									<td ng-if="$index===0" rowspan="0">{{stateItem.totalMessageCount}}</td>

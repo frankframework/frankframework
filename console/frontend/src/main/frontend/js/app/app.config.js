@@ -250,7 +250,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.send_message', {
 				url: "/jms/send-message",
-				templateUrl: "js/app/views/jms/jms-send-message/SendJmsMessage.html",
+				component: "jmsSendMessage",
 				data: {
 					pageTitle: 'Send JMS Message',
 					breadcrumbs: 'JMS > Send Message'
@@ -258,7 +258,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_queue', {
 				url: "/jms/browse-queue",
-				templateUrl: "js/app/views/jms/jms-browse-queue/BrowseJmsQueue.html",
+				component: "jmsBrowseQueue",
 				data: {
 					pageTitle: 'Browse JMS Queue',
 					breadcrumbs: 'JMS > Browse Queue'
@@ -336,7 +336,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_tables', {
 				url: "/jdbc/browse-tables",
-				templateUrl: "js/app/views/jdbc/jdbc-browse-tables/BrowseJdbcTable.html",
+				component: "jdbcBrowseTables",
 				data: {
 					pageTitle: 'Browse JDBC Tables',
 					breadcrumbs: 'JDBC > Browse Tables'
@@ -360,7 +360,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.inlinestore_overview', {
 				url: "/inlinestores/overview",
-				templateUrl: "js/app/views/inlinestore/ShowInlineMessageStoreOverview.html",
+				component: "inlineStore",
 				data: {
 					pageTitle: 'InlineStore Overview',
 					breadcrumbs: 'InlineStore Overview'
@@ -404,7 +404,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.ibisstore_summary', {
 				url: "/ibisstore-summary",
-				templateUrl: "js/app/views/ibisstore-summary/ShowIbisstoreSummary.html",
+				component: "ibisStoreSummary",
 				data: {
 					pageTitle: 'Ibisstore Summary',
 					breadcrumbs: 'JDBC > Ibisstore Summary'
@@ -412,7 +412,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.liquibase', {
 				url: "/liquibase",
-				templateUrl: "js/app/views/liquibase/ShowLiquibaseScript.html",
+				component: "liquibase",
 				data: {
 					pageTitle: 'Liquibase Script',
 					breadcrumbs: 'JDBC > Liquibase Script'

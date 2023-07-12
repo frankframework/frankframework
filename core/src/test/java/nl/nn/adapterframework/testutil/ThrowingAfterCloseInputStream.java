@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.pipes;
+package nl.nn.adapterframework.testutil;
 
 import java.io.IOException;
 import java.io.InputStream;

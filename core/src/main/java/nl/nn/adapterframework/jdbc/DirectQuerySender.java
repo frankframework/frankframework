@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -122,12 +121,12 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	}
 
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		try (JdbcSession jdbcSession = isAvoidLocking() ? getDbmsSupport().prepareSessionForNonLockingRead(connection) : null) {
-			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message, session);
+		try {
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
 			try {
 				return executeStatementSet(queryExecutionContext, message, session, next);
 			} finally {
-				closeStatementSet(queryExecutionContext, session);
+				closeStatementSet(queryExecutionContext);
 			}
 		} catch (SenderException|TimeoutException e) {
 			throw e;
@@ -136,9 +135,9 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		}
 	}
 
-	protected QueryExecutionContext prepareStatementSet(Connection connection, Message message, PipeLineSession session) throws SenderException {
+	protected QueryExecutionContext prepareStatementSet(Connection connection, Message message) throws SenderException {
 		try {
-			QueryExecutionContext result = getQueryExecutionContext(connection, message, session);
+			QueryExecutionContext result = getQueryExecutionContext(connection, message);
 			if (getBatchSize()>0) {
 				result.getStatement().clearBatch();
 			}

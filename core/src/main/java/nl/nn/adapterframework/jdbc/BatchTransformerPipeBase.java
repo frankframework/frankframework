@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,10 +37,12 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * abstract base class for JDBC batch transforming pipes.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("Not tested and maintained, please look for alternatives if you use this class")
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	protected FixedQuerySender querySender;
@@ -69,7 +71,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		querySender.close();
 	}
 
-	public class ResultSetReader extends BufferedReader {
+	public static class ResultSetReader extends BufferedReader {
 		Connection conn;
 		ResultSet rs;
 
@@ -96,7 +98,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();

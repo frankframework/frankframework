@@ -88,6 +88,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	// for jwt validation
 	private @Getter String requiredIssuer=null;
 	private @Getter String jwksUrl=null;
+	private @Getter String jwtHeader="Authorization";
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
@@ -356,6 +357,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Keysource URL to validate JWT */
 	public void setJwksURL(String string) {
 		this.jwksUrl = string;
+	}
+
+	/** Header to extract JWT from */
+	public void setJwtHeader(String string) {
+		this.jwtHeader = string;
 	}
 
 	/** Comma separated list of required claims */
