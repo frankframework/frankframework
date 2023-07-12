@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const LiquibaseController = function ($rootScope, Api, Misc) {
+const LiquibaseController = function ($rootScope, Api, Misc, appService) {
     const ctrl = this;
 
     ctrl.form = {};
@@ -9,7 +9,7 @@ const LiquibaseController = function ($rootScope, Api, Misc) {
 
     ctrl.$onInit = function () {
         let findFirstAvailabeConfiguration = function () {
-			ctrl.configurations = $rootScope.configurations();
+			ctrl.configurations = appService.configurations();
 
             for (let i in ctrl.configurations) {
                 let configuration = ctrl.configurations[i];
@@ -21,8 +21,8 @@ const LiquibaseController = function ($rootScope, Api, Misc) {
             };
         };
 
-        findFirstAvailabeConfiguration();
 		$rootScope.$on('configurations', findFirstAvailabeConfiguration);
+        findFirstAvailabeConfiguration();
     };
 
     ctrl.download = function () {
@@ -54,6 +54,6 @@ const LiquibaseController = function ($rootScope, Api, Misc) {
 };
 
 appModule.component('liquibase', {
-	controller: ['$rootScope', 'Api', 'Misc', LiquibaseController],
+	controller: ['$rootScope', 'Api', 'Misc', 'appService', LiquibaseController],
     templateUrl: 'js/app/views/liquibase/liquibase.component.html'
 });
