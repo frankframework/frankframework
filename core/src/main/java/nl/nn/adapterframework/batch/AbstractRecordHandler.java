@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.batch;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,8 +51,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private @Getter String inputSeparator;
 	private @Getter boolean trim=false;
 
-	private final List<InputField> inputFields = new LinkedList<>();
-	private final List<Integer> recordIdentifyingFields = new LinkedList<>();
+	private final List<InputField> inputFields = new ArrayList<>();
+	private final List<Integer> recordIdentifyingFields = new ArrayList<>();
 
 	protected @Getter ParameterList paramList = null;
 

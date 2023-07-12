@@ -18,7 +18,6 @@ package nl.nn.adapterframework.xcom;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -105,8 +104,8 @@ public class XComSender extends SenderWithParametersBase {
 				throw new ConfigurationException("Attribute [port] is not a number", e);
 			}
 		}
-		if (tracelevel != null && (tracelevel.intValue() < 0 || tracelevel.intValue() > 10)) {
-			throw new ConfigurationException("Attribute [tracelevel] should be between 0 (no trace) and 10, not " + tracelevel.intValue());
+		if (tracelevel != null && (tracelevel < 0 || tracelevel > 10)) {
+			throw new ConfigurationException("Attribute [tracelevel] should be between 0 (no trace) and 10, not " + tracelevel);
 		}
 		if (StringUtils.isEmpty(workingDirName)) {
 			throw new ConfigurationException("Attribute [workingDirName] is not set");
@@ -130,8 +129,7 @@ public class XComSender extends SenderWithParametersBase {
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		for (Iterator<String> filenameIt = getFileList(messageString).iterator(); filenameIt.hasNext(); ) {
-			String filename = filenameIt.next();
+		for (String filename : getFileList(messageString)) {
 			log.debug("Start sending " + filename);
 
 			// get file to send
@@ -150,13 +148,18 @@ public class XComSender extends SenderWithParametersBase {
 					while ((line = br.readLine()) != null) {
 						output.append(line);
 					}
+				} catch (IOException e) {
+					// Make sure process is cleaned up
+					p.destroy();
+					// Rethrow for further cleanup
+					throw e;
 				}
 
 				// wait until the process is completely finished
 				try {
 					p.waitFor();
-				} catch(InterruptedException e) {
-					log.warn(getLogPrefix()+"has been interrupted", e);
+				} catch (InterruptedException e) {
+					log.warn(getLogPrefix() + "has been interrupted", e);
 				}
 
 				log.debug("output for {} = {}", localFile::getName, output::toString);
@@ -166,8 +169,7 @@ public class XComSender extends SenderWithParametersBase {
 				if (p.exitValue() != 0) {
 					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
 				}
-			}
-			catch(IOException e) {
+			} catch (IOException e) {
 				throw new SenderException("Error while executing command " + getCommand(session, localFile, false), e);
 			}
 		}

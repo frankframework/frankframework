@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -199,12 +200,9 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param key the key of the property value to retrieve
 	 * @return a list of string values associated with the specified key, or an empty list if the resolved property is null
 	 */
-	public List<String> getListProperty(String key) {
-		String resolvedProperty = getResolvedProperty(key);
-		if (resolvedProperty == null) {
-			return Collections.emptyList();
-		}
-		return StringUtil.split(resolvedProperty);
+	@Nonnull
+	public List<String> getListProperty(@Nonnull String key) {
+		return getListProperty(key, null);
 	}
 
 	/**
@@ -212,9 +210,11 @@ public final class AppConstants extends Properties implements Serializable {
 	 *
 	 * @param key the key of the property value to retrieve
 	 * @param defaults the default list of string values to return if the resolved property is null
-	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null
+	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null.
+	 * If the defaults is also null, then returns an empty list.
 	 */
-	public List<String> getListProperty(String key, @Nonnull String defaults) {
+	@Nonnull
+	public List<String> getListProperty(@Nonnull String key, @Nullable String defaults) {
 		String list = getResolvedProperty(key);
 		if (list != null) {
 			return StringUtil.split(list);
