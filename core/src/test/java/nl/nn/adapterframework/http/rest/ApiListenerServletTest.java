@@ -1044,6 +1044,24 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void testJwtTokenParsingWithJwtHeader() throws Exception {
+		final String JWT_HEADER = "X-JWT-Assertion";
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+				.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+				.setRequiredIssuer("JWTPipeTest")
+				.setAuthenticationMethod(AuthenticationMethods.JWT)
+				.setJwtHeader(JWT_HEADER)
+				.build();
+
+		Response result = service(prepareJWTRequest(null, JWT_HEADER));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+		assertTrue(result.containsHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testJwtTokenParsingWithInterceptedPayload() throws Exception {
 		String token="eyJhbGciOiJSUzI1NiJ9."
 				+ "eyJpc3MiOiJKV1RQaXBlVGVHzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
@@ -1204,8 +1222,11 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
-		Map<String, String> headers = new HashMap<String, String>();
-		headers.put("Authorization", "Bearer "+ (token != null ? token : createJWT()) );
+		return prepareJWTRequest(token, "Authorization");
+	}
+	public MockHttpServletRequest prepareJWTRequest(String token, String header) throws Exception {
+		Map<String, String> headers = new HashMap();
+		headers.put(header, "Bearer "+ (token != null ? token : createJWT()) );
 
 		return createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 	}
@@ -1280,6 +1301,11 @@ public class ApiListenerServletTest extends Mockito {
 
 		public ApiListenerBuilder setExactMatchClaims(String exactMatchClaims) {
 			listener.setExactMatchClaims(exactMatchClaims);
+			return this;
+		}
+
+		public ApiListenerBuilder setJwtHeader(String headerName) {
+			listener.setJwtHeader(headerName);
 			return this;
 		}
 
