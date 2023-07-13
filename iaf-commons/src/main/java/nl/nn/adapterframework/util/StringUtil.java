@@ -30,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class StringUtil {
 
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
+
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
@@ -233,8 +235,6 @@ public class StringUtil {
 		return splitToStream(input)
 				.collect(Collectors.toList());
 	}
-
-	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
 
 	/**
 	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
