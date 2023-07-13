@@ -29,13 +29,14 @@ import nl.nn.adapterframework.util.StringUtil;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 
-	private @Getter Map<String, Object> claimsSet;
-	private @Getter String roleClaim;
-	private @Getter String principalNameClaim;
+	private final @Getter Map<String, Object> claimsSet;
+	private final @Getter String roleClaim;
+	private final @Getter String principalNameClaim;
 
 	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
+		this.principalNameClaim = principalNameClaim;
 	}
 
 	@Override
@@ -46,15 +47,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public Principal getPrincipal(PipeLineSession session) {
-		Principal principal = new Principal() {
-
-			@Override
-			public String getName() {
-				return (String) getClaimsSet().get(principalNameClaim);
-			}
-
-		};
-		return principal;
+		return () -> (String) getClaimsSet().get(principalNameClaim);
 	}
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
@@ -73,8 +66,9 @@ public class JwtSecurityHandler implements ISecurityHandler {
 			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
 					.map(s -> StringUtil.split(s, "="))
 					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
-			for (String key : claims.keySet()) {
-				String expectedValue = claims.get(key);
+			for (Map.Entry<String, String> entry : claims.entrySet()) {
+				String key = entry.getKey();
+				String expectedValue = entry.getValue();
 				String value = (String) claimsSet.get(key);
 				if(!value.equals(expectedValue)) {
 					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
