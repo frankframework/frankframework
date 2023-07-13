@@ -25,10 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
@@ -42,6 +44,9 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 	private static final String WELCOME_FILE = "/index.html";
 
 	private @Setter ApplicationContext applicationContext;
+
+	@Autowired
+	private Environment environment;
 
 	/**
 	 * Spring MVC Bean that allows file retrieval from (classpath) jars and static resources (META-INF/resources).
@@ -64,7 +69,11 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 
 		};
 		SpringUtils.autowireByName(applicationContext, requestHandler);
-		requestHandler.setLocationValues(Arrays.asList("classpath:/META-INF/resources/iaf/gui/"));
+		String frontendFolder = "classpath:/META-INF/resources/iaf/gui/";
+		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
+			frontendFolder = "file:C:/Users/matthijs/Projects/iaf/console/frontend/target/frontend";
+		}
+		requestHandler.setLocationValues(Arrays.asList(frontendFolder));
 		return requestHandler;
 	}
 
