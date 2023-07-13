@@ -42,6 +42,11 @@ import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
+ * The InputOutputPipeProcessor class is a subclass of PipeProcessorBase and is responsible for processing pipes in a pipeline.
+ * It handles input and output manipulation, including replacing input with session values, replacing input with fixed values,
+ * replacing empty input with a fixed value, restoring moved elements from a compacted result, compacting a received message,
+ * storing a result in a session key, preserving input, and writing to a secure log.
+ *
  * @author Jaco de Groot
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
@@ -50,6 +55,19 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private static final String ME_START = "{sessionKey:";
 	private static final String ME_END = "}";
 
+	/**
+	 * Processes the pipe in the pipeline.
+	 * This method is called by the Pipeline to process the given pipe.
+	 * It performs various operations on the message and modifies it as required.
+	 *
+	 * @param pipeLine The PipeLine to which the pipe belongs.
+	 * @param pipe The pipe to be processed.
+	 * @param message The message to be processed.
+	 * @param pipeLineSession The session of the pipeline execution.
+	 * @param chain The chain of functions to be executed.
+	 * @return The result of processing the pipe.
+	 * @throws PipeRunException if there is an error during processing.
+	 */
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
