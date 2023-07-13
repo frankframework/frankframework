@@ -158,7 +158,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		return null;
 	}
 
-	public class ResponseValidatorWrapper implements IValidator {
+	public static class ResponseValidatorWrapper implements IValidator {
 
 		private @Getter @Setter String name;
 

@@ -75,13 +75,13 @@ public class InlineStorage extends BusEndpointBase {
 		return new JsonResponseMessage(storeItemsGroupedByProcessState);
 	}
 
-	private class InlineStoreStateItem {
+	private static class InlineStoreStateItem {
 		private @Getter List<InlineStoreItem> items = new LinkedList<>();
 		private @Getter @Setter int totalMessageCount;
 	}
 
 	@AllArgsConstructor
-	private class InlineStoreItem {
+	private static class InlineStoreItem {
 		private @Getter @Setter String adapterName;
 		private @Getter @Setter String receiverName;
 		private @Getter @Setter int messageCount;
