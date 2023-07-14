@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -125,16 +127,30 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			String sessionKey = getInputFormatSessionKey();
 
 			if (!session.containsKey(sessionKey)) {
-				String acceptHeader = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
-				if(isAutoFormat() && StringUtils.isNotEmpty(acceptHeader)) {
-					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", acceptHeader, sessionKey);
-					session.put(sessionKey, acceptHeader);
+				if(isAutoFormat()) {
+					String acceptHeaderValue = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
+					String determinedFormat = parseAcceptHeader(format, acceptHeaderValue);
+
+					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", determinedFormat, sessionKey);
+					session.put(sessionKey, determinedFormat);
 				} else {
 					log.debug("storing default inputFormat [{}] under session key [{}]", format, sessionKey);
 					session.put(sessionKey, format);
 				}
 			}
 		}
+	}
+
+	/**
+	 * Default format has precedence over the accept header, accept header may be invalid or * slash *, in which case it should be ignored. First accept value wins.
+	 */
+	private String parseAcceptHeader(DocumentFormat detectedFormat, String acceptHeaderValue) {
+		if(StringUtils.isEmpty(acceptHeaderValue) || "*/*".equals(acceptHeaderValue)) {
+			return detectedFormat.name();
+		}
+
+		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue).filter(t -> !t.equals("*/*")).findFirst();
+		return value.orElse(detectedFormat.name());
 	}
 
 	/**
@@ -154,7 +170,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
 			messageToValidate="{}";
-			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
 		} else {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
