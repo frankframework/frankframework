@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.runner;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -69,10 +71,22 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 
 		};
 		SpringUtils.autowireByName(applicationContext, requestHandler);
+
 		String frontendFolder = "classpath:/META-INF/resources/iaf/gui/";
 		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
-			frontendFolder = "file:C:/Users/matthijs/Projects/iaf/console/frontend/target/frontend";
+			String devFrontendLocation = environment.getProperty("frontend.resources.location");
+			if(devFrontendLocation == null) { // get default location based on current working directory
+				Path currentRelativePath = Paths.get("");
+				String basePath = currentRelativePath.toAbsolutePath().toString();
+				devFrontendLocation = basePath + "/console/frontend/target/frontend/";
+			}
+
+			if (!devFrontendLocation.endsWith("/")) {
+				devFrontendLocation += "/";
+			}
+			frontendFolder = "file:" + devFrontendLocation;
 		}
+
 		requestHandler.setLocationValues(Arrays.asList(frontendFolder));
 		return requestHandler;
 	}
