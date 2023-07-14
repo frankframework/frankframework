@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.runner;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
@@ -49,6 +51,24 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 
 	@Autowired
 	private Environment environment;
+
+	private String getFrontendLocation() {
+		String frontendFolder = "classpath:/META-INF/resources/iaf/gui/";
+		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
+			String devFrontendLocation = environment.getProperty("frontend.resources.location");
+			if(devFrontendLocation == null) {
+				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory
+				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString();
+			}
+
+			if (!devFrontendLocation.endsWith("/")) {
+				devFrontendLocation += "/";
+			}
+			frontendFolder = ResourceUtils.FILE_URL_PREFIX + devFrontendLocation;
+		}
+
+		return frontendFolder;
+	}
 
 	/**
 	 * Spring MVC Bean that allows file retrieval from (classpath) jars and static resources (META-INF/resources).
@@ -72,22 +92,7 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 		};
 		SpringUtils.autowireByName(applicationContext, requestHandler);
 
-		String frontendFolder = "classpath:/META-INF/resources/iaf/gui/";
-		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
-			String devFrontendLocation = environment.getProperty("frontend.resources.location");
-			if(devFrontendLocation == null) { // get default location based on current working directory
-				Path currentRelativePath = Paths.get("");
-				String basePath = currentRelativePath.toAbsolutePath().toString();
-				devFrontendLocation = basePath + "/console/frontend/target/frontend/";
-			}
-
-			if (!devFrontendLocation.endsWith("/")) {
-				devFrontendLocation += "/";
-			}
-			frontendFolder = "file:" + devFrontendLocation;
-		}
-
-		requestHandler.setLocationValues(Arrays.asList(frontendFolder));
+		requestHandler.setLocationValues(Arrays.asList(getFrontendLocation()));
 		return requestHandler;
 	}
 
