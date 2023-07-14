@@ -99,7 +99,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private @Getter Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
+	private @Getter Level defaultMsgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 	private @Getter String targetDesignDocument;
 
@@ -156,7 +156,7 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public void configure() throws ConfigurationException { //TODO check if we should fail when the adapter has already been configured?
 		msgLog = LogUtil.getMsgLogger(this);
-		Configurator.setLevel(msgLog.getName(), msgLogLevel);
+		Configurator.setLevel(msgLog.getName(), defaultMsgLogLevel);
 		configurationSucceeded = false;
 		log.debug("configuring adapter [{}]", name);
 		if(getName().contains("/")) {
@@ -1043,18 +1043,18 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
 	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
 	 */
-	public void setMsgLogLevel(MessageLogLevel level) throws ConfigurationException {
-		msgLogLevel = level.getEffectiveLevel();
+	public void setDefaultMsgLogLevel(MessageLogLevel level) throws ConfigurationException {
+		defaultMsgLogLevel = level.getEffectiveLevel();
 	}
 
 	@Deprecated
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
 		if (requestReplyLogging) {
 			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=DEBUG");
-			msgLogLevel = Level.DEBUG;
+			defaultMsgLogLevel = Level.DEBUG;
 		} else {
 			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=OFF");
-			msgLogLevel = Level.OFF;
+			defaultMsgLogLevel = Level.OFF;
 		}
 	}
 
