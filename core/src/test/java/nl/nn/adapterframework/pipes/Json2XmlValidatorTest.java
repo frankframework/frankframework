@@ -249,7 +249,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testAcceptHeaderAndIgnoreMessage() throws Exception {
+	public void testInputFormatSessionKeyAndIgnoreMessage() throws Exception {
 		pipe.setName("Response_To_Json_from_acceptSession");
 		pipe.setInputFormatSessionKey("Accept");
 		pipe.setOutputFormat(DocumentFormat.XML);
