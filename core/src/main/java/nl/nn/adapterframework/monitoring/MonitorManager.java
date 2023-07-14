@@ -36,7 +36,6 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.Event;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -55,8 +54,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
 	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
 	private Map<String, IMonitorDestination> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
-
-	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
 
 	/**
 	 * (re)configure all destinations and all monitors.
@@ -166,7 +163,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	public XmlBuilder toXml() {
 		XmlBuilder configXml=new XmlBuilder("monitoring");
-		configXml.addAttribute("enabled",isEnabled());
 		for(String name : destinations.keySet()) {
 			IMonitorDestination ma=getDestination(name);
 
@@ -182,10 +178,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		return configXml;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
 	}
 
 	@Override
