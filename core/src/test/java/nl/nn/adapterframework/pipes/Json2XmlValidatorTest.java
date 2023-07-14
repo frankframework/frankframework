@@ -184,7 +184,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 
-		doPipe(pipe, input,session); // first run the request validation ...
+		doPipe(pipe, input, session); // first run the request validation ...
 
 		IValidator validator = pipe.getResponseValidator();
 		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
@@ -211,7 +211,45 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	}
 
 	@Test
-	public void testAcceptHeaderAndIgnoreMessage() throws Exception {
+	public void testDefaultAcceptHeaderFromMessage() throws Exception {
+		testDefaultAcceptHeaderFromMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*");
+	}
+
+	@Test
+	public void testDefaultAcceptHeaderFromMessageJSON() throws Exception {
+		testDefaultAcceptHeaderFromMessage(DocumentFormat.JSON, DocumentFormat.JSON, "*/*");
+	}
+
+	@Test
+	public void testMultipleAcceptHeaderValuesFromMessage() throws Exception {
+		testDefaultAcceptHeaderFromMessage(DocumentFormat.XML, DocumentFormat.JSON, "application/json    ,application/xml,     */*");
+	}
+
+	private void testDefaultAcceptHeaderFromMessage(DocumentFormat defaultFormat, DocumentFormat expectedFormat, String acceptHeader) throws Exception {
+		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setRoot("Root");
+		pipe.setResponseRoot("Root");
+		pipe.setOutputFormat(defaultFormat);
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(new Parameter("a", "param_a"));
+		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
+		pipe.configure();
+		pipe.start();
+
+		// Get request with no content, when no (valid) accept header, fall back to the default.
+		Message inputMessage = new Message("", new MessageContext().with("Header.Accept", acceptHeader));
+
+		doPipe(inputMessage);
+
+		assertEquals(expectedFormat, pipe.getOutputFormat(session, true));
+	}
+
+	@Test
+	public void testInputFormatSessionKeyAndIgnoreMessage() throws Exception {
 		pipe.setName("Response_To_Json_from_acceptSession");
 		pipe.setInputFormatSessionKey("Accept");
 		pipe.setOutputFormat(DocumentFormat.XML);
