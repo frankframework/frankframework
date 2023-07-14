@@ -36,34 +36,43 @@ public class SftpFileRef {
 	private String name;
 	private SftpATTRS attributes = null;
 
-	public SftpFileRef() {
+	private SftpFileRef() {
 	}
 
 	public SftpFileRef(String name) {
-		this();
-		setName(name);
+		this(name, null);
 	}
 
+	/**
+	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 */
+	public SftpFileRef(String name, String folder) {
+		setName(name);
+		setFolder(folder);
+	}
+
+	/**
+	 * Returns the filename, not the full (relative) path
+	 */
 	public String getFilename() {
 		return name;
 	}
 
-	public void setName(String name) {
+	/** Strip folder prefix of filename if present. May not be changed after creation */
+	private void setName(String name) {
 		String normalized = FilenameUtils.normalize(name, true);
 		this.name = FilenameUtils.getName(normalized);
 		setFolder(FilenameUtils.getFullPathNoEndSeparator(normalized));
 	}
 
-	public void setFolder(String folder) {
+	private void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
-			if(this.folder != null) {
-				this.folder = FilenameUtils.normalize(folder + "/" + this.folder, true);
-			} else {
-				this.folder = folder;
-			}
+			this.folder = FilenameUtils.normalize(folder, true);
 		}
 	}
 
+	/** Returns the canonical name inclusive file path when present */
 	public String getName() {
 		String prefix = folder != null ? folder + "/" : "";
 		return prefix + name;
@@ -75,12 +84,20 @@ public class SftpFileRef {
 	}
 
 	/**
-	 * Creates a deep-copy of FTPFile
+	 * Creates a deep-copy of LsEntry
 	 */
 	public static SftpFileRef fromLsEntry(LsEntry entry) {
+		return fromLsEntry(entry, null);
+	}
+
+	/**
+	 * Creates a deep-copy of LsEntry, relative to the provided folder
+	 */
+	public static SftpFileRef fromLsEntry(LsEntry entry, String folder) {
 		SftpFileRef file = new SftpFileRef();
 		file.setName(entry.getFilename());
-		file.attributes = entry.getAttrs();
+		file.setFolder(folder);
+		file.setAttrs(entry.getAttrs());
 		return file;
 	}
 

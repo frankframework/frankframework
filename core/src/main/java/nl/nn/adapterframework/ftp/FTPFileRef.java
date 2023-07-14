@@ -32,19 +32,36 @@ public class FTPFileRef extends FTPFile {
 	private static final long serialVersionUID = 9010790363003272021L;
 	private @Getter String folder;
 
-	public FTPFileRef() {
+	private FTPFileRef() {
 		setType(FTPFile.FILE_TYPE);
 	}
 
+	/**
+	 * Create a new file reference, strips the folder of the filename when present
+	 */
 	public FTPFileRef(String name) {
 		this();
 		setName(name);
 	}
 
+	/**
+	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 */
+	public FTPFileRef(String name, String folder) {
+		this();
+		setName(name);
+		setFolder(folder);
+	}
+
+	/**
+	 * Returns the filename, not the full (relative) path
+	 */
 	public String getFileName() {
 		return super.getName();
 	}
 
+	/** Strip folder prefix of filename if present. May not be changed after creation */
 	@Override
 	public void setName(String name) {
 		String normalized = FilenameUtils.normalize(name, true);
@@ -52,16 +69,14 @@ public class FTPFileRef extends FTPFile {
 		setFolder(FilenameUtils.getFullPathNoEndSeparator(normalized));
 	}
 
-	public void setFolder(String folder) {
+	/** Overwrites the folder of the file, in case setName was called with a canonical path */
+	private void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
-			if(this.folder != null) {
-				this.folder = FilenameUtils.normalize(folder + "/" + this.folder, true);
-			} else {
-				this.folder = folder;
-			}
+			this.folder = FilenameUtils.normalize(folder, true);
 		}
 	}
 
+	/** Returns the canonical name inclusive file path when present */
 	@Override
 	public String getName() {
 		String prefix = folder != null ? folder + "/" : "";
@@ -73,6 +88,7 @@ public class FTPFileRef extends FTPFile {
 		return "file-ref name["+super.getName()+"] folder["+getFolder()+"]";
 	}
 
+	/** Update the FTPFile attributes */
 	public void updateFTPFile(FTPFile ftpFile) {
 		setGroup(ftpFile.getGroup());
 		setHardLinkCount(ftpFile.getHardLinkCount());
@@ -89,11 +105,19 @@ public class FTPFileRef extends FTPFile {
 	 * Creates a deep-copy of FTPFile
 	 */
 	public static FTPFileRef fromFTPFile(FTPFile ftpFile) {
+		return fromFTPFile(ftpFile, null);
+	}
+
+	/**
+	 * Creates a deep-copy of FTPFile, relative to the provided folder
+	 */
+	public static FTPFileRef fromFTPFile(FTPFile ftpFile, String folder) {
 		FTPFileRef file = new FTPFileRef();
 		file.setGroup(ftpFile.getGroup());
 		file.setHardLinkCount(ftpFile.getHardLinkCount());
 		file.setLink(ftpFile.getLink());
 		file.setName(ftpFile.getName());
+		file.setFolder(folder);
 		file.setRawListing(ftpFile.getRawListing());
 		file.setSize(ftpFile.getSize());
 		file.setTimestamp(ftpFile.getTimestamp());

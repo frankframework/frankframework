@@ -8,6 +8,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
+
 public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	public Path folder;
@@ -19,7 +21,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void setUp() throws Exception {
-		// not necessary
+		FileUtils.cleanDirectory(folder.toFile());
 	}
 
 	@Override
