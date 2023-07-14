@@ -31,16 +31,23 @@ public class SmbFileRef {
 	private @Getter String folder;
 	private @Nullable @Getter @Setter FileAllInformation attributes = null;
 
-	public SmbFileRef(@Nonnull String name) {
-		setName(name);
+	/**
+	 * Create a new file reference, strips the folder of the filename when present
+	 */
+	public SmbFileRef(@Nonnull String path) {
+		setName(path);
 	}
 
+	/**
+	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
+	 * @param folder The directory the file. This always has presedence over the canonical path provided by the name.
+	 */
 	public SmbFileRef(@Nonnull String name, String folder) {
 		setName(name);
 		setFolder(folder);
 	}
 
-	//strip folder prefix of filename if present
+	/** Strip folder prefix of filename if present. May not be changed after creation */
 	private void setName(String filename) {
 		String normalized = FilenameUtils.normalize(filename, false);
 		this.filename = FilenameUtils.getName(normalized);
@@ -53,7 +60,7 @@ public class SmbFileRef {
 		}
 	}
 
-	/** full path (folder + name) */
+	/** Returns the canonical name inclusive file path when present */
 	public String getName() {
 		String prefix = folder != null ? folder + "\\" : "";
 		return prefix + filename;
