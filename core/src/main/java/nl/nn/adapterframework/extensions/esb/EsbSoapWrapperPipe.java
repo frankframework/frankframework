@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.extensions.esb;
-
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,6 +30,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -428,17 +427,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
 				boolean esbDestinationWithoutServiceContext = false;
-				StringTokenizer st = new StringTokenizer(destination,".");
 				int count = 0;
-				while (st.hasMoreTokens()) {
+				for (final String str : StringUtil.split(destination, ".")) {
 					count++;
-					String str = st.nextToken();
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					switch (count) {
 						case 1:
 							if (str.equals("P2P")
 									|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))
-									) {
+							) {
 								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
@@ -495,11 +492,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 							}
 							break;
 						case 9:
-							if (esbDestinationWithoutServiceContext) {
-								// not possible
-							} else {
+							if (!esbDestinationWithoutServiceContext) {
 								p.setName(PARADIGM);
 							}
+
 							break;
 						default:
 					}
@@ -646,10 +642,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (split.length == 9 || split.length == 10) {
 				for (int i = 0; i < split.length; i++) {
 					if (i == 1) {
-						if (split[i].length() != 0) {
+						if (!split[i].isEmpty()) {
 							return false;
 						}
-					} else if (split[i].length() == 0) {
+					} else if (split[i].isEmpty()) {
 						return false;
 					}
 				}

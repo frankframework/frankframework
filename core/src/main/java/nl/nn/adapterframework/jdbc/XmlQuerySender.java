@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +46,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -377,11 +377,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
 				return executeSelectQuery(statement,null,null, null, null).getResult();
 			} else if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("ddl")) {
-				//TODO: alles tussen -- en newline nog weggooien
+				//TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
-				StringTokenizer stringTokenizer = new StringTokenizer(query, ";");
-				while (stringTokenizer.hasMoreTokens()) {
-					String q = stringTokenizer.nextToken();
+				for (String q : StringUtil.split(query, ";")) {
 					statement = getStatement(connection, q, QueryType.OTHER);
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,23 +19,24 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 
-	private @Getter Map<String, Object> claimsSet;
-	private @Getter String roleClaim;
-	private @Getter String principalNameClaim;
+	private final @Getter Map<String, Object> claimsSet;
+	private final @Getter String roleClaim;
+	private final @Getter String principalNameClaim;
 
 	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
+		this.principalNameClaim = principalNameClaim;
 	}
 
 	@Override
@@ -46,21 +47,13 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public Principal getPrincipal(PipeLineSession session) {
-		Principal principal = new Principal() {
-
-			@Override
-			public String getName() {
-				return (String) getClaimsSet().get(principalNameClaim);
-			}
-
-		};
-		return principal;
+		return () -> (String) getClaimsSet().get(principalNameClaim);
 	}
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
+			List<String> claims = StringUtil.split(requiredClaims);
 			for (String claim : claims) {
 				if(!claimsSet.containsKey(claim)) {
 					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
@@ -70,10 +63,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
-					.map(s -> s.split("\\s*=\\s*")).collect(Collectors.toMap(item -> item[0], item -> item[1]));
-			for (String key : claims.keySet()) {
-				String expectedValue = claims.get(key);
+			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
+					.map(s -> StringUtil.split(s, "="))
+					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+			for (Map.Entry<String, String> entry : claims.entrySet()) {
+				String key = entry.getKey();
+				String expectedValue = entry.getValue();
 				String value = (String) claimsSet.get(key);
 				if(!value.equals(expectedValue)) {
 					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");

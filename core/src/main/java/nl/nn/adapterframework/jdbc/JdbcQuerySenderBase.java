@@ -31,9 +31,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -167,16 +165,8 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 		super.configure();
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
-			List<String> tempList = new ArrayList<>();
-			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
-			while (st.hasMoreTokens()) {
-				String column = st.nextToken().trim();
-				tempList.add(column);
-			}
-			columnsReturnedList = new String[tempList.size()];
-			for (int i=0; i<tempList.size(); i++) {
-				columnsReturnedList[i] = tempList.get(i);
-			}
+			// don't call StringUtil.split(*) b/c we want an array, not a list.
+			columnsReturnedList = getColumnsReturned().trim().split("\\s*,+\\s*");
 		}
 		if (getBatchSize()>0 && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException(getLogPrefix()+"batchSize>0 only valid for queryType 'other'");

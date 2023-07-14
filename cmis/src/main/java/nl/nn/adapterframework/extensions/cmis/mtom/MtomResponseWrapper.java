@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.internet.MimeMultipart;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
@@ -42,9 +39,12 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
 import org.springframework.mock.web.DelegatingServletOutputStream;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.http.InputStreamDataSource;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class MtomResponseWrapper extends HttpServletResponseWrapper {
 	protected Logger log = LogUtil.getLogger(this);
@@ -157,10 +157,9 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 			List<NameValuePair> params = new ArrayList<>();
 			String mimeType = null;
 
-			StringTokenizer nameValuePairs = new StringTokenizer(contentType, "; ");
-			while (nameValuePairs.hasMoreTokens()) {
-				String nameValuePair = nameValuePairs.nextToken();
-				if(nameValuePair.indexOf("=") > -1) {
+			List<String> nameValuePairs = StringUtil.split(contentType, "; ");
+			for (String nameValuePair : nameValuePairs) {
+				if(nameValuePair.contains("=")) {
 					String[] pair = nameValuePair.split("=");
 					params.add(new BasicNameValuePair(pair[0], pair[1].replace("\"", "")));
 				}

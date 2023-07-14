@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -42,6 +41,7 @@ import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -82,21 +82,24 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			setUseReplyTo(false);
 		}
 		super.configure();
-		configurexPathLogging();
+		configureXPathLogging();
 	}
 
 	protected Map<String, String> getxPathLogMap() {
 		return xPathLogMap;
 	}
 
-	private void configurexPathLogging() {
-		String logKeys = MSGLOG_KEYS;
+	private void configureXPathLogging() {
+		String logKeys;
 		if(getXPathLoggingKeys() != null) //Override on listener level
 			logKeys = getXPathLoggingKeys();
+		else
+			logKeys = MSGLOG_KEYS;
 
-		StringTokenizer tokenizer = new StringTokenizer(logKeys, ",");
-		while (tokenizer.hasMoreTokens()) {
-			String name = tokenizer.nextToken();
+		if (logKeys == null) {
+			return;
+		}
+		for (String name : StringUtil.split(logKeys)) {
 			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
 			if(xPath != null)
 				xPathLogMap.put(name, xPath);

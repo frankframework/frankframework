@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.StringTokenizer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Pipe to zip or unzip a message or file.
@@ -52,6 +54,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends StreamingPipe {
+
+	private static final int CHUNK_SIZE = 16384;
 
 	private @Getter boolean messageIsContent;
 	private @Getter boolean resultIsContent;
@@ -95,7 +99,7 @@ public class CompressPipe extends StreamingPipe {
 				if (compress) {
 					zipMultipleFiles = StringUtils.contains(filename, ";");
 				} else {
-					in = new FileInputStream(filename);
+					in = Files.newInputStream(Paths.get(filename));
 				}
 			}
 
@@ -108,16 +112,16 @@ public class CompressPipe extends StreamingPipe {
 				}
 			}
 
-			String outFilename = null;
+			String outFilename;
 			if (messageIsContent) {
 				outFilename = FileUtils.getFilename(getParameterList(), session, (File)null, filenamePattern);
 			} else {
-				outFilename = FileUtils.getFilename(getParameterList(), session, new File(filename), filenamePattern);
+				outFilename = FileUtils.getFilename(getParameterList(), session, new File(Objects.requireNonNull(filename)), filenamePattern);
 			}
 
 			File outFile = new File(outputDirectory, outFilename);
 			result = outFile.getAbsolutePath();
-			try(OutputStream stream = new FileOutputStream(outFile)) {
+			try(OutputStream stream = Files.newOutputStream(outFile.toPath())) {
 				processStream(stream, in, zipMultipleFiles, filename, session);
 			}
 
@@ -125,60 +129,73 @@ public class CompressPipe extends StreamingPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
-				log.warn("exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				log.warn("exception occurred, forwarded to ["+exceptionForward.getPath()+"]", e);
 				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,e,this,message,session.getMessageId(),0));
 			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
 	}
 
-	private void processStream(OutputStream out, InputStream in, boolean zipMultipleFiles, String filename, PipeLineSession session) throws Exception {
+	private void processStream(final OutputStream out, final InputStream in, boolean zipMultipleFiles, String filename, PipeLineSession session) throws Exception {
 		if (zipMultipleFiles) {
-			try (ZipOutputStream zipper = new ZipOutputStream(out)) {
-				StringTokenizer st = new StringTokenizer(filename, ";");
-				while (st.hasMoreElements()) {
-					String fn = st.nextToken();
-					String zipEntryName = getZipEntryName(fn, session);
-					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					in = new FileInputStream(fn);
-					try {
-						StreamUtil.copyStream(in, zipper, 4096);
-					} finally {
-						zipper.closeEntry();
-					}
-				}
-			}
+			zipMultipleFiles(out, filename, session);
 		} else {
 			if (compress) {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
-					out = new GZIPOutputStream(out);
-				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out);
-					String zipEntryName = getZipEntryName(filename, session);
-					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					out = zipper;
-				}
+				compressSingleFile(out, in, filename, session);
 			} else {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
-					in = new GZIPInputStream(in);
+				decompressSingleFile(out, in, filename, session);
+			}
+		}
+	}
+
+	private void decompressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
+		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && messageIsContent)) {
+			try (InputStream copyFrom = new GZIPInputStream(in); OutputStream copyTo = out;) {
+				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
+			}
+		} else {
+			try (ZipInputStream zipper = new ZipInputStream(in); OutputStream copyTo = out;) {
+				String zipEntryName = getZipEntryName(filename, session);
+				if (zipEntryName.isEmpty()) {
+					// Use first entry found
+					zipper.getNextEntry();
 				} else {
-					ZipInputStream zipper = new ZipInputStream(in);
-					String zipEntryName = getZipEntryName(filename, session);
-					if (zipEntryName.equals("")) {
-						// Use first entry found
-						zipper.getNextEntry();
-					} else {
-						// Position the stream at the specified entry
-						ZipEntry zipEntry = zipper.getNextEntry();
-						while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
-							zipEntry = zipper.getNextEntry();
-						}
+					// Position the stream at the specified entry
+					ZipEntry zipEntry = zipper.getNextEntry();
+					while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
+						zipEntry = zipper.getNextEntry();
 					}
-					in = zipper;
+				}
+				StreamUtil.copyStream(zipper, copyTo, CHUNK_SIZE);
+			}
+		}
+	}
+
+	private void compressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
+		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && resultIsContent)) {
+			try (OutputStream copyTo = new GZIPOutputStream(out); InputStream copyFrom = in;) {
+				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
+			}
+		} else {
+			try (ZipOutputStream zipper = new ZipOutputStream(out); InputStream copyFrom = in;) {
+				String zipEntryName = getZipEntryName(filename, session);
+				zipper.putNextEntry(new ZipEntry(zipEntryName));
+				StreamUtil.copyStream(copyFrom, zipper, CHUNK_SIZE);
+			}
+		}
+	}
+
+	private void zipMultipleFiles(OutputStream out, String filename, PipeLineSession session) throws IOException, ParameterException {
+		try (ZipOutputStream zipper = new ZipOutputStream(out)) {
+			for (String s : StringUtil.split(filename, ";")) {
+				String zipEntryName = getZipEntryName(s, session);
+				zipper.putNextEntry(new ZipEntry(zipEntryName));
+				try (InputStream fin = Files.newInputStream(Paths.get(s))) {
+					StreamUtil.copyStream(fin, zipper, CHUNK_SIZE);
+				} finally {
+					zipper.closeEntry();
 				}
 			}
-
-			StreamUtil.copyStream(in, out, 4096);
 		}
 	}
 

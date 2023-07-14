@@ -17,12 +17,9 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
@@ -45,6 +42,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
@@ -275,12 +273,7 @@ public class FileRecordListener implements IPullingListener<String> {
 	 * This method is easy to extend to satisfy your project needs.
 	 */
 	protected Iterator<String> parseToRecords(String input) {
-		StringTokenizer t = new StringTokenizer(input, "\n");
-		List<String> array = new ArrayList<>();
-		while (t.hasMoreTokens()) {
-			array.add(t.nextToken());
-		}
-		return array.iterator();
+		return StringUtil.splitToStream(input, "\n").iterator();
 	}
 
 	public void setSender(ISender sender) {
