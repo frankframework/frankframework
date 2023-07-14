@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.batch;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,9 +27,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
@@ -50,10 +50,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private TransformerPool transformerPool;
 
-	private List<String> outputFields;
+	private final List<String> outputFields;
 
 	public RecordXmlTransformer() {
-		outputFields = new LinkedList<String>();
+		outputFields = new LinkedList<>();
 	}
 
 	@Override
@@ -117,11 +117,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	/** comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized */
 	public void setOutputFields(String fieldLengths) {
-		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken().trim();
-			outputFields.add(token);
-		}
+		outputFields.addAll(StringUtil.split(fieldLengths));
 	}
 
 

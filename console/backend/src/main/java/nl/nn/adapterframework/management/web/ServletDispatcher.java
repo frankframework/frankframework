@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -38,10 +37,11 @@ import org.springframework.stereotype.Component;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.HttpUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Main dispatcher for all API resources.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -78,9 +78,8 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		super.init(servletConfig);
 
 		if(StringUtils.isNotEmpty(allowedCorsOrigins)) {
-			StringTokenizer tokenizer = new StringTokenizer(allowedCorsOrigins, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String domain = tokenizer.nextToken();
+			List<String> allowedOrigins = StringUtil.split(allowedCorsOrigins);
+			for (String domain : allowedOrigins) {
 				if(domain.startsWith("http://")) {
 					log.warn("cross side resource domain ["+domain+"] is insecure, it is strongly encouraged to use a secure protocol (HTTPS)");
 				}

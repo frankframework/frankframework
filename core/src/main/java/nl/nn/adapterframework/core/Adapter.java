@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
@@ -650,21 +651,7 @@ public class Adapter implements IAdapter, NamedBean {
 				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 			}
 
-			StringBuilder additionalLogging = new StringBuilder();
-
-			// xPathLogKeys is an EsbJmsListener thing
-			String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-			if(StringUtils.isNotEmpty(xPathLogKeys)) {
-				StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-				while (tokenizer.hasMoreTokens()) {
-					String logName = tokenizer.nextToken();
-					String xPathResult = (String) pipeLineSession.get(logName);
-					additionalLogging.append(" and ");
-					additionalLogging.append(logName);
-					additionalLogging.append(" [").append(xPathResult).append("]");
-				}
-			}
-
+			String additionalLogging = getAdditionalLogging(pipeLineSession);
 			if(msgLog.isDebugEnabled()) {
 				logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message);
 			}
@@ -713,6 +700,20 @@ public class Adapter implements IAdapter, NamedBean {
 
 			IbisMaskingLayout.removeThreadLocalReplace();
 		}
+	}
+
+	private static String getAdditionalLogging(final PipeLineSession pipeLineSession) {
+		// xPathLogKeys is an EsbJmsListener thing
+		String additionalLogging;
+		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+		if(StringUtils.isNotEmpty(xPathLogKeys)) {
+			additionalLogging = StringUtil.splitToStream(xPathLogKeys)
+					.map(logName -> logName + " [" + pipeLineSession.get(logName) + "]")
+					.collect(Collectors.joining(" and "));
+		} else {
+			additionalLogging = "";
+		}
+		return additionalLogging;
 	}
 
 	// technically, a Receiver is not mandatory, but no useful adapter can do without it.

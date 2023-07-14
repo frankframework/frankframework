@@ -25,10 +25,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -60,6 +59,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.UUIDUtil;
@@ -350,16 +350,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 	}
 
-	private List<DefaultValueMethods>getDefaultValueMethodsList() {
-		if (defaultValueMethodsList==null) {
-			defaultValueMethodsList = new LinkedList<>();
-			if (StringUtils.isNotEmpty(getDefaultValueMethods())) {
-				StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ", ");
-				while (stringTokenizer.hasMoreTokens()) {
-					String token = stringTokenizer.nextToken();
-					defaultValueMethodsList.add(EnumUtils.parse(DefaultValueMethods.class, token));
-				}
-			}
+	private List<DefaultValueMethods> getDefaultValueMethodsList() {
+		if (defaultValueMethodsList == null) {
+			defaultValueMethodsList = StringUtil.splitToStream(getDefaultValueMethods(), ", ")
+					.map(token -> EnumUtils.parse(DefaultValueMethods.class, token))
+					.collect(Collectors.toList());
 		}
 		return defaultValueMethodsList;
 	}
