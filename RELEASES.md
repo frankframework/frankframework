@@ -26,6 +26,7 @@ Upcoming (7.8)
   by setting defaultValueMethod="input".
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'.
 - XsltPipe and XsltSender 'handleLexicalEvents' attribute default value has been changed to 'false'.
+- Some API endpoints have been deprecated. Users are encouraged to change over to the new API, however in order to restore the deprecated functionality the property 'iaf-api.allowDeprecated' can be set to true.
 
 7.7
 ---

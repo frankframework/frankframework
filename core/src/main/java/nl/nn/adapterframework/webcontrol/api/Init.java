@@ -54,15 +54,16 @@ public class Init extends Base implements ApplicationContextAware {
 	@Context HttpServletRequest httpServletRequest;
 
 	private static String ResourceKey = (HATEOASImplementation.equalsIgnoreCase("hal")) ? "_links" : "links";
+	private static boolean allowDeprecatedEndpoints = AppConstants.getInstance().getBoolean(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
 
 	@GET
 	@PermitAll
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllResources(@QueryParam("allowedRoles") boolean displayAllowedRoles) {
-		List<Object> JSONresources = new ArrayList<Object>();
-		Map<String, Object> HALresources = new HashMap<String, Object>();
-		Map<String, Object> resources = new HashMap<String, Object>(1);
+		List<Object> JSONresources = new ArrayList<>();
+		Map<String, Object> HALresources = new HashMap<>();
+		Map<String, Object> resources = new HashMap<>(1);
 
 		StringBuffer requestPath = httpServletRequest.getRequestURL();
 		if(requestPath.substring(requestPath.length()-1).equals("/"))
@@ -77,12 +78,19 @@ public class Init extends Base implements ApplicationContextAware {
 				if(method.getDeclaringClass() == getClass()) {
 					continue;
 				}
-				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && 
+				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") &&
 					!AppConstants.getInstance().getBoolean("monitoring.enabled", false)) {
 					continue;
 				}
+				boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
-				Map<String, Object> resource = new HashMap<String, Object>(4);
+				Map<String, Object> resource = new HashMap<>(4);
+
+				if(deprecated) {
+					if(!allowDeprecatedEndpoints) continue; // Skip all
+
+					resource.put("deprecated", true);
+				}
 
 				if(method.isAnnotationPresent(GET.class))
 					resource.put("type", "GET");

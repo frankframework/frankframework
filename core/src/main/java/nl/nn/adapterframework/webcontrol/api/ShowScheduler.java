@@ -84,7 +84,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 
 @Path("/")
-public final class ShowScheduler extends Base {
+public class ShowScheduler extends Base {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -400,7 +400,7 @@ public final class ShowScheduler extends Base {
 	@Relation("schedules")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
 		Scheduler scheduler = getScheduler();
 
 		if(log.isInfoEnabled()) {
