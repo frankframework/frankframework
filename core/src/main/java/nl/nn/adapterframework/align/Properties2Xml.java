@@ -44,7 +44,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 	private Map<String,String> data;
 
-	protected class PropertyNode {
+	protected static class PropertyNode {
 		String value;
 		Map<String,String> attributes;
 	}

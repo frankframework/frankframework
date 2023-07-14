@@ -41,6 +41,8 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * Translates the request, adds required headers per action, creates a hash and signs the message.
+ * 
  * @author Niels Meijer
  */
 public class NetStorageRequest {

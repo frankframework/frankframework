@@ -4,10 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.jdbc.JdbcException;
 
 public class H2DbmsSupportTest {
 

@@ -169,7 +169,7 @@ public class JsonElementContainer implements ElementContainer {
 		}
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
-				array=new LinkedList<Object>();
+				array=new LinkedList<>();
 				setType(content.getType());
 			}
 			array.add(content.getContent());

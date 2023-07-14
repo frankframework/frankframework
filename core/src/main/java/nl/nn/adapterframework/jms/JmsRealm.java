@@ -133,7 +133,7 @@ public class JmsRealm {
 		} catch (Throwable t) {
 			log.warn("exception getting string representation of jmsRealm [" + getRealmName() + "]", t);
 		}
-		return null;
+		return super.toString();
 	}
 
 	/**

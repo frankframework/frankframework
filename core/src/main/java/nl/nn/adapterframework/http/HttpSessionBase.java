@@ -131,7 +131,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since	7.0
  */
 public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeystore, HasTruststore {
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter String name;

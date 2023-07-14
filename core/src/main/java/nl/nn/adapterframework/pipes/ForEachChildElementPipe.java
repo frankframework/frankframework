@@ -166,7 +166,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		"</xsl:stylesheet>";
 	}
 
-	private class ItemCallbackCallingHandler extends NodeSetFilter {
+	private static class ItemCallbackCallingHandler extends NodeSetFilter {
 		private ItemCallback callback;
 
 		private XmlWriter xmlWriter;
@@ -283,7 +283,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	}
 
-	private class StopSensor extends FullXmlFilter {
+	private static class StopSensor extends FullXmlFilter {
 
 		private ItemCallbackCallingHandler itemHandler;
 
@@ -300,7 +300,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 	}
 
-	private class HandlerRecord {
+	private static class HandlerRecord {
 		private ItemCallbackCallingHandler itemHandler;
 		private ContentHandler inputHandler;
 		private String errorMessage="Could not parse input";

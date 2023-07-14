@@ -300,7 +300,6 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 * @throws IOException
 	 */
 	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);

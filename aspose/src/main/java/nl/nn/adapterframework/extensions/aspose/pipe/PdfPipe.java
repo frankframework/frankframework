@@ -177,8 +177,8 @@ public class PdfPipe extends FixedForwardPipe {
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileNameToAttachSessionKey' is replaced with 'filenameToAttachSessionKey'")
-	public void setFileNameToAttachSessionKey(String fileNameToAttachSessionKey) {
-		this.filenameToAttachSessionKey = fileNameToAttachSessionKey;
+	public void setFileNameToAttachSessionKey(String filenameToAttachSessionKey) {
+		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
 	/**
