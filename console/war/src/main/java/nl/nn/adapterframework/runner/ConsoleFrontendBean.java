@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.runner;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
