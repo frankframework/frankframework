@@ -31,6 +31,7 @@ Upcoming (7.9)
     `servlet.WebServices10.enabled=true`,
     `servlet.WebServices11.enabled=true` or 
     `servlet.BrowserBinding.enabled=true`
+- Some API endpoints have been deprecated. Users are encouraged to change over to the new API, however in order to restore the deprecated functionality the property 'iaf-api.allowDeprecated' can be set to true.
 
 
 7.8-RC1
