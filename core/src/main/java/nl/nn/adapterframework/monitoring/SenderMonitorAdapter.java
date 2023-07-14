@@ -68,6 +68,13 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 	@Override
 	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = event.getEventMessage();
+			if(!Message.isNull(message)) {
+				Message newMessage = Message.asMessage(message.asObject());
+				newMessage.getContext().putAll(message.getContext());
+				session.put(PipeLineSession.originalMessageKey, newMessage);
+				session.scheduleCloseOnSessionExit(newMessage, "Event fired by "+ monitorName);
+			}
 			getSender().sendMessage(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session);
 		} catch (Exception e) {
 			log.error("Could not signal event", e);

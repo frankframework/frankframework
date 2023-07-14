@@ -107,7 +107,6 @@ public final class ShowMonitors extends Base {
 		}
 
 		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 

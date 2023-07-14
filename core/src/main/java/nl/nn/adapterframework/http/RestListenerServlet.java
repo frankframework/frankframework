@@ -189,6 +189,6 @@ public class RestListenerServlet extends HttpServletBase {
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return ALL_IBIS_USER_ROLES;
+		return ALL_IBIS_ROLES;
 	}
 }
