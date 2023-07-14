@@ -218,10 +218,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public SmbFileRef toFile(String folder, String filename) throws FileSystemException {
-		SmbFileRef smbFile = new SmbFileRef();
-		smbFile.setName(filename);
-		smbFile.setFolder(folder);
-		return smbFile;
+		return new SmbFileRef(filename, folder);
 	}
 
 	@Override
@@ -507,8 +504,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
 				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
-					SmbFileRef file = new SmbFileRef(info.getFileName());
-					file.setFolder(folder);
+					SmbFileRef file = new SmbFileRef(info.getFileName(), folder);
 					try {
 						FileAllInformation fileinfo = getAttributes(file);
 						file.setAttributes(fileinfo);

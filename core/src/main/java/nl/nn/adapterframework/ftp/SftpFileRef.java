@@ -40,21 +40,25 @@ public class SftpFileRef {
 	}
 
 	public SftpFileRef(String name) {
-		this();
+		this(name, null);
+	}
+
+	public SftpFileRef(String name, String folder) {
 		setName(name);
+		setFolder(folder);
 	}
 
 	public String getFilename() {
 		return name;
 	}
 
-	public void setName(String name) {
+	private void setName(String name) {
 		String normalized = FilenameUtils.normalize(name, true);
 		this.name = FilenameUtils.getName(normalized);
 		setFolder(FilenameUtils.getFullPathNoEndSeparator(normalized));
 	}
 
-	public void setFolder(String folder) {
+	private void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, true);
 		}
@@ -74,9 +78,14 @@ public class SftpFileRef {
 	 * Creates a deep-copy of FTPFile
 	 */
 	public static SftpFileRef fromLsEntry(LsEntry entry) {
+		return fromLsEntry(entry, null);
+	}
+
+	public static SftpFileRef fromLsEntry(LsEntry entry, String folder) {
 		SftpFileRef file = new SftpFileRef();
 		file.setName(entry.getFilename());
-		file.attributes = entry.getAttrs();
+		file.setAttrs(entry.getAttrs());
+		file.setFolder(folder);
 		return file;
 	}
 

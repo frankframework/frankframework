@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.filesystem.smb;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,22 +31,23 @@ public class SmbFileRef {
 	private @Getter String folder;
 	private @Nullable @Getter @Setter FileAllInformation attributes = null;
 
-	public SmbFileRef() {
-		this(null);
-	}
-
-	public SmbFileRef(String name) {
+	public SmbFileRef(@Nonnull String name) {
 		setName(name);
 	}
 
+	public SmbFileRef(@Nonnull String name, String folder) {
+		setName(name);
+		setFolder(folder);
+	}
+
 	//strip folder prefix of filename if present
-	public void setName(String filename) {
+	private void setName(String filename) {
 		String normalized = FilenameUtils.normalize(filename, false);
 		this.filename = FilenameUtils.getName(normalized);
 		setFolder(FilenameUtils.getFullPathNoEndSeparator(normalized));
 	}
 
-	public void setFolder(String folder) {
+	private void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, false);
 		}

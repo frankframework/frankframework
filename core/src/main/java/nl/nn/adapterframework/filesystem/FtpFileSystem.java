@@ -86,10 +86,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFileRef toFile(String folder, String filename) throws FileSystemException {
-		FTPFileRef ftpFile = new FTPFileRef();
-		ftpFile.setName(filename);
-		ftpFile.setFolder(folder);
-		return ftpFile;
+		return new FTPFileRef(filename, folder);
 	}
 
 	@Override
@@ -251,8 +248,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public FTPFileRef moveFile(FTPFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		FTPFileRef destination = new FTPFileRef(getName(f));
-		destination.setFolder(destinationFolder);
+		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 		try {
 			if(exists(destination)) {
 				throw new FileSystemException("target already exists");
@@ -272,8 +268,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			createFolder(destinationFolder);
 		}
 
-		FTPFileRef destination = new FTPFileRef(getName(f));
-		destination.setFolder(destinationFolder);
+		FTPFileRef destination = new FTPFileRef(getName(f), destinationFolder);
 
 		try (InputStream inputStream = ftpClient.retrieveFileStream(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
 			ftpClient.completePendingCommand();
@@ -363,8 +358,8 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			files = new ArrayList<>();
 			for (FTPFile ftpFile : filesArr) {
 				if(ftpFile.isFile()) {
-					FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile);
-					fileRef.setFolder(folder);
+					FTPFileRef fileRef = FTPFileRef.fromFTPFile(ftpFile, folder);
+					log.debug("adding FTPFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
 				}
 			}

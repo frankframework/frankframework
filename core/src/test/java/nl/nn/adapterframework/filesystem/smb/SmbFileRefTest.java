@@ -14,22 +14,19 @@ public class SmbFileRefTest {
 
 	@Test
 	public void testSmbFileRefSetFolder() {
-		SmbFileRef ref1 = new SmbFileRef("test123");
-		ref1.setFolder("folder");
+		SmbFileRef ref1 = new SmbFileRef("test123", "folder");
 		assertEquals("folder\\test123", ref1.getName());
 	}
 
 	@Test
 	public void testSmbFileRefRelativeWithSetFolder() {
-		SmbFileRef ref2 = new SmbFileRef("folder1/test123");
-		ref2.setFolder("folder2");
+		SmbFileRef ref2 = new SmbFileRef("folder1/test123", "folder2");
 		assertEquals("folder2\\test123", ref2.getName());
 	}
 
 	@Test
 	public void testSmbFileRefWindowsSlash() {
-		SmbFileRef ref2 = new SmbFileRef("folder1\\test123");
-		ref2.setFolder("folder2");
+		SmbFileRef ref2 = new SmbFileRef("folder1\\test123", "folder2");
 		assertEquals("folder2\\test123", ref2.getName());
 	}
 }

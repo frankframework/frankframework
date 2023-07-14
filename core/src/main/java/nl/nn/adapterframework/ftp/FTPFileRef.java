@@ -41,10 +41,17 @@ public class FTPFileRef extends FTPFile {
 		setName(name);
 	}
 
+	public FTPFileRef(String name, String folder) {
+		this();
+		setName(name);
+		setFolder(folder);
+	}
+
 	public String getFileName() {
 		return super.getName();
 	}
 
+	/** May not be changed after creation */
 	@Override
 	public void setName(String name) {
 		String normalized = FilenameUtils.normalize(name, true);
@@ -52,7 +59,7 @@ public class FTPFileRef extends FTPFile {
 		setFolder(FilenameUtils.getFullPathNoEndSeparator(normalized));
 	}
 
-	public void setFolder(String folder) {
+	private void setFolder(String folder) {
 		if(StringUtils.isNotEmpty(folder)) {
 			this.folder = FilenameUtils.normalize(folder, true);
 		}
@@ -85,11 +92,16 @@ public class FTPFileRef extends FTPFile {
 	 * Creates a deep-copy of FTPFile
 	 */
 	public static FTPFileRef fromFTPFile(FTPFile ftpFile) {
+		return fromFTPFile(ftpFile, null);
+	}
+
+	public static FTPFileRef fromFTPFile(FTPFile ftpFile, String folder) {
 		FTPFileRef file = new FTPFileRef();
 		file.setGroup(ftpFile.getGroup());
 		file.setHardLinkCount(ftpFile.getHardLinkCount());
 		file.setLink(ftpFile.getLink());
 		file.setName(ftpFile.getName());
+		file.setFolder(folder);
 		file.setRawListing(ftpFile.getRawListing());
 		file.setSize(ftpFile.getSize());
 		file.setTimestamp(ftpFile.getTimestamp());
