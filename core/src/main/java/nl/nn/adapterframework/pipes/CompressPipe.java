@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe to zip or unzip a message or file.
- * 
+ *
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
@@ -64,10 +64,10 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter FileFormat fileFormat;
 
 	public enum FileFormat {
-		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code> 
+		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code>
 		 * or when direction is decompress and messageIsContent=<code>true</code> */
 		GZ,
-		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code> 
+		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code>
 		 * or when direction is decompress and messageIsContent=<code>false</code> */
 		ZIP
 	}
@@ -109,7 +109,7 @@ public class CompressPipe extends StreamingPipe {
 				}
 			}
 
-			String outFilename = null;
+			String outFilename;
 			if (messageIsContent) {
 				outFilename = FileUtils.getFilename(getParameterList(), session, (File)null, filenamePattern);
 			} else {
@@ -150,36 +150,41 @@ public class CompressPipe extends StreamingPipe {
 				}
 			}
 		} else {
-			if (compress) {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
-					out = new GZIPOutputStream(out);
-				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out); 
-					String zipEntryName = getZipEntryName(filename, session);
-					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					out = zipper;
-				}
-			} else {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
-					in = new GZIPInputStream(in);
-				} else {
-					ZipInputStream zipper = new ZipInputStream(in);
-					String zipEntryName = getZipEntryName(filename, session);
-					if (zipEntryName.equals("")) {
-						// Use first entry found
-						zipper.getNextEntry();
+			try {
+				if (compress) {
+					if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
+						out = new GZIPOutputStream(out);
 					} else {
-						// Position the stream at the specified entry
-						ZipEntry zipEntry = zipper.getNextEntry();
-						while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
-							zipEntry = zipper.getNextEntry();
-						}
+						ZipOutputStream zipper = new ZipOutputStream(out);
+						String zipEntryName = getZipEntryName(filename, session);
+						zipper.putNextEntry(new ZipEntry(zipEntryName));
+						out = zipper;
 					}
-					in = zipper;
+				} else {
+					if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
+						in = new GZIPInputStream(in);
+					} else {
+						ZipInputStream zipper = new ZipInputStream(in);
+						String zipEntryName = getZipEntryName(filename, session);
+						if (zipEntryName.equals("")) {
+							// Use first entry found
+							zipper.getNextEntry();
+						} else {
+							// Position the stream at the specified entry
+							ZipEntry zipEntry = zipper.getNextEntry();
+							while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
+								zipEntry = zipper.getNextEntry();
+							}
+						}
+						in = zipper;
+					}
 				}
-			}
 
-			StreamUtil.copyStream(in, out, 4096);
+				StreamUtil.copyStream(in, out, 4096);
+			} finally {
+				in.close();
+				out.close();
+			}
 		}
 	}
 
