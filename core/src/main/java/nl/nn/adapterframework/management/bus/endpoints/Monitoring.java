@@ -256,7 +256,6 @@ public class Monitoring extends BusEndpointBase {
 
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
