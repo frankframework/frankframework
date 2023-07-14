@@ -99,7 +99,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
+	private @Getter Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 	private @Getter String targetDesignDocument;
 
