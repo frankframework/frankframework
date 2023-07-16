@@ -3,9 +3,16 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipException;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -147,7 +154,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testGetterSetterOuputDirectory() {
+	public void testGetterSetterOutputDirectory() {
 		pipe.setOutputDirectory(dummyString);
 		String otherString = pipe.getOutputDirectory();
 		assertEquals(dummyString, otherString);
@@ -208,13 +215,34 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		doPipe(pipe, dummyStringSemiColon, session);
 	}
 
-	@Test(expected = PipeRunException.class)
+	@Test
 	public void testResultIsContent() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setFileFormat(FileFormat.GZ);
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		GZIPOutputStream gouz = new GZIPOutputStream(bout);
+		gouz.write(dummyStringSemiColon.getBytes());
+		gouz.close();
+
+		configureAndStartPipe();
+		final PipeRunResult result = doPipe(pipe, bout.toByteArray(), session);
+
+		final String message = result.getResult().asString();
+
+		assertEquals(dummyStringSemiColon, message);
+	}
+	@Test
+	public void testResultIsContentIncorrectFormat() throws Exception {
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 
 		configureAndStartPipe();
-		doPipe(pipe, dummyStringSemiColon, session);
+		final PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, dummyStringSemiColon, session));
+
+		assertEquals(ZipException.class, pipeRunException.getCause().getClass());
+		assertTrue(pipeRunException.getMessage().endsWith("Not in GZIP format"));
 	}
 
 	@Test
@@ -225,11 +253,20 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(true);
 
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe, dummyStringSemiColon, session));
+		final PipeRunResult pipeRunResult = doPipe(pipe, dummyStringSemiColon, session);
+		assertNotNull(pipeRunResult);
+
+		GZIPInputStream giz = new GZIPInputStream(pipeRunResult.getResult().asInputStream());
+		BufferedReader bur = new BufferedReader(new InputStreamReader(giz));
+
+		String result = bur.readLine();
+		bur.close();
+
+		assertEquals(dummyStringSemiColon, result);
 	}
 
 	@Test
-	public void testCompressWithIllegimitateFileFormat() throws Exception {
+	public void testCompressWithIllegitimateFileFormat() throws Exception {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
