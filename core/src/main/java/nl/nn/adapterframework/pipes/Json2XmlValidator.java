@@ -129,17 +129,37 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	protected void storeInputFormat(DocumentFormat format, Message input, PipeLineSession session, boolean responseMode) {
 		if (!responseMode) {
 			String sessionKey = getInputFormatSessionKey();
+
 			if (!session.containsKey(sessionKey)) {
-				String acceptHeader = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
-				if(isAutoFormat() && StringUtils.isNotEmpty(acceptHeader)) {
-					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", acceptHeader, sessionKey);
-					session.put(sessionKey, acceptHeader);
+				if(isAutoFormat()) {
+					String acceptHeaderValue = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
+					String determinedFormat = parseAcceptHeader(format, acceptHeaderValue);
+
+					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", determinedFormat, sessionKey);
+					session.put(sessionKey, determinedFormat);
 				} else {
 					log.debug("storing default inputFormat [{}] under session key [{}]", format, sessionKey);
 					session.put(sessionKey, format);
 				}
 			}
 		}
+	}
+
+	/**
+	 * Default format has precedence over the accept header, accept header may be invalid or * slash *, in which case it should be ignored. First accept value wins.
+	 */
+	private String parseAcceptHeader(DocumentFormat detectedFormat, String acceptHeaderValue) {
+		if(StringUtils.isEmpty(acceptHeaderValue) || "*/*".equals(acceptHeaderValue)) {
+			return detectedFormat.name();
+		}
+
+		String[] values = acceptHeaderValue.split(", ");
+		for(String value : values) {
+			if(!value.equals("*/*")) {
+				return value;
+			}
+		}
+		return detectedFormat.name();
 	}
 
 	/**
@@ -159,7 +179,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
 			messageToValidate="{}";
-			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+			storeInputFormat(getOutputFormat(), input, session, responseMode);
 		} else {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
@@ -346,7 +366,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 	public JsonStructure createResponseJsonSchema() {
 		return createJsonSchema(getResponseRoot());
- 	}
+	}
 
 	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
 		List<XSModel> models = validator.getXSModels();
