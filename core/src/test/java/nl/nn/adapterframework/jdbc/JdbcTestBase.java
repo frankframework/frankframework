@@ -10,10 +10,8 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -37,6 +35,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
@@ -70,9 +69,6 @@ public abstract class JdbcTestBase {
 	private @Getter IDbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
 
-	private boolean runMigratorOnlyOncePerDatabaseAndChangelog = true;
-	private Set<String> migratedDatabaseChangelogFiles = new HashSet<>();
-
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
@@ -96,11 +92,16 @@ public abstract class JdbcTestBase {
 	public void setup() throws Exception {
 		dataSource = transactionManagerType.getDataSource(productKey);
 
-		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			dsInfo = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getTargetDataSource().toString();
+		} else {
+			dsInfo = dataSource.toString();
+		}
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
 
 		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
-		assertEquals("DataSourceName does not match ProductKey", productKey,dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
+		assertEquals("DataSourceName does not match ProductKey", productKey, dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
 
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 		configuration = transactionManagerType.getConfigurationContext(productKey);
@@ -161,13 +162,6 @@ public abstract class JdbcTestBase {
 	//IBISSTORE_CHANGESET_PATH
 	protected void runMigrator(String changeLogFile) throws Exception {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-		if (runMigratorOnlyOncePerDatabaseAndChangelog) {
-			String key = getDataSourceName() +"/" + changeLogFile;
-			if (migratedDatabaseChangelogFiles.contains(key)) {
-				return;
-			}
-			migratedDatabaseChangelogFiles.add(key);
-		}
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
 		liquibase.update(new Contexts());
 	}

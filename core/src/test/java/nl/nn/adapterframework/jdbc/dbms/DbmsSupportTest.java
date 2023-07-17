@@ -52,7 +52,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 
 	@Test
-	public void testName() {
+	public void testNameEqualsDbmsKey() {
 		assertEquals(productKey, dbmsSupport.getDbmsName());
 		assertEquals(productKey, dbmsSupport.getDbms().getKey());
 	}
