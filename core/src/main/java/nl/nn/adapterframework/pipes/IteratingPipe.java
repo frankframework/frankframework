@@ -129,7 +129,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
 		STOP_CONDITION_MET(STOP_CONDITION_MET_FORWARD);
 
-		private @Getter String forwardName;
+		private final @Getter String forwardName;
 
 		private StopReason(String forwardName) {
 			this.forwardName=forwardName;
@@ -507,8 +507,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	/** Stylesheet to apply to each message, before sending it */
-	public void setStyleSheetName(String stylesheetName){
-		this.styleSheetName=stylesheetName;
+	public void setStyleSheetName(String styleSheetName){
+		this.styleSheetName=styleSheetName;
 	}
 
 	/** Alternatively: xpath-expression to create stylesheet from */

@@ -25,10 +25,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -60,6 +59,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.UUIDUtil;
@@ -350,16 +350,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 	}
 
-	private List<DefaultValueMethods>getDefaultValueMethodsList() {
-		if (defaultValueMethodsList==null) {
-			defaultValueMethodsList = new LinkedList<>();
-			if (StringUtils.isNotEmpty(getDefaultValueMethods())) {
-				StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ", ");
-				while (stringTokenizer.hasMoreTokens()) {
-					String token = stringTokenizer.nextToken();
-					defaultValueMethodsList.add(EnumUtils.parse(DefaultValueMethods.class, token));
-				}
-			}
+	private List<DefaultValueMethods> getDefaultValueMethodsList() {
+		if (defaultValueMethodsList == null) {
+			defaultValueMethodsList = StringUtil.splitToStream(getDefaultValueMethods(), ", ")
+					.map(token -> EnumUtils.parse(DefaultValueMethods.class, token))
+					.collect(Collectors.toList());
 		}
 		return defaultValueMethodsList;
 	}
@@ -836,42 +831,52 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
-			if ("now".equals(name.toLowerCase())) {
-				substitutionValue = preFormatDateType(new Date(), formatType, formatString);
-			} else if ("uid".equals(namelc)) {
-				substitutionValue = UUIDUtil.createSimpleUUID();
-			} else if ("uuid".equals(namelc)) {
-				substitutionValue = UUIDUtil.createRandomUUID();
-			} else if ("hostname".equals(namelc)) {
-				substitutionValue = Misc.getHostname();
-			} else if ("fixeddate".equals(namelc)) {
-				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
-				}
-				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-				if (fixedDateTime==null) {
-					DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
-					try {
-						fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
-					} catch (ParseException e) {
-						throw new ParameterException("Could not parse FIXEDDATETIME ["+fixedDateTime+"]", e);
+			switch (namelc) {
+				case "now":
+					substitutionValue = preFormatDateType(new Date(), formatType, formatString);
+					break;
+				case "uid":
+					substitutionValue = UUIDUtil.createSimpleUUID();
+					break;
+				case "uuid":
+					substitutionValue = UUIDUtil.createRandomUUID();
+					break;
+				case "hostname":
+					substitutionValue = Misc.getHostname();
+					break;
+				case "fixeddate":
+					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+						throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 					}
-				}
-				substitutionValue = preFormatDateType(fixedDateTime, formatType, formatString);
-			} else if ("fixeduid".equals(namelc)) {
-				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
-				}
-				substitutionValue = FIXEDUID;
-			} else if ("fixedhostname".equals(namelc)) {
-				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
-				}
-				substitutionValue = FIXEDHOSTNAME;
-			} else if ("username".equals(namelc)) {
-				substitutionValue=cf!=null?cf.getUsername():"";
-			} else if ("password".equals(namelc)) {
-				substitutionValue=cf!=null?cf.getPassword():"";
+					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+					if (fixedDateTime == null) {
+						DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+						try {
+							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
+						} catch (ParseException e) {
+							throw new ParameterException("Could not parse FIXEDDATETIME [" + fixedDateTime + "]", e);
+						}
+					}
+					substitutionValue = preFormatDateType(fixedDateTime, formatType, formatString);
+					break;
+				case "fixeduid":
+					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+						throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
+					}
+					substitutionValue = FIXEDUID;
+					break;
+				case "fixedhostname":
+					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+						throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
+					}
+					substitutionValue = FIXEDHOSTNAME;
+					break;
+				case "username":
+					substitutionValue = cf != null ? cf.getUsername() : "";
+					break;
+				case "password":
+					substitutionValue = cf != null ? cf.getPassword() : "";
+					break;
 			}
 		}
 		if (substitutionValue == null) {

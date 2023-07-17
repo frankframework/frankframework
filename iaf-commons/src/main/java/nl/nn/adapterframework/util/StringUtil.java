@@ -17,12 +17,20 @@ package nl.nn.adapterframework.util;
 
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class StringUtil {
+
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
 
 	/**
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
@@ -213,5 +221,66 @@ public class StringUtil {
 			sb.append(" ...more");
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Splits a string into a list of substrings using default delimiter {@literal ','}.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @return a {@link List} of strings. An empty list if the input was {@literal null}.
+	 */
+	@Nonnull
+	public static List<String> split(@Nullable String input) {
+		return splitToStream(input)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @return a {@link Stream} of strings. An empty stream if the input was {@literal null}.
+	 */
+	@Nonnull
+	public static Stream<String> splitToStream(@Nullable final String input) {
+		if (input == null) {
+			return Stream.empty();
+		}
+		return DEFAULT_SPLIT_PATTERN.splitAsStream(input.trim())
+				.filter(StringUtils::isNotBlank);
+	}
+
+	/**
+	 * Splits a string into an array of substrings using specified delimiters.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @param delim the delimiters to split the string by
+	 * @return a {@link List} of strings. An empty list if the input was {@literal null}.
+	 */
+	@Nonnull
+	public static List<String> split(@Nullable String input, @Nonnull String delim) {
+		return splitToStream(input, delim)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Splits a string into a stream of substrings using specified delimiters.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @param delim the delimiters to split the string by
+	 * @return a Stream of strings. An empty stream if the input was {@literal null}.
+	 */
+	@Nonnull
+	public static Stream<String> splitToStream(@Nullable final String input, @Nonnull final String delim) {
+		if (input == null) {
+			return Stream.empty();
+		}
+		Pattern splitPattern = Pattern.compile("\\s*[" + delim + "]+\\s*");
+		return splitPattern.splitAsStream(input.trim())
+				.filter(StringUtils::isNotBlank);
 	}
 }

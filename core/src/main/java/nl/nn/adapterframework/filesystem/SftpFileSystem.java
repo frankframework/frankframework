@@ -84,10 +84,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public SftpFileRef toFile(String folder, String filename) throws FileSystemException {
-		SftpFileRef ftpFile = new SftpFileRef();
-		ftpFile.setName(filename);
-		ftpFile.setFolder(folder);
-		return ftpFile;
+		return new SftpFileRef(filename, folder);
 	}
 
 	@Override
@@ -237,8 +234,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				String recursiveName = (folder != null) ? folder + "/" + ftpFile.getFilename() : ftpFile.getFilename();
 				removeDirectoryContent(recursiveName);
 			} else {
-				SftpFileRef ftpFileRef = SftpFileRef.fromLsEntry(ftpFile);
-				ftpFileRef.setFolder(folder);
+				SftpFileRef ftpFileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
+				log.debug("created SftpFileRef [{}]", ftpFileRef);
 				deleteFile(ftpFileRef);
 			}
 		}
@@ -258,8 +255,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
-		SftpFileRef destination = new SftpFileRef(getName(f));
-		destination.setFolder(destinationFolder);
+		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 		if(exists(destination)) {
 			throw new FileSystemException("target already exists");
 		}
@@ -278,8 +274,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			createFolder(destinationFolder);
 		}
 
-		SftpFileRef destination = new SftpFileRef(getName(f));
-		destination.setFolder(destinationFolder);
+		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
 
 		try (InputStream inputStream = ftpClient.get(f.getName()); SerializableFileReference ref = SerializableFileReference.of(inputStream) ) {
 			ftpClient.put(ref.getInputStream(), destination.getName());
@@ -369,8 +364,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			files = new ArrayList<>();
 			for (LsEntry ftpFile : fileEnties) {
 				if(!ftpFile.getAttrs().isDir()) {
-					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile);
-					fileRef.setFolder(folder);
+					SftpFileRef fileRef = SftpFileRef.fromLsEntry(ftpFile, folder);
+					log.debug("adding SftpFileRef [{}] to the collection", fileRef);
 					files.add(fileRef);
 				}
 			}

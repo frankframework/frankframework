@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.SharedResources;
+import nl.nn.adapterframework.core.SharedWsdlDefinitions;
 import nl.nn.adapterframework.soap.SoapValidator;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
@@ -89,7 +88,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Getter String wsdl;
 	private @Getter String schemaLocationToAdd;
 
-	private @Setter SharedResources<Definition> sharedResources;
+	private @Setter SharedWsdlDefinitions sharedWsdlDefinitions;
 	private Definition definition;
 
 
@@ -108,7 +107,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void configure() throws ConfigurationException {
 		addSoapEnvelopeToSchemaLocation = false;
 
-		definition = sharedResources.getOrCompute(wsdl, this::getDefinition);
+		definition = sharedWsdlDefinitions.getOrCompute(wsdl, this::getDefinition);
 
 		if (StringUtils.isNotEmpty(getSchemaLocation()) && !isAddNamespaceToSchema()) {
 			ConfigurationWarnings.add(this, log, "attribute [schemaLocation] for wsdl [" + getWsdl() + "] should only be set when addNamespaceToSchema=true");
@@ -315,8 +314,7 @@ public class WsdlXmlValidator extends SoapValidator {
 		}
 		List<Schema> schemas = new ArrayList<>();
 		List<ExtensibilityElement> types = definition.getTypes().getExtensibilityElements();
-		for (Iterator<ExtensibilityElement> i = types.iterator(); i.hasNext();) {
-			ExtensibilityElement type = i.next();
+		for (ExtensibilityElement type : types) {
 			QName qn = type.getElementType();
 			if (SchemaUtils.WSDL_SCHEMA.equals(qn)) {
 				final Schema schema = (Schema) type;

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -49,6 +48,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * This class sends messages with JMS.
@@ -112,10 +112,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 
 		if (responseHeaders != null) {
-			StringTokenizer st = new StringTokenizer(responseHeaders, ",");
-			while (st.hasMoreElements()) {
-				responseHeadersList.add(st.nextToken());
-			}
+			responseHeadersList.addAll(StringUtil.split(responseHeaders));
 		}
 	}
 

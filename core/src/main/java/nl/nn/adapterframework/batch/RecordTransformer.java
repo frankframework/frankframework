@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Translate a record using an outputFields description.
@@ -283,10 +284,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 	}
 
 	/** semicolon separated list of output record field specifications (see table below) */
-	public void setOutputFields(String outputfieldsDef) throws ConfigurationException {
-		StringTokenizer st = new StringTokenizer(outputfieldsDef, ";");
-		while (st.hasMoreTokens()) {
-			addOutputField(st.nextToken().trim());
+	public void setOutputFields(String outputFieldsDef) throws ConfigurationException {
+		for (String token : StringUtil.split(outputFieldsDef, ";")) {
+			addOutputField(token);
 		}
 	}
 
@@ -588,32 +588,17 @@ public class RecordTransformer extends AbstractRecordHandler {
 			String val = inputFields.get(inputFieldIndex);
 
 			if (compareValue.startsWith("{") && compareValue.endsWith("}")) {
-				Vector<String> v = new Vector<String>();
-				StringTokenizer st = new StringTokenizer(compareValue.substring(1, compareValue.length() - 1),"|");
-				while (st.hasMoreTokens()) {
-					v.add(st.nextToken());
-				}
+				String value = compareValue.substring(1, compareValue.length() - 1);
+				Stream<String> v = StringUtil.splitToStream(value, "|");
 				switch(comparator) {
 					case 1: // eq
-						return v.contains(val);
+						return v.anyMatch(val::equals);
 					case 3: // sw
-						for (int i = 0; i < v.size(); i++) {
-							String  vs = v.elementAt(i);
-							if (val.startsWith(vs)) {
-								return true;
-							}
-						}
-						return false;
+						return v.anyMatch(val::startsWith);
 					case 4: // ns
-						for (int i = 0; i < v.size(); i++) {
-							String  vs = v.elementAt(i);
-							if (val.startsWith(vs)) {
-								return false;
-							}
-						}
-						return true;
+						return v.noneMatch(val::startsWith);
 					default: // ne
-						return ! v.contains(val);
+						return v.noneMatch(val::equals);
 				}
 			}
 			switch(comparator) {

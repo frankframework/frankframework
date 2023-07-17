@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -150,8 +149,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
+		if (getFileSystem() != null) {
+			return getFileSystem().getPhysicalDestinationName();
 		}
 		return null;
 	}

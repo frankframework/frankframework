@@ -318,12 +318,14 @@ public class Misc {
 
 	/**
 	 * Converts the list to a string.
+	 * {@code
 	 * <pre>
 	 *      List<String> list = new ArrayList<>();
 	 *      list.add("We Are");
 	 *      list.add(" Frank");
-	 *      String res = Misc.listToString(list); // res gives out "We Are Frank"
+	 *      String res = Misc.listToString(list); // res = "We Are Frank"
 	 * </pre>
+	 * }
 	 */
 	public static String listToString(List<String> list) {
 		StringBuilder sb = new StringBuilder();

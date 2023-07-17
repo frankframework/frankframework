@@ -95,7 +95,7 @@ public class ChecksumPipe extends StreamingPipe {
 		}
 	}
 
-	protected class ZipChecksumGenerator implements ChecksumGenerator {
+	protected static class ZipChecksumGenerator implements ChecksumGenerator {
 
 		private Checksum checksum;
 
@@ -121,7 +121,7 @@ public class ChecksumPipe extends StreamingPipe {
 		}
 	}
 
-	protected class MessageDigestChecksumGenerator implements ChecksumGenerator {
+	protected static class MessageDigestChecksumGenerator implements ChecksumGenerator {
 
 		private MessageDigest messageDigest;
 

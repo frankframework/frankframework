@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -490,12 +490,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	private SenderResult sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
-		String fileName = null;
-		try {
-			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
-		} catch (IOException e) {
-			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
-		}
+		String fileName = session.getString(getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()));
 
 		String mediaType;
 		Map<String, Object> props = new HashMap<String, Object>();
@@ -755,11 +750,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		CmisEvent event = CmisEvent.GET_OBJECT;
 		try {
-			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
+			String cmisEvent = session.getString(CmisEventDispatcher.CMIS_EVENT_KEY);
 			if(StringUtils.isNotEmpty(cmisEvent)) {
 				event = EnumUtils.parse(CmisEvent.class, cmisEvent, true);
 			}
-		} catch (IOException | IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			throw new SenderException("unable to parse CmisEvent", e);
 		}
 

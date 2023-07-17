@@ -41,7 +41,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 	public static final boolean CMIS_BRIDGE_ENABLED = AppConstants.getInstance().getBoolean(CMIS_BRIDGE_PROPERTY_PREFIX+"active", true);
 
 	private static final Logger LOG = LogUtil.getLogger(RepositoryConnectorFactory.class);
-	private ThreadLocal<CallContextAwareCmisService> threadLocalService = new ThreadLocal<>();
+	private static final ThreadLocal<CallContextAwareCmisService> CMIS_SERVICE = new ThreadLocal<>(); //1 service per appl-server HTTP connection pool thread.
 	private File tempDirectory = null;
 
 	@Override
@@ -73,10 +73,10 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 		LOG.debug("retrieve repository service");
 
 		// Make sure that each thread in the HTTP CONN POOL has it's own BridgedCmisService
-		CallContextAwareCmisService service = threadLocalService.get();
+		CallContextAwareCmisService service = CMIS_SERVICE.get();
 		if (service == null) {
 			service = new ConformanceCmisServiceWrapper(createService(context));
-			threadLocalService.set(service);
+			CMIS_SERVICE.set(service);
 			LOG.debug("stored repository service in local http-conn-thread");
 		}
 

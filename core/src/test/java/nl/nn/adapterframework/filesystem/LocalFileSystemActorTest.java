@@ -62,8 +62,8 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 		actor.open();
 
 		Message message = new Message(srcFolder+"/"+filename);
-		ParameterValueList pvl = params.getValues(message, null);
-		Object result = actor.doAction(message, pvl, null);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = actor.doAction(message, pvl, session);
 
 		// test
 		// result should be name of the moved file

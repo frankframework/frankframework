@@ -159,11 +159,12 @@ public abstract class ClassUtils {
 	/**
 	 * returns the className of the object, without the package name.
 	 */
+	@Nonnull
 	public static String nameOf(Object o) {
 		String tail=null;
 		if (o instanceof INamedObject) {
 			String name = ((INamedObject)o).getName();
-			if (name!=null) {
+			if (StringUtils.isNotEmpty(name)) {
 				tail = "["+ name +"]";
 			}
 		}
@@ -173,12 +174,13 @@ public abstract class ClassUtils {
 	/**
 	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link INamedObject}.
 	 */
+	@Nonnull
 	public static String classNameOf(Object o) {
 		if (o==null) {
 			return "<null>";
 		}
 		Class<?> clazz;
-		if(isSpringClassUtilsPresent()) {
+		if(isClassPresent("org.springframework.util.ClassUtils")) {
 			if(o instanceof Class) {
 				clazz = org.springframework.util.ClassUtils.getUserClass((Class<?>)o);
 			} else {
@@ -192,9 +194,9 @@ public abstract class ClassUtils {
 		return (StringUtils.isNotEmpty(simpleName)) ? simpleName : clazz.getTypeName();
 	}
 
-	private static boolean isSpringClassUtilsPresent() {
+	public static boolean isClassPresent(String classname) {
 		try {
-			Class.forName("org.springframework.util.ClassUtils");
+			Class.forName(classname);
 			return true;
 		} catch (Throwable ex) {
 			// Class or one of its dependencies is not present...

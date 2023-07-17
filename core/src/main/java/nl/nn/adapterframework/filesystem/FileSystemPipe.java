@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package nl.nn.adapterframework.filesystem;
 
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -60,7 +63,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 @SupportsOutputStreaming
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 
-	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
+	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
 	private FS fileSystem;
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
 
@@ -107,7 +110,8 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	}
 
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	@Nullable
+	public PipeRunResult doPipe (@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {

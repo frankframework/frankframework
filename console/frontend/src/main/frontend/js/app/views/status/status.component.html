@@ -131,7 +131,7 @@
                             <div class="text-center">
                                 <button ng-if="$ctrl.selectedConfiguration != 'All' && !$ctrl.reloading && !$ctrl.isConfigReloading[$ctrl.selectedConfiguration]" title="Reload Configuration" ng-click="$ctrl.reloadConfiguration()" class="btn btn-info btn-xs" id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
                                 <button ng-if="$ctrl.selectedConfiguration != 'All' && !$ctrl.reloading && $ctrl.isConfigReloading[$ctrl.selectedConfiguration]" disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                                <button ng-if="$ctrl.selectedConfiguration == 'All' && !$ctrl.reloading" title="Full Reload" ng-click="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
+                                <button ng-if="$ctrl.selectedConfiguration == 'All' && !$ctrl.reloading" title="Full Reload" ng-click="$ctrl.fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
                                 <button ng-if="$ctrl.reloading" disabled="disabled" title="Full Reload in process" class="btn btn-danger btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
                                 <button ng-if="$ctrl.configurationFlowDiagram" title="Show Adapter References" ng-click="$ctrl.showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
                             </div>
@@ -139,9 +139,9 @@
                         <div class="ibox-left">
                             <span style="font-weight:700;margin-right:4px;">Filter:</span>
                             <div class="btn-group state">
-                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
-                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
-                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
+                                <label class="btn btn-primary btn-outline btn-xs started" ng-model="$ctrl.filter.started" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Started</label>
+                                <label class="btn btn-danger btn-outline btn-xs stopped" ng-model="$ctrl.filter.stopped" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Stopped</label>
+                                <label class="btn btn-warning btn-outline btn-xs warning" ng-model="$ctrl.filter.warning" ng-click="$ctrl.applyFilter($ctrl.filter)" uib-btn-checkbox>Warning</label>
                             </div>
                         </div>
                         <div class="ibox-stretch">

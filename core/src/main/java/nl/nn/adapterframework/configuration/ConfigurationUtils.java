@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -63,6 +62,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Functions to manipulate the configuration.
@@ -71,7 +71,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Jaco de Groot
  */
 public class ConfigurationUtils {
-	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
+	private static final Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
 	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
@@ -428,9 +428,10 @@ public class ConfigurationUtils {
 	protected static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext, boolean directoryConfigurations, boolean databaseConfigurations) {
 		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
 
-		StringTokenizer tokenizer = new StringTokenizer(CONFIGURATIONS, ",");
-		while (tokenizer.hasMoreTokens()) {
-			allConfigNameItems.put(tokenizer.nextToken(), null);
+		if (CONFIGURATIONS != null) {
+			for (String configFileName : StringUtil.split(CONFIGURATIONS)) {
+				allConfigNameItems.put(configFileName, null);
+			}
 		}
 
 		if (directoryConfigurations) {

@@ -17,7 +17,7 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,9 +38,15 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
+ * The InputOutputPipeProcessor class is a subclass of PipeProcessorBase and is responsible for processing pipes in a pipeline.
+ * It handles input and output manipulation, including replacing input with session values, replacing input with fixed values,
+ * replacing empty input with a fixed value, restoring moved elements from a compacted result, compacting a received message,
+ * storing a result in a session key, preserving input, and writing to a secure log.
+ *
  * @author Jaco de Groot
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
@@ -49,6 +55,19 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	private static final String ME_START = "{sessionKey:";
 	private static final String ME_END = "}";
 
+	/**
+	 * Processes the pipe in the pipeline.
+	 * This method is called by the Pipeline to process the given pipe.
+	 * It performs various operations on the message and modifies it as required.
+	 *
+	 * @param pipeLine The PipeLine to which the pipe belongs.
+	 * @param pipe The pipe to be processed.
+	 * @param message The message to be processed.
+	 * @param pipeLineSession The session of the pipeline execution.
+	 * @param chain The chain of functions to be executed.
+	 * @return The result of processing the pipe.
+	 * @throws PipeRunException if there is an error during processing.
+	 */
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
@@ -163,17 +182,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			if (pe != null && pe.isWriteToSecLog()) {
 				String secLogMsg = "adapter [" + owner.getName() + "] pipe [" + pe.getName() + "]";
 				if (pe.getSecLogSessionKeys() != null) {
-					StringBuilder sk = new StringBuilder();
-					StringTokenizer st = new StringTokenizer(pe.getSecLogSessionKeys(), " ,;");
-					while (st.hasMoreTokens()) {
-						if (sk.length() > 0) {
-							sk.append(",");
-						}
-						String key = st.nextToken();
-						Object value = pipeLineSession.get(key);
-						sk.append(key).append("=").append(value);
-					}
-					secLogMsg = secLogMsg + " sessionKeys [" + sk + "]";
+					secLogMsg = secLogMsg + " sessionKeys [" +
+							StringUtil.splitToStream(pe.getSecLogSessionKeys(), " ,;")
+									.map(key -> key + "=" + pipeLineSession.get(key))
+									.collect(Collectors.joining(","))
+							+ "]";
 				}
 				secLog.info(secLogMsg);
 			}
@@ -210,7 +223,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			} else {
 				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
-					String movedElementValue = pipeLineSession.getMessage(movedElementSessionKey).asString();
+					String movedElementValue = pipeLineSession.getString(movedElementSessionKey);
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {

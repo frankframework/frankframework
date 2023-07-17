@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.RequestUtils;
  */
 
 @Path("/")
-public final class ShowScheduler extends FrankApiBase {
+public class ShowScheduler extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})

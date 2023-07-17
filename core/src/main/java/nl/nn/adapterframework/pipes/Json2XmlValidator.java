@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -100,26 +102,22 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 
 	public DocumentFormat getOutputFormat(PipeLineSession session, boolean responseMode) throws PipeRunException {
 		DocumentFormat format=null;
-		try {
-			if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
-				String outputFormat = session.getMessage(getOutputFormatSessionKey()).asString();
-				if (StringUtils.isNotEmpty(outputFormat)) {
-					format=EnumUtils.parse(DocumentFormat.class, outputFormat);
-				}
+		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
+			String outputFormat = session.getString(getOutputFormatSessionKey());
+			if (StringUtils.isNotEmpty(outputFormat)) {
+				format=EnumUtils.parse(DocumentFormat.class, outputFormat);
 			}
-			if (format==null && isAutoFormat() && responseMode && session.containsKey(getInputFormatSessionKey())) {
-				String inputFormat = session.getMessage(getInputFormatSessionKey()).asString().toLowerCase();
-				if (inputFormat.contains("json")) {
-					format = DocumentFormat.JSON;
-				} else if (inputFormat.contains("xml")) {
-					format = DocumentFormat.XML;
-				}
+		}
+		if (format==null && isAutoFormat() && responseMode && session.containsKey(getInputFormatSessionKey())) {
+			String inputFormat = session.getString(getInputFormatSessionKey()).toLowerCase();
+			if (inputFormat.contains("json")) {
+				format = DocumentFormat.JSON;
+			} else if (inputFormat.contains("xml")) {
+				format = DocumentFormat.XML;
 			}
-			if (format==null) {
-				format=getOutputFormat();
-			}
-		} catch(IOException e) {
-			throw new PipeRunException(this, "cannot get output format", e);
+		}
+		if (format==null) {
+			format=getOutputFormat();
 		}
 		return format;
 	}
@@ -129,16 +127,30 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			String sessionKey = getInputFormatSessionKey();
 
 			if (!session.containsKey(sessionKey)) {
-				String acceptHeader = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
-				if(isAutoFormat() && StringUtils.isNotEmpty(acceptHeader)) {
-					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", acceptHeader, sessionKey);
-					session.put(sessionKey, acceptHeader);
+				if(isAutoFormat()) {
+					String acceptHeaderValue = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
+					String determinedFormat = parseAcceptHeader(format, acceptHeaderValue);
+
+					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", determinedFormat, sessionKey);
+					session.put(sessionKey, determinedFormat);
 				} else {
 					log.debug("storing default inputFormat [{}] under session key [{}]", format, sessionKey);
 					session.put(sessionKey, format);
 				}
 			}
 		}
+	}
+
+	/**
+	 * Default format has precedence over the accept header, accept header may be invalid or * slash *, in which case it should be ignored. First accept value wins.
+	 */
+	private String parseAcceptHeader(DocumentFormat detectedFormat, String acceptHeaderValue) {
+		if(StringUtils.isEmpty(acceptHeaderValue) || "*/*".equals(acceptHeaderValue)) {
+			return detectedFormat.name();
+		}
+
+		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue).filter(t -> !t.equals("*/*")).findFirst();
+		return value.orElse(detectedFormat.name());
 	}
 
 	/**
@@ -158,7 +170,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
 		if (i>=messageToValidate.length()) {
 			messageToValidate="{}";
-			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
+			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
 		} else {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
@@ -405,7 +417,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	/** 
+	/**
 	 * Session key to store the inputFormat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response
 	 * @ff.default {@value #INPUT_FORMAT_SESSION_KEY_PREFIX}&lt;name of the pipe&gt;
 	 */

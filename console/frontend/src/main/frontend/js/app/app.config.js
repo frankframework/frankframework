@@ -250,7 +250,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.send_message', {
 				url: "/jms/send-message",
-				templateUrl: "js/app/views/jms/jms-send-message/SendJmsMessage.html",
+				component: "jmsSendMessage",
 				data: {
 					pageTitle: 'Send JMS Message',
 					breadcrumbs: 'JMS > Send Message'
@@ -258,7 +258,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_queue', {
 				url: "/jms/browse-queue",
-				templateUrl: "js/app/views/jms/jms-browse-queue/BrowseJmsQueue.html",
+				component: "jmsBrowseQueue",
 				data: {
 					pageTitle: 'Browse JMS Queue',
 					breadcrumbs: 'JMS > Browse Queue'
@@ -282,7 +282,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.webservices', {
 				url: "/webservices",
-				templateUrl: "js/app/views/webservices/Webservices.html",
+				component: "webservices",
 				data: {
 					pageTitle: 'Webservices',
 					breadcrumbs: 'Webservices'
@@ -320,7 +320,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.environment_variables', {
 				url: "/environment-variables",
-				templateUrl: "js/app/views/environment-variables/ShowEnvironmentVariables.html",
+				component: "environmentVariables",
 				data: {
 					pageTitle: 'Environment Variables',
 					breadcrumbs: 'Environment Variables'
@@ -336,7 +336,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.browse_tables', {
 				url: "/jdbc/browse-tables",
-				templateUrl: "js/app/views/jdbc/jdbc-browse-tables/BrowseJdbcTable.html",
+				component: "jdbcBrowseTables",
 				data: {
 					pageTitle: 'Browse JDBC Tables',
 					breadcrumbs: 'JDBC > Browse Tables'
@@ -344,7 +344,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.security_items', {
 				url: "/security-items",
-				templateUrl: "js/app/views/security-items/ShowSecurityItems.html",
+				component: "securityItems",
 				data: {
 					pageTitle: 'Security Items',
 					breadcrumbs: 'Security Items'
@@ -360,7 +360,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.inlinestore_overview', {
 				url: "/inlinestores/overview",
-				templateUrl: "js/app/views/inlinestore/ShowInlineMessageStoreOverview.html",
+				component: "inlineStore",
 				data: {
 					pageTitle: 'InlineStore Overview',
 					breadcrumbs: 'InlineStore Overview'
@@ -368,7 +368,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors', {
 				url: "/monitors?configuration",
-				templateUrl: "js/app/views/monitors/ShowMonitors.html",
+				component: 'monitors',
 				data: {
 					pageTitle: 'Monitors',
 					breadcrumbs: 'Monitors'
@@ -379,7 +379,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_editTrigger', {
 				url: "/monitors/:monitor/triggers/:trigger?configuration",
-				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
+				component: 'monitorsAddEdit',
 				data: {
 					pageTitle: 'Edit Trigger',
 					breadcrumbs: 'Monitors > Triggers > Edit'
@@ -392,7 +392,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.monitors_addTrigger', {
 				url: "/monitors/:monitor/triggers/new?configuration",
-				templateUrl: "js/app/views/monitors/monitors-add-edit/EditMonitorTrigger.html",
+				component: 'monitorsAddEdit',
 				data: {
 					pageTitle: 'Add Trigger',
 					breadcrumbs: 'Monitors > Triggers > Add'
@@ -404,7 +404,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.ibisstore_summary', {
 				url: "/ibisstore-summary",
-				templateUrl: "js/app/views/ibisstore-summary/ShowIbisstoreSummary.html",
+				component: "ibisStoreSummary",
 				data: {
 					pageTitle: 'Ibisstore Summary',
 					breadcrumbs: 'JDBC > Ibisstore Summary'
@@ -412,7 +412,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.liquibase', {
 				url: "/liquibase",
-				templateUrl: "js/app/views/liquibase/ShowLiquibaseScript.html",
+				component: "liquibase",
 				data: {
 					pageTitle: 'Liquibase Script',
 					breadcrumbs: 'JDBC > Liquibase Script'

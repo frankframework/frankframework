@@ -524,7 +524,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			try (Message mia = result;
 				 InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);) {
 
-				String contentType = session.getMessage("contentType").asString();
+				String contentType = session.getString("contentType");
 				if (StringUtils.isNotEmpty(contentType)) {
 					RestListenerUtils.setResponseContentType(session, contentType);
 				}
@@ -638,7 +638,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
-				messageTrail = session.getMessage(getAuditTrailSessionKey()).asString();
+				messageTrail = session.getString(getAuditTrailSessionKey());
 			}
 		}
 		String storedMessageID= messageID;
@@ -647,7 +647,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (correlationIDTp!=null) {
 			if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
-				String sourceString = session.getMessage(getCorrelationIDSessionKey()).asString();
+				String sourceString = session.getString(getCorrelationIDSessionKey());
 				correlationID =correlationIDTp.transform(sourceString,null);
 			} else {
 				if (isUseInputForExtract()) {

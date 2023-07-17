@@ -1086,6 +1086,22 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="MonitorType">
+    <xs:annotation>
+      <xs:documentation>&lt;p&gt;Example configuration:&lt;/p&gt;
+ &lt;pre&gt;&lt;code&gt;
+ {@literal
+ &lt;monitor name="Receiver Shutdown" destinations="MONITOR_LOG"&gt;
+    &lt;trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING"&gt;
+        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
+    &lt;/trigger&gt;
+    &lt;trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING"&gt;
+        &lt;event&gt;Receiver Shutdown&lt;/event&gt;
+    &lt;/trigger&gt;
+ &lt;/monitor&gt;
+ }
+ 
+ &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
@@ -1096,11 +1112,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="raised" type="frankBoolean" />
-    <xs:attribute name="alarmSeverityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="additionalHitCount" type="frankInt" />
     <xs:attribute name="type">
       <xs:simpleType>
@@ -1134,6 +1145,16 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="adapterfilter" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
+  <xs:complexType name="SharedResourcesType">
+    <xs:sequence>
+      <xs:group ref="SharedResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="HttpSession" minOccurs="0" maxOccurs="unbounded" type="HttpSessionType" />
+    </xs:sequence>
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.SharedResources" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
   <xs:complexType name="ConfigurationType">
     <xs:group ref="ConfigurationDeclaredChildGroup" />
     <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
@@ -1148,6 +1169,7 @@
       <xs:element name="SapSystems" minOccurs="0" maxOccurs="1" type="SapSystemsType" />
       <xs:element name="JmsRealms" minOccurs="0" maxOccurs="1" type="JmsRealmsType" />
       <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
+      <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
     </xs:sequence>
   </xs:group>
   <xs:group name="ListenerElementGroup">
@@ -1712,6 +1734,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="SftpFileSystemListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SftpFileSystemListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="SimpleJdbcListener">
         <xs:annotation>
           <xs:documentation>Database Listener that returns a count of messages available, but does not perform any locking or
@@ -1887,6 +1918,11 @@
         <xs:documentation>Claim name which specifies the role</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="principalNameClaim" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>claim name which specifies the principal</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiListenerDeclaredAttributeGroup" />
@@ -1992,7 +2028,7 @@
     </xs:attribute>
     <xs:attribute name="useReplyTo" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Default: if messageProtocol=&lt;code&gt;FF&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Flag if reply-to queue from the request message should be used or not. Default: if messageProtocol=&lt;code&gt;FF&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xPathLoggingKeys" type="xs:string">
@@ -2071,7 +2107,7 @@
     </xs:attribute>
     <xs:attribute name="useReplyTo" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Default: true</xs:documentation>
+        <xs:documentation>Flag if reply-to queue from the request message should be used or not. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="replyDestinationName" />
@@ -2483,21 +2519,6 @@
         <xs:documentation>Proxy port Default: 1080</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="ftpType">
       <xs:annotation>
         <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
@@ -2511,55 +2532,18 @@
         <xs:union memberTypes="FileTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="messageIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the contents of the message is send, otherwise it message contains the local filenames of the files to be send Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="passive" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyTransportType" type="frankInt">
+    <xs:attribute name="proxyTransportType">
       <xs:annotation>
-        <xs:documentation>(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5) Default: 4</xs:documentation>
+        <xs:documentation>(ftps) Transport type in case of sftp Default: SOCKS5</xs:documentation>
       </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="prefCSEncryption" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Optional preferred encryption from client to server for sftp protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="prefSCEncryption" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Optional preferred encryption from server to client for sftp protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyFilePath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Path to private key file for sftp authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Passphrase of private key file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="knownHostsPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Path to file with knownhosts</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="consoleKnownHostsVerifier" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(sftp) Default: false</xs:documentation>
-      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
@@ -2654,11 +2638,6 @@
       <xs:simpleType>
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keyboardInteractive" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, keyboardinteractive is used to login Default: false</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemListenerCumulativeAttributeGroup">
@@ -2836,7 +2815,7 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results.
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3396,6 +3375,114 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="SftpFileSystemListenerType">
+    <xs:attributeGroup ref="SftpFileSystemListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.SftpFileSystemListener" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="SftpFileSystemListenerDeclaredAttributeGroup">
+    <xs:attribute name="remoteDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="host" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name or ip address of remote host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port number of remote host Default: 21</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the user to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyHost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy hostname</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Proxy port Default: 1080</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyUsername" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyTransportType">
+      <xs:annotation>
+        <xs:documentation>Transport type in case of sftp Default: SOCKS5</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TransportTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="prefCSEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional preferred encryption from client to server for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefSCEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional preferred encryption from server to client for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyFilePath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path to private key file for sftp authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="knownHostsPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path to file with knownhosts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="strictHostKeyChecking" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Verify the hosts againt the knownhosts file. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SftpFileSystemListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SftpFileSystemListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FileSystemListenerDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="SimpleJdbcListenerType">
     <xs:attributeGroup ref="SimpleJdbcListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.SimpleJdbcListener" use="prohibited" />
@@ -3915,7 +4002,7 @@
         <xs:annotation>
           <xs:documentation>Sender for the HTTP protocol using HttpMethod. By default, any response code outside the 2xx or 3xx range
  is considered an error and the &lt;code&gt;exception&lt;/code&gt; forward of the SenderPipe is followed if present and if there
- is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
+ is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
  are returned by this sender so they are available to the SenderPipe.
 
  &lt;p&gt;&lt;b&gt;Expected message format:&lt;/b&gt;&lt;/p&gt;
@@ -4541,7 +4628,7 @@
       <xs:element name="SendGridSender">
         <xs:annotation>
           <xs:documentation>Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- 
+
  Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4571,6 +4658,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SenderWrapperType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SftpFileSystemSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SftpFileSystemSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -4763,7 +4859,7 @@
                                           - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default
                                           - decimalSeparator [0..1] only applicable for type=number
                                           - groupingSeparator [0..1] only applicable for type=number
-                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
+                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
          - where [0..1]
          - order [0..1]
  &lt;br/&gt;
@@ -4895,6 +4991,11 @@
     <xs:attribute name="serviceEndpoint" type="xs:string">
       <xs:annotation>
         <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxConnections" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Maximum concurrent connections towards S3</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -5877,21 +5978,6 @@
         <xs:documentation>Proxy port Default: 1080</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyUsername" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="proxyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="ftpType">
       <xs:annotation>
         <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
@@ -5905,55 +5991,18 @@
         <xs:union memberTypes="FileTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="messageIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the contents of the message is send, otherwise it message contains the local filenames of the files to be send Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="passive" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="proxyTransportType" type="frankInt">
+    <xs:attribute name="proxyTransportType">
       <xs:annotation>
-        <xs:documentation>(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5) Default: 4</xs:documentation>
+        <xs:documentation>(ftps) Transport type in case of sftp Default: SOCKS5</xs:documentation>
       </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="prefCSEncryption" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Optional preferred encryption from client to server for sftp protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="prefSCEncryption" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Optional preferred encryption from server to client for sftp protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyFilePath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Path to private key file for sftp authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="privateKeyPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Passphrase of private key file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="knownHostsPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(sftp) Path to file with knownhosts</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="consoleKnownHostsVerifier" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(sftp) Default: false</xs:documentation>
-      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
@@ -6049,18 +6098,13 @@
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="keyboardInteractive" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, keyboardinteractive is used to login Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="FtpFileSystemSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FileSystemSenderCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="HttpSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="HttpSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.HttpSender" use="prohibited" />
   </xs:complexType>
@@ -6111,6 +6155,11 @@
     <xs:attributeGroup ref="HttpSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="HttpSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="HttpSenderBaseDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="HttpSenderBaseDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
@@ -6121,6 +6170,24 @@
     <xs:attribute ref="methodType" />
     <xs:attribute ref="contentType" />
     <xs:attribute ref="charSet" />
+    <xs:attribute ref="headersParams" />
+    <xs:attribute ref="parametersToSkipWhenEmpty" />
+    <xs:attribute ref="xhtml" />
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Only used when xHtml=&lt;code&gt;true&lt;/code&gt;) stylesheet to apply to the HTML response</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="resultStatusCodeSessionKey" />
+    <xs:attribute ref="sharedResourceRef" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HttpSenderBaseCumulativeAttributeGroup">
+    <xs:attributeGroup ref="HttpSenderBaseDeclaredAttributeGroup" />
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
@@ -6156,6 +6223,7 @@
     <xs:attribute ref="proxyUsername" />
     <xs:attribute ref="proxyPassword" />
     <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
@@ -6173,26 +6241,80 @@
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="headersParams" />
-    <xs:attribute ref="parametersToSkipWhenEmpty" />
     <xs:attribute ref="followRedirects" />
     <xs:attribute ref="ignoreRedirects" />
     <xs:attribute ref="staleChecking" />
     <xs:attribute ref="staleTimeout" />
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="xhtml" />
-    <xs:attribute name="styleSheetName" type="xs:string">
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HttpSessionBaseDeclaredAttributeGroup">
+    <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>(Only used when xHtml=&lt;code&gt;true&lt;/code&gt;) stylesheet to apply to the HTML response</xs:documentation>
+        <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="maxConnections" />
+    <xs:attribute ref="maxExecuteRetries" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="tokenEndpoint" />
+    <xs:attribute ref="tokenExpiry" />
+    <xs:attribute ref="clientAlias" />
+    <xs:attribute ref="clientId" />
+    <xs:attribute ref="clientSecret" />
+    <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="proxyHost" />
+    <xs:attribute ref="proxyPort" />
+    <xs:attribute ref="proxyAuthAlias" />
+    <xs:attribute ref="proxyUsername" />
+    <xs:attribute ref="proxyPassword" />
+    <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
+    <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
-    <xs:attribute ref="resultStatusCodeSessionKey" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="HttpSenderBaseCumulativeAttributeGroup">
-    <xs:attributeGroup ref="HttpSenderBaseDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="IMSSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
@@ -7180,7 +7302,7 @@
     </xs:sequence>
   </xs:group>
   <xs:complexType name="NetStorageSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="NetStorageSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.akamai.NetStorageSender" use="prohibited" />
   </xs:complexType>
@@ -7198,7 +7320,7 @@
         <xs:documentation>NetStorage action to be used</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="actionVersion" type="frankInt">
@@ -7248,6 +7370,21 @@
     <xs:attribute ref="methodType" />
     <xs:attribute ref="contentType" />
     <xs:attribute ref="charSet" />
+    <xs:attribute ref="headersParams" />
+    <xs:attribute ref="parametersToSkipWhenEmpty" />
+    <xs:attribute ref="xhtml" />
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Only used when xHtml=&lt;code&gt;true&lt;/code&gt;) stylesheet to apply to the HTML response</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="resultStatusCodeSessionKey" />
+    <xs:attribute ref="sharedResourceRef" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
@@ -7278,6 +7415,7 @@
     <xs:attribute ref="proxyUsername" />
     <xs:attribute ref="proxyPassword" />
     <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
@@ -7295,23 +7433,15 @@
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="headersParams" />
-    <xs:attribute ref="parametersToSkipWhenEmpty" />
     <xs:attribute ref="followRedirects" />
     <xs:attribute ref="ignoreRedirects" />
     <xs:attribute ref="staleChecking" />
     <xs:attribute ref="staleTimeout" />
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="xhtml" />
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(Only used when xHtml=&lt;code&gt;true&lt;/code&gt;) stylesheet to apply to the HTML response</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute ref="protocol" />
-    <xs:attribute ref="resultStatusCodeSessionKey" />
-    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="ParallelSendersType">
     <xs:group ref="ParallelSendersCumulativeChildGroup" />
@@ -7741,6 +7871,115 @@
       <xs:group ref="SenderWrapperBaseCumulativeChildGroup" />
     </xs:sequence>
   </xs:group>
+  <xs:complexType name="SftpFileSystemSenderType">
+    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:attributeGroup ref="SftpFileSystemSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.SftpFileSystemSender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="SftpFileSystemSenderDeclaredAttributeGroup">
+    <xs:attribute name="remoteDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>pathname of the file or directory to list. Default: Home folder of the ftp user</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="host" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name or ip address of remote host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port number of remote host Default: 21</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the user to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password to authenticatie on remote server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyHost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy hostname</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Proxy port Default: 1080</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias to obtain credentials to authenticate on proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyUsername" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default user name in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password in case proxy requires authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyTransportType">
+      <xs:annotation>
+        <xs:documentation>Transport type in case of sftp Default: SOCKS5</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TransportTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="prefCSEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional preferred encryption from client to server for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="prefSCEncryption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional preferred encryption from server to client for sftp protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyFilePath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path to private key file for sftp authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the alias to obtain credentials for passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="privateKeyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Passphrase of private key file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="knownHostsPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path to file with knownhosts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="strictHostKeyChecking" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Verify the hosts againt the knownhosts file. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SftpFileSystemSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SftpFileSystemSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FileSystemSenderCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="ShadowSenderType">
     <xs:group ref="ParallelSendersCumulativeChildGroup" />
     <xs:attributeGroup ref="ShadowSenderCumulativeAttributeGroup" />
@@ -7842,7 +8081,7 @@
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="WebServiceSenderType">
-    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="WebServiceSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.WebServiceSender" use="prohibited" />
   </xs:complexType>
@@ -8146,49 +8385,19 @@
     <xs:attributeGroup ref="ZipWriterSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.compression.ZipWriterSender" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="ZipWriterSenderDeclaredAttributeGroup">
-    <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Only for action='write': If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after the zip entry is written Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Only for action='open': If set to &lt;code&gt;false&lt;/code&gt;, the outputstream is not closed after the zip creation is finished Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Only for action='write': Charset used to write strings to zip entries Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="completeFileHeader" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Only for action='write': If set to &lt;code&gt;true&lt;/code&gt;, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
+  <xs:attributeGroup name="ZipWriterSenderDeclaredAttributeGroup" />
   <xs:attributeGroup name="ZipWriterSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ZipWriterSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="CollectorSenderCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="CollectorSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:attributeGroup name="CollectorSenderDeclaredAttributeGroup">
-    <xs:attribute name="action">
-      <xs:annotation>
-        <xs:documentation>Default: WRITE</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="collection" type="xs:string">
+  <xs:attributeGroup name="CollectorSenderBaseDeclaredAttributeGroup">
+    <xs:attribute name="collectionName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session Default: collection</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="CollectorSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="CollectorSenderDeclaredAttributeGroup" />
+  <xs:attributeGroup name="CollectorSenderBaseCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CollectorSenderBaseDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="ErrorSenderElementGroup">
@@ -8475,7 +8684,7 @@
         <xs:annotation>
           <xs:documentation>Sender for the HTTP protocol using HttpMethod. By default, any response code outside the 2xx or 3xx range
  is considered an error and the &lt;code&gt;exception&lt;/code&gt; forward of the SenderPipe is followed if present and if there
- is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...) 
+ is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
  are returned by this sender so they are available to the SenderPipe.
 
  &lt;p&gt;&lt;b&gt;Expected message format:&lt;/b&gt;&lt;/p&gt;
@@ -9101,7 +9310,7 @@
       <xs:element name="SendGridErrorSender">
         <xs:annotation>
           <xs:documentation>Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- 
+
  Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9131,6 +9340,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SenderWrapperType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SftpFileSystemErrorSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SftpFileSystemSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -9323,7 +9541,7 @@
                                           - type [0..1] one of {string;function;number;datetime;blob;clob;xmldatetime}, string by default
                                           - decimalSeparator [0..1] only applicable for type=number
                                           - groupingSeparator [0..1] only applicable for type=number
-                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default 
+                                          - formatString [0..1] only applicable for type=datetime, yyyy-MM-dd HH:mm:ss.SSS by default
          - where [0..1]
          - order [0..1]
  &lt;br/&gt;
@@ -9389,11 +9607,6 @@
     <xs:choice>
       <xs:element name="ErrorStorage">
         <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
-            </xs:choice>
-          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="errorStorage" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
@@ -9509,40 +9722,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="MessageStoreSenderErrorStorage">
-        <xs:annotation>
-          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
- adapter which will read the messages using a MessageStoreListener.
- This other adapter will process the messages asynchronously and (optionally)
- under transaction control. Duplicate messages are ignored based on the
- messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
- the sender of the message can retry sending the message until a valid reply
- is received in which case it can be certain that the message is stored in the
- database table IBISSTORE.
- &lt;br/&gt;&lt;br/&gt;
- If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
- or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
- acts as a message log and an error store. It can be useful however to add a message log or error store
- to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
- &lt;br/&gt;&lt;br/&gt;
- Example configuration:
- &lt;code&gt;&lt;pre&gt;
-	&amp;lt;SenderPipe name="Send"&amp;gt;
-		&amp;lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&amp;gt;
-	&amp;lt;/SenderPipe&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MessageStoreSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorStorage" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
     </xs:choice>
   </xs:group>
   <xs:complexType name="EsbJmsTransactionalStorageType">
@@ -9599,11 +9778,6 @@
     <xs:choice>
       <xs:element name="MessageLog">
         <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
-            </xs:choice>
-          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="messageLog" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
@@ -9714,40 +9888,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="JmsTransactionalStorageType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="messageLog" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="MessageStoreSenderMessageLog">
-        <xs:annotation>
-          <xs:documentation>Send messages to the IBISSTORE database table to have them processed exactly-once by another
- adapter which will read the messages using a MessageStoreListener.
- This other adapter will process the messages asynchronously and (optionally)
- under transaction control. Duplicate messages are ignored based on the
- messageId (except when onlyStoreWhenMessageIdUnique is set to false), hence
- the sender of the message can retry sending the message until a valid reply
- is received in which case it can be certain that the message is stored in the
- database table IBISSTORE.
- &lt;br/&gt;&lt;br/&gt;
- If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
- or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
- acts as a message log and an error store. It can be useful however to add a message log or error store
- to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
- &lt;br/&gt;&lt;br/&gt;
- Example configuration:
- &lt;code&gt;&lt;pre&gt;
-	&amp;lt;SenderPipe name="Send"&amp;gt;
-		&amp;lt;MessageStoreSender
-			slotId="${instance.name}/TestMessageStore"
-			onlyStoreWhenMessageIdUnique="false"
-		/&amp;gt;
-	&amp;lt;/SenderPipe&amp;gt;
- &lt;/pre&gt;&lt;/code&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="MessageStoreSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="messageLog" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -11928,11 +12068,11 @@
     <xs:choice>
       <xs:element name="RecordTransformerRecordHandler">
         <xs:annotation>
-          <xs:documentation>Translate a record using an outputFields description. 
- 
- 
+          <xs:documentation>Translate a record using an outputFields description.
+
+
  The outputFields description can contain the following functions:
- 
+
  &lt;table border="1"&gt;
  &lt;tr&gt;&lt;td&gt;string(value)&lt;/td&gt;&lt;td&gt;inserts the value between the braces&lt;/td&gt;&lt;td&gt;string( Dit wordt geinsert inclusief spaties ervoor en erna. )&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;align(value,size,align,fillchar)&lt;/td&gt;&lt;td&gt;inserts the value aligned&lt;/td&gt;&lt;td&gt;align(test~10~left~ )&lt;/td&gt;&lt;/tr&gt;
@@ -14151,13 +14291,11 @@
       </xs:element>
       <xs:element name="ZipWriterPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that creates a ZipStream.
-
- For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:&lt;ul&gt;
- &lt;li&gt;String specifying a filename&lt;/li&gt;
- &lt;li&gt;OutputStream&lt;/li&gt;
- &lt;li&gt;HttpResponse&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+          <xs:documentation>Pipe that creates a ZIP archive (on action close).
+ &lt;p&gt;
+ A chain of zipWriterPipes can be used to create a ZIP archive. You can use the pipe with different actions (see specified below).
+ Action &lt;code&gt;CLOSE&lt;/code&gt; will generate the ZIP archive which is returned as the pipe ouput.
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -17161,21 +17299,6 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.compression.ZipWriterPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ZipWriterPipeDeclaredAttributeGroup">
-    <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Only for action='write': If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after the zip entry is written Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Only for action='open': If set to &lt;code&gt;false&lt;/code&gt;, the outputstream is not closed after the zip creation is finished Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Only for action='write': Charset used to write strings to zip entries Default: utf-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="completeFileHeader" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Only for action='write': If set to &lt;code&gt;true&lt;/code&gt;, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero) Default: false</xs:documentation>
@@ -17184,26 +17307,26 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ZipWriterPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ZipWriterPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="CollectorPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="CollectorPipeBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:attributeGroup name="CollectorPipeDeclaredAttributeGroup">
+  <xs:attributeGroup name="CollectorPipeBaseDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
-        <xs:documentation>Default: WRITE</xs:documentation>
+        <xs:documentation>Collectors must be opened before you can write content to them, after it's closed you can no longer write to it. Default: WRITE</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef" />
+        <xs:union memberTypes="ActionAttributeValuesType_3 variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="collection" type="xs:string">
+    <xs:attribute name="collectionName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Session key used to refer to collection. Must be specified with another value if multiple CollectorPipes are active at the same time in the same session Default: collection</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="CollectorPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="CollectorPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
+  <xs:attributeGroup name="CollectorPipeBaseCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CollectorPipeBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="JobElementGroup">
     <xs:choice>
@@ -17543,23 +17666,7 @@
   </xs:group>
   <xs:group name="DestinationElementGroupBase">
     <xs:choice>
-      <xs:element name="GalmDestination">
-        <xs:annotation>
-          <xs:documentation>MonitorAdapter that creates log lines for the GALM log adapter.
-
- configuration is done via the AppConstants 'galm.stage' and 'galm.source',
- that in the default implemenation obtain their values from custom properties 'galm.stage' and
- appConstant 'instance.name'.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="GalmMonitorAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SenderDestination">
+      <xs:element name="SenderMonitorAdapterDestination">
         <xs:annotation>
           <xs:documentation>IMonitorAdapter that uses a sender to send its message.</xs:documentation>
         </xs:annotation>
@@ -17573,11 +17680,17 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="GalmMonitorAdapterType">
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.GalmMonitorAdapter" use="prohibited" />
+  <xs:complexType name="SenderMonitorAdapterType">
+    <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
+    <xs:attributeGroup ref="MonitorDestinationBaseDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.SenderMonitorAdapter" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="MonitorAdapterBaseDeclaredAttributeGroup">
+  <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="MonitorDestinationBaseDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
         <xs:documentation>The functional name of the object.</xs:documentation>
@@ -17586,16 +17699,6 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
-  <xs:complexType name="SenderMonitorAdapterType">
-    <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.SenderMonitorAdapter" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
   <xs:group name="TriggerElementGroup">
     <xs:choice>
       <xs:element name="Trigger">
@@ -17686,6 +17789,111 @@
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Clearing" use="prohibited" />
   </xs:complexType>
+  <xs:group name="SharedResourceElementGroup">
+    <xs:choice>
+      <xs:element name="SharedResource">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="sharedResource" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="SharedResourceElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="SharedResourceElementGroupBase">
+    <xs:choice>
+      <xs:element name="HttpSessionSharedResource">
+        <xs:annotation>
+          <xs:documentation>Shared HTTPSession, implements SharedResource so it can be set in the Configuration.xml</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="HttpSessionType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sharedResource" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="HttpSessionType">
+    <xs:attributeGroup ref="HttpSessionCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.HttpSession" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="HttpSessionDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="HttpSessionCumulativeAttributeGroup">
+    <xs:attributeGroup ref="HttpSessionDeclaredAttributeGroup" />
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout in ms of obtaining a connection/result. 0 means no timeout Default: 10000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="maxConnections" />
+    <xs:attribute ref="maxExecuteRetries" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="tokenEndpoint" />
+    <xs:attribute ref="tokenExpiry" />
+    <xs:attribute ref="clientAlias" />
+    <xs:attribute ref="clientId" />
+    <xs:attribute ref="clientSecret" />
+    <xs:attribute ref="scope" />
+    <xs:attribute ref="authenticatedTokenRequest" />
+    <xs:attribute ref="proxyHost" />
+    <xs:attribute ref="proxyPort" />
+    <xs:attribute ref="proxyAuthAlias" />
+    <xs:attribute ref="proxyUsername" />
+    <xs:attribute ref="proxyPassword" />
+    <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
+    <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:attributeGroup name="ConfigurationDeclaredAttributeGroup">
     <xs:attribute name="autoStart" type="frankBoolean">
       <xs:annotation>
@@ -17912,7 +18120,6 @@
   <xs:simpleType name="FtpTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="FTP" />
-      <xs:enumeration value="SFTP" />
       <xs:enumeration value="FTPSI" />
       <xs:enumeration value="FTPSX(TLS)" />
       <xs:enumeration value="FTPSX(SSL)" />
@@ -17922,6 +18129,13 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="ASCII" />
       <xs:enumeration value="BINARY" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TransportTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DIRECT" />
+      <xs:enumeration value="HTTP" />
+      <xs:enumeration value="SOCKS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ProtAttributeValuesType">
@@ -17972,6 +18186,13 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="NTLM" />
       <xs:enumeration value="SPNEGO" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TransportTypeAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="HTTP" />
+      <xs:enumeration value="SOCKS4" />
+      <xs:enumeration value="SOCKS5" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OutputTypeAttributeValuesType">
@@ -18366,7 +18587,7 @@
       <xs:enumeration value="SHA256" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_3">
+  <xs:simpleType name="ActionAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:enumeration value="DU" />
       <xs:enumeration value="DIR" />
@@ -18411,35 +18632,6 @@
       <xs:enumeration value="LZSMALL" />
       <xs:enumeration value="RLE" />
       <xs:enumeration value="NO" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType_2">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="OPEN">
-        <xs:annotation>
-          <xs:documentation>To initiate a new collection</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="WRITE">
-        <xs:annotation>
-          <xs:documentation>Add an item to to an existing collection</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="STREAM">
-        <xs:annotation>
-          <xs:documentation>Create a new collection entry, and return an OutputStream that the next element can use to write an item to</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="LAST">
-        <xs:annotation>
-          <xs:documentation>Combination of WRITE and CLOSE: Add an item to to an existing collection, then finalize the collection</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="CLOSE">
-        <xs:annotation>
-          <xs:documentation>Finalize the collection</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OnErrorAttributeValuesType">
@@ -18724,6 +18916,30 @@
       <xs:enumeration value="NUMERIC">
         <xs:annotation>
           <xs:documentation>a UUID with fixed length 31 will be generated</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="OPEN">
+        <xs:annotation>
+          <xs:documentation>To initiate a new collection</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="WRITE">
+        <xs:annotation>
+          <xs:documentation>Add an item to to an existing collection</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="LAST">
+        <xs:annotation>
+          <xs:documentation>Combination of WRITE and CLOSE: Add an item to to an existing collection, then finalize the collection</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CLOSE">
+        <xs:annotation>
+          <xs:documentation>Finalize the collection</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -19179,6 +19395,29 @@
       <xs:documentation>Charset of the request. Typically only used on &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;POST&lt;/code&gt; requests. Default: UTF-8</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="headersParams" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma separated list of parameter names which should be set as HTTP headers</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="parametersToSkipWhenEmpty" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="xhtml" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the HTML response is transformed to XHTML Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
+ Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
+ the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="sharedResourceRef" type="xs:string" />
   <xs:attribute name="maxConnections" type="frankInt">
     <xs:annotation>
       <xs:documentation>The maximum number of concurrent connections Default: 10</xs:documentation>
@@ -19257,6 +19496,11 @@
   <xs:attribute name="proxyRealm" type="xs:string">
     <xs:annotation>
       <xs:documentation>Proxy realm</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="prefillProxyAuthCache" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Create a pre-emptive login context for the proxy connection(s).</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="disableCookies" type="frankBoolean">
@@ -19350,16 +19594,6 @@
       <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="headersParams" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Comma separated list of parameter names which should be set as HTTP headers</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="parametersToSkipWhenEmpty" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Comma separated list of parameter names that should not be added as request or body parameter, or as HTTP header, if they are empty. Set to '*' for this behaviour for all parameters</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="followRedirects" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
@@ -19390,21 +19624,9 @@
       <xs:documentation>Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool Default: 10 s</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="xhtml" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the HTML response is transformed to XHTML Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="protocol" type="xs:string">
     <xs:annotation>
       <xs:documentation>Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. Default: SSL</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
- Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
- the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">

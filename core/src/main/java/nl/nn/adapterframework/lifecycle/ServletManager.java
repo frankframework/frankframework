@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
@@ -76,7 +75,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * </p>
  * NOTE:
  * Both CONTAINER and NONE are non-configurable default authenticators.
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -135,13 +134,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	private void resolveAuthenticators() {
-		StringTokenizer tokenizer = AppConstants.getInstance().getTokenizedProperty("application.security.http.authenticators");
-		while(tokenizer.hasMoreTokens()) {
-			String token = tokenizer.nextToken();
-			if(StringUtils.isNotEmpty(token)) {
-				resolveAndConfigureAuthenticator(token);
-			}
-		}
+		AppConstants.getInstance()
+				.getListProperty("application.security.http.authenticators")
+				.forEach(this::resolveAndConfigureAuthenticator);
 	}
 
 	private void resolveAndConfigureAuthenticator(String authenticatorName) {

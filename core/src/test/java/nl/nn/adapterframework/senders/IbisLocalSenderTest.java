@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +41,8 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
+import nl.nn.adapterframework.testutil.VirtualInputStream;
 import nl.nn.adapterframework.util.RunState;
 
 class IbisLocalSenderTest {
@@ -81,22 +82,8 @@ class IbisLocalSenderTest {
 	}
 
 	private Message createVirtualInputStream(long streamSize) {
-		InputStream virtualInputStream = new InputStream() {
-			final LongAdder bytesRead = new LongAdder();
-
-			@Override
-			public int read() {
-				if (bytesRead.longValue() >= streamSize) {
-					log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
-					return -1;
-				}
-				bytesRead.increment();
-				Thread.yield();
-				return 1;
-			}
-		};
-
-		return new Message(virtualInputStream);
+		InputStream virtualInputStream = new VirtualInputStream(streamSize);
+		return new Message(new ThrowingAfterCloseInputStream(virtualInputStream));
 	}
 
 	@ParameterizedTest(name = "Call via Dispatcher: {0}, Isolated: {1}, Synchronous: {2}")

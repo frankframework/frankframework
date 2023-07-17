@@ -12,14 +12,14 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
-public class IsXmlIfPipeTest extends PipeTestBase<IsXmlIfPipe> {
+public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 
 	String pipeForwardThen = "then";
 	String pipeForwardElse = "else";
 
 	@Override
-	public IsXmlIfPipe createPipe() throws ConfigurationException {
-		IsXmlIfPipe isXmlIfPipe = new IsXmlIfPipe();
+	public IsXmlPipe createPipe() throws ConfigurationException {
+		IsXmlPipe isXmlIfPipe = new IsXmlPipe();
 
 		//Add default pipes
 		isXmlIfPipe.registerForward(new PipeForward(pipeForwardThen,null));
