@@ -23,4 +23,5 @@ import './app/views/liquibase/liquibase.component';
 import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 import './app/views/monitors/monitors.component';
 import './app/views/status/status.component';
+import './app/views/status/flow/flow.component';
 import './app/views/webservices/webservices.component';

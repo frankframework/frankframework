@@ -1,12 +1,11 @@
 import { appModule } from "../../../app.module";
 
-const FlowController = function (Misc, $http, $uibModal){
+const FlowController = function (Misc, $http, $uibModal) {
 	const ctrl = this;
-
-	ctrl.flow = { "image": null, "url": uri };
 
 	ctrl.$onInit = function () {
 		const uri = Misc.getServerPath() + 'iaf/api/configurations/' + ctrl.adapter.configuration + '/adapters/' + Misc.escapeURL(ctrl.adapter.name) + "/flow?" + ctrl.adapter.upSince;
+		ctrl.flow = { "image": null, "url": uri };
 		$http.get(uri).then(function (data) {
 			const status = (data && data.status) ? data.status : 204;
 			if (status == 200) {
@@ -45,8 +44,8 @@ appModule.component('flow', {
 	},
 	transclude: true,
 	controller: ['Misc', '$http', '$uibModal', FlowController],
-	template: `<a ng-if="flow.image === true" ng-href="{{flow.url}}" target="_blank" rel="noopener noreferrer">
-		<img ng-src="{{flow.url}}" alt="Flow Diagram">
+	template: `<a ng-if="$ctrl.flow.image === true" ng-href="{{$ctrl.flow.url}}" target="_blank" rel="noopener noreferrer">
+		<img ng-src="{{$ctrl.flow.url}}" alt="Flow Diagram">
 	</a>
-	<button ng-if="flow.image === false" ladda="flowModalLadda" ng-click="openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>`
+	<button ng-if="$ctrl.flow.image === false" ladda="$ctrl.flowModalLadda" ng-click="$ctrl.openFlowModal(flow.data)" title="Generate Flow Diagram" class="btn btn-xs btn-info" type="button"><i class="fa fa-share-alt-square"></i> Flow Diagram</button>`
 })

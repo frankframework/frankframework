@@ -15,6 +15,3 @@ import './app/views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import './app/views/logging/clipboard.directive';
 import './app/views/status/ui-lref.directive';
 import './app/views/storage/back-button.directive';
-
-// element directives
-import './app/views/status/flow/flow.directive'; // TODO: finish converting
