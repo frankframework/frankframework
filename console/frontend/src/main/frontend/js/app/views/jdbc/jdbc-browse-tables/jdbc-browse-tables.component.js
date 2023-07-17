@@ -20,7 +20,6 @@ const JdbcBrowseTablesController = function ($scope, Api, $timeout, $state, appC
 
     ctrl.submit = function (formData) {
         ctrl.processingMessage = true;
-        console.log(formData)
         if (!formData || !formData.table) {
             ctrl.error = "Please specify a datasource and table name!";
             ctrl.processingMessage = false;
@@ -72,20 +71,19 @@ const JdbcBrowseTablesController = function ($scope, Api, $timeout, $state, appC
             ctrl.query = "";
             ctrl.processingMessage = false;
         }, false);
-
-        ctrl.reset = function () {
-            console.log("here", ctrl.form)
-            ctrl.query = "";
-            ctrl.error = "";
-            if (!ctrl.form) return;
-            if (ctrl.form.table) ctrl.form.table = "";
-            if (ctrl.form.where) ctrl.form.where = "";
-            if (ctrl.form.order) ctrl.form.order = "";
-            if (ctrl.form.numberOfRowsOnly) ctrl.form.numberOfRowsOnly = "";
-            if (ctrl.form.minRow) ctrl.form.minRow = "";
-            if (ctrl.form.maxRow) ctrl.form.maxRow = "";
-        };
     };
+
+	ctrl.reset = function () {
+		ctrl.query = "";
+		ctrl.error = "";
+		if (!ctrl.form) return;
+		if (ctrl.form.table) ctrl.form.table = "";
+		if (ctrl.form.where) ctrl.form.where = "";
+		if (ctrl.form.order) ctrl.form.order = "";
+		if (ctrl.form.numberOfRowsOnly) ctrl.form.numberOfRowsOnly = "";
+		if (ctrl.form.minRow) ctrl.form.minRow = "";
+		if (ctrl.form.maxRow) ctrl.form.maxRow = "";
+	};
 };
 
 appModule.component('jdbcBrowseTables', {
