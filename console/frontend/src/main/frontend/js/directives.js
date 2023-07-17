@@ -1,8 +1,5 @@
 import './app/page-title.directive';
 
-import './app/components/pages/hamburger.directive'; // TODO: convert to component
-import './app/components/pages/minimaliza-sidebar.directive'; // TODO: convert to component
-import './app/components/pages/scroll-to-top.directive'; // TODO: convert to component
 import './app/components/pages/side-navigation.directive';
 import './app/components/icheck.directive';
 import './app/components/time-since.directive';

@@ -2,10 +2,13 @@ import './app/app.component';
 
 import './app/components/custom-views/custom-views.component';
 import './app/components/input-file-upload/input-file-upload.component';
+import './app/components/pages/hamburger.component';
+import './app/components/pages/minimaliza-sidebar.component';
 import './app/components/pages/pages-footer.component';
 import './app/components/pages/pages-navigation.component';
 import './app/components/pages/pages-topinfobar.component';
 import './app/components/pages/pages-topnavbar.component';
+import './app/components/pages/scroll-to-top.component';
 
 import './app/views/configurations/configurations-manage/configurations-manage.component';
 import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
