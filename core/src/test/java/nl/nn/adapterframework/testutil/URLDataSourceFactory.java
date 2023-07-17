@@ -25,8 +25,8 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
 			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false, "org.h2.jdbcx.JdbcDataSource" },
 			{ "DB2",        "jdbc:db2://localhost:50000/testiaf", "testiaf_user", "testiaf_user00", false, "com.ibm.db2.jcc.DB2XADataSource" },
-			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" },
-			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf;lockTimeout=10000", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" },
+			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:XE", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" },
+			{ "Microsoft SQL Server",     "jdbc:sqlserver://localhost:1433;database=testiaf;lockTimeout=10000", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" },
 			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" },
 			//{ "MariaDB",   "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false }, // can have only one entry per product key
 			{ "MariaDB",   "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver=true&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", false, "com.mysql.cj.jdbc.MysqlXADataSource" },
