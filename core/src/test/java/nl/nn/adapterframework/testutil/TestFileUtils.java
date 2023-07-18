@@ -1,12 +1,16 @@
 package nl.nn.adapterframework.testutil;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -53,6 +57,13 @@ public class TestFileUtils {
 			}
 		}
 		return string.toString();
+	}
+
+	@SneakyThrows
+	public static String getTestFilePath(String string) {
+		URL url = getTestFileURL(string);
+		assertNotNull(url);
+		return Paths.get(url.toURI()).toString();
 	}
 
 }

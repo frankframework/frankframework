@@ -44,7 +44,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertTrue(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
 	}
@@ -55,7 +55,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setConvert2String(true);
 		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertFalse(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
 	}
@@ -66,7 +66,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setConvert2String(true);
 		pipe.setFileFormat(FileFormat.GZ);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.tar.gz").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.tar.gz"));
 		assertTrue(prr.getResult().asString().startsWith("fileaa.txt"));
 	}
 
@@ -102,7 +102,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
 		assertEquals("aaa", result);
 	}
@@ -116,7 +116,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
 		assertEquals("aaa", result);
 	}
@@ -126,7 +126,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
 		configureAndStartPipe();
-		String input=TestFileUtils.getTestFileURL("/Util/FileUtils/copyFile.txt").getPath()+";"+TestFileUtils.getTestFileURL("/Util/FileUtils/copyFrom.txt").getPath();
+		String input=TestFileUtils.getTestFilePath("/Util/FileUtils/copyFile.txt")+";"+TestFileUtils.getTestFilePath("/Util/FileUtils/copyFrom.txt");
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
 	}
