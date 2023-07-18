@@ -83,6 +83,8 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	}
 
 	public static void assertEqualsIgnoreCRLF(String expected, String actual, String message) {
+		assertNotNull(expected);
+		assertNotNull(actual);
 		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
 	}
 

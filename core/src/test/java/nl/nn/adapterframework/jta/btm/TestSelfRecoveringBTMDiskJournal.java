@@ -46,6 +46,8 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	@Before
 	@Override
 	public void setup() throws Exception {
+		assumeTrue("H2".equals(productKey));
+
 		if(getTransactionManagerType().equals(TransactionManagerType.BTM) && TransactionManagerServices.isTransactionManagerRunning()) {
 			log.info("Shutting down TransactionManager before tests");
 
