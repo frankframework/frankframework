@@ -13,7 +13,7 @@ import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
 import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
-import nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory;
+import nl.nn.adapterframework.jta.narayana.NarayanaDataSource;
 
 public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 
@@ -40,7 +40,7 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 				return ConnectionManager.create(null, properties);
 			}
 		};
-		NarayanaDataSourceFactory.checkModifiers(result);
+		NarayanaDataSource.checkModifiers(result);
 		return result;
 	}
 }
