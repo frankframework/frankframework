@@ -41,8 +41,14 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public boolean isUserInRole(String role, PipeLineSession session) {
-		String claim = (String) getClaimsSet().get(roleClaim);
-		return role.equals(claim);
+		Object claim = getClaimsSet().get(roleClaim);
+		if(claim instanceof String){
+			return role.equals(claim);
+		} else if(claim instanceof List){
+			List<String> claimList = (List) claim;
+			return claimList.stream().anyMatch(s -> role.equals(s));
+		}
+		return false;
 	}
 
 	@Override
