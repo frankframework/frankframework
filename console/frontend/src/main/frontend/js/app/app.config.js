@@ -472,7 +472,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.loading', {
 				url: "/",
-				templateUrl: "js/app/views/loading/loading.html",
+				component: "loading",
 			})
 			.state('pages.errorpage', {
 				url: "/error",
