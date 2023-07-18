@@ -23,6 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,10 +34,10 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
-	private @Getter @Setter int minPoolSize=0;
-	private @Getter @Setter int maxPoolSize=20;
-	private @Getter @Setter int maxIdleTime=60;
-	private @Getter @Setter int maxLifeTime=0;
+	private @Getter @Setter int minPoolSize = 0;
+	private @Getter @Setter int maxPoolSize = 20;
+	private @Getter @Setter int maxIdleTime = 60;
+	private @Getter @Setter int maxLifeTime = 0;
 	private @Getter @Setter String testQuery = null;
 
 	public BtmDataSourceFactory() {
@@ -49,26 +52,50 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
-			PoolingDataSource result = new PoolingDataSource();
-			result.setUniqueName(dataSourceName);
-			result.setMinPoolSize(getMinPoolSize());
-			result.setMaxPoolSize(getMaxPoolSize());
-			result.setMaxIdleTime(getMaxIdleTime());
-			result.setMaxLifeTime(getMaxLifeTime());
-
-			if(StringUtils.isNotBlank(testQuery)) {
-				result.setTestQuery(testQuery);
-			}
-			result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
-
-			result.setAllowLocalTransactions(true);
-			result.setXaDataSource((XADataSource)dataSource);
-			result.init();
-			return result;
+			return createXAPool((XADataSource) dataSource, dataSourceName);
 		}
 
-		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
-		return (DataSource)dataSource;
+		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
+		if(maxPoolSize > 1) {
+			return createPool((DataSource)dataSource, dataSourceName);
+		}
+		return (DataSource) dataSource;
+	}
+
+	private DataSource createPool(DataSource dataSource, String dataSourceName) {
+		HikariConfig config = new HikariConfig();
+		config.setRegisterMbeans(false);
+		config.setMaxLifetime(maxLifeTime);
+		config.setIdleTimeout(maxIdleTime);
+		config.setMaximumPoolSize(maxPoolSize);
+		config.setMinimumIdle(minPoolSize);
+		config.setDataSource(dataSource);
+		config.setPoolName(dataSourceName);
+
+		HikariDataSource poolingDataSource = new HikariDataSource(config);
+		log.info("created Hikari pool [{}]", poolingDataSource);
+		return poolingDataSource;
+	}
+
+	private DataSource createXAPool(XADataSource dataSource, String dataSourceName) {
+		PoolingDataSource result = new PoolingDataSource();
+		result.setUniqueName(dataSourceName);
+		result.setMinPoolSize(minPoolSize);
+		result.setMaxPoolSize(maxPoolSize);
+		result.setMaxIdleTime(maxIdleTime);
+		result.setMaxLifeTime(maxLifeTime);
+
+		if(StringUtils.isNotBlank(testQuery)) {
+			result.setTestQuery(testQuery);
+		}
+		result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
+
+		result.setAllowLocalTransactions(true);
+		result.setXaDataSource(dataSource);
+		result.init();
+
+		log.info("registered BTM DataSource [{}] with Transaction Manager", result);
+		return result;
 	}
 
 	@Override

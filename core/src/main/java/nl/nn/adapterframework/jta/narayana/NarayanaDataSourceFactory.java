@@ -15,62 +15,71 @@
 */
 package nl.nn.adapterframework.jta.narayana;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.logging.log4j.Logger;
-
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
-	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
-	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
+	private @Getter @Setter int minPoolSize = 0;
+	private @Getter @Setter int maxPoolSize = 20;
+	private @Getter @Setter int maxIdleTime = 60;
+	private @Getter @Setter int maxLifeTime = 0;
+
+	public NarayanaDataSourceFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
+		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
+		maxIdleTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxIdleTime", maxIdleTime);
+		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
+	}
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource) {
+		DataSource ds = registerWithTM(dataSource, dataSourceName);
+
+		if(maxPoolSize > 1) {
+			return pool(ds, dataSourceName);
+		}
+		return ds;
+	}
+
+	private DataSource registerWithTM(CommonDataSource dataSource, String dataSourceName) {
+		if(dataSource instanceof XADataSource) {
 			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			NarayanaDataSource result = new NarayanaDataSource(dataSource, dataSourceName);
-			result.setMaxConnections(maxPoolSize);
-			checkModifiers(result);
-			return result;
+			NarayanaDataSource ds = new NarayanaDataSource(dataSource, dataSourceName);
+			log.info("registered BTM DataSource [{}] with Transaction Manager", ds);
+			return ds;
 		}
 
-		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
+		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
 		return (DataSource) dataSource;
 	}
 
-	public static void checkModifiers(DataSource dataSource) {
-		try (Connection connection = dataSource.getConnection()) {
-			DatabaseMetaData metadata = connection.getMetaData();
-			String driverName = metadata.getDriverName();
-			int major = metadata.getDriverMajorVersion();
-			int minor = metadata.getDriverMinorVersion();
+	private DataSource pool(DataSource dataSource, String dataSourceName) {
+		HikariConfig config = new HikariConfig();
+		config.setRegisterMbeans(false);
+		config.setMaxLifetime(maxLifeTime);
+		config.setIdleTimeout(maxIdleTime);
+		config.setMaximumPoolSize(maxPoolSize);
+		config.setMinimumIdle(minPoolSize);
+		config.setDataSource(dataSource);
+		config.setPoolName(dataSourceName);
 
-			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
-				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
-			}
-		} catch (SQLException e) {
-			LOG.warn("Could not check for existence of Modifier", e);
-		}
+		HikariDataSource poolingDataSource = new HikariDataSource(config);
+		log.info("created Hikari pool [{}]", poolingDataSource);
+		return poolingDataSource;
 	}
-
 }
