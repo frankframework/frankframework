@@ -90,7 +90,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="row in $ctrl.result">
-                                <td ng-repeat="column in $ctrl.row track by $index">{{column}}</td>
+                                <td ng-repeat="column in row; track by $index">{{column}}</td>
                             </tr>
                         </tbody>
                     </table>

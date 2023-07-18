@@ -9,7 +9,7 @@ const LiquibaseController = function ($rootScope, Api, Misc, appService) {
 
     ctrl.$onInit = function () {
         let findFirstAvailabeConfiguration = function () {
-			ctrl.configurations = appService.configurations();
+			ctrl.configurations = appService.configurations;
 
             for (let i in ctrl.configurations) {
                 let configuration = ctrl.configurations[i];
