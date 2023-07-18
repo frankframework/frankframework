@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public abstract class FileSystemBase<F> implements IBasicFileSystem<F> {
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	private int maxNumberOfMessagesToList=-1;
 

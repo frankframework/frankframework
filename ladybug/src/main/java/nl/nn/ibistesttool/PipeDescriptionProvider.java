@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
 import javax.xml.transform.TransformerException;
@@ -45,6 +44,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -56,8 +56,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Jaco de Groot (jaco@dynasol.nl)
  */
 public class PipeDescriptionProvider {
-	private Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<>();
-	private Map<Configuration, Document> documents = new WeakHashMap<>();
+	private final Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<>();
+	private final Map<Configuration, Document> documents = new WeakHashMap<>();
 	private static final String INPUT_VALIDATOR_CHECKPOINT_NAME = "InputValidator";
 	private static final String OUTPUT_VALIDATOR_CHECKPOINT_NAME = "OutputValidator";
 	private static final String INPUT_WRAPPER_CHECKPOINT_NAME = "InputWrapper";
@@ -132,11 +132,7 @@ public class PipeDescriptionProvider {
 			}
 
 			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
-			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.get(configuration);
-			if (pipeDescriptionCache == null) {
-				pipeDescriptionCache = new HashMap<>();
-				pipeDescriptionCaches.put(configuration, pipeDescriptionCache);
-			}
+			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(configuration, k -> new HashMap<>());
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
 			if (pipeDescription == null) {
 				pipeDescription = new PipeDescription();
@@ -203,17 +199,12 @@ public class PipeDescriptionProvider {
 					|| "fileName".equals(attribute.getName())
 					|| "schemaLocation".equals(attribute.getName())) {
 				if ("schemaLocation".equals(attribute.getName())) {
-					StringTokenizer st = new StringTokenizer(attribute.getValue(),", \t\r\n\f");
-					while (st.hasMoreTokens()) {
-						st.nextToken();
-						String resourceName = st.nextToken();
-						if (!pipeDescription.containsResourceName(resourceName)) {
-							pipeDescription.addResourceName(resourceName);
-						}
-					}
+					StringUtil.splitToStream(attribute.getValue(), ", \t\r\n\f")
+							.filter(pipeDescription::doesNotContainResourceName)
+							.forEach(pipeDescription::addResourceName);
 				} else {
 					String resourceName = attribute.getValue();
-					if (!pipeDescription.containsResourceName(resourceName)) {
+					if (pipeDescription.doesNotContainResourceName(resourceName)) {
 						pipeDescription.addResourceName(resourceName);
 					}
 				}

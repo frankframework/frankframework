@@ -144,7 +144,7 @@ public class MultipartForm {
 	/**
 	 * Determines the total length of the multipart content (content length of
 	 * individual parts plus that of extra elements required to delimit the parts
-	 * from one another). If any of the @{link BodyPart}s contained in this object
+	 * from one another). If any of the {@link FormBodyPart BodyParts} contained in this object
 	 * is of a streaming entity of unknown length the total length is also unknown.
 	 * <p>
 	 * This method buffers only a small amount of data in order to determine the

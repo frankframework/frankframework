@@ -12,7 +12,7 @@
 		<log4j2.version>2.20.0</log4j2.version>
 
 		<jackson.version>2.15.2</jackson.version>
-		<cxf.version>3.5.5</cxf.version>
+		<cxf.version>3.5.6</cxf.version>
 		<spring.version>5.3.28</spring.version>
 		<spring-security.version>5.8.4</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
@@ -20,7 +20,7 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.11.1</micrometer.version>
+		<micrometer.version>1.11.2</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -34,7 +34,7 @@
 		<mysql.driver.version>8.0.33</mysql.driver.version>
 		<mariadb.driver.version>2.7.9</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.10.0</mongodb.driver.version>
+		<mongodb.driver.version>4.10.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->

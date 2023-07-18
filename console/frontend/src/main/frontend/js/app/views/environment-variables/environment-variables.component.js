@@ -12,6 +12,17 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
     ctrl.appConstants = [];
 
     ctrl.$onInit = function () {
+		function convertPropertiesToArray(propertyList) {
+			var tmp = new Array();
+			for (var variableName in propertyList) {
+				tmp.push({
+					key: variableName,
+					val: propertyList[variableName]
+				});
+			}
+			return tmp;
+		}
+
         ctrl.configurations = appService.configurations;
         $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
 
@@ -33,17 +44,6 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
         ctrl.selectedConfiguration = name;
         ctrl.configProperties = ctrl.appConstants[name];
     };
-
-    function convertPropertiesToArray(propertyList) {
-        var tmp = new Array();
-        for (var variableName in propertyList) {
-            tmp.push({
-                key: variableName,
-                val: propertyList[variableName]
-            });
-        }
-        return tmp;
-    }
 };
 
 appModule.component('environmentVariables', {

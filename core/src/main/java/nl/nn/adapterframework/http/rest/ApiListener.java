@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.http.rest;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,6 +41,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -88,6 +87,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	// for jwt validation
 	private @Getter String requiredIssuer=null;
 	private @Getter String jwksUrl=null;
+	private @Getter String jwtHeader="Authorization";
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
@@ -283,17 +283,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
 	 */
 	public void setAuthenticationRoles(String authRoles) {
-		List<String> roles = new ArrayList<>();
-		if (StringUtils.isNotEmpty(authRoles)) {
-			StringTokenizer st = new StringTokenizer(authRoles, ",;");
-			while (st.hasMoreTokens()) {
-				String authRole = st.nextToken();
-				if(!roles.contains(authRole))
-					roles.add(authRole);
-			}
-		}
-
-		this.authenticationRoles = roles;
+		this.authenticationRoles = StringUtil.split(authRoles, ",;");
 	}
 	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
@@ -343,7 +333,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.headerParams = headerParams;
 	}
 
-	/** Session key that provides the Content-disposition header in the response */
+	/** Session key that provides the Content-Disposition header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
 	}
@@ -356,6 +346,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Keysource URL to validate JWT */
 	public void setJwksURL(String string) {
 		this.jwksUrl = string;
+	}
+
+	/** Header to extract JWT from */
+	public void setJwtHeader(String string) {
+		this.jwtHeader = string;
 	}
 
 	/** Comma separated list of required claims */
@@ -373,7 +368,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.roleClaim = roleClaim;
 	}
 
-	/** claim name which specifies the principal */
+	/** Claim name which specifies the principal name (maps to GetPrincipalPipe) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
 	}

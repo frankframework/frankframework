@@ -46,10 +46,10 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	private MeterRegistry registry;
 	private NodeConfig root;
 
-	protected class NodeConfig {
-		public String name;
-		public List<Tag> tags;
-		public int groupLevel;
+	protected static class NodeConfig {
+		public final String name;
+		public final List<Tag> tags;
+		public final int groupLevel;
 
 		NodeConfig(String name, List<Tag> tags, int groupLevel) {
 			this.name = name;

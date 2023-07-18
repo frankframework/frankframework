@@ -39,8 +39,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -92,13 +90,13 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
-			String convertedSelectQuery = convertQuery(getSelectQuery(), QueryType.SELECT);
+			String convertedSelectQuery = convertQuery(getSelectQuery());
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
-			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery(), QueryType.SELECT) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
+			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery()) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
 			Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
 			for (ProcessState state : ProcessState.values()) {
 				if(updateStatusQueries.containsKey(state)) {
-					String convertedUpdateStatusQuery = convertQuery(updateStatusQueries.get(state), QueryType.OTHER);
+					String convertedUpdateStatusQuery = convertQuery(updateStatusQueries.get(state));
 					orderedUpdateStatusQueries.put(state, convertedUpdateStatusQuery);
 				}
 			}
@@ -170,9 +168,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
-			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {
-				return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
-			}
+			return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
@@ -381,13 +377,11 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return false;
 	}
 
-	protected String convertQuery(String query, QueryType queryType) throws JdbcException, SQLException {
+	protected String convertQuery(String query) throws JdbcException, SQLException {
 		if (StringUtils.isEmpty(getSqlDialect())) {
 			return query;
 		}
-		QueryExecutionContext qec = new QueryExecutionContext(query, queryType, null);
-		getDbmsSupport().convertQuery(qec, getSqlDialect());
-		return qec.getQuery();
+		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
 	protected void setUpdateStatusQuery(ProcessState state, String query) {

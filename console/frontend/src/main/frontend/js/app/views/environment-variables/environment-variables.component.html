@@ -20,7 +20,7 @@
 					<div class="col-md-12 m-b-lg">
 						<div class="input-group" id="searchbar">
 							<input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" ng-model="$ctrl.searchFilter" ng-model-options="{debounce: 500}" name="search" />
-							<i ng-show="$ctrl.searchFilter.length" ng-click="$ctrl.searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"/>
+							<i ng-show="$ctrl.searchFilter.length" ng-click="$ctrl.searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true" />
 							<span class="input-group-addon">
 								<i class="fa fa-search" aria-hidden="true"></i>
 							</span>
@@ -41,7 +41,7 @@
 									<td class="col-lg-9">{{::vari.val}}</td>
 								</tr>
 								<tr ng-if="$ctrl.filteredConfigVariables.length == 0">
-									<td colspan="2">No variables found matching '{{searchFilter}}'</td>
+									<td colspan="2">No variables found matching '{{$ctrl.searchFilter}}'</td>
 								</tr>
 							</tbody>
 						</table>

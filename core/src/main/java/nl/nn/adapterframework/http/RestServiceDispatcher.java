@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
@@ -46,6 +45,8 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
+
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -193,20 +194,13 @@ public class RestServiceDispatcher {
 				if (writeToSecLog) {
 					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
 				}
-				boolean authorized = false;
+				boolean authorized;
 				if (principal == null) {
 					authorized = true;
 				} else {
 					String authRoles = restListener.getAuthRoles();
-					if (StringUtils.isNotEmpty(authRoles)) {
-						StringTokenizer st = new StringTokenizer(authRoles, ",;");
-						while (st.hasMoreTokens()) {
-							String authRole = st.nextToken();
-							if (httpServletRequest.isUserInRole(authRole)) {
-								authorized = true;
-							}
-						}
-					}
+					authorized = StringUtil.splitToStream(authRoles, ",;")
+							.anyMatch(httpServletRequest::isUserInRole);
 				}
 				if (!authorized) {
 					throw new ListenerException("Not allowed for uri [" + uri + "]");

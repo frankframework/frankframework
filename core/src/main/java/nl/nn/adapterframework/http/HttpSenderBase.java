@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerConfigurationException;
@@ -62,6 +61,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -158,11 +158,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			paramList.configure();
 
 			if (StringUtils.isNotEmpty(getHeadersParams())) {
-				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
-				while (st.hasMoreElements()) {
-					String paramName = st.nextToken().trim();
-					headerParamsSet.add(paramName);
-				}
+				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
 			}
 			for (Parameter p: paramList) {
 				String paramName = p.getName();
@@ -182,18 +178,14 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 					parametersToSkipWhenEmptySet.addAll(headerParamsSet);
 					parametersToSkipWhenEmptySet.addAll(requestOrBodyParamsSet);
 				} else {
-					StringTokenizer st = new StringTokenizer(getParametersToSkipWhenEmpty(), ",");
-					while (st.hasMoreElements()) {
-						String paramName = st.nextToken().trim();
-						parametersToSkipWhenEmptySet.add(paramName);
-					}
+					parametersToSkipWhenEmptySet.addAll(StringUtil.split(getParametersToSkipWhenEmpty()));
 				}
 			}
 		}
 
 		if(StringUtils.isNotEmpty(getContentType())) {
 			fullContentType = ContentType.parse(getContentType());
-			if(fullContentType != null && fullContentType.getCharset() == null) {
+			if(fullContentType.getCharset() == null) {
 				fullContentType = fullContentType.withCharset(getCharSet());
 			}
 		}
@@ -298,7 +290,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	/**
 	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
 	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
-	 * 
+	 *
 	 * @return className + name of the ISender
 	 */
 	protected String getLogPrefix() {

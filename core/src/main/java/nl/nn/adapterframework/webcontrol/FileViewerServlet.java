@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -102,12 +101,10 @@ public class FileViewerServlet extends HttpServletBase {
 	public static final String permissionRules = AppConstants.getInstance().getResolvedProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
-		StringTokenizer tok=AppConstants.getInstance().getTokenizedProperty(fvConfigKey);
-		while (tok.hasMoreTokens()){
-			String signal=tok.nextToken();
-			String pre=AppConstants.getInstance().getProperty(fvConfigKey+"."+signal+".pre");
-			String post=AppConstants.getInstance().getProperty(fvConfigKey+"."+signal+".post");
-			input=StringUtils.replace(input, signal, pre+signal+post);
+		for (final String signal : AppConstants.getInstance().getListProperty(fvConfigKey)) {
+			String pre = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".pre");
+			String post = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".post");
+			input = StringUtils.replace(input, signal, pre + signal + post);
 		}
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}

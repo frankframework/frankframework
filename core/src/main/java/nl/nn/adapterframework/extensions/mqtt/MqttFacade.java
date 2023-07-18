@@ -138,8 +138,8 @@ public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 		return "["+getName()+"] ";
 	}
 
-	public void setTimeout(int timeOut) {
-		this.timeout = timeOut;
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 	public void setKeepAliveInterval(int keepAliveInterval) {

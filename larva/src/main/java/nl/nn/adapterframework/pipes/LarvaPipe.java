@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +34,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Call Larva Test Tool
@@ -66,8 +66,8 @@ public class LarvaPipe extends FixedForwardPipe {
 			log.warn("no log level specified, setting to default ["+DEFAULT_LOG_LEVEL+"]");
 			setLogLevel(DEFAULT_LOG_LEVEL);
 		} else {
-			String[] logLevels = TestTool.LOG_LEVEL_ORDER.split(",\\s*");
-			if (!Arrays.asList(logLevels).contains("["+getLogLevel()+"]")) {
+			List<String> logLevels = StringUtil.split(TestTool.LOG_LEVEL_ORDER);
+			if (!logLevels.contains("["+getLogLevel()+"]")) {
 				throw new ConfigurationException("illegal log level ["+getLogLevel()+"]");
 			}
 		}
@@ -129,7 +129,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.execute = execute;
 	}
 
-	/** 
+	/**
 	 * the larva log level: one of [debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]
 	 * @ff.default wrong pipeline messages
 	 */

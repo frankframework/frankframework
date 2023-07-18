@@ -1,15 +1,30 @@
 package nl.nn.adapterframework.util;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class StringUtilTest {
+	private static final Logger LOG = LogManager.getLogger(StringUtil.class);
 
 	/**
 	 * Method: concatStrings(String part1, String separator, String part2)
@@ -124,6 +139,7 @@ class StringUtilTest {
 		// Arrange
 		Collection<Object> c = new ArrayList<Object>() {
 			@Override
+			@Nonnull
 			public Iterator<Object> iterator() {
 				final Iterator<Object> delegate = super.iterator();
 				return new Iterator<Object>() {
@@ -148,5 +164,72 @@ class StringUtilTest {
 
 		// Act / Assert
 		assertEquals("A, B, 3, 4 ...more", StringUtil.safeCollectionToString(c));
+	}
+
+	public static Stream<Arguments> testSplitStringDefaultDelimiter() {
+		return Stream.of(
+				arguments("a,b", asList("a", "b")),
+				arguments(",a,,b,", asList("a", "b")),
+				arguments(" a , b ", asList("a", "b")),
+				arguments(null, Collections.emptyList())
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void testSplitStringDefaultDelimiter(String input, Iterable<String> expected) {
+		// Act
+		List<String> result = StringUtil.split(input);
+
+		// Assert
+		assertIterableEquals(expected, result);
+	}
+
+	public static Stream<Arguments> testSplitStringCustomDelimiters() {
+		return Stream.of(
+				arguments(null, "\\/", Collections.emptyList()),
+				arguments("a,b;c", ";,", asList("a", "b", "c")),
+				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
+				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),
+				arguments(" a , ;  b  c  ", " ;,", asList("a", "b", "c")),
+				arguments(" a , b  c\t d\re  \n f  \f  g", ", \t\r\n\f", asList("a", "b", "c", "d", "e", "f", "g"))
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void testSplitStringCustomDelimiters(String input, String delimiters, Iterable<String> expected) {
+		// Act
+		List<String> result = StringUtil.split(input, delimiters);
+
+		LOG.debug("input: [{}]", ()->escapeUnprintable(input));
+		LOG.debug("result [{}]", ()->String.join("|", result));
+
+		// Assert
+		assertIterableEquals(expected, result);
+	}
+
+	static String escapeUnprintable(String input) {
+		if (input == null) {
+			return "null";
+		}
+		return input.chars()
+				.mapToObj(StringUtilTest::mapChar)
+				.collect(Collectors.joining());
+	}
+
+	static String mapChar(int chr) {
+		switch (chr) {
+			case '\t':
+				return "\\t";
+			case '\r':
+				return "\\r";
+			case '\n':
+				return "\\n";
+			case '\f':
+				return "\\f";
+			default:
+				return Character.toString((char)chr);
+		}
 	}
 }

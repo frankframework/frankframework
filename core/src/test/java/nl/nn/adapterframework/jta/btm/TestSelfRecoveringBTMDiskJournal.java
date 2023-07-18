@@ -31,7 +31,6 @@ import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.AppConstants;
@@ -47,6 +46,8 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	@Before
 	@Override
 	public void setup() throws Exception {
+		assumeTrue("H2".equals(productKey));
+
 		if(getTransactionManagerType().equals(TransactionManagerType.BTM) && TransactionManagerServices.isTransactionManagerRunning()) {
 			log.info("Shutting down TransactionManager before tests");
 
@@ -72,7 +73,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 
 	private int getNumberOfLines() throws JdbcException, SQLException {
 		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(SELECT_QUERY);
-		try (Connection connection = createNonTransactionalConnection(); JdbcSession session = dbmsSupport.prepareSessionForNonLockingRead(connection)) {
+		try (Connection connection = createNonTransactionalConnection()) {
 			return JdbcUtil.executeIntQuery(connection, preparedQuery);
 		}
 	}
@@ -88,7 +89,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 
 		assertEquals(1, getNumberOfLines()); // Database has been updated !?
 
-		// Assert if new transaction can be created, this is not the case when the 
+		// Assert if new transaction can be created, this is not the case when the
 		// previous commit corrupted the TX log due to a ClosedChannelException
 		runInsertQuery();
 
@@ -108,7 +109,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 
 		assertEquals(amount, getNumberOfLines()); // Database has been updated !?
 
-		// Assert if new transaction can be created, this is not the case when the 
+		// Assert if new transaction can be created, this is not the case when the
 		// previous commit corrupted the TX log due to a ClosedChannelException
 		runInsertQuery();
 

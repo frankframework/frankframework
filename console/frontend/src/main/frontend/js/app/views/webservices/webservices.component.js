@@ -3,9 +3,9 @@ import { appModule } from "../../app.module";
 const WebservicesController = function ($scope, Api, Misc) {
     const ctrl = this;
 
-    ctrl.rootURL = Misc.getServerPath();
-    
-    ctrl.$onInit = function () {
+	ctrl.$onInit = function () {
+		ctrl.rootURL = Misc.getServerPath();
+
         Api.Get("webservices", function (data) {
             $.extend(ctrl, data);
         });

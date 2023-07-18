@@ -125,6 +125,10 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
 	}
 
+	protected final boolean allowDeprecatedEndpoints() {
+		return getProperty(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
+	}
+
 	protected JAXRSServiceFactoryBean getJAXRSService() {
 		return serviceFactory;
 	}
