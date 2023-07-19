@@ -1,6 +1,8 @@
 import { appModule } from "../../app.module";
 
 const LoadingController = function ($scope, Api, $state) {
+    const ctrl = this;
+
     ctrl.$onInit = function () {
         Api.Get("server/health", function () {
             $state.go("pages.status");

@@ -11,10 +11,10 @@ const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, S
         Poller.add("schedules", function (data) {
             $.extend(ctrl, data);
         }, true, 5000);
+    };
 
-        $scope.$on('$destroy', function () {
-            Poller.remove("schedules");
-        });
+    ctrl.$onDestroy = function () {
+        Poller.remove("schedules");
     };
 
     ctrl.start = function () {

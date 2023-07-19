@@ -476,7 +476,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.errorpage', {
 				url: "/error",
-				templateUrl: "js/app/views/error/errorpage.html",
+				component: "error",
 			});
 
 	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope, $state, Debug, $trace) {

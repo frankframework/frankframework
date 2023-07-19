@@ -5,7 +5,6 @@ import './app/components/pages/information-modal/information-modal.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/connections/connections.controller';
-import './app/views/error/error.controller';
 import './app/views/logging/logging.controller';
 import './app/views/logging/logging-manage/logging-manage.controller';
 import './app/views/login/login.controller';

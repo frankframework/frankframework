@@ -38,7 +38,7 @@
 							<label class="col-sm-3 control-label">Select an adapter</label>
 							<div class="col-sm-9">
 								<select class="form-control m-b" name="adapter" ng-model="$ctrl.form.adapter" ng-disabled="$ctrl.selectedConfiguration ==''">
-									<option ng-repeat="adapter in $ctrl.adapters | configurationFilter:$ctrl" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+									<option ng-repeat="adapter in $ctrl.adapters | configurationFilter:$ctrl | withJavaListener" ng-value="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
 								</select>
 							</div>
 						</div>
