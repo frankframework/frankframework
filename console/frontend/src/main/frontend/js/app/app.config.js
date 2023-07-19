@@ -103,15 +103,14 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 		$stateProvider
 			.state('login', {
 				url: "/login",
-				templateUrl: "js/app/views/login/login.html",
-				controller: 'LoginCtrl',
+				component: "login",
 				data: {
 					pageTitle: 'Login'
 				}
 			})
 			.state('logout', {
 				url: "/logout",
-				controller: 'LogoutCtrl',
+				component: 'logout',
 				data: {
 					pageTitle: 'Logout'
 				}
