@@ -1,0 +1,97 @@
+package nl.nn.adapterframework.jdbc;
+
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.jms.JMSException;
+
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StringUtil;
+
+public class StoredProcedureQuerySender extends FixedQuerySender {
+
+	private @Getter String outputParameters;
+	private final LinkedHashMap<Integer, JDBCType> outputParameterMap = new LinkedHashMap<>();
+
+
+	/**
+	 * Sets the output parameters of the store procedure, separated by commas.
+	 *
+	 * @param outputParameters the output parameters to be set
+	 */
+	public void setOutputParameters(String outputParameters) {
+		this.outputParameters = outputParameters;
+	}
+
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotBlank(getColumnsReturned())) {
+			throw new ConfigurationException("Cannot use 'columnsReturned' with StoredProcedureSender, use 'outputParameters' instead.");
+		}
+		if (getQueryTypeEnum() != QueryType.SELECT && getQueryTypeEnum() != QueryType.OTHER) {
+			throw new ConfigurationException("For StoredProcedureSender, queryType can only be 'SELECT' or 'OTHER'");
+		}
+		super.configure();
+		if (outputParameters != null) {
+			for (String param : StringUtil.split(outputParameters, ",")) {
+				List<String> paramDef = StringUtil.split(param, ":");
+				int paramNum = Integer.parseInt(paramDef.get(0));
+				JDBCType jdbcType = EnumUtils.parse(JDBCType.class, paramDef.get(1));
+				outputParameterMap.put(paramNum, jdbcType);
+			}
+		}
+
+		if (isScalar() && outputParameterMap.size() > 1) {
+			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
+		}
+	}
+
+	@Override
+	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
+		CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+		for (Map.Entry<Integer, JDBCType> entry : outputParameterMap.entrySet()) {
+			Integer param = entry.getKey();
+			JDBCType type = entry.getValue();
+
+			// Not all drivers support registerOutParameter by JDBCType (for instance, PostgreSQL)
+			callableStatement.registerOutParameter(param, type.getVendorTypeNumber());
+		}
+		return callableStatement;
+	}
+
+	@Override
+	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
+		throw new IllegalArgumentException("Stored Procedures do not support 'columnsReturned', specify outputParameters");
+	}
+
+	@Override
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+		Message result = super.executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
+		if (outputParameterMap.isEmpty()) {
+			return result;
+		}
+		try {
+			return getResult(new ResultSetProxy((CallableStatement) statement, outputParameterMap));
+		} catch (JdbcException | JMSException | IOException | SQLException e) {
+			throw new SenderException(e);
+		}
+	}
+
+}

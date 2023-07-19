@@ -113,7 +113,7 @@ public class DB2XMLWriter {
 			if (maxlength < 0) {
 				maxlength = Integer.MAX_VALUE;
 			}
-			Statement stmt=null;
+			Statement stmt;
 			try {
 				stmt = rs.getStatement();
 				if (stmt!=null) {

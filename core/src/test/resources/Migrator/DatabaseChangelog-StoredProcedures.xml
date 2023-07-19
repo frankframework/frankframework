@@ -1,0 +1,87 @@
+<databaseChangeLog
+		xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+	<changeSet id="IAF-UnitTests-1" author="Tim van der Leeuw">
+		<comment>Create SP_TESTDATA for Tests</comment>
+		<createTable tableName="SP_TESTDATA">
+			<column name="TKEY" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
+			</column>
+			<column name="TCHAR" type="CHAR(1)"/>
+			<column name="TMESSAGE" type="VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="postgres">
+		<comment>Create Stored Procedure to insert data</comment>
+		<sql>
+			drop procedure if exists insert_message;
+			create or replace procedure insert_message(
+				message varchar(100),
+				status char(1)
+			) language sql
+			begin atomic
+			insert into sp_testdata(tmessage, tchar) VALUES (message, status);
+			end;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="postgres">
+		<comment>Create Stored Procedure to select single row</comment>
+		<sql>
+			drop procedure if exists get_message_and_type_by_id;
+			create or replace procedure get_message_and_type_by_id(
+				in id bigint,
+				out message varchar,
+				out status char
+			) language sql
+			begin atomic
+			select tmessage, tchar from sp_testdata where tkey = id;
+			end;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mysql">
+		<comment>Create Stored Procedure to insert data</comment>
+		<sql>
+			drop procedure if exists insert_message;
+			create procedure insert_message(
+				message varchar(100),
+				status char(1)
+			) language sql
+			begin
+				insert into sp_testdata(tmessage, tchar) VALUES (message, status);
+			end;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="mysql">
+		<comment>Create Stored Procedure to select single row</comment>
+		<sql>
+			drop procedure if exists get_message_and_type_by_id;
+			create procedure get_message_and_type_by_id(
+				in id bigint,
+				out message varchar(100),
+				out status char
+			) language sql
+			begin
+				select tmessage, tchar into message, status from sp_testdata where tkey = id;
+			end;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="mysql">
+		<comment>Create Stored Procedure to select multiple rows</comment>
+		<sql>
+			drop procedure if exists get_all_messages;
+			create procedure get_all_messages() language sql
+			begin
+				select * from sp_testdata;
+			end;
+		</sql>
+	</changeSet>
+
+</databaseChangeLog>
