@@ -1,10 +1,6 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
-import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
-import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";
-import iframeLadybugStateController from "./views/iframe/iframe-ladybug/iframe-ladybug-state.controller";
-import iframeLarvaStateController from "./views/iframe/iframe-larva/iframe-larva-state.controller";
 import storageStateController from "./views/storage/storage-state.controller";
 import storageViewStateController from "./views/storage/storage-view/storage-view-state.controller";
 
@@ -416,7 +412,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.customView', {
 				url: "/customView/:name",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeCustomView",
 				data: {
 					pageTitle: "Custom View",
 					breadcrumbs: 'Custom View',
@@ -426,37 +422,33 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 					name: { value: '', squash: true },
 					url: { value: '', squash: true },
 				},
-				controller: iframeCustomViewStateController
 			})
 			.state('pages.larva', {
 				url: "/testing/larva",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLarva",
 				data: {
 					pageTitle: 'Larva',
 					breadcrumbs: 'Testing > Larva',
 					iframe: true
 				},
-				controller: iframeLarvaStateController
 			})
 			.state('pages.ladybug', {
 				url: "/testing/ladybug",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLadybug",
 				data: {
 					pageTitle: 'Ladybug',
 					breadcrumbs: 'Testing > Ladybug',
 					iframe: true
 				},
-				controller: iframeLadybugStateController
 			})
 			.state('pages.ladybug_beta', {
 				url: "/testing/ladybug-beta",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLadybugBeta",
 				data: {
 					pageTitle: 'Ladybug (beta)',
 					breadcrumbs: 'Testing > Ladybug (beta)',
 					iframe: true
 				},
-				controller: iframeLadybugBetaStateController
 			})
 			.state('pages.empty_page', {
 				url: "/empty_page",
