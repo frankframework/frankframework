@@ -134,7 +134,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.adapterstatistics', {
 				url: "/adapter/:name/statistics",
-				templateUrl: "js/app/views/adapterstatistics/adapter_statistics.html",
+				component: "adapterstatistics",
 				data: {
 					pageTitle: 'Adapter',
 					breadcrumbs: 'Adapter > Statistics'

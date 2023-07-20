@@ -11,6 +11,7 @@ import './app/components/pages/pages-topinfobar.component';
 import './app/components/pages/pages-topnavbar.component';
 import './app/components/pages/scroll-to-top.component';
 
+import './app/views/adapterstatistics/adapterstatistics.component';
 import './app/views/configurations/configurations-manage/configurations-manage.component';
 import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import './app/views/configurations/configurations-show/configurations-show.component';

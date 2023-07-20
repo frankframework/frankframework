@@ -2,7 +2,6 @@ import './app/components/pages/feedback-modal/feedback-modal.controller';
 import './app/components/pages/information-modal/cookie-modal.controller';
 import './app/components/pages/information-modal/information-modal.controller';
 
-import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/connections/connections.controller';
 import './app/views/storage/storage.controller';
 import './app/views/storage/storage-list/storage-list.controller';
