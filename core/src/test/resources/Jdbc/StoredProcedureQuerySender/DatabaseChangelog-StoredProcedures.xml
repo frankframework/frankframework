@@ -10,8 +10,8 @@
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
 			</column>
-			<column name="TCHAR" type="CHAR(1)"/>
-			<column name="TMESSAGE" type="VARCHAR(100)"/>
+			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
 	</changeSet>
 
@@ -108,6 +108,114 @@
 			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
 				IN MESSAGE VARCHAR(100)
 			)
+			BEGIN
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mssql">
+		<comment>Create Stored Procedure to insert data</comment>
+		<sql>
+			DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
+			CREATE PROCEDURE INSERT_MESSAGE(
+				@MESSAGE VARCHAR(100),
+				@STATUS CHAR(1)
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (@MESSAGE, @STATUS);
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="mssql">
+		<comment>Create Stored Procedure to select single item</comment>
+		<sql>
+			DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
+			CREATE PROCEDURE GET_MESSAGE_BY_ID(
+				@ID BIGINT,
+				@MESSAGE VARCHAR(100) OUTPUT
+			) AS
+			BEGIN
+				SELECT @MESSAGE = TMESSAGE FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="mssql">
+		<comment>Create Stored Procedure to select single row</comment>
+		<sql>
+			DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
+			CREATE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				@ID BIGINT,
+				@MESSAGE VARCHAR(100) OUTPUT,
+				@STATUS CHAR OUT
+			) AS
+			BEGIN
+				SELECT @MESSAGE = TMESSAGE, @STATUS = TCHAR FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="mssql">
+		<comment>Create Stored Procedure to select multiple rows</comment>
+		<sql>
+			DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
+			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				@MESSAGE VARCHAR(100)
+			) AS
+			BEGIN
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE ORDER BY TKEY;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="oracle">
+		<comment>Create Stored Procedure to insert data</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="oracle">
+		<comment>Create Stored Procedure to select single item</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				ID IN NUMBER,
+				MESSAGE OUT VARCHAR(100)
+			) AS
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="oracle">
+		<comment>Create Stored Procedure to select single row</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				ID IN NUMBER,
+				MESSAGE OUT VARCHAR(100),
+				STATUS OUT CHAR
+			) AS
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="oracle">
+		<comment>Create Stored Procedure to select multiple rows</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				MESSAGE IN VARCHAR(100)
+			) AS
 			BEGIN
 				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
 			END;

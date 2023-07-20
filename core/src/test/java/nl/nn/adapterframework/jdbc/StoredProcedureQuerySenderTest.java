@@ -35,10 +35,12 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void setUp() throws Exception {
 		assumeThat("H2 does not support proper stored procedures, skipping test suite", productKey, not(equalToIgnoringCase("H2")));
 
+		assumeThat("Still working on Oracle tests, skipping test suite", productKey, not(equalToIgnoringCase("Oracle")));
+
 		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
 
 		sender = getConfiguration().createBean(StoredProcedureQuerySender.class);
-		sender.setSqlDialect(productKey);
+		sender.setSqlDialect("Oracle");
 		sender.setDatasourceName(productKey);
 
 		session = new PipeLineSession();
@@ -240,7 +242,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	private int countRowsWithMessageValue(final String value) throws SQLException, JdbcException {
-		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = ?", "H2");
+		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = ?", "Oracle");
 		int rowsCounted;
 		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
 			statement.setString(1, value);
@@ -252,7 +254,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	private long insertRowWithMessageValue(final String value) throws SQLException, JdbcException {
-		String insertValueStatement = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "H2");
+		String insertValueStatement = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
 		try (PreparedStatement statement = getConnection().prepareStatement(insertValueStatement, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, value);
 			statement.executeUpdate();

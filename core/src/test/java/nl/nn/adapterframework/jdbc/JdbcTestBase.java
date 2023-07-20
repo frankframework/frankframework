@@ -53,6 +53,7 @@ public abstract class JdbcTestBase {
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
+	private boolean dropAllAfterEachTest = true;
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
@@ -129,11 +130,13 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			try {
-				liquibase.dropAll();
-			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+			if (dropAllAfterEachTest) {
+				try {
+					liquibase.dropAll();
+				} catch(Exception e) {
+					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+				}
 			}
 			liquibase.close();
 			liquibase = null;

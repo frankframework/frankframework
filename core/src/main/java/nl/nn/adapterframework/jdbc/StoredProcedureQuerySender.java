@@ -59,12 +59,14 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	@Override
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
-		final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-		for (int param : outputParameterPositions) {
-			// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
-			// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
-			callableStatement.setNull(param, parameterMetaData.getParameterType(param));
-			callableStatement.registerOutParameter(param, parameterMetaData.getParameterType(param));
+		if (outputParameterPositions.length > 0) {
+			final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
+			for (int param : outputParameterPositions) {
+				// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
+				// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
+				callableStatement.setNull(param, parameterMetaData.getParameterType(param));
+				callableStatement.registerOutParameter(param, parameterMetaData.getParameterType(param));
+			}
 		}
 		return callableStatement;
 	}
