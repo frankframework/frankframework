@@ -3,14 +3,10 @@ package nl.nn.adapterframework.jdbc;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.jms.JMSException;
 
@@ -22,13 +18,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	private @Getter String outputParameters;
-	private final LinkedHashMap<Integer, JDBCType> outputParameterMap = new LinkedHashMap<>();
+	private int[] outputParameterPositions = new int[0];
 
 
 	/**
@@ -51,15 +46,12 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 		super.configure();
 		if (outputParameters != null) {
-			for (String param : StringUtil.split(outputParameters, ",")) {
-				List<String> paramDef = StringUtil.split(param, ":");
-				int paramNum = Integer.parseInt(paramDef.get(0));
-				JDBCType jdbcType = EnumUtils.parse(JDBCType.class, paramDef.get(1));
-				outputParameterMap.put(paramNum, jdbcType);
-			}
+			outputParameterPositions = StringUtil.splitToStream(outputParameters, ",;")
+					.mapToInt(Integer::parseInt)
+					.toArray();
 		}
 
-		if (isScalar() && outputParameterMap.size() > 1) {
+		if (isScalar() && outputParameterPositions.length > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
 		}
 	}
@@ -68,10 +60,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
 		final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-		for (Map.Entry<Integer, JDBCType> entry : outputParameterMap.entrySet()) {
-			Integer param = entry.getKey();
-			JDBCType type = entry.getValue();
-
+		for (int param : outputParameterPositions) {
 			// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
 			// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
 			callableStatement.setNull(param, parameterMetaData.getParameterType(param));
@@ -88,11 +77,11 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	@Override
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		Message result = super.executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
-		if (outputParameterMap.isEmpty()) {
+		if (outputParameterPositions.length == 0) {
 			return result;
 		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, outputParameterMap));
+			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameterPositions));
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}

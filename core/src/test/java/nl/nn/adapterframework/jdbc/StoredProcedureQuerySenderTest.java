@@ -144,7 +144,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		}
 		sender.setQuery(query);
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
-		sender.setOutputParameters("2:VARCHAR");
+		sender.setOutputParameters("2");
 		sender.setScalar(true);
 
 		Parameter parameter = new Parameter("id", String.valueOf(id));

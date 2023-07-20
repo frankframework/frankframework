@@ -9,8 +9,8 @@ import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Date;
-import java.sql.JDBCType;
 import java.sql.NClob;
+import java.sql.ParameterMetaData;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,19 +22,27 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 class StoredProcedureResultWrapper implements ResultSet {
 
 	private final CallableStatement delegate;
-	private final LinkedHashMap<Integer, JDBCType> parameterMappings;
+	private final ParameterMetaData parameterMetaData;
+	private final int[] parameterPositions;
 
 	private boolean hasNext = true;
 
-	StoredProcedureResultWrapper(CallableStatement delegate, LinkedHashMap<Integer, JDBCType> parameterMappings) {
+	/**
+	 * Class that wraps a CallableStatement to present its output-parameters as if they were
+	 * a {@link ResultSet}.
+	 *
+	 * @param delegate The {@link CallableStatement} to be wrapped
+	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
+	 */
+	StoredProcedureResultWrapper(CallableStatement delegate, ParameterMetaData parameterMetaData, int[] parameterPositions) {
 		this.delegate = delegate;
-		this.parameterMappings = parameterMappings;
+		this.parameterMetaData = parameterMetaData;
+		this.parameterPositions = parameterPositions;
 	}
 
 	@Override
@@ -249,7 +257,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 	@Override
 	public int findColumn(String columnLabel) throws SQLException {
 		int idx = 1;
-		for (Integer paramNr : parameterMappings.keySet()) {
+		for (Integer paramNr : parameterPositions) {
 			String columnName = String.valueOf(paramNr);
 			if (columnName.equalsIgnoreCase(columnLabel)) {
 				return idx;
@@ -1004,12 +1012,8 @@ class StoredProcedureResultWrapper implements ResultSet {
 		return delegate.isWrapperFor(iface);
 	}
 
-	private JDBCType mapColumnIndexToParamType(final int column) {
-		return parameterMappings.values().toArray(new JDBCType[0])[column - 1];
-	}
-
 	private Integer mapColumnIndexToParamNr(final int column) {
-		return parameterMappings.keySet().toArray(new Integer[0])[column - 1];
+		return parameterPositions[column - 1];
 	}
 
 	private int mapColumnLabelToParamNr(final String columnLabel) {
@@ -1023,7 +1027,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 		@Override
 		public int getColumnCount() {
-			return parameterMappings.size();
+			return parameterPositions.length;
 		}
 
 		@Override
@@ -1097,13 +1101,13 @@ class StoredProcedureResultWrapper implements ResultSet {
 		}
 
 		@Override
-		public int getColumnType(int column) {
-			return mapColumnIndexToParamType(column).getVendorTypeNumber();
+		public int getColumnType(int column) throws SQLException {
+			return parameterMetaData.getParameterType(column);
 		}
 
 		@Override
-		public String getColumnTypeName(int column) {
-			return mapColumnIndexToParamType(column).getName();
+		public String getColumnTypeName(int column) throws SQLException {
+			return parameterMetaData.getParameterTypeName(column);
 		}
 
 		@Override
@@ -1123,9 +1127,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 		@Override
 		public String getColumnClassName(int column) throws SQLException {
-			Object value = delegate.getObject(mapColumnIndexToParamNr(column));
-			if (value == null) return null;
-			return value.getClass().getName();
+			return parameterMetaData.getParameterClassName(column);
 		}
 
 		@Override
