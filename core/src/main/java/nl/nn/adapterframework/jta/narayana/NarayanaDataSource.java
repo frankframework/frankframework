@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class NarayanaDataSource implements DataSource {
-	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSource.class);
+	private final Logger log = LogUtil.getLogger(NarayanaDataSource.class);
 
 	private final @Getter XADataSource targetDataSource;
 	private final String name;
@@ -67,7 +67,7 @@ public class NarayanaDataSource implements DataSource {
 	}
 
 	/** In order to allow transactions to run over multiple databases, see {@link ModifierFactory}. */
-	public static void checkModifiers(DataSource dataSource) {
+	private void checkModifiers(DataSource dataSource) {
 		try (Connection connection = dataSource.getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			String driverName = metadata.getDriverName();
@@ -75,11 +75,11 @@ public class NarayanaDataSource implements DataSource {
 			int minor = metadata.getDriverMinorVersion();
 
 			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
 				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
 			}
 		} catch (SQLException e) {
-			LOG.warn("Could not check for existence of Modifier", e);
+			log.warn("Could not check for existence of Modifier", e);
 		}
 	}
 

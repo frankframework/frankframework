@@ -153,16 +153,24 @@ public abstract class JdbcTestBase {
 		}
 	}
 
-	protected Connection createNonTransactionalConnection() throws SQLException {
-		Connection connection = new DelegatingDataSource(dataSource).getConnection();
+	protected final Connection createNonTransactionalConnection() throws SQLException {
+		Connection connection = getTargetDataSource(dataSource).getConnection();
 		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
 		return connection;
 	}
 
+	private DataSource getTargetDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getTargetDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
+	}
+
 	//IBISSTORE_CHANGESET_PATH
 	protected void runMigrator(String changeLogFile) throws Exception {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection()));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.forceReleaseLocks();
 		liquibase.update(new Contexts());
 	}
 
