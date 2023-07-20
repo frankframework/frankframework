@@ -31,6 +31,8 @@ import './app/views/jms/jms-send-message/jms-send-message.component';
 import './app/views/liquibase/liquibase.component';
 import './app/views/loading/loading.component';
 import './app/views/login/login.component';
+import './app/views/logging/logging.component';
+import './app/views/logging/logging-manage/logging-manage.component';
 import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 import './app/views/monitors/monitors.component';
 import './app/views/notifications/notifications.component';

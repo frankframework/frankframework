@@ -224,7 +224,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.logging_show', {
 				url: "/logging?directory&file",
-				templateUrl: "js/app/views/logging/ShowLogging.html",
+				component: "logging",
 				data: {
 					pageTitle: 'Logging',
 					breadcrumbs: 'Logging > Log Files'
@@ -236,7 +236,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.logging_manage', {
 				url: "/logging/settings",
-				templateUrl: "js/app/views/logging/logging-manage/ManageLogging.html",
+				component: "loggingManage",
 				data: {
 					pageTitle: 'Logging',
 					breadcrumbs: 'Logging > Log Settings'
