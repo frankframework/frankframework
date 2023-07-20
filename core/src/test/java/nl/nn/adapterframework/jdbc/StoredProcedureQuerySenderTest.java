@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
@@ -12,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +24,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
@@ -35,7 +39,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// TODO: Add stored procedures for all databases (except H2). Until then, limit the test to MySQL, Postgres.
 		assumeThat(productKey, isOneOf("MySQL", "PostgreSQL"));
 
-		runMigrator("Migrator/DatabaseChangelog-StoredProcedures.xml");
+		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
 
 		sender = getConfiguration().createBean(StoredProcedureQuerySender.class);
 		sender.setSqlDialect(productKey);
@@ -55,7 +59,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testSimpleStoredProcedureNoResultNoParameters() throws Exception {
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		sender.setQuery("call insert_message('" + value + "', 'P')");
+		sender.setQuery("CALL INSERT_MESSAGE('" + value + "', 'P')");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 
 		sender.configure();
@@ -82,9 +86,9 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testSimpleStoredProcedureResultQueryNoParameters() throws Exception {
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		sender.setQuery("call insert_message('" + value + "', 'P')");
+		sender.setQuery("CALL INSERT_MESSAGE('" + value + "', 'P')");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
-		sender.setResultQuery("SELECT COUNT(*) FROM sp_testdata WHERE tmessage = '" + value + "'");
+		sender.setResultQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = '" + value + "'");
 		sender.setScalar(true);
 
 		sender.configure();
@@ -105,9 +109,9 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testSimpleStoredProcedureResultQueryInputParameters() throws Exception {
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		sender.setQuery("call insert_message(?, 'P')");
+		sender.setQuery("CALL INSERT_MESSAGE(?, 'P')");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
-		sender.setResultQuery("SELECT COUNT(*) FROM sp_testdata WHERE tmessage = '" + value + "'");
+		sender.setResultQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = '" + value + "'");
 		sender.setScalar(true);
 
 		Parameter parameter = new Parameter("message", value);
@@ -134,15 +138,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		String value = UUID.randomUUID().toString();
 		long id = insertRowWithMessageValue(value);
 
-		String query;
-		if (productKey.equalsIgnoreCase("MySQL")) {
-			query = "call get_message_by_id(?, ?)";
-		} else if (productKey.equalsIgnoreCase("PostgreSQL")) {
-			query = "call get_message_by_id(?, ?)";
-		} else {
-			throw new IllegalStateException("Don't yet know how to make procedure-call with out-parameters for database '" + productKey + "'");
-		}
-		sender.setQuery(query);
+		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 		sender.setOutputParameters("2");
 		sender.setScalar(true);
@@ -165,8 +161,51 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals(value, result.getResult().asString());
 	}
 
+	@Test
+	public void testStoredProcedureReturningResultSet() throws Exception {
+		assumeThat("PostgreSQL does not support stored procedures that return multi-row results, skipping test", productKey, not(equalToIgnoringCase("PostgreSQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long[] ids = new long[5];
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] =insertRowWithMessageValue(value);
+		}
+
+		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.SELECT.name());
+
+		Parameter parameter = new Parameter("content", value);
+		parameter.configure();
+		sender.addParameter(parameter);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		int idx = 0;
+		String expectedOutput = TestFileUtils
+				.getTestFile("/Jdbc/StoredProcedureQuerySender/multi-row-results.xml")
+				.replace("MESSAGE-CONTENTS", value);
+		StringBuffer sb = new StringBuffer();
+		Matcher matcher = Pattern.compile("MSG-ID").matcher(expectedOutput);
+		while (matcher.find()) {
+			matcher.appendReplacement(sb, String.valueOf(ids[idx++]));
+		}
+		matcher.appendTail(sb);
+
+		assertXmlEquals(sb.toString(), result.getResult().asString());
+	}
+
 	private int countRowsWithMessageValue(final String value) throws SQLException, JdbcException {
-		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM sp_testdata WHERE tmessage = ?", "H2");
+		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = ?", "H2");
 		int rowsCounted;
 		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
 			statement.setString(1, value);
@@ -178,7 +217,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	private long insertRowWithMessageValue(final String value) throws SQLException, JdbcException {
-		String insertValueStatement = dbmsSupport.convertQuery("INSERT INTO sp_testdata (tmessage, tchar) VALUES (?, 'E')", "H2");
+		String insertValueStatement = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "H2");
 		try (PreparedStatement statement = getConnection().prepareStatement(insertValueStatement, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, value);
 			statement.executeUpdate();

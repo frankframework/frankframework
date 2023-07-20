@@ -1,0 +1,37 @@
+<result>
+    <fielddefinition>
+        <field name="TKEY" type="BIGINT" columnDisplaySize="19" precision="19" scale="0" isCurrency="false" columnTypeName="BIGINT"
+               columnClassName="java.lang.Long"/>
+        <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR"
+               columnClassName="java.lang.String"/>
+        <field name="TMESSAGE" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR"
+               columnClassName="java.lang.String"/>
+    </fielddefinition>
+    <rowset>
+        <row number="0">
+            <field name="TKEY">MSG-ID</field>
+            <field name="TCHAR">E</field>
+            <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+        </row>
+        <row number="1">
+            <field name="TKEY">MSG-ID</field>
+            <field name="TCHAR">E</field>
+            <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+        </row>
+        <row number="2">
+            <field name="TKEY">MSG-ID</field>
+            <field name="TCHAR">E</field>
+            <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+        </row>
+        <row number="3">
+            <field name="TKEY">MSG-ID</field>
+            <field name="TCHAR">E</field>
+            <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+        </row>
+        <row number="4">
+            <field name="TKEY">MSG-ID</field>
+            <field name="TCHAR">E</field>
+            <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+        </row>
+    </rowset>
+</result>
