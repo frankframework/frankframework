@@ -266,7 +266,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							}
 							if (rawMessage == null) {
 								if (txStatus!=null) {
-									log.trace("Rollback; raw message == null");
+									log.trace("Rollback; raw message == null"); //Why do we do a rollback here? There is no message to process?
 									txManager.rollback(txStatus);
 								}
 								return;
