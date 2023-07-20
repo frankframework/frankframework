@@ -25,14 +25,14 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class ResultSetProxy implements ResultSet {
+class StoredProcedureResultWrapper implements ResultSet {
 
 	private final CallableStatement delegate;
 	private final LinkedHashMap<Integer, JDBCType> parameterMappings;
 
 	private boolean hasNext = true;
 
-	ResultSetProxy(CallableStatement delegate, LinkedHashMap<Integer, JDBCType> parameterMappings) {
+	StoredProcedureResultWrapper(CallableStatement delegate, LinkedHashMap<Integer, JDBCType> parameterMappings) {
 		this.delegate = delegate;
 		this.parameterMappings = parameterMappings;
 	}
@@ -52,7 +52,7 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public boolean wasNull() throws SQLException {
+	public boolean wasNull() {
 		return false;
 	}
 
@@ -122,17 +122,17 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public InputStream getAsciiStream(int columnIndex) throws SQLException {
+	public InputStream getAsciiStream(int columnIndex) {
 		throw new UnsupportedOperationException("Cannot get ASCII stream from CallableStatement");
 	}
 
 	@Override
-	public InputStream getUnicodeStream(int columnIndex) throws SQLException {
+	public InputStream getUnicodeStream(int columnIndex) {
 		throw new UnsupportedOperationException("Cannot get Unicode stream from CallableStatement");
 	}
 
 	@Override
-	public InputStream getBinaryStream(int columnIndex) throws SQLException {
+	public InputStream getBinaryStream(int columnIndex) {
 		throw new UnsupportedOperationException("Cannot get binary stream from CallableStatement");
 	}
 
@@ -202,17 +202,17 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public InputStream getAsciiStream(String columnLabel) throws SQLException {
+	public InputStream getAsciiStream(String columnLabel) {
 		throw new UnsupportedOperationException("Cannot get ASCII stream from CallableStatement");
 	}
 
 	@Override
-	public InputStream getUnicodeStream(String columnLabel) throws SQLException {
+	public InputStream getUnicodeStream(String columnLabel) {
 		throw new UnsupportedOperationException("Cannot get Unicode stream from CallableStatement");
 	}
 
 	@Override
-	public InputStream getBinaryStream(String columnLabel) throws SQLException {
+	public InputStream getBinaryStream(String columnLabel) {
 		throw new UnsupportedOperationException("Cannot get binary stream from CallableStatement");
 	}
 
@@ -227,7 +227,7 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public String getCursorName() throws SQLException {
+	public String getCursorName() {
 		throw new UnsupportedOperationException("Cannot get Cursor name from CallableStatement");
 	}
 
@@ -280,32 +280,32 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public boolean isBeforeFirst() throws SQLException {
+	public boolean isBeforeFirst() {
 		return hasNext;
 	}
 
 	@Override
-	public boolean isAfterLast() throws SQLException {
+	public boolean isAfterLast() {
 		return !hasNext;
 	}
 
 	@Override
-	public boolean isFirst() throws SQLException {
+	public boolean isFirst() {
 		return !hasNext;
 	}
 
 	@Override
-	public boolean isLast() throws SQLException {
+	public boolean isLast() {
 		return !hasNext;
 	}
 
 	@Override
-	public void beforeFirst() throws SQLException {
+	public void beforeFirst() {
 		hasNext = true;
 	}
 
 	@Override
-	public void afterLast() throws SQLException {
+	public void afterLast() {
 		hasNext = false;
 	}
 
@@ -320,7 +320,7 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public int getRow() throws SQLException {
+	public int getRow() {
 		return 0;
 	}
 
@@ -340,22 +340,22 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void setFetchDirection(int direction) throws SQLException {
+	public void setFetchDirection(int direction) {
 
 	}
 
 	@Override
-	public int getFetchDirection() throws SQLException {
+	public int getFetchDirection() {
 		return ResultSet.FETCH_FORWARD;
 	}
 
 	@Override
-	public void setFetchSize(int rows) throws SQLException {
+	public void setFetchSize(int rows) {
 
 	}
 
 	@Override
-	public int getFetchSize() throws SQLException {
+	public int getFetchSize() {
 		return 1;
 	}
 
@@ -365,247 +365,247 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public int getConcurrency() throws SQLException {
+	public int getConcurrency() {
 		return ResultSet.CONCUR_READ_ONLY;
 	}
 
 	@Override
-	public boolean rowUpdated() throws SQLException {
+	public boolean rowUpdated() {
 		return false;
 	}
 
 	@Override
-	public boolean rowInserted() throws SQLException {
+	public boolean rowInserted() {
 		return false;
 	}
 
 	@Override
-	public boolean rowDeleted() throws SQLException {
+	public boolean rowDeleted() {
 		return false;
 	}
 
 	@Override
-	public void updateNull(int columnIndex) throws SQLException {
+	public void updateNull(int columnIndex) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBoolean(int columnIndex, boolean x) throws SQLException {
+	public void updateBoolean(int columnIndex, boolean x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateByte(int columnIndex, byte x) throws SQLException {
+	public void updateByte(int columnIndex, byte x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateShort(int columnIndex, short x) throws SQLException {
+	public void updateShort(int columnIndex, short x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateInt(int columnIndex, int x) throws SQLException {
+	public void updateInt(int columnIndex, int x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateLong(int columnIndex, long x) throws SQLException {
+	public void updateLong(int columnIndex, long x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateFloat(int columnIndex, float x) throws SQLException {
+	public void updateFloat(int columnIndex, float x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateDouble(int columnIndex, double x) throws SQLException {
+	public void updateDouble(int columnIndex, double x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
+	public void updateBigDecimal(int columnIndex, BigDecimal x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateString(int columnIndex, String x) throws SQLException {
+	public void updateString(int columnIndex, String x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBytes(int columnIndex, byte[] x) throws SQLException {
+	public void updateBytes(int columnIndex, byte[] x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateDate(int columnIndex, Date x) throws SQLException {
+	public void updateDate(int columnIndex, Date x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateTime(int columnIndex, Time x) throws SQLException {
+	public void updateTime(int columnIndex, Time x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
+	public void updateTimestamp(int columnIndex, Timestamp x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
+	public void updateAsciiStream(int columnIndex, InputStream x, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
+	public void updateBinaryStream(int columnIndex, InputStream x, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
+	public void updateCharacterStream(int columnIndex, Reader x, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
+	public void updateObject(int columnIndex, Object x, int scaleOrLength) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateObject(int columnIndex, Object x) throws SQLException {
+	public void updateObject(int columnIndex, Object x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNull(String columnLabel) throws SQLException {
+	public void updateNull(String columnLabel) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBoolean(String columnLabel, boolean x) throws SQLException {
+	public void updateBoolean(String columnLabel, boolean x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateByte(String columnLabel, byte x) throws SQLException {
+	public void updateByte(String columnLabel, byte x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateShort(String columnLabel, short x) throws SQLException {
+	public void updateShort(String columnLabel, short x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateInt(String columnLabel, int x) throws SQLException {
+	public void updateInt(String columnLabel, int x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateLong(String columnLabel, long x) throws SQLException {
+	public void updateLong(String columnLabel, long x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateFloat(String columnLabel, float x) throws SQLException {
+	public void updateFloat(String columnLabel, float x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateDouble(String columnLabel, double x) throws SQLException {
+	public void updateDouble(String columnLabel, double x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBigDecimal(String columnLabel, BigDecimal x) throws SQLException {
+	public void updateBigDecimal(String columnLabel, BigDecimal x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateString(String columnLabel, String x) throws SQLException {
+	public void updateString(String columnLabel, String x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBytes(String columnLabel, byte[] x) throws SQLException {
+	public void updateBytes(String columnLabel, byte[] x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateDate(String columnLabel, Date x) throws SQLException {
+	public void updateDate(String columnLabel, Date x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateTime(String columnLabel, Time x) throws SQLException {
+	public void updateTime(String columnLabel, Time x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateTimestamp(String columnLabel, Timestamp x) throws SQLException {
+	public void updateTimestamp(String columnLabel, Timestamp x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x, int length) throws SQLException {
+	public void updateAsciiStream(String columnLabel, InputStream x, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x, int length) throws SQLException {
+	public void updateBinaryStream(String columnLabel, InputStream x, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader, int length) throws SQLException {
+	public void updateCharacterStream(String columnLabel, Reader reader, int length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
+	public void updateObject(String columnLabel, Object x, int scaleOrLength) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateObject(String columnLabel, Object x) throws SQLException {
+	public void updateObject(String columnLabel, Object x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void insertRow() throws SQLException {
+	public void insertRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateRow() throws SQLException {
+	public void updateRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void deleteRow() throws SQLException {
+	public void deleteRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void refreshRow() throws SQLException {
+	public void refreshRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void cancelRowUpdates() throws SQLException {
+	public void cancelRowUpdates() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void moveToInsertRow() throws SQLException {
+	public void moveToInsertRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void moveToCurrentRow() throws SQLException {
+	public void moveToCurrentRow() {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -705,12 +705,12 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateRef(int columnIndex, Ref x) throws SQLException {
+	public void updateRef(int columnIndex, Ref x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateRef(String columnLabel, Ref x) throws SQLException {
+	public void updateRef(String columnLabel, Ref x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -735,37 +735,37 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateArray(int columnIndex, Array x) throws SQLException {
+	public void updateArray(int columnIndex, Array x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateArray(String columnLabel, Array x) throws SQLException {
+	public void updateArray(String columnLabel, Array x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public RowId getRowId(int columnIndex) throws SQLException {
+	public RowId getRowId(int columnIndex) {
 		throw new UnsupportedOperationException("ROWID not supported for Callable Statement results");
 	}
 
 	@Override
-	public RowId getRowId(String columnLabel) throws SQLException {
+	public RowId getRowId(String columnLabel) {
 		throw new UnsupportedOperationException("ROWID not supported for Callable Statement results");
 	}
 
 	@Override
-	public void updateRowId(int columnIndex, RowId x) throws SQLException {
+	public void updateRowId(int columnIndex, RowId x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateRowId(String columnLabel, RowId x) throws SQLException {
+	public void updateRowId(String columnLabel, RowId x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public int getHoldability() throws SQLException {
+	public int getHoldability() {
 		return ResultSet.CLOSE_CURSORS_AT_COMMIT;
 	}
 
@@ -775,22 +775,22 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateNString(int columnIndex, String nString) throws SQLException {
+	public void updateNString(int columnIndex, String nString) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNString(String columnLabel, String nString) throws SQLException {
+	public void updateNString(String columnLabel, String nString) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
+	public void updateNClob(int columnIndex, NClob nClob) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
+	public void updateNClob(String columnLabel, NClob nClob) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -815,12 +815,12 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
+	public void updateSQLXML(int columnIndex, SQLXML xmlObject) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
+	public void updateSQLXML(String columnLabel, SQLXML xmlObject) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -845,42 +845,42 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+	public void updateNCharacterStream(int columnIndex, Reader x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+	public void updateNCharacterStream(String columnLabel, Reader reader, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
+	public void updateAsciiStream(int columnIndex, InputStream x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
+	public void updateBinaryStream(int columnIndex, InputStream x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
+	public void updateCharacterStream(int columnIndex, Reader x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
+	public void updateAsciiStream(String columnLabel, InputStream x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
+	public void updateBinaryStream(String columnLabel, InputStream x, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
+	public void updateCharacterStream(String columnLabel, Reader reader, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -905,52 +905,52 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
+	public void updateNClob(int columnIndex, Reader reader, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
+	public void updateNClob(String columnLabel, Reader reader, long length) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
+	public void updateNCharacterStream(int columnIndex, Reader x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
+	public void updateNCharacterStream(String columnLabel, Reader reader) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
+	public void updateAsciiStream(int columnIndex, InputStream x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
+	public void updateBinaryStream(int columnIndex, InputStream x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
+	public void updateCharacterStream(int columnIndex, Reader x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
+	public void updateAsciiStream(String columnLabel, InputStream x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
+	public void updateBinaryStream(String columnLabel, InputStream x) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
+	public void updateCharacterStream(String columnLabel, Reader reader) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -975,12 +975,12 @@ class ResultSetProxy implements ResultSet {
 	}
 
 	@Override
-	public void updateNClob(int columnIndex, Reader reader) throws SQLException {
+	public void updateNClob(int columnIndex, Reader reader) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
 	@Override
-	public void updateNClob(String columnLabel, Reader reader) throws SQLException {
+	public void updateNClob(String columnLabel, Reader reader) {
 		throw new UnsupportedOperationException("Cannot update results from Callable Statement");
 	}
 
@@ -1022,102 +1022,102 @@ class ResultSetProxy implements ResultSet {
 		}
 
 		@Override
-		public int getColumnCount() throws SQLException {
+		public int getColumnCount() {
 			return parameterMappings.size();
 		}
 
 		@Override
-		public boolean isAutoIncrement(int column) throws SQLException {
+		public boolean isAutoIncrement(int column) {
 			return false;
 		}
 
 		@Override
-		public boolean isCaseSensitive(int column) throws SQLException {
+		public boolean isCaseSensitive(int column) {
 			return false;
 		}
 
 		@Override
-		public boolean isSearchable(int column) throws SQLException {
+		public boolean isSearchable(int column) {
 			return false;
 		}
 
 		@Override
-		public boolean isCurrency(int column) throws SQLException {
+		public boolean isCurrency(int column) {
 			return false;
 		}
 
 		@Override
-		public int isNullable(int column) throws SQLException {
+		public int isNullable(int column) {
 			return ResultSetMetaData.columnNullableUnknown;
 		}
 
 		@Override
-		public boolean isSigned(int column) throws SQLException {
+		public boolean isSigned(int column) {
 			return false;
 		}
 
 		@Override
-		public int getColumnDisplaySize(int column) throws SQLException {
+		public int getColumnDisplaySize(int column) {
 			return 0;
 		}
 
 		@Override
-		public String getColumnLabel(int column) throws SQLException {
+		public String getColumnLabel(int column) {
 			return mapColumnIndexToParamNr(column).toString();
 		}
 
 		@Override
-		public String getColumnName(int column) throws SQLException {
+		public String getColumnName(int column) {
 			return mapColumnIndexToParamNr(column).toString();
 		}
 
 		@Override
-		public String getSchemaName(int column) throws SQLException {
+		public String getSchemaName(int column) {
 			return null;
 		}
 
 		@Override
-		public int getPrecision(int column) throws SQLException {
+		public int getPrecision(int column) {
 			return 0;
 		}
 
 		@Override
-		public int getScale(int column) throws SQLException {
+		public int getScale(int column) {
 			return 0;
 		}
 
 		@Override
-		public String getTableName(int column) throws SQLException {
+		public String getTableName(int column) {
 			return null;
 		}
 
 		@Override
-		public String getCatalogName(int column) throws SQLException {
+		public String getCatalogName(int column) {
 			return null;
 		}
 
 		@Override
-		public int getColumnType(int column) throws SQLException {
+		public int getColumnType(int column) {
 			return mapColumnIndexToParamType(column).getVendorTypeNumber();
 		}
 
 		@Override
-		public String getColumnTypeName(int column) throws SQLException {
+		public String getColumnTypeName(int column) {
 			return mapColumnIndexToParamType(column).getName();
 		}
 
 		@Override
-		public boolean isReadOnly(int column) throws SQLException {
+		public boolean isReadOnly(int column) {
 			return true;
 		}
 
 		@Override
-		public boolean isWritable(int column) throws SQLException {
+		public boolean isWritable(int column) {
 			return false;
 		}
 
 		@Override
-		public boolean isDefinitelyWritable(int column) throws SQLException {
+		public boolean isDefinitelyWritable(int column) {
 			return false;
 		}
 
@@ -1129,12 +1129,12 @@ class ResultSetProxy implements ResultSet {
 		}
 
 		@Override
-		public <T> T unwrap(Class<T> iface) throws SQLException {
+		public <T> T unwrap(Class<T> iface) {
 			return null;
 		}
 
 		@Override
-		public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		public boolean isWrapperFor(Class<?> iface) {
 			return false;
 		}
 	}

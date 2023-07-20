@@ -982,6 +982,7 @@ public class JdbcUtil {
 			statement.setString(parameterIndex, value);
 			return;
 		}
+		// TODO: Some databases appear to re-fetch this for every parameter, can this be cached?
 		int sqlTYpe=statement.getParameterMetaData().getParameterType(parameterIndex);
 		try {
 			switch(sqlTYpe) {

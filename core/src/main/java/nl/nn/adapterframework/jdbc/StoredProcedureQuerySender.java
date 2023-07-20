@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -65,13 +66,16 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	@Override
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
-		CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+		final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
 		for (Map.Entry<Integer, JDBCType> entry : outputParameterMap.entrySet()) {
 			Integer param = entry.getKey();
 			JDBCType type = entry.getValue();
 
-			// Not all drivers support registerOutParameter by JDBCType (for instance, PostgreSQL)
-			callableStatement.registerOutParameter(param, type.getVendorTypeNumber());
+			// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
+			// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
+			callableStatement.setNull(param, parameterMetaData.getParameterType(param));
+			callableStatement.registerOutParameter(param, parameterMetaData.getParameterType(param));
 		}
 		return callableStatement;
 	}
@@ -88,7 +92,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			return result;
 		}
 		try {
-			return getResult(new ResultSetProxy((CallableStatement) statement, outputParameterMap));
+			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, outputParameterMap));
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
