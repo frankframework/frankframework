@@ -25,14 +25,13 @@ const FlowController = function (Misc, $http, $uibModal) {
 	ctrl.openFlowModal = function (xhr) {
 		ctrl.flowModalLadda = true;
 		$uibModal.open({
-			templateUrl: 'js/app/views/status/flow/flow-modal/flow-modal.html',
+			component: 'flowModal',
 			windowClass: 'mermaidFlow',
 			resolve: {
 				xhr: function () {
 					return xhr;
 				}
 			},
-			controller: 'FlowDiagramModalCtrl'
 		});
 		setTimeout(function () { ctrl.flowModalLadda = false; }, 1000);
 	}

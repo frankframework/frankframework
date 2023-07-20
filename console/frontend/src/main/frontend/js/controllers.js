@@ -4,7 +4,6 @@ import './app/components/pages/information-modal/information-modal.controller';
 
 import './app/views/adapterstatistics/adapterstatistics.controller';
 import './app/views/connections/connections.controller';
-import './app/views/status/flow/flow-modal/flow-modal.controller';
 import './app/views/storage/storage.controller';
 import './app/views/storage/storage-list/storage-list.controller';
 import './app/views/storage/storage-view/storage-view.controller';

@@ -43,4 +43,5 @@ import './app/views/security-items/security-items.component';
 import './app/views/status/status.component';
 import './app/views/status/status.component';
 import './app/views/status/flow/flow.component';
+import './app/views/status/flow/flow-modal/flow-modal.component';
 import './app/views/webservices/webservices.component';
