@@ -2,7 +2,6 @@ package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,9 +34,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Before
 	public void setUp() throws Exception {
 		assumeThat("H2 does not support proper stored procedures, skipping test suite", productKey, not(equalToIgnoringCase("H2")));
-
-		// TODO: Add stored procedures for all databases (except H2). Until then, limit the test to MySQL, Postgres.
-		assumeThat(productKey, isOneOf("MySQL", "PostgreSQL"));
 
 		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
 
@@ -162,6 +158,41 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testStoredProcedureInputAndOutputParametersXmlOutput() throws Exception {
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+
+		sender.setQuery("CALL GET_MESSAGE_AND_TYPE_BY_ID(?, ?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setOutputParameters("2, 3");
+
+		Parameter parameter = new Parameter("id", String.valueOf(id));
+		parameter.configure();
+		sender.addParameter(parameter);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		String expectedOutput = TestFileUtils
+				.getTestFile("/Jdbc/StoredProcedureQuerySender/multi-output-parameter-xml-result.xml")
+				.replace("MESSAGE-CONTENTS", value);
+
+		final String actual = result.getResult()
+				.asString()
+				.replaceAll("(?m)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
+		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
 	public void testStoredProcedureReturningResultSet() throws Exception {
 		assumeThat("PostgreSQL does not support stored procedures that return multi-row results, skipping test", productKey, not(equalToIgnoringCase("PostgreSQL")));
 
@@ -201,7 +232,11 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		}
 		matcher.appendTail(sb);
 
-		assertXmlEquals(sb.toString(), result.getResult().asString());
+		final String actual = result.getResult()
+				.asString()
+				.replaceAll("(?m)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
+
+		assertXmlEquals(sb.toString(), actual);
 	}
 
 	private int countRowsWithMessageValue(final String value) throws SQLException, JdbcException {

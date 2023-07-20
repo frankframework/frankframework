@@ -58,7 +58,7 @@
 		</sql>
 	</changeSet>
 
-	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mysql">
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mysql,mariadb">
 		<comment>Create Stored Procedure to insert data</comment>
 		<sql>
 			DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
@@ -72,7 +72,7 @@
 		</sql>
 	</changeSet>
 
-	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="mysql">
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="mysql,mariadb">
 		<comment>Create Stored Procedure to select single item</comment>
 		<sql>
 			DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
@@ -86,7 +86,7 @@
 		</sql>
 	</changeSet>
 
-	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="mysql">
+	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="mysql,mariadb">
 		<comment>Create Stored Procedure to select single row</comment>
 		<sql>
 			DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
@@ -101,7 +101,7 @@
 		</sql>
 	</changeSet>
 
-	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="mysql">
+	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="mysql,mariadb">
 		<comment>Create Stored Procedure to select multiple rows</comment>
 		<sql>
 			DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
