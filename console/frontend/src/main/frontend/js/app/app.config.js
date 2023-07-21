@@ -1,8 +1,6 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
 import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
-import storageStateController from "./views/storage/storage-state.controller";
-import storageViewStateController from "./views/storage/storage-view/storage-view-state.controller";
 
 appModule.config(['$httpProvider', function ($httpProvider) {
 	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants, $q, Misc, Toastr, $location) {
@@ -146,8 +144,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			.state('pages.storage', {
 				abstract: true,
 				url: "/adapters/:adapter/:storageSource/:storageSourceName/",
-				template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
-				controller: storageStateController,
+				component: "storageState",
 				params: {
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
@@ -161,15 +158,14 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.storage.list', {
 				url: "stores/:processState",
-				templateUrl: "js/app/views/storage/storage-list/adapter_storage_list.html",
+				component: "storageList",
 			})
 			.state('pages.storage.view', {
 				url: "stores/:processState/messages/:messageId",
-				templateUrl: "js/app/views/storage/storage-view/adapter_storage_view.html",
+				component: "storageView",
 				params: {
 					messageId: { value: '', squash: true },
 				},
-				controller: storageViewStateController,
 			})
 			.state('pages.notifications', {
 				url: "/notifications",

@@ -45,4 +45,7 @@ import './app/views/status/status.component';
 import './app/views/status/status.component';
 import './app/views/status/flow/flow.component';
 import './app/views/status/flow/flow-modal/flow-modal.component';
+import './app/views/storage/storage.component';
+import './app/views/storage/storage-list/storage-list.component';
+import './app/views/storage/storage-view/storage-view.component';
 import './app/views/webservices/webservices.component';
