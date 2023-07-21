@@ -175,8 +175,8 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, pipeLineSession);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
 		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
 			Session queueSession = (Session) pipeLineSession.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			if (queueSession!=null) {
