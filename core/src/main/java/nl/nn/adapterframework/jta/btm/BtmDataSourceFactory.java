@@ -15,16 +15,20 @@
 */
 package nl.nn.adapterframework.jta.btm;
 
+import java.sql.Connection;
+
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DataSourceConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import lombok.Getter;
@@ -57,24 +61,28 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
 		if(maxPoolSize > 1) {
-			return createPool((DataSource)dataSource, dataSourceName);
+			return createPool((DataSource)dataSource);
 		}
 		return (DataSource) dataSource;
 	}
 
-	private DataSource createPool(DataSource dataSource, String dataSourceName) {
-		HikariConfig config = new HikariConfig();
-		config.setRegisterMbeans(false);
-		config.setMaxLifetime(maxLifeTime);
-		config.setIdleTimeout(maxIdleTime);
-		config.setMaximumPoolSize(maxPoolSize);
-		config.setMinimumIdle(minPoolSize);
-		config.setDataSource(dataSource);
-		config.setPoolName(dataSourceName);
+	private DataSource createPool(DataSource dataSource) {
+		ConnectionFactory dcf = new DataSourceConnectionFactory(dataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(dcf, null);
 
-		HikariDataSource poolingDataSource = new HikariDataSource(config);
-		log.info("created Hikari pool [{}]", poolingDataSource);
-		return poolingDataSource;
+		poolableConnectionFactory.setAutoCommitOnReturn(false);
+		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000 : -1);
+		poolableConnectionFactory.setRollbackOnReturn(true);
+		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+		connectionPool.setMinIdle(minPoolSize);
+		connectionPool.setMaxTotal(maxPoolSize);
+		connectionPool.setBlockWhenExhausted(true);
+		poolableConnectionFactory.setPool(connectionPool);
+
+		org.apache.commons.dbcp2.PoolingDataSource<PoolableConnection> ds = new org.apache.commons.dbcp2.PoolingDataSource<>(connectionPool);
+		log.info("registered PoolingDataSource [{}]", ds);
+		return ds;
 	}
 
 	private DataSource createXAPool(XADataSource dataSource, String dataSourceName) {
@@ -94,7 +102,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 		result.setXaDataSource(dataSource);
 		result.init();
 
-		log.info("registered BTM DataSource [{}] with Transaction Manager", result);
+		log.info("registered BTM DataSource [{}]", result);
 		return result;
 	}
 

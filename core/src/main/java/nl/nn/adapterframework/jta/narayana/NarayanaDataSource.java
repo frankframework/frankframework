@@ -30,11 +30,13 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 
 import com.arjuna.ats.internal.jdbc.ConnectionImple;
+import com.arjuna.ats.internal.jdbc.ConnectionManager;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
 import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -48,6 +50,9 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class NarayanaDataSource implements DataSource {
 	private final Logger log = LogUtil.getLogger(NarayanaDataSource.class);
+
+	private @Setter boolean connectionPooling = true;
+	private @Setter int maxConnections = 20;
 
 	private final @Getter XADataSource targetDataSource;
 	private final String name;
@@ -98,7 +103,9 @@ public class NarayanaDataSource implements DataSource {
 		if (password!=null) {
 			properties.put(TransactionalDriver.password, password);
 		}
-		return new ConnectionImple(name, properties);
+		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
+		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
+		return ConnectionManager.create(name, properties);
 	}
 
 
