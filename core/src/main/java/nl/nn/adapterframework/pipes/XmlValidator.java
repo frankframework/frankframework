@@ -128,7 +128,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	 * @throws ConfigurationException when:
 	 * <ul><li>the schema cannot be found</li>
 	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-	 * for "failure"</li>
+	 * for "failure" or "exception"</li>
 	 * <li>when the parser does not accept setting the properties for validating</li>
 	 * </ul>
 	 */
@@ -155,8 +155,8 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
 
-			if (!isForwardFailureToSuccess() && !isThrowException() && findForward("failure") == null) {
-				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure]");
+			if (!isForwardFailureToSuccess() && !isThrowException() && ((findForward("failure") == null) && (findForward("exception")== null))) {
+				throw new ConfigurationException("must either set throwException=true or have a forward with name [failure] or [exception]");
 			}
 
 			// Different default value for ignoreUnknownNamespaces when using
