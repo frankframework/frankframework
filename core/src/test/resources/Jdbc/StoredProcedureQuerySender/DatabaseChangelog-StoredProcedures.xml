@@ -15,6 +15,7 @@
 		</createTable>
 	</changeSet>
 
+	<!-- PostgreSQL -->
 	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="postgresql">
 		<comment>Create Stored Procedure to insert data</comment>
 		<sql>
@@ -58,6 +59,7 @@
 		</sql>
 	</changeSet>
 
+	<!-- MySQL / MariaDB -->
 	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mysql,mariadb">
 		<comment>Create Stored Procedure to insert data</comment>
 		<sql>
@@ -114,6 +116,7 @@
 		</sql>
 	</changeSet>
 
+	<!-- Microsoft SQL Server -->
 	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="mssql">
 		<comment>Create Stored Procedure to insert data</comment>
 		<sql>
@@ -170,16 +173,17 @@
 		</sql>
 	</changeSet>
 
+	<!-- Oracle -->
 	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="oracle">
 		<comment>Create Stored Procedure to insert data</comment>
 		<sql>
 			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
-				MESSAGE VARCHAR(100),
-				STATUS CHAR(1)
+				MESSAGE IN SP_TESTDATA.TMESSAGE%TYPE,
+				STATUS IN SP_TESTDATA.TCHAR%TYPE
 			) AS
 			BEGIN
 				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
-			END;
+			END INSERT_MESSAGE;
 		</sql>
 	</changeSet>
 
@@ -187,11 +191,11 @@
 		<comment>Create Stored Procedure to select single item</comment>
 		<sql>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
-				ID IN NUMBER,
-				MESSAGE OUT VARCHAR(100)
+				MSG_ID IN SP_TESTDATA.TKEY%type,
+				MESSAGE OUT SP_TESTDATA.TMESSAGE%TYPE
 			) AS
 			BEGIN
-				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = MSG_ID;
 			END;
 		</sql>
 	</changeSet>
@@ -201,7 +205,7 @@
 		<sql>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
 				ID IN NUMBER,
-				MESSAGE OUT VARCHAR(100),
+				MESSAGE OUT VARCHAR,
 				STATUS OUT CHAR
 			) AS
 			BEGIN
@@ -214,7 +218,7 @@
 		<comment>Create Stored Procedure to select multiple rows</comment>
 		<sql>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
-				MESSAGE IN VARCHAR(100)
+				MESSAGE IN VARCHAR
 			) AS
 			BEGIN
 				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;

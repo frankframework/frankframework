@@ -5,12 +5,15 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -254,13 +257,28 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	private long insertRowWithMessageValue(final String value) throws SQLException, JdbcException {
-		String insertValueStatement = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
-		try (PreparedStatement statement = getConnection().prepareStatement(insertValueStatement, Statement.RETURN_GENERATED_KEYS)) {
+		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
+		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, value);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			generatedKeys.next();
-			return generatedKeys.getLong(1);
+			ResultSetMetaData metaData = generatedKeys.getMetaData();
+			if (metaData.getColumnName(1).equalsIgnoreCase("TKEY")) {
+				return generatedKeys.getLong(1);
+			}
+
+			// Should be ROWID then
+			if (metaData.getColumnType(1) != Types.ROWID) {
+				fail("If generated key is not TKEY column should be of type ROWID or I don't know how to fetch it.");
+			}
+			String retrieveKeyQuery = "SELECT TKEY FROM SP_TESTDATA WHERE " + metaData.getColumnName(1) + " = ?";
+			try (PreparedStatement retrieveKey = getConnection().prepareStatement(retrieveKeyQuery)) {
+				retrieveKey.setObject(1, generatedKeys.getObject(1), metaData.getColumnType(1));
+				ResultSet keyResultSet = retrieveKey.executeQuery();
+				keyResultSet.next();
+				return keyResultSet.getLong(1);
+			}
 		}
 	}
 }
