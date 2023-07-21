@@ -264,7 +264,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.test_servicelistener', {
 				url: "/test-serviceListener",
-				templateUrl: "js/app/views/test-service-listener/TestServiceListener.html",
+				component: "testServiceListener",
 				data: {
 					pageTitle: 'Test a ServiceListener',
 					breadcrumbs: 'Testing > Test a ServiceListener'
