@@ -33,8 +33,27 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.StringUtil;
 
+/**
+ * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
+ *
+ * <p>
+ * The StoredProcedureQuerySender class has the following features:
+ * <ul>
+ *     <li>It supports setting the output parameters of the stored procedure by position.</li>
+ *     <li>The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
+ *     returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
+ *  </li>
+ * </ul>
+ * </p>
+ * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
+ *
+ * @ff.parameters All parameters present are applied to the query to be executed.
+ *
+ * @since 7.9
+ */
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	private @Getter String outputParameters;
@@ -42,7 +61,17 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 
 	/**
-	 * Sets the output parameters of the store procedure, separated by commas.
+	 * Sets the output parameters of the store procedure, separated by commas. Each output parameter of the stored
+	 * procedure should be specified by its index in the parameter list of the SQL, with the first parameter being
+	 * number 1.
+	 * <p>
+	 *     Example:<br/>
+	 *     If there is a stored procedure {@code get_message_and_status_by_id} with a single input parameter, the message id,
+	 *     and two output parameters, the message and the message status, then the query should be specified as:
+	 *     <code>call get_message_and_status_by_id(?, ?, ?)</code>,
+	 *     and {@code outputParameters} should be:
+	 *     <code>outputParameters="2,3"</code>
+	 * </p>
 	 *
 	 * @param outputParameters the output parameters to be set
 	 */
@@ -75,6 +104,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
 		if (outputParameterPositions.length > 0) {
+			// TODO: This does not work with Oracle -- "SQLFeatureNotSupportedException" :'(
 			final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
 			for (int param : outputParameterPositions) {
 				// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number

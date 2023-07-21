@@ -5,6 +5,11 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
 	<changeSet id="IAF-UnitTests-1" author="Tim van der Leeuw">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="SP_TESTDATA" schemaName="TESTIAF_USER"/>
+			</not>
+		</preConditions>
 		<comment>Create SP_TESTDATA for Tests</comment>
 		<createTable tableName="SP_TESTDATA">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
@@ -222,6 +227,61 @@
 			) AS
 			BEGIN
 				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+			END;
+		</sql>
+	</changeSet>
+
+	<!-- DB2 -->
+	<changeSet id="IAF-UnitTests-2" author="Tim van der Leeuw" dbms="db2">
+		<comment>Create Stored Procedure to insert data</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-3" author="Tim van der Leeuw" dbms="db2">
+		<comment>Create Stored Procedure to select single item</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100)
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-4" author="Tim van der Leeuw" dbms="db2">
+		<comment>Create Stored Procedure to select single row</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100),
+				OUT STATUS CHAR
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="db2">
+		<comment>Create Stored Procedure to select multiple rows</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				IN MESSAGE VARCHAR(100)
+			) RESULT SETS 1 LANGUAGE SQL
+			BEGIN
+				DECLARE cursor1 CURSOR WITH RETURN TO CLIENT FOR
+					SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+				OPEN cursor1;
 			END;
 		</sql>
 	</changeSet>

@@ -49,22 +49,21 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				try { //Attempt to add the DataSource and skip it if it cannot be instantiated
 					DataSource ds = new DriverManagerDataSource(url, userId, password); // do not use createDataSource here, as it has side effects in descender classes
 					// Check if we can make a connection
-					if(validateConnection(ds)) {
+					if(validateConnection(product, ds)) {
 						availableDatasources.add(product);
 					}
 				} catch (Exception e) {
 					log.info("ignoring DataSource for [" + product + "], cannot complete setup", e);
-					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	private boolean validateConnection(DataSource ds) {
-		try(Connection connection = ds.getConnection()) {
+	private boolean validateConnection(String product, DataSource ds) {
+		try(Connection ignored = ds.getConnection()) {
 			return true;
 		} catch (Throwable e) {
-			log.warn("Cannot connect to ["+ds+"], skipping:"+e.getMessage());
+			log.warn("Cannot connect to [" + product + "], skipping:" + e.getMessage());
 		}
 		return false;
 	}

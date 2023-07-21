@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  *
- * <p><b>NOTE:</b> See {@link DB2XMLWriter} for Resultset!</p>
+ * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
