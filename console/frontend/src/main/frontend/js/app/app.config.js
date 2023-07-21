@@ -256,7 +256,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.test_pipeline', {
 				url: "/test-pipeline",
-				templateUrl: "js/app/views/test-pipeline/TestPipeline.html",
+				component: "testPipeline",
 				data: {
 					pageTitle: 'Test a PipeLine',
 					breadcrumbs: 'Testing > Test a PipeLine'
