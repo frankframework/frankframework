@@ -16,6 +16,7 @@ import './app/views/configurations/configurations-manage/configurations-manage.c
 import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import './app/views/configurations/configurations-show/configurations-show.component';
 import './app/views/configurations/configurations-upload/configurations-upload.component';
+import './app/views/connections/connections.component';
 import './app/views/environment-variables/environment-variables.component';
 import './app/views/error/error.component';
 import './app/views/ibisstore-summary/ibisstore-summary.component';

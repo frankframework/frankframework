@@ -11,4 +11,5 @@ const StorageStateController = function ($state) {
 
 appModule.component('storageState', {
     controller: ['$state', StorageStateController],
+    template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
 });

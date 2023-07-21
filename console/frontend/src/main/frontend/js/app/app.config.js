@@ -340,7 +340,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.connection_overview', {
 				url: "/connections",
-				templateUrl: "js/app/views/connections/ShowConnectionOverview.html",
+				component: "connections",
 				data: {
 					pageTitle: 'Connection Overview',
 					breadcrumbs: 'Connection Overview'
