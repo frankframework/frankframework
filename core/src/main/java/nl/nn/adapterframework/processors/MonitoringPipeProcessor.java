@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		long pipeStartTime= System.currentTimeMillis();
 
 		if (log.isDebugEnabled()){  // for performance reasons
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			String ownerName=pipeLine.getOwner()==null?"<null>":pipeLine.getOwner().getName();
 			String pipeName=pipe==null?"<null>":pipe.getName();
 			String messageId = pipeLineSession==null?null:pipeLineSession.getMessageId();

@@ -251,6 +251,12 @@ public class Stub4TesttoolTest {
 	}
 
 	@Test
+	public void stub4testtoolSamba2Pipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/Samba2Pipe";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
 	public void stub4testtoolSenderPipe() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderPipe";
 		stub4testtoolTest(directory, false);

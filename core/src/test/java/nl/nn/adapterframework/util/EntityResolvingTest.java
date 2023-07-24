@@ -131,7 +131,7 @@ public class EntityResolvingTest {
 		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
 		StringReader sr = new StringReader(xmlIn);
 		InputSource is = new InputSource(sr);
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		ContentHandler ch = new DefaultHandler() {
 

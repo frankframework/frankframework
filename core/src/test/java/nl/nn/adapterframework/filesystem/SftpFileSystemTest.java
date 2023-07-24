@@ -125,22 +125,19 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 
 	@Test
 	public void testSFTPFileRefSetFolder() {
-		SftpFileRef ref1 = new SftpFileRef("test123");
-		ref1.setFolder("folder");
+		SftpFileRef ref1 = new SftpFileRef("test123", "folder");
 		assertEquals("folder/test123", ref1.getName());
 	}
 
 	@Test
 	public void testSFTPFileRefRelativeWithSetFolder() {
-		SftpFileRef ref2 = new SftpFileRef("folder1/test123");
-		ref2.setFolder("folder2");
-		assertEquals("folder2/folder1/test123", ref2.getName());
+		SftpFileRef ref2 = new SftpFileRef("folder1/test123", "folder2");
+		assertEquals("folder2/test123", ref2.getName());
 	}
 
 	@Test
 	public void testSFTPFileRefWindowsSlash() {
-		SftpFileRef ref2 = new SftpFileRef("folder1\\test123");
-		ref2.setFolder("folder2");
-		assertEquals("folder2/folder1/test123", ref2.getName());
+		SftpFileRef ref2 = new SftpFileRef("folder1\\test123", "folder2");
+		assertEquals("folder2/test123", ref2.getName());
 	}
 }

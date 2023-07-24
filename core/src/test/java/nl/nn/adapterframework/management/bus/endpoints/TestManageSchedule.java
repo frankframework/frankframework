@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -14,6 +13,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.ResponseMessageBase;
@@ -91,7 +91,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 
@@ -113,7 +113,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 
@@ -124,7 +124,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, response.getHeaders().get(ResponseMessageBase.STATUS_KEY));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, ResponseMessageBase.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 }

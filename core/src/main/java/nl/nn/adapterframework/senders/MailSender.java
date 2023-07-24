@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-//import jakarta.activation.CommandMap;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import com.sun.mail.smtp.SMTPMessage;
+
 import jakarta.activation.DataHandler;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Message;
@@ -34,14 +40,6 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import com.sun.mail.smtp.SMTPMessage;
-
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -214,7 +212,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
-		StringBuffer logBuffer = new StringBuffer();
+		StringBuilder logBuffer = new StringBuilder();
 
 		if (log.isDebugEnabled()) {
 			logBuffer.append("MailSender [" + getName() + "] sending message ");
@@ -249,7 +247,7 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
+	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuilder logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
 		mailSession.setSmtpMessage(msg);
 

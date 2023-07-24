@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,7 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 
 		// Assert
 		Message message = messageCapture.getValue();
-		String result = "<event hostname=\"XXX\" monitor=\"monitor-name\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\"/>";
+		String result = "<event hostname=\"XXX\" monitor=\"monitor-name\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" event=\"MONITOR_EVENT_CODE\"/>";
 		assertEquals(result, ignoreHostname(message.asString()));
 	}
 
@@ -47,21 +48,24 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 		SenderMonitorAdapter destination = new SenderMonitorAdapter();
 		EchoSender sender = spy(EchoSender.class);
 		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
+		ArgumentCaptor<PipeLineSession> sessionCapture = ArgumentCaptor.forClass(PipeLineSession.class);
 		destination.setSender(sender);
 		destination.configure();
+		String eventText = "<ik>ben<xml/></ik>";
 
-		when(sender.sendMessage(messageCapture.capture(), any(PipeLineSession.class))).thenCallRealMethod();
-		MonitorEvent event = new MonitorEvent(this, EVENTCODE, new Message("<ik>ben<xml/></ik>"));
+		when(sender.sendMessage(messageCapture.capture(), sessionCapture.capture())).thenCallRealMethod();
+		MonitorEvent event = new MonitorEvent(this, EVENTCODE, new Message(eventText));
 
 		// Act
 		destination.fireEvent(null, EventType.FUNCTIONAL, Severity.WARNING, EVENTCODE, event);
 
 		// Assert
 		Message message = messageCapture.getValue();
-		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" code=\"MONITOR_EVENT_CODE\">\n"
-				+ "	<message><![CDATA[<ik>ben<xml/></ik>]]></message>\n"
-				+ "</event>";
+		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" event=\"MONITOR_EVENT_CODE\"/>";
 		assertEquals(result, ignoreHostname(message.asString()));
+		PipeLineSession session = sessionCapture.getValue();
+		assertTrue(session.containsKey(PipeLineSession.ORIGINAL_MESSAGE_KEY));
+		assertEquals(eventText, session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY).asString());
 	}
 
 	private String ignoreHostname(String result) {

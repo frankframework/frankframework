@@ -44,6 +44,10 @@ public class FunctionalUtil {
 		return () -> value;
 	}
 
+	public static <T> org.apache.logging.log4j.util.Supplier<T> logValue(T value) {
+		return () -> value;
+	}
+
 	/**
 	 * Helper function to cast parameter as a {@link Supplier} when the compiler cannot work it
 	 * out by itself.

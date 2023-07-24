@@ -307,7 +307,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
-		assertEquals("3", session.getMessage("itemNo").asString());
+		assertEquals("3", session.getString("itemNo"));
 	}
 
 	@Test
@@ -324,11 +324,11 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
-		assertEquals("0", session.getMessage("itemNo").asString());
+		assertEquals("0", session.getString("itemNo"));
 	}
 
 	private ISender getElementRenderer() {
-		resultLog = new StringBuffer();
+		resultLog = new StringBuilder();
 		// returns the renderer that does not surround the input with brackets
 		return new BlockEnabledRenderer() {
 			@Override

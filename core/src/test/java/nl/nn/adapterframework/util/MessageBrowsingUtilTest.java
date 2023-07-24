@@ -40,15 +40,17 @@ public class MessageBrowsingUtilTest {
 	public void testGetMessageTextWithMessage() throws Exception {
 		String contents = "fakeMessage";
 		Message message = new Message(contents);
+		RawMessageWrapper<?> rawMessageWrapper = new RawMessageWrapper<>(message);
 
-		assertEquals(contents, MessageBrowsingUtil.getMessageText(message, new TestListener()));
+		assertEquals(contents, MessageBrowsingUtil.getMessageText(rawMessageWrapper, new TestListener()));
 	}
 
 	@Test
 	public void testGetMessageTextWithString() throws Exception {
 		String contents = "fakeMessage";
 
-		assertEquals(contents, MessageBrowsingUtil.getMessageText(contents, new TestListener()));
+		RawMessageWrapper<?> rawMessageWrapper = new RawMessageWrapper<>(contents);
+		assertEquals(contents, MessageBrowsingUtil.getMessageText(rawMessageWrapper, new TestListener()));
 	}
 
 	@Test
@@ -66,7 +68,8 @@ public class MessageBrowsingUtilTest {
 		TestListenerMessage listenerMessage = new TestListenerMessage();
 		listenerMessage.setText(contents);
 
-		assertEquals(contents, MessageBrowsingUtil.getMessageText(listenerMessage, new TestListener()));
+		RawMessageWrapper<?> rawMessageWrapper = new RawMessageWrapper<>(listenerMessage);
+		assertEquals(contents, MessageBrowsingUtil.getMessageText(rawMessageWrapper, new TestListener()));
 	}
 
 	@Test //This is a strange test the causes a ClassCastException when converting a byte[] to TestListenerMessage.
@@ -74,7 +77,8 @@ public class MessageBrowsingUtilTest {
 		String contents = "fakeMessage";
 		byte[] bytes = contents.getBytes();
 
-		assertEquals(contents, MessageBrowsingUtil.getMessageText(bytes, new TestListener()));
+		RawMessageWrapper<?> rawMessageWrapper = new RawMessageWrapper<>(bytes);
+		assertEquals(contents, MessageBrowsingUtil.getMessageText(rawMessageWrapper, new TestListener()));
 	}
 
 

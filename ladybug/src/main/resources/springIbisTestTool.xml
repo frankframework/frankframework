@@ -91,12 +91,12 @@
 			<ref bean="#{testStorageActive}"/>
 		</property>
 	</bean>
-	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 		<property name="name" value="Test"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -110,12 +110,7 @@
 		<property name="name" value="Gray box"/>
 		<property name="checkpointMatchers">
 			<list>
-				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
-					<property name="nameSearch" value="Pipeline *"/>
-				</bean>
-				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
-					<property name="nameSearch" value="Sender *"/>
-				</bean>
+				<bean class="nl.nn.ibistesttool.filter.GrayBox"/>
 				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>

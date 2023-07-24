@@ -34,7 +34,6 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -68,8 +67,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 	private @Getter SortOrder order = null;
-	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
-	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
+	private final String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
+	private final String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
 
 	protected String deleteQuery;
@@ -300,21 +299,19 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		}
 	}
 
-	protected abstract RawMessageWrapper<M> retrieveObject(ResultSet rs, int columnIndex) throws SQLException, JdbcException;
+	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
 		try (Connection conn = getConnection()) {
-			try (JdbcSession session = getDbmsSupport().prepareSessionForNonLockingRead(conn)) {
-				try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
-					applyStandardParameters(stmt, false, false);
-					try (ResultSet rs =  stmt.executeQuery()) {
-						if (!rs.next()) {
-							log.warn(getLogPrefix()+"no message count found");
-							return 0;
-						}
-						return rs.getInt(1);
+			try (PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery)) {
+				applyStandardParameters(stmt, false, false);
+				try (ResultSet rs =  stmt.executeQuery()) {
+					if (!rs.next()) {
+						log.warn(getLogPrefix()+"no message count found");
+						return 0;
 					}
+					return rs.getInt(1);
 				}
 			}
 		} catch (Exception e) {
@@ -371,20 +368,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	}
 
 	@Override
-	public M browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);
 				try (ResultSet rs =  stmt.executeQuery()) {
-
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					// TODO: Fix the return types in MessageBrowsers
-					return retrieveObject(rs, 2).getRawMessage();
+					return retrieveObject(storageKey, rs, 2);
 				}
 			}
-		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly
+		} catch (ListenerException e) { // Don't catch ListenerExceptions, unnecessarily and ugly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);
@@ -394,15 +389,15 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	private class JdbcMessageBrowserIteratorItem implements IMessageBrowsingIteratorItem {
 
-		private Connection conn;
-		private ResultSet rs;
-		private boolean closeOnRelease;
+		private final Connection conn;
+		private final ResultSet rs;
+		private final boolean closeOnRelease;
 
 		public JdbcMessageBrowserIteratorItem(Connection conn, ResultSet rs, boolean closeOnRelease) {
 			super();
-			this.conn=conn;
-			this.rs=rs;
-			this.closeOnRelease=closeOnRelease;
+			this.conn = conn;
+			this.rs = rs;
+			this.closeOnRelease = closeOnRelease;
 		}
 
 		public String fieldValue(String field) throws ListenerException {

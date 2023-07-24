@@ -10,6 +10,10 @@
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
+	<rule pattern="configuration/sharedResources" registerMethod="setSharedResources" beanClass="nl.nn.adapterframework.configuration.SharedResources" />
+	<rule pattern="*/sharedResources/sharedResource" registerMethod="registerSharedResource" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/>
+	<rule pattern="*/sharedResources/httpSession" registerMethod="addHttpSession" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/> <!-- Hack to make the frankdoc look nice -->
+
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.SapSystems"/>
 	<rule pattern="*/sapSystem" registerMethod="registerSapSystem" beanClass="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 

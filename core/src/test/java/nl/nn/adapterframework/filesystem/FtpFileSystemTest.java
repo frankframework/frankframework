@@ -95,22 +95,19 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem>
 
 	@Test
 	public void testFTPFileRefSetFolder() {
-		FTPFileRef ref1 = new FTPFileRef("test123");
-		ref1.setFolder("folder");
+		FTPFileRef ref1 = new FTPFileRef("test123", "folder");
 		assertEquals("folder/test123", ref1.getName());
 	}
 
 	@Test
 	public void testFTPFileRefRelativeWithSetFolder() {
-		FTPFileRef ref2 = new FTPFileRef("folder1/test123");
-		ref2.setFolder("folder2");
-		assertEquals("folder2/folder1/test123", ref2.getName());
+		FTPFileRef ref2 = new FTPFileRef("folder1/test123", "folder2");
+		assertEquals("folder2/test123", ref2.getName());
 	}
 
 	@Test
 	public void testFTPFileRefWindowsSlash() {
-		FTPFileRef ref2 = new FTPFileRef("folder1\\test123");
-		ref2.setFolder("folder2");
-		assertEquals("folder2/folder1/test123", ref2.getName());
+		FTPFileRef ref2 = new FTPFileRef("folder1\\test123", "folder2");
+		assertEquals("folder2/test123", ref2.getName());
 	}
 }

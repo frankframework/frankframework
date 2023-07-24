@@ -132,7 +132,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private class FieldsContentHandler extends DefaultHandler {
+	private static class FieldsContentHandler extends DefaultHandler {
 		private byte[] result = new byte[0];
 
 		@Override

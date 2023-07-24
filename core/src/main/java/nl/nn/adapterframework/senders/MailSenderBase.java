@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2022 WeAreFrank!
+   Copyright 2019, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +44,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -93,10 +93,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		credentialFactory = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
 
 		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
-			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
-			while (st.hasMoreTokens()) {
-				allowedDomains.add(st.nextToken());
-			}
+			allowedDomains.addAll(StringUtil.split(getDomainWhitelist()));
 		}
 
 		super.configure();
@@ -457,7 +454,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		this.timeout = timeout;
 	}
 
-	/** 
+	/**
 	 * When this name is used, it will be followed by a number which is equal to the node's position
 	 * @ff.default attachment
 	 */
@@ -515,7 +512,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			from = new EMail(getDefaultFrom(),"from");
 		}
 
-		public void setRecipientsOnMessage(StringBuffer logBuffer) throws SenderException {
+		public void setRecipientsOnMessage(StringBuilder logBuffer) throws SenderException {
 			boolean recipientsFound = false;
 			List<EMail> emailList = getRecipientList();
 			for (EMail recipient : emailList) {

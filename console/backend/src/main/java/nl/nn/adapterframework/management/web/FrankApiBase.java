@@ -41,7 +41,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
-import nl.nn.adapterframework.management.bus.IntegrationGateway;
+import nl.nn.adapterframework.management.bus.OutboundGateway;
 import nl.nn.adapterframework.util.ResponseUtils;
 
 /**
@@ -64,8 +64,8 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 
 	protected Logger log = LogManager.getLogger(this);
 
-	protected final IntegrationGateway getGateway() {
-		return getApplicationContext().getBean("outboundGateway", IntegrationGateway.class);
+	protected final OutboundGateway getGateway() {
+		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
 	}
 
 	@Nonnull
@@ -103,7 +103,7 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	}
 
 	public Response callAsyncGateway(RequestMessageBuilder input) {
-		IntegrationGateway gateway = getGateway();
+		OutboundGateway gateway = getGateway();
 		gateway.sendAsyncMessage(input.build());
 		return Response.ok().build();
 	}
@@ -123,6 +123,10 @@ public abstract class FrankApiBase implements ApplicationContextAware, Initializ
 	/** Get a property from the Spring Environment. */
 	protected <T> T getProperty(String key, T defaultValue) {
 		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
+	}
+
+	protected final boolean allowDeprecatedEndpoints() {
+		return getProperty(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
 	}
 
 	protected JAXRSServiceFactoryBean getJAXRSService() {

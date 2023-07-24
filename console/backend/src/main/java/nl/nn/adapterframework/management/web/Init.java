@@ -39,7 +39,7 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 
 /**
  * Root collection for API.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -48,7 +48,7 @@ import org.apache.cxf.jaxrs.model.OperationResourceInfo;
 public class Init extends FrankApiBase {
 
 	private String getHATEOASImplementation() {
-		return getProperty("ibis-api.hateoasImplementation", "default");
+		return getProperty("iaf-api.hateoasImplementation", "default");
 	}
 
 	private boolean isMonitoringEnabled() {
@@ -80,8 +80,15 @@ public class Init extends FrankApiBase {
 				if(method.getDeclaringClass().getName().endsWith("ShowMonitors") && !isMonitoringEnabled()) {
 					continue;
 				}
+				boolean deprecated = method.getAnnotation(Deprecated.class) != null;
 
 				Map<String, Object> resource = new HashMap<>(4);
+
+				if(deprecated) {
+					if(!allowDeprecatedEndpoints()) continue; // Skip all
+
+					resource.put("deprecated", true);
+				}
 
 				if(method.isAnnotationPresent(GET.class))
 					resource.put("type", "GET");
@@ -103,7 +110,6 @@ public class Init extends FrankApiBase {
 				if(rolesAllowed != null && displayAllowedRoles) {
 					resource.put("allowed", rolesAllowed.value());
 				}
-
 
 				if(("hal".equalsIgnoreCase(getHATEOASImplementation()))) {
 					if(method.isAnnotationPresent(Relation.class))

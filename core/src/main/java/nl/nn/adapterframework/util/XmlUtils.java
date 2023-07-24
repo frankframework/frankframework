@@ -29,9 +29,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -224,12 +224,11 @@ public class XmlUtils {
 	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
-		StringTokenizer st1 = new StringTokenizer(metadataString,";");
 		Map<String,String> result = new LinkedHashMap<>();
-		while (st1.hasMoreTokens()) {
-			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
-			String key=st2.nextToken();
-			String value=st2.nextToken();
+		for (final String s : StringUtil.split(metadataString, ";")) {
+			List<String> kv = StringUtil.split(s, "=");
+			String key = kv.get(0);
+			String value = kv.get(1);
 			result.put(key, value);
 		}
 		return result;
@@ -670,23 +669,21 @@ public class XmlUtils {
 	}
 
 	public static String getNamespaceClause(String namespaceDefs) {
-		String namespaceClause = "";
+		StringBuilder namespaceClause = new StringBuilder();
 		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
 			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
-			namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.getValue() + "\"";
+			namespaceClause.append(" xmlns").append(prefixClause).append("=\"").append(namespaceDef.getValue()).append("\"");
 		}
-		return namespaceClause;
+		return namespaceClause.toString();
 	}
 
 	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
-		Map<String,String> namespaceMap=new LinkedHashMap<String,String>();
+		Map<String,String> namespaceMap= new LinkedHashMap<>();
 		if (namespaceDefs != null) {
-			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
-			while (st1.hasMoreTokens()) {
-				String namespaceDef = st1.nextToken();
+			for (final String namespaceDef : StringUtil.split(namespaceDefs, ", \t\r\n\f")) {
 				int separatorPos = namespaceDef.indexOf('=');
-				String prefix=separatorPos < 1?null:namespaceDef.substring(0, separatorPos);
-				String namespace=namespaceDef.substring(separatorPos + 1);
+				String prefix = separatorPos < 1 ? null : namespaceDef.substring(0, separatorPos);
+				String namespace = namespaceDef.substring(separatorPos + 1);
 				namespaceMap.put(prefix, namespace);
 			}
 		}
@@ -900,9 +897,8 @@ public class XmlUtils {
 
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
-		Transformer result = tFactory.newTransformer(source);
 
-		return result;
+		return tFactory.newTransformer(source);
 	}
 
 	public static TransformerFactory getTransformerFactory() {
@@ -965,7 +961,7 @@ public class XmlUtils {
 		if (input==null) {
 			return null;
 		}
-		return input.replaceAll("\t|\n|\r", " ");
+		return input.replaceAll("[\t\n\r]", " ");
 	}
 
 	public static String normalizeAttributeValue(String input) {
@@ -973,7 +969,7 @@ public class XmlUtils {
 	}
 
 	public static String cleanseElementName(String candidateName) {
-		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-\\.]", "_") : null;
+		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-.]", "_") : null;
 	}
 
 	/**
@@ -1058,20 +1054,14 @@ public class XmlUtils {
 		String tag,
 		boolean defaultValue) {
 		String str;
-		boolean bool;
 
 		str = getChildTagAsString(el, tag, null);
 		if (str == null) {
 			return defaultValue;
 		}
-
-		bool = false;
-		if (str.equalsIgnoreCase("true")
-			|| str.equalsIgnoreCase("yes")
-			|| str.equalsIgnoreCase("on")) {
-			bool = true;
-		}
-		return bool;
+		return str.equalsIgnoreCase("true")
+				|| str.equalsIgnoreCase("yes")
+				|| str.equalsIgnoreCase("on");
 	}
 	/**
 	 * Method getChildTagAsLong.
@@ -1157,7 +1147,7 @@ public class XmlUtils {
 		if (tmpEl != null) {
 			str = getStringValue(tmpEl, true);
 		}
-		return (str.length() == 0) ? (defaultValue) : (str);
+		return (str.isEmpty()) ? (defaultValue) : (str);
 	}
 	/**
 	 * Method getChildTags. Get all direct children of given element which
@@ -1560,10 +1550,9 @@ public class XmlUtils {
 	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
 		if (!attribute1.getName().equals(attribute2.getName())) {
 			return false;
-		} else if (!attribute1.getValue().equals(attribute2.getValue())) {
-			return false;
+		} else {
+			return attribute1.getValue().equals(attribute2.getValue());
 		}
-		return true;
 	}
 
 
@@ -1601,7 +1590,7 @@ public class XmlUtils {
 
 	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
-		if (c != null && c.size() > 0) {
+		if (c != null && !c.isEmpty()) {
 			return c.iterator().next();
 		}
 		return null;

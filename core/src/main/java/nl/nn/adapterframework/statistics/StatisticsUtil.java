@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Some utilities for working with statistics files. 
- * 
+ * Some utilities for working with statistics files.
+ *
  * @author  Peter Leeuwenburgh
  */
 public class StatisticsUtil {
 
 	public static String fileToString(String fileName, String timestamp, String adapterName) throws IOException {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		BufferedReader in = new BufferedReader(new FileReader(fileName));
 		String line;
 		boolean timestampActive = false;

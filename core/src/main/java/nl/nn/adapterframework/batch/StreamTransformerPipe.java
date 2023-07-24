@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,19 +56,19 @@ import nl.nn.adapterframework.util.StreamUtil;
 @ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {
 
-	public static final String originalBlockKey="originalBlock";
+	public static final String originalBlockKey = "originalBlock";
 
-	private @Getter boolean storeOriginalBlock=false;
-	private @Getter boolean closeInputstreamOnExit=true;
-	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean storeOriginalBlock = false;
+	private @Getter boolean closeInputstreamOnExit = true;
+	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-	private IRecordHandlerManager initialManager=null;
-	private IResultHandler defaultHandler=null;
-	private Map<String,IRecordHandlerManager> registeredManagers= new HashMap<>();
-	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
-	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
+	private IRecordHandlerManager initialManager = null;
+	private IResultHandler defaultHandler = null;
+	private final Map<String,IRecordHandlerManager> registeredManagers = new HashMap<>();
+	private final Map<String,IRecordHandler> registeredRecordHandlers = new HashMap<>();
+	private final Map<String,IResultHandler> registeredResultHandlers = new LinkedHashMap<>();
 
-	private @Getter IReaderFactory readerFactory=new InputStreamReaderFactory();
+	private @Getter IReaderFactory readerFactory = new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getCorrelationId();
@@ -90,7 +90,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	protected BufferedReader getReader(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
-			Reader reader=getReaderFactory().getReader(getInputStream(streamId, input,session),getCharset(),streamId,session);
+			Reader reader = getReaderFactory().getReader(getInputStream(streamId, input, session), getCharset(), streamId, session);
 			if (reader instanceof BufferedReader) {
 				return (BufferedReader)reader;
 			}
@@ -103,7 +103,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (registeredManagers.size()==0) {
+		if (registeredManagers.isEmpty()) {
 			log.info("creating default manager");
 			IRecordHandlerManager manager = new RecordHandlerManager();
 			manager.setInitial(true);
@@ -123,7 +123,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				throw new ConfigurationException("could not register default manager and flow", e);
 			}
 		}
-		if (initialManager==null) {
+		if (initialManager == null) {
 			throw new ConfigurationException("no initial manager specified");
 		}
 		for (String managerName: registeredManagers.keySet()) {
@@ -401,7 +401,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		String rawRecord = null;
 		int linenumber = 0;
 		int counter = 0;
-		StringBuffer sb = null;
+		StringBuilder sb = null;
 		List<String> prevParsedRecord = null;
 		IRecordHandler prevHandler = null;
 
@@ -441,7 +441,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 						// If blocks does not contain a previous block, it never existed, or has been removed by closing the block.
 						// In both cases a new block has just started
 						if (!blocks.containsKey(originalBlockKey)) {
-							sb = new StringBuffer();
+							sb = new StringBuilder();
 						}
 						if (sb.length()>0) {
 							sb.append(System.getProperty("line.separator"));

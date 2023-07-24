@@ -101,7 +101,7 @@ public class Monitoring extends BusEndpointBase {
 			return getTrigger(mm, trigger);
 		}
 
-		return getMonitor(monitor, showConfigAsXml);
+		return getMonitor(mm, monitor, showConfigAsXml);
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
@@ -116,11 +116,13 @@ public class Monitoring extends BusEndpointBase {
 			monitor = getMonitor(mm, name);
 			ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 			updateTrigger(trigger, message);
+			monitor.registerTrigger(trigger);
 		} else {
 			monitor = SpringUtils.createBean(getApplicationContext(), Monitor.class);
 			updateMonitor(monitor, message);
 			mm.addMonitor(monitor);
 		}
+
 		try {
 			monitor.configure();
 		} catch (ConfigurationException e) {
@@ -254,7 +256,6 @@ public class Monitoring extends BusEndpointBase {
 
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("monitors", monitors);
-		returnMap.put("enabled", mm.isEnabled());
 		returnMap.put("eventTypes", EnumUtils.getEnumList(EventType.class));
 		returnMap.put("destinations", mm.getDestinations().keySet());
 
@@ -270,13 +271,17 @@ public class Monitoring extends BusEndpointBase {
 		return new JsonResponseMessage(returnMap);
 	}
 
-	private Message<String> getMonitor(Monitor monitor, boolean showConfigAsXml) {
+	private Message<String> getMonitor(MonitorManager manager, Monitor monitor, boolean showConfigAsXml) {
 		if(showConfigAsXml) {
 			String xml = monitor.toXml().toXML();
 			return new StringResponseMessage(xml, MediaType.APPLICATION_XML);
 		}
 
 		Map<String, Object> monitorInfo = mapMonitor(monitor);
+
+		monitorInfo.put("severities", EnumUtils.getEnumList(Severity.class));
+		monitorInfo.put("events", manager.getEvents());
+
 		return new JsonResponseMessage(monitorInfo);
 	}
 

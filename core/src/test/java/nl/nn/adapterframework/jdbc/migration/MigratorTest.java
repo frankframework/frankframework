@@ -153,6 +153,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 			return null;
 		}
 		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
+		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
 
 		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
 		sqlScript = sqlScript.replaceAll("\r\n", "\n"); //change CRLF into LF

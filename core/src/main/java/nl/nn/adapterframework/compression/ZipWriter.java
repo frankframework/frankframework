@@ -34,7 +34,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -126,7 +125,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 		}
 
 		Message result = StringUtils.isEmpty(zipLocation) ? PathMessage.asTemporaryMessage(file.toPath()) : new FileMessage(file);
-		result.getContext().put(MessageContext.METADATA_MIMETYPE, MIMETYPE_ZIP);
+		result.getContext().withMimeType(MIMETYPE_ZIP);
 		return result;
 	}
 

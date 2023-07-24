@@ -68,7 +68,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -79,7 +79,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	private @Getter boolean httpWsdl = false;
 
 	private @Getter boolean open=false;
-	private static Map<String, JavaListener> registeredListeners;
+	private static Map<String, JavaListener<?>> registeredListeners;
 	private @Getter @Setter IMessageHandler<M> handler;
 
 	@Override
@@ -131,12 +131,12 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try {
-			if (context != null) {
-				context.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
+			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			try (Message message = Message.asMessage(rawMessage);
+				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext);) {
+					return result.asString();
 			}
-			RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)rawMessage, null, correlationId);
-			Message result = processRequest(rawMessageWrapper, new Message(rawMessage), context);
-			return result.asString();
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert stream", e);
 		}
@@ -144,36 +144,34 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 	@Override
 	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
-		@SuppressWarnings({"unchecked", "deprecation"})
-		RawMessageWrapper<M> rawMessageWrapper = new RawMessageWrapper<>((M)message.asObject(), session.getMessageId(), session.getCorrelationId());
-		Message response = processRequest(rawMessageWrapper, message, session);
+		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
+		Message response = processRequest(messageWrapper, session);
 		response.closeOnCloseOf(session, this);
 		return  response;
 	}
 
-	private Message processRequest(RawMessageWrapper<M> rawMessageWrapper, Message message, Map<String, Object> context) throws ListenerException {
+	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull Map<String, Object> context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), context != null ? context.get(PipeLineSession.CORRELATION_ID_KEY) : null);
-		if (context != null) {
-			Object object = context.get("httpRequest");
-			if (object != null) {
-				if (object instanceof HttpServletRequest) {
-					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
-				} else {
-					log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
-				}
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
+		Object object = context.get("httpRequest");
+		if (object != null) {
+			if (object instanceof HttpServletRequest) {
+				ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
+				context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+			} else {
+				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
 			}
 		}
 		try (PipeLineSession session = new PipeLineSession(context)) {
 			try {
+				Message message = messageWrapper.getMessage();
 				if (throwException) {
-					return handler.processRequest(this, rawMessageWrapper, message, session);
+					return handler.processRequest(this, messageWrapper, message, session);
 				} else {
 					try {
-						return handler.processRequest(this, rawMessageWrapper, message, session);
+						return handler.processRequest(this, messageWrapper, message, session);
 					} catch (ListenerException e) {
 						// Message with error contains a String so does not need to be preserved.
 						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
@@ -200,14 +198,14 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	/**
 	 * Returns JavaListener registered under the given name
 	 */
-	public static JavaListener getListener(String name) {
+	public static JavaListener<?> getListener(String name) {
 		return getListeners().get(name);
 	}
 
 	/**
 	 * Get all registered JavaListeners
 	 */
-	private static synchronized Map<String, JavaListener> getListeners() {
+	private static synchronized Map<String, JavaListener<?>> getListeners() {
 		if (registeredListeners == null) {
 			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}

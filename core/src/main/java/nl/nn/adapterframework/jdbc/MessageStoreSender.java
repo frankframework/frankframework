@@ -19,12 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.commons.text.TextStringBuilder;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -37,6 +36,7 @@ import nl.nn.adapterframework.doc.ExcludeFromType;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Send messages to the IBISSTORE database table to have them processed exactly-once by another
@@ -48,7 +48,7 @@ import nl.nn.adapterframework.stream.Message;
  * is received in which case it can be certain that the message is stored in the
  * database table IBISSTORE.
  * <br/><br/>
- * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code> 
+ * If you have a <code>MessageStoreSender</code> it does not make sense to add a <code>JdbcMessageLog</code>
  * or <code>JdbcErrorStorage</code> in the same sender pipe. A <code>MessageStoreSender</code>
  * acts as a message log and an error store. It can be useful however to add a message log or error store
  * to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
@@ -105,22 +105,33 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		return paramList;
 	}
 
+	/**
+	 * Helper method to convert a message to a string from Stream.map, without hitting the exception thrown
+	 * and without the issue of ambiguous method overload for lambda reference.
+	 *
+	 * @param message Message to convert
+	 * @return String of the message.
+	 */
+	@SneakyThrows
+	private String messageAsString(Message message) {
+		return message.asString();
+	}
+
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			String messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
-			if (sessionKeys != null) {
+			String messageToStore;
+			if (sessionKeys == null) {
+				messageToStore = message.asString(); // if no session keys are specified, message is stored without escaping, for compatibility with normal messagestore operation.
+			} else {
 				List<String> list = new ArrayList<>();
-				list.add(StringEscapeUtils.escapeCsv(messageToStore));
-				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
-				while (tokenizer.hasMoreElements()) {
-					String sessionKey = (String)tokenizer.nextElement();
-					Message msg = session.getMessage(sessionKey);
-					list.add(StringEscapeUtils.escapeCsv(msg.asString()));
-				}
-				TextStringBuilder sb = new TextStringBuilder();
-				sb.appendWithSeparators(list, ",");
-				messageToStore = sb.toString();
+				list.add(StringEscapeUtils.escapeCsv(message.asString()));
+				StringUtil.splitToStream(sessionKeys)
+						.map(session::getMessage)
+						.map(this::messageAsString)
+						.map(StringEscapeUtils::escapeCsv)
+						.forEachOrdered(list::add);
+				messageToStore = String.join(",", list);
 			}
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
 			String messageId = session.getMessageId();

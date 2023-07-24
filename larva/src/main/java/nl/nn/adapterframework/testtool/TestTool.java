@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -93,6 +92,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -516,12 +516,10 @@ public class TestTool {
 			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml(TD_STARTING_TAG, writers, false);
 			writeHtml("<select name=\"loglevel\">", writers, false);
-			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String level = tokenizer.nextToken().trim();
+			for (String level : StringUtil.split(LOG_LEVEL_ORDER)) {
 				level = level.substring(1, level.length() - 1);
 				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level) + "\"";
-				if (((String)writers.get("loglevel")).equals(level)) {
+				if (writers.get("loglevel").equals(level)) {
 					option = option + " selected";
 				}
 				option = option + ">" + XmlEncodingUtils.encodeChars(level) + "</option>";
@@ -1723,7 +1721,7 @@ public class TestTool {
 		if (encoding != null) {
 			Reader inputStreamReader = null;
 			try {
-				StringBuffer stringBuffer = new StringBuffer();
+				StringBuilder stringBuffer = new StringBuilder();
 				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
@@ -2177,7 +2175,7 @@ public class TestTool {
 				if (unzipped == null) {
 					try {
 						debugMessage("Unzip", writers);
-						StringBuffer stringBuffer = new StringBuffer();
+						StringBuilder stringBuffer = new StringBuilder();
 						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
 						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
 						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
@@ -2565,7 +2563,7 @@ public class TestTool {
 	}
 
 	public static String formatString(String string, Map<String, Object> writers) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);

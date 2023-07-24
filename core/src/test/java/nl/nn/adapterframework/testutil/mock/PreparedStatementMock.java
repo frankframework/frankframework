@@ -4,10 +4,12 @@ import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.mockito.Mockito;
+
+import nl.nn.adapterframework.util.StringUtil;
 
 public abstract class PreparedStatementMock extends Mockito implements PreparedStatement {
 
@@ -16,7 +18,7 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 
 	public void setQuery(String query) {
 		this.query = query;
-		parameterMap = new HashMap<Integer, Object>();
+		parameterMap = new HashMap<>();
 	}
 
 	public Map<Integer, Object> getParameters() {
@@ -24,20 +26,20 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 	}
 
 	public Map<String, Object> getNamedParameters() {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		//Prepare parameterMap. We can assume its a proper query!
 		int fieldTo = query.indexOf(")");
 		String fields = query.substring(query.indexOf("(")+1, fieldTo);
 		String values = query.substring(query.indexOf("(", fieldTo)+1, query.lastIndexOf(")"));
-		StringTokenizer fieldTokenizer = new StringTokenizer(fields, ",");
-		StringTokenizer valueTokenizer = new StringTokenizer(values, ",");
+		Iterator<String> fieldIter = StringUtil.split(fields).iterator();
+		Iterator<String> valueIter = StringUtil.split(values).iterator();
 
 		int index = 1;
-		while (fieldTokenizer.hasMoreTokens()) {
-			String fieldName = fieldTokenizer.nextToken().trim();
-			String fieldIndex = valueTokenizer.nextToken().trim();
-			Object value = null;
+		while (fieldIter.hasNext()) {
+			String fieldName = fieldIter.next();
+			String fieldIndex = valueIter.next();
+			Object value;
 			if("?".equals(fieldIndex)) {
 				value = parameterMap.get(index);
 				index++;

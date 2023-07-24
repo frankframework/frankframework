@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.PasswordHash;
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class PasswordHashPipe extends FixedForwardPipe {
-	private static String FAILURE_FORWARD_NAME = "failure";
+	private static final String FAILURE_FORWARD_NAME = "failure";
 	private String hashSessionKey;
 	private int rounds = 40000;
 	private String roundsSessionKey = null;
@@ -75,7 +75,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 				if (getRoundsSessionKey() == null) {
 					result = PasswordHash.createHash(input.toCharArray(), getRounds());
 				} else {
-					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.getMessage(getRoundsSessionKey()).asString()));
+					result = PasswordHash.createHash(input.toCharArray(), session.getInteger(getRoundsSessionKey()));
 				}
 				pipeForward = getSuccessForward();
 			} catch (Exception e) {
@@ -84,7 +84,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 		} else {
 			try {
 				result = message;
-				if (PasswordHash.validatePassword(input, session.getMessage(getHashSessionKey()).asString())) {
+				if (PasswordHash.validatePassword(input, session.getString(getHashSessionKey()))) {
 					pipeForward = getSuccessForward();
 				} else {
 					pipeForward = findForward(FAILURE_FORWARD_NAME);
@@ -122,4 +122,3 @@ public class PasswordHashPipe extends FixedForwardPipe {
 	}
 
 }
-

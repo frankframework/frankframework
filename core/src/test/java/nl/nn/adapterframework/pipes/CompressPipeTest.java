@@ -3,9 +3,16 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipException;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -21,8 +28,8 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
-	private String dummyString = "dummyString";
-	private String dummyStringSemiColon = dummyString + ";";
+	private static final String DUMMY_STRING = "dummyString";
+	private static final String DUMMY_STRING_SEMI_COLON = DUMMY_STRING + ";";
 
 	@ClassRule
 	public static TemporaryFolder tempFolder = new TemporaryFolder();
@@ -37,7 +44,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertTrue(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
 	}
@@ -48,7 +55,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setConvert2String(true);
 		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertFalse(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
 	}
@@ -59,7 +66,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setConvert2String(true);
 		pipe.setFileFormat(FileFormat.GZ);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.tar.gz").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.tar.gz"));
 		assertTrue(prr.getResult().asString().startsWith("fileaa.txt"));
 	}
 
@@ -70,7 +77,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
 
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(pipe, dummyStringSemiColon, session);
+		PipeRunResult prr = doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
 
 		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
 	}
@@ -95,7 +102,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
 		assertEquals("aaa", result);
 	}
@@ -109,7 +116,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
-		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
 		assertEquals("aaa", result);
 	}
@@ -119,7 +126,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
 		configureAndStartPipe();
-		String input=TestFileUtils.getTestFileURL("/Util/FileUtils/copyFile.txt").getPath()+";"+TestFileUtils.getTestFileURL("/Util/FileUtils/copyFrom.txt").getPath();
+		String input=TestFileUtils.getTestFilePath("/Util/FileUtils/copyFile.txt")+";"+TestFileUtils.getTestFilePath("/Util/FileUtils/copyFrom.txt");
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
 	}
@@ -147,24 +154,24 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testGetterSetterOuputDirectory() {
-		pipe.setOutputDirectory(dummyString);
+	public void testGetterSetterOutputDirectory() {
+		pipe.setOutputDirectory(DUMMY_STRING);
 		String otherString = pipe.getOutputDirectory();
-		assertEquals(dummyString, otherString);
+		assertEquals(DUMMY_STRING, otherString);
 	}
 
 	@Test
 	public void testGetterSetterFilenamePattern() {
-		pipe.setFilenamePattern(dummyString);
+		pipe.setFilenamePattern(DUMMY_STRING);
 		String otherString = pipe.getFilenamePattern();
-		assertEquals(dummyString, otherString);
+		assertEquals(DUMMY_STRING, otherString);
 	}
 
 	@Test
 	public void testGetterSetterZipEntryPattern() {
-		pipe.setZipEntryPattern(dummyString);
+		pipe.setZipEntryPattern(DUMMY_STRING);
 		String otherString = pipe.getZipEntryPattern();
-		assertEquals(dummyString, otherString);
+		assertEquals(DUMMY_STRING, otherString);
 	}
 
 	@Test
@@ -195,7 +202,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(true);
 
 		configureAndStartPipe();
-		doPipe(pipe, dummyStringSemiColon, session);
+		doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
 	}
 
 	@Test(expected = ConfigurationException.class)
@@ -205,16 +212,37 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFileFormat(FileFormat.GZ);
 
 		configureAndStartPipe();
-		doPipe(pipe, dummyStringSemiColon, session);
+		doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
 	}
 
-	@Test(expected = PipeRunException.class)
+	@Test
 	public void testResultIsContent() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setFileFormat(FileFormat.GZ);
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		GZIPOutputStream gouz = new GZIPOutputStream(bout);
+		gouz.write(DUMMY_STRING_SEMI_COLON.getBytes());
+		gouz.close();
+
+		configureAndStartPipe();
+		final PipeRunResult result = doPipe(pipe, bout.toByteArray(), session);
+
+		final String message = result.getResult().asString();
+
+		assertEquals(DUMMY_STRING_SEMI_COLON, message);
+	}
+	@Test
+	public void testResultIsContentIncorrectFormat() throws Exception {
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 
 		configureAndStartPipe();
-		doPipe(pipe, dummyStringSemiColon, session);
+		final PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, DUMMY_STRING_SEMI_COLON, session));
+
+		assertEquals(ZipException.class, pipeRunException.getCause().getClass());
+		assertTrue(pipeRunException.getMessage().endsWith("Not in GZIP format"));
 	}
 
 	@Test
@@ -225,18 +253,27 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(true);
 
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe, dummyStringSemiColon, session));
+		final PipeRunResult pipeRunResult = doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
+		assertNotNull(pipeRunResult);
+
+		GZIPInputStream giz = new GZIPInputStream(pipeRunResult.getResult().asInputStream());
+		BufferedReader bur = new BufferedReader(new InputStreamReader(giz));
+
+		String result = bur.readLine();
+		bur.close();
+
+		assertEquals(DUMMY_STRING_SEMI_COLON, result);
 	}
 
 	@Test
-	public void testCompressWithIllegimitateFileFormat() throws Exception {
+	public void testCompressWithIllegitimateFileFormat() throws Exception {
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
 
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+		assertNotNull(doPipe(pipe, DUMMY_STRING_SEMI_COLON, session)); // TODO should assert proper return value
 	}
 
 	@Test
@@ -247,7 +284,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(false);
 
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+		assertNotNull(doPipe(pipe, DUMMY_STRING_SEMI_COLON, session)); // TODO should assert proper return value
 	}
 
 	@Test
@@ -259,7 +296,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setConvert2String(true);
 
 		configureAndStartPipe();
-		assertNotNull(doPipe(pipe, dummyStringSemiColon, session)); // TODO should assert proper return value
+		assertNotNull(doPipe(pipe, DUMMY_STRING_SEMI_COLON, session)); // TODO should assert proper return value
 	}
 
 	@Test(expected = ConfigurationException.class)
@@ -268,12 +305,12 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setCompress(true);
 
 		configureAndStartPipe();
-		doPipe(pipe, dummyStringSemiColon, session);
+		doPipe(pipe, DUMMY_STRING_SEMI_COLON, session);
 	}
 
 	@Test(expected = PipeRunException.class)
 	public void testCaptureIllegitimateByteArray() throws Exception {
-		Object input = dummyString.getBytes();
+		Object input = DUMMY_STRING.getBytes();
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();
@@ -282,7 +319,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test(expected = PipeRunException.class)
 	public void testCaptureUnconvertableArray() throws Exception {
-		Object input = dummyString;
+		Object input = DUMMY_STRING;
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();

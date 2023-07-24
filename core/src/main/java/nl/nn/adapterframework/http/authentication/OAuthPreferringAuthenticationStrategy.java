@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
-	protected Logger log = LogUtil.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 //	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 
@@ -49,7 +49,7 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
 		final HttpClientContext clientContext = HttpClientContext.adapt(context);
 
-		final Queue<AuthOption> options = new LinkedList<AuthOption>();
+		final Queue<AuthOption> options = new LinkedList<>();
 
 		final CredentialsProvider credsProvider = clientContext.getCredentialsProvider();
 		if (credsProvider == null) {

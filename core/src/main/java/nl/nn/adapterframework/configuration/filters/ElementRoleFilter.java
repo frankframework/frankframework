@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 */
 package nl.nn.adapterframework.configuration.filters;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -27,9 +28,9 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class ElementRoleFilter extends FullXmlFilter {
 
-	private final String ELEMENTROLE_ATTRIBUTE = "elementRole";
+	private static final String ELEMENTROLE_ATTRIBUTE = "elementRole";
 
-	private Stack<String> elementNames = new Stack<>();
+	private Deque<String> elementNames = new ArrayDeque<>();
 
 	public ElementRoleFilter() {
 		super();
@@ -46,7 +47,7 @@ public class ElementRoleFilter extends FullXmlFilter {
 			elementName = Character.toLowerCase(localName.charAt(0))+localName.substring(1);
 		}
 		elementNames.push(elementName);
-		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts,ELEMENTROLE_ATTRIBUTE));
+		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts, ELEMENTROLE_ATTRIBUTE));
 	}
 
 	@Override

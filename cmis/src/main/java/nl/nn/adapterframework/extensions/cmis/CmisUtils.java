@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
@@ -131,6 +130,7 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -224,7 +224,7 @@ public class CmisUtils {
 				SimpleDateFormat sdf = new SimpleDateFormat(FORMATSTRING_BY_DEFAULT);
 				propertyXml.setValue(sdf.format(gc.getTime()));
 				break;
-	
+
 			default: // String/ID/HTML/URI
 				propertyXml.setValue((String) value);
 				break;
@@ -593,7 +593,7 @@ public class CmisUtils {
 		}
 		return null;
 	}
-	
+
 
 	public static XmlBuilder repositoryInfo2xml(RepositoryInfo repository) {
 		XmlBuilder repositoryXml = new XmlBuilder("repository");
@@ -783,7 +783,7 @@ public class CmisUtils {
 
 	private static AclCapabilities xml2aclCapabilities(Element cmisResult) {
 		AclCapabilitiesDataImpl aclCapabilities = new AclCapabilitiesDataImpl();
-		
+
 		Element aclCapabilitiesXml = XmlUtils.getFirstChildTag(cmisResult, "aclCapabilities");
 
 		aclCapabilities.setAclPropagation(AclPropagation.valueOf(aclCapabilitiesXml.getAttribute("aclPropagation")));
@@ -796,20 +796,19 @@ public class CmisUtils {
 	}
 
 	private static Map<String, PermissionMapping> xml2permissionMapping(Element cmisResult) {
-		Map<String, PermissionMapping> permissionMap = new HashMap<String, PermissionMapping>();
+		Map<String, PermissionMapping> permissionMap = new HashMap<>();
 
 		Element permissionMapXml = XmlUtils.getFirstChildTag(cmisResult, "permissionMapping");
+		if (permissionMapXml == null) {
+			return permissionMap;
+		}
 		for (Node node : XmlUtils.getChildTags(permissionMapXml, "permission")) {
 			Element element = (Element) node;
 			String key = element.getAttribute("name");
 			String types = XmlUtils.getStringValue(element);
 
 			PermissionMappingDataImpl permissionMapData = new PermissionMappingDataImpl();
-			List<String> permissions = new ArrayList<String>();
-			StringTokenizer tokenizer = new StringTokenizer(types, ",");
-			while (tokenizer.hasMoreTokens()) {
-				permissions.add(tokenizer.nextToken());
-			}
+			List<String> permissions = StringUtil.split(types);
 			permissionMapData.setPermissions(permissions);
 			permissionMapData.setKey(key);
 			permissionMap.put(key, permissionMapData);
@@ -818,9 +817,12 @@ public class CmisUtils {
 	}
 
 	private static List<PermissionDefinition> xml2permissionDefinitionList(Element cmisResult) {
-		List<PermissionDefinition> permissionsList = new ArrayList<PermissionDefinition>();
+		List<PermissionDefinition> permissionsList = new ArrayList<>();
 
 		Element permissionsXml = XmlUtils.getFirstChildTag(cmisResult, "permissions");
+		if (permissionsXml == null) {
+			return permissionsList;
+		}
 		for (Node node : XmlUtils.getChildTags(permissionsXml, "permission")) {
 			Element element = (Element) node;
 

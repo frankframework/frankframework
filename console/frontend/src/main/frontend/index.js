@@ -1,3 +1,9 @@
+import('pace-js').then((Pace) => {
+	Pace.start({
+		ajax: false
+	});
+});
+
 import 'jquery';
 import 'metismenu';
 import './js/plugins/iCheck/icheck.min';
@@ -42,13 +48,17 @@ import 'sweetalert/lib/sweet-alert.css';
 import './css/plugins/iCheck/custom.css';
 import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';
+import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+import 'prismjs/plugins/line-highlight/prism-line-highlight.css';
 import 'angularjs-toaster/toaster.min.css';
 import './css/style.css';
 import './css/plugins/iCheck/custom.css';
 
 import './js/main';
-import './js/app';
-import './js/config';
+import './js/app/app.module';
+import './js/app/app.config';
 import './js/services';
+import './js/filters';
 import './js/directives';
 import './js/controllers';
+import './js/components';

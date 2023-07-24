@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.pipes;
-
-import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,8 +43,8 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_INCREMENT = "increment";
 
-	private @Getter String sessionKey=null;
-	private @Getter int increment=1;
+	private @Getter String sessionKey = null;
+	private @Getter int increment = 1;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -59,16 +57,13 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
-		String sessionKeyString;
-		try {
-			sessionKeyString = session.getMessage(sessionKey).asString();
-		} catch (IOException e1) {
+		Integer sessionKeyInteger = session.getInteger(sessionKey);
+		if (sessionKeyInteger == null) {
 			throw new PipeRunException(this, "unable to determine sessionkey from pipeline session");
 		}
-		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
 		int incrementBy = increment;
 		ParameterList pl = getParameterList();
-		if(pl != null && pl.size() > 0) {
+		if(pl != null && !pl.isEmpty()) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
 				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
@@ -79,9 +74,9 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
-		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
+		session.put(sessionKey, sessionKeyInteger + incrementBy + "");
 
-		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyString, getSessionKey());
+		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyInteger + incrementBy, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

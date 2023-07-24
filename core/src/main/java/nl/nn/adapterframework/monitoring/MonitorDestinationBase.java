@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.monitoring;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.monitoring.events.MonitorEvent;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -57,23 +54,14 @@ public abstract class MonitorDestinationBase implements IMonitorDestination, App
 		hostname = Misc.getHostname();
 	}
 
-	public String makeXml(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
+	protected String makeXml(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		XmlBuilder eventXml = new XmlBuilder("event");
 		eventXml.addAttribute("hostname", hostname);
 		eventXml.addAttribute("monitor", monitorName);
 		eventXml.addAttribute("source", event.getEventSourceName());
 		eventXml.addAttribute("type", eventType.name());
 		eventXml.addAttribute("severity", severity.name());
-		eventXml.addAttribute("code", eventCode);
-		if(!Message.isNull(event.getEventMessage())) {
-			try {
-				XmlBuilder messageBuilder = new XmlBuilder("message");
-				messageBuilder.setCdataValue(event.getEventMessage().asString());
-				eventXml.addSubElement(messageBuilder);
-			} catch (IOException e) {
-				log.warn("unable to read monitor event message", e);
-			}
-		}
+		eventXml.addAttribute("event", eventCode);
 		return eventXml.toXML();
 	}
 

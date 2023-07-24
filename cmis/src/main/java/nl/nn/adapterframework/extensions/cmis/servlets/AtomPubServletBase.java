@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 
 /**
- * It is important that we register the correct (CMIS) CXF bus, or else 
+ * It is important that we register the correct (CMIS) CXF bus, or else
  * JAX-RS (IAF-API / WebServiceListener) won't work properly
  * 
  * @author Niels Meijer
@@ -35,7 +35,7 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 
 	@Override
 	public Map<String, String> getParameters() {
-		Map<String, String> returnMap = new HashMap<String, String>();
+		Map<String, String> returnMap = new HashMap<>();
 		returnMap.put(PARAM_CMIS_VERSION, getCmisVersionStr());
 		returnMap.put(PARAM_CALL_CONTEXT_HANDLER, "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
 
@@ -45,5 +45,11 @@ public abstract class AtomPubServletBase extends CmisAtomPubServlet implements D
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
+	}
+
+	/** Disabled by default, set servlet.AtomPub10.enabled=true or servlet.AtomPub11.enabled=true to enable this endpoint. */
+	@Override
+	public boolean isEnabled() {
+		return false;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.http;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
@@ -42,6 +41,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -95,10 +95,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			throw new ConfigurationException("address cannot contain colon ( : ) character");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
-			StringTokenizer stringTokenizer = new StringTokenizer(getAttachmentSessionKeys(), " ,;");
-			while (stringTokenizer.hasMoreTokens()) {
-				attachmentSessionKeysList.add(stringTokenizer.nextToken());
-			}
+			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
 		}
 
 		if (isSoap()) {
@@ -234,7 +231,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		soap = b;
 	}
 
-	/** 
+	/**
 	 * Namespace of the service that is provided by the adapter of this listener.
 	 * If specified, requests posted to https://mydomain.com/ibis4something/servlet/rpcrouter that have this namespace in their body  will be handled by this listener,
 	 * where mydomain.com and ibis4something refer to 'your ibis'.

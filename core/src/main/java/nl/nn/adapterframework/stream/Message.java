@@ -38,11 +38,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
@@ -81,62 +82,62 @@ public class Message implements Serializable, Closeable {
 
 	private static final long serialVersionUID = 437863352486501445L;
 
-	private Object request;
-	private @Getter String requestClass;
+	private @Nullable Object request;
+	private @Getter @Nonnull String requestClass;
 
-	private @Getter Map<String, Object> context;
+	private @Getter @Nonnull MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Map<String, Object> context, Object request, Class<?> requestClass) {
+	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
-			this.request = ((Message) request).asObject();
+			throw new IllegalArgumentException("Cannot pass object of type Message to Message constructor");
 		} else {
 			this.request = request;
 		}
-		this.context = context != null ? context : new MessageContext();
+		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 
-	private Message(Map<String, Object> context, Object request) {
+	private Message(@Nonnull MessageContext context, Object request) {
 		this(context, request, request != null ? request.getClass() : null);
 	}
 
-	public Message(String request, Map<String, Object> context) {
+	public Message(String request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(String request) {
-		this(request, null);
+		this(new MessageContext(), request);
 	}
 
 	public Message(byte[] request, String charset) {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(byte[] request, Map<String, Object> context) {
+	public Message(byte[] request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(byte[] request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
-	public Message(Reader request, Map<String, Object> context) {
+	public Message(Reader request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(Reader request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream, Exception> request, Map<String, Object> context, Class<?> requestClass) {
+	protected Message(ThrowingSupplier<InputStream, Exception> request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -147,7 +148,7 @@ public class Message implements Serializable, Closeable {
 	 * @param context {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
-	protected Message(SerializableFileReference request, MessageContext context, Class<?> requestClass) {
+	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -155,30 +156,33 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(InputStream request, Map<String, Object> context) {
+	public Message(InputStream request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(InputStream request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
-	public Message(Node request, Map<String, Object> context) {
+	public Message(Node request, @Nonnull MessageContext context) {
 		this(context, request);
 	}
 
 	public Message(Node request) {
-		this(null, request);
+		this(new MessageContext(), request);
 	}
 
+	@Nonnull
 	public static Message nullMessage() {
-		return nullMessage(null);
+		return nullMessage(new MessageContext());
 	}
 
-	public static Message nullMessage(MessageContext context) {
+	@Nonnull
+	public static Message nullMessage(@Nonnull MessageContext context) {
 		return new Message(context, null, null);
 	}
 
+	@Nonnull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
 	}
@@ -188,6 +192,7 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @return the charset provided when the message was created
 	 */
+	@Nullable
 	public String getCharset() {
 		return (String) context.get(MessageContext.METADATA_CHARSET);
 	}
@@ -196,6 +201,7 @@ public class Message implements Serializable, Closeable {
 	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
 	 * If unsuccessful return the default; <code>UTF-8</code>.
 	 */
+	@Nonnull
 	protected String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
 		String decodingCharset = getCharset();
 
@@ -225,6 +231,7 @@ public class Message implements Serializable, Closeable {
 		return decodingCharset;
 	}
 
+	@Nonnull
 	private String getEncodingCharset(String defaultEncodingCharset) {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -322,6 +329,7 @@ public class Message implements Serializable, Closeable {
 	 * @deprecated Please avoid the use of the raw object.
 	 */
 	@Deprecated
+	@Nullable
 	public Object asObject() {
 		return request;
 	}
@@ -354,8 +362,8 @@ public class Message implements Serializable, Closeable {
 				} catch (Exception e) {
 					log.warn("Could not close request", e);
 				}
+				request = null;
 			}
-			request = null;
 		} finally {
 			if (resourcesToClose != null) {
 				resourcesToClose.forEach(r -> {
@@ -369,19 +377,19 @@ public class Message implements Serializable, Closeable {
 		}
 	}
 
-	private void closeOnClose(AutoCloseable resource) {
+	private void closeOnClose(@Nonnull AutoCloseable resource) {
 		if (resourcesToClose == null) {
 			resourcesToClose = new LinkedHashSet<>();
 		}
 		resourcesToClose.add(resource);
 	}
 
-	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
+	public void closeOnCloseOf(@Nonnull PipeLineSession session, INamedObject requester) {
 		closeOnCloseOf(session, ClassUtils.nameOf(requester));
 	}
 
-	public void closeOnCloseOf(PipeLineSession session, String requester) {
-		if (!(request instanceof InputStream || request instanceof Reader || request instanceof SerializableFileReference) || isScheduledForCloseOnExitOf(session)) {
+	public void closeOnCloseOf(@Nonnull PipeLineSession session, String requester) {
+		if (this.request == null || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
 		log.debug("registering Message [{}] for close on exit", this);
@@ -400,15 +408,15 @@ public class Message implements Serializable, Closeable {
 		session.scheduleCloseOnSessionExit(this, request.toString() + " requested by " + requester);
 	}
 
-	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
+	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
 		return session.isScheduledForCloseOnExit(this);
 	}
 
-	public void unscheduleFromCloseOnExitOf(PipeLineSession session) {
+	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
 	}
 
-	private void onExceptionClose(Exception e) {
+	private void onExceptionClose(@Nonnull Exception e) {
 		try {
 			close();
 		} catch (Exception e2) {
@@ -419,11 +427,13 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a {@link Reader}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
+	@Nullable
 	public Reader asReader() throws IOException {
 		return asReader(null);
 	}
 
-	public Reader asReader(String defaultDecodingCharset) throws IOException {
+	@Nullable
+	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -452,7 +462,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Node) {
 			log.debug("returning Node {} as Reader", this::getId);
-			return new StringReader(asString());
+			return new StringReader(Objects.requireNonNull(asString()));
 		}
 		log.debug("returning String {} as Reader", this::getId);
 		return new StringReader(request.toString());
@@ -461,6 +471,7 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a {@link InputStream}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
+	@Nullable
 	public InputStream asInputStream() throws IOException {
 		return asInputStream(null);
 	}
@@ -468,7 +479,8 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
-	public InputStream asInputStream(String defaultEncodingCharset) throws IOException {
+	@Nullable
+	public InputStream asInputStream(@Nullable String defaultEncodingCharset) throws IOException {
 		try {
 			if (request == null) {
 				return null;
@@ -543,6 +555,7 @@ public class Message implements Serializable, Closeable {
 		return new byte[0];
 	}
 
+	@Nonnull
 	private byte[] readBytesFromCharacterData(int readLimit) throws IOException {
 		if (request instanceof Reader) {
 			if (!((Reader) request).markSupported()) {
@@ -573,6 +586,7 @@ public class Message implements Serializable, Closeable {
 		return new byte[0];
 	}
 
+	@Nonnull
 	private byte[] readBytesFromReader(Reader reader, int readLimit) throws IOException {
 		char[] chars = new char[readLimit];
 		int charsRead = reader.read(chars);
@@ -582,6 +596,7 @@ public class Message implements Serializable, Closeable {
 		return new String(chars, 0, charsRead).getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
+	@Nonnull
 	private byte[] readBytesFromInputStream(int readLimit) throws IOException {
 		if (!((InputStream) request).markSupported()) {
 			request = new BufferedInputStream((InputStream) request, readLimit);
@@ -596,6 +611,7 @@ public class Message implements Serializable, Closeable {
 		}
 	}
 
+	@Nonnull
 	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
 		byte[] bytes = new byte[readLimit];
 		int numRead = stream.read(bytes);
@@ -612,6 +628,7 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
+	@Nullable
 	public InputSource asInputSource() throws IOException {
 		if (request == null) {
 			return null;
@@ -638,6 +655,7 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
 	 */
+	@Nullable
 	public Source asSource() throws IOException, SAXException {
 		if (request == null) {
 			return null;
@@ -657,11 +675,13 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a byte array. Has the side effect of preserving the input as byte array.
 	 */
+	@Nullable
 	public byte[] asByteArray() throws IOException {
 		return asByteArray(null);
 	}
 
-	public byte[] asByteArray(String defaultEncodingCharset) throws IOException {
+	@Nullable
+	public byte[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -693,11 +713,13 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * return the request object as a String. Has the side effect of preserving the input as a String.
 	 */
+	@Nullable
 	public String asString() throws IOException {
 		return asString(null);
 	}
 
-	public String asString(String decodingCharset) throws IOException {
+	@Nullable
+	public String asString(@Nullable String decodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -736,30 +758,19 @@ public class Message implements Serializable, Closeable {
 		return size() == 0;
 	}
 
-	public void toStringPrefix(Writer writer) throws IOException {
-		if (context == null || context.isEmpty() || !log.isDebugEnabled()) {
+	private void toStringPrefix(StringBuilder writer) {
+		if (context.isEmpty() || !log.isDebugEnabled()) {
 			return;
 		}
-		writer.write("context:\n");
+		writer.append("context:\n");
 		for (Entry<String, Object> entry : context.entrySet()) {
+			Object value = entry.getValue();
 			if ("authorization".equalsIgnoreCase(entry.getKey())) {
-				String value = StringUtil.hide((String) entry.getValue());
-				writer.write(entry.getKey() + ": " + value + "\n");
-				continue;
+				value = StringUtil.hide((String) value);
 			}
-			writer.write(entry.getKey() + ": " + entry.getValue() + "\n");
+			writer.append(entry.getKey()).append(": ").append(value).append("\n");
 		}
-		writer.write("value:\n");
-	}
-
-	public String toStringPrefix() {
-		StringWriter result = new StringWriter();
-		try {
-			toStringPrefix(result);
-		} catch (IOException e) {
-			result.write("cannot write toStringPrefix: " + e.getMessage());
-		}
-		return result.toString();
+		writer.append("value:\n");
 	}
 
 	/**
@@ -767,17 +778,13 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Override
 	public String toString() {
-		StringWriter result = new StringWriter();
+		StringBuilder result = new StringBuilder();
 
-		try {
-			toStringPrefix(result);
-			if (request == null) {
-				result.write("null");
-			} else {
-				result.write(getRequestClass() + " " + getId() + ": [" + request.toString() + "]");
-			}
-		} catch (IOException e) {
-			result.write("cannot write toString: " + e.getMessage());
+		toStringPrefix(result);
+		if (request == null) {
+			result.append("null");
+		} else {
+			result.append(getRequestClass()).append(" ").append(getId()).append(": [").append(request).append("]");
 		}
 
 		return result.toString();
@@ -806,7 +813,7 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
 		}
-		return new Message(null, object);
+		return new Message(new MessageContext(), object);
 	}
 
 	public static InputSource asInputSource(Object object) throws IOException {

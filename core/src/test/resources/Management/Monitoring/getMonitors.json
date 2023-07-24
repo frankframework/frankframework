@@ -8,7 +8,6 @@
         "HEARTBEAT",
         "CLEARING"
     ],
-    "enabled": false,
     "monitors": [
         {
             "hits": 0,

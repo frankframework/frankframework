@@ -164,7 +164,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/**
 	 * Creates a local S3Object pointer, not representative with what is stored in the S3 Bucket.
 	 * This method may be used to upload a file to S3.
-	 * See {@link #resolve(S3Object) resolve}.
 	 */
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
@@ -293,20 +292,25 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return null;
 	}
 
+	/** 
+	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
+	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
+	 * Further, failure to close this stream can cause the request pool to become blocked. 
+	 */
 	@Override
 	public Message readFile(S3Object file, String charset) throws FileSystemException, IOException {
 		try {
 			if(file.getObjectContent() == null) { // We have a reference but not an actual object representing the S3 bucket.
 				file = s3Client.getObject(bucketName, file.getKey()); // Fetch a new copy
 			}
-			return new S3Message(file, FileSystemUtils.getContext(this, file, charset));
+			return new Message(file.getObjectContent(), FileSystemUtils.getContext(this, file, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	/**
-	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * Attempts to update the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
 	 * Updates the Metadata context but does not retrieve the actual file handle.
 	 */
 	private S3Object updateFileAttributes(S3Object f) {
@@ -315,17 +319,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			f.setObjectMetadata(omd);
 		}
 		return f;
-	}
-
-	/**
-	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
-	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
-	 * Further, failure to close this stream can cause the request pool to become blocked.
-	 */
-	private static class S3Message extends Message {
-		public S3Message(S3Object file, Map<String,Object> context) {
-			super(file.getObjectContent(), context);
-		}
 	}
 
 	@Override

@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.management.web;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -37,10 +37,11 @@ import org.springframework.stereotype.Component;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.HttpUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Main dispatcher for all API resources.
- * 
+ *
  * @since	7.0-B1
  * @author	Niels Meijer
  */
@@ -69,18 +70,16 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
-
 		if(!isEnabled) {
 			return;
 		}
 
-		log.debug("initialize IAFAPI servlet");
+		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);
 
 		if(StringUtils.isNotEmpty(allowedCorsOrigins)) {
-			StringTokenizer tokenizer = new StringTokenizer(allowedCorsOrigins, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String domain = tokenizer.nextToken();
+			List<String> allowedOrigins = StringUtil.split(allowedCorsOrigins);
+			for (String domain : allowedOrigins) {
 				if(domain.startsWith("http://")) {
 					log.warn("cross side resource domain ["+domain+"] is insecure, it is strongly encouraged to use a secure protocol (HTTPS)");
 				}
@@ -97,6 +96,12 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	@Override
 	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 		if(!isEnabled) {
+			try {
+				response.sendError(404, "api backend not enabled");
+			} catch (IOException e) {
+				log.debug("unable to send 404 error to client", e);
+			}
+
 			return;
 		}
 

@@ -27,10 +27,30 @@
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
 					firstBodyPartName="request"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					sharedResourceRef="SharedHttpSession"
 				/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="HttpSenderAndBase64Pipe" description="Test the functioning of the HttpSender combined with Base64 encoded output">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="${web.contextpath}-HttpSenderWithBase64Encoding" />
+		</receiver>
+		<pipeline firstPipe="LocalHttp">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="LocalHttp">
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					methodType="POST"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
+					firstBodyPartName="request"
+					sharedResourceRef="SharedHttpSession"
+				/>
+			</pipe>
+			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -63,10 +83,8 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
-					timeout="1000" firstBodyPartName="request"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
+					firstBodyPartName="request"
+					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />

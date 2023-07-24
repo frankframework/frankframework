@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.List;
 public class PipeDescription {
 	private String checkpointName;
 	private String description;
-	private List<String> resourcesNames = new ArrayList<>();
+	private final List<String> resourcesNames = new ArrayList<>();
 
 	public void setCheckpointName(String checkpointName) {
 		this.checkpointName = checkpointName;
@@ -49,8 +49,8 @@ public class PipeDescription {
 		resourcesNames.add(resourceName);
 	}
 
-	public boolean containsResourceName(String resourceName) {
-		return resourcesNames.contains(resourceName);
+	public boolean doesNotContainResourceName(String resourceName) {
+		return !resourcesNames.contains(resourceName);
 	}
 
 	public List<String> getResourceNames() {

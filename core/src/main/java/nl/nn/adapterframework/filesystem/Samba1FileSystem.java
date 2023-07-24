@@ -34,11 +34,13 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  *
- * @author alisihab
+ * Uses the SMB 1 protocol
  *
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
@@ -61,6 +63,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 			throw new ConfigurationException("server share endpoint is required");
 		if (!getShare().startsWith("smb://"))
 			throw new ConfigurationException("attribute share must begin with [smb://]");
+		if(!getShare().endsWith("/"))
+			setShare(getShare()+"/");
 
 		//Setup credentials if applied, may be null.
 		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
@@ -99,18 +103,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	@Override
 	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
-			if (!isListHiddenFiles()) {
-				SmbFileFilter filter = new SmbFileFilter() {
-
-					@Override
-					public boolean accept(SmbFile file) throws SmbException {
-						return !file.isHidden();
-					}
-				};
-				return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles(filter)));
-			}
-			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles()));
-		} catch (SmbException e) {
+			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder));
+		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
@@ -148,7 +142,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	private class Samba1Message extends Message {
-		public Samba1Message(SmbFile f, Map<String,Object> context) {
+		public Samba1Message(SmbFile f, MessageContext context) {
 			super(() -> new SmbFileInputStream(f), context, f.getClass());
 		}
 	}
@@ -200,11 +194,12 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
+		String normalized = FilenameUtils.normalizeNoEndSeparator(folder, true) + "/";
 		try {
-			if (folderExists(folder)) {
-				toFile(folder).delete();
+			if (folderExists(normalized)) {
+				toFile(normalized).delete();
 			} else {
-				throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
+				throw new FileSystemException("Remove directory for [" + normalized + "] has failed. Directory does not exist.");
 			}
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
@@ -234,6 +229,14 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
+		if (!folderExists(destinationFolder)) {
+			if(createFolder) {
+				createFolder(destinationFolder);
+			} else {
+				throw new FileSystemException("destination does not exist");
+			}
+		}
+
 		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
 			f.copyTo(dest);
@@ -254,8 +257,20 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		private SmbFile[] files;
 		private int i = 0;
 
-		public SmbFileIterator(SmbFile[] files) {
-			this.files = files;
+		public SmbFileIterator(String folder) throws IOException {
+			SmbFileFilter filter = new SmbFileFilter() {
+
+				@Override
+				public boolean accept(SmbFile file) throws SmbException {
+					return (!isListHiddenFiles() && !file.isHidden()) && file.isFile();
+				}
+			};
+			SmbFile f = smbContext;
+			if(StringUtils.isNotBlank(folder)) {
+				String normalizedFolder = FilenameUtils.normalizeNoEndSeparator(folder, true)+"/";
+				f = new SmbFile(smbContext, normalizedFolder);
+			}
+			this.files = f.listFiles(filter);
 		}
 
 		@Override
