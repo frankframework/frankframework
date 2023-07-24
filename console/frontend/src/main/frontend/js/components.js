@@ -43,7 +43,6 @@ import './app/views/scheduler/scheduler-add/scheduler-add.component';
 import './app/views/scheduler/scheduler-edit/scheduler-edit.component';
 import './app/views/security-items/security-items.component';
 import './app/views/status/status.component';
-import './app/views/status/status.component';
 import './app/views/status/flow/flow.component';
 import './app/views/status/flow/flow-modal/flow-modal.component';
 import './app/views/storage/storage.component';
