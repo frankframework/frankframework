@@ -59,7 +59,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -663,11 +662,12 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	/**
-	 * Set the desired storage class for the S3 object when action is move,copy or write. Consult the AWS S3 docs on which storage classses are available: https://aws.amazon.com/s3/storage-classes/
+	 * Set the desired storage class for the S3 object when action is move,copy or write.
+	 * More info on storage classes can be found on the AWS S3 docs: https://aws.amazon.com/s3/storage-classes/
 	 * @ff.default STANDARD
 	 */
-	public void setStorageClass(String storageClass) {
-		this.storageClass = EnumUtils.parse(StorageClass.class, storageClass);
+	public void setStorageClass(StorageClass storageClass) {
+		this.storageClass = storageClass;
 	}
 
 	/** Maximum concurrent connections towards S3 */
