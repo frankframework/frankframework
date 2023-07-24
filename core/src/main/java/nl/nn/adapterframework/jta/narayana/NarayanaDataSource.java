@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
  * 
  * Bypasses the {@link TransactionalDriver} in order to create connections and 
- * uses the @{link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
+ * uses the {@link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
  * 
  * {@link ConnectionImple} requires an {@link XADataSource}
  *
