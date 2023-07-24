@@ -67,8 +67,8 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	}
 
 	private DataSource createPool(DataSource dataSource) {
-		ConnectionFactory dcf = new DataSourceConnectionFactory(dataSource);
-		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(dcf, null);
+		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);

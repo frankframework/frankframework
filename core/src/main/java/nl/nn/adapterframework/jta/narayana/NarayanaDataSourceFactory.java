@@ -30,6 +30,7 @@ import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.commons.dbcp2.managed.ManagedDataSource;
 import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.commons.dbcp2.managed.XAConnectionFactory;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -77,7 +78,7 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
-		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
 		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
 		log.info("created PoolingDataSource [{}]", ds);
@@ -88,14 +89,14 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 		XAConnectionFactory cf = new DataSourceXAConnectionFactory(transactionManager.getTransactionManager(), dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
 
-		GenericObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
 
 		PoolingDataSource<PoolableConnection> ds = new ManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 		log.info("created XA-enabled PoolingDataSource [{}]", ds);
 		return ds;
 	}
 
-	private GenericObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000 : -1);
