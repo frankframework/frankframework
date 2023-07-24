@@ -32,6 +32,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.StringUtil;
@@ -98,6 +99,10 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (isScalar() && outputParameterPositions.length > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
 		}
+
+		if (!getQuery().matches("(?i)^\\s*(call|exec)\\s+.*")) {
+			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
+		}
 	}
 
 	@Override
@@ -134,4 +139,180 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 	}
 
+	/**
+	 * A SQL statement that calls a stored procedure. The statement should begin with the <code>CALL</code> or <code>EXEC</code>
+	 * SQL keyword depending on SQL dialect. In case of doubt, the safe choice is to always start with <code>CALL</code> and choose Oracle dialect.
+	 *
+	 * @param query The SQL statement to invoke the stored procedure.
+	 */
+	@Override
+	public void setQuery(final String query) {
+		super.setQuery(query);
+	}
+
+	/**
+	 * The query type. For stored procedures, valid query types are {@link JdbcQuerySenderBase.QueryType#SELECT} and {@link JdbcQuerySenderBase.QueryType#OTHER}.
+	 * Use {@link JdbcQuerySenderBase.QueryType#SELECT} when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
+	 * Use {@link JdbcQuerySenderBase.QueryType#OTHER} when your stored procedure returns values via {@value "OUT"} or {@value "INOUT"} parameters, or does not return
+	 * anything at all.
+	 * <p>
+	 * Using any other value will be rejected.
+	 * </p>
+	 *
+	 * @param queryType The queryType.
+	 */
+	@Override
+	public void setQueryType(final String queryType) {
+		super.setQueryType(queryType);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setColumnsReturned(final String string) {
+		super.setColumnsReturned(string);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setLockRows(final boolean b) {
+		super.setLockRows(b);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setLockWait(final int i) {
+		super.setLockWait(i);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobColumn(final int i) {
+		super.setBlobColumn(i);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobSessionKey(final String string) {
+		super.setBlobSessionKey(string);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobsCompressed(final boolean b) {
+		super.setBlobsCompressed(b);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobBase64Direction(final Base64Pipe.Direction value) {
+		super.setBlobBase64Direction(value);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobCharset(final String string) {
+		super.setBlobCharset(string);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setBlobSmartGet(final boolean b) {
+		super.setBlobSmartGet(b);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setClobColumn(final int i) {
+		super.setClobColumn(i);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setClobSessionKey(final String string) {
+		super.setClobSessionKey(string);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setAvoidLocking(final boolean avoidLocking) {
+		super.setAvoidLocking(avoidLocking);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setMaxRows(final int i) {
+		super.setMaxRows(i);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setStartRow(final int i) {
+		super.setStartRow(i);
+	}
+
+	/**
+	 * This feature is not supported for StoredProcedureQuerySender.
+	 *
+	 * @ff.protected
+	 */
+	@Override
+	public void setRowIdSessionKey(final String string) {
+		super.setRowIdSessionKey(string);
+	}
 }
