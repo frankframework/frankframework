@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,21 +53,17 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 	private Environment environment;
 
 	private String getFrontendLocation() {
-		String frontendFolder = "classpath:/META-INF/resources/iaf/gui/";
-		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
+		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
 			String devFrontendLocation = environment.getProperty("frontend.resources.location");
 			if(devFrontendLocation == null) {
-				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory
-				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString();
+				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory, in IntelliJ this is the project root.
+				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString(); //Navigate to the target of the frontend module
 			}
 
-			if (!devFrontendLocation.endsWith("/")) {
-				devFrontendLocation += "/";
-			}
-			frontendFolder = ResourceUtils.FILE_URL_PREFIX + devFrontendLocation;
+			return ResourceUtils.FILE_URL_PREFIX + FilenameUtils.getFullPath(devFrontendLocation);
 		}
 
-		return frontendFolder;
+		return "classpath:/META-INF/resources/iaf/gui/";
 	}
 
 	/**
