@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, SweetAlert) {
+const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, SweetAlert, AppService) {
     const ctrl = this;
 
     ctrl.jobs = {};
@@ -11,6 +11,11 @@ const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, S
         Poller.add("schedules", function (data) {
             $.extend(ctrl, data);
         }, true, 5000);
+
+		ctrl.databaseSchedulesEnabled = AppService.databaseSchedulesEnabled;
+		$rootScope.$on('databaseSchedulesEnabled', function (){
+			ctrl.databaseSchedulesEnabled = AppService.databaseSchedulesEnabled;
+		});
     };
 
     ctrl.$onDestroy = function () {
@@ -51,6 +56,6 @@ const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, S
 };
 
 appModule.component('scheduler', {
-    controller: ['$rootScope', '$scope', 'Api', 'Poller', '$state', 'SweetAlert', SchedulerController],
+	controller: ['$rootScope', '$scope', 'Api', 'Poller', '$state', 'SweetAlert', 'AppService', SchedulerController],
     templateUrl: 'js/app/views/scheduler/scheduler.component.html'
 });
