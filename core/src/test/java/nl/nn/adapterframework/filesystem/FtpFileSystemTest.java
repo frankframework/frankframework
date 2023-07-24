@@ -22,7 +22,7 @@ import nl.nn.adapterframework.ftp.FTPFileRef;
  */
 public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem> {
 
-	private String username = "wearefrank";
+	private String username = "frankframework";
 	private String password = "pass_123";
 	private String host = "localhost";
 	private int port = 21;
