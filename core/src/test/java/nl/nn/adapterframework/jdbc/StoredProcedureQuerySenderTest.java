@@ -2,6 +2,7 @@ package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -199,7 +200,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testStoredProcedureReturningResultSet() throws Exception {
-		assumeThat("PostgreSQL does not support stored procedures that return multi-row results, skipping test", productKey, not(equalToIgnoringCase("PostgreSQL")));
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, not(isOneOf("Oracle", "PostgreSQL")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -264,7 +265,11 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			generatedKeys.next();
 			ResultSetMetaData metaData = generatedKeys.getMetaData();
-			if (metaData.getColumnName(1).equalsIgnoreCase("TKEY")) {
+			if (metaData.getColumnName(1).equalsIgnoreCase("TKEY")
+				|| metaData.getColumnType(1) == Types.INTEGER
+				|| metaData.getColumnType(1) == Types.BIGINT
+				|| metaData.getColumnType(1) == Types.NUMERIC
+			) {
 				return generatedKeys.getLong(1);
 			}
 

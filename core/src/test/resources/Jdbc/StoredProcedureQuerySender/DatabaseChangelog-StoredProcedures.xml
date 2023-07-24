@@ -5,11 +5,6 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
 	<changeSet id="IAF-UnitTests-1" author="Tim van der Leeuw">
-		<preConditions onFail="MARK_RAN">
-			<not>
-				<tableExists tableName="SP_TESTDATA" schemaName="TESTIAF_USER"/>
-			</not>
-		</preConditions>
 		<comment>Create SP_TESTDATA for Tests</comment>
 		<createTable tableName="SP_TESTDATA">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
@@ -189,6 +184,7 @@
 			BEGIN
 				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
 			END INSERT_MESSAGE;
+			/
 		</sql>
 	</changeSet>
 
@@ -202,6 +198,7 @@
 			BEGIN
 				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = MSG_ID;
 			END;
+			/
 		</sql>
 	</changeSet>
 
@@ -216,18 +213,7 @@
 			BEGIN
 				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
-		</sql>
-	</changeSet>
-
-	<changeSet id="IAF-UnitTests-5" author="Tim van der Leeuw" dbms="oracle">
-		<comment>Create Stored Procedure to select multiple rows</comment>
-		<sql>
-			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
-				MESSAGE IN VARCHAR
-			) AS
-			BEGIN
-				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
-			END;
+			/
 		</sql>
 	</changeSet>
 
