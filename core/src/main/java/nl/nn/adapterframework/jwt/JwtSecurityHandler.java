@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,10 +31,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	private @Getter Map<String, Object> claimsSet;
 	private @Getter String roleClaim;
+	private @Getter String principalNameClaim;
 
-	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim) {
+	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
+		this.principalNameClaim = principalNameClaim;
 	}
 
 	@Override
@@ -49,7 +51,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 			@Override
 			public String getName() {
-				return (String) getClaimsSet().get("sub");
+				return (String) getClaimsSet().get(principalNameClaim);
 			}
 
 		};

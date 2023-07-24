@@ -85,6 +85,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
+	private @Getter String principalNameClaim = "sub";
 	private @Getter(onMethod = @__(@Override)) String physicalDestinationName = null;
 
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
@@ -323,7 +324,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.headerParams = headerParams;
 	}
 
-	/** Session key that provides the Content-disposition header in the response */
+	/** Session key that provides the Content-Disposition header in the response */
 	public void setContentDispositionHeaderSessionKey(String key) {
 		this.contentDispositionHeaderSessionKey = key;
 	}
@@ -356,6 +357,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Claim name which specifies the role */
 	public void setRoleClaim(String roleClaim) {
 		this.roleClaim = roleClaim;
+	}
+
+	/** Claim name which specifies the principal */
+	public void setPrincipalNameClaim(String principalNameClaim) {
+		this.principalNameClaim = principalNameClaim;
 	}
 
 	@Override
