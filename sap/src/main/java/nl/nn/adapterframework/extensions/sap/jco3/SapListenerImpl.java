@@ -168,8 +168,8 @@ public abstract class SapListenerImpl extends SapFunctionFacade implements ISapL
 
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
-		try {
-			handler.processRawMessage(this, jcoFunction, null, false);
+		try (PipeLineSession session = new PipeLineSession()) {
+			handler.processRawMessage(this, jcoFunction, session, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
