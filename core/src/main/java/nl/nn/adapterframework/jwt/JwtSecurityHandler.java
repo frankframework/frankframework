@@ -39,7 +39,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		this.principalNameClaim = principalNameClaim;
 	}
 
-	//JWTClaimNames#AUDIENCE claim may be a String or List. Others are either a String or Long (epoch date)
+	//JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
 	public boolean isUserInRole(String role, PipeLineSession session) {
 		Object claim = claimsSet.get(roleClaim);
