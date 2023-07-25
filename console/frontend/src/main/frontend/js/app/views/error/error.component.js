@@ -10,7 +10,7 @@ const ErrorController = function ($scope, Api, $state, $interval, $rootScope, $t
 		ctrl.checkState();
 	};
 
-	var cooldown = function (data) {
+	ctrl.cooldown = function (data) {
 		ctrl.cooldownCounter = 60;
 
 		if (data.status == "error" || data.status == "INTERNAL_SERVER_ERROR") {
@@ -33,7 +33,7 @@ const ErrorController = function ($scope, Api, $state, $interval, $rootScope, $t
 		Api.Get("server/health", function () {
 			$state.go("pages.status");
 			$timeout(function () { window.location.reload(); }, 50);
-		}, cooldown);
+		}, ctrl.cooldown);
 	};
 };
 

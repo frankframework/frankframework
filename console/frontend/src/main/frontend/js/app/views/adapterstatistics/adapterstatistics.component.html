@@ -7,16 +7,16 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
                     <div class="pull-right">
-                        <button ui-sref="$ctrl.pages.status({$ctrl.adapter:adapterName})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
-                        <button ladda="refreshing" ng-click="$ctrl.refresh()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> <span>Refresh</span></button>
+                        <button ui-sref="$ctrl.pages.status({adapter:$ctrl.adapterName})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+                        <button ladda="$ctrl.refreshing" ng-click="$ctrl.refresh()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> <span>Refresh</span></button>
                     </div>
-                    <h4>{{adapterName}} Statistics</h4>
+                    <h4>{{$ctrl.adapterName}} Statistics</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="col-md-12 table-responsive">
                         <h4>Adapter statistics by the hour</h4>
                         <div style="height:300px;">
-                            <canvas id="line" class="chart chart-line" chart-options="$ctrl.options" chart-data="$ctrl.hourlyStatistics.data" chart-labels="$ctrl.hourlyStatistics.labels" chart-dataset-override="dataset" chart-series="series">
+                            <canvas id="line" class="chart chart-line" chart-options="$ctrl.options" chart-data="$ctrl.hourlyStatistics.data" chart-labels="$ctrl.hourlyStatistics.labels" chart-dataset-override="$ctrl.dataset" chart-series="series">
                             </canvas>
                         </div>
                     </div>

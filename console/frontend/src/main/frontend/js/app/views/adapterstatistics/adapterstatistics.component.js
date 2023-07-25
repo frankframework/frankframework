@@ -3,10 +3,8 @@ import { appModule } from "../../app.module";
 const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
     const ctrl = this;
 
-    var adapterName = $stateParams.name;
-    var defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
-
-    ctrl.adapterName = adapterName;
+    ctrl.defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
+	ctrl.adapterName = $stateParams.name;
     ctrl.refreshing = false;
     ctrl.hourlyStatistics = {
         labels: [],
@@ -49,14 +47,14 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
     };
 
     ctrl.$onInit = function () {
-        if (!adapterName)
+		if (!ctrl.adapterName)
             return SweetAlert.Warning("Adapter not found!");
 
         if (appConstants["Statistics.boundaries"]) {
-            populateBoundaries(); //AppConstants already loaded
+			ctrl.populateBoundaries(); //AppConstants already loaded
         }
         else {
-            ctrl.$on('appConstants', populateBoundaries); //Wait for appConstants trigger to load
+			ctrl.$on('appConstants', ctrl.populateBoundaries); //Wait for appConstants trigger to load
         }
 
         $timeout(function () {
@@ -66,7 +64,7 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
 
     ctrl.refresh = function () {
         ctrl.refreshing = true;
-        Api.Get("adapters/" + Misc.escapeURL(adapterName) + "/statistics", function (data) {
+		Api.Get("adapters/" + Misc.escapeURL(ctrl.adapterName) + "/statistics", function (data) {
             ctrl.stats = data;
 
             var labels = [];
@@ -85,7 +83,7 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
         });
     };
 
-    function populateBoundaries() {
+    ctrl.populateBoundaries = function() {
         var timeBoundaries = appConstants["Statistics.boundaries"].split(",");
         var sizeBoundaries = appConstants["Statistics.size.boundaries"].split(",");
         var percBoundaries = appConstants["Statistics.percentiles"].split(",");

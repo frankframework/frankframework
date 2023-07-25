@@ -12,7 +12,7 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
     ctrl.sessionKeyIndex = 1;
     ctrl.sessionKeyIndices = [ctrl.sessionKeyIndex];
 
-    var sessionKeys = [];
+    ctrl.sessionKeys = [];
 
     ctrl.$onInit = function () {
         ctrl.configurations = appService.configurations;
@@ -27,23 +27,23 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
     };
 
     ctrl.updateSessionKeys = function (sessionKey, index) {
-        let sessionKeyIndex = sessionKeys.findIndex(f => f.index === index); // find by index
+		let sessionKeyIndex = ctrl.sessionKeys.findIndex(f => f.index === index); // find by index
         if (sessionKeyIndex >= 0) {
             if (sessionKey.name == "" && sessionKey.value == "") { // remove row if row is empty
-                sessionKeys.splice(sessionKeyIndex, 1);
+				ctrl.sessionKeys.splice(sessionKeyIndex, 1);
                 ctrl.sessionKeyIndices.splice(sessionKeyIndex, 1);
             } else { // update existing key value pair
-                sessionKeys[sessionKeyIndex].key = sessionKey.name;
-                sessionKeys[sessionKeyIndex].value = sessionKey.value;
+				ctrl.sessionKeys[sessionKeyIndex].key = sessionKey.name;
+				ctrl.sessionKeys[sessionKeyIndex].value = sessionKey.value;
             }
             ctrl.state = [];
         } else if (sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != "") {
-            let keyIndex = sessionKeys.findIndex(f => f.key === sessionKey.name);	// find by key
+			let keyIndex = ctrl.sessionKeys.findIndex(f => f.key === sessionKey.name);	// find by key
             // add new key
             if (keyIndex < 0) {
                 ctrl.sessionKeyIndex += 1;
                 ctrl.sessionKeyIndices.push(ctrl.sessionKeyIndex);
-                sessionKeys.push({ index: index, key: sessionKey.name, value: sessionKey.value });
+				ctrl.sessionKeys.push({ index: index, key: sessionKey.name, value: sessionKey.value });
                 ctrl.state = [];
             } else { // key with the same name already exists show warning
                 if (ctrl.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
@@ -81,10 +81,10 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
         if (ctrl.file)
             fd.append("file", ctrl.file, ctrl.file.name);
 
-        if (sessionKeys.length > 0) {
-            let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key === "" || f.value === ""));
+		if (ctrl.sessionKeys.length > 0) {
+			let incompleteKeyIndex = ctrl.sessionKeys.findIndex(f => (f.key === "" || f.value === ""));
             if (incompleteKeyIndex < 0) {
-                fd.append("sessionKeys", JSON.stringify(sessionKeys));
+				fd.append("sessionKeys", JSON.stringify(ctrl.sessionKeys));
             } else {
                 ctrl.addNote("warning", "Please make sure all sessionkeys have name and value!");
                 return;
