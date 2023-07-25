@@ -31,7 +31,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	private final @Getter Map<String, Object> claimsSet;
 	private final @Getter String roleClaim;
-	private final @Getter String principalNameClaim;
+	private final @Getter String principalNameClaim; //Defaults to JWTClaimNames#SUBJECT
 
 	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
@@ -39,21 +39,22 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		this.principalNameClaim = principalNameClaim;
 	}
 
+	//JWTClaimNames#AUDIENCE claim may be a String or List. Others are either a String or Long (epoch date)
 	@Override
 	public boolean isUserInRole(String role, PipeLineSession session) {
-		Object claim = getClaimsSet().get(roleClaim);
-		if(claim instanceof String){
+		Object claim = claimsSet.get(roleClaim);
+		if(claim instanceof String) {
 			return role.equals(claim);
-		} else if(claim instanceof List){
-			List<String> claimList = (List) claim;
-			return claimList.stream().anyMatch(s -> role.equals(s));
+		} else if(claim instanceof List) {
+			List<String> claimList = (List<String>) claim;
+			return claimList.stream().anyMatch(role::equals);
 		}
 		return false;
 	}
 
 	@Override
 	public Principal getPrincipal(PipeLineSession session) {
-		return () -> (String) getClaimsSet().get(principalNameClaim);
+		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
@@ -72,11 +73,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
 					.map(s -> StringUtil.split(s, "="))
 					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+
 			for (Map.Entry<String, String> entry : claims.entrySet()) {
 				String key = entry.getKey();
 				String expectedValue = entry.getValue();
-				String value = (String) claimsSet.get(key);
-				if(!value.equals(expectedValue)) {
+				Object value = claimsSet.get(key);
+				if(!expectedValue.equals(value)) { //Value may be a List, Long or String
 					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
 				}
 			}
