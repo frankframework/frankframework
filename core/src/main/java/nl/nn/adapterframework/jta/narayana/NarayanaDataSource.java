@@ -59,7 +59,7 @@ public class NarayanaDataSource implements DataSource {
 
 	public NarayanaDataSource(CommonDataSource dataSource, String name) {
 		if(!(dataSource instanceof XADataSource)) {
-			throw new IllegalStateException("Only XA DataSources can be registerd with a TransactionManager");
+			throw new IllegalStateException("Only XA DataSources can be registered with a TransactionManager");
 		}
 
 		this.targetDataSource = (XADataSource) dataSource;
