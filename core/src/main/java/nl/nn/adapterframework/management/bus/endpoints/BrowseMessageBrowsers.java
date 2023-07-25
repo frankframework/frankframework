@@ -68,19 +68,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	public static final String HEADER_PIPE_NAME_KEY = "pipe";
 	public static final String HEADER_PROCESSSTATE_KEY = "processState";
 
-	private PlatformTransactionManager transactionManager;
 	private static final TransactionDefinition TXNEW_DEFINITION = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-
-	@Override
-	protected void doAfterPropertiesSet() {
-		transactionManager = getApplicationContext().getBean("txManager", PlatformTransactionManager.class);
-
-		//Try to create a new transaction to verify if there is a connection to the database
-		TransactionStatus status = this.transactionManager.getTransaction(TXNEW_DEFINITION);
-		if(status != null) { //If there is a transaction (read connection) close it!
-			this.transactionManager.commit(status);
-		}
-	}
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getMessageById(Message<?> message) {
@@ -219,6 +207,10 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		}
 	}
 
+	/**
+	 * Keep the transaction local to this method. Roll back when any error occurs.
+	 * The Manager should only be retrieved when this method is being called. Else it may prevent the application from starting up.
+	 */
 	@ActionSelector(BusAction.DELETE)
 	public void delete(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, IbisManager.ALL_CONFIGS_KEY);
@@ -230,19 +222,15 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		Receiver<?> receiver = getReceiverByName(adapter, receiverName);
 		IMessageBrowser<?> browser = receiver.getMessageBrowser(ProcessState.ERROR);
 
-		TransactionStatus txStatus = null;
+		PlatformTransactionManager transactionManager = getApplicationContext().getBean("txManager", PlatformTransactionManager.class);
+		TransactionStatus txStatus = transactionManager.getTransaction(TXNEW_DEFINITION);
 		try {
-			txStatus = transactionManager.getTransaction(TXNEW_DEFINITION);
 			browser.deleteMessage(messageId);
 		} catch (Exception e) {
-			if (txStatus != null) {
-				txStatus.setRollbackOnly();
-			}
+			txStatus.setRollbackOnly();
 			throw new BusException("unable to delete message with id ["+messageId+"]", e);
 		} finally {
-			if (txStatus != null) {
-				transactionManager.commit(txStatus);
-			}
+			transactionManager.commit(txStatus);
 		}
 	}
 

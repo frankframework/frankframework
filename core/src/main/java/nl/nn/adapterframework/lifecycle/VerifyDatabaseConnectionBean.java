@@ -28,6 +28,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -54,6 +55,10 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
 			try (Connection connection = getDefaultDataSource().getConnection()) {
+				if(!connection.isValid(5)) {
+					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
+				}
+
 				int isolationLevel = connection.getTransactionIsolation();
 				if(isolationLevel == Connection.TRANSACTION_NONE) {
 					log.info("expected a transacted connection got isolation level [{}]", isolationLevel);
