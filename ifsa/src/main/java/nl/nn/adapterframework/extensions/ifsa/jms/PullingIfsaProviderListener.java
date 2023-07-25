@@ -208,7 +208,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 
 		try {
 			if (isJmsTransacted() && !(getMessagingSource().isXaEnabledForSure() && JtaUtil.inTransaction())) {
@@ -229,13 +229,14 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 		}
 		// on request-reply send the reply.
 		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
+			IFSAMessage rawMessage = rawMessageWrapper.getRawMessage();
 			Message originalRawMessage;
-			if (rawMessage instanceof Message) {
-				originalRawMessage = (Message)rawMessage;
+			if (rawMessage != null) {
+				originalRawMessage = rawMessage;
 			} else {
 				originalRawMessage = (Message) pipeLineSession.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
-			if (originalRawMessage==null) {
+			if (originalRawMessage == null) {
 				String id = pipeLineSession.getMessageId();
 				String cid = pipeLineSession.getCorrelationId();
 				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
