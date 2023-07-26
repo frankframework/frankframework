@@ -17,11 +17,11 @@ package nl.nn.adapterframework.jta.narayana;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -29,31 +29,63 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
+import com.arjuna.ats.internal.jdbc.ConnectionImple;
 import com.arjuna.ats.internal.jdbc.ConnectionManager;
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jdbc.TransactionalDriver;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * {@link DataSource} implementation wrapping {@link XADataSource} and using
- * {@link ConnectionManager} to acquire connections.
+ * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
+ * 
+ * Bypasses the {@link TransactionalDriver} in order to create connections and 
+ * uses the {@link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
+ * 
+ * {@link ConnectionImple} requires an {@link XADataSource}
  *
  */
 public class NarayanaDataSource implements DataSource {
-	protected Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(NarayanaDataSource.class);
 
 	private @Setter boolean connectionPooling = true;
 	private @Setter int maxConnections = 20;
 
-	private @Getter CommonDataSource targetDataSource;
-	private String dbUrl;
+	private final @Getter XADataSource targetDataSource;
+	private final String name;
 
-	public NarayanaDataSource(CommonDataSource dataSource, String dbUrl) {
-		this.targetDataSource = dataSource;
-		this.dbUrl = dbUrl;
+	public NarayanaDataSource(CommonDataSource dataSource, String name) {
+		if(!(dataSource instanceof XADataSource)) {
+			throw new IllegalStateException("Only XA DataSources can be registered with a TransactionManager");
+		}
+
+		this.targetDataSource = (XADataSource) dataSource;
+		this.name = name;
+
+		//If the DataSource implements both DataSource and XADataSource, check for modifiers.
+		if(dataSource instanceof DataSource) {
+			checkModifiers((DataSource) dataSource);
+		}
+	}
+
+	/** In order to allow transactions to run over multiple databases, see {@link ModifierFactory}. */
+	private void checkModifiers(DataSource dataSource) {
+		try (Connection connection = dataSource.getConnection()) {
+			DatabaseMetaData metadata = connection.getMetaData();
+			String driverName = metadata.getDriverName();
+			int major = metadata.getDriverMajorVersion();
+			int minor = metadata.getDriverMinorVersion();
+
+			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
+				log.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
+				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
+			}
+		} catch (SQLException e) {
+			log.warn("Could not check for existence of Modifier", e);
+		}
 	}
 
 	@Override
@@ -73,7 +105,7 @@ public class NarayanaDataSource implements DataSource {
 		}
 		properties.setProperty(TransactionalDriver.poolConnections, ""+connectionPooling);
 		properties.setProperty(TransactionalDriver.maxConnections, ""+maxConnections);
-		return ConnectionManager.create(dbUrl, properties);
+		return ConnectionManager.create(name, properties);
 	}
 
 
@@ -114,17 +146,5 @@ public class NarayanaDataSource implements DataSource {
 			return (T) this;
 		}
 		return ((Wrapper)targetDataSource).unwrap(iface);
-	}
-
-	@Override
-	public String toString() {
-		Set<?> connections=null;
-		try {
-			connections = (Set<?>)ClassUtils.getDeclaredFieldValue(null, ConnectionManager.class,"_connections");
-		} catch (IllegalArgumentException | SecurityException | IllegalAccessException | NoSuchFieldException e) {
-			log.warn("could not obtain connectionPool size", e);
-		}
-		int connectionPoolSize = connections!=null ? connections.size() : -1;
-		return "NarayanaDataSource with connection pool size "+connectionPoolSize;
 	}
 }
