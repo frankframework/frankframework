@@ -43,7 +43,7 @@ import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
-	private String username = "wearefrank";
+	private String username = "frankframework";
 	private String password = "pass_123";
 	private String host = "localhost";
 	private int port = 4450;

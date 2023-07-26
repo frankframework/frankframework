@@ -15,11 +15,18 @@
 */
 package nl.nn.adapterframework.jta.btm;
 
+import java.sql.Connection;
+
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DataSourceConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
@@ -31,10 +38,10 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
-	private @Getter @Setter int minPoolSize=0;
-	private @Getter @Setter int maxPoolSize=20;
-	private @Getter @Setter int maxIdleTime=60;
-	private @Getter @Setter int maxLifeTime=0;
+	private @Getter @Setter int minPoolSize = 0;
+	private @Getter @Setter int maxPoolSize = 20;
+	private @Getter @Setter int maxIdleTime = 60;
+	private @Getter @Setter int maxLifeTime = 0;
 	private @Getter @Setter String testQuery = null;
 
 	public BtmDataSourceFactory() {
@@ -49,26 +56,54 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
-			PoolingDataSource result = new PoolingDataSource();
-			result.setUniqueName(dataSourceName);
-			result.setMinPoolSize(getMinPoolSize());
-			result.setMaxPoolSize(getMaxPoolSize());
-			result.setMaxIdleTime(getMaxIdleTime());
-			result.setMaxLifeTime(getMaxLifeTime());
-
-			if(StringUtils.isNotBlank(testQuery)) {
-				result.setTestQuery(testQuery);
-			}
-			result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
-
-			result.setAllowLocalTransactions(true);
-			result.setXaDataSource((XADataSource)dataSource);
-			result.init();
-			return result;
+			return createXAPool((XADataSource) dataSource, dataSourceName);
 		}
 
-		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
-		return (DataSource)dataSource;
+		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
+		if(maxPoolSize > 1) {
+			return createPool((DataSource)dataSource);
+		}
+		return (DataSource) dataSource;
+	}
+
+	private DataSource createPool(DataSource dataSource) {
+		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
+
+		poolableConnectionFactory.setAutoCommitOnReturn(false);
+		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000 : -1);
+		poolableConnectionFactory.setRollbackOnReturn(true);
+		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+		connectionPool.setMinIdle(minPoolSize);
+		connectionPool.setMaxTotal(maxPoolSize);
+		connectionPool.setBlockWhenExhausted(true);
+		poolableConnectionFactory.setPool(connectionPool);
+
+		org.apache.commons.dbcp2.PoolingDataSource<PoolableConnection> ds = new org.apache.commons.dbcp2.PoolingDataSource<>(connectionPool);
+		log.info("registered PoolingDataSource [{}]", ds);
+		return ds;
+	}
+
+	private DataSource createXAPool(XADataSource dataSource, String dataSourceName) {
+		PoolingDataSource result = new PoolingDataSource();
+		result.setUniqueName(dataSourceName);
+		result.setMinPoolSize(minPoolSize);
+		result.setMaxPoolSize(maxPoolSize);
+		result.setMaxIdleTime(maxIdleTime);
+		result.setMaxLifeTime(maxLifeTime);
+
+		if(StringUtils.isNotBlank(testQuery)) {
+			result.setTestQuery(testQuery);
+		}
+		result.setEnableJdbc4ConnectionTest(true); //Assume everything uses JDBC4. BTM will test if isValid exists, to avoid unnecessary 'future' calls.
+
+		result.setAllowLocalTransactions(true);
+		result.setXaDataSource(dataSource);
+		result.init();
+
+		log.info("registered BTM DataSource [{}]", result);
+		return result;
 	}
 
 	@Override

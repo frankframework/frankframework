@@ -169,9 +169,10 @@ public class PushingIfsaProviderListener extends IfsaListener implements IPortCo
 
 		// on request-reply send the reply.
 		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
+			IFSAMessage rawMessage = rawMessageWrapper.getRawMessage();
 			javax.jms.Message originalRawMessage;
-			if (rawMessageWrapper instanceof javax.jms.Message) {
-				originalRawMessage = (javax.jms.Message)rawMessageWrapper;
+			if (rawMessage != null) {
+				originalRawMessage = rawMessage;
 			} else {
 				originalRawMessage = (javax.jms.Message) pipeLineSession.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}

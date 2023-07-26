@@ -10,7 +10,7 @@ import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 @Disabled
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
 
-	private String username = "wearefrank";
+	private String username = "frankframework";
 	private String password = "pass_123";
 	private String host = "localhost";
 	private int port = 4450;

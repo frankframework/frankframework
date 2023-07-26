@@ -22,10 +22,6 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -72,6 +68,11 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		return new InitialContext();
 	}
 
+	/**
+	 * Removed the suggested wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring.
+	 * This was a bug in WAS 6.1 in combination with Spring 2.1, taking a risk here, but I'm assuming WebSphere has fixed this by now.
+	 * see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
+	 */
 	@Override
 	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
 		IConnectionFactoryFactory connectionFactoryFactory = jmsFacade.getConnectionFactoryFactory();
@@ -87,17 +88,6 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 		}
 		if (connectionFactory == null) {
 			throw new JmsException("Could not find connection factory ["+cfName+"]");
-		}
-		// wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring
-		// see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
-		if (jmsFacade.useJms102()) {
-			if (connectionFactory instanceof QueueConnectionFactory) {
-				connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory) connectionFactory);
-			} else if (connectionFactory instanceof TopicConnectionFactory) {
-				connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory) connectionFactory);
-			}
-		} else {
-			connectionFactory = new ConnectionFactoryWrapper(connectionFactory);
 		}
 
 		if(log.isInfoEnabled()) {
@@ -135,83 +125,5 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 			}
 		}
 		return info;
-	}
-
-	//Wrapping seems WebsShere specific, shouldn't this be done by the QueueConnectionFactoryFactory
-	private static class ConnectionFactoryWrapper implements ConnectionFactory {
-		private final ConnectionFactory wrapped;
-
-		public ConnectionFactoryWrapper(ConnectionFactory connectionFactory) {
-			super();
-			wrapped=connectionFactory;
-		}
-
-		@Override
-		public Connection createConnection() throws JMSException {
-			return wrapped.createConnection();
-		}
-
-		@Override
-		public Connection createConnection(String userName, String password) throws JMSException {
-			return wrapped.createConnection(userName, password);
-		}
-	}
-
-	private static class QueueConnectionFactoryWrapper implements QueueConnectionFactory {
-		private final QueueConnectionFactory wrapped;
-
-		public QueueConnectionFactoryWrapper(QueueConnectionFactory connectionFactory) {
-			super();
-			wrapped=connectionFactory;
-		}
-
-		@Override
-		public QueueConnection createQueueConnection() throws JMSException {
-			return wrapped.createQueueConnection();
-		}
-
-		@Override
-		public QueueConnection createQueueConnection(String userName, String password) throws JMSException {
-			return wrapped.createQueueConnection(userName, password);
-		}
-
-		@Override
-		public Connection createConnection() throws JMSException {
-			return createQueueConnection();
-		}
-
-		@Override
-		public Connection createConnection(String userName, String password) throws JMSException {
-			return createQueueConnection(userName, password);
-		}
-	}
-
-	private static class TopicConnectionFactoryWrapper implements TopicConnectionFactory {
-		private final TopicConnectionFactory wrapped;
-
-		public TopicConnectionFactoryWrapper(TopicConnectionFactory connectionFactory) {
-			super();
-			wrapped=connectionFactory;
-		}
-
-		@Override
-		public TopicConnection createTopicConnection() throws JMSException {
-			return wrapped.createTopicConnection();
-		}
-
-		@Override
-		public TopicConnection createTopicConnection(String userName, String password) throws JMSException {
-			return wrapped.createTopicConnection(userName, password);
-		}
-
-		@Override
-		public Connection createConnection() throws JMSException {
-			return createTopicConnection();
-		}
-
-		@Override
-		public Connection createConnection(String userName, String password) throws JMSException {
-			return createTopicConnection(userName, password);
-		}
 	}
 }
