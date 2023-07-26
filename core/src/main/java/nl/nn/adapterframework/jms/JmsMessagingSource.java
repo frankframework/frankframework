@@ -20,15 +20,10 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Session;
-import javax.jms.XAConnectionFactory;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
-
-import bitronix.tm.resource.jms.PoolingConnectionFactory;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * {@link MessagingSource} for JMS connections.
@@ -94,25 +89,6 @@ public class JmsMessagingSource extends MessagingSource {
 			releaseSession(session);
 		}
 		return dest;
-	}
-
-	@Override
-	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		ConnectionFactory result = getConnectionFactory();
-		if (result instanceof TransactionAwareConnectionFactoryProxy) {
-			result = (ConnectionFactory)ClassUtils.getDeclaredFieldValue(result,"targetConnectionFactory");
-		}
-		if (result instanceof PoolingConnectionFactory) {
-			XAConnectionFactory xaConnectionFactory =  ((PoolingConnectionFactory)result).getXaConnectionFactory();
-			if (xaConnectionFactory instanceof ConnectionFactory) {
-				result = (ConnectionFactory)xaConnectionFactory;
-			}
-		}
-		try {
-			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(result,"wrapped");
-		} catch (NoSuchFieldException e) {
-			return result;
-		}
 	}
 
 	private String getJndiContextPrefix() {

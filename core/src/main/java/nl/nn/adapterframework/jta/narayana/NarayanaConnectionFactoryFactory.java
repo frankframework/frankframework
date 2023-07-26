@@ -21,6 +21,7 @@ import javax.jms.XAConnectionFactory;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
 import org.jboss.narayana.jta.jms.TransactionHelper;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -29,6 +30,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 
@@ -53,15 +55,28 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			log.info("add TransactionHelper [{}] to ConnectionFactory", transactionHelper);
 			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
 		}
-		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
+
+		log.info("ConnectionFactory [{}] is not XA enabled, unable to register with an Transaction Manager", connectionFactoryName);
+		if(maxPoolSize > 1) {
+			return createConnectionFactoryPool(connectionFactory);
+		}
 		return connectionFactory;
 	}
 
-	private ConnectionFactory createConnectionFactoryPool(ConnectionFactory xaConnectionFactory) {
-		JmsPoolXAConnectionFactory pooledConnectionFactory = new JmsPoolXAConnectionFactory();
-		pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
-		pooledConnectionFactory.setConnectionFactory(xaConnectionFactory);
+	private ConnectionFactory createConnectionFactoryPool(ConnectionFactory connectionFactory) {
+		if(connectionFactory instanceof XAConnectionFactory) {
+			JmsPoolXAConnectionFactory pooledConnectionFactory = new JmsPoolXAConnectionFactory();
+			pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
+			pooledConnectionFactory.setConnectionFactory(connectionFactory);
+			return augmentPool(pooledConnectionFactory);
+		}
 
+		JmsPoolConnectionFactory pooledConnectionFactory = new JmsPoolConnectionFactory();
+		pooledConnectionFactory.setConnectionFactory(connectionFactory);
+		return augmentPool(pooledConnectionFactory);
+	}
+
+	private ConnectionFactory augmentPool(JmsPoolConnectionFactory pooledConnectionFactory) {
 		pooledConnectionFactory.setMaxConnections(maxPoolSize);
 		pooledConnectionFactory.setConnectionIdleTimeout(getMaxIdleTime() * 1000);
 		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval);
@@ -73,7 +88,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 		pooledConnectionFactory.setUseAnonymousProducers(true);
 
-		log.info("created pooled XaConnectionFactory [{}]", pooledConnectionFactory);
+		log.info("created pooled {} [{}]", ClassUtils.classNameOf(pooledConnectionFactory), pooledConnectionFactory);
 		return pooledConnectionFactory;
 	}
 }
