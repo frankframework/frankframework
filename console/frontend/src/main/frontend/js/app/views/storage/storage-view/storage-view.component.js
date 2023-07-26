@@ -7,6 +7,7 @@ const StorageViewController = function ($scope, Api, $state, SweetAlert) {
     ctrl.message.id = $state.params.messageId;
 
     ctrl.$onInit = function () {
+		$state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource == 'pipes' ? "Pipes > " + $state.params.storageSourceName + " > " : "") + $state.params.processState + " List > View Message " + $state.params.messageId;
         ctrl.closeNotes();
 
         if (!ctrl.message.id)
