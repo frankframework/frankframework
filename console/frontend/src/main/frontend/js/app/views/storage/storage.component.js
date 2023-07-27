@@ -9,8 +9,8 @@ const StorageController = function ($scope, Api, $state, SweetAlert, Misc) {
     ctrl.$onInit = function () {
         ctrl.base_url = "adapters/" + Misc.escapeURL(ctrl.adapterName) + "/" + ctrl.storageSource + "/" + Misc.escapeURL(ctrl.storageSourceName) + "/stores/" + ctrl.processState;
 
-		$state.current.data.pageTitle = $state.params.processState + " List";
-		$state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource == 'pipes' ? "Pipes > " + $state.params.storageSourceName + " > " : "") + $state.params.processState + " List";
+        $state.current.data.pageTitle = $state.params.processState + " List";
+        $state.current.data.breadcrumbs = "Adapter > " + ($state.params.storageSource == 'pipes' ? "Pipes > " + $state.params.storageSourceName + " > " : "") + $state.params.processState + " List";
 
         if (!ctrl.adapterName)
             return SweetAlert.Warning("Invalid URL", "No adapter name provided!");
@@ -80,6 +80,16 @@ const StorageController = function ($scope, Api, $state, SweetAlert, Misc) {
 };
 
 appModule.component('storage', {
-	controller: ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', StorageController],
-	template: "<div ui-view></div>"
+    controller: ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', StorageController],
+    template: `
+        <div ui-view
+            onAddNote="$ctrl.addNote(type, message, removeQueue)"
+            onCloseNote="$ctrl.closeNote(index)"
+            onCloseNotes="$ctrl.closeNotes()"
+            onUpdateTable="$ctrl.updateTable()"
+            onDoDeleteMessage="$ctrl.doDeleteMessage(message, callback)"
+            onDownloadMessage="$ctrl.downloadMessage(messageId)"
+            onDoResendMessage="$ctrl.doResendMessage(message, callback)"
+        ></div>
+    `
 });

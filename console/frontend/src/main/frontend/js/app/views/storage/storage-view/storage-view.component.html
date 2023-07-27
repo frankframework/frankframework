@@ -2,7 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
-    <uib-alert ng-repeat="alert in $ctrl.notes | orderBy:'type'" type="{{alert.type}}" close="$ctrl.closeNote($index)">{{alert.message}}</uib-alert>
+    <uib-alert ng-repeat="alert in $ctrl.notes | orderBy:'type'" type="{{alert.type}}" close="$ctrl.onCloseNote({ index: $index})">{{alert.message}}</uib-alert>
     <div class="row">
         <div class="col-lg-12">
             <div class="ibox float-e-margins">

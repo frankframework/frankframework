@@ -10,8 +10,8 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
     ctrl.truncateButtonText = "Truncate displayed data";
     ctrl.filterBoxExpanded = false;
 
-    ctrl.resendMessage = ctrl.doResendMessage;
-    ctrl.deleteMessage = ctrl.doDeleteMessage;
+    ctrl.resendMessage = ctrl.onDoResendMessage;
+    ctrl.deleteMessage = ctrl.onDoDeleteMessage;
 
     ctrl.messagesResending = false;
     ctrl.messagesDeleting = false;
@@ -120,17 +120,17 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
     };
 
     ctrl.$onInit = function () {
-        ctrl.closeNotes();
+        ctrl.onCloseNotes();
         let searchSession = Session.get('search');
 
         var a = '';
 
-        a += '<input icheck type="checkbox" ng-model="selectedMessages[message.id]"/>';
-        a += '<div ng-show="!selectedMessages[message.id]">';
+        a += '<input icheck type="checkbox" ng-model="$ctrl.selectedMessages[message.id]"/>';
+        a += '<div ng-show="!$ctrl.selectedMessages[message.id]">';
         a += '<a ui-sref="pages.storage.view({adapter:adapterName,receiver:receiverName,processState:processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-        a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="resendMessage(message)" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
-        a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
-        a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
+        a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="$ctrl.resendMessage({message: message})" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
+        a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="$ctrl.deleteMessage({message: message})" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
+        a += '<button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
         a += '</div';
 
         var columns = [
@@ -194,7 +194,7 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
 
     ctrl.searchUpdated = function () {
         ctrl.searching = true;
-        ctrl.updateTable();
+        ctrl.onUpdateTable();
     };
 
     ctrl.truncate = function () {
@@ -204,14 +204,14 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
         } else {
             ctrl.truncateButtonText = "Truncate displayed data";
         }
-        ctrl.updateTable();
+        ctrl.onUpdateTable();
     };
 
     ctrl.clearSearch = function () {
         ctrl.clearSearchLadda = true;
         Session.remove('search');
         ctrl.search = {};
-        ctrl.updateTable();
+        ctrl.onUpdateTable();
     };
 
     ctrl.updateFilter = function (column) {
@@ -244,12 +244,12 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
             ctrl.messagesResending = true;
             Api.Post(ctrl.base_url, fd, function () {
                 ctrl.messagesResending = false;
-                ctrl.addNote("success", "Selected messages will be reprocessed");
-                ctrl.updateTable();
+                ctrl.onAddNote("success", "Selected messages will be reprocessed");
+                ctrl.onUpdateTable();
             }, function (data) {
                 ctrl.messagesResending = false;
-                ctrl.addNote("danger", "Something went wrong, unable to resend all messages!");
-                ctrl.updateTable();
+                ctrl.onAddNote("danger", "Something went wrong, unable to resend all messages!");
+                ctrl.onUpdateTable();
             });
         }
     };
@@ -260,12 +260,12 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
             ctrl.messagesDeleting = true;
             Api.Delete(ctrl.base_url, fd, function () {
                 ctrl.messagesDeleting = false;
-                ctrl.addNote("success", "Successfully deleted messages");
-                ctrl.updateTable();
+                ctrl.onAddNote("success", "Successfully deleted messages");
+                ctrl.onUpdateTable();
             }, function (data) {
                 ctrl.messagesDeleting = false;
-                ctrl.addNote("danger", "Something went wrong, unable to delete all messages!");
-                ctrl.updateTable();
+                ctrl.onAddNote("danger", "Something went wrong, unable to delete all messages!");
+                ctrl.onUpdateTable();
             });
         }
     };
@@ -283,11 +283,11 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.parentNode.removeChild(downloadLink);
-                ctrl.addNote("success", "Successfully downloaded messages");
+                ctrl.onAddNote("success", "Successfully downloaded messages");
                 ctrl.messagesDownloading = false;
             }, function (data) {
                 ctrl.messagesDownloading = false;
-                ctrl.addNote("danger", "Something went wrong, unable to download selected messages!");
+                ctrl.onAddNote("danger", "Something went wrong, unable to download selected messages!");
             }, null, 'blob');
         }
     };
@@ -298,12 +298,12 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
             ctrl.changingProcessState = true;
             Api.Post(ctrl.base_url + "/move/" + targetState, fd, function () {
                 ctrl.changingProcessState = false;
-                ctrl.addNote("success", "Successfully changed the state of messages to " + targetState);
-                ctrl.updateTable();
+                ctrl.onAddNote("success", "Successfully changed the state of messages to " + targetState);
+                ctrl.onUpdateTable();
             }, function (data) {
                 ctrl.changingProcessState = false;
-                ctrl.addNote("danger", "Something went wrong, unable to move selected messages!");
-                ctrl.updateTable();
+                ctrl.onAddNote("danger", "Something went wrong, unable to move selected messages!");
+                ctrl.onUpdateTable();
             });
         }
     };
@@ -320,6 +320,15 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
 };
 
 appModule.component('storageList', {
+    bindings: {
+        onAddNote: '&',
+        onCloseNote: '&',
+        onCloseNotes: '&',
+        onUpdateTable: '&',
+        onDoDeleteMessage: '&',
+        onDownloadMessage: '&',
+        onDoResendMessage: '&',
+    },
     controller: ['$scope', 'Api', '$compile', 'Cookies', 'Session', 'SweetAlert', StorageListController],
     templateUrl: 'js/app/views/storage/storage-list/storage-list.component.html',
 });
