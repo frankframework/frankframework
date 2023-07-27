@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
+const adapterstatisticsController = function ($rootScope, Api, $stateParams, SweetAlert, $timeout, $filter, appConstants, Debug, Misc) {
     const ctrl = this;
 
     ctrl.defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
@@ -11,8 +11,8 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
         data: [],
     };
     ctrl.stats = [];
-    ctrl.statisticsTimeBoundaries = angular.copy(defaults);
-    ctrl.statisticsSizeBoundaries = angular.copy(defaults);
+    ctrl.statisticsTimeBoundaries = angular.copy(ctrl.defaults);
+	ctrl.statisticsSizeBoundaries = angular.copy(ctrl.defaults);
     ctrl.statisticsNames = [];
     ctrl.dataset = {
         fill: false,
@@ -54,7 +54,7 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
 			ctrl.populateBoundaries(); //AppConstants already loaded
         }
         else {
-			ctrl.$on('appConstants', ctrl.populateBoundaries); //Wait for appConstants trigger to load
+			$rootScope.$on('appConstants', ctrl.populateBoundaries); //Wait for appConstants trigger to load
         }
 
         $timeout(function () {
@@ -114,6 +114,6 @@ const adapterstatisticsController = function ($scope, Api, $stateParams, SweetAl
 };
 
 appModule.component('adapterstatistics', {
-    controller: ['$scope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', adapterstatisticsController],
+    controller: ['$rootScope', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', adapterstatisticsController],
     templateUrl: 'js/app/views/adapterstatistics/adapterstatistics.component.html'
 });
