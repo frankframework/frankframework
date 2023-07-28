@@ -19,6 +19,7 @@ import './app/views/configurations/configurations-upload/configurations-upload.c
 import './app/views/connections/connections.component';
 import './app/views/environment-variables/environment-variables.component';
 import './app/views/error/error.component';
+import './app/views/iaf-update/iaf-update-status.component';
 import './app/views/ibisstore-summary/ibisstore-summary.component';
 import './app/views/iframe/iframe-custom-view/iframe-custom-view.component';
 import './app/views/iframe/iframe-ladybug/iframe-ladybug.component';

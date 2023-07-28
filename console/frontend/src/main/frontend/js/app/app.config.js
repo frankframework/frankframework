@@ -1,6 +1,5 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
 
 appModule.config(['$httpProvider', function ($httpProvider) {
 	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants, $q, Misc, Toastr, $location) {
@@ -453,9 +452,8 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.iaf_update', {
 				url: "/iaf-update",
-				templateUrl: "js/app/views/iaf-update/iaf-update.html",
+				component: "iafUpdateStatus",
 				data: { pageTitle: 'IAF Update' },
-				controller: iafUpdateStatusController
 			})
 			.state('pages.loading', {
 				url: "/",
