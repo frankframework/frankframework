@@ -127,8 +127,8 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	@Override
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
-		Message result = super.executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+		Message result = super.executeOtherQuery(connection, statement, query, resultQuery, resStmt, message, session, parameterList);
 		if (outputParameterPositions.length == 0) {
 			return result;
 		}

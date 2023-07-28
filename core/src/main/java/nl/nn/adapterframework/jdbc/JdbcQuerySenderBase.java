@@ -262,7 +262,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} else {
 			resultQueryStatement = null;
 		}
-		return new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
+		return new QueryExecutionContext(query, convertedResultQuery, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
 	}
 
 
@@ -754,9 +754,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
-			if (convertedResultQuery!=null) {
+			if (queryExecutionContext.getResultQueryStatement() != null) {
 				PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
-				if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
+				if (log.isDebugEnabled()) log.debug("obtaining result from [" + queryExecutionContext.getResultQuery() + "]");
 				ResultSet rs = resStmt.executeQuery();
 				return getResult(rs);
 			}
@@ -778,10 +778,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		String query = queryExecutionContext.getQuery();
 		ParameterList parameterList = queryExecutionContext.getParameterList();
 		PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
-		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
+		return executeOtherQuery(connection, statement, query, queryExecutionContext.getResultQuery(), resStmt, message, session, parameterList);
 	}
 
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
@@ -807,7 +807,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 			if (resStmt != null) {
-				log.debug("obtaining result from [{}]", convertedResultQuery);
+				log.debug("obtaining result from [{}]", resultQuery);
 				try (ResultSet rs = resStmt.executeQuery()) {
 					return getResult(rs);
 				}

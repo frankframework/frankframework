@@ -92,4 +92,76 @@ TagDatabase
 	<changeSet id="Enlarge IBISTEMP Size" author="Tim van der Leeuw">
 		<modifyDataType tableName="IBISTEMP" columnName="TVARCHAR" newDataType="varchar(200)"/>
 	</changeSet>
+
+	<changeSet id="Add StoredProcedure 1" author="Tim van der Leeuw" runOnChange="true">
+		<comment>Create simple stored procedure without output parameters</comment>
+		<sql dbms="postgresql">
+			DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			CREATE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+			NMBR INTEGER,
+			VCHR VARCHAR(200)
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</sql>
+		<createProcedure
+				procedureName="INSERT_SIMPLE_NO_RETURN"
+				replaceIfExists="true"
+				dbms="mysql,mariadb"
+		>
+			DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			CREATE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+				NMBR INTEGER,
+				VCHR VARCHAR(200)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</createProcedure>
+		<createProcedure
+				procedureName="INSERT_SIMPLE_NO_RETURN"
+				replaceIfExists="true"
+				dbms="mssql"
+		>
+			CREATE OR ALTER PROCEDURE INSERT_SIMPLE_NO_RETURN(
+				@NMBR INT,
+				@VCHR VARCHAR(200)
+				) AS
+			BEGIN
+				INSERT INTO IBISTEMP(TKEY, TINT, TVARCHAR) VALUES (NEXT VALUE FOR SEQ_IBISTEMP, @NMBR, @VCHR);
+			END;
+		</createProcedure>
+		<createProcedure dbms="oracle">
+			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+				NMBR INTEGER,
+				VCHR VARCHAR
+			) AS
+			BEGIN
+				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</createProcedure>
+		<createProcedure
+				procedureName="INSERT_SIMPLE_NO_RETURN"
+				replaceIfExists="true"
+				dbms="db2"
+		>
+			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+				NMBR INTEGER,
+				VCHR VARCHAR(200)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</createProcedure>
+
+		<rollback>
+			<sql dbms="!db2,!oracle">
+				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			</sql>
+			<sql dbms="db2,oracle">
+				DROP PROCEDURE INSERT_SIMPLE_NO_RETURN;
+			</sql>
+		</rollback>
+	</changeSet>
 </databaseChangeLog>
