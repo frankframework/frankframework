@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-appModule.controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'SweetAlert', function ($scope, $uibModalInstance, $http, rating, $timeout, appConstants, SweetAlert) {
+appModule.controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'rating', '$timeout', 'appConstants', 'Toastr', function ($scope, $uibModalInstance, $http, rating, $timeout, appConstants, Toastr) {
 	var URL = appConstants["console.feedbackURL"];
 	$scope.form = { rating: rating, name: "", feedback: "" };
 
@@ -34,11 +34,11 @@ appModule.controller('FeedbackCtrl', ['$scope', '$uibModalInstance', '$http', 'r
 		form.rating++;
 		$http.post(URL, form, { headers: { "Authorization": undefined } }).then(function (response) {
 			if (response && response.data && response.data.result && response.data.result == "ok")
-				SweetAlert.Success("Thank you for sending us feedback!");
+				Toastr.success("Thank you for sending us feedback!");
 			else
-				SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
+				Toastr.error("Oops, something went wrong...", "Please try again later!");
 		}).catch(function (error) {
-			SweetAlert.Error("Oops, something went wrong...", "Please try again later!");
+			Toastr.error("Oops, something went wrong...", "Please try again later!");
 		});
 		$uibModalInstance.close();
 	};
