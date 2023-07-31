@@ -93,11 +93,17 @@ TagDatabase
 		<modifyDataType tableName="IBISTEMP" columnName="TVARCHAR" newDataType="varchar(200)"/>
 	</changeSet>
 
-	<changeSet id="Add StoredProcedure 1" author="Tim van der Leeuw" runOnChange="true">
-		<comment>Create simple stored procedure without output parameters</comment>
+	<!--
+		When stored procedures need to be changed, or new stored procedures added,
+		do not forget to add or modify them for all supported databases and please
+		add to existing changesets to keep everything together (runOnChange=true for these changeSets).
+
+		Existing stored procedure versions will be modified in place.
+	-->
+	<changeSet id="IAF-Test StoredProcedures PostgreSQL" author="Tim van der Leeuw" runOnChange="true" dbms="postgresql">
+		<comment>Stored Procedures for PostgreSQL</comment>
 		<sql dbms="postgresql">
-			DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
-			CREATE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
 			NMBR INTEGER,
 			VCHR VARCHAR(200)
 			) LANGUAGE SQL
@@ -105,12 +111,20 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</sql>
+
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-Test StoredProcedures MySQL and MariaDB" author="Tim van der Leeuw" runOnChange="true" dbms="mysql,mariadb">
+		<comment>Stored Procedures for MySQL and MariaDB</comment>
 		<createProcedure
 				procedureName="INSERT_SIMPLE_NO_RETURN"
 				replaceIfExists="true"
-				dbms="mysql,mariadb"
 		>
-			DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
 			CREATE PROCEDURE INSERT_SIMPLE_NO_RETURN(
 				NMBR INTEGER,
 				VCHR VARCHAR(200)
@@ -119,11 +133,16 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</createProcedure>
-		<createProcedure
-				procedureName="INSERT_SIMPLE_NO_RETURN"
-				replaceIfExists="true"
-				dbms="mssql"
-		>
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-Test StoredProcedures MS SQL" author="Tim van der Leeuw" runOnChange="true" dbms="mssql">
+		<comment>Stored Procedures for MS SQL Server</comment>
+		<createProcedure>
 			CREATE OR ALTER PROCEDURE INSERT_SIMPLE_NO_RETURN(
 				@NMBR INT,
 				@VCHR VARCHAR(200)
@@ -132,6 +151,33 @@ TagDatabase
 				INSERT INTO IBISTEMP(TKEY, TINT, TVARCHAR) VALUES (NEXT VALUE FOR SEQ_IBISTEMP, @NMBR, @VCHR);
 			END;
 		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-Test StoredProcedures DB2" author="Tim van der Leeuw" runOnChange="true" dbms="db2">
+		<comment>Stored Procedures for DB2</comment>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
+				NMBR INTEGER,
+				VCHR VARCHAR(200)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_SIMPLE_NO_RETURN;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-Test StoredProcedures Oracle" author="Tim van der Leeuw" runOnChange="true" dbms="oracle">
+		<comment>Stored Procedures for Oracle</comment>
 		<createProcedure dbms="oracle">
 			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
 				NMBR INTEGER,
@@ -141,25 +187,8 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</createProcedure>
-		<createProcedure
-				procedureName="INSERT_SIMPLE_NO_RETURN"
-				replaceIfExists="true"
-				dbms="db2"
-		>
-			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
-				NMBR INTEGER,
-				VCHR VARCHAR(200)
-			) LANGUAGE SQL
-			BEGIN
-				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
-			END;
-		</createProcedure>
-
 		<rollback>
-			<sql dbms="!db2,!oracle">
-				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
-			</sql>
-			<sql dbms="db2,oracle">
+			<sql>
 				DROP PROCEDURE INSERT_SIMPLE_NO_RETURN;
 			</sql>
 		</rollback>

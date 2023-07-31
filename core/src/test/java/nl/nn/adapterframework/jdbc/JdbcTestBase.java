@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -174,6 +175,9 @@ public abstract class JdbcTestBase {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection()));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
 		liquibase.forceReleaseLocks();
+		liquibase.reportStatus(true, new Contexts(), new PrintWriter(System.out));
+		log.info("Liquibase Database: " + liquibase.getDatabase().getDatabaseProductName() + ", " + liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: " + liquibase.getDatabase());
 		liquibase.update(new Contexts());
 	}
 

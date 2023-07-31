@@ -35,8 +35,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void setUp() throws Exception {
 		assumeThat("H2 does not support proper stored procedures, skipping test suite", productKey, not(equalToIgnoringCase("H2")));
 
-		assumeThat("Still working on Oracle tests, skipping test suite", productKey, not(equalToIgnoringCase("Oracle")));
-
 		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
 
 		sender = getConfiguration().createBean(StoredProcedureQuerySender.class);

@@ -20,9 +20,9 @@
 		</createTable>
 	</changeSet>
 
-	<changeSet id="IAF-UnitTests-SP1" author="Tim van der Leeuw" runOnChange="true">
+	<changeSet id="IAF-UnitTests-SP-PostgreSQL" author="Tim van der Leeuw" runOnChange="true" dbms="postgresql">
 		<comment>Create Stored Procedure to insert data no OUT parameters</comment>
-		<sql dbms="postgresql">
+		<sql>
 			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
 				MESSAGE VARCHAR(100),
 				STATUS CHAR(1)
@@ -31,55 +31,7 @@
 				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
 			END;
 		</sql>
-		<createProcedure dbms="mysql,mariadb"
-						 procedureName="INSERT_MESSAGE" replaceIfExists="true">
-			CREATE PROCEDURE INSERT_MESSAGE(
-				MESSAGE VARCHAR(100),
-				STATUS CHAR(1)
-			) LANGUAGE SQL
-			BEGIN
-				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
-			END;
-		</createProcedure>
-		<createProcedure dbms="mssql"
-						 procedureName="INSERT_MESSAGE" replaceIfExists="true">
-			CREATE PROCEDURE INSERT_MESSAGE(
-				@MESSAGE VARCHAR(100),
-				@STATUS CHAR(1)
-			) AS
-			BEGIN
-				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (@MESSAGE, @STATUS);
-			END;
-		</createProcedure>
-		<createProcedure dbms="oracle">
-			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
-				MESSAGE IN SP_TESTDATA.TMESSAGE%TYPE,
-				STATUS IN SP_TESTDATA.TCHAR%TYPE
-			) AS
-			BEGIN
-				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
-			END INSERT_MESSAGE;
-		</createProcedure>
-		<createProcedure dbms="db2"
-						 procedureName="INSERT_MESSAGE" replaceIfExists="true">
-			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
-				MESSAGE VARCHAR(100),
-				STATUS CHAR(1)
-			) LANGUAGE SQL
-			BEGIN
-				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
-			END;
-		</createProcedure>
-		<rollback>
-			<sql>
-				DROP PROCEDURE INSERT_MESSAGE;
-			</sql>
-		</rollback>
-	</changeSet>
-
-	<changeSet id="IAF-UnitTests-SP2" author="Tim van der Leeuw" runOnChange="true">
-		<comment>Create Stored Procedure with single OUT parameter</comment>
-		<sql dbms="postgresql">
+		<sql>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
 				IN ID BIGINT,
 				OUT MESSAGE VARCHAR
@@ -88,63 +40,7 @@
 				SELECT TMESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
 		</sql>
-		<createProcedure dbms="mysql,mariadb">
-			DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
-			CREATE PROCEDURE GET_MESSAGE_BY_ID(
-				IN ID BIGINT,
-				OUT MESSAGE VARCHAR(100)
-			) LANGUAGE SQL
-			BEGIN
-				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
-			END;
-		</createProcedure>
-		<createProcedure dbms="mssql">
-			DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
-			CREATE PROCEDURE GET_MESSAGE_BY_ID(
-				@ID BIGINT,
-				@MESSAGE VARCHAR(100) OUTPUT
-			) AS
-			BEGIN
-				SELECT @MESSAGE = TMESSAGE FROM SP_TESTDATA WHERE TKEY = @ID;
-			END;
-		</createProcedure>
-		<createProcedure dbms="oracle">
-			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
-				MSG_ID IN SP_TESTDATA.TKEY%type,
-				MESSAGE OUT SP_TESTDATA.TMESSAGE%TYPE
-			) AS
-			BEGIN
-				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = MSG_ID;
-			END;
-		</createProcedure>
-		<createProcedure dbms="db2">
-			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
-				IN ID BIGINT,
-				OUT MESSAGE VARCHAR(100)
-			) LANGUAGE SQL
-			BEGIN
-				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
-			END;
-		</createProcedure>
-		<createProcedure dbms="db2">
-			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
-				IN ID BIGINT,
-				OUT MESSAGE VARCHAR(100)
-			) LANGUAGE SQL
-			BEGIN
-				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
-			END;
-		</createProcedure>
-		<rollback>
-			<sql>
-				DROP PROCEDURE GET_MESSAGE_BY_ID;
-			</sql>
-		</rollback>
-	</changeSet>
-
-	<changeSet id="IAF-UnitTests-SP3" author="Tim van der Leeuw" runOnChange="true">
-		<comment>Create Stored Procedure with multiple OUT parameters</comment>
-		<sql dbms="postgresql">
+		<sql>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
 				IN ID BIGINT,
 				OUT MESSAGE VARCHAR,
@@ -154,8 +50,36 @@
 				SELECT TMESSAGE, TCHAR FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
 		</sql>
-		<createProcedure dbms="mysql,mariadb">
-			DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-MySQL-MariaDB" author="Tim van der Leeuw" runOnChange="true" dbms="mysql,mariadb">
+		<comment>Stored Procedures for MySQL and MariaDB</comment>
+		<createProcedure procedureName="INSERT_MESSAGE" replaceIfExists="true">
+			CREATE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</createProcedure>
+		<createProcedure procedureName="GET_MESSAGE_BY_ID" replaceIfExists="true">
+			CREATE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100)
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure procedureName="GET_MESSAGE_AND_TYPE_BY_ID" replaceIfExists="true">
 			CREATE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
 				IN ID BIGINT,
 				OUT MESSAGE VARCHAR(100),
@@ -165,27 +89,93 @@
 				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
 		</createProcedure>
-		<createProcedure dbms="mssql">
+		<createProcedure procedureName="GET_MESSAGES_BY_CONTENT" replaceIfExists="true">
+			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				IN MESSAGE VARCHAR(100)
+			)
+			BEGIN
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-MS-SQL" author="Tim van der Leeuw" runOnChange="true" dbms="mssql">
+		<comment>Stored Procedures for MS SQL Server</comment>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE INSERT_MESSAGE(
+				@MESSAGE VARCHAR(100),
+				@STATUS CHAR(1)
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (@MESSAGE, @STATUS);
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_MESSAGE_BY_ID(
+				@ID BIGINT,
+				@MESSAGE VARCHAR(100) OUTPUT
+			) AS
+			BEGIN
+				SELECT @MESSAGE = TMESSAGE FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
 			CREATE OR ALTER PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
 				@ID BIGINT,
 				@MESSAGE VARCHAR(100) OUTPUT,
 				@STATUS CHAR OUT
-				) AS
+			) AS
 			BEGIN
 				SELECT @MESSAGE = TMESSAGE, @STATUS = TCHAR FROM SP_TESTDATA WHERE TKEY = @ID;
 			END;
 		</createProcedure>
-		<createProcedure dbms="oracle">
-			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
-				ID IN NUMBER,
-				MESSAGE OUT VARCHAR,
-				STATUS OUT CHAR
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_MESSAGES_BY_CONTENT(
+				@MESSAGE VARCHAR(100)
 			) AS
 			BEGIN
-				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE ORDER BY TKEY;
 			END;
 		</createProcedure>
-		<createProcedure dbms="db2">
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-DB2" author="Tim van der Leeuw" runOnChange="true" dbms="db2">
+		<comment>Stored Procedures for DB2</comment>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100)
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
 				IN ID BIGINT,
 				OUT MESSAGE VARCHAR(100),
@@ -195,34 +185,7 @@
 				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
 		</createProcedure>
-		<rollback>
-			<sql>
-				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
-			</sql>
-		</rollback>
-	</changeSet>
-
-	<changeSet id="IAF-UnitTests-SP4" author="Tim van der Leeuw" runOnChange="true">
-		<comment>Create Stored Procedure to return rowset</comment>
-		<createProcedure dbms="mysql,mariadb">
-			DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
-			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
-				IN MESSAGE VARCHAR(100)
-			)
-			BEGIN
-				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
-			END;
-		</createProcedure>
-		<createProcedure dbms="mssql">
-			DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
-			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
-				@MESSAGE VARCHAR(100)
-			) AS
-			BEGIN
-				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE ORDER BY TKEY;
-			END;
-		</createProcedure>
-		<createProcedure dbms="db2">
+		<createProcedure>
 			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
 				IN MESSAGE VARCHAR(100)
 			) RESULT SETS 1 LANGUAGE SQL
@@ -234,8 +197,51 @@
 		</createProcedure>
 		<rollback>
 			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
 				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
 			</sql>
 		</rollback>
+
+	</changeSet>
+	<changeSet id="IAF-UnitTests-SP-Oracle" author="Tim van der Leeuw" runOnChange="true" dbms="oracle">
+		<comment>Stored Procedures for Oracle</comment>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE IN SP_TESTDATA.TMESSAGE%TYPE,
+				STATUS IN SP_TESTDATA.TCHAR%TYPE
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END INSERT_MESSAGE;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				MSG_ID IN SP_TESTDATA.TKEY%type,
+				MESSAGE OUT SP_TESTDATA.TMESSAGE%TYPE
+			) AS
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = MSG_ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				ID IN NUMBER,
+				MESSAGE OUT VARCHAR,
+				STATUS OUT CHAR
+			) AS
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+			</sql>
+		</rollback>
+
 	</changeSet>
 </databaseChangeLog>
