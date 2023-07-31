@@ -83,14 +83,23 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (!getDbmsSupport().isStoredProceduresSupported()) {
+			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
+		}
 		if (StringUtils.isNotBlank(getColumnsReturned())) {
 			throw new ConfigurationException("Cannot use 'columnsReturned' with StoredProcedureSender, use 'outputParameters' instead.");
 		}
 		if (getQueryTypeEnum() != QueryType.SELECT && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException("For StoredProcedureSender, queryType can only be 'SELECT' or 'OTHER'");
 		}
+		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
+			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
+		}
 		super.configure();
 		if (outputParameters != null) {
+			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
+				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
+			}
 			outputParameterPositions = StringUtil.splitToStream(outputParameters, ",;")
 					.mapToInt(Integer::parseInt)
 					.toArray();

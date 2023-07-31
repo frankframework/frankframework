@@ -268,4 +268,14 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return value? "1":"0";
 	}
 
+
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return true;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return true;
+	}
 }

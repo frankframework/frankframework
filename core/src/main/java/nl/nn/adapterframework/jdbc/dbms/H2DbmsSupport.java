@@ -117,4 +117,18 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
 	}
 
+	@Override
+	public boolean isStoredProceduresSupported() {
+		return false;
+	}
+
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return false;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return false;
+	}
 }

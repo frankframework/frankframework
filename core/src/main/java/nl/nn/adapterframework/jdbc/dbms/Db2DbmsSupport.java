@@ -110,4 +110,13 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
 	}
 
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return true;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return true;
+	}
 }

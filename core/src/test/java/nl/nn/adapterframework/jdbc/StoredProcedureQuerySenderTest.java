@@ -263,7 +263,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	private long insertRowWithMessageValue(final String value) throws SQLException, JdbcException {
 		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
-		// Column name of generated key should be in lowercase for PostgreSQL
+		// Column name of generated key-field should be in lowercase for PostgreSQL
 		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
 			statement.setString(1, value);
 			statement.executeUpdate();
