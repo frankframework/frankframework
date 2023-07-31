@@ -364,7 +364,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void setFetchDirection(int direction) {
-
+		// No-op
 	}
 
 	@Override
@@ -374,7 +374,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 	@Override
 	public void setFetchSize(int rows) {
-
+		// No-op
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 import java.sql.PreparedStatement;
@@ -251,8 +252,11 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
 			statement.setString(1, value);
 			ResultSet resultSet = statement.executeQuery();
-			resultSet.next();
-			rowsCounted = resultSet.getInt(1);
+			if (resultSet.next()) {
+				rowsCounted = resultSet.getInt(1);
+			} else {
+				rowsCounted = 0;
+			}
 		}
 		return rowsCounted;
 	}
@@ -264,7 +268,9 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 			statement.setString(1, value);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
-			generatedKeys.next();
+			if (!generatedKeys.next()) {
+				fail("No generated keys from insert statement");
+			}
 			return generatedKeys.getLong(1);
 		}
 	}
