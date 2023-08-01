@@ -196,7 +196,7 @@ public interface IDbmsSupport {
 	 *
 	 * Currently not yet supported on any database, planned for future for PostgreSQL and Oracle.
 	 *
-	 * @return false for all databases currently. Future support planned for Oracle and PostgreSQ.
+	 * @return false for all databases currently. Future support planned for Oracle and PostgreSQL.
 	 */
 	default boolean isStoredProcedureRefCursorOutParameterSupported() {
 		return false;
