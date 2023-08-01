@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -1037,7 +1038,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
 			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 			Message result = processMessageInAdapter(messageWrapper, session, -1, false, false);
-			result.unscheduleFromCloseOnExitOf(session);
+			if(!Message.isNull(result)) {
+				result.unscheduleFromCloseOnExitOf(session);
+			}
 			return result;
 		}
 	}
@@ -1093,11 +1096,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			long endExtractingMessage = System.currentTimeMillis();
 			messageExtractionStatistics.addValue(endExtractingMessage-startExtractingMessage);
-			Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked);
-			try {
-				output.close();
+			try (Message output = processMessageInAdapter(messageWrapper, session, waitingDuration, manualRetry, duplicatesAlreadyChecked)) {
+				log.debug("Closing result message [{}]", output);
 			} catch (Exception e) {
-				log.warn("Could not close result message [{}]", output, e);
+				log.warn("Could not close result message", e);
 			}
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		}
@@ -1166,6 +1168,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/*
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
+	@Nullable
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
