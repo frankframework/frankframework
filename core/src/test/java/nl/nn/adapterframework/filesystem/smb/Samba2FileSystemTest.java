@@ -7,12 +7,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.EnumSet;
 
-import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.filesys.debug.ConsoleDebug;
 import org.filesys.debug.DebugConfigSection;
@@ -44,6 +45,7 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
 
@@ -167,9 +169,9 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 		super.setUp();
 	}
 
-	private String getLicense() {
-		String license = System.getenv("samba2licensekey");
-		return (StringUtils.isBlank(license)) ? null : license;
+	private String getLicense() throws IOException {
+		URL license = Samba2FileSystemTest.class.getResource("/jfileserver.lic");
+		return (license == null) ? null : StreamUtil.streamToString(license.openStream());
 	}
 
 	@AfterAll
@@ -183,7 +185,7 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	@Override
 	public Samba2FileSystem createFileSystem() {
 		Samba2FileSystem result = new Samba2FileSystem();
-		result.setShare(shareName.toUpperCase());
+		result.setShare(shareName);
 		result.setUsername(username);
 		result.setPassword(password);
 		if("localhost".equals(host)) { // test stub only works with NTLM
