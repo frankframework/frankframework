@@ -77,7 +77,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 		// Arrange
 		TransactionDefinition required = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 20);
-		TransactionStatus txStatus = txManager.getTransaction(required);
+		TransactionStatus txStatus = getTransaction(required);
 
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, 1);
@@ -100,10 +100,10 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 
 		assertEquals(1, getNumberOfLines()); // Database has been updated !?
 
-		// Assert if new transaction can be created, this is not the case when the 
+		// Assert if new transaction can be created, this is not the case when the
 		// previous commit corrupted the TX log due to a ClosedChannelException
 		try (Connection txManagedConnection = getConnection()) {
-			TransactionStatus txStatus2 = txManager.getTransaction(required);
+			TransactionStatus txStatus2 = getTransaction(required);
 			assertFalse(txStatus2.isRollbackOnly());
 			assertFalse(txStatus2.isCompleted());
 			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, 2);
@@ -112,6 +112,12 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		}
 
 		assertEquals(2, getNumberOfLines());
+	}
+
+	private TransactionStatus getTransaction(final TransactionDefinition required) {
+		final TransactionStatus tx = txManager.getTransaction(required);
+		registerForCleanup(tx);
+		return tx;
 	}
 
 	private void closeDiskJournal() throws Exception {

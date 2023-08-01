@@ -15,7 +15,9 @@ import java.util.TimerTask;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -28,6 +30,9 @@ import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 public class LockerTest extends TransactionManagerTestBase {
+
+	@Rule
+	public Timeout testTimeout = Timeout.seconds(60);
 
 	private Locker locker;
 	private boolean tableCreated = false;

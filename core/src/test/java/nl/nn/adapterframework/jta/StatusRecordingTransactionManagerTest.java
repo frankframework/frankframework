@@ -15,6 +15,7 @@ import javax.transaction.TransactionManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
@@ -22,6 +23,9 @@ import org.springframework.util.StreamUtils;
 import lombok.Setter;
 
 public class StatusRecordingTransactionManagerTest {
+
+	@Rule
+	public Timeout testTimeout = Timeout.seconds(60);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
@@ -54,7 +58,7 @@ public class StatusRecordingTransactionManagerTest {
 
 	}
 
-	public TestableStatusRecordingTransactionManager getStatusRecordingTransactionManager() {
+	private TestableStatusRecordingTransactionManager getStatusRecordingTransactionManager() {
 		TestableStatusRecordingTransactionManager result = new TestableStatusRecordingTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
