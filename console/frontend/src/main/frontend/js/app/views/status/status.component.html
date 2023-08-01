@@ -358,7 +358,7 @@
                                                 <span class="pull-right">
                                                 	<span ng-repeat="store in receiver.transactionalStores">
                                                 		<span class="text-{{::$ctrl.getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
-	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})" class="btn btn-xs btn-default" type="button">
+	                                                        <button ui-lref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})" class="btn btn-xs btn-default" type="button">
 	                                                            <i class="fa {{::$ctrl.getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
 	                                                        </button>
 	                                                    </span>
@@ -394,7 +394,7 @@
                                             <td>
                                                 <span class="pull-right">
                                                     <span ng-class="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
-                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-lref="pages.storage.list({adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-lref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i ng-class="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i> ({{::pipes.messageLogCount}})
                                                         </button>
                                                     </span>

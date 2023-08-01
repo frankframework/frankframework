@@ -99,7 +99,7 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
                     <div class="pull-right">
-                        <button back-button class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
+                        <button ui-sref="pages.status({adapter:$ctrl.adapterName})" class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Back</span></button>
                     </div>
                     <h4>Browse messages<span ng-if="$ctrl.storageSource != 'pipes'"> in state [{{::$ctrl.processState}}]</span> of {{::$ctrl.storageSource | dropLastChar}} [{{::$ctrl.storageSourceName}}] of adapter [{{::$ctrl.adapterName}}]</h4>
                 </div>

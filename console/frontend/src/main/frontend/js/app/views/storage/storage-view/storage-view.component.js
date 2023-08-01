@@ -13,7 +13,7 @@ const StorageViewController = function ($scope, Api, $state, SweetAlert) {
         if (!ctrl.message.id)
             return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-        Api.Get(ctrl.base_url + "/messages/" + encodeURIComponent(encodeURIComponent(ctrl.message.id)), function (data) {
+		Api.Get(ctrl.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(ctrl.message.id)), function (data) {
             ctrl.metadata = data;
         }, function (errorData, statusCode, errorMsg) {
             let error = (errorData) ? errorData.error : errorMsg;
@@ -46,7 +46,11 @@ const StorageViewController = function ($scope, Api, $state, SweetAlert) {
 };
 
 appModule.component('storageView', {
-    bindings: {
+	bindings: {
+		adapterName: '<',
+		baseUrl: '<',
+		storageSourceName: '<',
+		storageSource: '<',
         onCloseNote: '&',
         onCloseNotes: '&',
         onDoDeleteMessage: '&',

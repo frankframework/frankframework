@@ -142,9 +142,10 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.storage', {
 				abstract: true,
-				url: "/adapters/:adapter/:storageSource/:storageSourceName/",
+				url: "/:configuration/adapters/:adapter/:storageSource/:storageSourceName/",
 				component: "storage",
 				params: {
+					configuration: { value: '', squash: true },
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
 					processState: { value: '', squash: true },
