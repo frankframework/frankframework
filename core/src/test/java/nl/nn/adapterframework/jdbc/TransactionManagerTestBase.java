@@ -23,8 +23,10 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
-		TransactionManagerType[] transactionManagerTypes = { singleTransactionManagerType };
-		if (singleTransactionManagerType==null) {
+		final TransactionManagerType[] transactionManagerTypes;
+		if (singleTransactionManagerType != null) {
+			transactionManagerTypes = new TransactionManagerType[]{ singleTransactionManagerType };
+		} else {
 			transactionManagerTypes = TransactionManagerType.values();
 		}
 		List<Object[]> matrix = new ArrayList<>();

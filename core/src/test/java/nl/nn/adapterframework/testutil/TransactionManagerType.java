@@ -15,6 +15,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
+import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public enum TransactionManagerType {
@@ -90,6 +91,9 @@ public enum TransactionManagerType {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
 			if(ac != null) {
 				ac.close();
+			}
+			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {
+				TransactionManagerServices.getTransactionManager().shutdown();
 			}
 		}
 	}
