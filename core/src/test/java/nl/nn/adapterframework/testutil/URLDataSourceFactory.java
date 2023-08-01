@@ -50,6 +50,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 					// Check if we can make a connection
 					if(validateConnection(product, ds)) {
 						availableDatasources.add(product);
+						log.info("adding DataSource {} for testing", product);
 					}
 				} catch (Exception e) {
 					log.info("ignoring DataSource for [" + product + "], cannot complete setup", e);
