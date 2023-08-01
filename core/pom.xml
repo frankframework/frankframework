@@ -306,7 +306,7 @@
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>
-			<version>3.9.2</version>
+			<version>3.9.3</version>
 		</dependency>
 
 		<dependency>
@@ -543,7 +543,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.8</version>
+			<version>1.13.9</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>

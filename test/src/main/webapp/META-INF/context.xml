@@ -68,6 +68,7 @@
 	/>
 
 	<!-- serverTimezone is set for docker instances -->
+	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
 	<Resource
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -82,34 +83,15 @@
 		socketTimeout="5000"
 	/>
 
- 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
-
-	<!-- Use MySQL driver for MariaDB for proper XA support. --> <!-- serverTimezone is set for docker instances -->
-	<Resource
-		name="jdbc/ibis4test-mariadb"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		URL="jdbc:mysql://${jdbc.hostname:-host.docker.internal}:3306/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
-		password="${testiaf_user/password:-testiaf_user00}"
-		sslMode="DISABLED"
-		serverTimezone="Europe/Amsterdam"
-		allowPublicKeyRetrieval="true"
-		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="5000"
-	/>
-<!--
+	<!-- pinGlobalTxToPhysicalConnection is not supported for mariadb driver -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.mariadb.jdbc.MariaDbDataSource"
-		user="testiaf_user"
-		password="testiaf_user00"
-		url="jdbc:mariadb://${jdbc.hostname:-host.docker.internal}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		url="jdbc:mariadb://${jdbc.hostname:-host.docker.internal}:3306/testiaf"
 	/>
- -->
- 	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
-
 
 	<Resource
 		name="jdbc/ibis4test-postgres-xa"
