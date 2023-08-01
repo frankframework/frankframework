@@ -143,7 +143,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 
 	private void runInsertQuery() throws Exception {
 		try (Connection txManagedConnection = getConnection()) {
-			TransactionStatus txStatus2 = txManager.getTransaction(TX_DEF);
+			TransactionStatus txStatus2 = getTransaction();
 			assertFalse(txStatus2.isRollbackOnly());
 			assertFalse(txStatus2.isCompleted());
 			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
@@ -152,8 +152,14 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		}
 	}
 
+	private TransactionStatus getTransaction() {
+		TransactionStatus tx = txManager.getTransaction(TX_DEF);
+		registerForCleanup(tx);
+		return tx;
+	}
+
 	private void getConnectionCloseJournalAndTestException() throws Exception {
-		TransactionStatus txStatus = txManager.getTransaction(TX_DEF);
+		TransactionStatus txStatus = getTransaction();
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, INSERT_QUERY, COUNT.getAndIncrement());
 

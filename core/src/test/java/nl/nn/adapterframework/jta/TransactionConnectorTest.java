@@ -159,7 +159,9 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	private TransactionStatus startTransaction() {
 		int txTimeout=5;
 		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,txTimeout);
-		return txManager.getTransaction(txDef);
+		TransactionStatus tx = txManager.getTransaction(txDef);
+		registerForCleanup(tx);
+		return tx;
 	}
 
 	private void runQuery(String query) throws SQLException {
