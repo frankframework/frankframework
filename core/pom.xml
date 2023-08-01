@@ -832,6 +832,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
 			<version>${mssql.driver.version}</version>

@@ -37,6 +37,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
@@ -96,7 +97,12 @@ public abstract class JdbcTestBase {
 	public void setup() throws Exception {
 		dataSource = transactionManagerType.getDataSource(productKey);
 
-		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			dsInfo = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getTargetDataSource().toString();
+		} else {
+			dsInfo = dataSource.toString();
+		}
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
 
 		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
