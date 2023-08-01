@@ -10,6 +10,7 @@ import './js/plugins/iCheck/icheck.min';
 import 'datatables.net/js/jquery.dataTables.min';
 import 'chart.js';
 import 'mermaid';
+import 'sweetalert';
 
 import 'angular';
 import 'angular-animate';
@@ -27,6 +28,7 @@ import 'angular-ui-bootstrap';
 import 'angular-ui-router';
 import 'ng-idle/angular-idle';
 import 'angular-ladda';
+import 'angular-sweetalert';
 import 'angularjs-toaster';
 import 'angular-datatables';
 import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
@@ -44,7 +46,7 @@ import 'angular-datatables/dist/css/angular-datatables.css';
 import 'angular-datatables/dist/plugins/bootstrap/datatables.bootstrap.min.css';
 import './css/animate.css';
 
-import 'sweetalert/lib/sweet-alert.css';
+// import 'sweetalert/lib/sweet-alert.css';
 import './css/plugins/iCheck/custom.css';
 import 'ladda/dist/ladda-themeless.min.css';
 import 'prismjs/themes/prism.css';

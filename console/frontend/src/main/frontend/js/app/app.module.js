@@ -2,14 +2,14 @@ var server; //Try and see if serverurl has been defined, if not try to deduct fr
 try {
 	server = serverurl;
 }
-catch(e) {
+catch (e) {
 	var path = window.location.pathname;
 
-	if(path.indexOf("/iaf/gui") >= 0)
-		path = path.substr(0, path.indexOf("/iaf/gui")+1);
+	if (path.indexOf("/iaf/gui") >= 0)
+		path = path.substr(0, path.indexOf("/iaf/gui") + 1);
 	else
-		if(path.indexOf("/", 1) >= 0)
-			path = path.substr(0, path.indexOf("/", 1)+1);
+		if (path.indexOf("/", 1) >= 0)
+			path = path.substr(0, path.indexOf("/", 1) + 1);
 	server = path;
 }
 
@@ -23,7 +23,8 @@ export const appModule = angular.module('iaf.beheerconsole', [
 	'toaster',                       // Toastr
 	'datatables',
 	'chart.js',
-	'angular-mermaid'
+	'angular-mermaid',
+	'oitozero.ngSweetAlert'
 ]).constant("appConstants", {
 	//Configure these in the server AppConstants!!!
 	//The settings here are defaults and will be overwritten upon set in any .properties file.
@@ -49,11 +50,11 @@ export const appModule = angular.module('iaf.beheerconsole', [
 	//These will automatically be updated.
 	"timeOffset": 0,
 	"init": -1,
-	getString: function(variable) {
+	getString: function (variable) {
 		return this[variable];
 	},
-	getBoolean: function(variable, dfault) {
-		if(this[variable] != undefined) return (this[variable] === "true");
+	getBoolean: function (variable, dfault) {
+		if (this[variable] != undefined) return (this[variable] === "true");
 		return dfault;
 	}
 });

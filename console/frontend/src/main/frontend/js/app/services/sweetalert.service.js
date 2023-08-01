@@ -1,5 +1,6 @@
 import { appModule } from "../app.module";
 
+/* TODO replace with Toastr where possible (warns, info, errorm, success) */
 appModule.service('SweetAlert', ['Debug', function (Debug) {
 	this.defaultSettings = {
 		//			confirmButtonColor: "#449d44"
@@ -39,26 +40,36 @@ appModule.service('SweetAlert', ['Debug', function (Debug) {
 			showCancelButton: true,
 		};
 		angular.merge(options, options, this.defaults.apply(this, arguments));
+		if (!options.callback)
+			return swal(options);
 		return swal(options, options.callback);
 	};
 	this.Info = function () {
 		var options = {};
 		angular.merge(options, { type: "info" }, this.defaults.apply(this, arguments));
+		if (!options.callback)
+			return swal(options);
 		return swal(options, options.callback);
 	};
 	this.Warning = function () {
 		var options = {};
 		angular.merge(options, { type: "warning" }, this.defaults.apply(this, arguments));
+		if (!options.callback)
+			return swal(options);
 		return swal(options, options.callback);
 	};
 	this.Error = function () {
 		var options = {};
 		angular.merge(options, { type: "error" }, this.defaults.apply(this, arguments));
+		if (!options.callback)
+			return swal(options);
 		return swal(options, options.callback);
 	};
 	this.Success = function () {
 		var options = {};
 		angular.merge(options, { type: "success" }, this.defaults.apply(this, arguments));
+		if (!options.callback)
+			return swal(options);
 		return swal(options, options.callback);
 	};
 }]);

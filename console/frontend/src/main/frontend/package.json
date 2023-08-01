@@ -43,6 +43,7 @@
     "ng-idle": "1.0.4",
     "pace-js": "1.2.4",
     "prismjs": "1.25.0",
+    "sweetalert": "^2.1.2",
     "tinycon": "0.6.8"
   },
   "devDependencies": {
