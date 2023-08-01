@@ -65,9 +65,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	@BeforeClass
 	public static void init() {
 		assumeThat(URLDataSourceFactory.availableDatasources, hasItems(SECONDARY_PRODUCT));
-		for (TransactionManagerType tmt:TransactionManagerType.values()) {
-			tmt.closeConfigurationContext();
-		}
+		TransactionManagerType.closeAllConfigurationContexts();
 	}
 
 	@Override
