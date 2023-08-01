@@ -118,17 +118,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isStoredProceduresSupported() {
-		return false;
-	}
-
-	@Override
 	public boolean isStoredProcedureOutParametersSupported() {
-		return false;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
 		return false;
 	}
 }

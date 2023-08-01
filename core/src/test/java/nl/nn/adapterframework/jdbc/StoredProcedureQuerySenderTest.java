@@ -34,8 +34,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Before
 	public void setUp() throws Exception {
-		assumeThat("H2 does not support proper stored procedures, skipping test suite", productKey, not(equalToIgnoringCase("H2")));
-
 		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
 
 		sender = getConfiguration().createBean(StoredProcedureQuerySender.class);
@@ -132,6 +130,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureInputAndOutputParameters() throws Exception {
 
+		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
 		assumeThat("Oracle OUT parameters do not yet work, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange
@@ -164,6 +163,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureInputAndOutputParametersXmlOutput() throws Exception {
 
+		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
 		assumeThat("Oracle OUT parameters do not yet work, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange

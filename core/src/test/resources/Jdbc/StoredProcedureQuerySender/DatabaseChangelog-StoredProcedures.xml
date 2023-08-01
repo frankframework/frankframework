@@ -20,8 +20,23 @@
 		</createTable>
 	</changeSet>
 
+	<changeSet id="IAF-UnitTests-SP-H2" author="Tim van der Leeuw" runOnChange="true" dbms="h2">
+		<comment>Create Stored Procedures for H2</comment>
+		<sql>
+			CREATE ALIAS IF NOT EXISTS INSERT_MESSAGE FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.insertMessage";
+			CREATE ALIAS IF NOT EXISTS GET_MESSAGES_BY_CONTENT FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.selectByContent";
+		</sql>
+
+		<rollback>
+			<sql>
+				DROP ALIAS INSERT_MESSAGE;
+				DROP ALIAS GET_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
 	<changeSet id="IAF-UnitTests-SP-PostgreSQL" author="Tim van der Leeuw" runOnChange="true" dbms="postgresql">
-		<comment>Create Stored Procedure to insert data no OUT parameters</comment>
+		<comment>Create Stored Procedures for PostgreSQL</comment>
 		<sql>
 			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
 				MESSAGE VARCHAR(100),
@@ -102,7 +117,7 @@
 				DROP PROCEDURE INSERT_MESSAGE;
 				DROP PROCEDURE GET_MESSAGE_BY_ID;
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
-				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
+				DROP PROCEDURE GET_MESSAGES_BY_CONTENT;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -150,7 +165,7 @@
 				DROP PROCEDURE INSERT_MESSAGE;
 				DROP PROCEDURE GET_MESSAGE_BY_ID;
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
-				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
+				DROP PROCEDURE GET_MESSAGES_BY_CONTENT;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -200,7 +215,7 @@
 				DROP PROCEDURE INSERT_MESSAGE;
 				DROP PROCEDURE GET_MESSAGE_BY_ID;
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
-				DROP PROCEDURE GET_MESSAGE_BY_CONTENT;
+				DROP PROCEDURE GET_MESSAGES_BY_CONTENT;
 			</sql>
 		</rollback>
 
