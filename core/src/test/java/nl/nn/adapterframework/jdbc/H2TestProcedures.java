@@ -12,8 +12,8 @@ import java.sql.SQLException;
 @SuppressWarnings("unused")
 public class H2TestProcedures {
 
-	final static String INSERT_SQL = "INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (?, ?)";
-	final static String SELECT_BY_CONTENT_SQL = "SELECT * FROM SP_TESTDATA WHERE TMESSAGE = ? ORDER BY TKEY";
+	static final String INSERT_SQL = "INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (?, ?)";
+	static final String SELECT_BY_CONTENT_SQL = "SELECT * FROM SP_TESTDATA WHERE TMESSAGE = ? ORDER BY TKEY";
 
 	public static void insertMessage(Connection conn, String message, char status) throws SQLException {
 		try (PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL)) {

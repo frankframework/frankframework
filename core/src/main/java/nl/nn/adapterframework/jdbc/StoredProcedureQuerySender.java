@@ -95,7 +95,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
 			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
 		}
+
 		super.configure();
+
 		if (outputParameters != null) {
 			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
 				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
