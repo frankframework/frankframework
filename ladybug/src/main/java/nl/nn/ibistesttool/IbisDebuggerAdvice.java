@@ -132,7 +132,11 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
 			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
 		} else {
-			pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+			Message result = ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult());
+			if(Message.isNull(result)) {
+				log.error("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
+			}
+			pipeLineResult.setResult(result);
 		}
 		return pipeLineResult;
 	}
