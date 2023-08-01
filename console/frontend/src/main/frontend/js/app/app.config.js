@@ -1,12 +1,5 @@
 import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
-import iafUpdateStatusController from "./views/iaf-update/iaf-update-status.controller";
-import iframeCustomViewStateController from "./views/iframe/iframe-custom-view/iframe-custom-view-state.controller";
-import iframeLadybugBetaStateController from "./views/iframe/iframe-ladybug-beta/iframe-ladybug-beta-state.controller";
-import iframeLadybugStateController from "./views/iframe/iframe-ladybug/iframe-ladybug-state.controller";
-import iframeLarvaStateController from "./views/iframe/iframe-larva/iframe-larva-state.controller";
-import storageStateController from "./views/storage/storage-state.controller";
-import storageViewStateController from "./views/storage/storage-view/storage-view-state.controller";
 
 appModule.config(['$httpProvider', function ($httpProvider) {
 	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants, $q, Misc, Toastr, $location) {
@@ -103,15 +96,14 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 		$stateProvider
 			.state('login', {
 				url: "/login",
-				templateUrl: "js/app/views/login/login.html",
-				controller: 'LoginCtrl',
+				component: "login",
 				data: {
 					pageTitle: 'Login'
 				}
 			})
 			.state('logout', {
 				url: "/logout",
-				controller: 'LogoutCtrl',
+				component: 'logout',
 				data: {
 					pageTitle: 'Logout'
 				}
@@ -139,7 +131,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.adapterstatistics', {
 				url: "/adapter/:name/statistics",
-				templateUrl: "js/app/views/adapterstatistics/adapter_statistics.html",
+				component: "adapterstatistics",
 				data: {
 					pageTitle: 'Adapter',
 					breadcrumbs: 'Adapter > Statistics'
@@ -150,10 +142,10 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.storage', {
 				abstract: true,
-				url: "/adapters/:adapter/:storageSource/:storageSourceName/",
-				template: "<div ui-view ng-controller='StorageBaseCtrl'></div>",
-				controller: storageStateController,
+				url: "/:configuration/adapters/:adapter/:storageSource/:storageSourceName/",
+				component: "storage",
 				params: {
+					configuration: { value: '', squash: true },
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
 					processState: { value: '', squash: true },
@@ -166,19 +158,18 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.storage.list', {
 				url: "stores/:processState",
-				templateUrl: "js/app/views/storage/storage-list/adapter_storage_list.html",
+				component: "storageList",
 			})
 			.state('pages.storage.view', {
 				url: "stores/:processState/messages/:messageId",
-				templateUrl: "js/app/views/storage/storage-view/adapter_storage_view.html",
+				component: "storageView",
 				params: {
 					messageId: { value: '', squash: true },
 				},
-				controller: storageViewStateController,
 			})
 			.state('pages.notifications', {
 				url: "/notifications",
-				templateUrl: "js/app/views/notifications/notifications.html",
+				component: "notifications",
 				data: {
 					pageTitle: 'Notifications',
 					breadcrumbs: 'Notifications'
@@ -186,7 +177,6 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				params: {
 					id: 0,
 				},
-				controller: 'NotificationsCtrl'
 			})
 			.state('pages.configuration', {
 				url: "/configurations?name&loaded",
@@ -230,7 +220,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.logging_show', {
 				url: "/logging?directory&file",
-				templateUrl: "js/app/views/logging/ShowLogging.html",
+				component: "logging",
 				data: {
 					pageTitle: 'Logging',
 					breadcrumbs: 'Logging > Log Files'
@@ -242,7 +232,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.logging_manage', {
 				url: "/logging/settings",
-				templateUrl: "js/app/views/logging/logging-manage/ManageLogging.html",
+				component: "loggingManage",
 				data: {
 					pageTitle: 'Logging',
 					breadcrumbs: 'Logging > Log Settings'
@@ -266,7 +256,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.test_pipeline', {
 				url: "/test-pipeline",
-				templateUrl: "js/app/views/test-pipeline/TestPipeline.html",
+				component: "testPipeline",
 				data: {
 					pageTitle: 'Test a PipeLine',
 					breadcrumbs: 'Testing > Test a PipeLine'
@@ -274,7 +264,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.test_servicelistener', {
 				url: "/test-serviceListener",
-				templateUrl: "js/app/views/test-service-listener/TestServiceListener.html",
+				component: "testServiceListener",
 				data: {
 					pageTitle: 'Test a ServiceListener',
 					breadcrumbs: 'Testing > Test a ServiceListener'
@@ -290,7 +280,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.scheduler', {
 				url: "/scheduler",
-				templateUrl: "js/app/views/scheduler/ShowScheduler.html",
+				component: "scheduler",
 				data: {
 					pageTitle: 'Scheduler',
 					breadcrumbs: 'Scheduler'
@@ -298,21 +288,19 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.add_schedule', {
 				url: "/scheduler/new",
-				templateUrl: "js/app/views/scheduler/AddEditSchedule.html",
+				component: "schedulerAdd",
 				data: {
 					pageTitle: 'Add Schedule',
 					breadcrumbs: 'Scheduler > Add Schedule'
 				},
-				controller: 'AddScheduleCtrl'
 			})
 			.state('pages.edit_schedule', {
 				url: "/scheduler/edit/:group/:name",
-				templateUrl: "js/app/views/scheduler/AddEditSchedule.html",
+				component: "schedulerEdit",
 				data: {
 					pageTitle: 'Edit Schedule',
 					breadcrumbs: 'Scheduler > Edit Schedule'
 				},
-				controller: 'EditScheduleCtrl',
 				params: {
 					name: "",
 					group: ""
@@ -352,7 +340,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.connection_overview', {
 				url: "/connections",
-				templateUrl: "js/app/views/connections/ShowConnectionOverview.html",
+				component: "connections",
 				data: {
 					pageTitle: 'Connection Overview',
 					breadcrumbs: 'Connection Overview'
@@ -420,7 +408,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.customView', {
 				url: "/customView/:name",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeCustomView",
 				data: {
 					pageTitle: "Custom View",
 					breadcrumbs: 'Custom View',
@@ -430,37 +418,33 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 					name: { value: '', squash: true },
 					url: { value: '', squash: true },
 				},
-				controller: iframeCustomViewStateController
 			})
 			.state('pages.larva', {
 				url: "/testing/larva",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLarva",
 				data: {
 					pageTitle: 'Larva',
 					breadcrumbs: 'Testing > Larva',
 					iframe: true
 				},
-				controller: iframeLarvaStateController
 			})
 			.state('pages.ladybug', {
 				url: "/testing/ladybug",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLadybug",
 				data: {
 					pageTitle: 'Ladybug',
 					breadcrumbs: 'Testing > Ladybug',
 					iframe: true
 				},
-				controller: iframeLadybugStateController
 			})
 			.state('pages.ladybug_beta', {
 				url: "/testing/ladybug-beta",
-				templateUrl: "js/app/views/iframe/iFrame.html",
+				component: "iframeLadybugBeta",
 				data: {
 					pageTitle: 'Ladybug (beta)',
 					breadcrumbs: 'Testing > Ladybug (beta)',
 					iframe: true
 				},
-				controller: iframeLadybugBetaStateController
 			})
 			.state('pages.empty_page', {
 				url: "/empty_page",
@@ -469,17 +453,16 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			})
 			.state('pages.iaf_update', {
 				url: "/iaf-update",
-				templateUrl: "js/app/views/iaf-update/iaf-update.html",
+				component: "iafUpdateStatus",
 				data: { pageTitle: 'IAF Update' },
-				controller: iafUpdateStatusController
 			})
 			.state('pages.loading', {
 				url: "/",
-				templateUrl: "js/app/views/loading/loading.html",
+				component: "loading",
 			})
 			.state('pages.errorpage', {
 				url: "/error",
-				templateUrl: "js/app/views/error/errorpage.html",
+				component: "error",
 			});
 
 	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope, $state, Debug, $trace) {

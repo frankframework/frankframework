@@ -56,6 +56,12 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 
 	service.dtapStage = "";
 
+	service.databaseSchedulesEnabled = false;
+	service.updateDatabaseSchedulesEnabled = function (databaseSchedulesEnabled) {
+		service.databaseSchedulesEnabled = databaseSchedulesEnabled;
+		$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
+	}
+
 	service.updateConfigurations = function (configurations) {
 		const updatedConfigurations = [];
 		for (var i in configurations) {
