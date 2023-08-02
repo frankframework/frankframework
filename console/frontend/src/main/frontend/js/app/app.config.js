@@ -130,7 +130,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				//parent: "pages"
 			})
 			.state('pages.adapterstatistics', {
-				url: "/adapter/:name/statistics",
+				url: "/:configuration/adapter/:name/statistics",
 				component: "adapterstatistics",
 				data: {
 					pageTitle: 'Adapter',
