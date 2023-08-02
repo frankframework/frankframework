@@ -75,6 +75,21 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 		$rootScope.$broadcast('configurations', updatedConfigurations);
 	}
 
+	service.getProcessStateIcon = function (processState) {
+		switch (processState) {
+			case "Available":
+				return "fa-server";
+			case "InProcess":
+				return "fa-gears";
+			case "Done":
+				return "fa-sign-in";
+			case "Error":
+				return "fa-times-circle";
+			case "Hold":
+				return "fa-pause-circle";
+		}
+	};
+
 	service.getProcessStateIconColor = function (processState) {
 		switch (processState) {
 			case "Available":

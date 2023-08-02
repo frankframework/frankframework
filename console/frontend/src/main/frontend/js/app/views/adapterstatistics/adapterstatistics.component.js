@@ -5,6 +5,7 @@ const adapterstatisticsController = function ($rootScope, Api, $stateParams, Swe
 
     ctrl.defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
 	ctrl.adapterName = $stateParams.name;
+	ctrl.configuration = $stateParams.configuration;
     ctrl.refreshing = false;
     ctrl.hourlyStatistics = {
         labels: [],
@@ -64,7 +65,7 @@ const adapterstatisticsController = function ($rootScope, Api, $stateParams, Swe
 
     ctrl.refresh = function () {
         ctrl.refreshing = true;
-		Api.Get("adapters/" + Misc.escapeURL(ctrl.adapterName) + "/statistics", function (data) {
+		Api.Get("configurations/" + Misc.escapeURL(ctrl.configuration) + "/adapters/" + Misc.escapeURL(ctrl.adapterName) + "/statistics", function (data) {
             ctrl.stats = data;
 
             var labels = [];

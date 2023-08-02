@@ -32,16 +32,16 @@
                                     <td ng-if="$ctrl.scheduler.state =='started'">
                                         <span><i class="fa fa-play m-r-xs"></i> Started</span>
                                         <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
-                                        <button style="float:right;" title="Pause Scheduler" ng-click="$ctrl.pauseScheduler()" class="btn btn-xs btn-warning" type="button"><i class="fa fa-pause m-r-xs"></i> Pause</button>
+                                        <button style="float:right;" ladda="$ctrl.refreshing" title="Pause Scheduler" ng-click="$ctrl.pauseScheduler()" class="btn btn-xs btn-warning" type="button"><i class="fa fa-pause m-r-xs"></i> Pause</button>
                                     </td>
                                     <td ng-if="$ctrl.scheduler.state =='paused'">
                                         <span><i class="fa fa-pause m-r-xs"></i> Paused</span>
                                         <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
-                                        <button style="float:right;" title="Start Scheduler" ng-click="$ctrl.start()" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start</button>
+                                        <button style="float:right;" ladda="$ctrl.refreshing" title="Start Scheduler" ng-click="$ctrl.start()" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start</button>
                                     </td>
                                     <td ng-if="$ctrl.scheduler.state =='stopped'">
                                         <span><i class="fa fa-stop m-r-xs"></i> Stopped</span>
-                                        <button style="float:right;" title="Start Scheduler" ng-click="$ctrl.start()" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start</button>
+                                        <button style="float:right;" ladda="$ctrl.refreshing" title="Start Scheduler" ng-click="$ctrl.start()" class="btn btn-xs btn-primary" type="button"><i class="fa fa-play m-r-xs"></i> Start</button>
                                     </td>
                                 </tr>
                                 <tr>

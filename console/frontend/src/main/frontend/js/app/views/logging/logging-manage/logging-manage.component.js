@@ -18,11 +18,15 @@ const LoggingManageController = function ($scope, Api, Misc, $timeout, $state, T
     ctrl.$onInit = function () {
 		ctrl.updateLogInformation();
 
-		Api.Get(ctrl.logURL, function (data) {
-            ctrl.form = data;
-            ctrl.errorLevels = data.errorLevels;
-        });
+		ctrl.setForm();
     };
+
+	ctrl.setForm = function(){
+		Api.Get(ctrl.logURL, function (data) {
+			ctrl.form = data;
+			ctrl.errorLevels = data.errorLevels;
+		});
+	}
 
     //Root logger level
     ctrl.changeRootLoglevel = function (level) {
@@ -68,6 +72,10 @@ const LoggingManageController = function ($scope, Api, Misc, $timeout, $state, T
             console.error(data);
         });
     };
+
+	ctrl.reset = function(){
+		ctrl.setForm();
+	}
 };
 
 appModule.component('loggingManage', {
