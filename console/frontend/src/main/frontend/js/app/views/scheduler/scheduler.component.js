@@ -1,15 +1,17 @@
 import { appModule } from "../../app.module";
 
-const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, SweetAlert, appService) {
+const SchedulerController = function ($rootScope, $timeout, Api, Poller, $state, SweetAlert, appService) {
     const ctrl = this;
 
     ctrl.jobs = {};
     ctrl.scheduler = {};
     ctrl.searchFilter = "";
+	ctrl.refreshing = false;
 
     ctrl.$onInit = function () {
         Poller.add("schedules", function (data) {
             $.extend(ctrl, data);
+			ctrl.refreshing = false;
         }, true, 5000);
 
 		ctrl.databaseSchedulesEnabled = appService.databaseSchedulesEnabled;
@@ -23,11 +25,13 @@ const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, S
     };
 
     ctrl.start = function () {
+		ctrl.refreshing = true;
         Api.Put("schedules", { action: "start" });
     };
 
-    ctrl.pauseScheduler = function () {
-        Api.Put("schedules", { action: "pause" });
+	ctrl.pauseScheduler = function () {
+		ctrl.refreshing = true;
+		Api.Put("schedules", { action: "pause" });
     };
 
     ctrl.pause = function (jobGroup, jobName) {
@@ -56,6 +60,6 @@ const SchedulerController = function ($rootScope, $scope, Api, Poller, $state, S
 };
 
 appModule.component('scheduler', {
-	controller: ['$rootScope', '$scope', 'Api', 'Poller', '$state', 'SweetAlert', 'appService', SchedulerController],
+	controller: ['$rootScope', '$timeout', 'Api', 'Poller', '$state', 'SweetAlert', 'appService', SchedulerController],
     templateUrl: 'js/app/views/scheduler/scheduler.component.html'
 });
