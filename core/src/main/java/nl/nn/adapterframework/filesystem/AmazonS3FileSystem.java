@@ -348,7 +348,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		ObjectListing objectListing = s3Client.listObjects(bucketName);
+		ObjectListing objectListing = s3Client.listObjects(bucketName, folder);
 		Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
 		while (objIter.hasNext()) {
 			S3ObjectSummary s3ObjectSummary = objIter.next();
