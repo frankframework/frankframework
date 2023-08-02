@@ -39,13 +39,14 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
 	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
-	private void testClassMethods() {
+	private void testClassMethods() throws Exception {
 		org.h2.jdbcx.JdbcDataSource h2 = null;
 		DB2XADataSource db2 = null;
 		oracle.jdbc.xa.client.OracleXADataSource oracle = null;
 		com.microsoft.sqlserver.jdbc.SQLServerXADataSource mssql = null;
 		com.mysql.cj.jdbc.MysqlXADataSource mysql = null;
 		org.postgresql.xa.PGXADataSource postgres = null;
+		org.mariadb.jdbc.MariaDbDataSource mariadb = null;
 
 		h2.setUrl("x");
 		h2.setURL("x");
@@ -71,6 +72,10 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		mysql.setURL("x");
 		mysql.setUser("x");
 		mysql.setPassword("x");
+
+		mariadb.setUrl("x");
+		mariadb.setUser("x");
+		mariadb.setPassword("x");
 
 		postgres.setUrl("x");
 		postgres.setURL("x");
