@@ -59,7 +59,7 @@
 	/>
 
 	<!-- serverTimezone is set for docker instances -->
-	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+	<!-- pinGlobalTxToPhysicalConnection is required because BTM is not a real Transaction Manager and cannot handle transactions over multiple connections -->
 	<Resource
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -74,14 +74,14 @@
 		socketTimeout="5000"
 	/>
 
-	<!-- pinGlobalTxToPhysicalConnection is not supported for mariadb driver -->
+	<!-- pinGlobalTxToPhysicalConnection is required because BTM is not a real Transaction Manager and cannot handle transactions over multiple connections -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.mariadb.jdbc.MariaDbDataSource"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
-		url="jdbc:mariadb://${jdbc.hostname:-host.docker.internal}:3306/testiaf"
+		url="jdbc:mariadb://${jdbc.hostname:-host.docker.internal}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
 
 	<Resource
