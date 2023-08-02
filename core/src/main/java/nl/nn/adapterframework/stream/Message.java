@@ -784,7 +784,7 @@ public class Message implements Serializable, Closeable {
 		result.append(getObjectId());
 
 		if (request != null) {
-			result.append(" request [").append(request).append("]");
+			result.append(": [").append(request).append("]");
 		}
 
 

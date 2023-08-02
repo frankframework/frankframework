@@ -43,6 +43,10 @@ const StorageViewController = function ($scope, Api, $state, SweetAlert) {
             }
         });
     };
+
+	ctrl.goBack = function(){
+		history.back();
+	}
 };
 
 appModule.component('storageView', {
@@ -54,7 +58,8 @@ appModule.component('storageView', {
         onCloseNote: '&',
         onCloseNotes: '&',
         onDoDeleteMessage: '&',
-        onDoResendMessage: '&'
+		onDoResendMessage: '&',
+		onDownloadMessage: '&',
     },
     controller: ['$scope', 'Api', '$state', 'SweetAlert', StorageViewController],
     templateUrl: 'js/app/views/storage/storage-view/storage-view.component.html',
