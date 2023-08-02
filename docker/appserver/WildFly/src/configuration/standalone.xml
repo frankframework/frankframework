@@ -207,7 +207,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
 					<driver>mariadb</driver>
-					<xa-datasource-property name="URL">jdbc:mariadb://host.docker.internal:3306/testiaf</xa-datasource-property>
+					<xa-datasource-property name="Url">jdbc:mariadb://host.docker.internal:3306/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<password>testiaf_user00</password>
