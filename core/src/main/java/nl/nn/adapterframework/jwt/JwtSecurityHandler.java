@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jwt;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,15 +71,16 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = splitClaims(exactMatchClaims);
+			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+					.entrySet()
+					.stream()
+					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
+					.findFirst();
 
-			for (Map.Entry<String, String> entry : claims.entrySet()) {
-				String key = entry.getKey();
-				String expectedValue = entry.getValue();
-				Object value = claimsSet.get(key);
-				if(!expectedValue.equals(value)) { //Value may be a List, Long or String
-					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
-				}
+			if(nonMatchingClaim.isPresent()){
+				String key = nonMatchingClaim.get().getKey();
+				String expectedValue = nonMatchingClaim.get().getValue();
+				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
 			}
 		}
 
