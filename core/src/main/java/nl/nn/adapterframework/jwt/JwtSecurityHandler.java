@@ -85,12 +85,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
-			boolean anyMatch = splitClaims(matchOneOfClaims)
+			boolean noneMatch = splitClaims(matchOneOfClaims)
 					.entrySet()
 					.stream()
-					.anyMatch(entry -> claimsSet.get(entry.getKey()).equals(entry.getValue()));
+					.noneMatch(entry -> claimsSet.get(entry.getKey()).equals(entry.getValue()));
 
-			if(!anyMatch){
+			if(noneMatch){
 				throw new AuthorizationException("JWT does not contain any of the following claims ["+matchOneOfClaims+"]");
 			}
 		}
