@@ -83,9 +83,6 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (!getDbmsSupport().isStoredProceduresSupported()) {
-			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
-		}
 		if (StringUtils.isNotBlank(getColumnsReturned())) {
 			throw new ConfigurationException("Cannot use 'columnsReturned' with StoredProcedureSender, use 'outputParameters' instead.");
 		}
@@ -97,6 +94,12 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 
 		super.configure();
+
+		// Have to check this after "super.configure()" b/c otherwise the datasource-name is not set
+		// and cannot check DMBS support features.
+		if (!getDbmsSupport().isStoredProceduresSupported()) {
+			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
+		}
 
 		if (outputParameters != null) {
 			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
