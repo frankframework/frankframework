@@ -1,12 +1,10 @@
 package nl.nn.adapterframework.filesystem.smb;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
@@ -38,10 +36,12 @@ import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.extensions.config.ConfigElement;
 
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -71,27 +71,15 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	private static SMBServer smbServer;
 	private static final boolean DEBUG = false;
 
+	@TempDir
+	public static Path testDirectory;
+
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-//		return new LocalFileSystemTestHelper(getTestDirectoryFS());
-		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
-	}
-
-	/**
-	 * Creates the folder '../target/sftpTestFS' in which the tests will be executed.
-	 * This 'virtual FS' will pretend that the mentioned folder is the SFTP HOME directory.
-	 */
-	private static Path getTestDirectoryFS() {
-		try {
-			File targetFolder = new File(".", "target");
-			File sbm2TestFS = new File(targetFolder.getCanonicalPath(), "smb2TestFS");
-			sbm2TestFS.mkdir();
-			assertTrue(sbm2TestFS.exists());
-
-			return sbm2TestFS.toPath();
-		} catch (Exception e) {
-			throw new IllegalStateException("invalid path");
+		if("localhost".equals(host)) {
+			return new LocalFileSystemTestHelper(testDirectory);
 		}
+		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
 	}
 
 	@Override
@@ -99,14 +87,14 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	public void setUp() throws Exception {
 		if("localhost".equals(host) && smbServer == null) {
 			String license = getLicense();
-			assumeTrue(license != null && ClassUtils.isClassPresent("org.filesys.smb.server.EnterpriseSMBServer")); //Only run test when a license is present!
+			assumeTrue(license != null); //Only run test when a license is present!
 			setWaitMillis(1000);
 
 			ServerConfiguration serverConfig = new ServerConfiguration("dummySmbServer");
 			FilesystemsConfigSection fsConfig = new FilesystemsConfigSection(serverConfig);
 
 			JavaFileDiskDriver diskDriver = new JavaFileDiskDriver();
-			DiskDeviceContext ctx = new DiskDeviceContext(getTestDirectoryFS().toAbsolutePath().toString(), shareName);
+			DiskDeviceContext ctx = new DiskDeviceContext(testDirectory.toAbsolutePath().toString(), shareName);
 			DiskSharedDevice dsd = new DiskSharedDevice(shareName, diskDriver, ctx);
 			fsConfig.addShare(dsd);
 
@@ -171,7 +159,10 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 
 	private String getLicense() throws IOException {
 		URL license = Samba2FileSystemTest.class.getResource("/jfileserver.lic");
-		return (license == null) ? null : StreamUtil.streamToString(license.openStream());
+		if(license != null && ClassUtils.isClassPresent("org.filesys.smb.server.EnterpriseSMBServer")) {
+			return StreamUtil.streamToString(license.openStream());
+		}
+		return null;
 	}
 
 	@AfterAll
