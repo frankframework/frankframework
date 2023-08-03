@@ -84,11 +84,11 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 	private static Path getTestDirectoryFS() {
 		try {
 			File targetFolder = new File(".", "target");
-			File sftpTestFS = new File(targetFolder.getCanonicalPath(), "smb2TestFS");
-			sftpTestFS.mkdir();
-			assertTrue(sftpTestFS.exists());
+			File sbm2TestFS = new File(targetFolder.getCanonicalPath(), "smb2TestFS");
+			sbm2TestFS.mkdir();
+			assertTrue(sbm2TestFS.exists());
 
-			return sftpTestFS.toPath();
+			return sbm2TestFS.toPath();
 		} catch (Exception e) {
 			throw new IllegalStateException("invalid path");
 		}
