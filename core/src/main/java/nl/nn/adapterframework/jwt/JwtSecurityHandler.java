@@ -57,7 +57,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
-	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
+	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
 			List<String> claims = StringUtil.split(requiredClaims);
@@ -70,9 +70,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
-					.map(s -> StringUtil.split(s, "="))
-					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+			Map<String, String> claims = splitClaims(exactMatchClaims);
 
 			for (Map.Entry<String, String> entry : claims.entrySet()) {
 				String key = entry.getKey();
@@ -83,6 +81,21 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				}
 			}
 		}
+
+		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
+			Map<String, String> claims = splitClaims(matchOneOfClaims);
+			boolean anyMatch = claims.keySet().stream().anyMatch(key -> claimsSet.get(key).equals(claims.get(key)));
+
+			if(!anyMatch){
+				throw new AuthorizationException("JWT does not contain any of the following claims ["+claims+"]");
+			}
+		}
+	}
+
+	private Map<String, String> splitClaims(String claimsToSplit){
+		return StringUtil.splitToStream(claimsToSplit)
+				.map(s -> StringUtil.split(s, "="))
+				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
 	}
 
 }

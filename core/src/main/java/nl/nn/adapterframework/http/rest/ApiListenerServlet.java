@@ -312,17 +312,17 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
+						String matchOneOfClaims = listener.getMatchOneOfClaims();
 						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
 						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims);
+							handler.validateClaims(requiredClaims, exactMatchClaims, matchOneOfClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									for (String role : authRoles) {
-										if(handler.isUserInRole(role, messageContext)) {
-											userPrincipal = new ApiPrincipal();
-											break;
-										}
+									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									if(userIsInRole) {
+										userPrincipal = new ApiPrincipal();
+										break;
 									}
 								} else {
 									userPrincipal = new ApiPrincipal();

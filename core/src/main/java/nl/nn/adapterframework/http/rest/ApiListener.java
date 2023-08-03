@@ -90,6 +90,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String jwtHeader="Authorization";
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
+	private @Getter String matchOneOfClaims=null;
 	private @Getter String roleClaim;
 
 	private @Getter String principalNameClaim = "sub";
@@ -358,9 +359,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.requiredClaims = string;
 	}
 
-	/** Comma separated key value pairs to match with JWT payload. e.g. "sub=UnitTest, aud=test" */
+	/** Comma separated key value pairs to exactly match with JWT payload. e.g. "sub=UnitTest, aud=test" */
 	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
+	}
+
+	/** Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b" */
+	public void setMatchOneOfClaims(String string) {
+		this.matchOneOfClaims = string;
 	}
 
 	/** Claim name which specifies the role */
