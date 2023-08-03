@@ -274,5 +274,13 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 				"TABLE_OWNER", "TABLE_NAME", "INDEX_NAME", "column_name", "column_position");
 	}
 
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return false;
+	}
 
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return false;
+	}
 }

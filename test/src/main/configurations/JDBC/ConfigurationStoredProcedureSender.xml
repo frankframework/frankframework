@@ -1,0 +1,35 @@
+<module>
+	<Adapter name="StoredProcedureQuerySender Test Adapter">
+		<Receiver>
+			<JavaListener name="StoredProcedureQuerySenderTest"
+						  serviceName="ibis4test-StoredProcedureQuerySender"/>
+		</Receiver>
+		<Pipeline>
+			<SenderPipe name="Count nr of existing records">
+				<!-- Negative count so we can use it as increment and expect 1 as result -->
+				<FixedQuerySender
+					query="SELECT 0 - COUNT(*) FROM IBISTEMP WHERE tvarchar = 'a text'"
+					queryType="SELECT"
+					scalar="true"
+				/>
+			</SenderPipe>
+			<PutInSessionPipe name="Record Counter in Session" sessionKey="countBefore"/>
+			<SenderPipe name="Call StoredProcedure To Insert Record">
+				<StoredProcedureQuerySender
+					query="CALL INSERT_SIMPLE_NO_RETURN(?, ?)"
+					queryType="other"
+					resultQuery="SELECT COUNT(*) FROM IBISTEMP WHERE tvarchar = 'a text'"
+					scalar="true"
+					>
+					<param name="number" value="7" />
+					<param name="vchar" value="a text" />
+				</StoredProcedureQuerySender>
+			</SenderPipe>
+			<PutInSessionPipe name="Record New Counter in Session" sessionKey="countAfter"/>
+			<IncreaseIntegerPipe name="Calculate Nr of Rows Inserted" sessionKey="countAfter">
+				<Param name="increment" sessionKey="countBefore"/>
+			</IncreaseIntegerPipe>
+			<GetFromSessionPipe name="Get Nr Records Added" sessionKey="countAfter"/>
+		</Pipeline>
+	</Adapter>
+</module>

@@ -25,6 +25,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 public class QueryExecutionContext {
 
 	@Getter private final String query;
+	@Getter private final String resultQuery;
 	@Getter private final QueryType queryType;
 	@Getter private final ParameterList parameterList;
 	@Getter private final Connection connection;
@@ -32,8 +33,9 @@ public class QueryExecutionContext {
 	@Getter private final PreparedStatement resultQueryStatement;
 	protected int iteration;
 
-	public QueryExecutionContext(String query, QueryType queryType, ParameterList parameterList, Connection connection, PreparedStatement statement, PreparedStatement resultQueryStatement) {
+	public QueryExecutionContext(String query, String resultQuery, QueryType queryType, ParameterList parameterList, Connection connection, PreparedStatement statement, PreparedStatement resultQueryStatement) {
 		this.query = query;
+		this.resultQuery = resultQuery;
 		this.queryType = queryType;
 		this.parameterList = parameterList;
 		this.connection = connection;
