@@ -121,6 +121,11 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if(StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
+
+		if("log.dir".equals(key)) {
+			value = fixLogDirectorySlashes(value);
+		}
+
 		return value;
 	}
 
@@ -199,16 +204,22 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if (System.getProperty("log.dir") == null) {
 			File logDir = findLogDir();
 			if (logDir != null) {
-				// Replace backslashes because log.dir is used in log4j2.xml
-				// on which substVars is done (see below) which will replace
-				// double backslashes into one backslash and after that the same
-				// is done by Log4j:
-				// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
-				System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+				System.setProperty("log.dir", fixLogDirectorySlashes(logDir.getPath()));
 			} else {
 				System.out.println(LOG_PREFIX + "did not find system property log.dir and unable to locate it automatically");
 			}
 		}
+	}
+
+	/**
+	 * Replace backslashes because log.dir is used in log4j2.xml
+	 * on which substVars is done (see below) which will replace
+	 * double backslashes into one backslash and after that the same
+	 * is done by Log4j:
+	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+	 * */
+	private static String fixLogDirectorySlashes(String directory) {
+		return directory.replaceAll("\\\\", "/");
 	}
 
 	/**
