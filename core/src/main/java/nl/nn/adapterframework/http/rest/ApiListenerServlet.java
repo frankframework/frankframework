@@ -286,11 +286,10 @@ public class ApiListenerServlet extends HttpServletBase {
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
 						if(roles != null) {
-							for (String role : roles) {
-								if(request.isUserInRole(role)) {
-									userPrincipal = new ApiPrincipal(); //Create a dummy user
-									break;
-								}
+							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+							if(userIsInRole) {
+								userPrincipal = new ApiPrincipal();
+								break;
 							}
 						}
 						break;
