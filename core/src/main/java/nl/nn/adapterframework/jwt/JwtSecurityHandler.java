@@ -62,8 +62,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			Optional<String> missingClaim  = StringUtil.split(requiredClaims)
-					.stream()
+			Optional<String> missingClaim  = StringUtil.splitToStream(requiredClaims)
 					.filter(claim -> !claimsSet.containsKey(claim))
 					.findFirst();
 
