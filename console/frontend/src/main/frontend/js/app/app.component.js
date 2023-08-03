@@ -346,21 +346,6 @@ const AppController = function ($scope, $rootScope, authService, appConstants, A
 		ctrl.addAlert("danger", configuration, message);
 	};
 
-	ctrl.getProcessStateIcon = function (processState) {
-		switch (processState) {
-			case "Available":
-				return "fa-server";
-			case "InProcess":
-				return "fa-gears";
-			case "Done":
-				return "fa-sign-in";
-			case "Error":
-				return "fa-times-circle";
-			case "Hold":
-				return "fa-pause-circle";
-		}
-	};
-
 	ctrl.openInfoModel = function () {
 		$uibModal.open({
 			templateUrl: 'js/app/components/pages/information-modal/information.html',

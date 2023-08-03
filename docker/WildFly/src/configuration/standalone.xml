@@ -198,7 +198,6 @@
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql">
 					<driver>mysql</driver>
 					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:host.docker.internal}:3307/testiaf</xa-datasource-property>
-					<xa-datasource-property name="sslMode">DISABLED</xa-datasource-property>
 					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
 					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
 					<security>
@@ -208,7 +207,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
 					<driver>mariadb</driver>
-					<xa-datasource-property name="URL">jdbc:mariadb://${env.jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
+					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>

@@ -62,6 +62,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		$rootScope.$on('messageLog', function () { ctrl.messageLog = appService.messageLog; });
 		$rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
 
+		ctrl.getProcessStateIcon = appService.getProcessStateIcon;
 		ctrl.getProcessStateIconColor = appService.getProcessStateIconColor;
 
 		if ($state.params.configuration != "All")
