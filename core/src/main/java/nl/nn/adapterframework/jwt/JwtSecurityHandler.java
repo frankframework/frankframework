@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,8 +73,6 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
 			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
-					.entrySet()
-					.stream()
 					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
 					.findFirst();
 
@@ -86,8 +85,6 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
 			boolean noneMatch = splitClaims(matchOneOfClaims)
-					.entrySet()
-					.stream()
 					.noneMatch(entry -> claimsSet.get(entry.getKey()).equals(entry.getValue()));
 
 			if(noneMatch){
@@ -96,10 +93,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	private Map<String, String> splitClaims(String claimsToSplit){
+	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
 		return StringUtil.splitToStream(claimsToSplit)
 				.map(s -> StringUtil.split(s, "="))
-				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
+				.entrySet()
+				.stream();
 	}
 
 }
