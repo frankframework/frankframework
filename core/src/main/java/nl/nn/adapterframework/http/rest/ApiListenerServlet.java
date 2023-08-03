@@ -289,7 +289,6 @@ public class ApiListenerServlet extends HttpServletBase {
 							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
 							if(userIsInRole) {
 								userPrincipal = new ApiPrincipal();
-								break;
 							}
 						}
 						break;
@@ -321,7 +320,6 @@ public class ApiListenerServlet extends HttpServletBase {
 									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
 									if(userIsInRole) {
 										userPrincipal = new ApiPrincipal();
-										break;
 									}
 								} else {
 									userPrincipal = new ApiPrincipal();
