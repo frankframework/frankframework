@@ -1099,7 +1099,7 @@
     &lt;/trigger&gt;
  &lt;/monitor&gt;
  }
- 
+
  &lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
@@ -1890,7 +1890,7 @@
     </xs:attribute>
     <xs:attribute name="contentDispositionHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key that provides the Content-disposition header in the response</xs:documentation>
+        <xs:documentation>Session key that provides the Content-Disposition header in the response</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -1901,6 +1901,11 @@
     <xs:attribute name="jwksURL" type="xs:string">
       <xs:annotation>
         <xs:documentation>Keysource URL to validate JWT</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jwtHeader" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Header to extract JWT from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredClaims" type="xs:string">
@@ -1920,7 +1925,7 @@
     </xs:attribute>
     <xs:attribute name="principalNameClaim" type="xs:string">
       <xs:annotation>
-        <xs:documentation>claim name which specifies the principal</xs:documentation>
+        <xs:documentation>Claim name which specifies the principal name (maps to GetPrincipalPipe)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -1997,7 +2002,14 @@
         <xs:documentation>Charset to be used for extracting the contents</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="outputFormat" />
+    <xs:attribute name="outputFormat">
+      <xs:annotation>
+        <xs:documentation>OutputFormat of message for messageType=info Default: XML</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -2470,7 +2482,14 @@
         <xs:documentation>Charset to be used for extracting the contents</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="outputFormat" />
+    <xs:attribute name="outputFormat">
+      <xs:annotation>
+        <xs:documentation>OutputFormat of message for messageType=info Default: XML</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -2867,7 +2886,11 @@
         <xs:documentation>Field containing the correlationId Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="sqlDialect" />
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -3103,7 +3126,11 @@
     <xs:attribute ref="selectCondition" />
     <xs:attribute ref="peekUntransacted" />
     <xs:attribute ref="peekQuery" />
-    <xs:attribute ref="sqlDialect" />
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
@@ -3266,9 +3293,20 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.Samba2Listener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2ListenerDeclaredAttributeGroup">
-    <xs:attribute name="share" type="xs:string">
+    <xs:attribute name="hostname" type="xs:string" />
+    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="authType">
       <xs:annotation>
-        <xs:documentation>Shared folder name in the samba server</xs:documentation>
+        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
+ When setting SPNEGO, the host must use the FQDN, and must be registered on the KDC with a valid SPN. Default: SPNEGO</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -3281,32 +3319,23 @@
         <xs:documentation>the smb share password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="domain" type="xs:string">
+    <xs:attribute name="domainName" type="xs:string">
       <xs:annotation>
         <xs:documentation>domain, in case the user account is bound to a domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authType">
-      <xs:annotation>
-        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO' Default: SPNEGO</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="share" type="xs:string" />
     <xs:attribute name="kdc" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Domain Controller, as set in java.security.krb5.kdc. If authentication type specified as SPNEGO and realm is specified then this field must be filled.</xs:documentation>
+        <xs:documentation>Key Distribution Center, typically hosted on a domain controller.
+ Stored in &lt;code&gt;java.security.krb5.kdc&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="realm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Realm, as set in java.security.krb5.realm. If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used</xs:documentation>
+        <xs:documentation>Kerberos Realm, case sensitive. Typically upper case and the same as the domain name.
+ An Active Directory domain acts as a Kerberos Realm.
+ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3967,7 +3996,7 @@
         <xs:annotation>
           <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.
 
- &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for Resultset!&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4470,7 +4499,7 @@
  is received in which case it can be certain that the message is stored in the
  database table IBISSTORE.
  &lt;br/&gt;&lt;br/&gt;
- If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt;
  or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
  acts as a message log and an error store. It can be useful however to add a message log or error store
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
@@ -4682,6 +4711,29 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ShadowSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="StoredProcedureQuerySender">
+        <xs:annotation>
+          <xs:documentation>StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
+
+ &lt;p&gt;
+ The StoredProcedureQuerySender class has the following features:
+ &lt;ul&gt;
+     &lt;li&gt;It supports setting the output parameters of the stored procedure by position.&lt;/li&gt;
+     &lt;li&gt;The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
+     returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
+  &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;/p&gt;
+ &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="StoredProcedureQuerySenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -5385,16 +5437,7 @@
     <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcQuerySenderBaseDeclaredAttributeGroup">
-    <xs:attribute name="packageContent" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Controls wheter the returned package content is db2 format or xml format.
- Possible values:
- &lt;ul&gt;
- &lt;li&gt;select:&lt;/li&gt; xml content s expected
- &lt;li&gt;&lt;i&gt;anything else&lt;/i&gt;:&lt;/li&gt; db2 content is expected
- &lt;/ul&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="packageContent" />
     <xs:attribute name="queryType">
       <xs:annotation>
         <xs:documentation>Type of query to be executed Default: OTHER</xs:documentation>
@@ -5403,21 +5446,8 @@
         <xs:union memberTypes="QueryTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="scalar" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="scalarExtended" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
- &lt;ul&gt;
- &lt;li&gt;'[absent]' no row is found&lt;/li&gt;
- &lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
- &lt;li&gt;'[empty]' a row is found, but the value is a empty string&lt;/li&gt;
- &lt;/ul&gt; Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="scalar" />
+    <xs:attribute ref="scalarExtended" />
     <xs:attribute name="maxRows" type="frankInt">
       <xs:annotation>
         <xs:documentation>The maximum number of rows to be returned from the output of &lt;code&gt;select&lt;/code&gt; queries, -1 means unlimited rows Default: -1</xs:documentation>
@@ -5428,16 +5458,8 @@
         <xs:documentation>The number of the first row to be returned from the output of &lt;code&gt;select&lt;/code&gt; queries. Rows before this are skipped from the output. Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="nullValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Value used in result as contents of fields that contain no value (sql-null) Default: &lt;i&gt;empty string&lt;/i&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultQuery" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="nullValue" />
+    <xs:attribute ref="resultQuery" />
     <xs:attribute name="columnsReturned" type="xs:string">
       <xs:annotation>
         <xs:documentation>Comma separated list of columns whose values are to be returned. Works only if the driver implements jdbc 3.0 getGeneratedKeys().
@@ -5445,21 +5467,9 @@
  Works for H2 and Oracle. Could work for MS_SQL with a single identity column, with name GENERATED_KEYS, if a identity has been generated. Not supported for other DBMSes.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="useNamedParams" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="includeFieldDefinition" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the result contains besides the returned rows also includes a header with information about the fetched fields Default: application default (true)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trimSpaces" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Remove trailing blanks from all result values. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="useNamedParams" />
+    <xs:attribute ref="includeFieldDefinition" />
+    <xs:attribute ref="trimSpaces" />
     <xs:attribute name="rowIdSessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for &lt;code&gt;querytype=other&lt;/code&gt;). &lt;b&gt;Note:&lt;/b&gt; If multiple rows are processed a SqlException is thrown.</xs:documentation>
@@ -5480,11 +5490,7 @@
         <xs:documentation>when set and &gt;=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED' Default: -1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="synchronous" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="synchronous" />
     <xs:attribute name="blobColumn" type="frankInt">
       <xs:annotation>
         <xs:documentation>Only for querytype 'updateBlob': column that contains the BLOB to be updated Default: 1</xs:documentation>
@@ -5531,26 +5537,14 @@
  For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When set to &lt;code&gt;false&lt;/code&gt;, the Outputstream is not closed after BLOB or CLOB has been written to it Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="streamCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="closeOutputstreamOnExit" />
+    <xs:attribute ref="streamCharset" />
     <xs:attribute name="avoidLocking" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If true, then select queries are executed in a way that avoids taking locks, e.g. with isolation mode 'read committed' instead of 'repeatable read'. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="prettyPrint" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="prettyPrint" />
     <xs:attribute name="outputFormat">
       <xs:annotation>
         <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
@@ -5893,11 +5887,7 @@
         <xs:documentation>The SQL query text to be excecuted each time sendMessage() is called</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="batchSize" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other. Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="batchSize" />
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedQuerySenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedQuerySenderDeclaredAttributeGroup" />
@@ -7509,7 +7499,7 @@
     </xs:attribute>
     <xs:attribute name="maxRecordsSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set (and &amp;gt;=0), this session key contains the maximum number of records which are processed. 
+        <xs:documentation>If set (and &amp;gt;=0), this session key contains the maximum number of records which are processed.
  If &lt;code&gt;query&lt;/code&gt; contains a group field (3), then also following records with the same group field value as the last record are processed</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -7565,9 +7555,20 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.Samba2Sender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2SenderDeclaredAttributeGroup">
-    <xs:attribute name="share" type="xs:string">
+    <xs:attribute name="hostname" type="xs:string" />
+    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="authType">
       <xs:annotation>
-        <xs:documentation>the destination, aka smb://xxx/yyy share</xs:documentation>
+        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
+ When setting SPNEGO, the host must use the FQDN, and must be registered on the KDC with a valid SPN. Default: SPNEGO</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -7580,32 +7581,23 @@
         <xs:documentation>the smb share password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="domain" type="xs:string">
+    <xs:attribute name="domainName" type="xs:string">
       <xs:annotation>
         <xs:documentation>domain, in case the user account is bound to a domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authType">
-      <xs:annotation>
-        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO' Default: SPNEGO</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="share" type="xs:string" />
     <xs:attribute name="kdc" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Domain Controller, as set in java.security.krb5.kdc. If authentication type specified as SPNEGO and realm is specified then this field must be filled.</xs:documentation>
+        <xs:documentation>Key Distribution Center, typically hosted on a domain controller.
+ Stored in &lt;code&gt;java.security.krb5.kdc&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="realm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Realm, as set in java.security.krb5.realm. If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used</xs:documentation>
+        <xs:documentation>Kerberos Realm, case sensitive. Typically upper case and the same as the domain name.
+ An Active Directory domain acts as a Kerberos Realm.
+ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -8005,6 +7997,78 @@
   <xs:attributeGroup name="ShadowSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="ShadowSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="ParallelSendersCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="StoredProcedureQuerySenderType">
+    <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
+    <xs:attributeGroup ref="StoredProcedureQuerySenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.StoredProcedureQuerySender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="StoredProcedureQuerySenderDeclaredAttributeGroup">
+    <xs:attribute name="outputParameters" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Sets the output parameters of the store procedure, separated by commas. Each output parameter of the stored
+ procedure should be specified by its index in the parameter list of the SQL, with the first parameter being
+ number 1.
+ &lt;p&gt;
+     Example:&lt;br/&gt;
+     If there is a stored procedure {@code get_message_and_status_by_id} with a single input parameter, the message id,
+     and two output parameters, the message and the message status, then the query should be specified as:
+     &lt;code&gt;call get_message_and_status_by_id(?, ?, ?)&lt;/code&gt;,
+     and {@code outputParameters} should be:
+     &lt;code&gt;outputParameters="2,3"&lt;/code&gt;
+ &lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="query" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>A SQL statement that calls a stored procedure. The statement should begin with the &lt;code&gt;CALL&lt;/code&gt; or &lt;code&gt;EXEC&lt;/code&gt;
+ SQL keyword depending on SQL dialect. In case of doubt, the safe choice is to always start with &lt;code&gt;CALL&lt;/code&gt; and choose Oracle dialect.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="queryType">
+      <xs:annotation>
+        <xs:documentation>The query type. For stored procedures, valid query types are JdbcQuerySenderBase.QueryType#SELECT and JdbcQuerySenderBase.QueryType#OTHER.
+ Use JdbcQuerySenderBase.QueryType#SELECT when your stored procedure returns a row set (not supported by Oracle and PostgreSQL).
+ Use JdbcQuerySenderBase.QueryType#OTHER when your stored procedure returns values via &lt;code&gt;OUT&lt;/code&gt; or &lt;code&gt;INOUT&lt;/code&gt; parameters, or does not return
+ anything at all.
+ &lt;p&gt;
+ Using any other value will be rejected.
+ &lt;/p&gt; Default: OTHER</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="QueryTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StoredProcedureQuerySenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StoredProcedureQuerySenderDeclaredAttributeGroup" />
+    <xs:attribute ref="batchSize" />
+    <xs:attribute ref="packageContent" />
+    <xs:attribute ref="scalar" />
+    <xs:attribute ref="scalarExtended" />
+    <xs:attribute ref="nullValue" />
+    <xs:attribute ref="resultQuery" />
+    <xs:attribute ref="useNamedParams" />
+    <xs:attribute ref="includeFieldDefinition" />
+    <xs:attribute ref="trimSpaces" />
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="synchronous" />
+    <xs:attribute ref="closeOutputstreamOnExit" />
+    <xs:attribute ref="streamCharset" />
+    <xs:attribute ref="prettyPrint" />
+    <xs:attribute name="outputFormat">
+      <xs:annotation>
+        <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attributeGroup ref="JdbcSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="TibcoSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
@@ -8649,7 +8713,7 @@
         <xs:annotation>
           <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.
 
- &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for Resultset!&lt;/p&gt;</xs:documentation>
+ &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9152,7 +9216,7 @@
  is received in which case it can be certain that the message is stored in the
  database table IBISSTORE.
  &lt;br/&gt;&lt;br/&gt;
- If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt; 
+ If you have a &lt;code&gt;MessageStoreSender&lt;/code&gt; it does not make sense to add a &lt;code&gt;JdbcMessageLog&lt;/code&gt;
  or &lt;code&gt;JdbcErrorStorage&lt;/code&gt; in the same sender pipe. A &lt;code&gt;MessageStoreSender&lt;/code&gt;
  acts as a message log and an error store. It can be useful however to add a message log or error store
  to the adapter around the sender pipe, because errors may occur before the message reaches the sender pipe.
@@ -9364,6 +9428,29 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ShadowSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="StoredProcedureQueryErrorSender">
+        <xs:annotation>
+          <xs:documentation>StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
+
+ &lt;p&gt;
+ The StoredProcedureQuerySender class has the following features:
+ &lt;ul&gt;
+     &lt;li&gt;It supports setting the output parameters of the stored procedure by position.&lt;/li&gt;
+     &lt;li&gt;The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
+     returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
+  &lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;/p&gt;
+ &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="StoredProcedureQuerySenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -12636,32 +12723,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="BatchBlobTransformerPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe that batch-transforms the lines in a BLOB.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BatchBlobTransformerPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="BatchClobTransformerPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe that batch-transforms the lines in a CLOB.
- 
- N.B. the readerFactory is not used by this class.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BatchClobTransformerPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="BatchFileTransformerPipe">
         <xs:annotation>
           <xs:documentation>Pipe for transforming a (batch)file with records. Records in the file must be separated
@@ -13461,7 +13522,7 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="IsXmlIfPipe">
+      <xs:element name="IsXmlPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on if the input is a XML string.
 
@@ -13469,7 +13530,7 @@
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="IsXmlIfPipeType">
+            <xs:extension base="IsXmlPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -14420,21 +14481,41 @@
     <xs:attributeGroup ref="StreamingPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="BatchBlobTransformerPipeType">
+  <xs:complexType name="BatchFileTransformerPipeType">
     <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="BatchBlobTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BatchBlobTransformerPipe" use="prohibited" />
+    <xs:attributeGroup ref="BatchFileTransformerPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.BatchFileTransformerPipe" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="BatchBlobTransformerPipeDeclaredAttributeGroup">
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
+  <xs:attributeGroup name="BatchFileTransformerPipeDeclaredAttributeGroup">
+    <xs:attribute name="move2dirAfterTransform" type="xs:string">
       <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
+        <xs:documentation>Directory in which the transformed file(s) is stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="move2dirAfterError" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory to which the inputfile is moved in case an error occurs</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberOfBackups" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 5</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="overwrite" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="delete" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will deleted after being processed, and not stored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="BatchBlobTransformerPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BatchBlobTransformerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="BatchTransformerPipeBaseCumulativeAttributeGroup" />
+  <xs:attributeGroup name="BatchFileTransformerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="BatchFileTransformerPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="StreamTransformerPipeType">
     <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
@@ -14475,63 +14556,6 @@
   <xs:attributeGroup name="StreamTransformerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="StreamTransformerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BatchTransformerPipeBaseDeclaredAttributeGroup">
-    <xs:attribute name="query" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>The SQL query text to be excecuted each time sendMessage() is called</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BatchTransformerPipeBaseCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BatchTransformerPipeBaseDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="BatchClobTransformerPipeType">
-    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="BatchTransformerPipeBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BatchClobTransformerPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:complexType name="BatchFileTransformerPipeType">
-    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="BatchFileTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.BatchFileTransformerPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="BatchFileTransformerPipeDeclaredAttributeGroup">
-    <xs:attribute name="move2dirAfterTransform" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory in which the transformed file(s) is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2dirAfterError" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory to which the inputfile is moved in case an error occurs</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="numberOfBackups" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 5</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="overwrite" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="delete" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will deleted after being processed, and not stored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BatchFileTransformerPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BatchFileTransformerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="BlobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
@@ -15610,12 +15634,12 @@
     <xs:attributeGroup ref="IsUserInRolePipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="IsXmlIfPipeType">
+  <xs:complexType name="IsXmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="IsXmlIfPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IsXmlIfPipe" use="prohibited" />
+    <xs:attributeGroup ref="IsXmlPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IsXmlPipe" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="IsXmlIfPipeDeclaredAttributeGroup">
+  <xs:attributeGroup name="IsXmlPipeDeclaredAttributeGroup">
     <xs:attribute name="thenForwardName" type="xs:string">
       <xs:annotation>
         <xs:documentation>forward returned when &lt;code&gt;'true'&lt;/code&gt; Default: then</xs:documentation>
@@ -15632,8 +15656,8 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="IsXmlIfPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="IsXmlIfPipeDeclaredAttributeGroup" />
+  <xs:attributeGroup name="IsXmlPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="IsXmlPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPipeType">
@@ -16403,10 +16427,10 @@
     </xs:attribute>
     <xs:attribute name="sleepWhenEqualToPrevious" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Set to a time &lt;i&gt;in milliseconds&lt;/i&gt; to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in 
- this virtual machine or &lt;code&gt;-1 to disable&lt;/code&gt;. The thread will sleep for the specified time before recalculating a new value. Set the 
+        <xs:documentation>Set to a time &lt;i&gt;in milliseconds&lt;/i&gt; to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in
+ this virtual machine or &lt;code&gt;-1 to disable&lt;/code&gt;. The thread will sleep for the specified time before recalculating a new value. Set the
  timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back.
- &lt;b&gt;note:&lt;/b&gt; When you're looking for a GUID parameter for your XSLT it might be better to use 
+ &lt;b&gt;note:&lt;/b&gt; When you're looking for a GUID parameter for your XSLT it might be better to use
  &amp;lt;param name=&amp;quot;guid&amp;quot; pattern=&amp;quot;{hostname}_{uid}&amp;quot;/&amp;gt;, see Parameter. Default: -1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -16642,9 +16666,20 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Samba2Pipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2PipeDeclaredAttributeGroup">
-    <xs:attribute name="share" type="xs:string">
+    <xs:attribute name="hostname" type="xs:string" />
+    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="authType">
       <xs:annotation>
-        <xs:documentation>the destination, aka smb://xxx/yyy share</xs:documentation>
+        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
+ When setting SPNEGO, the host must use the FQDN, and must be registered on the KDC with a valid SPN. Default: SPNEGO</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -16657,32 +16692,23 @@
         <xs:documentation>the smb share password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="domain" type="xs:string">
+    <xs:attribute name="domainName" type="xs:string">
       <xs:annotation>
         <xs:documentation>domain, in case the user account is bound to a domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="authType">
-      <xs:annotation>
-        <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO' Default: SPNEGO</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="Samba2AuthTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="share" type="xs:string" />
     <xs:attribute name="kdc" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Domain Controller, as set in java.security.krb5.kdc. If authentication type specified as SPNEGO and realm is specified then this field must be filled.</xs:documentation>
+        <xs:documentation>Key Distribution Center, typically hosted on a domain controller.
+ Stored in &lt;code&gt;java.security.krb5.kdc&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="realm" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Kerberos Realm, as set in java.security.krb5.realm. If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used</xs:documentation>
+        <xs:documentation>Kerberos Realm, case sensitive. Typically upper case and the same as the domain name.
+ An Active Directory domain acts as a Kerberos Realm.
+ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -18186,6 +18212,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="NTLM" />
       <xs:enumeration value="SPNEGO" />
+      <xs:enumeration value="ANONYMOUS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="TransportTypeAttributeValuesType_2">
@@ -19085,14 +19112,6 @@
       <xs:documentation>If set, an XML with all message properties is provided under this key</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="outputFormat">
-    <xs:annotation>
-      <xs:documentation>OutputFormat of message for messageType=info Default: XML</xs:documentation>
-    </xs:annotation>
-    <xs:simpleType>
-      <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-    </xs:simpleType>
-  </xs:attribute>
   <xs:attribute name="replyDestinationName" type="xs:string">
     <xs:annotation>
       <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;,
@@ -19253,11 +19272,6 @@
       <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="sqlDialect" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
@@ -19319,6 +19333,76 @@
       <xs:documentation>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="packageContent" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Controls wheter the returned package content is db2 format or xml format.
+ Possible values:
+ &lt;ul&gt;
+ &lt;li&gt;select:&lt;/li&gt; xml content s expected
+ &lt;li&gt;&lt;i&gt;anything else&lt;/i&gt;:&lt;/li&gt; db2 content is expected
+ &lt;/ul&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="scalar" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="scalarExtended" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
+ &lt;ul&gt;
+ &lt;li&gt;'[absent]' no row is found&lt;/li&gt;
+ &lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
+ &lt;li&gt;'[empty]' a row is found, but the value is a empty string&lt;/li&gt;
+ &lt;/ul&gt; Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="nullValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Value used in result as contents of fields that contain no value (sql-null) Default: &lt;i&gt;empty string&lt;/i&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="resultQuery" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="useNamedParams" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Named parameters will be auto detected by default. Every string in the query which equals &lt;code&gt;?{paramname}&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="includeFieldDefinition" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the result contains besides the returned rows also includes a header with information about the fetched fields Default: application default (true)</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="trimSpaces" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Remove trailing blanks from all result values. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="synchronous" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When set to &lt;code&gt;false&lt;/code&gt;, the Outputstream is not closed after BLOB or CLOB has been written to it Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="streamCharset" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="prettyPrint" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="destinationParam" type="xs:string">
     <xs:annotation>
       <xs:documentation>Parameter that is used, if specified and not empty, to determine the destination. Overrides the &lt;code&gt;destination&lt;/code&gt; attribute</xs:documentation>
@@ -19370,6 +19454,11 @@
   <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
     <xs:annotation>
       <xs:documentation>A list of JMS headers of the response to add to the PipeLineSession</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="batchSize" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other. Default: 0</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="urlParam" type="xs:string">

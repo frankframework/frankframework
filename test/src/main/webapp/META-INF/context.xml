@@ -143,7 +143,7 @@
 	/>
 
 
-	<!-- Tibco crendentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
+	<!-- Tibco credentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"

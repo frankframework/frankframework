@@ -193,4 +193,9 @@ public class LarvaServlet extends HttpServletBase {
 	public String getUrlMapping() {
 		return SERVLET_PATH + "*";
 	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return new String[] {"IbisTester"};
+	}
 }

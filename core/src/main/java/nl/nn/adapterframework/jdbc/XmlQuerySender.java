@@ -345,7 +345,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		try {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a DELETE SQL command [" + query + "]", e);
 		}
@@ -384,12 +384,12 @@ public class XmlQuerySender extends DirectQuerySender {
 					if (q.trim().toLowerCase().startsWith("select")) {
 						result.append(executeSelectQuery(statement,null,null, null, null).getResult().asString());
 					} else {
-						result.append(executeOtherQuery(connection, statement, q, null, null, null, null).asString());
+						result.append(executeOtherQuery(connection, statement, q, null, null, null, null, null).asString());
 					}
 				}
 				return new Message(result.toString());
 			} else {
-				return executeOtherQuery(connection, statement, query, null, null, null, null);
+				return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 			}
 		} catch (SQLException | IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command ["+query+"]", e);
@@ -432,7 +432,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			applyParameters(statement, columns);
 			statement.setQueryTimeout(getTimeout());
-			return executeOtherQuery(connection, statement, query, null, null, null, null);
+			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}

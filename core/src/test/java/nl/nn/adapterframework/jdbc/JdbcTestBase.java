@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -66,6 +67,7 @@ public abstract class JdbcTestBase {
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
+	private boolean dropAllAfterEachTest = true;
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
@@ -142,11 +144,13 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			try {
-				liquibase.dropAll();
-			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+			if (dropAllAfterEachTest) {
+				try {
+					liquibase.dropAll();
+				} catch(Exception e) {
+					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+				}
 			}
 			liquibase.close();
 			liquibase = null;
@@ -190,6 +194,12 @@ public abstract class JdbcTestBase {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection()));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
 		liquibase.forceReleaseLocks();
+		StringWriter out = new StringWriter(2048);
+		liquibase.reportStatus(true, new Contexts(), out);
+		log.info("Liquibase Database: {}, {}", liquibase.getDatabase().getDatabaseProductName(), liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: {}", liquibase.getDatabase());
+		log.info("Liquibase changeset status:");
+		log.info(out.toString());
 		liquibase.update(new Contexts());
 	}
 

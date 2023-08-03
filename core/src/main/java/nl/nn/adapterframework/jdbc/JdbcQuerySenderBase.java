@@ -32,7 +32,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.StringTokenizer;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -71,6 +71,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -227,19 +228,17 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return prepareQueryWithResultSet(con, adaptedQuery, resultSetConcurrency);
 	}
 
-	protected static PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final int resultSetConcurrency) throws SQLException {
+	protected PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final int resultSetConcurrency) throws SQLException {
 		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
 	}
 
 	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
-		return con.prepareStatement(query,columnsReturned);
+		return con.prepareStatement(query, columnsReturned);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"preparing statement for query ["+callQuery+"]");
-		}
+		log.debug("{}preparing statement for query [{}]", this::getLogPrefix, () -> callQuery);
 		return con.prepareCall(callQuery);
 	}
 
@@ -263,7 +262,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} else {
 			resultQueryStatement = null;
 		}
-		return new QueryExecutionContext(query, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
+		return new QueryExecutionContext(query, convertedResultQuery, getQueryTypeEnum(), newParameterList, connection, statement, resultQueryStatement);
 	}
 
 
@@ -720,26 +719,26 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					getMaxRows() + (getStartRow() > 1 ? getStartRow() - 1 : 0));
 			}
 			int var = 1;
-			for (int i=0;i<paramArray.length;i++) {
-				if (paramArray[i] instanceof Timestamp) {
-					pstmt.setTimestamp(var, (Timestamp) paramArray[i]);
+			for (final Object o : paramArray) {
+				if (o instanceof Timestamp) {
+					pstmt.setTimestamp(var, (Timestamp) o);
 					var++;
 				}
-				if (paramArray[i] instanceof java.sql.Date) {
-					pstmt.setDate(var, (java.sql.Date) paramArray[i]);
+				if (o instanceof java.sql.Date) {
+					pstmt.setDate(var, (java.sql.Date) o);
 					var++;
 				}
-				if (paramArray[i] instanceof String) {
-					pstmt.setString(var, (String) paramArray[i]);
+				if (o instanceof String) {
+					pstmt.setString(var, (String) o);
 					var++;
 				}
-				if (paramArray[i] instanceof Integer) {
-					int x = Integer.parseInt(paramArray[i].toString());
+				if (o instanceof Integer) {
+					int x = Integer.parseInt(o.toString());
 					pstmt.setInt(var, x);
 					var++;
 				}
-				if (paramArray[i] instanceof Float) {
-					float x = Float.parseFloat(paramArray[i].toString());
+				if (o instanceof Float) {
+					float x = Float.parseFloat(o.toString());
 					pstmt.setFloat(var, x);
 					var++;
 				}
@@ -755,9 +754,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
 			int numRowsAffected = pstmt.executeUpdate();
-			if (convertedResultQuery!=null) {
+			if (queryExecutionContext.getResultQueryStatement() != null) {
 				PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
-				if (log.isDebugEnabled()) log.debug("obtaining result from [" + convertedResultQuery + "]");
+				if (log.isDebugEnabled()) log.debug("obtaining result from [" + queryExecutionContext.getResultQuery() + "]");
 				ResultSet rs = resStmt.executeQuery();
 				return getResult(rs);
 			}
@@ -779,10 +778,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		String query = queryExecutionContext.getQuery();
 		ParameterList parameterList = queryExecutionContext.getParameterList();
 		PreparedStatement resStmt = queryExecutionContext.getResultQueryStatement();
-		return executeOtherQuery(connection, statement, query, resStmt, message, session, parameterList);
+		return executeOtherQuery(connection, statement, query, queryExecutionContext.getResultQuery(), resStmt, message, session, parameterList);
 	}
 
-	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
@@ -808,7 +807,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 			if (resStmt != null) {
-				log.debug("obtaining result from [{}]", convertedResultQuery);
+				log.debug("obtaining result from [{}]", resultQuery);
 				try (ResultSet rs = resStmt.executeQuery()) {
 					return getResult(rs);
 				}
@@ -831,21 +830,19 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	protected String fillParamArray(Object[] paramArray, String message) throws SenderException {
 		int lengthMessage = message.length();
-		int startHaakje = message.indexOf('(');
-		int eindHaakje	= message.indexOf(')');
+		int openingBracePosition = message.indexOf('(');
+		int closingBracePosition = message.indexOf(')');
 		int beginOutput = message.indexOf('?');
-		if (startHaakje < 1)
+		if (openingBracePosition < 1)
 			return message;
 		if (beginOutput < 0)
-			beginOutput = eindHaakje;
-		String packageInput = message.substring(startHaakje + 1, beginOutput);
-		int idx = 0;
-		if (message.indexOf(',') == -1) {
-			if (message.indexOf('?') == -1) {
-				idx = 1;
-			} else {
-				idx = 0;
-			}
+			beginOutput = closingBracePosition;
+		String packageInput = message.substring(openingBracePosition + 1, beginOutput);
+		int idx;
+		if (!message.contains(",") && !message.contains("?")) {
+			idx = 1;
+		} else {
+			idx = 0;
 		}
 		int ix  = 1;
 		String element=null;
@@ -854,18 +851,18 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
 					ix++;
 				}
-				int eindInputs = beginOutput - ix;
-				packageInput = message.substring(startHaakje + 1, eindInputs);
-				StringTokenizer st2 = new StringTokenizer(packageInput, ",");
+				int endInputs = beginOutput - ix;
+				packageInput = message.substring(openingBracePosition + 1, endInputs);
 				if (idx != 1) {
-					while (st2.hasMoreTokens()) {
-						element = st2.nextToken().trim();
+					Iterator<String> iter = StringUtil.splitToStream(packageInput).iterator();
+					while (iter.hasNext()) {
+						element = iter.next();
 						if (element.startsWith("'")) {
 							int x = element.indexOf('\'');
 							int y = element.lastIndexOf('\'');
 							paramArray[idx] = element.substring(x + 1, y);
 						} else {
-							if (element.indexOf('-') >= 0){
+							if (element.contains("-")){
 								if (element.length() > 10) {
 									String pattern = "yyyy-MM-dd HH:mm:ss";
 									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
@@ -882,7 +879,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 									paramArray[idx] = sDate;
 								}
 							} else {
-								if (element.indexOf('.') >= 0) {
+								if (element.contains(".")) {
 									paramArray[idx] = new Float(element);
 								} else {
 									paramArray[idx] = new Integer(element);
@@ -893,27 +890,17 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					}
 				}
 			}
-			StringBuilder newMessage = new StringBuilder(message.substring(0, startHaakje + 1));
-			if (idx > 0) {
-				newMessage.append("?");
-			}
-			for (int i = 0;i<idx; i++) {
-				if (i<idx - 1) {
-					newMessage.append(",?");
-				}
-			}
-			if (idx>=0) {
+			StringBuilder newMessage = new StringBuilder(message.substring(0, openingBracePosition + 1));
+			if (idx >= 0) {
 				//check if output parameter exists is expected in original message and append an ending ?(out-parameter)
-				if (message.indexOf('?') > 0) {
-					if (idx == 0) {
-						newMessage.append("?");
-					} else {
+				int parameterCount = idx + (message.contains("?") ? 1 : 0);
+				if (parameterCount > 0) {
+					newMessage.append("?");
+					for (int i = 1; i < parameterCount; i++) {
 						newMessage.append(",?");
 					}
-					newMessage.append(message.substring(eindHaakje, lengthMessage));
-				} else {
-					newMessage.append(message.substring(eindHaakje, lengthMessage));
 				}
+				newMessage.append(message, closingBracePosition, lengthMessage);
 			}
 			return newMessage.toString();
 		} catch (ParseException e) {

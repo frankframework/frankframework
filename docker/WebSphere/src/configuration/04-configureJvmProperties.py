@@ -21,7 +21,7 @@ def setSecurityProperty(name, value ):
 	return
 
 setJVMSystemProperty('log.dir', '${SERVER_LOG_ROOT}')
-setJVMSystemProperty('dtap.stage', 'TST')
+setJVMSystemProperty('dtap.stage', 'LOC')
 setJVMSystemProperty('web.protocol', 'http')
 setJVMSystemProperty('web.port', '9080')
 setJVMSystemProperty('scenariosroot1.directory', '/opt/frank/testtool')
@@ -44,4 +44,3 @@ setSecurityProperty('enforceJava2Security', 'true')
 
 
 AdminConfig.save()
-	

@@ -3,4 +3,5 @@
 	<Include ref="./ConfigurationJdbcSenders.xml"/>
 	<Include ref="./ConfigurationResultSetIteratingPipe.xml"/>
 	<Include ref="./ConfigurationManageDatabaseWrapper.xml"/>
+	<Include ref="./ConfigurationStoredProcedureSender.xml"/>
 </Configuration>

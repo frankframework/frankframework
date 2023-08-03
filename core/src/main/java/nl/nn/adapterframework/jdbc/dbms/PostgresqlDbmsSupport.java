@@ -34,8 +34,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-//import org.postgresql.largeobject.LargeObject;
-//import org.postgresql.largeobject.LargeObjectManager;
 
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -361,4 +359,14 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "INT AUTO_INCREMENT";
 	}
 
+
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return true;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return false;
+	}
 }
