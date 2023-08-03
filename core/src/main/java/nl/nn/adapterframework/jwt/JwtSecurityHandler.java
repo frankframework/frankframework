@@ -62,11 +62,13 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> claims = StringUtil.split(requiredClaims);
-			for (String claim : claims) {
-				if(!claimsSet.containsKey(claim)) {
-					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
-				}
+			Optional<String> missingClaim  = StringUtil.split(requiredClaims)
+					.stream()
+					.filter(claim -> !claimsSet.containsKey(claim))
+					.findFirst();
+
+			if(missingClaim.isPresent()){
+				throw new AuthorizationException("JWT missing required claims: ["+missingClaim.get()+"]");
 			}
 		}
 
