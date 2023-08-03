@@ -246,4 +246,9 @@ public class WebContentServlet extends HttpServletBase {
 	public String getUrlMapping() {
 		return SERVLET_PATH + "*";
 	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return ALL_IBIS_ROLES;
+	}
 }

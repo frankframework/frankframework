@@ -5,6 +5,7 @@ grant {
   permission java.io.FilePermission "${APPSERVER_ROOT_DIR}", "read";
   permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}-", "read";
   permission java.io.FilePermission "${SERVER_LOG_ROOT}${/}-", "read,write,delete";
+  permission java.io.FilePermission "/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/logs", "read";
   permission java.io.FilePermission "/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/logs/-", "read,write,delete";
   permission java.io.FilePermission "/opt/frank/configuration/-", "read";
   permission java.io.FilePermission "/opt/frank/testtool", "read";
