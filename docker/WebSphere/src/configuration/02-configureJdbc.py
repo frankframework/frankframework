@@ -67,7 +67,7 @@ createDatasource('ibis4test-mysql', 'MySQL JDBC Driver', authAliasName, [
 	])
 
 createDatasource('ibis4test-mariadb', 'MariaDB JDBC Driver', authAliasName, [
-		[['name', 'Url'], ['value', 'jdbc:mariadb://${jdbc.hostname}:3306/testiaf']],
+		[['name', 'url'], ['value', 'jdbc:mariadb://${jdbc.hostname}:3306/testiaf']],
 	])
 
 createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasName, [
