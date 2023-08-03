@@ -89,7 +89,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 					.anyMatch(entry -> claimsSet.get(entry.getKey()).equals(entry.getValue()));
 
 			if(!anyMatch){
-				throw new AuthorizationException("JWT does not contain any of the following claims ["+claims+"]");
+				throw new AuthorizationException("JWT does not contain any of the following claims ["+matchOneOfClaims+"]");
 			}
 		}
 	}
