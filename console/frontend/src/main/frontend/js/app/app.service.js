@@ -56,6 +56,12 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 
 	service.dtapStage = "";
 
+	service.databaseSchedulesEnabled = false;
+	service.updateDatabaseSchedulesEnabled = function (databaseSchedulesEnabled) {
+		service.databaseSchedulesEnabled = databaseSchedulesEnabled;
+		$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
+	}
+
 	service.updateConfigurations = function (configurations) {
 		const updatedConfigurations = [];
 		for (var i in configurations) {
@@ -68,6 +74,21 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 		service.configurations = updatedConfigurations;
 		$rootScope.$broadcast('configurations', updatedConfigurations);
 	}
+
+	service.getProcessStateIcon = function (processState) {
+		switch (processState) {
+			case "Available":
+				return "fa-server";
+			case "InProcess":
+				return "fa-gears";
+			case "Done":
+				return "fa-sign-in";
+			case "Error":
+				return "fa-times-circle";
+			case "Hold":
+				return "fa-pause-circle";
+		}
+	};
 
 	service.getProcessStateIconColor = function (processState) {
 		switch (processState) {

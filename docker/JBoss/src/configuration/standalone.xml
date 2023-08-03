@@ -224,18 +224,16 @@
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql">
 					<driver>mysql</driver>
 					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:host.docker.internal}:3307/testiaf</xa-datasource-property>
+					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
+					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<!-- Use MySQL driver for MariaDB for proper XA support. -->
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
-					<driver>mysql</driver>
-					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
-					<xa-datasource-property name="sslMode">DISABLED</xa-datasource-property>
-					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
-					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
+					<driver>mariadb</driver>
+					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
@@ -274,6 +272,9 @@
 					</driver>
 					<driver name="mysql" module="module.frank-framework">
 						<xa-datasource-class>com.mysql.cj.jdbc.MysqlXADataSource</xa-datasource-class>
+					</driver>
+					<driver name="mariadb" module="module.frank-framework">
+						<xa-datasource-class>org.mariadb.jdbc.MariaDbDataSource</xa-datasource-class>
 					</driver>
 					<driver name="postgresql" module="module.frank-framework">
 						<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>

@@ -11,4 +11,3 @@ import './app/views/iframe/fit-height.directive';
 import './app/views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import './app/views/logging/clipboard.directive';
 import './app/views/status/ui-lref.directive';
-import './app/views/storage/back-button.directive';

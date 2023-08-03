@@ -14,7 +14,7 @@
 		<jackson.version>2.15.2</jackson.version>
 		<cxf.version>3.5.6</cxf.version>
 		<spring.version>5.3.29</spring.version>
-		<spring-security.version>5.8.4</spring-security.version>
+		<spring-security.version>5.8.5</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
@@ -311,6 +311,11 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-web</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
@@ -1210,7 +1215,7 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.2-SNAPSHOT</version>
+						<version>0.2</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
