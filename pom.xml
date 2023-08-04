@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.8.1-SNAPSHOT</revision>
+		<revision>7.8.1</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.20.0</log4j2.version>
 		<cxf.version>3.5.5</cxf.version>
@@ -763,7 +763,7 @@
 		<url>https://github.com/ibissource/iaf</url>
 		<connection>scm:git:https://github.com/ibissource/iaf.git</connection>
 		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v7.8.1</tag>
 	</scm>
 
 	<profiles>

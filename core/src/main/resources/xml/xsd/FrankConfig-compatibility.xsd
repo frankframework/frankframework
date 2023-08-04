@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -859,23 +859,18 @@
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="raised" type="frankBoolean" />
+    <xs:attribute name="additionalHitCount" type="frankInt" />
     <xs:attribute name="type">
       <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="EventTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="typeEnum">
+    <xs:attribute name="alarmSeverity">
       <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="raised" type="frankBoolean" />
-    <xs:attribute name="alarmSeverityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="additionalHitCount" type="frankInt" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Monitor" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitor" />
@@ -6294,7 +6289,7 @@
     </xs:attribute>
     <xs:attribute name="contentDispositionHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key that provides the Content-disposition header in the response</xs:documentation>
+        <xs:documentation>Session key that provides the Content-Disposition header in the response</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -6305,6 +6300,11 @@
     <xs:attribute name="jwksURL" type="xs:string">
       <xs:annotation>
         <xs:documentation>Keysource URL to validate JWT</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jwtHeader" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Header to extract JWT from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredClaims" type="xs:string">
@@ -6320,6 +6320,11 @@
     <xs:attribute name="roleClaim" type="xs:string">
       <xs:annotation>
         <xs:documentation>Claim name which specifies the role</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="principalNameClaim" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Claim name which specifies the principal</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7296,7 +7301,7 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. 
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -7307,7 +7312,7 @@
     </xs:attribute>
     <xs:attribute name="httpWsdl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download  Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -15707,7 +15712,7 @@
     </xs:attribute>
     <xs:attribute name="deleteOnExit" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If true, file is automatically deleted upon normal JVM termination Default: true</xs:documentation>
+        <xs:documentation>This flag is no longer supported as it was leaking server memory. Temporary files should be removed by other means. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="collectResults" type="frankBoolean">
@@ -16480,16 +16485,7 @@
   </xs:group>
   <xs:group name="DestinationElementGroupBase">
     <xs:choice>
-      <xs:element name="GalmDestination">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="GalmMonitorAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SenderDestination">
+      <xs:element name="SenderMonitorAdapterDestination">
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SenderMonitorAdapterType">
@@ -16500,22 +16496,13 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="GalmMonitorAdapterType">
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.GalmMonitorAdapter" />
-  </xs:complexType>
-  <xs:attributeGroup name="MonitorAdapterBaseDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:complexType name="SenderMonitorAdapterType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="MonitorDestinationBaseDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.SenderMonitorAdapter" />
   </xs:complexType>
   <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
@@ -16523,6 +16510,15 @@
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="MonitorDestinationBaseDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:group name="TriggerElementGroup">
     <xs:choice>
       <xs:element name="Trigger">
@@ -16590,20 +16586,14 @@
   </xs:group>
   <xs:attributeGroup name="TriggerDeclaredAttributeGroup">
     <xs:attribute name="eventCode" type="xs:string" />
-    <xs:attribute name="eventCodes" type="xs:string" />
-    <xs:attribute name="severity">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="severityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="threshold" type="frankInt" />
     <xs:attribute name="period" type="frankInt" />
-    <xs:attribute name="sourceFilteringEnum">
+    <xs:attribute name="severity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="sourceFiltering">
       <xs:simpleType>
         <xs:union memberTypes="SourceFilteringAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -17124,7 +17114,7 @@
       <xs:pattern value="[sS][tT][aA][rR][tT][rR][eE][cC][eE][iI][vV][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="SeverityEnumAttributeValuesType">
+  <xs:simpleType name="SeverityAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[hH][aA][rR][mM][lL][eE][sS][sS]" />
       <xs:pattern value="[wW][aA][rR][nN][iI][nN][gG]" />
@@ -17145,7 +17135,7 @@
       <xs:pattern value="[cC][lL][eE][aA][rR][iI][nN][gG]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="EventTypeEnumAttributeValuesType">
+  <xs:simpleType name="EventTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[tT][eE][cC][hH][nN][iI][cC][aA][lL]" />
       <xs:pattern value="[fF][uU][nN][cC][tT][iI][oO][nN][aA][lL]" />

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1059,23 +1059,18 @@
         <xs:documentation>The functional name of the object.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="raised" type="frankBoolean" />
+    <xs:attribute name="additionalHitCount" type="frankInt" />
     <xs:attribute name="type">
       <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="EventTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="typeEnum">
+    <xs:attribute name="alarmSeverity">
       <xs:simpleType>
-        <xs:union memberTypes="EventTypeEnumAttributeValuesType variableRef" />
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="raised" type="frankBoolean" />
-    <xs:attribute name="alarmSeverityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="additionalHitCount" type="frankInt" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Monitor" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitor" use="prohibited" />
@@ -6319,7 +6314,7 @@
  &lt;tr&gt;&lt;td&gt;automaticReconnect&lt;/td&gt;&lt;td&gt;see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank"&gt;MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)&lt;/a&gt; (apart from this recover job will also try to recover)&lt;/td&gt;&lt;td&gt;true&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;charset&lt;/td&gt;&lt;td&gt;character encoding of received messages&lt;/td&gt;&lt;td&gt;UTF-8&lt;/td&gt;&lt;/tr&gt;
  &lt;/table&gt;
- 
+
  Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -6701,7 +6696,7 @@
     </xs:attribute>
     <xs:attribute name="contentDispositionHeaderSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key that provides the Content-disposition header in the response</xs:documentation>
+        <xs:documentation>Session key that provides the Content-Disposition header in the response</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -6712,6 +6707,11 @@
     <xs:attribute name="jwksURL" type="xs:string">
       <xs:annotation>
         <xs:documentation>Keysource URL to validate JWT</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jwtHeader" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Header to extract JWT from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredClaims" type="xs:string">
@@ -6727,6 +6727,11 @@
     <xs:attribute name="roleClaim" type="xs:string">
       <xs:annotation>
         <xs:documentation>Claim name which specifies the role</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="principalNameClaim" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Claim name which specifies the principal</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7285,7 +7290,7 @@
     </xs:attribute>
     <xs:attribute name="returnedSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. 
+        <xs:documentation>Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -7296,7 +7301,7 @@
     </xs:attribute>
     <xs:attribute name="httpWsdl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download  Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="active" />
@@ -16525,11 +16530,6 @@
         <xs:documentation>Sessionkey with a directory value to extract the archive to</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="deleteOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If true, file is automatically deleted upon normal JVM termination Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="collectResults" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, only a small summary (count of items in zip) is returned Default: true</xs:documentation>
@@ -17124,23 +17124,7 @@
   </xs:group>
   <xs:group name="DestinationElementGroupBase">
     <xs:choice>
-      <xs:element name="GalmDestination">
-        <xs:annotation>
-          <xs:documentation>MonitorAdapter that creates log lines for the GALM log adapter.
- 
- configuration is done via the AppConstants 'galm.stage' and 'galm.source',
- that in the default implemenation obtain their values from custom properties 'galm.stage' and
- appConstant 'instance.name'.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="GalmMonitorAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="destination" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SenderDestination">
+      <xs:element name="SenderMonitorAdapterDestination">
         <xs:annotation>
           <xs:documentation>IMonitorAdapter that uses a sender to send its message.</xs:documentation>
         </xs:annotation>
@@ -17154,18 +17138,9 @@
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="GalmMonitorAdapterType">
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.GalmMonitorAdapter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="MonitorAdapterBaseDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:complexType name="SenderMonitorAdapterType">
     <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
-    <xs:attributeGroup ref="MonitorAdapterBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="MonitorDestinationBaseDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.SenderMonitorAdapter" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
@@ -17173,6 +17148,15 @@
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="MonitorDestinationBaseDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:group name="TriggerElementGroup">
     <xs:choice>
       <xs:element name="Trigger">
@@ -17238,20 +17222,14 @@
   </xs:group>
   <xs:attributeGroup name="TriggerDeclaredAttributeGroup">
     <xs:attribute name="eventCode" type="xs:string" />
-    <xs:attribute name="eventCodes" type="xs:string" />
-    <xs:attribute name="severity">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="severityEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="SeverityEnumAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="threshold" type="frankInt" />
     <xs:attribute name="period" type="frankInt" />
-    <xs:attribute name="sourceFilteringEnum">
+    <xs:attribute name="severity">
+      <xs:simpleType>
+        <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="sourceFiltering">
       <xs:simpleType>
         <xs:union memberTypes="SourceFilteringAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -18068,13 +18046,13 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="GZ">
         <xs:annotation>
-          <xs:documentation>Gzip format; also used when direction is compress and resultIsContent=&lt;code&gt;true&lt;/code&gt; 
+          <xs:documentation>Gzip format; also used when direction is compress and resultIsContent=&lt;code&gt;true&lt;/code&gt;
  or when direction is decompress and messageIsContent=&lt;code&gt;true&lt;/code&gt;</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="ZIP">
         <xs:annotation>
-          <xs:documentation>Zip format; also used when direction is compress and resultIsContent=&lt;code&gt;false&lt;/code&gt; 
+          <xs:documentation>Zip format; also used when direction is compress and resultIsContent=&lt;code&gt;false&lt;/code&gt;
  or when direction is decompress and messageIsContent=&lt;code&gt;false&lt;/code&gt;</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
@@ -18170,7 +18148,7 @@
       <xs:enumeration value="STARTRECEIVER" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="SeverityEnumAttributeValuesType">
+  <xs:simpleType name="SeverityAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="HARMLESS" />
       <xs:enumeration value="WARNING" />
@@ -18191,7 +18169,7 @@
       <xs:enumeration value="CLEARING" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="EventTypeEnumAttributeValuesType">
+  <xs:simpleType name="EventTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="TECHNICAL" />
       <xs:enumeration value="FUNCTIONAL" />
