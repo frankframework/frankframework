@@ -1,7 +1,7 @@
 Frank!Framework with Docker
 ===========================
 
-Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, the source is available from the [docker-folder](docker/appserver/Tomcat) in this repository.
+Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, the source is available from the [docker-folder](docker/Tomcat) in this repository.
 
 # Contents
 
@@ -78,7 +78,7 @@ The image also contains the following files:
 |---|---|---|
 | /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml | mount/copy of your context.xml | Use hostname `host.docker.internal` to get to the host machine for local testing. Changing this file will require a new instance to be started, it cannot be reloaded |
 | /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
-| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
+| /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/Tomcat/Dockerfile) for an example |
 
 Logging
 =======
@@ -116,7 +116,7 @@ Special consideration should be taken with secrets. As described on the [Tomcat 
 - Mount the value for the username in the file `/opt/frank/secrets/<secret-name>/username`
 - Mount the value for the password in the file `/opt/frank/secrets/<secret-name>/password`
 
-See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
+See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/Tomcat/test/Dockerfile) for an example.
 
 ## Non-root
 
