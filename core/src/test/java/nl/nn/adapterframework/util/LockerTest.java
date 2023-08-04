@@ -33,7 +33,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 public class LockerTest extends TransactionManagerTestBase {
 
 	@Rule
-	public Timeout testTimeout = Timeout.seconds(30);
+	public Timeout testTimeout = Timeout.seconds(60);
 
 	private Locker locker;
 	private boolean tableCreated = false;

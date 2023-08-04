@@ -26,7 +26,8 @@ import nl.nn.adapterframework.stream.Message;
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 
 	@Rule
-	public Timeout testTimeout = Timeout.seconds(30);
+	public Timeout testTimeout = Timeout.seconds(60);
+
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;

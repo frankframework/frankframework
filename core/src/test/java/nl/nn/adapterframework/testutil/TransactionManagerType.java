@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.WeakHashMap;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -22,11 +26,11 @@ public enum TransactionManagerType {
 	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
 	NARAYANA(NarayanaXADataSourceFactory.class, "springTOMCATNARAYANA.xml");
 
-	private static Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
-	private static Map<String, TestConfiguration> datasourceConfigurations = new WeakHashMap<>();
+	private static final Map<TransactionManagerType, TestConfiguration> transactionManagerConfigurations = new WeakHashMap<>();
+	private static final Map<String, TestConfiguration> datasourceConfigurations = new WeakHashMap<>();
 
-	private Class<? extends URLDataSourceFactory> factory;
-	private String[] springConfigurationFiles;
+	private final Class<? extends URLDataSourceFactory> factory;
+	private final String[] springConfigurationFiles;
 
 	TransactionManagerType(Class<? extends URLDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
@@ -56,10 +60,24 @@ public enum TransactionManagerType {
 		properties.setProperty("TransactionManagerType", this.name());
 		propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
+		removePreviousTxLogFiles(config);
+
 		config.setName(this.name());
 		config.refresh();
 
 		return config;
+	}
+
+	private void removePreviousTxLogFiles(TestConfiguration config) {
+		String txDir = config.getEnvironment().getProperty("transactionmanager.log.dir");
+		try {
+			LogManager.getLogger(this.getClass()).debug("Cleaning up old TX log files at [{}]", txDir);
+			if (txDir != null) {
+				FileUtils.deleteDirectory(new File(txDir));
+			}
+		} catch (IOException e) {
+			LogManager.getLogger(this.getClass()).warn("Could not remove previous TX manager log dirs:", e);
+		}
 	}
 
 	public TestConfiguration getConfigurationContext(String productKey) {
@@ -86,6 +104,9 @@ public enum TransactionManagerType {
 			}
 			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {
 				TransactionManagerServices.getTransactionManager().shutdown();
+			}
+			if (ac != null) {
+				removePreviousTxLogFiles(ac);
 			}
 		}
 	}

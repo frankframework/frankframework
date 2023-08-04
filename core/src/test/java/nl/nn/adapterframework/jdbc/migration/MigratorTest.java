@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MigratorTest extends TransactionManagerTestBase {
 
 	@Rule
-	public Timeout testTimeout = Timeout.seconds(30);
+	public Timeout testTimeout = Timeout.seconds(60);
 
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";

@@ -63,7 +63,7 @@ public abstract class JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
-	public static final String TEST_TABLE="Temp"; // use mixed case tablename for testing
+	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 

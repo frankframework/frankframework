@@ -13,13 +13,21 @@ import java.nio.file.Paths;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
+import bitronix.tm.TransactionManagerServices;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
+
+	@Rule
+	public Timeout testTimeout = Timeout.seconds(15);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
@@ -38,11 +46,20 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		tmUidFile = folder+"/"+TMUID_FILE;
 	}
 
+	@BeforeClass
+	public static void beforeAll() {
+		// Clean up any transaction state that might have been leftover from previous tests.
+		TransactionManagerType.closeAllConfigurationContexts();
+	}
+
 	@After
 	public void tearDown() {
 		if (transactionManager != null) {
 			transactionManager.shutdownTransactionManager();
 			transactionManager = null;
+		}
+		if (TransactionManagerServices.isTransactionManagerRunning()) {
+			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 	}
 

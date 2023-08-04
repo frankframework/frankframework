@@ -16,8 +16,8 @@
 		class="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager"
 		depends-on="narayanaConfig"
 		>
-		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
-		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
+		<property name="statusFile" value="${transactionmanager.log.dir}/NARAYANA/status.txt" />
+		<property name="uidFile"  value="${transactionmanager.log.dir}/NARAYANA/tm-uid.txt" />
 		<property name="uid" value="${transactionmanager.uid}" />
 	</bean>
 
