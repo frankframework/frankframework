@@ -9,9 +9,7 @@ import java.sql.PreparedStatement;
 import java.util.Date;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -24,9 +22,6 @@ import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
-
-	@Rule
-	public Timeout testTimeout = Timeout.seconds(60);
 
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;

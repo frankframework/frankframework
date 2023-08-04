@@ -25,6 +25,11 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 	}
 
 	public static void stop(boolean stop) {
+		if (XaDatasourceCommitStopper.stop && !stop && performCommit != null) {
+			while (!performCommit.isReleased()) {
+				performCommit.release();
+			}
+		}
 		XaDatasourceCommitStopper.stop = stop;
 		if (stop) {
 			prepareFinished = new Semaphore();
@@ -34,7 +39,7 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 	}
 
 	public static XADataSource augmentXADataSource(XADataSource dataSource) {
-		return new XaDatasourceObserver(dataSource, c -> new XaConnectionObserver(c,r -> new XaDatasourceCommitStopper(r)));
+		return new XaDatasourceObserver(dataSource, c -> new XaConnectionObserver(c, XaDatasourceCommitStopper::new));
 	}
 
 	@Override

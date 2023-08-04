@@ -26,7 +26,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 	public void testCommit() throws Exception {
 		JdbcUtil.executeStatement(connection, "DELETE FROM "+TEST_TABLE+" where TKEY=1");
 
-		TransactionStatus txStatus = getTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
@@ -42,7 +42,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 	public void testRollback() throws Exception {
 		JdbcUtil.executeStatement(connection, "DELETE FROM "+TEST_TABLE+" where TKEY=1");
 
-		TransactionStatus txStatus = getTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionStatus txStatus = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
@@ -64,7 +64,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (1)");
 		}
 
-		TransactionStatus txStatus1 = getTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionStatus txStatus1 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 
 		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(1);
@@ -76,7 +76,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		}
 		checkNumberOfLines(1);
 
-		TransactionStatus txStatus2 = getTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus txStatus2 = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (2)");
 		}
@@ -94,12 +94,12 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 		// This tests fails for Narayana, if no Modifiers are present for the database driver.
 		// @see NarayanaDataSourceFactory.checkModifiers()
 
-		TransactionStatus txStatusOuter = getTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
+		TransactionStatus txStatusOuter = startTransaction(TransactionDefinition.PROPAGATION_REQUIRED);
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, "SELECT TVARCHAR FROM "+TEST_TABLE+" WHERE tkey=1");
 		}
 
-		TransactionStatus txStatusInner = getTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus txStatusInner = startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		try (Connection txManagedConnection = getConnection()) {
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO "+TEST_TABLE+" (tkey) VALUES (2)");
 		}

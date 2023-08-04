@@ -75,6 +75,9 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 		assumeFalse("FIXME JDBC/JTA: These tests currently broken with Narayana", transactionManagerType == TransactionManagerType.NARAYANA);
 
+		// Release any hanging commits that might be from previous tests
+		XaDatasourceCommitStopper.stop(false);
+
 		super.setup();
 	}
 

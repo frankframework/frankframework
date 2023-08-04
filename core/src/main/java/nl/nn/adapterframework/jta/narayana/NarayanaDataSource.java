@@ -41,10 +41,10 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
- * 
- * Bypasses the {@link TransactionalDriver} in order to create connections and 
+ *
+ * Bypasses the {@link TransactionalDriver} in order to create connections and
  * uses the {@link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
- * 
+ *
  * {@link ConnectionImple} requires an {@link XADataSource}
  *
  */
@@ -65,15 +65,12 @@ public class NarayanaDataSource implements DataSource {
 		this.targetDataSource = (XADataSource) dataSource;
 		this.name = name;
 
-		//If the DataSource implements both DataSource and XADataSource, check for modifiers.
-		if(dataSource instanceof DataSource) {
-			checkModifiers((DataSource) dataSource);
-		}
+		checkModifiers((XADataSource) dataSource);
 	}
 
 	/** In order to allow transactions to run over multiple databases, see {@link ModifierFactory}. */
-	private void checkModifiers(DataSource dataSource) {
-		try (Connection connection = dataSource.getConnection()) {
+	private void checkModifiers(XADataSource dataSource) {
+		try (Connection connection = dataSource.getXAConnection().getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			String driverName = metadata.getDriverName();
 			int major = metadata.getDriverMajorVersion();

@@ -10,6 +10,8 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -19,6 +21,9 @@ import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
+
+	@Rule
+	public Timeout testTimeout = Timeout.seconds(60);
 
 	protected IThreadConnectableTransactionManager txManager;
 	private List<TransactionStatus> transactionsToClose = new ArrayList<>();
@@ -87,13 +92,17 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		return getTxDef(transactionAttribute, 20);
 	}
 
-	protected TransactionStatus getTransaction(final int transactionAttribute) {
-		TransactionStatus tx = txManager.getTransaction(getTxDef(transactionAttribute));
+	protected TransactionStatus startTransaction(final int transactionAttribute) {
+		return startTransaction(getTxDef(transactionAttribute));
+	}
+
+	protected TransactionStatus startTransaction(final TransactionDefinition txDef) {
+		TransactionStatus tx = txManager.getTransaction(txDef);
 		registerForCleanup(tx);
 		return tx;
 	}
 
-	protected boolean registerForCleanup(final TransactionStatus tx) {
-		return transactionsToClose.add(tx);
+	protected void registerForCleanup(final TransactionStatus tx) {
+		transactionsToClose.add(tx);
 	}
 }
