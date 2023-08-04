@@ -45,8 +45,6 @@ permission java.util.logging.LoggingPermission "control";
 
 permission java.lang.RuntimePermission "getenv.*";
 
-// permission java.util.PropertyPermission "*", "read";
-
 permission com.ibm.websphere.security.WebSphereRuntimePermission "accessRuntimeClasses";
 
 // required for WebSphere Application Server administrative application programming interfaces (APIs):
@@ -68,7 +66,7 @@ permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.
 // property * write required for Quartz scheduler and SpringFramework,
 // as they call java.System.getProperties()
 // See http://java.sun.com/j2se/1.5.0/docs/api/java/lang/SecurityManager.html#checkPropertiesAccess()
-permission java.util.PropertyPermission "*", "write";
+permission java.util.PropertyPermission "*", "read,write";
 
 // required to for CredentialFactory to obtain credentials from JAAS Authentication Entries:
 permission javax.security.auth.AuthPermission "createLoginContext.DefaultPrincipalMapping";
@@ -101,6 +99,9 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 // required for CXF jaxrs spring bean parser
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp";
+
+// required for Spring Core
+permission java.lang.RuntimePermission "accessClassInPackage.sun.reflect.annotation";
 
 // required for SUN SAAJ library
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
