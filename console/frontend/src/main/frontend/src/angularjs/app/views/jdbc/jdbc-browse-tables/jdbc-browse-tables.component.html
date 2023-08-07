@@ -1,0 +1,101 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="alert alert-warning" role="alert" type="warning" ng-if="$ctrl.error">
+        <span class="ng-binding ng-scope" ng-bind-html="$ctrl.error"></span>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h4>Browse a JDBC Table</h4>
+                </div>
+                <div class="ibox-content">
+                    <form role="form">
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Datasource</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="datasource" ng-model="$ctrl.form.datasource">
+                                    <option ng-repeat="datasource in $ctrl.datasources">{{datasource}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Table name</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="table" type="text" ng-model="$ctrl.form.table" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Where</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="where" type="text" ng-model="$ctrl.form.where" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Order by</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="order" type="text" ng-model="$ctrl.form.order" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Number of rows only</label>
+                            <div class="col-sm-9">
+                                <span class="form-control" style="border: none;"><input icheck type="checkbox"
+                                        ng-model="$ctrl.form.numberOfRowsOnly" /></span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Rownum min</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="minrow" type="text" ng-model="$ctrl.form.minRow" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Rownum max</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="maxrow" type="text" ng-model="$ctrl.form.maxRow" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-sm-3 m-t-md">
+                                <button class="btn btn-info btn-w-m font-bold" type="button"
+                                    ng-click="$ctrl.reset()">Reset</button>
+                            </div>
+                            <div class="col-sm-3 m-t-md">
+                                <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold"
+                                    type="submit" ng-click="$ctrl.submit($ctrl.form)">Send</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12" ng-if="$ctrl.query">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h4>Result</h4>
+                </div>
+                <div class="ibox-content">
+                    {{$ctrl.query}}
+                </div>
+                <div class="ibox-content">
+                    <table class="table jdbcBrowse">
+                        <thead>
+                            <tr>
+                                <th ng-repeat="columnName in $ctrl.columnNames | orderBy:'id'" title="{{columnName.desc}}">
+                                    {{columnName.name}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="row in $ctrl.result">
+                                <td ng-repeat="column in row; track by $index">{{column}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
