@@ -23,7 +23,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
 import java.util.Properties;
 
-import javax.sql.CommonDataSource;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -57,15 +57,12 @@ public class NarayanaDataSource implements DataSource {
 	private final @Getter XADataSource targetDataSource;
 	private final String name;
 
-	public NarayanaDataSource(CommonDataSource dataSource, String name) {
-		if(!(dataSource instanceof XADataSource)) {
-			throw new IllegalStateException("Only XA DataSources can be registered with a TransactionManager");
-		}
+	public NarayanaDataSource(@Nonnull XADataSource dataSource, String name) {
 
-		this.targetDataSource = (XADataSource) dataSource;
+		this.targetDataSource = dataSource;
 		this.name = name;
 
-		checkModifiers((XADataSource) dataSource);
+		checkModifiers(dataSource);
 	}
 
 	/** In order to allow transactions to run over multiple databases, see {@link ModifierFactory}. */

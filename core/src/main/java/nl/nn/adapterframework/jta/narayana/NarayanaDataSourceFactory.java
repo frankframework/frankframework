@@ -58,14 +58,15 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if(dataSource instanceof XADataSource) {
-			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
+			XADataSource xaDataSource = (XADataSource) dataSource;
+			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
 
 			if(maxPoolSize > 1) {
-				return XAPool((XADataSource) dataSource);
+				return XAPool(xaDataSource);
 			}
 
-			NarayanaDataSource ds = new NarayanaDataSource(dataSource, dataSourceName);
+			NarayanaDataSource ds = new NarayanaDataSource(xaDataSource, dataSourceName);
 			log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
 			return ds;
 		}
