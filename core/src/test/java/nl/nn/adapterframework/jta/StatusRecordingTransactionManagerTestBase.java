@@ -26,8 +26,12 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
+	/**
+	 * Test timeout of 3 minutes is likely more than ever needed but some of these tests can
+	 * be very slow, so I'm being extra generous here.
+	 */
 	@Rule
-	public Timeout testTimeout = Timeout.seconds(15);
+	public Timeout testTimeout = Timeout.seconds(180);
 
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";

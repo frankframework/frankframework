@@ -58,7 +58,6 @@ public class NarayanaDataSource implements DataSource {
 	private final String name;
 
 	public NarayanaDataSource(@Nonnull XADataSource dataSource, String name) {
-
 		this.targetDataSource = dataSource;
 		this.name = name;
 

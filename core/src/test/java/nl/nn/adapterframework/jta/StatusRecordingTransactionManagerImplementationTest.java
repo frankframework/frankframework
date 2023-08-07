@@ -64,7 +64,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	@BeforeClass
 	public static void init() {
-		assumeThat(URLDataSourceFactory.availableDatasources, hasItems(SECONDARY_PRODUCT));
+		assumeThat(URLDataSourceFactory.getAvailableDataSources(), hasItems(SECONDARY_PRODUCT));
 		TransactionManagerType.closeAllConfigurationContexts();
 	}
 
@@ -113,7 +113,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		case NARAYANA:
 			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
 		default:
-			throw new NotImplementedException("Unkonwn transaction manager type ["+transactionManagerType+"]");
+			throw new NotImplementedException("Unknown transaction manager type ["+transactionManagerType+"]");
 		}
 	}
 
@@ -144,21 +144,23 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		String uid = txManagerReal.getUid();
 		assertStatus("ACTIVE", uid);
 		XaDatasourceCommitStopper.stop(true);
-		Semaphore actionDone = new Semaphore();
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
-		xaTester.setActionDone(actionDone);
+		// Register each ConcurrentXATransactionTester instance right away
+		XaDatasourceCommitStopper.commitGuard.register();
 
 		xaTester.start();
-		XaDatasourceCommitStopper.commitCalled.acquire();
+		// Wait for all others to have arrived here too.
+		log.info("<*> Nr of participants: {}", XaDatasourceCommitStopper.commitGuard.getRegisteredParties());
+		log.info("Waiting for all other participants to arrive in 'commit'");
+		int tst1 = XaDatasourceCommitStopper.commitGuard.arriveAndAwaitAdvance();
+		log.info("<*> Phase at Tst1: {}", tst1);
+
 		txManagerReal.destroy();
 		assertStatus("PENDING", uid);
 
 		teardown();
-		XaDatasourceCommitStopper.performCommit.release();
 		XaDatasourceCommitStopper.stop(false);
 
-//		log.debug("waiting for commit to finish");
-//		actionDone.acquire();
 		log.debug("recreating transaction manager");
 		setupTransactionManager();
 
