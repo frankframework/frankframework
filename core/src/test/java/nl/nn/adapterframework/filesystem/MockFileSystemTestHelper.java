@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 
 	private MockFileSystem<F> fileSystem;
-	
+
 	protected MockFileSystemTestHelper(MockFileSystem<F> fileSystem) {
 		this.fileSystem=fileSystem;
 	}
@@ -55,13 +55,13 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		if (folder==null) {
 			return;
 		}
-		folder.getFiles().remove(filename);	
+		folder.getFiles().remove(filename);
 	}
 
 	protected F createNewFile(MockFolder folder, String filename) {
 		return (F)new MockFile(filename,folder);
 	}
-	
+
 	@Override
 	public OutputStream _createFile(String folderName, String filename) throws Exception {
 		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
@@ -70,11 +70,11 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 			fileSystem.getFolders().put(folderName,folder);
 		}
 		final MockFile mf = createNewFile(folder,filename);
-		
+
 		//log.debug("created file ["+filename+"] in folder ["+folderName+"]");
-		
+
 		folder.getFiles().put(filename, mf);
-		
+
 		return new ByteArrayOutputStream() {
 
 			@Override
@@ -82,7 +82,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 				super.close();
 				mf.setContents(toByteArray());
 			}
-			
+
 		};
 	}
 
@@ -118,7 +118,6 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	public void _createFolder(String filename) throws Exception {
 		MockFolder mf = new MockFolder(filename,fileSystem);
 		fileSystem.getFolders().put(filename,mf);
-		
 	}
 
 	@Override

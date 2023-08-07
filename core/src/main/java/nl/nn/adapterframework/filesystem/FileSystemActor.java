@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -78,6 +79,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutputStreamingSupport {
 	protected Logger log = LogUtil.getLogger(this);
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	public static final String ACTION_CREATE="create";
 	public static final String ACTION_LIST="list";
@@ -112,7 +114,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String filename;
 	private @Getter String destination;
 	private @Getter String inputFolder; // folder for action=list
-	private @Getter boolean createFolder; // for action move, rename and list
+	private @Getter boolean createFolder; // for action create, move, rename and list
 
 	private @Getter Base64Pipe.Direction base64;
 	private @Getter int rotateDays=0;
@@ -219,7 +221,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
-		eolArray = System.getProperty("line.separator").getBytes();
+		eolArray = LINE_SEPARATOR.getBytes();
 	}
 
 	private void checkConfiguration(FileSystemAction action2) throws ConfigurationException {
@@ -335,10 +337,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			switch(action) {
 				case CREATE:{
-					F file=getFile(input, pvl);
+					String filename = determineFilename(input, pvl);
+					String folder = FilenameUtils.getFullPathNoEndSeparator(filename);
+					if(StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder) && isCreateFolder()) {
+						fileSystem.createFolder(folder);
+					}
+					F file = fileSystem.toFile(filename);
 					if (fileSystem.exists(file)) {
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
-						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
+						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 					//noinspection EmptyTryBlock
 					try (OutputStream ignored = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {

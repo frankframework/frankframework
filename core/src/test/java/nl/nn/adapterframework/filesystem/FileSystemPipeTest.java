@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
@@ -227,10 +228,10 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
 
-		if (folder1!=null) {
+		if(folder1 != null) {
 			_createFolder(folder1);
 		}
-		if (folderExists && folder2!=null) {
+		if(folderExists && folder2 != null) {
 			_createFolder(folder2);
 		}
 		createFile(folder1, filename, contents);
@@ -245,9 +246,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		Message message= new Message(filename);
+		Message message = new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
-		String result=prr.getResult().asString();
+		String result = prr.getResult().asString();
 
 		// test
 		// result should be name of the moved file
@@ -281,6 +282,47 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 //	public void fileSystemPipeMoveActionTestFolderToFolder() throws Exception {
 //		fileSystemPipeMoveActionTest("folder1","folder2");
 //	}
+
+	public void fileSystemPipeCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "create" + FILE1;
+
+		if(_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		fileSystemPipe.setAction(FileSystemAction.CREATE); //TODO WRITE
+		if (setCreateFolderAttribute) {
+			fileSystemPipe.setCreateFolder(true);
+		}
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		Message message = new Message(folder + "/" +filename);
+		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
+		String result = prr.getResult().asString();
+
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+	}
+
+	@Test
+	public void fileSystemPipeCreateFile() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder", false, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemPipeCreateFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemPipeCreateFile("folder", false, true);
+	}
 
 	@Test
 	public void fileSystemPipeMkdirActionTest() throws Exception {

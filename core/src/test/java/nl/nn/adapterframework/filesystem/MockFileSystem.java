@@ -170,7 +170,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	public OutputStream createFile(MockFile f) throws FileSystemException, IOException {
 		checkOpen();
 		f.getOwner().getFiles().put(f.getName(), f);
-		f.setOwner(this);
 		return f.getOutputStream(true);
 	}
 

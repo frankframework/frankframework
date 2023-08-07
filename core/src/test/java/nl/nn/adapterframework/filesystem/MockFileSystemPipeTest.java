@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
-public class MockFileSystemPipeTest extends FileSystemPipeTest <FileSystemPipe<MockFile, MockFileSystem<MockFile>>, MockFile,MockFileSystem<MockFile>>{
+public class MockFileSystemPipeTest extends FileSystemPipeTest<FileSystemPipe<MockFile, MockFileSystem<MockFile>>, MockFile, MockFileSystem<MockFile>> {
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {

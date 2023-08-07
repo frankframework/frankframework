@@ -518,6 +518,47 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		fileSystemSenderListActionTest("folder",2);
 	}
 
+	public void fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "create" + FILE1;
+
+		if(_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		Message message = new Message(folder + "/" + filename);
+		Message rs = fileSystemSender.sendMessageOrThrow(message, session);
+		String result = rs.asString();
+
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+	}
+
+	@Test
+	public void fileSystemSenderCreateFile() throws Exception {
+		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderCreateFile("folder", false, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemSenderCreateFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemSenderCreateFile("folder", false, true);
+	}
+
 	@Test
 	public void fileSystemSenderTestForFolderExistenceWithNonExistingFolder() throws Exception {
 		fileSystemSender.setAction(FileSystemAction.LIST);
