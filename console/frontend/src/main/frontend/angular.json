@@ -26,13 +26,33 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              {
+                "glob": "**/*",
+                "input": "src/assets/",
+                "output": "/assets/"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": "src/",
+                "output": "/"
+              },
+              {
+                "glob": "**/*.html",
+                "input": "src/angularjs/app/",
+                "output": "/angularjs/app/"
+              }
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.js",
+              "node_modules/angular/angular.js",
+              "src/angularjs/plugins/iCheck/icheck.min.js",
+              "node_modules/datatables.net/js/jquery.dataTables.min.js",
+              "node_modules/chart.js/dist/Chart.js",
+              "node_modules/mermaid/dist/mermaid.core.js"
+            ]
           },
           "configurations": {
             "production": {

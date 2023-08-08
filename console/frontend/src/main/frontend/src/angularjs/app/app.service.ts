@@ -1,69 +1,69 @@
 import { appModule } from "./app.module";
 
 appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $state){
-	const service = {};
+	const service = {} as Record<string, any>;
 
-	service.adapters = {};
-	service.updateAdapters = function (adapters) {
-		service.adapters = adapters;
+	service["adapters"] = {};
+	service["updateAdapters"] = function (adapters) {
+		service["adapters"] = adapters;
 		$rootScope.$broadcast('adapters', adapters);
 	}
 
-	service.alerts = [];
-	service.updateAlerts = function(alerts){
-		service.alerts = alerts;
+	service["alerts"] = [];
+	service["updateAlerts"] = function(alerts){
+		service["alerts"] = alerts;
 		$rootScope.$broadcast('alerts', alerts);
 	}
 
-	service.startupError = null;
+	service["startupError"] = null;
 
-	service.adapterSummary = {
+	service["adapterSummary"] = {
 		started: 0,
 		stopped: 0,
 		starting: 0,
 		stopping: 0,
 		error: 0
 	};
-	service.receiverSummary = {
+	service["receiverSummary"] = {
 		started: 0,
 		stopped: 0,
 		starting: 0,
 		stopping: 0,
 		error: 0
 	};
-	service.messageSummary = {
+	service["messageSummary"] = {
 		info: 0,
 		warn: 0,
 		error: 0
 	};
 
-	service.lastUpdated = 0;
-	service.timeout = null;
+	service["lastUpdated"] = 0;
+	service["timeout"] = null;
 
-	service.configurations = [];
+	service["configurations"] = [];
 
-	service.messageLog = [];
-	service.updateMessageLog = function (messageLog) {
-		service.messageLog = messageLog;
+	service["messageLog"] = [];
+	service["updateMessageLog"] = function (messageLog) {
+		service["messageLog"] = messageLog;
 		$rootScope.$broadcast('messageLog', messageLog);
 	}
 
-	service.instanceName = "";
-	service.updateInstanceName = function (instanceName) {
-		service.instanceName = instanceName;
+	service["instanceName"] = "";
+	service["updateInstanceName"] = function (instanceName) {
+		service["instanceName"] = instanceName;
 		$rootScope.$broadcast('instanceName', instanceName);
 	}
 
-	service.dtapStage = "";
+	service["dtapStage"] = "";
 
-	service.databaseSchedulesEnabled = false;
-	service.updateDatabaseSchedulesEnabled = function (databaseSchedulesEnabled) {
-		service.databaseSchedulesEnabled = databaseSchedulesEnabled;
+	service["databaseSchedulesEnabled"] = false;
+	service["updateDatabaseSchedulesEnabled"] = function (databaseSchedulesEnabled) {
+		service["databaseSchedulesEnabled"] = databaseSchedulesEnabled;
 		$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
 	}
 
-	service.updateConfigurations = function (configurations) {
-		const updatedConfigurations = [];
+	service["updateConfigurations"] = function (configurations) {
+		const updatedConfigurations = [] as any[];
 		for (var i in configurations) {
 			var config = configurations[i];
 			if (config.name.startsWith("IAF_"))
@@ -71,11 +71,11 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 			else
 				updatedConfigurations.push(config);
 		}
-		service.configurations = updatedConfigurations;
+		service["configurations"] = updatedConfigurations;
 		$rootScope.$broadcast('configurations', updatedConfigurations);
 	}
 
-	service.getProcessStateIcon = function (processState) {
+	service["getProcessStateIcon"] = function (processState) {
 		switch (processState) {
 			case "Available":
 				return "fa-server";
@@ -83,14 +83,15 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 				return "fa-gears";
 			case "Done":
 				return "fa-sign-in";
-			case "Error":
-				return "fa-times-circle";
-			case "Hold":
-				return "fa-pause-circle";
+      case "Hold":
+        return "fa-pause-circle";
+      case "Error":
+      default:
+        return "fa-times-circle";
 		}
 	};
 
-	service.getProcessStateIconColor = function (processState) {
+	service["getProcessStateIconColor"] = function (processState) {
 		switch (processState) {
 			case "Available":
 				return "success";
@@ -98,18 +99,19 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 				return "success";
 			case "Done":
 				return "success";
+      case "Hold":
+        return "warning";
 			case "Error":
+      default:
 				return "danger";
-			case "Hold":
-				return "warning";
 		}
 	};
 
-	service.updateAdapterSummary = function (configurationName) {
+	service["updateAdapterSummary"] = function (configurationName) {
 		var updated = (new Date().getTime());
-		if (updated - 3000 < service.lastUpdated && !configurationName) { //3 seconds
-			clearTimeout(service.timeout);
-			service.timeout = setTimeout(service.updateAdapterSummary, 1000);
+		if (updated - 3000 < service["lastUpdated"] && !configurationName) { //3 seconds
+			clearTimeout(service["timeout"]);
+			service["timeout"] = setTimeout(service["updateAdapterSummary"], 1000);
 			return;
 		}
 		if (configurationName == undefined)
@@ -139,7 +141,7 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 			error: 0
 		};
 
-		var allAdapters = service.adapters;
+		var allAdapters = service["adapters"];
 		for (const adapterName in allAdapters) {
 			var adapter = allAdapters[adapterName];
 
@@ -155,10 +157,10 @@ appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $
 			}
 		}
 
-		service.adapterSummary = adapterSummary;
-		service.receiverSummary = receiverSummary;
-		service.messageSummary = messageSummary;
-		service.lastUpdated = updated;
+		service["adapterSummary"] = adapterSummary;
+		service["receiverSummary"] = receiverSummary;
+		service["messageSummary"] = messageSummary;
+		service["lastUpdated"] = updated;
 		$rootScope.$broadcast('summaries');
 	};
 

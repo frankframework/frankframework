@@ -1,4 +1,5 @@
-import { appModule } from "../app.module";
+import Swal from 'sweetalert2';
+import { appModule } from '../app.module';
 
 /* TODO replace with Toastr where possible (warns, info, errorm, success) */
 appModule.service('SweetAlert', ['Debug', function (Debug) {
@@ -32,7 +33,7 @@ appModule.service('SweetAlert', ['Debug', function (Debug) {
 		if (options.input == undefined)
 			options.input = "text";
 		options.showCancelButton = true;
-		return swal(options);
+		return Swal.fire(options)
 	};
 	this.Confirm = function () { //(JsonObject, Callback)-> returns boolean
 		var options = {
@@ -41,35 +42,35 @@ appModule.service('SweetAlert', ['Debug', function (Debug) {
 		};
 		angular.merge(options, options, this.defaults.apply(this, arguments));
 		if (!options.callback)
-			return swal(options);
-		return swal(options, options.callback);
+			return Swal.fire(options);
+		return Swal.fire(options).then(result => options.callback(result.value));
 	};
 	this.Info = function () {
 		var options = {};
 		angular.merge(options, { type: "info" }, this.defaults.apply(this, arguments));
-		if (!options.callback)
-			return swal(options);
-		return swal(options, options.callback);
+    if (!options.callback)
+      return Swal.fire(options);
+    return Swal.fire(options).then(result => options.callback(result.value));
 	};
 	this.Warning = function () {
 		var options = {};
 		angular.merge(options, { type: "warning" }, this.defaults.apply(this, arguments));
-		if (!options.callback)
-			return swal(options);
-		return swal(options, options.callback);
+    if (!options.callback)
+      return Swal.fire(options);
+    return Swal.fire(options).then(result => options.callback(result.value));
 	};
 	this.Error = function () {
 		var options = {};
 		angular.merge(options, { type: "error" }, this.defaults.apply(this, arguments));
-		if (!options.callback)
-			return swal(options);
-		return swal(options, options.callback);
+    if (!options.callback)
+      return Swal.fire(options);
+    return Swal.fire(options).then(result => options.callback(result.value));
 	};
 	this.Success = function () {
 		var options = {};
 		angular.merge(options, { type: "success" }, this.defaults.apply(this, arguments));
-		if (!options.callback)
-			return swal(options);
-		return swal(options, options.callback);
+    if (!options.callback)
+      return Swal.fire(options);
+    return Swal.fire(options).then(result => options.callback(result.value));
 	};
 }]);

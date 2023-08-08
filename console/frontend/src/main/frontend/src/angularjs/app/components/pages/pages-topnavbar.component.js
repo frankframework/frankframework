@@ -28,5 +28,5 @@ appModule.component('pagesTopnavbar', {
 		onOpenFeedback: '&'
 	},
 	controller: ['$scope', 'Notification', PagesTopnavbarController],
-	templateUrl: 'js/app/components/pages/pages-topnavbar.component.html'
+  templateUrl: 'angularjs/app/components/pages/pages-topnavbar.component.html'
 });

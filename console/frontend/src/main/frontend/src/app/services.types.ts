@@ -1,5 +1,5 @@
 import { IRequestShortcutConfig } from "angular";
-import { SwalParams, SweetAlert } from "sweetalert/typings/core";
+import { SweetAlertOptions } from "sweetalert2";
 
 export interface AlertService {
   add: (level: string | number, message: any, non_repeditive: boolean) => void;
@@ -75,7 +75,7 @@ export interface MiscService {
   escapeURL: (uri: string | number | boolean) => string;
   isMobile: () => boolean;
   getUID: (serverInfo: Record<string, any>) => string;
-  compare_version: (v1: string | number, v2: string | number, operator: '>' | 'gt' | '>=' | 'ge' | '<=' | 'le' | '===' | '=' | 'eq' | '<>' | '!==' | 'ne' | '' | '<' | 'lt') => boolean;
+  compare_version: (v1: string | number, v2: string | number, operator?: '>' | 'gt' | '>=' | 'ge' | '<=' | 'le' | '===' | '=' | 'eq' | '<>' | '!==' | 'ne' | '' | '<' | 'lt') => boolean;
 }
 
 export interface NotificationService {
@@ -140,7 +140,7 @@ export interface SessionService {
 
 export interface SweetAlertService {
   defaultSettings: Record<string, any>;
-  defaults: (title: string | SwalParams, text: string | (() => void)) => SwalParams;
+  defaults: (title: string | SweetAlertOptions, text: string | (() => void)) => SweetAlertOptions;
   Input: (...args: any[]) => Promise<any>;
   Confirm: (...args: any[]) => Promise<any>;
   Info: (...args: any[]) => Promise<any>;

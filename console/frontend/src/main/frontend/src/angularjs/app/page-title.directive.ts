@@ -1,6 +1,6 @@
 import { appModule } from "./app.module";
 
-appModule.directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transitions', 'Debug', 'appService', function ($rootScope, $timeout, $state, $transitions, Debug, appService) {
+appModule.directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transitions', 'Debug', 'appService', function ($rootScope: angular.IRootScopeService, $timeout: angular.ITimeoutService, $state, $transitions, Debug, appService) {
 	return {
 		link: function (scope, element) {
 			var listener = function () {

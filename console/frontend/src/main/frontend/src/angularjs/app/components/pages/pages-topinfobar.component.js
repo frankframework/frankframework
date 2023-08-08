@@ -13,5 +13,5 @@ const PagesTopinfobarController = function ($scope, $state) {
 
 appModule.component('pagesTopinfobar', {
 	controller: ['$scope', '$state', PagesTopinfobarController],
-	templateUrl: 'js/app/components/pages/pages-topinfobar.component.html',
+  templateUrl: 'angularjs/app/components/pages/pages-topinfobar.component.html',
 });

@@ -1,4 +1,3 @@
-import { AppComponent } from "./app.component";
 import { appModule } from "./app.module";
 
 appModule.config(['$httpProvider', function ($httpProvider) {
@@ -21,7 +20,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 							fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
 								if (res.type === "opaqueredirect") {
 									// if the request ended in a redirect that failed, then login
-									login_url = Misc.getServerPath() + 'iaf/';
+									const login_url = Misc.getServerPath() + 'iaf/';
 									window.location.href = login_url;
 								}
 							});

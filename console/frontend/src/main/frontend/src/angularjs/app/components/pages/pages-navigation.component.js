@@ -11,5 +11,5 @@ appModule.component('pagesNavigation', {
 		onOpenFeedback: '&'
 	},
 	controller: ['$state', PagesNavigationController],
-	templateUrl: 'js/app/components/pages/pages-navigation.component.html'
+  templateUrl: 'angularjs/app/components/pages/pages-navigation.component.html'
 });
