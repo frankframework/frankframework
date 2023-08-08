@@ -260,7 +260,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
-		if (folder != null && !folderExists(folder)) {
+		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
 			throw new FileSystemException("folder ["+folder+"] does not exist");
 		}
 

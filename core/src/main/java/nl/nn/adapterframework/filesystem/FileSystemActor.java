@@ -305,7 +305,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
 		String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
-		if(StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder) && isCreateFolder()) {
+		if(StringUtils.isNotBlank(folder) && isCreateFolder() && !fileSystem.folderExists(folder)) {
 			fileSystem.createFolder(folder);
 		}
 		return fileSystem.toFile(filenameWithFolder);

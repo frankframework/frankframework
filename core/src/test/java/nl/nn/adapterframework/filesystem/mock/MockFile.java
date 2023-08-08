@@ -32,7 +32,7 @@ public class MockFile {
 		this.name = name;
 	}
 
-	/** Folder not Owner, not sure what fetish whoever thought of this had... */
+	/** Folder or Parent not Owner... */
 	public MockFolder getOwner() {
 		return owner;
 	}
