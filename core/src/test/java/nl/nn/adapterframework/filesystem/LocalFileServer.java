@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -263,6 +265,8 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 			break;
 		}
 		server.startServer();
+
+		await().atMost(1000L, TimeUnit.MILLISECONDS).until(() -> server.isActive());
 	}
 
 	@Override
