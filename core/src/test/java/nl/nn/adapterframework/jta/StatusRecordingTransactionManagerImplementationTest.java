@@ -37,7 +37,6 @@ import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
-import nl.nn.adapterframework.util.Semaphore;
 
 @RunWith(Parameterized.class)
 public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
@@ -72,8 +71,6 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	public void setup() throws IOException {
 		assumeFalse(transactionManagerType==TransactionManagerType.DATASOURCE);
 		assumeThat(productKey, not(equalTo(SECONDARY_PRODUCT)));
-
-		assumeFalse("FIXME JDBC/JTA: These tests currently broken with Narayana", transactionManagerType == TransactionManagerType.NARAYANA);
 
 		// Release any hanging commits that might be from previous tests
 		XaDatasourceCommitStopper.stop(false);
