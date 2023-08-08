@@ -37,8 +37,8 @@ public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileS
 		return new Samba2FileSystemTestHelper(host, port, shareName, username, password, domain);
 	}
 
-	@BeforeEach
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
 			fs.startServer(FileSystemType.SMB2);

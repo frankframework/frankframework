@@ -42,7 +42,6 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 			fs.startServer(FileSystemType.SMB2);
 			port = fs.getPort();
 		}
-
 		super.setUp();
 	}
 

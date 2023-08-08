@@ -221,7 +221,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				throw new ConfigurationException("FileSystem ["+ClassUtils.nameOf(fileSystem)+"] does not support setting attribute 'rotateDays'");
 			}
 		}
-		eolArray = LINE_SEPARATOR.getBytes();
+		eolArray = LINE_SEPARATOR.getBytes(StreamUtil.DEFAULT_CHARSET);
 	}
 
 	private void checkConfiguration(FileSystemAction action2) throws ConfigurationException {

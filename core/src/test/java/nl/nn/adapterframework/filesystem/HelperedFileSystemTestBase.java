@@ -74,15 +74,16 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		super.setUp();
 		helper = getFileSystemTestHelper();
 		helper.setUp();
+		super.setUp();
 	}
 
 	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
-		helper.tearDown();
+		if (helper!=null) helper.tearDown();
+		super.tearDown();
 	}
 
 }
