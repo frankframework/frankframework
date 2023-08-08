@@ -114,7 +114,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String filename;
 	private @Getter String destination;
 	private @Getter String inputFolder; // folder for action=list
-	private @Getter boolean createFolder; // for action create, move, rename and list
+	private @Getter boolean createFolder; // for action create, write, move, rename and list
 
 	private @Getter Base64Pipe.Direction base64;
 	private @Getter int rotateDays=0;
@@ -158,7 +158,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		@EnumLabel(ACTION_MKDIR) MKDIR,
 		/** remove a folder/directory, specified by attribute <code>inputFolder</code>, parameter <code>inputFolder</code> or input message */
 		@EnumLabel(ACTION_RMDIR) RMDIR,
-		/** write contents, specified by parameter <code>contents</code> or input message, to a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message.
+		/** Creates file and writes contents, specified by parameter <code>contents</code> or input message, to a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message.
 		 *  At least one of the parameters must be specified. The missing parameter defaults to the input message. For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_WRITE1) WRITE,
 		/** replaced by <code>write</code> */
@@ -298,8 +298,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		throw new FileSystemException("no destination specified");
 	}
 
-	private F getFile(Message input, ParameterValueList pvl) throws FileSystemException {
+	private F getFile(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
 		return fileSystem.toFile(determineFilename(input, pvl));
+	}
+
+	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
+		String filenameWithFolder = determineFilename(input, pvl);
+		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
+		if(StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder) && isCreateFolder()) {
+			fileSystem.createFolder(folder);
+		}
+		return fileSystem.toFile(filenameWithFolder);
 	}
 
 	private String determineInputFoldername(Message input, ParameterValueList pvl) throws FileSystemException {
@@ -337,12 +346,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			switch(action) {
 				case CREATE:{
-					String filename = determineFilename(input, pvl);
-					String folder = FilenameUtils.getFullPathNoEndSeparator(filename);
-					if(StringUtils.isNotBlank(folder) && !fileSystem.folderExists(folder) && isCreateFolder()) {
-						fileSystem.createFolder(folder);
-					}
-					F file = fileSystem.toFile(filename);
+					F file = getFileAndCreateFolder(input, pvl);
 					if (fileSystem.exists(file)) {
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.CREATE);
 						file = fileSystem.toFile(fileSystem.getCanonicalName(file)); // reobtain the file, as the object itself may have changed because of the rollover
@@ -430,7 +434,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					return Message.asMessage(directoryBuilder.toString());
 				}
 				case WRITE: {
-					F file=getFile(input, pvl);
+					F file = getFileAndCreateFolder(input, pvl);
 					if (fileSystem.exists(file)) {
 						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
@@ -686,7 +690,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * If set <code>true</code>, the folder to move or copy to is created if it does not exist
+	 * If set <code>true</code>, the folder to create, write, move or copy the file to is created if it does not exist
 	 * @ff.default false
 	 */
 	public void setCreateFolder(boolean createFolder) {

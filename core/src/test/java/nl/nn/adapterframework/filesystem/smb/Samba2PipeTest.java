@@ -5,10 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import nl.nn.adapterframework.filesystem.FileSystemPipeTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.LocalFileServer;
+import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import nl.nn.adapterframework.pipes.Samba2Pipe;
 

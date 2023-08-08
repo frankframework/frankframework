@@ -391,12 +391,6 @@
 			<artifactId>commons-net</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mockftpserver</groupId>
-			<artifactId>MockFtpServer</artifactId>
-			<version>3.1.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.sshd</groupId>
 			<artifactId>sshd-sftp</artifactId>
 			<version>2.10.0</version>

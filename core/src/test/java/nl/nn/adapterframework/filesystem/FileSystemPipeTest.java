@@ -29,6 +29,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -291,14 +292,18 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 		waitForActionToFinish();
 
-		fileSystemPipe.setAction(FileSystemAction.CREATE); //TODO WRITE
+		if(fileAlreadyExists && !_fileExists(folder, filename)) {
+			_createFile(folder, filename);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.CREATE);
 		if (setCreateFolderAttribute) {
 			fileSystemPipe.setCreateFolder(true);
 		}
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		Message message = new Message(folder + "/" +filename);
+		Message message = new Message(folder + "/" + filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
 		String result = prr.getResult().asString();
 
@@ -313,15 +318,89 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 	}
 
 	@Test
-	public void fileSystemPipeCreateFile() throws Exception {
-		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder", false, false));
+	public void fileSystemPipeCreateFileInFolder() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder1", false, false));
 		assertEquals(e.getCause().getClass(), FileSystemException.class);
-		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder1/createfile1.txt]"));
 	}
 
 	@Test
 	public void fileSystemPipeCreateFileAndCreateFolderAttributeEnabled() throws Exception {
-		fileSystemPipeCreateFile("folder", false, true);
+		fileSystemPipeCreateFile("folder2", false, true);
+	}
+
+	@Test
+	public void fileSystemPipeCreatingFileThatAlreadyExists() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder3", true, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder3/createfile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemPipeCreatingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeCreateFile("folder4", true, true));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder4/createfile1.txt]"));
+	}
+
+	public void fileSystemPipeWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "write" + FILE1;
+
+		if(_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		if(fileAlreadyExists && !_fileExists(folder, filename)) {
+			_createFile(folder, filename);
+		}
+
+		fileSystemPipe.setAction(FileSystemAction.WRITE);
+		if (setCreateFolderAttribute) {
+			fileSystemPipe.setCreateFolder(true);
+		}
+		fileSystemPipe.addParameter(ParameterBuilder.create("filename", folder + "/" + filename));
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+
+		Message message = new Message("dummyText");
+		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
+		String result = prr.getResult().asString();
+
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+		assertEquals("dummyText", StreamUtil.streamToString(_readFile(folder, filename)));
+	}
+	@Test
+	public void fileSystemPipeWriteNewFileInFolder() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder1", false, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemPipeWritingFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemPipeWriteFile("folder2", false, true);
+	}
+
+	@Test
+	public void fileSystemPipeWritingFileThatAlreadyExists() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder3", true, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemPipeWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
+		PipeRunException e = assertThrows(PipeRunException.class, () -> fileSystemPipeWriteFile("folder3", true, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
 	}
 
 	@Test

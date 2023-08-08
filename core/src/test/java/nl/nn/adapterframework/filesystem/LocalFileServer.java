@@ -97,7 +97,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 		license = getLicense();
 		serverConfig = new ServerConfiguration(serverName);
 		final Path tempDirectory = findTempDirectory();
-		testDirectory = tempDirectory.resolve("junit-"+serverConfig.getServerName());
+		testDirectory = Files.createTempDirectory(tempDirectory, "junit-" + serverConfig.getServerName());
 		this.username = username;
 		this.password = password;
 	}
@@ -247,7 +247,6 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 			return;
 		}
 
-		Files.createDirectories(testDirectory);
 		switch (fsType) {
 		case FTP:
 			server = createFTPServer();
