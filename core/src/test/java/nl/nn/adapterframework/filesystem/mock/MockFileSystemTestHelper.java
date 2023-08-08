@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,6 +9,8 @@ import java.util.Date;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelperFullControl;
 
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 

@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -20,6 +20,9 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.FileSystemUtils;
+import nl.nn.adapterframework.filesystem.IWritableFileSystem;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 

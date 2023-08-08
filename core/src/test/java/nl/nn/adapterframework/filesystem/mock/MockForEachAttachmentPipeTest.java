@@ -1,4 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
+
+import nl.nn.adapterframework.filesystem.ForEachAttachmentPipe;
+import nl.nn.adapterframework.filesystem.ForEachAttachmentPipeTest;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
 public class MockForEachAttachmentPipeTest extends ForEachAttachmentPipeTest <ForEachAttachmentPipe<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments>, MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments>{
 

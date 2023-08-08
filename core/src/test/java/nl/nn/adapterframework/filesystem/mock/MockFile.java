@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
