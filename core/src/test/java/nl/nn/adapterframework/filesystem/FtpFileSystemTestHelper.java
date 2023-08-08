@@ -7,8 +7,8 @@ import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
@@ -35,14 +35,14 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws ConfigurationException, IOException, FileSystemException {
 		open();
 		cleanFolder();
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		FtpSession.close(ftpClient);
 	}
