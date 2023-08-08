@@ -250,11 +250,19 @@
 				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE FUNCTION add_numbers(a IN NUMBER, b IN NUMBER)
+				RETURN NUMBER IS
+			BEGIN
+				RETURN a + b;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE INSERT_MESSAGE;
 				DROP PROCEDURE GET_MESSAGE_BY_ID;
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP FUNCTION add_number;
 			</sql>
 		</rollback>
 

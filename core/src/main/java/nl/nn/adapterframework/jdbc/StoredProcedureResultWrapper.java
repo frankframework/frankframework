@@ -36,14 +36,18 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 class StoredProcedureResultWrapper implements ResultSet {
 
-	private final CallableStatement delegate;
-	private final ParameterMetaData parameterMetaData;
-	private final int[] parameterPositions;
+	@Nonnull private final CallableStatement delegate;
+	@Nullable private final ParameterMetaData parameterMetaData;
+	@Nonnull private final StoredProcedureParamDef[] parameterPositions;
 
 	private boolean hasNext = true;
 
@@ -54,7 +58,7 @@ class StoredProcedureResultWrapper implements ResultSet {
 	 * @param delegate The {@link CallableStatement} to be wrapped
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
-	StoredProcedureResultWrapper(CallableStatement delegate, ParameterMetaData parameterMetaData, int[] parameterPositions) {
+	StoredProcedureResultWrapper(@Nonnull CallableStatement delegate, @Nullable ParameterMetaData parameterMetaData, @Nonnull StoredProcedureParamDef[] parameterPositions) {
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;
 		this.parameterPositions = parameterPositions;
@@ -272,9 +276,8 @@ class StoredProcedureResultWrapper implements ResultSet {
 	@Override
 	public int findColumn(String columnLabel) throws SQLException {
 		int idx = 1;
-		for (Integer paramNr : parameterPositions) {
-			String columnName = String.valueOf(paramNr);
-			if (columnName.equalsIgnoreCase(columnLabel)) {
+		for (StoredProcedureParamDef paramDef : parameterPositions) {
+			if (paramDef.getName().equalsIgnoreCase(columnLabel)) {
 				return idx;
 			}
 			idx++;
@@ -1028,11 +1031,15 @@ class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	private Integer mapColumnIndexToParamNr(final int column) {
-		return parameterPositions[column - 1];
+		return parameterPositions[column - 1].getPosition();
 	}
 
-	private int mapColumnLabelToParamNr(final String columnLabel) {
-		return Integer.parseInt(columnLabel);
+	private int mapColumnLabelToParamNr(final String columnLabel) throws SQLException {
+		return Arrays.stream(parameterPositions)
+				.filter(def -> def.getName().equalsIgnoreCase(columnLabel))
+				.findFirst()
+				.map(StoredProcedureParamDef::getPosition)
+				.orElseThrow(() -> new SQLException("Cannot find parameter with label [" + columnLabel + "]"));
 	}
 
 	private class MyResultSetMetaData implements ResultSetMetaData {
@@ -1117,12 +1124,20 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 		@Override
 		public int getColumnType(int column) throws SQLException {
-			return parameterMetaData.getParameterType(column);
+			if (parameterMetaData != null) {
+				return parameterMetaData.getParameterType(column);
+			} else {
+				return parameterPositions[column - 1].getType().getVendorTypeNumber();
+			}
 		}
 
 		@Override
 		public String getColumnTypeName(int column) throws SQLException {
-			return parameterMetaData.getParameterTypeName(column);
+			if (parameterMetaData != null) {
+				return parameterMetaData.getParameterTypeName(column);
+			} else {
+				return parameterPositions[column - 1].getType().getName();
+			}
 		}
 
 		@Override
@@ -1142,7 +1157,11 @@ class StoredProcedureResultWrapper implements ResultSet {
 
 		@Override
 		public String getColumnClassName(int column) throws SQLException {
-			return parameterMetaData.getParameterClassName(column);
+			if (parameterMetaData != null) {
+				return parameterMetaData.getParameterClassName(column);
+			} else {
+				throw new SQLException("Column class name not known for parameter [" + parameterPositions[column-1].getPosition() + "]");
+			}
 		}
 
 		@Override

@@ -201,4 +201,8 @@ public interface IDbmsSupport {
 	default boolean isStoredProcedureRefCursorOutParameterSupported() {
 		return false;
 	}
+
+	default boolean canPreFetchStoredProcedureMetaData() {
+		return true;
+	}
 }

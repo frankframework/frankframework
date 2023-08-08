@@ -275,12 +275,12 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
+	public boolean isStoredProcedureResultSetSupported() {
 		return false;
 	}
 
 	@Override
-	public boolean isStoredProcedureResultSetSupported() {
+	public boolean canPreFetchStoredProcedureMetaData() {
 		return false;
 	}
 }

@@ -131,7 +131,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testStoredProcedureInputAndOutputParameters() throws Exception {
 
 		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
-		assumeThat("Oracle OUT parameters do not yet work, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -156,7 +155,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 		// Assert
 		assertTrue(result.isSuccess());
-
 		assertEquals(value, result.getResult().asString());
 	}
 
@@ -164,7 +162,6 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testStoredProcedureInputAndOutputParametersXmlOutput() throws Exception {
 
 		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
-		assumeThat("Oracle OUT parameters do not yet work, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -244,6 +241,34 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 				.replaceAll("(?m)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
 
 		assertXmlEquals(sb.toString(), actual);
+	}
+
+	@Test
+	public void testCallFunction() throws Exception {
+		assumeThat("CALL to custom function only tested on Oracle so far", productKey, equalToIgnoringCase("Oracle"));
+
+		// Arrange
+		sender.setQuery("{ ? = call add_numbers(?, ?) }");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setOutputParameters("1");
+		sender.setScalar(true);
+
+		Parameter p1 = new Parameter("one", "1");
+		p1.configure();
+		sender.addParameter(p1);
+		Parameter p2 = new Parameter("two", "2");
+		p2.configure();
+		sender.addParameter(p2);
+
+		sender.configure();
+		sender.open();
+
+		// Act
+		SenderResult result = sender.sendMessage(Message.nullMessage(), session);
+
+		// Arrange
+		assertTrue(result.isSuccess());
+		assertEquals("3", result.getResult().asString());
 	}
 
 	private int countRowsWithMessageValue(final String value) throws SQLException, JdbcException {

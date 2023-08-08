@@ -18,10 +18,15 @@ package nl.nn.adapterframework.jdbc;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 
@@ -58,7 +63,7 @@ import nl.nn.adapterframework.util.StringUtil;
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	private @Getter String outputParameters;
-	private int[] outputParameterPositions = new int[0];
+	private StoredProcedureParamDef[] outputParameterDefs = new StoredProcedureParamDef[0];
 
 
 	/**
@@ -105,31 +110,70 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
 				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 			}
-			outputParameterPositions = StringUtil.splitToStream(outputParameters, ",;")
-					.mapToInt(Integer::parseInt)
-					.toArray();
+			outputParameterDefs = parseOutParameters(getQuery(), outputParameters);
 		}
 
-		if (isScalar() && outputParameterPositions.length > 1) {
+		if (isScalar() && outputParameterDefs.length > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
 		}
 
-		if (!getQuery().matches("(?i)^\\s*(call|exec)\\s+.*")) {
+		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?\\s*=\\s*call)\\s+.*")) {
 			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
 		}
+	}
+
+	private StoredProcedureParamDef[] parseOutParameters(String query, String outParamSpec) {
+		Pattern queryParamPattern = Pattern.compile("\\?(\\{\\w+\\})?");
+		Matcher parameterMatcher = queryParamPattern.matcher(query);
+		List<String> queryParameterNames = new ArrayList<>();
+		while (parameterMatcher.find()) {
+			queryParameterNames.add(parameterMatcher.group(1));
+		}
+
+		return StringUtil.splitToStream(outParamSpec, ",;")
+				.map(p -> StringUtil.split(p, ":"))
+				.map(pl -> {
+					int pos = Integer.parseInt(pl.get(0));
+					String name = queryParameterNames.get(pos-1);
+					JDBCType type;
+					if (pl.size() == 1) {
+						type = null;
+					} else {
+						type = JDBCType.valueOf(pl.get(1));
+					}
+					if (name == null) {
+						return new StoredProcedureParamDef(pos, type);
+					}
+					return new StoredProcedureParamDef(pos, type, name);
+				})
+				.toArray(StoredProcedureParamDef[]::new);
 	}
 
 	@Override
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
-		if (outputParameterPositions.length > 0) {
+		if (outputParameterDefs.length > 0) {
 			// TODO: This does not work with Oracle -- "SQLFeatureNotSupportedException" :'(
-			final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-			for (int param : outputParameterPositions) {
+			final ParameterMetaData parameterMetaData;
+			if (getDbmsSupport().canPreFetchStoredProcedureMetaData()) {
+				parameterMetaData = callableStatement.getParameterMetaData();
+			} else {
+				parameterMetaData = null;
+			}
+			for (StoredProcedureParamDef param : outputParameterDefs) {
 				// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
 				// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
-				callableStatement.setNull(param, parameterMetaData.getParameterType(param));
-				callableStatement.registerOutParameter(param, parameterMetaData.getParameterType(param));
+				int position = param.getPosition();
+				int typeNr;
+				if (param.getType() != null) {
+					typeNr = param.getType().getVendorTypeNumber();
+				} else if (parameterMetaData != null) {
+					typeNr = parameterMetaData.getParameterType(position);
+				} else {
+					throw new IllegalStateException("Cannot determine parameter type for parameter nr " + position);
+				}
+				callableStatement.setNull(position, typeNr);
+				callableStatement.registerOutParameter(position, typeNr);
 			}
 		}
 		return callableStatement;
@@ -143,11 +187,11 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	@Override
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		Message result = super.executeOtherQuery(connection, statement, query, resultQuery, resStmt, message, session, parameterList);
-		if (outputParameterPositions.length == 0) {
+		if (outputParameterDefs.length == 0) {
 			return result;
 		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameterPositions));
+			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameterDefs));
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
@@ -329,4 +373,5 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	public void setRowIdSessionKey(final String string) {
 		super.setRowIdSessionKey(string);
 	}
+
 }
