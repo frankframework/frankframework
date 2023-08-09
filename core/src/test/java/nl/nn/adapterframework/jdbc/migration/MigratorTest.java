@@ -33,6 +33,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends TransactionManagerTestBase {
+
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
 

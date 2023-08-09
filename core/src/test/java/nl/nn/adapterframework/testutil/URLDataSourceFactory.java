@@ -10,16 +10,20 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
+	private static Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
+
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
 	private static final int DB_LOGIN_TIMEOUT = 1;
-	public static List<String> availableDatasources = null;
+	private static List<String> availableDataSources = null;
 
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked, JDBC Driver class
@@ -33,37 +37,49 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		};
 
 	public URLDataSourceFactory() {
-		if(availableDatasources == null) {
-			availableDatasources = new ArrayList<>();
-			DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
-
-			for (Object[] datasource: TEST_DATASOURCES) {
-				String product = (String)datasource[0];
-				String url = (String)datasource[1];
-				String userId = (String)datasource[2];
-				String password = (String)datasource[3];
-				//boolean testPeek = (boolean)datasource[4];
-				//String xaImplClassName = (String)datasource[5];
-
-				try { //Attempt to add the DataSource and skip it if it cannot be instantiated
-					DataSource ds = new DriverManagerDataSource(url, userId, password); // do not use createDataSource here, as it has side effects in descender classes
-					// Check if we can make a connection
-					if(validateConnection(product, ds)) {
-						availableDatasources.add(product);
-						log.info("adding DataSource {} for testing", product);
-					}
-				} catch (Exception e) {
-					log.info("ignoring DataSource for [" + product + "], cannot complete setup", e);
-				}
-			}
+		if(availableDataSources == null) {
+			availableDataSources = findAvailableDataSources();
 		}
 	}
 
-	private boolean validateConnection(String product, DataSource ds) {
+	public static List<String> getAvailableDataSources() {
+		if (availableDataSources == null) {
+			availableDataSources = findAvailableDataSources();
+		}
+		return availableDataSources;
+	}
+
+	private static List<String> findAvailableDataSources() {
+		List<String> availableDatasources = new ArrayList<>();
+		DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
+
+		for (Object[] datasource: TEST_DATASOURCES) {
+			String product = (String)datasource[0];
+			String url = (String)datasource[1];
+			String userId = (String)datasource[2];
+			String password = (String)datasource[3];
+			//boolean testPeek = (boolean)datasource[4];
+			//String xaImplClassName = (String)datasource[5];
+
+			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
+				DataSource ds = new DriverManagerDataSource(url, userId, password); // do not use createDataSource here, as it has side effects in descender classes
+				// Check if we can make a connection
+				if(validateConnection(product, ds)) {
+					availableDatasources.add(product);
+					LOG.info("adding DataSource {} for testing", product);
+				}
+			} catch (Exception e) {
+				LOG.info("ignoring DataSource for [" + product + "], cannot complete setup", e);
+			}
+		}
+		return availableDatasources;
+	}
+
+	private static boolean validateConnection(String product, DataSource ds) {
 		try(Connection ignored = ds.getConnection()) {
 			return true;
 		} catch (Throwable e) {
-			log.warn("Cannot connect to [{}], skipping: {}", product, e.getMessage());
+			LOG.warn("Cannot connect to [{}], skipping: {}", product, e.getMessage());
 		}
 		return false;
 	}
@@ -86,7 +102,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override //fail fast
 	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
-		if(!availableDatasources.contains(jndiName)) {
+		if(!availableDataSources.contains(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}
 
@@ -122,6 +138,6 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	public List<String> getDataSourceNames() {
-		return availableDatasources;
+		return availableDataSources;
 	}
 }
