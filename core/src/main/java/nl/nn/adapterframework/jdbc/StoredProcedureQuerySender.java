@@ -23,6 +23,7 @@ import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StringUtil;
 
 /**
@@ -111,7 +113,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
 				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 			}
-			outputParameterDefs = parseOutParameters(getQuery(), outputParameters);
+			outputParameterDefs = parseOutParameters(outputParameters, getQuery(), getParameterList());
 			if (!getDbmsSupport().canFetchStatementParameterMetaData()) {
 				if (!Arrays.stream(outputParameterDefs).allMatch(def -> def.getType() != null)) {
 					throw new ConfigurationException("Target database " + getDbmsSupport().getDbmsName() + " requires types of all output parameters to be specified.");
@@ -128,7 +130,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 	}
 
-	private StoredProcedureParamDef[] parseOutParameters(String query, String outParamSpec) {
+	private StoredProcedureParamDef[] parseOutParameters(String outParamSpec, String query, ParameterList parameterList) {
 		Pattern queryParamPattern = Pattern.compile("\\?(\\{\\w+\\})?");
 		Matcher parameterMatcher = queryParamPattern.matcher(query);
 		List<String> queryParameterNames = new ArrayList<>();
@@ -141,9 +143,13 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 				.map(pl -> {
 					int pos = Integer.parseInt(pl.get(0));
 					String name = queryParameterNames.get(pos-1);
-					JDBCType type;
+					SQLType type;
 					if (pl.size() == 1) {
-						type = null;
+						if (parameterList.size() >= pos) {
+							type = JdbcUtil.mapParameterTypeToSqlType(parameterList.getParameter(pos - 1).getType());
+						} else {
+							type = null;
+						}
 					} else {
 						type = JDBCType.valueOf(pl.get(1));
 					}

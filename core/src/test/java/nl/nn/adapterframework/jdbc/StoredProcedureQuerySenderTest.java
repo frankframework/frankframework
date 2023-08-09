@@ -283,7 +283,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
-		sender.setOutputParameters("1:INTEGER");
+		sender.setOutputParameters("1");
 		sender.setScalar(true);
 
 		Parameter dummyParam = new Parameter("dummy", "0");

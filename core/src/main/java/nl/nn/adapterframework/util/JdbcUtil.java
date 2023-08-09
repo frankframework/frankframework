@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Time;
@@ -867,6 +868,32 @@ public class JdbcUtil {
 		}
 	}
 
+	public static SQLType mapParameterTypeToSqlType(ParameterType parameterType) {
+		switch (parameterType) {
+			case DATE:
+				return JDBCType.DATE;
+			case TIMESTAMP:
+			case DATETIME:
+			case XMLDATETIME:
+				return JDBCType.TIMESTAMP;
+			case TIME:
+				return JDBCType.TIME;
+			case NUMBER:
+				return JDBCType.NUMERIC;
+			case INTEGER:
+				return JDBCType.INTEGER;
+			case BOOLEAN:
+				return JDBCType.BOOLEAN;
+			case STRING:
+				return JDBCType.VARCHAR;
+			case CHARACTER:
+				return JDBCType.CLOB;
+			case BINARY:
+				return JDBCType.BLOB;
+			default:
+				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		}
+	}
 
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, JdbcException {
 		String paramName=pv.getDefinition().getName();
