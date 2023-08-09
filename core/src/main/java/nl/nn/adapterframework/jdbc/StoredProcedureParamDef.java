@@ -25,9 +25,7 @@ class StoredProcedureParamDef {
 	@Getter final String name;
 
 	StoredProcedureParamDef(int position, SQLType type) {
-		this.position = position;
-		this.type = type;
-		this.name = String.valueOf(position);
+		this(position, type, String.valueOf(position));
 	}
 
 	StoredProcedureParamDef(int position, SQLType type, String name) {
