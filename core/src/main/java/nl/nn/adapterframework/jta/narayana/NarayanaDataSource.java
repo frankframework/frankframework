@@ -23,7 +23,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
 import java.util.Properties;
 
-import javax.sql.CommonDataSource;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -41,10 +41,10 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link DataSource} implementation wrapping {@link XADataSource} because Narayana doesn't provide their own DataSource.
- * 
- * Bypasses the {@link TransactionalDriver} in order to create connections and 
+ *
+ * Bypasses the {@link TransactionalDriver} in order to create connections and
  * uses the {@link ConnectionManager} directly in order to acquire {@link XADataSource} connections.
- * 
+ *
  * {@link ConnectionImple} requires an {@link XADataSource}
  *
  */
@@ -57,23 +57,17 @@ public class NarayanaDataSource implements DataSource {
 	private final @Getter XADataSource targetDataSource;
 	private final String name;
 
-	public NarayanaDataSource(CommonDataSource dataSource, String name) {
-		if(!(dataSource instanceof XADataSource)) {
-			throw new IllegalStateException("Only XA DataSources can be registered with a TransactionManager");
-		}
+	public NarayanaDataSource(@Nonnull XADataSource dataSource, String name) {
 
-		this.targetDataSource = (XADataSource) dataSource;
+		this.targetDataSource = dataSource;
 		this.name = name;
 
-		//If the DataSource implements both DataSource and XADataSource, check for modifiers.
-		if(dataSource instanceof DataSource) {
-			checkModifiers((DataSource) dataSource);
-		}
+		checkModifiers(dataSource);
 	}
 
 	/** In order to allow transactions to run over multiple databases, see {@link ModifierFactory}. */
-	private void checkModifiers(DataSource dataSource) {
-		try (Connection connection = dataSource.getConnection()) {
+	private void checkModifiers(XADataSource dataSource) {
+		try (Connection connection = dataSource.getXAConnection().getConnection()) {
 			DatabaseMetaData metadata = connection.getMetaData();
 			String driverName = metadata.getDriverName();
 			int major = metadata.getDriverMajorVersion();

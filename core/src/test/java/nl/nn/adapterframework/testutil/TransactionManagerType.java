@@ -2,6 +2,8 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -10,11 +12,14 @@ import java.util.WeakHashMap;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
+import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public enum TransactionManagerType {
@@ -61,6 +66,8 @@ public enum TransactionManagerType {
 			properties.setProperty("TransactionManagerType", this.name());
 			propertySources.addFirst(new PropertiesPropertySource("testProperties", properties));
 
+			removePreviousTxLogFiles(config);
+
 			config.setName(this.name());
 			config.refresh();
 
@@ -68,6 +75,18 @@ public enum TransactionManagerType {
 		} catch (Throwable t) {
 			fail(t.getMessage());
 			throw t;
+		}
+	}
+
+	private void removePreviousTxLogFiles(TestConfiguration config) {
+		String txDir = config.getEnvironment().getProperty("transactionmanager.log.dir");
+		try {
+			LogManager.getLogger(this.getClass()).debug("Cleaning up old TX log files at [{}]", txDir);
+			if (txDir != null) {
+				FileUtils.deleteDirectory(new File(txDir));
+			}
+		} catch (IOException e) {
+			LogManager.getLogger(this.getClass()).warn("Could not remove previous TX manager log dirs:", e);
 		}
 	}
 
@@ -90,6 +109,12 @@ public enum TransactionManagerType {
 			TestConfiguration ac = transactionManagerConfigurations.remove(this);
 			if(ac != null) {
 				ac.close();
+			}
+			if (this == BTM && TransactionManagerServices.isTransactionManagerRunning()) {
+				TransactionManagerServices.getTransactionManager().shutdown();
+			}
+			if (ac != null) {
+				removePreviousTxLogFiles(ac);
 			}
 		}
 	}

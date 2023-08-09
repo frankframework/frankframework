@@ -18,7 +18,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.BytesResource;
@@ -33,6 +35,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends TransactionManagerTestBase {
+
+	@Rule
+	public Timeout testTimeout = Timeout.seconds(60);
+
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
 

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jdbc;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +14,6 @@ import static org.junit.Assume.assumeTrue;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
@@ -37,16 +37,28 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 	private void assertSenderException(SenderException ex) {
-		if(getDataSourceName().equals("H2")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("Syntax error in SQL statement"));
-		} else if(getDataSourceName().equals("PostgreSQL")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("No value specified for parameter 1"));
-		} else if(getDataSourceName().equals("Oracle")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("errorCode [17041]"));
-		} else if(getDataSourceName().equals("MS_SQL")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("The value is not set for the parameter number 1"));
-		} else {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("parameter"));
+		switch (getDataSourceName()) {
+			case "H2":
+				assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
+				break;
+			case "DB2":
+				assertThat(ex.getMessage(), containsString("SQLSTATE=42601"));
+				break;
+			case "PostgreSQL":
+				assertThat(ex.getMessage(), containsString("No value specified for parameter 1"));
+				break;
+			case "Oracle":
+				assertThat(ex.getMessage(), containsString("errorCode [17041]"));
+				break;
+			case "MS_SQL":
+				assertThat(ex.getMessage(), containsString("The value is not set for the parameter number 1"));
+				break;
+			case "MariaDB":
+				assertThat(ex.getMessage(), containsString(" escape sequence "));
+				break;
+			default:
+				assertThat(ex.getMessage(), containsString("parameter"));
+				break;
 		}
 	}
 

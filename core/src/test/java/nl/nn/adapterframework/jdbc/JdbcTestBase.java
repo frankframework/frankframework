@@ -22,6 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -46,12 +49,22 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
+
+	private boolean failed = false;
+	@Rule
+	public TestWatcher watchman = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			failed = true;
+		}
+	};
+
 	protected static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static final String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
-	public static final String TEST_TABLE="Temp"; // use mixed case tablename for testing
+	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
@@ -149,7 +162,13 @@ public abstract class JdbcTestBase {
 				dropTableIfPresent(connection, TEST_TABLE);
 			} finally {
 				connection.close();
+				connection = null;
 			}
+		}
+
+		if (failed) {
+			transactionManagerType.closeConfigurationContext();
+			configuration = null;
 		}
 	}
 
