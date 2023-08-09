@@ -280,7 +280,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean canPreFetchStoredProcedureMetaData() {
+	public boolean canFetchStatementParameterMetaData() {
 		return false;
 	}
 }

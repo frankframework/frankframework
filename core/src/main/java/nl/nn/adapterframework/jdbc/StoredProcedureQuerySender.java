@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,13 +112,18 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 			}
 			outputParameterDefs = parseOutParameters(getQuery(), outputParameters);
+			if (!getDbmsSupport().canFetchStatementParameterMetaData()) {
+				if (!Arrays.stream(outputParameterDefs).allMatch(def -> def.getType() != null)) {
+					throw new ConfigurationException("Target database " + getDbmsSupport().getDbmsName() + " requires types of all output parameters to be specified.");
+				}
+			}
 		}
 
 		if (isScalar() && outputParameterDefs.length > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
 		}
 
-		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?\\s*=\\s*call)\\s+.*")) {
+		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?(\\{\\w+\\})?\\s*=\\s*call)\\s+.*")) {
 			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
 		}
 	}
@@ -155,7 +161,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (outputParameterDefs.length > 0) {
 			// TODO: This does not work with Oracle -- "SQLFeatureNotSupportedException" :'(
 			final ParameterMetaData parameterMetaData;
-			if (getDbmsSupport().canPreFetchStoredProcedureMetaData()) {
+			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
 				parameterMetaData = callableStatement.getParameterMetaData();
 			} else {
 				parameterMetaData = null;
@@ -191,7 +197,13 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			return result;
 		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameterDefs));
+			ParameterMetaData parameterMetaData;
+			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
+				parameterMetaData = statement.getParameterMetaData();
+			} else {
+				parameterMetaData = null;
+			}
+			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, parameterMetaData, outputParameterDefs));
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}

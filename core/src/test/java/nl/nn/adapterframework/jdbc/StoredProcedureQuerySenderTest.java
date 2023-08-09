@@ -131,6 +131,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	public void testStoredProcedureInputAndOutputParameters() throws Exception {
 
 		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeThat("For Oracle, need to specify the type with each OUT parameter, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -159,9 +160,41 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testStoredProcedureInputAndOutputWithTypeParameters() throws Exception {
+
+		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+
+		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setOutputParameters("2:VARCHAR");
+		sender.setScalar(true);
+
+		Parameter parameter = new Parameter("id", String.valueOf(id));
+		parameter.configure();
+		sender.addParameter(parameter);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertEquals(value, result.getResult().asString());
+	}
+
+	@Test
 	public void testStoredProcedureInputAndOutputParametersXmlOutput() throws Exception {
 
 		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeThat("For Oracle, need to specify the type with each OUT parameter, skipping test case", productKey, not(equalToIgnoringCase("Oracle")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -250,13 +283,19 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
-		sender.setOutputParameters("1");
+		sender.setOutputParameters("1:INTEGER");
 		sender.setScalar(true);
 
+		Parameter dummyParam = new Parameter("dummy", "0");
+		dummyParam.setType(Parameter.ParameterType.INTEGER);
+		dummyParam.configure();
+		sender.addParameter(dummyParam);
 		Parameter p1 = new Parameter("one", "1");
+		p1.setType(Parameter.ParameterType.INTEGER);
 		p1.configure();
 		sender.addParameter(p1);
 		Parameter p2 = new Parameter("two", "2");
+		p2.setType(Parameter.ParameterType.INTEGER);
 		p2.configure();
 		sender.addParameter(p2);
 

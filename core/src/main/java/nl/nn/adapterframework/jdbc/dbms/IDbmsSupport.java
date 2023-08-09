@@ -202,7 +202,7 @@ public interface IDbmsSupport {
 		return false;
 	}
 
-	default boolean canPreFetchStoredProcedureMetaData() {
+	default boolean canFetchStatementParameterMetaData() {
 		return true;
 	}
 }
