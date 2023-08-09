@@ -38,6 +38,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
@@ -145,11 +146,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 					String name = queryParameterNames.get(pos-1);
 					SQLType type;
 					if (pl.size() == 1) {
-						if (parameterList.size() >= pos) {
-							type = JdbcUtil.mapParameterTypeToSqlType(parameterList.getParameter(pos - 1).getType());
-						} else {
-							type = null;
-						}
+						type = getSqlTypeFromParameterList(parameterList, pos, name);
 					} else {
 						type = JDBCType.valueOf(pl.get(1));
 					}
@@ -159,6 +156,19 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 					return new StoredProcedureParamDef(pos, type, name);
 				})
 				.toArray(StoredProcedureParamDef[]::new);
+	}
+
+	private static SQLType getSqlTypeFromParameterList(final ParameterList parameterList, final int pos, final String name) {
+		if (parameterList.size() < pos) {
+			return null;
+		}
+		Parameter parameter;
+		if (name == null) {
+			parameter = parameterList.getParameter(pos - 1);
+		} else {
+			parameter = parameterList.findParameter(name);
+		}
+		return JdbcUtil.mapParameterTypeToSqlType(parameter.getType());
 	}
 
 	@Override
