@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.util.HashMap;
 import java.util.Map;

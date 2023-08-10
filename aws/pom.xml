@@ -100,7 +100,7 @@
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>sqs</artifactId>
-				<version>2.20.103</version>
+				<version>2.20.122</version>
 			</dependency>
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
@@ -110,12 +110,12 @@
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>utils</artifactId>
-				<version>2.20.117</version>
+				<version>2.20.122</version>
 			</dependency>
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>cloudwatch</artifactId>
-				<version>2.20.120</version>
+				<version>2.20.122</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

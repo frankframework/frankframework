@@ -1,12 +1,8 @@
 package nl.nn.adapterframework.filesystem;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockftpserver.fake.FakeFtpServer;
-import org.mockftpserver.fake.UserAccount;
-import org.mockftpserver.fake.filesystem.DirectoryEntry;
-import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 
+import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
 
@@ -17,16 +13,20 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
 
-	private String username = "wearefrank";
+	private String username = "frankframework";
 	private String password = "pass_123";
 	private String host = "localhost";
 	private int port = 21;
-	private String remoteDirectory = "/home/wearefrank/dir";
+	private String remoteDirectory = "/home";
 
-	private FakeFtpServer ftpServer;
+	@LocalFileSystemMock
+	private static LocalFileServer fs;
 
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
+		if("localhost".equals(host)) {
+			return new LocalFileSystemTestHelper(fs.getTestDirectory());
+		}
 		return new FtpFileSystemTestHelper(username, password, host, remoteDirectory, port);
 	}
 
@@ -34,30 +34,11 @@ public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemS
 	@BeforeEach
 	public void setUp() throws Exception {
 		if("localhost".equals(host)) {
-			ftpServer = new FakeFtpServer();
-			ftpServer.setServerControlPort(0); // use any free port
-
-			UnixFakeFileSystem fileSystem = new UnixFakeFileSystem();
-			fileSystem.add(new DirectoryEntry(remoteDirectory));
-			ftpServer.setFileSystem(fileSystem);
-
-			UserAccount userAccount = new UserAccount(username, password, remoteDirectory);
-			ftpServer.addUserAccount(userAccount);
-
-			ftpServer.start();
-			port = ftpServer.getServerControlPort();
+			fs.startServer(FileSystemType.FTP);
+			port = fs.getPort();
 		}
 
 		super.setUp();
-	}
-
-	@Override
-	@AfterEach
-	public void tearDown() throws Exception {
-		ftpServer.stop();
-		ftpServer = null;
-
-		super.tearDown();
 	}
 
 	@Override

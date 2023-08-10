@@ -34,7 +34,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FilenameUtils;
 
@@ -138,13 +137,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public Message readFile(SmbFile f, String charset) throws IOException, FileSystemException {
-		return new Samba1Message(f, FileSystemUtils.getContext(this, f, charset));
-	}
-
-	private class Samba1Message extends Message {
-		public Samba1Message(SmbFile f, MessageContext context) {
-			super(() -> new SmbFileInputStream(f), context, f.getClass());
-		}
+		return new Message(new SmbFileInputStream(f), FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override

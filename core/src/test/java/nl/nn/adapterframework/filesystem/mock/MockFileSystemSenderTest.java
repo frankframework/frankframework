@@ -1,4 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
+
+import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
 
 public class MockFileSystemSenderTest extends FileSystemSenderTest <FileSystemSender<MockFile, MockFileSystem<MockFile>>, MockFile,MockFileSystem<MockFile>>{
 

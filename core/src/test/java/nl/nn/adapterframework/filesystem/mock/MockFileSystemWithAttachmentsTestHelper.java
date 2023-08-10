@@ -1,6 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.util.Map;
+
+import nl.nn.adapterframework.filesystem.IFileSystemWithAttachmentsTestHelper;
 
 public class MockFileSystemWithAttachmentsTestHelper extends MockFileSystemTestHelper<MockFileWithAttachments> implements IFileSystemWithAttachmentsTestHelper<MockAttachment> {
 	

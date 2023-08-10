@@ -1,4 +1,8 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
+
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.FileSystemListenerExtraTest;
+import nl.nn.adapterframework.filesystem.IFileSystemTestHelperFullControl;
 
 public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <MockFile,MockFileSystem<MockFile>>{
 

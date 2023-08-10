@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,14 +14,14 @@ public class MockFile {
 	private String name;
 	private MockFolder owner;
 	private byte[] contents;
-	private Date lastModified=new Date();
+	private Date lastModified = new Date();
 	private Map<String,Object> additionalProperties;
-	
+
 	public MockFile(String name, MockFolder owner) {
 		super();
 		this.name = name;
 		this.owner=owner;
-		additionalProperties=new LinkedHashMap<String,Object>();
+		additionalProperties = new LinkedHashMap<>();
 		additionalProperties.put("id", "[id:"+getName()+"]");
 	}
 
@@ -31,14 +31,15 @@ public class MockFile {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	/** Folder or Parent not Owner... */
 	public MockFolder getOwner() {
 		return owner;
 	}
 	public void setOwner(MockFolder owner) {
 		this.owner = owner;
 	}
-	
+
 	public OutputStream getOutputStream(boolean truncate) throws IOException {
 
 		OutputStream result=new ByteArrayOutputStream() {
@@ -46,17 +47,17 @@ public class MockFile {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				contents=toByteArray();
-				lastModified=new Date();
+				contents = toByteArray();
+				lastModified =new Date();
 			}
 
 			@Override
 			public void flush() throws IOException {
 				super.flush();
-				contents=toByteArray();
-				lastModified=new Date();
+				contents = toByteArray();
+				lastModified =new Date();
 			}
-			
+
 		};
 		if (truncate) {
 			contents=null;
@@ -67,9 +68,9 @@ public class MockFile {
 		}
 		return result;
 	}
-	
+
 	public InputStream getInputStream() {
-		return new ByteArrayInputStream(contents==null? new byte[0]:contents);
+		return new ByteArrayInputStream(contents == null ? new byte[0] : contents);
 	}
 
 	public Date getLastModified() {
@@ -79,7 +80,6 @@ public class MockFile {
 		this.lastModified = lastModified;
 	}
 
-	
 	public byte[] getContents() {
 		return contents;
 	}
@@ -89,7 +89,7 @@ public class MockFile {
 	}
 
 	public void addProperty(String key, Object value) {
-		if (additionalProperties==null) {
+		if(additionalProperties == null) {
 			additionalProperties=new LinkedHashMap<String,Object>();
 		}
 		additionalProperties.put(key, value);
