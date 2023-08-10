@@ -36,11 +36,14 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>webpack build</id>
+						<id>npm build</id>
 						<goals>
-							<goal>webpack</goal>
+							<goal>npm</goal>
 						</goals>
 						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>run build -- -c development</arguments>
+						</configuration>
 					</execution>
 				</executions>
 				<configuration>
@@ -89,7 +92,6 @@
 										<versionRange>[1.12,)</versionRange>
 										<goals>
 											<goal>install-node-and-npm</goal>
-											<goal>webpack</goal>
 											<goal>npm</goal>
 										</goals>
 									</pluginExecutionFilter>
@@ -184,13 +186,13 @@
 						<version>1.13.4</version>
 						<executions>
 							<execution>
-								<id>webpack build</id>
+								<id>npm build</id>
 								<goals>
-									<goal>webpack</goal>
+									<goal>npm</goal>
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>--mode production</arguments>
+									<arguments>run build</arguments>
 								</configuration>
 							</execution>
 						</executions>

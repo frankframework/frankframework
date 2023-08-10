@@ -25,7 +25,7 @@ class ErrorController {
     this.cooldownCounter = 60;
 
     if (data.status == "error" || data.status == "INTERNAL_SERVER_ERROR") {
-      this.appService.startupError = data.error;
+      this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
       var interval = this.$interval(() => {

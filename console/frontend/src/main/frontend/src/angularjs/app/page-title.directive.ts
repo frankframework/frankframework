@@ -16,6 +16,7 @@ appModule.directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transiti
 			};
 			$transitions.onSuccess({}, listener); //Fired on every state change
 			$rootScope.$on('instanceName', listener); //Fired once, once the instance name is known.
+      $rootScope.$on('startupError', listener); //Fired once, once the startup error is known if there is one.
 		}
 	};
 }]);

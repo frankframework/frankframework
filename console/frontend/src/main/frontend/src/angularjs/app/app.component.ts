@@ -2,6 +2,8 @@
 import { ApiService, AuthService, DebugService, HooksService, MiscService, NotificationService, PollerService, SessionService, SweetAlertService } from 'src/app/services.types';
 import { angular, Pace } from '../deps';
 import { AppConstants, appModule } from "./app.module";
+import { StateService } from 'angular-ui-router';
+import { Configuration } from './app.service';
 
 class AppController {
 
@@ -14,6 +16,7 @@ class AppController {
   dtapStage = "";
   dtapSide = "";
   serverTime = "";
+  startupError = null;
   userName?: string;
 
   constructor(
@@ -23,8 +26,8 @@ class AppController {
     private appConstants: AppConstants,
     private Api: ApiService,
     private Hooks: HooksService,
-    private $state,
-    private $location,
+    private $state: StateService,
+    private $location: angular.ILocationService,
     private Poller: PollerService,
     private Notification: NotificationService,
     private dateFilter,
@@ -150,6 +153,10 @@ class AppController {
         }
 
         this.appService.updateMessageLog(configurations);
+
+        this.$scope.$on('startupError', () => {
+          this.startupError = this.appService.startupError;
+        })
       }, true, 60000);
 
       var raw_adapter_data = {};
@@ -319,7 +326,7 @@ class AppController {
           this.Idle.setTimeout(false);
         }
 
-        this.Api.Get("server/configurations", (data) => {
+        this.Api.Get("server/configurations", (data: Configuration[]) => {
           this.appService.updateConfigurations(data);
         });
         this.Hooks.call("init", false);
