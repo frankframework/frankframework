@@ -115,7 +115,10 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws FileSystemException {
+	public OutputStream _createFile(String folder, String filename) throws Exception {
+		if(folder != null && !_folderExists(folder)) {
+			_createFolder(folder);
+		}
 		String path = folder != null ? folder + "/" + filename : filename;
 		try {
 			return ftpClient.put(path);

@@ -1,10 +1,12 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.filesystem.mock;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.nn.adapterframework.filesystem.FileSystemException;
+import nl.nn.adapterframework.filesystem.IWithAttachments;
 import nl.nn.adapterframework.stream.Message;
 
 public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IWithAttachments<MockFileWithAttachments, MockAttachment> {

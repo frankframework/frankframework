@@ -117,7 +117,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		try {
 			FTPFile[] files = ftpClient.listFiles(file.getFolder(), f -> f.getName().equals(file.getFileName()));
 			if(files != null && files.length > 0) {
-				return FTPFileRef.fromFTPFile(files[0]);
+				return FTPFileRef.fromFTPFile(files[0], file.getFolder());
 			}
 		} catch(IOException e) {
 			throw new FileSystemException("unable to browse remote directory", e);
