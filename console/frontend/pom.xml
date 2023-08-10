@@ -173,6 +173,27 @@
 		</plugins>
 	</reporting>
 
+	<developers>
+		<developer>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Matt Booman</name>
+			<email>matt@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Sergi Philipsen</name>
+			<email>sergi@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+	</developers>
+
 	<profiles>
 		<profile>
 			<id>ci</id>

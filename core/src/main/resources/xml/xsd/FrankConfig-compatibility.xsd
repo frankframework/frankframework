@@ -443,7 +443,7 @@
         <xs:group ref="OutputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:element name="Exits" minOccurs="0" maxOccurs="1" type="ExitsType" />
         <xs:element name="Exit" minOccurs="0" maxOccurs="unbounded" type="ExitType" />
-        <xs:element name="Global-forwards" minOccurs="0" maxOccurs="1" type="Global-forwardsType" />
+        <xs:element name="GlobalForwards" minOccurs="0" maxOccurs="1" type="GlobalForwardsType" />
         <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
         <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
         <xs:group ref="CacheElementGroup" minOccurs="0" maxOccurs="1" />
@@ -686,7 +686,7 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="exit" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
-  <xs:complexType name="Global-forwardsType">
+  <xs:complexType name="GlobalForwardsType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
@@ -694,7 +694,7 @@
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForwards" use="prohibited" />
     <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="global-forwards" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="globalForwards" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="FlowType">

@@ -57,26 +57,32 @@
 		<license>
 			<name>Apache License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>manual</distribution>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<developers>
 		<developer>
-			<name>Jaco de Groot</name>
-			<email>jaco@ibissource.org</email>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Niels Meijer</name>
-			<email>niels@ibissource.org</email>
+			<name>Tim van der Leeuw</name>
+			<email>tim@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Ali Sihab Akcan</name>
 			<email>ali@ibissource.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Jaco de Groot</name>
+			<email>jaco@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
