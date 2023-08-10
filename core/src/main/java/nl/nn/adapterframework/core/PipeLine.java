@@ -683,9 +683,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		pipeLineExits.put(exit.getName(), exit);
 	}
 
-	/** Global forwards */
+	/**
+	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
+	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>'exception'</code> forward to every pipe in the pipeline.
+	 */
 	public void setGlobalForwards(PipeForwards forwards){
-		for(PipeForward forward:forwards.getForwards()) {
+		for(PipeForward forward: forwards.getForwards()) {
 			registerForward(forward);
 		}
 	}
