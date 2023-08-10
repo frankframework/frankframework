@@ -60,6 +60,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -863,6 +864,9 @@ public class JdbcUtil {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
+				if (parameters.getParameterValue(i).getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+					continue;
+				}
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired, session);
 			}
 		}
