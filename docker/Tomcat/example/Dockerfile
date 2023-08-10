@@ -1,11 +1,9 @@
-FROM iaf-webapp-tomcat AS iaf-example-tomcat
+ARG FF_VERSION=latest
+FROM nexus.frankframework.org/frank-framework:${FF_VERSION}
 
-# copy any additional drivers
-COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
+# Copy resources
+COPY --chown=tomcat target/resources /opt/frank/resources
 
-# copy resources
-COPY --chown=tomcat target/dependencies/resources /opt/frank/resources
-
-# copy context, normally this file is mounted from the environment
+# Copy context, normally this file is mounted from the environment
 # The example webapp uses an H2 internal database as it does not need to store actual data, so the context.xml can be part of the image
-COPY --chown=tomcat target/dependencies/context.xml /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml
+COPY --chown=tomcat target/context.xml /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml

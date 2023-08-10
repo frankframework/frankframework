@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+    ff-test:
+        volumes:
+            - "../test/src/test/testtool:/opt/frank/testtool-ext"
+        image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-websphere
+        build: WebSphere
+        ports:
+            - "80:9080"
+        environment:
+            larva.adapter.active: false

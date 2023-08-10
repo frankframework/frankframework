@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,18 @@
 package nl.nn.credentialprovider;
 
 
+import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.Misc;
 
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
-
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
-	private final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
-	private final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
+	private static final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
+	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
 	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
@@ -38,7 +37,14 @@ public class CredentialFactory {
 
 	private static CredentialFactory self;
 
-	public static CredentialFactory getInstance() {
+	static {
+		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
+		if (optionalPrefix != null) {
+			optionalPrefix = optionalPrefix.toLowerCase();
+		}
+	}
+
+	public static synchronized CredentialFactory getInstance() {
 		if (self==null) {
 			self=new CredentialFactory();
 		}
@@ -46,10 +52,6 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
-		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
-		if (optionalPrefix!=null) {
-			optionalPrefix=optionalPrefix.toLowerCase();
-		}
 		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;

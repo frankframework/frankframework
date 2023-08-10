@@ -3,17 +3,27 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-wildfly</artifactId>
-	<name>Frank!Framework Docker image for WildFly</name>
+	<artifactId>ibis-adapterframework-docker-wildfly</artifactId>
+	<name>Frank!Framework - Docker > WildFly</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as</artifactId>
+		<artifactId>ibis-adapterframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
 
+	<properties>
+		<config.image.variation>wildfly</config.image.variation>
+		<config.image.tag>${config.image.name}:${revision}-wildfly</config.image.tag>
+	</properties>
+
 	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>credentialprovider</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
@@ -31,6 +41,7 @@
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
 		</dependency>
+		<!--H2 Appears to be already included in WildFly, though as an older version -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -55,6 +66,11 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
@@ -110,6 +126,25 @@
 							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>secrets</classifier>
+									<excludes>META-INF/</excludes>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -135,28 +170,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-package</id>
-						<phase>package</phase>
-						<inherited>false</inherited>
-						<configuration>
-							<target>
-								<exec executable="docker" failonerror="true">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="iaf-test-as-wildfly"/>
-									<arg value="."/>
-								</exec>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

@@ -48,7 +48,7 @@
 					<systemProperties>
 						<systemProperty>
 							<name>log.dir</name>
-							<value>./target</value>
+							<value>./target/logs</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.level</name>
@@ -60,7 +60,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/ibis-adapterframework-*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>.*/ibis-adapterframework-[^/]*\.jar$</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>
@@ -122,6 +122,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<!-- Ignoring JaCoCo reports because this module does not contain any Java classes.-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

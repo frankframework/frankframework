@@ -3,15 +3,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-as-jboss</artifactId>
-	<name>Frank!Framework Docker image for JBoss</name>
+	<artifactId>ibis-adapterframework-docker-jboss</artifactId>
+	<name>Frank!Framework - Docker > JBoss</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-as</artifactId>
+		<artifactId>ibis-adapterframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
+
+	<properties>
+		<config.image.variation>jboss</config.image.variation>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -55,6 +59,11 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.db2</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${db2.driver.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
@@ -110,6 +119,25 @@
 							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>unpack-secrets</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>secrets</classifier>
+									<excludes>META-INF/</excludes>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/secrets</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -135,28 +163,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-package</id>
-						<phase>package</phase>
-						<inherited>false</inherited>
-						<configuration>
-							<target>
-								<exec executable="docker" failonerror="true">
-									<arg value="build"/>
-									<arg value="-t"/>
-									<arg value="iaf-test-as-jboss"/>
-									<arg value="."/>
-								</exec>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

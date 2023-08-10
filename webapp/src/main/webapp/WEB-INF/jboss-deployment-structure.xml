@@ -1,16 +1,17 @@
 <?xml version="1.0"?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+							xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<deployment>
-<!-- 
-In order to find all modules:
-	sh/bash into the image
-	navigate to <server-root>/bin/jboss-cli.sh
-	> connect
-	> /deployment=iaf-test.war:list-modules(verbose=true)
- -->
+		<!--
+		In order to find all modules:
+			sh/bash into the image
+			navigate to <server-root>/bin/jboss-cli.sh
+			> connect
+			> /deployment=iaf-test.war:list-modules(verbose=true)
+		 -->
 		<exclusions>
 			<module name="javax.json.api" />
+			<module name="javax.mail.api" />
 			<module name="org.eclipse.yasson"/><!-- yasson contains javax json -->
 			<!-- Disable RestEasy (except resteasy-jaxrs); it's not used and could speed up the server startup time -->
 			<module name="org.jboss.resteasy.resteasy-atom-provider" />
@@ -25,6 +26,14 @@ In order to find all modules:
 			<module name="org.jboss.resteasy.resteasy-validator-provider-11" />
 			<module name="org.jboss.resteasy.resteasy-yaml-provider" />
 			<module name="org.jboss.as.ee" />
+
+			<!-- Disable jackson, as it conflicts with spring integration -->
+			<module name="com.fasterxml.jackson.core.jackson-annotations" />
+			<module name="com.fasterxml.jackson.core.jackson-core" />
+			<module name="com.fasterxml.jackson.core.jackson-databind" />
+			<module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" />
+			<module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8" />
+			<module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310" />
 		</exclusions>
 		<exports />
 		<module-alias name="deployment.iaf" />
@@ -32,6 +41,7 @@ In order to find all modules:
 			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
 			<module name="javax.jms.api" export="true"/>
 			<module name="module.frank-framework" />
+			<module name="org.jboss.as.server"/> <!-- for WildFlyCredentialFactory -->
 		</dependencies>
 		<exclude-subsystems>
 			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->

@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.util.Collection;
-
 import nl.nn.credentialprovider.ICredentials;
+
+import java.util.Collection;
 
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
