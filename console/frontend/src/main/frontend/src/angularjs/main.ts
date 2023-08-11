@@ -1,4 +1,4 @@
-import Prism from 'prismjs';
+import * as Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-highlight/prism-line-highlight';
 import { $, angular } from './deps';
@@ -58,12 +58,12 @@ $(document).ready(function () {
 });
 
 //Foist: To force upon or impose fraudulently or unjustifiably
-function foist(callback) {
+function foist(callback: () => void) {
   // @ts-ignore
   angular.element(document.body).scope().foist(callback);
 }
 //Changes the log level to; 0 - error, 1 - warn, 2 - info, 3 - debug
-function setLogLevel(level) {
+function setLogLevel(level: number) {
   // @ts-ignore
   angular.element(document.body).scope().setLogLevel(level);
 }
@@ -95,7 +95,7 @@ $(function () {
 
   Prism.hooks.add('after-highlight', function (env) {
     // works only for <code> wrapped inside <pre data-line-numbers> (not inline)
-    var pre = env.element.parentNode;
+    var pre = env.element.parentNode as HTMLElement;
     if (!pre || !/pre/i.test(pre.nodeName) || pre.className.indexOf('line-numbers') === -1) {
       return;
     }

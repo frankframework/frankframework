@@ -24,7 +24,7 @@
       "dom"
     ],
     /* temp angularjs upgrade fix */
-    "noImplicitAny": false,
+    // "noImplicitAny": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

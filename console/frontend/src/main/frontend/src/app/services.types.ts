@@ -149,8 +149,19 @@ export interface SweetAlertService {
   Success: (...args: any[]) => Promise<any>;
 }
 
+interface ToastObject {
+  type?: string,
+  title: string,
+  body?: string,
+  timeout?: number,
+  bodyOutputType?: string,
+  clickHandler?: (_: any, isCloseButton: boolean) => boolean,
+  showCloseButton?: boolean,
+  uid?: number,
+  onHideCallback?: () => void
+}
 export interface ToastrService {
-  error: (title: string, text: string) => void;
-  success: (title: string, text: string) => void;
-  warning: (title: string, text: string) => void;
+  error: (title: string | ToastObject, text?: string) => void;
+  success: (title: string | ToastObject, text?: string) => void;
+  warning: (title: string | ToastObject, text?: string) => void;
 }

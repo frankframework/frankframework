@@ -1,6 +1,13 @@
 import { ApiService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { StateService } from "angular-ui-router";
+import { AppService } from "../../app.service";
+
+export type ServerError = {
+  status: string,
+  error: string,
+  stackTrace: any, //TODO does it even exist in Webservices.java [getIbisHealth]?
+}
 
 class ErrorController {
   constructor(
@@ -10,7 +17,7 @@ class ErrorController {
     private $interval: angular.IIntervalService,
     private $rootScope: angular.IRootScopeService,
     private $timeout: angular.ITimeoutService,
-    private appService
+    private appService: AppService
   ) { }
 
   cooldownCounter = 0;
@@ -21,7 +28,7 @@ class ErrorController {
     this.checkState();
   };
 
-  cooldown(data) {
+  cooldown(data: ServerError) {
     this.cooldownCounter = 60;
 
     if (data.status == "error" || data.status == "INTERNAL_SERVER_ERROR") {

@@ -1,7 +1,11 @@
-import { appModule } from "./app.module";
+import { DebugService, MiscService, ToastrService } from "src/app/services.types";
+import { AppConstants, appModule } from "./app.module";
+import { StateProvider, UrlRouterProvider } from "@uirouter/angularjs";
+import * as angular from "angular";
+import { StateService, Trace } from "angular-ui-router";
 
-appModule.config(['$httpProvider', function ($httpProvider) {
-	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants, $q, Misc, Toastr, $location) {
+appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvider) {
+	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants: AppConstants, $q: angular.IQService, Misc: MiscService, Toastr: ToastrService, $location: angular.ILocationService) {
 		var errorCount = 0;
 		return {
 			request: function (config) {
@@ -25,14 +29,14 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 								}
 							});
 
-							if (appConstants.init == 1) {
+							if (appConstants["init"] == 1) {
 								if (rejection.config.headers["Authorization"] != undefined) {
 									console.warn("Authorization error");
 								} else {
 									Toastr.error("Failed to connect to backend!");
 								}
 							}
-							else if (appConstants.init == 2 && rejection.config.poller) {
+							else if (appConstants["init"] == 2 && rejection.config.poller) {
 								console.warn("Connection to the server was lost!");
 								errorCount++;
 								if (errorCount == 3) {
@@ -74,7 +78,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 		};
 	}]);
 }]).config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', /*'$ocLazyLoadProvider',*/ 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider',
-	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
+  function config($cookiesProvider: angular.cookies.ICookiesProvider, $locationProvider: angular.ILocationProvider, $stateProvider: StateProvider, $urlRouterProvider: UrlRouterProvider, /*$ocLazyLoadProvider,*/ IdleProvider: angular.idle.IIdleProvider, KeepaliveProvider: angular.idle.IKeepAliveProvider, appConstants: AppConstants, laddaProvider: any, $anchorScrollProvider: angular.IAnchorScrollProvider) {
 
 		if (appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 			IdleProvider.idle(appConstants["console.idle.time"]);
@@ -464,14 +468,16 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 				component: "error",
 			});
 
-	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope, $state, Debug, $trace) {
+	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope: angular.IRootScopeService, $state: StateService, Debug: DebugService, $trace: Trace) {
 		// Set this asap on localhost to capture all debug data
 		if (location.hostname == "localhost")
 			Debug.setLevel(3);
 
+    // @ts-ignore
 		$rootScope.$state = $state;
 		// $trace.enable('TRANSITION');
 
+    // @ts-ignore
 		$rootScope.foist = function (callback) {
 			Debug.warn("Dirty injection!", callback);
 			try {
@@ -485,6 +491,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 			}
 		};
 
+    // @ts-ignore
 		$rootScope.setLogLevel = function (level) {
 			Debug.setLevel(level);
 		};

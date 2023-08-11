@@ -2,20 +2,63 @@ import { StateService } from "angular-ui-router";
 import { appModule } from "./app.module";
 
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
+export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
+
+export type Receiver = {
+  isEsbJmsFFListener: boolean,
+  name: string,
+  transactionalStores: Record<'DONE' | 'ERROR', { name: string, numberOfMessages: number }>,
+  listener: {
+    name: string,
+    destination: string,
+    class: string,
+    isRestListener: boolean
+  },
+  messages: {
+    retried: number,
+    rejected: number,
+    received: number
+  },
+  state: Lowercase<RunState>,
+}
+
+type Message = {
+  date: number,
+  level: MessageLevel,
+  message: string,
+}
+
+export interface AdapterMessage extends Message {
+  capacity: number
+}
+
+export type Pipe = {
+  forwards: Record<'success' | 'exception', string>,
+  sender: string,
+  name: string,
+  destination: string,
+  isJdbcSender: boolean,
+  hasMessageLog?: boolean,
+  messageLogCount?: 'error' | string,
+  isSenderTransactionalStorage?: boolean
+}
 
 export type Adapter = {
-  "configuration": string,
-  "upSince": number,
-  "name": string,
-  "description": null | string,
-  "started": boolean,
-  "state": RunState,
-  "status"?: 'started' | 'warning' | 'stopped',
-  "hasSender": boolean,
-  "sendersMessageLogCount": number,
-  "senderTransactionalStorageMessageCount": number,
-  receivers: any[],
-  messages: any[]
+  configuration: string,
+  configured: boolean,
+  upSince: number,
+  name: string,
+  description: null | string,
+  started: boolean,
+  state: Lowercase<RunState>,
+  receivers?: Receiver[],
+  messages?: AdapterMessage[],
+  pipes?: Pipe[],
+  hasSender?: boolean,
+  status?: 'started' | 'warning' | 'stopped',
+  sendersMessageLogCount?: number,
+  senderTransactionalStorageMessageCount?: number,
+  receiverReachedMaxExceptions?: boolean
 }
 
 export type Configuration = {
@@ -26,7 +69,20 @@ export type Configuration = {
   dbcMigrator: boolean
 }
 
-export class Service {
+export type Alert = {
+  link?: { name: string, '#': string },
+  type: string,
+  configuration: string,
+  message: string
+}
+
+export type MessageLog = {
+  errorStoreCount: number,
+  messages: Message[],
+  messageLevel: MessageLevel,
+}
+
+export class AppService {
   constructor(
     private $rootScope: angular.IRootScopeService,
     private $state: StateService
@@ -41,14 +97,14 @@ export class Service {
     this.$rootScope.$broadcast('adapters', adapters);
   }
 
-	alerts = [];
-	updateAlerts(alerts) {
+  alerts: Alert[] = [];
+	updateAlerts(alerts: Alert[]) {
     this.alerts = alerts;
     this.$rootScope.$broadcast('alerts', alerts);
   }
 
-	startupError = null;
-  updateStartupError(startupError) {
+	startupError: string | null = null;
+  updateStartupError(startupError: string) {
     this.startupError = startupError;
     this.$rootScope.$broadcast('startupError', startupError);
   }
@@ -87,8 +143,8 @@ export class Service {
     this.$rootScope.$broadcast('configurations', updatedConfigurations);
   }
 
-	messageLog = [];
-	updateMessageLog(messageLog) {
+	messageLog: Record<string, MessageLog> = {};
+  updateMessageLog(messageLog: Record<string, MessageLog>) {
     this.messageLog = messageLog;
     this.$rootScope.$broadcast('messageLog', messageLog);
   }
@@ -106,7 +162,7 @@ export class Service {
   }
 
 	databaseSchedulesEnabled = false;
-	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled) {
+	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
     this.$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
   }
@@ -143,17 +199,17 @@ export class Service {
     }
   };
 
-	updateAdapterSummary(configurationName: string) {
+	updateAdapterSummary(configurationName?: string) {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = setTimeout(this.updateAdapterSummary, 1000);
+      this.timeout = window.setTimeout(this.updateAdapterSummary, 1000);
       return;
     }
     if (configurationName == undefined)
       configurationName = this.$state.params["configuration"];
 
-    var adapterSummary = {
+    var adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -162,7 +218,7 @@ export class Service {
       exception_stopping: 0,
       error: 0
     };
-    var receiverSummary = {
+    var receiverSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -171,7 +227,7 @@ export class Service {
       exception_stopping: 0,
       error: 0
     };
-    var messageSummary = {
+    var messageSummary: Record<Lowercase<MessageLevel>, number> = {
       info: 0,
       warn: 0,
       error: 0
@@ -184,10 +240,10 @@ export class Service {
       if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
         adapterSummary[adapter.state]++;
         for (const i in adapter.receivers) {
-          receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
+          receiverSummary[adapter.receivers[+i].state.toLowerCase() as Lowercase<RunState>]++;
         }
         for (const i in adapter.messages) {
-          var level = adapter.messages[i].level.toLowerCase();
+          var level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
           messageSummary[level]++;
         }
       }
@@ -202,7 +258,7 @@ export class Service {
 }
 
 appModule.factory('appService', ['$rootScope', '$state', function ($rootScope: angular.IRootScopeService, $state: StateService) {
-  const service = new Service($rootScope, $state);
+  const service = new AppService($rootScope, $state);
 
 
 	return service;
