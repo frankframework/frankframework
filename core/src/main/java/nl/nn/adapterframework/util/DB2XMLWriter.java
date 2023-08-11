@@ -191,7 +191,7 @@ public class DB2XMLWriter {
 					log.debug("Could not determine isCurrency",e);
 				}
 				try {
-					String columnTypeName = "" + rsmeta.getColumnTypeName(j);
+					String columnTypeName = rsmeta.getColumnTypeName(j);
 					if(convertFieldnamesToUppercase)
 						columnTypeName = columnTypeName.toUpperCase();
 					field.addAttribute("columnTypeName", columnTypeName);
@@ -199,7 +199,7 @@ public class DB2XMLWriter {
 					log.debug("Could not determine columnTypeName",e);
 				}
 				try {
-					field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
+					field.addAttribute("columnClassName", rsmeta.getColumnClassName(j));
 				} catch (SQLException e) {
 					log.debug("Could not determine columnClassName",e);
 				}

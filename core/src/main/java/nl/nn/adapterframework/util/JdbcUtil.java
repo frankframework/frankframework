@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Time;
@@ -59,6 +60,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -205,7 +207,8 @@ public class JdbcUtil {
 				return nullValue;
 			}
 		}
-		switch(rsmeta.getColumnType(colNum)) {
+		int columnType = rsmeta.getColumnType(colNum);
+		switch(columnType) {
 			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.LONGVARBINARY:
 			case Types.VARBINARY:
@@ -215,21 +218,19 @@ public class JdbcUtil {
 			case Types.DISTINCT:
 			case Types.REF:
 			case Types.STRUCT:
-			return "undefined";
+				return "undefined";
 			case Types.BOOLEAN :
-			case Types.BIT :
-			{
+			case Types.BIT : {
 				boolean value = rs.getBoolean(colNum);
 				return Boolean.toString(value);
 			}
 			// return as specified date format
 			case Types.TIMESTAMP :
-			case Types.DATE :
-			{
+			case Types.DATE : {
 				try {
-					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+					if(columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
 						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else if(rsmeta.getColumnType(colNum) == Types.DATE && !DATEFORMAT.isEmpty())
+					else if(columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				}
 				catch (Exception e) {
@@ -238,14 +239,14 @@ public class JdbcUtil {
 			}
 			//$FALL-THROUGH$
 			default: {
-				String value = rs.getString(colNum);
+				Object value = rs.getObject(colNum);
 				if (value == null) {
 					return nullValue;
 				}
 				if (trimSpaces) {
-					return value.trim();
+					return value.toString().trim();
 				}
-				return value;
+				return value.toString();
 			}
 			}
 		}
@@ -862,11 +863,40 @@ public class JdbcUtil {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
+				if (parameters.getParameterValue(i).getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+					continue;
+				}
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired, session);
 			}
 		}
 	}
 
+	public static SQLType mapParameterTypeToSqlType(ParameterType parameterType) {
+		switch (parameterType) {
+			case DATE:
+				return JDBCType.DATE;
+			case TIMESTAMP:
+			case DATETIME:
+			case XMLDATETIME:
+				return JDBCType.TIMESTAMP;
+			case TIME:
+				return JDBCType.TIME;
+			case NUMBER:
+				return JDBCType.NUMERIC;
+			case INTEGER:
+				return JDBCType.INTEGER;
+			case BOOLEAN:
+				return JDBCType.BOOLEAN;
+			case STRING:
+				return JDBCType.VARCHAR;
+			case CHARACTER:
+				return JDBCType.CLOB;
+			case BINARY:
+				return JDBCType.BLOB;
+			default:
+				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		}
+	}
 
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, JdbcException {
 		String paramName=pv.getDefinition().getName();

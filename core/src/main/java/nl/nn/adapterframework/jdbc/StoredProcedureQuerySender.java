@@ -22,20 +22,27 @@ import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
@@ -43,11 +50,17 @@ import nl.nn.adapterframework.util.StringUtil;
  * <p>
  * The StoredProcedureQuerySender class has the following features:
  * <ul>
- *     <li>It supports setting the output parameters of the stored procedure by position.</li>
+ *     <li>It supports setting the output parameters of the stored procedure by setting 'mode' attribute of
+ *     the corresponding 'Param' to 'OUTPUT' or 'INOUT'.</li>
  *     <li>The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
  *     returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
  *  </li>
  * </ul>
+ * </p>
+ * <p>
+ *     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
+ *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
+ *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
  * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
  *
@@ -57,29 +70,7 @@ import nl.nn.adapterframework.util.StringUtil;
  */
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
-	private @Getter String outputParameters;
-	private int[] outputParameterPositions = new int[0];
-
-
-	/**
-	 * Sets the output parameters of the store procedure, separated by commas. Each output parameter of the stored
-	 * procedure should be specified by its index in the parameter list of the SQL, with the first parameter being
-	 * number 1.
-	 * <p>
-	 *     Example:<br/>
-	 *     If there is a stored procedure {@code get_message_and_status_by_id} with a single input parameter, the message id,
-	 *     and two output parameters, the message and the message status, then the query should be specified as:
-	 *     <code>call get_message_and_status_by_id(?, ?, ?)</code>,
-	 *     and {@code outputParameters} should be:
-	 *     <code>outputParameters="2,3"</code>
-	 * </p>
-	 *
-	 * @param outputParameters the output parameters to be set
-	 */
-	public void setOutputParameters(String outputParameters) {
-		this.outputParameters = outputParameters;
-	}
-
+	private Map<Integer, Parameter> outputParameters;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,36 +92,70 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
 		}
 
-		if (outputParameters != null) {
+		outputParameters = buildOutputParameterMap(getParameterList(), getQuery());
+		if (!outputParameters.isEmpty()) {
 			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
 				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 			}
-			outputParameterPositions = StringUtil.splitToStream(outputParameters, ",;")
-					.mapToInt(Integer::parseInt)
-					.toArray();
 		}
 
-		if (isScalar() && outputParameterPositions.length > 1) {
+		if (isScalar() && outputParameters.size() > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
 		}
 
-		if (!getQuery().matches("(?i)^\\s*(call|exec)\\s+.*")) {
+		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?(\\{\\w+\\})?\\s*=\\s*call)\\s+.*")) {
 			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
 		}
+	}
+
+	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
+		if (parameterList == null) {
+			return Collections.emptyMap();
+		}
+		Pattern queryParamPattern = Pattern.compile("\\?(\\{\\w+\\})?");
+		Matcher parameterMatcher = queryParamPattern.matcher(query);
+		List<String> queryParameterNames = new ArrayList<>();
+		while (parameterMatcher.find()) {
+			queryParameterNames.add(parameterMatcher.group(1));
+		}
+		Map<String, Integer> queryParameterMap = new HashMap<>();
+		for (int i = 0; i < queryParameterNames.size(); i++) {
+			queryParameterMap.put(queryParameterNames.get(i), i+1);
+		}
+
+		Map<Integer, Parameter> result = new HashMap<>();
+		int pos = 0;
+		for (Parameter param : parameterList) {
+			++pos;
+
+			if (param.getMode() == Parameter.ParameterMode.INPUT) {
+				continue;
+			}
+
+			result.put(queryParameterMap.getOrDefault(param.getName(), pos), param);
+		}
+
+		return result;
 	}
 
 	@Override
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
-		if (outputParameterPositions.length > 0) {
-			// TODO: This does not work with Oracle -- "SQLFeatureNotSupportedException" :'(
-			final ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-			for (int param : outputParameterPositions) {
-				// Not all drivers support JDBCType (for instance, PostgreSQL) so use the type number
-				// For some databases (PostgreSQL) the value should already be set when registering out-parameter.
-				callableStatement.setNull(param, parameterMetaData.getParameterType(param));
-				callableStatement.registerOutParameter(param, parameterMetaData.getParameterType(param));
+		ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
+		for (Map.Entry<Integer, Parameter> entry : outputParameters.entrySet()) {
+			final int position = entry.getKey();
+			final Parameter param = entry.getValue();
+			final int typeNr;
+			// Parameter metadata are more accurate than our parameter type mapping and
+			// for some databases, this can cause exceptions.
+			// But for Oracle we do need our own mapping.
+			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
+				typeNr = parameterMetaData.getParameterType(position);
+			} else {
+				typeNr = JdbcUtil.mapParameterTypeToSqlType(param.getType()).getVendorTypeNumber();
 			}
+			callableStatement.setNull(position, typeNr);
+			callableStatement.registerOutParameter(position, typeNr);
 		}
 		return callableStatement;
 	}
@@ -143,11 +168,11 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	@Override
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
 		Message result = super.executeOtherQuery(connection, statement, query, resultQuery, resStmt, message, session, parameterList);
-		if (outputParameterPositions.length == 0) {
+		if (outputParameters.isEmpty()) {
 			return result;
 		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameterPositions));
+			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameters));
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
@@ -329,4 +354,5 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	public void setRowIdSessionKey(final String string) {
 		super.setRowIdSessionKey(string);
 	}
+
 }

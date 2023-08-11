@@ -102,19 +102,29 @@ TagDatabase
 	-->
 	<changeSet id="IAF-Test StoredProcedures PostgreSQL" author="Tim van der Leeuw" runOnChange="true" dbms="postgresql">
 		<comment>Stored Procedures for PostgreSQL</comment>
-		<sql dbms="postgresql">
+		<sql>
 			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
-			NMBR INTEGER,
-			VCHR VARCHAR(200)
+				NMBR INTEGER,
+				VCHR VARCHAR(200)
 			) LANGUAGE SQL
 			BEGIN ATOMIC
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
+			END;
+		</sql>
+		<sql>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES(
+				VCHR VARCHAR(200),
+				CNT OUT INTEGER
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				SELECT COUNT(*) CNT FROM IBISTEMP WHERE TVARCHAR = VCHR;
 			END;
 		</sql>
 
 		<rollback>
 			<sql>
 				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -133,9 +143,22 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</createProcedure>
+		<createProcedure
+				procedureName="COUNT_MESSAGES"
+				replaceIfExists="true"
+		>
+			CREATE PROCEDURE COUNT_MESSAGES(
+				VCHR VARCHAR(200),
+				OUT CNT INTEGER
+			) LANGUAGE SQL
+			BEGIN
+				SELECT COUNT(*) INTO CNT FROM IBISTEMP WHERE TVARCHAR = VCHR;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -151,9 +174,19 @@ TagDatabase
 				INSERT INTO IBISTEMP(TKEY, TINT, TVARCHAR) VALUES (NEXT VALUE FOR SEQ_IBISTEMP, @NMBR, @VCHR);
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE COUNT_MESSAGES(
+				@VCHR VARCHAR(200),
+				@CNT INTEGER OUT
+			) AS
+			BEGIN
+				SELECT @CNT = COUNT(*) FROM IBISTEMP WHERE TVARCHAR = @VCHR;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE IF EXISTS INSERT_SIMPLE_NO_RETURN;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -169,16 +202,26 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES(
+				VCHR VARCHAR(200),
+				OUT CNT INTEGER
+			) LANGUAGE SQL
+			BEGIN
+				SELECT COUNT(*) INTO CNT FROM IBISTEMP WHERE TVARCHAR = VCHR;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE INSERT_SIMPLE_NO_RETURN;
+				DROP PROCEDURE COUNT_MESSAGES;
 			</sql>
 		</rollback>
 	</changeSet>
 
 	<changeSet id="IAF-Test StoredProcedures Oracle" author="Tim van der Leeuw" runOnChange="true" dbms="oracle">
 		<comment>Stored Procedures for Oracle</comment>
-		<createProcedure dbms="oracle">
+		<createProcedure>
 			CREATE OR REPLACE PROCEDURE INSERT_SIMPLE_NO_RETURN(
 				NMBR INTEGER,
 				VCHR VARCHAR
@@ -187,9 +230,19 @@ TagDatabase
 				INSERT INTO IBISTEMP(TINT, TVARCHAR) VALUES (NMBR, VCHR);
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES(
+				VCHR VARCHAR,
+				CNT OUT INTEGER
+			) AS
+			BEGIN
+				SELECT COUNT(*) INTO CNT FROM IBISTEMP WHERE TVARCHAR = VCHR;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE INSERT_SIMPLE_NO_RETURN;
+				DROP PROCEDURE COUNT_MESSAGES;
 			</sql>
 		</rollback>
 	</changeSet>

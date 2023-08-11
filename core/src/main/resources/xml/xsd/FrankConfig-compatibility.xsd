@@ -429,6 +429,20 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="mode">
+      <xs:annotation>
+        <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
+ This parameter only has effect for nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
+ An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
+ Parameter values will not be updated, but output values will be put into the result of the
+ nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
+ &lt;b/&gt;
+ If not specified, the default is INPUT.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterModeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="param" />
@@ -3561,24 +3575,24 @@
     <xs:attribute name="action" type="xs:string" />
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration, 
- and is used to unambiguously identify the Merchant. This number is 10-digits long, where the 
+        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
+ and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
  first four digits are equal to the AcquirerID.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantSubID" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN, 
- if operating under different brands or trading entities. The Merchant obtains the SubID 
- from its Acquirer after registration for iDIN. A Merchant can request permission from 
+        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
+ if operating under different brands or trading entities. The Merchant obtains the SubID
+ from its Acquirer after registration for iDIN. A Merchant can request permission from
  the Acquirer to use one or more SubIDs.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantReturnUrl" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the 
- Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL 
- does not necessarily begin with http:// or https://, it can also start with an app handler 
+        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the
+ Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
+ does not necessarily begin with http:// or https://, it can also start with an app handler
  e.g. companyname-nlservice://.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3587,7 +3601,7 @@
     <xs:attribute name="acquirerStatusUrl" type="xs:string" />
     <xs:attribute name="keyStoreLocation" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to 
+        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to
  store all the required certificates</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3621,22 +3635,22 @@
     </xs:attribute>
     <xs:attribute name="acquirerCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="acquirerAlternativeCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sAMLCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information. 
- The Merchant can then use the private key to decrypt that information. The SAML certificate must be in 
+        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
+ The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
  PKCS#12 format which has the extension .p12 or .pfx;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -5486,21 +5500,6 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.StoredProcedureQuerySender" />
   </xs:complexType>
   <xs:attributeGroup name="StoredProcedureQuerySenderDeclaredAttributeGroup">
-    <xs:attribute name="outputParameters" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the output parameters of the store procedure, separated by commas. Each output parameter of the stored
- procedure should be specified by its index in the parameter list of the SQL, with the first parameter being
- number 1.
- &lt;p&gt;
-     Example:&lt;br/&gt;
-     If there is a stored procedure {@code get_message_and_status_by_id} with a single input parameter, the message id,
-     and two output parameters, the message and the message status, then the query should be specified as:
-     &lt;code&gt;call get_message_and_status_by_id(?, ?, ?)&lt;/code&gt;,
-     and {@code outputParameters} should be:
-     &lt;code&gt;outputParameters="2,3"&lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="query" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>A SQL statement that calls a stored procedure. The statement should begin with the &lt;code&gt;CALL&lt;/code&gt; or &lt;code&gt;EXEC&lt;/code&gt;
@@ -5845,7 +5844,7 @@
     <xs:attribute name="noname" type="xs:string" />
     <xs:attribute name="copy" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script. 
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script.
  Reasons to copy the file:
  - XFB will rename the file (prefix it with FXB_) and delete it.
  - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).</xs:documentation>
@@ -7486,13 +7485,13 @@
     </xs:attribute>
     <xs:attribute name="updateStatusToInProcessQuery" type="xs:string">
       <xs:annotation>
-        <xs:documentation>SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. 
+        <xs:documentation>SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key.
  Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="revertInProcessStatusQuery" type="xs:string">
       <xs:annotation>
-        <xs:documentation>SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key. 
+        <xs:documentation>SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key.
  Only used in rollbacks, when updateStatusToInProcessQuery is specified</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -16746,6 +16745,13 @@
       <xs:pattern value="[mM][aA][pP]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ParameterModeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[iI][nN][pP][uU][tT]" />
+      <xs:pattern value="[oO][uU][tT][pP][uU][tT]" />
+      <xs:pattern value="[iI][nN][oO][uU][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="OutputTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[tT][eE][xX][tT]" />
@@ -18382,7 +18388,7 @@
   </xs:attribute>
   <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
+      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that
  this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
     </xs:annotation>
   </xs:attribute>
