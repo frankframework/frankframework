@@ -5,6 +5,10 @@
 						  serviceName="ibis4test-StoredProcedureQuerySender"/>
 		</Receiver>
 		<Pipeline>
+			<exits>
+				<exit path="ERROR" state="error"/>
+				<exit path="SUCCESS" state="success"/>
+			</exits>
 			<SenderPipe name="Count nr of existing records">
 				<!-- Negative count so we can use it as increment and expect 1 as result -->
 				<FixedQuerySender
@@ -26,6 +30,27 @@
 				</StoredProcedureQuerySender>
 			</SenderPipe>
 			<PutInSessionPipe name="Record New Counter in Session" sessionKey="countAfter"/>
+			<SenderPipe name="Call StoredProcedure To Count Records">
+				<StoredProcedureQuerySender
+						query="CALL COUNT_MESSAGES(?, ?)"
+						queryType="other"
+						scalar="true"
+				>
+					<param name="vchar" value="a text" />
+					<param name="number" type="INTEGER" mode="output" />
+				</StoredProcedureQuerySender>
+			</SenderPipe>
+			<PutInSessionPipe name="Record Stored Procedure Result in Session" sessionKey="SP2Result"/>
+			<CompareIntegerPipe
+					name="Check Output Parameter Result"
+					sessionKey1="countAfter"
+					sessionKey2="SP2Result"
+			>
+				<forward name="lessthan" path="ERROR"/>
+				<forward name="greaterthan" path="ERROR"/>
+				<forward name="equals" path="Calculate Nr of Rows Inserted"/>
+				<forward name="exception" path="ERROR"/>
+			</CompareIntegerPipe>
 			<IncreaseIntegerPipe name="Calculate Nr of Rows Inserted" sessionKey="countAfter">
 				<Param name="increment" sessionKey="countBefore"/>
 			</IncreaseIntegerPipe>

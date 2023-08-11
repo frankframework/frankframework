@@ -515,6 +515,20 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="mode">
+      <xs:annotation>
+        <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
+ This parameter only has effect for nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
+ An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
+ Parameter values will not be updated, but output values will be put into the result of the
+ nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
+ &lt;b/&gt;
+ If not specified, the default is INPUT.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterModeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="param" use="prohibited" />
@@ -876,7 +890,7 @@
   </xs:complexType>
   <xs:complexType name="FlowType">
     <xs:annotation>
-      <xs:documentation>The flow contains the handlers to handle records of a specific type. 
+      <xs:documentation>The flow contains the handlers to handle records of a specific type.
  Each flow is registered to a manager using the recordHandlerManagerRef.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="recordKey" type="xs:string">
@@ -1288,10 +1302,10 @@
       <xs:element name="IfsaProviderListener">
         <xs:annotation>
           <xs:documentation>Implementation of IPullingListener that acts as an IFSA-service.
- 
+
  There is no need or possibility to set the ServiceId as the Provider will receive all messages
  for this Application on the same serviceQueue.
- 
+
  The following session keys are set for each message:
  &lt;ul&gt;
    &lt;li&gt;id (the message id)&lt;/li&gt;
@@ -1305,13 +1319,13 @@
    &lt;li&gt;ifsaOccurrence&lt;/li&gt;
    &lt;li&gt;ifsaVersion&lt;/li&gt;
  &lt;/ul&gt;
- 
- N.B. 
+
+ N.B.
  Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
  and for Fire &amp; Forget services. This allows applications to provide both types of services, each in its own transaction
- mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
+ mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on
  the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
- 
+
  &lt;code&gt;ifsa.provider.useSelectors=false&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4723,11 +4737,17 @@
  &lt;p&gt;
  The StoredProcedureQuerySender class has the following features:
  &lt;ul&gt;
-     &lt;li&gt;It supports setting the output parameters of the stored procedure by position.&lt;/li&gt;
+     &lt;li&gt;It supports setting the output parameters of the stored procedure by setting 'mode' attribute of
+     the corresponding 'Param' to 'OUTPUT' or 'INOUT'.&lt;/li&gt;
      &lt;li&gt;The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
      returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
   &lt;/li&gt;
  &lt;/ul&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
+     have a corresponding Parameter entry. Output parameters should have {@code mode="OUTPUT"}, or
+     {@code mode="INOUT"} depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
         </xs:annotation>
@@ -4807,7 +4827,7 @@
  &lt;br/&gt;
  - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
  &lt;br/&gt;
- - send file must have rights 660 after putting the file in the send directory. 
+ - send file must have rights 660 after putting the file in the send directory.
  &lt;br/&gt;
  &lt;br/&gt;
  RECEIVING CFT:
@@ -6420,24 +6440,24 @@
     <xs:attribute name="action" type="xs:string" />
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration, 
- and is used to unambiguously identify the Merchant. This number is 10-digits long, where the 
+        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
+ and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
  first four digits are equal to the AcquirerID.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantSubID" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN, 
- if operating under different brands or trading entities. The Merchant obtains the SubID 
- from its Acquirer after registration for iDIN. A Merchant can request permission from 
+        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
+ if operating under different brands or trading entities. The Merchant obtains the SubID
+ from its Acquirer after registration for iDIN. A Merchant can request permission from
  the Acquirer to use one or more SubIDs.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantReturnUrl" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the 
- Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL 
- does not necessarily begin with http:// or https://, it can also start with an app handler 
+        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the
+ Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
+ does not necessarily begin with http:// or https://, it can also start with an app handler
  e.g. companyname-nlservice://.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6446,7 +6466,7 @@
     <xs:attribute name="acquirerStatusUrl" type="xs:string" />
     <xs:attribute name="keyStoreLocation" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to 
+        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to
  store all the required certificates</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6480,22 +6500,22 @@
     </xs:attribute>
     <xs:attribute name="acquirerCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="acquirerAlternativeCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sAMLCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information. 
- The Merchant can then use the private key to decrypt that information. The SAML certificate must be in 
+        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
+ The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
  PKCS#12 format which has the extension .p12 or .pfx;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -8004,21 +8024,6 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.StoredProcedureQuerySender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="StoredProcedureQuerySenderDeclaredAttributeGroup">
-    <xs:attribute name="outputParameters" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the output parameters of the store procedure, separated by commas. Each output parameter of the stored
- procedure should be specified by its index in the parameter list of the SQL, with the first parameter being
- number 1.
- &lt;p&gt;
-     Example:&lt;br/&gt;
-     If there is a stored procedure {@code get_message_and_status_by_id} with a single input parameter, the message id,
-     and two output parameters, the message and the message status, then the query should be specified as:
-     &lt;code&gt;call get_message_and_status_by_id(?, ?, ?)&lt;/code&gt;,
-     and {@code outputParameters} should be:
-     &lt;code&gt;outputParameters="2,3"&lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="query" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>A SQL statement that calls a stored procedure. The statement should begin with the &lt;code&gt;CALL&lt;/code&gt; or &lt;code&gt;EXEC&lt;/code&gt;
@@ -8335,7 +8340,7 @@
     <xs:attribute name="noname" type="xs:string" />
     <xs:attribute name="copy" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script. 
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script.
  Reasons to copy the file:
  - XFB will rename the file (prefix it with FXB_) and delete it.
  - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).</xs:documentation>
@@ -9440,11 +9445,17 @@
  &lt;p&gt;
  The StoredProcedureQuerySender class has the following features:
  &lt;ul&gt;
-     &lt;li&gt;It supports setting the output parameters of the stored procedure by position.&lt;/li&gt;
+     &lt;li&gt;It supports setting the output parameters of the stored procedure by setting 'mode' attribute of
+     the corresponding 'Param' to 'OUTPUT' or 'INOUT'.&lt;/li&gt;
      &lt;li&gt;The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
      returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
   &lt;/li&gt;
  &lt;/ul&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+     All stored procedure parameters that are not fixed, so specified in the query with a {@code ?}, should
+     have a corresponding Parameter entry. Output parameters should have {@code mode="OUTPUT"}, or
+     {@code mode="INOUT"} depending on how the stored procedure is defined.
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;NOTE:&lt;/b&gt; See DB2XMLWriter for ResultSet!&lt;/p&gt;</xs:documentation>
         </xs:annotation>
@@ -9524,7 +9535,7 @@
  &lt;br/&gt;
  - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
  &lt;br/&gt;
- - send file must have rights 660 after putting the file in the send directory. 
+ - send file must have rights 660 after putting the file in the send directory.
  &lt;br/&gt;
  &lt;br/&gt;
  RECEIVING CFT:
@@ -11962,7 +11973,7 @@
     <xs:choice>
       <xs:element name="FieldPositionManager">
         <xs:annotation>
-          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified 
+          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified
  position in a record. The fields in the record are separated by a separator.
  The value of the specified field is taken as key in the flow-table.</xs:documentation>
         </xs:annotation>
@@ -12757,40 +12768,40 @@
       </xs:element>
       <xs:element name="BytesOutputPipe">
         <xs:annotation>
-          <xs:documentation>Output bytes as specified by the input XML. 
- 
+          <xs:documentation>Output bytes as specified by the input XML.
+
  Actions are taken on every field
  tag found in the input XML. Every field tag should have a type attribute
  that specifies the type of conversion that needs to be done on the string
  specified by the value attribute. A value attribute also needs to be present
  for every field tag. Currently two types of conversion are supported:
- 
+
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)&lt;/li&gt;
    &lt;li&gt;&lt;code&gt;PackedDecimal&lt;/code&gt;, a conversion from string to Packed-decimal&lt;/li&gt;
  &lt;/ul&gt;
-  
+
  An additional charset attribute is needed for a GetBytesFromString
  conversion. An input XML that would encode the string &amp;quot; TEST 1234 &amp;quot;
  into EBCDIC format would look like:
- 
+
  &lt;pre&gt;
  &amp;lt;fields&amp;gt;
    &amp;lt;field type=&amp;quot;GetBytesFromString&amp;quot; value=&amp;quot; TEST 1234 &amp;quot; charset=&amp;quot;Cp037&amp;quot;/&amp;gt;
  &amp;lt;/fields&amp;gt;
  &lt;/pre&gt;
- 
+
  The Packed-decimal conversion has been implemented according to information
  found in the following resources:
- 
+
  &lt;ul&gt;
    &lt;li&gt;A description as found at &lt;a href="http://www.simotime.com/datapk01.htm"&gt;http://www.simotime.com/datapk01.htm&lt;/a&gt;&lt;/li&gt;
    &lt;li&gt;AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at &lt;a href="http://jt400.sourceforge.net/"&gt;http://jt400.sourceforge.net/&lt;/a&gt;&lt;/li&gt;
    &lt;li&gt;The WebSphere Studio COBOL for Windows Programming Guide from &lt;a href="http://www-1.ibm.com/support/docview.wss?uid=swg27005151"&gt;http://www-1.ibm.com/support/docview.wss?uid=swg27005151&lt;/a&gt;&lt;/li&gt;
  &lt;/ul&gt;
- 
+
  Some examples:
- 
+
  &lt;ul&gt;
    &lt;li&gt;The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C&lt;/li&gt;
    &lt;li&gt;The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D&lt;/li&gt;
@@ -12803,7 +12814,7 @@
  is smaller than the number of decimals.
 
  An input XML that would generate a number of Packed-decimals could look like:
- 
+
  &lt;pre&gt;
  &amp;lt;fields&amp;gt;
    &amp;lt;field type=&amp;quot;PackedDecimal&amp;quot; value=&amp;quot;+12345&amp;quot; size=&amp;quot;16&amp;quot;/&amp;gt;
@@ -12931,7 +12942,7 @@
       <xs:element name="CounterSwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on the number of received messages by this pipe.
- 
+
  The exitState is the difference (subtraction) between the &lt;code&gt;divisor&lt;/code&gt; and
  the remainder of [number of received messages] modulus &lt;code&gt;divisor&lt;/code&gt;.
  This will always be an integer between 1 and &lt;code&gt;divisor&lt;/code&gt;, inclusive.</xs:documentation>
@@ -13041,10 +13052,10 @@
         <xs:annotation>
           <xs:documentation>Pipe that performs domain transforming on the basis of a database table.
 
- Every string which equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;. 
- 
+ Every string which equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;.
+
  The field &lt;code&gt;type&lt;/code&gt;, which is optional, indicates the format of &lt;code&gt;valueIn&lt;/code&gt;. Currently the following types are supported:
- 
+
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;string&lt;/code&gt; (default): the methode setString() is used&lt;/li&gt;
    &lt;li&gt;&lt;code&gt;number&lt;/code&gt;: the method setDouble() is used &lt;/li&gt;
@@ -14151,7 +14162,7 @@
       </xs:element>
       <xs:element name="TextSplitterPipe">
         <xs:annotation>
-          <xs:documentation>Breaks up the text input in blocks of a maximum length. 
+          <xs:documentation>Breaks up the text input in blocks of a maximum length.
  By default the maximum block length is 160 characters, to enable them to be send as SMS messages.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -17442,7 +17453,7 @@
         <xs:annotation>
           <xs:documentation>1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
  2. It then loops through all records found in the database.
- 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
+ 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job.
     Only if they differ, it overwrites the current job.
     If it is not present it add the job to the scheduler.
  4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
@@ -18023,6 +18034,13 @@
  When applied as a JDBC parameter, the method setCharacterStream() or setString() is used</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ParameterModeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="INPUT" />
+      <xs:enumeration value="OUTPUT" />
+      <xs:enumeration value="INOUT" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="HttpMethodAttributeValuesType">
@@ -19982,7 +20000,7 @@
   </xs:attribute>
   <xs:attribute name="ignoreUnknownNamespaces" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
+      <xs:documentation>Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that
  this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. Default: true when &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;noNamespaceSchemaLocation&lt;/code&gt; is used, false otherwise</xs:documentation>
     </xs:annotation>
   </xs:attribute>

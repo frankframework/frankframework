@@ -207,7 +207,8 @@ public class JdbcUtil {
 				return nullValue;
 			}
 		}
-		switch(rsmeta.getColumnType(colNum)) {
+		int columnType = rsmeta.getColumnType(colNum);
+		switch(columnType) {
 			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.LONGVARBINARY:
 			case Types.VARBINARY:
@@ -217,21 +218,19 @@ public class JdbcUtil {
 			case Types.DISTINCT:
 			case Types.REF:
 			case Types.STRUCT:
-			return "undefined";
+				return "undefined";
 			case Types.BOOLEAN :
-			case Types.BIT :
-			{
+			case Types.BIT : {
 				boolean value = rs.getBoolean(colNum);
 				return Boolean.toString(value);
 			}
 			// return as specified date format
 			case Types.TIMESTAMP :
-			case Types.DATE :
-			{
+			case Types.DATE : {
 				try {
-					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+					if(columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
 						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else if(rsmeta.getColumnType(colNum) == Types.DATE && !DATEFORMAT.isEmpty())
+					else if(columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				}
 				catch (Exception e) {
@@ -240,14 +239,14 @@ public class JdbcUtil {
 			}
 			//$FALL-THROUGH$
 			default: {
-				String value = rs.getString(colNum);
+				Object value = rs.getObject(colNum);
 				if (value == null) {
 					return nullValue;
 				}
 				if (trimSpaces) {
-					return value.trim();
+					return value.toString().trim();
 				}
-				return value;
+				return value.toString();
 			}
 			}
 		}
