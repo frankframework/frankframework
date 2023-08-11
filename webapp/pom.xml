@@ -21,7 +21,7 @@
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
 		<!--  copy META-INF/services from the core module so it can be found by application servers -->
-		<!-- 
+		<!--
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
