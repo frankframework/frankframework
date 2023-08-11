@@ -238,7 +238,7 @@ public class StringUtil {
 
 	public static List<String> splitAndTrim(@Nullable String input){
 		return splitToStream(input)
-		        .map(item::trim)
+		        .map(item -> item.trim())
 				.collect(Collectors.toList());
 	}
 
