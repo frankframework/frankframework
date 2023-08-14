@@ -22,7 +22,11 @@ class ErrorController {
 
   cooldownCounter = 0;
   viewStackTrace = false;
-  stackTrace: any;
+  stackTrace?: {
+    className: string,
+    methodName: string,
+    lineNumber: string
+  }[];
 
   $onInit() {
     this.checkState();

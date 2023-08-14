@@ -3,12 +3,8 @@ import * as Pace from 'pace-js';
 Pace.start({
   ajax: false
 });
-
 import * as jQuery from 'jquery';
-// import './plugins/iCheck/icheck.min';
-// import 'datatables.net/js/jquery.dataTables.min';
-// import 'chart.js';
-// import 'mermaid';
+// import 'mermaid'; // TODO let ngMermaid handle or replace ngMermaid with own component
 
 import 'metismenu';
 

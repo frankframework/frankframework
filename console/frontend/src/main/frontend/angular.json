@@ -50,8 +50,7 @@
               "node_modules/angular/angular.js",
               "src/angularjs/plugins/iCheck/icheck.min.js",
               "node_modules/datatables.net/js/jquery.dataTables.min.js",
-              "node_modules/chart.js/dist/Chart.js",
-              "node_modules/mermaid/dist/mermaid.core.js"
+              "node_modules/chart.js/dist/Chart.js"
             ]
           },
           "configurations": {
