@@ -48,13 +48,16 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.StorageClass;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -96,6 +99,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 	private @Getter int maxConnections = 50;
+
+	private @Getter StorageClass storageClass = StorageClass.Standard;
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -290,7 +295,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 						metaData.setContentLength(file.length());
 
 						try(S3Object file = f) {
-							s3Client.putObject(bucketName, file.getKey(), fis, metaData);
+							PutObjectRequest por = new PutObjectRequest(bucketName, file.getKey(), fis, metaData);
+							por.setStorageClass(getStorageClass());
+							s3Client.putObject(por);
 						}
 					} finally {
 						isClosed = true;
@@ -307,10 +314,10 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return null;
 	}
 
-	/** 
+	/**
 	 * If you retrieve an S3Object, you should close this input stream as soon as possible,
 	 * because the object contents aren't buffered in memory and stream directly from Amazon S3.
-	 * Further, failure to close this stream can cause the request pool to become blocked. 
+	 * Further, failure to close this stream can cause the request pool to become blocked.
 	 */
 	@Override
 	public Message readFile(S3Object file, String charset) throws FileSystemException, IOException {
@@ -325,7 +332,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	/**
-	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * Attempts to update the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
 	 * Updates the Metadata context but does not retrieve the actual file handle.
 	 */
 	private S3Object updateFileAttributes(S3Object f) {
@@ -383,7 +390,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
-		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, source.getKey(), bucketName, destination.getKey());
+		cor.setStorageClass(getStorageClass());
+		s3Client.copyObject(cor);
 		s3Client.deleteObject(bucketName, source.getKey());
 		return destination;
 	}
@@ -394,7 +403,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
 		}
 		String destinationFile = destinationFolder+"/"+getName(f);
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
+		cor.setStorageClass(getStorageClass());
+		s3Client.copyObject(cor);
 		return toFile(destinationFile);
 	}
 
@@ -677,5 +688,15 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
+
+	/**
+	 * Set the desired storage class for the S3 object when action is move,copy or write.
+	 * More info on storage classes can be found on the AWS S3 docs: https://aws.amazon.com/s3/storage-classes/
+	 * @ff.default STANDARD
+	 */
+	public void setStorageClass(StorageClass storageClass) {
+		this.storageClass = storageClass;
+	}
+
 
 }

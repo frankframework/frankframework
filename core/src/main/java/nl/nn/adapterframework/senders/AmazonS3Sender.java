@@ -202,5 +202,18 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
-	
+	@IbisDoc({ "maximum concurrent connections towards S3", "50" })
+	public void setMaxConnections(int maxConnections) {
+		getFileSystem().setMaxConnections(maxConnections);
+	}
+
+	@IbisDoc({ "name of the region that the client will be created from", "" })
+	public void setServiceEndpoint(String bucketName) {
+		getFileSystem().setServiceEndpoint(bucketName);
+	}
+
+	@IbisDoc({ "set the desired storage class for the S3 object when action is move,copy or write", "Standard" })
+	public void setStorageClass(StorageClass storageClass) {
+		getFileSystem().setStorageClass(storageClass);
+	}
 }
