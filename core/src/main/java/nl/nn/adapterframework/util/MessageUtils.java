@@ -217,11 +217,13 @@ public abstract class MessageUtils {
 		MessageContext context = message.getContext();
 		MimeType mimeType = getMimeType(message);
 		if(mimeType != null) {
+			LOG.debug("returning predetermiend mimetype [{}]", mimeType);
 			return mimeType;
 		}
 
 		String name = (String) context.get(MessageContext.METADATA_NAME);
 		if(StringUtils.isNotEmpty(filename)) {
+			LOG.trace("using predetermiend filename [{}]", name);
 			name = filename;
 		}
 
