@@ -8,6 +8,11 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
+		<Appender name="systemout" type="Console">
+			<Layout type="PatternLayout">
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
+			</Layout>
+		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
@@ -103,7 +108,7 @@
 		<Logger name="org.springframework.security.ldap" level="WARN" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
-			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="systemout"/>
 			<AppenderRef ref="config"/>
 		</Logger>
 
@@ -119,6 +124,9 @@
 		</Logger>
 		<Logger name="CONFIG" additivity="false" level="INFO">
 			<AppenderRef ref="config"/>
+		</Logger>
+		<Logger name="APPLICATION" additivity="true" level="INFO">
+			<AppenderRef ref="systemout"/>
 		</Logger>
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>

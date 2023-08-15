@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -72,6 +73,7 @@ public class IbisApplicationContext implements Closeable {
 
 	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final Logger log = LogUtil.getLogger(this);
+	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 	private final Map<String, String> iafModules = new HashMap<>();
 
@@ -89,7 +91,7 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException If the Factory can not be created.
 	 */
 	protected void createApplicationContext() throws BeansException {
-		log.debug("creating Spring Application Context");
+		applicationLog.info("Creating IbisApplicationContext");
 		if (!state.equals(BootState.FIRST_START)) {
 			state = BootState.STARTING;
 		}
@@ -104,7 +106,7 @@ public class IbisApplicationContext implements Closeable {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if (parentContext != null) {
-				log.debug("found Spring rootContext [{}]", parentContext);
+				log.info("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -114,7 +116,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		log.info("created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
+		applicationLog.log(Level.ALL, "Created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -200,12 +202,12 @@ public class IbisApplicationContext implements Closeable {
 	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context [{}]", oldContextName);
+			log.info("closing IbisApplicationContext [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context [{}]", oldContextName);
+			applicationLog.log(Level.ALL, "closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
@@ -284,7 +286,7 @@ public class IbisApplicationContext implements Closeable {
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [{}] version [{}]", module, version);
+				applicationLog.info("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}
@@ -309,7 +311,7 @@ public class IbisApplicationContext implements Closeable {
 			props.load(is);
 			return (String) props.get("version");
 		} catch (IOException e) {
-			log.warn("unable to read pom.properties file for module[{}]", module, e);
+			applicationLog.warn("unable to read pom.properties file for module[{}]", module, e);
 
 			return "unknown";
 		}

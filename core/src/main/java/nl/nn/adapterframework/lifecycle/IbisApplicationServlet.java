@@ -25,6 +25,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -37,6 +38,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class IbisApplicationServlet extends HttpServlet {
 	private static final long serialVersionUID = 2L;
 	private final Logger log = LogUtil.getLogger(this);
+	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	public static final String CONTEXT_KEY = "IbisContext";
 	private IbisContext ibisContext;
 	private static final String EXCEPTION_KEY = "StartupException";
@@ -69,7 +71,7 @@ public class IbisApplicationServlet extends HttpServlet {
 			}
 		} catch (Throwable t) {
 			servletContext.setAttribute(EXCEPTION_KEY, t);
-			log.error("IBIS WebApplicationInitializer failed to initialize", t);
+			applicationLog.fatal("IBIS WebApplicationInitializer failed to initialize", t);
 			throw t; //If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
 		}
 
@@ -81,7 +83,7 @@ public class IbisApplicationServlet extends HttpServlet {
 		Exception startupException = ibisContext.getStartupException();
 		if(startupException != null) { //Check if there are any problems initializing Spring
 			String msg = this.getClass().getSimpleName()+" finished without successfully initializing the IbisContext";
-			log.error(msg, startupException);
+			applicationLog.fatal(msg, startupException);
 
 			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
 			servletContext.log(String.format("%s, check ibis logs for more information! (%s) %s", msg, startupException.getClass().getName(), startupException.getMessage()));
@@ -90,8 +92,7 @@ public class IbisApplicationServlet extends HttpServlet {
 		// save the IbisContext in the ServletContext
 		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
-
-		log.debug("Servlet init finished");
+		applicationLog.log(Level.ALL, "Initialized IbisContext: {}", ClassUtils.nameOf(ibisContext));
 	}
 
 	/**
@@ -115,6 +116,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
+		applicationLog.log(Level.ALL, "shutting down IbisContext");
 		getServletContext().log("Shutting down IbisContext");
 		if(ibisContext != null) {
 			ibisContext.close();

@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -47,13 +48,14 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class IbisApplicationInitializer extends ContextLoaderListener {
 	private Logger log = LogUtil.getLogger(this);
+	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
-		servletContext.log("Starting IBIS WebApplicationInitializer");
+		applicationLog.log(Level.ALL, "Starting IBIS WebApplicationInitializer");
 
-		checkAndCorrectLegacyServerTypes(servletContext);
+		checkAndCorrectLegacyServerTypes();
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
@@ -91,8 +93,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	public void closeWebApplicationContext(ServletContext servletContext) {
-		log.info("Stopping IBIS WebApplicationInitializer");
-		servletContext.log("Stopping IBIS WebApplicationInitializer");
+		applicationLog.log(Level.ALL, "Stopping IBIS WebApplicationInitializer");
 		super.closeWebApplicationContext(servletContext);
 	}
 
@@ -105,23 +106,25 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
 			log.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
-			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+			applicationLog.log(Level.ALL, "Successfully started IBIS WebApplicationInitializer");
 			return wac;
 		} catch (Exception e) {
 			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			applicationLog.log(Level.FATAL, "IBIS ApplicationInitializer failed to initialize", e);
 			throw e;
 		}
 	}
 
-	private void checkAndCorrectLegacyServerTypes(ServletContext servletContext) {
+	//TODO: remove this in 8.0
+	private void checkAndCorrectLegacyServerTypes() {
 		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
 		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 		if (StringUtils.isNotEmpty(applicationServerType)) {
 			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
-				servletContext.log("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
+				log.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
 				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
 			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-				servletContext.log("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
+				log.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
 				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
 			}
 		}
@@ -149,17 +152,19 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			}
 		} else {
 			autoDeterminedApplicationServerType = "TOMCAT";
-			servletContext.log("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
+			applicationLog.log(Level.ALL, "unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
 		}
 
 		//has it explicitly been set? if not, set the property
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
 		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			servletContext.log("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+autoDeterminedApplicationServerType+"]");
+			log.info("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+autoDeterminedApplicationServerType+"]");
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			servletContext.log("determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":""));
+			String logLine = "determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":"");
+			servletContext.log(logLine);
+			applicationLog.log(Level.ALL, logLine);
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 	}
