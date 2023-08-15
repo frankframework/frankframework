@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.StringUtil;
 public class CorsFilter implements Filter {
 	private final Logger secLog = LogManager.getLogger("SEC");
 	private final Logger log = LogManager.getLogger(this);
-	private String localHostAddress;
+	private String hostAddress;
 
 	@Value("${iaf-api.cors.allowOrigin:'*'}")
 	private String allowedCorsOrigins; //Defaults to nothing
@@ -53,12 +53,15 @@ public class CorsFilter implements Filter {
 	@Value("${iaf-api.cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
 	private String allowedCorsMethods;
 
+	@Value("${iaf-api.cors.enforced:false}")
+	private boolean enforceCORS;
+
 	private List<String> allowedCorsDomains =  new ArrayList<>();
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		try {
-			localHostAddress = InetAddress.getLocalHost().getHostAddress();
+			hostAddress = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
 			log.warn("unable to determine local host address", e);
 		}
@@ -88,7 +91,7 @@ public class CorsFilter implements Filter {
 		 * Handle Cross-Origin Resource Sharing
 		 */
 		String origin = request.getHeader("Origin");
-		if (origin != null) {
+		if (origin != null && enforceCORS) {
 			//Always add the cors headers when the origin has been set
 			if(isOriginEqualToLocalHost(origin) || allowedCorsDomains.contains(origin)) {
 				response.setHeader("Access-Control-Allow-Origin", origin);
@@ -106,6 +109,8 @@ public class CorsFilter implements Filter {
 			else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
 				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+origin+"] but was blocked due to CORS restrictions");
+				log.warn("blocked request with origin [{}]", origin);
+				response.setStatus(500);
 				return; //actually block the request
 			}
 			//If we pass one of the valid domains, it can be used to spoof the connection
@@ -123,10 +128,13 @@ public class CorsFilter implements Filter {
 		}
 	}
 
+	//192.168.1.235 : localhost : 127.0.0.1
 	private boolean isOriginEqualToLocalHost(String originHeader) {
 		try {
-			InetAddress origin = InetAddress.getByName(new URL(originHeader).getHost());
-			return localHostAddress != null && localHostAddress.equals(origin.getHostAddress());
+			String host = new URL(originHeader).getHost();
+			if("localhost".equals(host)) return true;
+			InetAddress origin = InetAddress.getByName(host);
+			return hostAddress != null && hostAddress.equals(origin.getHostAddress());
 		} catch (UnknownHostException e) {
 			log.warn("unable to parse host address", e);
 			return false;
