@@ -100,7 +100,7 @@
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>sqs</artifactId>
-				<version>2.20.124</version>
+				<version>2.20.127</version>
 			</dependency>
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
