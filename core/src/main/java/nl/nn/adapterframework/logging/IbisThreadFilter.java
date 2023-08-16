@@ -15,6 +15,8 @@
  */
 package nl.nn.adapterframework.logging;
 
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
@@ -23,8 +25,6 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
-
-import java.util.regex.Pattern;
 
 /**
  * Extension of StringMatchFilter with the facility of executing a regular

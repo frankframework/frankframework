@@ -15,11 +15,11 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-
 import java.util.Map;
 
 import org.xml.sax.Attributes;
+
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 
 /**
  * Factory for instantiating listeners from the Digester framework.

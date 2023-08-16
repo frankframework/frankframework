@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import nl.nn.adapterframework.core.INamedObject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.INamedObject;
 
 /**
  * Base class for items of global lists.

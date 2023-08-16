@@ -15,11 +15,13 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.flow.ResultHandler;
-import nl.nn.adapterframework.core.ISender;
 
 public class Rhino implements JavascriptEngine<Context> {
 

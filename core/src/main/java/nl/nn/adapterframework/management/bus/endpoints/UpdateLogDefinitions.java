@@ -44,8 +44,8 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.LogUtil;
 

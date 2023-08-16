@@ -17,11 +17,11 @@ package nl.nn.adapterframework.statistics.parser;
 
 import java.text.DecimalFormat;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.statistics.Basics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Record use to gather statistics data from a file.

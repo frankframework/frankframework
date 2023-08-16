@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.pgp;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.bouncycastle.util.io.Streams;
+
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BouncyGPG;
 import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputStreamAPI;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import org.bouncycastle.util.io.Streams;
-
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class Verify extends PGPAction {
 	private String[] senders;

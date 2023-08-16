@@ -17,6 +17,7 @@ package nl.nn.adapterframework.lifecycle;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
+import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -25,7 +26,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.http.WebServiceListener;
-import org.apache.cxf.jaxws.EndpointImpl;
 import nl.nn.adapterframework.http.cxf.NamespaceUriProvider;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
