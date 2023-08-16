@@ -515,21 +515,31 @@ public final class AppConstants extends Properties implements Serializable {
 	 */
 	public void RecursiveYaml(String key, Object value) throws IOException, URISyntaxException {
 
-		// If the value is a string, will split the key / value pair and put.
 		if (value instanceof String) {
-			String[] strings = ((String) value).split(" ");
-			for (String pair : strings) {
-				String[] split = pair.split(":");
-				put(key + "." + split[0], split[1]);
-			}
+			String[] split = ((String) value).split(":", 1);
+			if (split.length == 1) {put(key, split[0]);}
+			else{put(key + "." + split[0], split[1]);}
 		}
 
 		// Due to how the parser works, Arraylist encapsulates the map.
 		// Therefore, key doesn't need to be updated, only the value.
 		else if (value instanceof ArrayList){
+			String valueAppend = "";
+
 			for (int i = 0; i < ((ArrayList) value).size(); i++) {
-				RecursiveYaml(key, ((ArrayList) value).get(i));
+
+				Object innerValue = ((ArrayList) value).get(i);
+				// Checks if the value contains either a space, colon or equals sign.
+				if (innerValue.toString().contains(" ") || innerValue.toString().contains(":") || innerValue.toString().contains("=")){
+					RecursiveYaml(key, innerValue);
+				}
+				// else if value is not ""
+				else if (StringUtils.isEmpty(innerValue.toString()) == false){
+					if (valueAppend == "") {valueAppend += innerValue;}
+					else valueAppend += ("," +innerValue );
+				}
 			}
+			if (valueAppend != "") {RecursiveYaml(key, valueAppend);}
 		}
 
 		// If the value is a map, will recursively call the method.

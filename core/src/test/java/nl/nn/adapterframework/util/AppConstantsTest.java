@@ -1,5 +1,8 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isIn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -8,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.net.URISyntaxException;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
+
+import nl.nn.adapterframework.util.experimental.properties2yaml;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -202,6 +207,34 @@ public class AppConstantsTest {
 		assertEquals("200", yamlConstants.get("Ook.Is.YamlTest1"));
 		assertEquals("MRU", yamlConstants.get("Ook.Is.YamlTest2"));
 		assertEquals("true", yamlConstants.get("Ook.Is.YamlTest3"));
+	}
+
+	@Test
+	public void testYamlFromPropertiesConverter() throws IOException {
+		URL url = getClass().getResource("/AppConstants/yamlProperties.yaml");
+		InputStream is = url.openStream();
+		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is);
+
+		AppConstants yamlConstants = AppConstants.getInstance();
+		yamlConstants.loadYaml(reader);
+
+		String p2y = properties2yaml.createYaml(property2Reader(yamlConstants));
+
+		AppConstants.removeInstance();
+		AppConstants yamlConstants2 = AppConstants.getInstance();
+		yamlConstants2.loadYaml(new StringReader(p2y)); // <--- change this back to p2y after testing is done
+
+		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlConstants2.entrySet())));
+		assertThat( yamlConstants2.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+	}
+
+	private StringReader property2Reader(AppConstants constants) {
+		// convert the AppConstants to string, so that it can be read as a file
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Object key : constants.keySet()) {
+			stringBuilder.append(key).append("=").append(constants.getUnresolvedProperty((String) key)).append("\n");
+		}
+		return new StringReader(stringBuilder.toString());
 	}
 
 	private class ClassLoaderMock extends ClassLoader {

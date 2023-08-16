@@ -1,10 +1,6 @@
-Dit:
-  - Is:
-      YamlTest1:100
-      YamlTest2:LRU
-      YamlTest3:false
-Ook:
-  - Is:
-      YamlTest1:200
-      YamlTest2:MRU
-      YamlTest3:true
+application:
+    security:
+        http:
+            authenticators:
+                testte: {type: AD, baseDn: '', url: 'ldap://10.1.2.3'}
+                myADAuth: {type: AD, baseDn: '', url: 'ldap://10.1.2.3'}
