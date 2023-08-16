@@ -38,7 +38,7 @@ public class MessageDataSource implements javax.activation.DataSource, jakarta.a
 	}
 
 	public MessageDataSource(Message message, String newContentType) throws IOException {
-		if(message.isNull()) {
+		if(Message.isNull(message)) {
 			throw new IllegalArgumentException("message may not be null");
 		}
 		if(message.getContext() == null) {
