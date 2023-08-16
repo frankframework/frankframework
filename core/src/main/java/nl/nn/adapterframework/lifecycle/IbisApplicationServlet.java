@@ -19,16 +19,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Start the Framework with a servlet so `application startup order` can be used.
@@ -92,7 +91,7 @@ public class IbisApplicationServlet extends HttpServlet {
 		// save the IbisContext in the ServletContext
 		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
-		applicationLog.log(Level.ALL, "Initialized IbisContext: {}", ClassUtils.nameOf(ibisContext));
+		applicationLog.fatal("Initialized IbisContext: {}", ClassUtils.nameOf(ibisContext));
 	}
 
 	/**
@@ -116,7 +115,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		applicationLog.log(Level.ALL, "shutting down IbisContext");
+		applicationLog.fatal("shutting down IbisContext");
 		getServletContext().log("Shutting down IbisContext");
 		if(ibisContext != null) {
 			ibisContext.close();

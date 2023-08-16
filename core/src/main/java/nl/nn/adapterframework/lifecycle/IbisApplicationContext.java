@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -116,7 +115,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		applicationLog.log(Level.ALL, "Created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
+		applicationLog.fatal("Created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -207,7 +206,7 @@ public class IbisApplicationContext implements Closeable {
 			applicationContext.close();
 			applicationContext = null;
 
-			applicationLog.log(Level.ALL, "closed IbisApplicationContext [{}]", oldContextName);
+			applicationLog.fatal("closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
