@@ -52,7 +52,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
-		applicationLog.fatal("Starting IBIS WebApplicationInitializer");
+		applicationLog.debug("Starting IBIS WebApplicationInitializer");
 
 		checkAndCorrectLegacyServerTypes();
 		determineApplicationServerType(servletContext);
@@ -92,7 +92,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	public void closeWebApplicationContext(ServletContext servletContext) {
-		applicationLog.fatal("Stopping IBIS WebApplicationInitializer");
+		applicationLog.info("Stopping IBIS WebApplicationInitializer");
 		super.closeWebApplicationContext(servletContext);
 	}
 
@@ -105,7 +105,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
 			log.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
-			applicationLog.fatal("Successfully started IBIS WebApplicationInitializer");
+			applicationLog.info("Successfully started IBIS WebApplicationInitializer");
 			return wac;
 		} catch (Exception e) {
 			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
@@ -151,7 +151,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			}
 		} else {
 			autoDeterminedApplicationServerType = "TOMCAT";
-			applicationLog.fatal("unknown server info [{}] default application server type could not be determined, TOMCAT will be used as default value", serverInfo);
+			applicationLog.warn("Unknown server info [{}] default application server type could not be determined, TOMCAT will be used as default value", serverInfo);
 		}
 
 		//has it explicitly been set? if not, set the property
@@ -161,9 +161,9 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			log.info("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+autoDeterminedApplicationServerType+"]");
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			String logLine = "determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":"");
+			String logLine = "Determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":"");
 			servletContext.log(logLine);
-			applicationLog.fatal(logLine);
+			applicationLog.info(logLine);
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 	}

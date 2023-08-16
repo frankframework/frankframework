@@ -81,7 +81,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 		Exception startupException = ibisContext.getStartupException();
 		if(startupException != null) { //Check if there are any problems initializing Spring
-			String msg = this.getClass().getSimpleName()+" finished without successfully initializing the IbisContext";
+			String msg = ClassUtils.classNameOf(this)+" finished without successfully initializing the IbisContext";
 			applicationLog.fatal(msg, startupException);
 
 			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
@@ -91,7 +91,7 @@ public class IbisApplicationServlet extends HttpServlet {
 		// save the IbisContext in the ServletContext
 		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
 		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
-		applicationLog.fatal("Initialized IbisContext: {}", ClassUtils.nameOf(ibisContext));
+		applicationLog.info("Initialized {}", ClassUtils.classNameOf(this));
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		applicationLog.fatal("shutting down IbisContext");
+		applicationLog.info("Shutting down {}", ClassUtils.classNameOf(this));
 		getServletContext().log("Shutting down IbisContext");
 		if(ibisContext != null) {
 			ibisContext.close();

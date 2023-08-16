@@ -125,7 +125,7 @@
 		<Logger name="CONFIG" additivity="false" level="INFO">
 			<AppenderRef ref="config"/>
 		</Logger>
-		<Logger name="APPLICATION" additivity="true" level="INFO">
+		<Logger name="APPLICATION" additivity="true" level="DEBUG">
 			<AppenderRef ref="systemout"/>
 		</Logger>
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">

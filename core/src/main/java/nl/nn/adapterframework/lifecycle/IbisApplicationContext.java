@@ -90,7 +90,7 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException If the Factory can not be created.
 	 */
 	protected void createApplicationContext() throws BeansException {
-		applicationLog.info("Creating IbisApplicationContext");
+		applicationLog.debug("Creating IbisApplicationContext");
 		if (!state.equals(BootState.FIRST_START)) {
 			state = BootState.STARTING;
 		}
@@ -115,7 +115,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		applicationLog.fatal("Created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
+		applicationLog.info("Created IbisApplicationContext [{}] in {} ms", applicationContext::getId, () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -200,13 +200,13 @@ public class IbisApplicationContext implements Closeable {
 	@Override
 	public void close() {
 		if (applicationContext != null) {
-			String oldContextName = applicationContext.getDisplayName();
+			String oldContextName = applicationContext.getId();
 			log.info("closing IbisApplicationContext [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			applicationLog.fatal("closed IbisApplicationContext [{}]", oldContextName);
+			applicationLog.info("Closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
@@ -285,7 +285,7 @@ public class IbisApplicationContext implements Closeable {
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
-				applicationLog.info("Loading IAF module [{}] version [{}]", module, version);
+				applicationLog.debug("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}
