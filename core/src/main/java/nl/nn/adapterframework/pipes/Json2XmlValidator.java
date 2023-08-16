@@ -146,7 +146,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	}
 
 	/**
-	 * Default format has precedence over the accept header, accept header may be invalid or * slash *, in which case it should be ignored. First accept value wins.
+	 * Default format has precedence over the accept header, accept header may be invalid or * slash *, in case of * slash * it means any content-type is accepted for the consumer, defaults to detected output format.
 	 */
 	private String parseAcceptHeader(DocumentFormat detectedFormat, String acceptHeaderValue) {
 		if(StringUtils.isEmpty(acceptHeaderValue) || acceptHeaderValue.contains("*/*")) {
