@@ -28,6 +28,9 @@ The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration 
 All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
 For more information about our releases, see our [release notes](RELEASES.md) and [releases](https://github.com/ibissource/iaf/releases).
 
+## Security
+It is important to remember that the security of your Frank! application is the result of the overall security of the hosting stack (Java, Application Server), Frank!Framework itself, all Java dependencies and your code. As such, it is your responsibility to follow a few important best practices, more information can be found in [security](SECURITY.md)
+
 ## Feedback
 For bug reports and feature requests, create a new issue at <https://github.com/ibissource/iaf/issues>. 
 For general questions feel free to post them on our [discussions forum](https://github.com/ibissource/iaf/discussions) here on GitHub. 
