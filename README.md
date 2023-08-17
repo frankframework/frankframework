@@ -21,6 +21,11 @@ The Frank!Framework is a framework that is completely configurable through XML c
 The application may be managed and monitored through a web interface or REST API.
 See it in action: https://frank2example.frankframework.org
 
+## Running the Frank-Framework 
+The Frank!Framework can run on any java runtime so you have your choice of aplication server, in our CI we test every PR and Release against Tomcat, Websphere, Wildfly, JBoss, all these aplications servers are useeed by our clients in production environments. You want to ruun on (docker)[Docker.md], a HELM chart will be available soon. 
+
+
+
 ## Rebranding
 The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remain fully backwards compatible!
 
