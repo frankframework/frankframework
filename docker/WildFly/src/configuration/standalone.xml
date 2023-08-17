@@ -222,7 +222,7 @@
 					</security>
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2">
-					<driver>db2</driver>
+					<driver>db2-xa</driver>
 					<xa-datasource-property name="databaseName">testiaf</xa-datasource-property>
 					<xa-datasource-property name="serverName">${env.jdbc.hostname:host.docker.internal}</xa-datasource-property>
 					<xa-datasource-property name="portNumber">50000</xa-datasource-property>
@@ -232,6 +232,14 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
+				<datasource jndi-name="java:/jdbc/ibis4test-db2" pool-name="ibis4test-db2">
+					<driver>db2</driver>
+					<connection-url>jdbc:db2://${env.jdbc.hostname:host.docker.internal}:50000/testiaf</connection-url>
+					<security>
+						<user-name>testiaf_user</user-name>
+						<credential-reference store="CS" alias="testiaf_user"/>
+					</security>
+				</datasource>
 				<!-- End of Framework datasources -->
 				<drivers>
 					<driver name="h2" module="com.h2database.h2">
@@ -253,8 +261,11 @@
 					<driver name="postgresql" module="module.frank-framework">
 						<xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
 					</driver>
-					<driver name="db2" module="module.frank-framework">
+					<driver name="db2-xa" module="module.frank-framework">
 						<xa-datasource-class>com.ibm.db2.jcc.DB2XADataSource</xa-datasource-class>
+					</driver>
+					<driver name="db2" module="module.frank-framework">
+						<datasource-class>com.ibm.db2.jcc.DB2Driver</datasource-class>
 					</driver>
 					<!-- End of Framework drivers -->
 				</drivers>
