@@ -125,11 +125,21 @@
 	/>
 
 	<!-- DB2 XA does not work without BTM/Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
-	<Resource name="jdbc/ibis4test-db2" auth="Container"
+	<Resource name="jdbc/ibis4test-db2-old" auth="Container"
 		type="javax.sql.DataSource"
 		driverClassName="com.ibm.db2.jcc.DB2Driver"
 		url="jdbc:db2://${jdbc.hostname:-host.docker.internal}:50000/testiaf"
 		username="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+	/>
+
+	<Resource name="jdbc/ibis4test-db2" auth="Container"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.ibm.db2.jcc.DB2ConnectionPoolDataSource"
+		serverName="${jdbc.hostname:-host.docker.internal}"
+		portNumber="50000"
+		databaseName="testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 

@@ -221,7 +221,7 @@
 						<credential-reference store="CS" alias="testiaf_user"/>
 					</security>
 				</xa-datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2-xa">
 					<driver>db2-xa</driver>
 					<xa-datasource-property name="databaseName">testiaf</xa-datasource-property>
 					<xa-datasource-property name="serverName">${env.jdbc.hostname:host.docker.internal}</xa-datasource-property>

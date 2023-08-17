@@ -39,8 +39,8 @@ createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=
 createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-j.jar')
 createProvider('MariaDB JDBC Driver', 'org.mariadb.jdbc.MariaDbDataSource', 'classpath=/work/drivers/mariadb-java-client.jar')
 createProvider('PostgreSQL JDBC Driver', 'org.postgresql.xa.PGXADataSource', 'classpath=/work/drivers/postgresql.jar')
-createProvider('DB2 XA JDBC Driver', 'com.ibm.db2.jcc.DB2XADataSource', 'classpath=/work/drivers/jcc.jar')
-createProvider('DB2 JDBC Driver', 'com.ibm.db2.jcc.DB2Driver', 'classpath=/work/drivers/jcc.jar')
+createProvider('DB2 JDBC Driver (XA)', 'com.ibm.db2.jcc.DB2XADataSource', 'classpath=/work/drivers/jcc.jar')
+createProvider('DB2 JDBC Driver', 'com.ibm.db2.jcc.DB2ConnectionPoolDataSource', 'classpath=/work/drivers/jcc.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 		[['name', 'URL'], ['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
@@ -75,7 +75,7 @@ createDatasource('ibis4test-postgres-xa', 'PostgreSQL JDBC Driver', authAliasNam
 		[['name', 'URL'], ['value', 'jdbc:postgresql://${jdbc.hostname}:5432/testiaf']]
 	])
 
-createDatasource('ibis4test-db2-xa', 'DB2 XA JDBC Driver', authAliasName, [
+createDatasource('ibis4test-db2-xa', 'DB2 JDBC Driver (XA)', authAliasName, [
 		[['name', 'serverName'], ['value', '${jdbc.hostname}']],
 		[['name', 'portNumber'], ['value', '50000']],
 		[['name', 'databaseName'], ['value', 'testiaf']],
@@ -83,5 +83,5 @@ createDatasource('ibis4test-db2-xa', 'DB2 XA JDBC Driver', authAliasName, [
 	])
 
 createDatasource('ibis4test-db2', 'DB2 JDBC Driver', authAliasName, [
-	[['name', 'url'], ['value', 'jdbc:db2://${jdbc.hostname}:50000/testiaf']],
+	[['name', 'url'], ['value', 'jdbc:db2://${jdbc.hostname}:50000/testiaf']]
 ])
