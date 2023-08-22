@@ -1,8 +1,9 @@
 import { appModule } from "../../app.module";
+import { SidebarService } from "./sidebar.service";
 
-const HamburgerController = function (Sidebar) {
-	const ctrl = this;
-	ctrl.toggleSidebar = function () { Sidebar.toggle() };
+class HamburgerController {
+  constructor(private Sidebar: SidebarService){}
+	toggleSidebar() { this.Sidebar.toggle() };
 }
 
 appModule.component('hamburger', {

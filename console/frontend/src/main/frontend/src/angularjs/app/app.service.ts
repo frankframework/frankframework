@@ -2,6 +2,7 @@ import { StateService } from "angular-ui-router";
 import { appModule } from "./app.module";
 
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
+export type RunStateRuntime = RunState | 'loading'
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 
 export type Receiver = {
@@ -19,7 +20,7 @@ export type Receiver = {
     rejected: number,
     received: number
   },
-  state: Lowercase<RunState>,
+  state: Lowercase<RunStateRuntime>,
 }
 
 type Message = {
@@ -82,6 +83,20 @@ export type MessageLog = {
   messageLevel: MessageLevel,
 }
 
+export type Summary = {
+  started: number,
+  stopped: number,
+  starting: number,
+  stopping: number,
+  error: number
+}
+
+export type MessageSummary = {
+  info: number,
+  warn: number,
+  error: number
+}
+
 export class AppService {
   constructor(
     private $rootScope: angular.IRootScopeService,
@@ -109,21 +124,21 @@ export class AppService {
     this.$rootScope.$broadcast('startupError', startupError);
   }
 
-	adapterSummary = {
+  adapterSummary: Summary = {
     started: 0,
     stopped: 0,
     starting: 0,
     stopping: 0,
     error: 0
   };
-	receiverSummary = {
+  receiverSummary: Summary = {
     started: 0,
     stopped: 0,
     starting: 0,
     stopping: 0,
     error: 0
   };
-	messageSummary = {
+	messageSummary: MessageSummary = {
     info: 0,
     warn: 0,
     error: 0
@@ -203,7 +218,7 @@ export class AppService {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(this.updateAdapterSummary, 1000);
+      this.timeout = window.setTimeout(() => this.updateAdapterSummary(), 1000);
       return;
     }
     if (configurationName == undefined)

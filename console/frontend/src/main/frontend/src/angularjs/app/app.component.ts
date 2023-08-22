@@ -81,7 +81,7 @@ class AppController {
     private SweetAlert: SweetAlertService,
     private $timeout: angular.ITimeoutService,
     private appService: AppService
-  ) { }
+  ) { setTimeout(() => { this.dtapSide = "TEST" }, 5000) }
 
   $onInit() {
     /* state controller */
@@ -91,9 +91,9 @@ class AppController {
     angular.element(".loading").remove();
     /* state controller end */
 
-    Pace.on("done", () => { this.initializeFrankConsole });
-    this.$scope.$on('initializeFrankConsole', () => { this.initializeFrankConsole });
-    this.$timeout(() => { this.initializeFrankConsole }, 250);
+    Pace.on("done", () => this.initializeFrankConsole());
+    this.$scope.$on('initializeFrankConsole', () => this.initializeFrankConsole());
+    this.$timeout(() => this.initializeFrankConsole(), 250);
 
     this.$scope.$on('IdleStart', () => {
       this.Poller.getAll().changeInterval(this.appConstants["console.idle.pollerInterval"]);
@@ -199,7 +199,7 @@ class AppController {
         })
       }, true, 60000);
 
-      var raw_adapter_data: Record<string, string>;
+      var raw_adapter_data: Record<string, string> = {};
       var pollerCallback = (allAdapters: Record<string, Adapter>) => {
         for (const i in raw_adapter_data) { //Check if any old adapters should be removed
           if (!allAdapters[i]) {
@@ -209,7 +209,7 @@ class AppController {
           }
         }
         for (const adapterName in allAdapters) { //Add new adapter information
-          var adapter = allAdapters[+adapterName];
+          var adapter = allAdapters[adapterName];
 
           if (raw_adapter_data[adapter.name] != JSON.stringify(adapter)) {
             raw_adapter_data[adapter.name] = JSON.stringify(adapter);
@@ -239,7 +239,7 @@ class AppController {
               if (pipe.sender) {
                 adapter.hasSender = true;
                 if (pipe.hasMessageLog) {
-                  let count = parseInt(pipe.messageLogCount ||  '');
+                  let count = parseInt(pipe.messageLogCount || '');
                   if (!Number.isNaN(count)) {
                     if (pipe.isSenderTransactionalStorage) {
                       adapter.senderTransactionalStorageMessageCount += count;
@@ -272,7 +272,7 @@ class AppController {
       };
 
       //Get base information first, then update it with more details
-      this.Api.Get("adapters", (data: Record<string, Adapter>) => { pollerCallback(data) });
+      this.Api.Get("adapters", (data: Record<string, Adapter>) => pollerCallback(data));
       this.$timeout(() => {
         this.Poller.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
         this.$scope.$broadcast('loading', false);

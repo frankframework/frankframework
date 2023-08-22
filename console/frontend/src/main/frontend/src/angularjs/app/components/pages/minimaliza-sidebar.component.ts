@@ -1,8 +1,9 @@
 import { appModule } from "../../app.module";
+import { SidebarService } from "./sidebar.service";
 
-const MinimalizaSidebarController = function (Sidebar) {
-	const ctrl = this;
-	ctrl.toggleSidebar = function () { Sidebar.toggle() };
+class MinimalizaSidebarController {
+  constructor(private Sidebar: SidebarService){}
+	toggleSidebar() { this.Sidebar.toggle() };
 };
 
 appModule.component('minimalizaSidebar', {
