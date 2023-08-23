@@ -5,8 +5,29 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.util.*;
 
-public class properties2yaml {
-	public static String createYaml(Reader reader) throws IOException {
+public class PropertiesParser {
+	public static String PropertiesParser(String inputFilePath) throws IOException {
+
+		Map<String, Object> accumulation = new LinkedHashMap<>();
+
+		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFilePath))) {
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line.startsWith("#") || line.isEmpty()) {
+					continue;
+				}
+				String[] keys = line.split("\\.(?=[^=]*=)");
+				addPropertyToMap(accumulation, keys);
+			}
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+
+		Yaml yaml = new Yaml();
+		return yaml.dump(accumulation);
+	}
+
+	public static String PropertiesParser(Reader reader) throws IOException {
 
 		Map<String, Object> accumulation = new LinkedHashMap<>();
 

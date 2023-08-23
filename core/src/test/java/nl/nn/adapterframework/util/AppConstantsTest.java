@@ -16,7 +16,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import nl.nn.adapterframework.util.experimental.properties2yaml;
+import nl.nn.adapterframework.util.experimental.PropertiesParser;
+import nl.nn.adapterframework.util.experimental.YamlParser;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -194,19 +195,19 @@ public class AppConstantsTest {
 
 	@Test
 	public void testYAML() throws IOException {
-		URL url = getClass().getResource("/AppConstants/yamlProperties.yaml");
+		URL url = getClass().getResource("/AppConstants/yamlProperties2.yaml");
 		InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is);
 
 		AppConstants yamlConstants = AppConstants.getInstance();
-		yamlConstants.loadYaml(reader);
+		yamlConstants.putAll(new YamlParser(reader));
 
 		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
 		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
 		assertEquals("false", yamlConstants.get("Dit.Is.YamlTest3"));
 
-		assertEquals("200", yamlConstants.get("Ook.Is.YamlTest1"));
-		assertEquals("MRU", yamlConstants.get("Ook.Is.YamlTest2"));
-		assertEquals("true", yamlConstants.get("Ook.Is.YamlTest3"));
+		assertEquals("200", yamlConstants.get("Ook.Is.Daarnaast.YamlTest1"));
+		assertEquals("MRU", yamlConstants.get("Ook.Is.Daarnaast.YamlTest2"));
+		assertEquals("true", yamlConstants.get("Ook.Is.Daarnaast.YamlTest3"));
 	}
 
 	@Test
@@ -216,16 +217,27 @@ public class AppConstantsTest {
 		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is);
 
 		AppConstants yamlConstants = AppConstants.getInstance();
-		yamlConstants.loadYaml(reader);
+		yamlConstants.putAll(new YamlParser(reader));
 
-		String p2y = properties2yaml.createYaml(property2Reader(yamlConstants));
+		String p2y = PropertiesParser.PropertiesParser(property2Reader(yamlConstants));
 
 		AppConstants.removeInstance();
 		AppConstants yamlConstants2 = AppConstants.getInstance();
-		yamlConstants2.loadYaml(new StringReader(p2y)); // <--- change this back to p2y after testing is done
+		yamlConstants2.putAll(new YamlParser(new StringReader(p2y)));
 
 		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlConstants2.entrySet())));
 		assertThat( yamlConstants2.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+	}
+
+	@Test
+	public void testYamlIfResolves() throws IOException {
+		AppConstants yamlConstants = AppConstants.getInstance();
+		yamlConstants.load(AppConstantsTest.class.getClassLoader(), "AppConstants/ResolveTest1.yaml", false);
+		yamlConstants.load(AppConstantsTest.class.getClassLoader(), "AppConstants/ResolveTest2.properties", false);
+		yamlConstants.load(AppConstantsTest.class.getClassLoader(), "AppConstants/ResolveTest3.yaml", false);
+
+		assertEquals("Piet", yamlConstants.get("Resolve1"));
+		assertEquals("Pat", yamlConstants.get("InverseResolve3"));
 	}
 
 	private StringReader property2Reader(AppConstants constants) {

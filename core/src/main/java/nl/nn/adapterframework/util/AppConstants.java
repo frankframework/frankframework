@@ -19,18 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+
+import nl.nn.adapterframework.util.experimental.YamlParser;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,8 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
-
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Singleton class that has the constant values for this application. <br/>
@@ -258,9 +255,10 @@ public final class AppConstants extends Properties implements Serializable {
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
 	 * <code><pre>log4j2.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded in the listed order.
+	 * Has been made protected so it can be more easily accessed for tests.
 	 * </p>
 	 */
-	private synchronized void load(ClassLoader classLoader, String filename, boolean loadAdditionalPropertiesFiles) {
+	protected synchronized void load(ClassLoader classLoader, String filename, boolean loadAdditionalPropertiesFiles) {
 		load(classLoader, filename, null, loadAdditionalPropertiesFiles);
 	}
 
@@ -298,10 +296,8 @@ public final class AppConstants extends Properties implements Serializable {
 
 				for (URL url : resources) {
 					try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
-						CheckURL(reader, url);
+						loadResource(reader, url);
 						log.info("Application constants loaded from url [{}]", url::toString);
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
 					}
 				}
 
@@ -482,76 +478,18 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param reader    the reader
 	 * @param url 		the url
 	 */
-	public void CheckURL(Reader reader, URL url) throws URISyntaxException, IOException {
-		if (url.toURI().toString().contains(".properties")){
-			load(reader);
-		}
-		else if (url.toURI().toString().contains(".yaml")){
-			loadYaml(reader);
-		}
-	}
+	public void loadResource(Reader reader, URL url) throws IOException {
+		String extension = FilenameUtils.getExtension(url.toString());
 
-	/**
-	 * Loads and parses a yaml file.
-	 * Uses the {@link #RecursiveYaml(String, Object)} method.
-	 * @param reader    the reader
-	 */
-	public void loadYaml(Reader reader) {
-		Yaml yaml = new Yaml();
-		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
-		obj.entrySet().forEach(entry -> {
-			try {
-				RecursiveYaml(entry.getKey(), entry.getValue());
-			} catch (IOException | URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-		});
-	}
-
-	/**
-	 * Recursively traverses the object; When string is found will put it in the properties.
-	 * @param key    	Key of the property
-	 * @param value 	Value of the property
-	 */
-	public void RecursiveYaml(String key, Object value) throws IOException, URISyntaxException {
-
-		if (value instanceof String) {
-			String[] split = ((String) value).split(":", 1);
-			if (split.length == 1) {put(key, split[0]);}
-			else{put(key + "." + split[0], split[1]);}
-		}
-
-		// Due to how the parser works, Arraylist encapsulates the map.
-		// Therefore, key doesn't need to be updated, only the value.
-		else if (value instanceof ArrayList){
-			String valueAppend = "";
-
-			for (int i = 0; i < ((ArrayList) value).size(); i++) {
-
-				Object innerValue = ((ArrayList) value).get(i);
-				// Checks if the value contains either a space, colon or equals sign.
-				if (innerValue.toString().contains(" ") || innerValue.toString().contains(":") || innerValue.toString().contains("=")){
-					RecursiveYaml(key, innerValue);
-				}
-				// else if value is not ""
-				else if (StringUtils.isEmpty(innerValue.toString()) == false){
-					if (valueAppend == "") {valueAppend += innerValue;}
-					else valueAppend += ("," +innerValue );
-				}
-			}
-			if (valueAppend != "") {RecursiveYaml(key, valueAppend);}
-		}
-
-		// If the value is a map, will recursively call the method.
-		// Key will be added to the 'keychain'.
-		else if (value instanceof Map){
-			((Map<?, ?>) value).entrySet().forEach(entry -> {
-				try {
-					RecursiveYaml(key + "." + entry.getKey(), entry.getValue());
-				} catch (IOException | URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
-			});
+		switch (extension) {
+			case "properties":
+				load(reader);
+				break;
+			case "yaml":
+				putAll(new YamlParser(reader));
+				break;
+			default:
+				throw new IllegalArgumentException("Extension not supported: " + extension);
 		}
 	}
 }
