@@ -25,7 +25,7 @@ See it in action: https://frank2example.frankframework.org
 The Frank!Framework can run on any java runtime, so you have your choice of application server. In our CI we test every PR and Release against Tomcat, Websphere, Wildfly and JBoss, all these aplications servers may be used in production environments.
 You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [Docker.md](Docker.md).
 
-All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. HELM charts are available [here](https://github.com/ibissource/charts/tree/master/charts/frank-framework).
+All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/ibissource/charts).
 
 
 ## Rebranding
