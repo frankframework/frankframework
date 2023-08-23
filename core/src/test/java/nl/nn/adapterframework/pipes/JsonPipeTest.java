@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
@@ -130,6 +129,38 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	}
 
 	@Test
+	public void testXmlArray2JsonWithRoot() throws Exception {
+		pipe.setAddXmlRootElement(true);
+		pipe.setDirection(Direction.XML2JSON);
+		pipe.configure();
+		pipe.start();
+
+		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
+		String expected = "{\"root\":{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}}";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void testXmlArray2JsonWithVersion() throws Exception {
+		pipe.setVersion("2");
+		pipe.setDirection(Direction.XML2JSON);
+		pipe.configure();
+		pipe.start();
+
+		String input = "<root><values><value>a</value><value>a</value><value>a</value></values></root>";
+		String expected = "{\"root\":{\"values\":{\"value\":[\"a\",\"a\",\"a\"]}}}";
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+
+		String result = prr.getResult().asString();
+		assertEquals(expected, result);
+	}
+
+	@Test
 	public void testJson2XmlArray() throws Exception {
 		pipe.setAddXmlRootElement(false);
 		pipe.configure();
@@ -142,22 +173,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		assertXmlEquals(expected, result);
-	}
-
-	@Test
-	@Ignore("Structure is lost in version 1 and 2")
-	public void testJson2XmlNestedArray() throws Exception {
-		pipe.setAddXmlRootElement(false);
-		pipe.configure();
-		pipe.start();
-
-		String input ="{\"values\":{\"value\":[[\"a\",\"a\",\"a\"],[\"b\",\"b\",\"b\"]]}}";
-		String expected = "<values><value>a</value><value>a</value><value>a</value><value>b</value><value>b</value><value>b</value></values>";
-
-		PipeRunResult prr = doPipe(pipe, input, session);
-
-		String result = prr.getResult().asString();
-		assertEquals(expected, result);
 	}
 
 	@Test
