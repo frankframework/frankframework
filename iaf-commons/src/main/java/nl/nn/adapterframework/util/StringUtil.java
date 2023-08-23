@@ -236,12 +236,6 @@ public class StringUtil {
 				.collect(Collectors.toList());
 	}
 
-	public static List<String> splitAndTrim(@Nullable String input){
-		return splitToStream(input)
-		        .map(String::trim)
-				.collect(Collectors.toList());
-	}
-
 	/**
 	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
