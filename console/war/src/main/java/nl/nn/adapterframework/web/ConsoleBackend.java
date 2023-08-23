@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.runner;
+package nl.nn.adapterframework.web;
 
 import java.util.Map;
 
@@ -23,14 +23,16 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.ServletWithParameters;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class ConsoleBackendBean implements ApplicationContextAware {
-	private final Logger log = LogManager.getLogger(ConsoleBackendBean.class);
+@Configuration
+public class ConsoleBackend implements ApplicationContextAware {
+	private final Logger log = LogManager.getLogger(ConsoleBackend.class);
 
 	private @Setter ApplicationContext applicationContext;
 
