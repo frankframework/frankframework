@@ -287,7 +287,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			Entry<AutoCloseable, String> entry = it.next();
 			AutoCloseable closeable = entry.getKey();
 			try {
-				log.warn("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
+				log.info("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
 				closeable.close();
 			} catch (Exception e) {
 				log.warn("Exception closing resource", e);

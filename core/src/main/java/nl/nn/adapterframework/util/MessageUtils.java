@@ -46,7 +46,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
-	private static int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
+	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -56,7 +56,10 @@ public abstract class MessageUtils {
 		result.withCharset(request.getCharacterEncoding());
 		int contentLength = request.getContentLength();
 		result.withSize(contentLength);
-		result.withMimeType(request.getContentType());
+		String contentType = request.getContentType();
+		if(StringUtils.isNotEmpty(contentType)) {
+			result.withMimeType(contentType);
+		}
 
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
@@ -72,14 +75,7 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Transfer-Encoding".equals(name)) {
-				try {
-					Charset charset = Charset.forName(header.getValue());
-					result.withCharset(charset);
-				} catch (Exception e) {
-					LOG.warn("Could not determine charset", e);
-				}
-			} else if("Content-Type".equals(name)) {
+			if("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
@@ -98,6 +94,7 @@ public abstract class MessageUtils {
 		if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
+			// We want the context because of the request headers
 			return Message.nullMessage(getContext(request));
 		}
 	}
@@ -112,7 +109,7 @@ public abstract class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeDecodingCharset(Message message) throws IOException {
-		return computeDecodingCharset(message, charsetConfidenceLevel);
+		return computeDecodingCharset(message, CHARSET_CONFIDENCE_LEVEL);
 	}
 
 	/**
@@ -177,13 +174,16 @@ public abstract class MessageUtils {
 
 		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
 		if(mimeType == null) {
+			LOG.trace("no mimetype found in MessageContext");
 			return null;
 		}
 
 		if(message.getCharset() != null) { //and is character data?
+			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
 
+		LOG.trace("found mimetype [{}] in MessageContext without charset", mimeType);
 		return mimeType;
 	}
 
@@ -213,13 +213,15 @@ public abstract class MessageUtils {
 		}
 
 		Map<String, Object> context = message.getContext();
-		MimeType mimeType = getMimeType(message);
-		if(mimeType != null) {
-			return mimeType;
+		MimeType contextMimeType = getMimeType(message);
+		if(contextMimeType != null) {
+			LOG.debug("returning predetermined mimetype [{}]", contextMimeType);
+			return contextMimeType;
 		}
 
 		String name = (String) context.get(MessageContext.METADATA_NAME);
 		if(StringUtils.isNotEmpty(filename)) {
+			LOG.trace("using filename from MessageContext [{}]", name);
 			name = filename;
 		}
 
@@ -229,25 +231,26 @@ public abstract class MessageUtils {
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
 			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
 			byte[] magic = message.getMagic(tikaMimeMagicLength);
-			if(magic == null || magic.length == 0) {
+			if(magic.length == 0) {
 				return null;
 			}
 			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
-			mimeType = MimeType.valueOf(tikaMediaType.toString());
+			MimeType mimeType = MimeType.valueOf(tikaMediaType.toString());
 			context.put(MessageContext.METADATA_MIMETYPE, mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
 				if(charset != null) {
+					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
 					return new MimeType(mimeType, charset);
 				}
 			}
+
+			LOG.debug("found mimetype [{}]", mimeType);
 			return mimeType;
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
+			return null;
 		}
-
-		LOG.info("unable to determine mimetype");
-		return null;
 	}
 
 	/**
