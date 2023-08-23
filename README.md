@@ -22,8 +22,10 @@ The application may be managed and monitored through a web interface or REST API
 See it in action: https://frank2example.frankframework.org
 
 ## Running the Frank-Framework 
-The Frank!Framework can run on any java runtime so you have your choice of aplication server, in our CI we test every PR and Release against Tomcat, Websphere, Wildfly, JBoss, all these aplications servers are useeed by our clients in production environments. You want to ruun on (docker)[Docker.md], a HELM chart will be available soon. 
+The Frank!Framework can run on any java runtime so you have your choice of application server, in our CI we test every PR and Release against Tomcat, Websphere, Wildfly, JBoss, all these aplications servers may be used in production environments.
+You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [Docker.md](Docker.md).
 
+All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. HELM charts are available [here](https://github.com/ibissource/charts/tree/master/charts/frank-framework).
 
 
 ## Rebranding
@@ -31,10 +33,13 @@ The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration 
 
 ## Releases
 All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
-For more information about our releases, see our [release notes](RELEASES.md) and [releases](https://github.com/ibissource/iaf/releases).
+For more information about our releases (such as improvements, non-backwards compatibility changes and security fixes), see the release notes of your version [here](https://github.com/ibissource/iaf/releases).
 
 ## Security
-It is important to remember that the security of your Frank! application is the result of the overall security of the hosting stack (Java, Application Server), Frank!Framework itself, all Java dependencies and your code. As such, it is your responsibility to follow a few important best practices, more information can be found in [security](SECURITY.md)
+It is important to remember that the security of your Frank!Application is the result of the overall security of the hosting stack; the Java runtime, Application Server, Frank!Framework and your configuration.
+
+It is our responsibility that there are no vulnerabilities in the Frank!Framework itself and all it's Java dependencies. In turn it is your responsibility to keep your Frank!Framework version up to date and ensure there are no vulnerabilities in your configuration.
+More information about reporting vulnerabilities, supported versions and how we deal with CVE's can be found in our [Security Policy](SECURITY.md).
 
 ## Feedback
 For bug reports and feature requests, create a new issue at <https://github.com/ibissource/iaf/issues>. 
