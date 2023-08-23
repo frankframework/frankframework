@@ -16,11 +16,6 @@
 package nl.nn.adapterframework.web.filters;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.Filter;
@@ -35,16 +30,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsUtils;
 
 import nl.nn.adapterframework.util.StringUtil;
 
 public class CorsFilter implements Filter {
 	private final Logger secLog = LogManager.getLogger("SEC");
 	private final Logger log = LogManager.getLogger(this);
-	private String hostAddress;
 
-	@Value("${iaf-api.cors.allowOrigin:'*'}")
-	private String allowedCorsOrigins; //Defaults to nothing
+	@Value("${iaf-api.cors.allowOrigin:*}")
+	private String allowedCorsOrigins; //Defaults to ALL allowed
 
 	@Value("${iaf-api.cors.exposeHeaders:Allow, ETag, Content-Disposition}")
 	private String exposedCorsHeaders;
@@ -56,28 +52,19 @@ public class CorsFilter implements Filter {
 	@Value("${iaf-api.cors.enforced:false}")
 	private boolean enforceCORS;
 
-	private List<String> allowedCorsDomains =  new ArrayList<>();
+	private CorsConfiguration config = new CorsConfiguration();
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		try {
-			hostAddress = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			log.warn("unable to determine local host address", e);
-		}
-
 		List<String> allowedOrigins = StringUtil.split(allowedCorsOrigins);
 		for (String domain : allowedOrigins) {
-			if(domain.startsWith("http://")) {
-				log.warn("cross side resource domain ["+domain+"] is insecure, it is strongly encouraged to use a secure protocol (HTTPS)");
+			if("*".equals(domain) || !domain.contains("*")) {
+				config.addAllowedOrigin(domain);
+			} else {
+				config.addAllowedOriginPattern(domain);
 			}
-			if(!domain.startsWith("http://") && !domain.startsWith("https://")) {
-				log.error("skipping invalid domain ["+domain+"], domains must start with http(s)://");
-				continue;
-			}
-			allowedCorsDomains.add(domain);
-			log.debug("whitelisted CORS domain ["+domain+"]");
 		}
+		log.debug("whitelisted CORS origins: {} and patterns: {}", config::getAllowedOrigins, config::getAllowedOriginPatterns);
 	}
 
 	@Override
@@ -85,15 +72,13 @@ public class CorsFilter implements Filter {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
-		final String method = request.getMethod();
-
 		/**
 		 * Handle Cross-Origin Resource Sharing
 		 */
-		String origin = request.getHeader("Origin");
-		if (origin != null && enforceCORS) {
-			//Always add the cors headers when the origin has been set
-			if(isOriginEqualToLocalHost(origin) || allowedCorsDomains.contains(origin)) {
+		if(enforceCORS && CorsUtils.isCorsRequest(request)) {
+			String originHeader = request.getHeader("Origin");
+			String origin = config.checkOrigin(originHeader);
+			if (origin != null) {
 				response.setHeader("Access-Control-Allow-Origin", origin);
 
 				String requestHeaders = request.getHeader("Access-Control-Request-Headers");
@@ -108,8 +93,8 @@ public class CorsFilter implements Filter {
 			}
 			else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+origin+"] but was blocked due to CORS restrictions");
-				log.warn("blocked request with origin [{}]", origin);
+				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+originHeader+"] but was blocked due to CORS restrictions");
+				log.warn("blocked request with origin [{}]", originHeader);
 				response.setStatus(500);
 				return; //actually block the request
 			}
@@ -120,27 +105,11 @@ public class CorsFilter implements Filter {
 		 * Pass request down the chain, except for OPTIONS
 		 */
 		// Return standard response if OPTIONS request w/o Origin header
-		if(method.equals("OPTIONS")) {
+		if(CorsUtils.isPreFlightRequest(request)) {
 			response.setHeader("Allow", allowedCorsMethods);
 			response.setStatus(200);
 		} else {
 			chain.doFilter(request, response);
-		}
-	}
-
-	//192.168.1.235 : localhost : 127.0.0.1
-	private boolean isOriginEqualToLocalHost(String originHeader) {
-		try {
-			String host = new URL(originHeader).getHost();
-			if("localhost".equals(host)) return true;
-			InetAddress origin = InetAddress.getByName(host);
-			return hostAddress != null && hostAddress.equals(origin.getHostAddress());
-		} catch (UnknownHostException e) {
-			log.warn("unable to parse host address", e);
-			return false;
-		} catch (MalformedURLException e) {
-			log.warn("invalid ORIGIN header [{}]", originHeader, e);
-			return false;
 		}
 	}
 
