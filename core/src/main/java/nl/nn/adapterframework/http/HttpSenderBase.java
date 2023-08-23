@@ -158,7 +158,7 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 			paramList.configure();
 
 			if (StringUtils.isNotEmpty(getHeadersParams())) {
-				headerParamsSet.addAll(StringUtil.splitToStream(getHeadersParams()));
+				headerParamsSet.addAll(StringUtil.split(getHeadersParams()));
 			}
 			for (Parameter p: paramList) {
 				String paramName = p.getName();
