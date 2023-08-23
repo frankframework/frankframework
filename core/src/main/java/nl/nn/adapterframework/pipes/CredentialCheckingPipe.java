@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe to check the the CredentialFactory (for testing only).

@@ -15,17 +15,18 @@
 */
 package nl.nn.adapterframework.parameters;
 
+import java.io.IOException;
+import java.util.Collection;
+
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import java.io.IOException;
-import java.util.Collection;
 /**
  * 
  * 

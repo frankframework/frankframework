@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 
 import javax.transaction.TransactionManager;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -35,6 +34,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
