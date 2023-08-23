@@ -1,8 +1,7 @@
-import { StateService } from "angular-ui-router";
+import { StateService } from "@uirouter/angularjs";
 import { ApiService, MiscService, PollerService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { Adapter, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from "../../app.service";
-import { angular } from "../../../deps";
 import { ConfigurationFilter } from "../../filters/configuration-filter.filter";
 
 type Filter = Record<'started' | 'stopped' | 'warning', boolean>;

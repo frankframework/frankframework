@@ -3,12 +3,10 @@ import * as Pace from 'pace-js';
 Pace.start({
   ajax: false
 });
-import * as jQuery from 'jquery';
 // import 'mermaid'; // TODO let ngMermaid handle or replace ngMermaid with own component
 
 import 'metismenu';
 
-import * as angular from 'angular';
 import 'angular-animate';
 import 'angular-aria';
 import 'angular-cookies';
@@ -21,7 +19,7 @@ import 'angular-route';
 import 'angular-sanitize';
 import 'angular-touch';
 import 'angular-ui-bootstrap';
-import 'angular-ui-router';
+import '@uirouter/angularjs'; // somehow loads angularjs again
 import 'ng-idle/angular-idle.js';
 import 'angular-ladda';
 import 'angularjs-toaster';
@@ -30,11 +28,7 @@ import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
 import 'angular-chart.js';
 import './plugins/mermaid/ng-mermaid';
 
-const $ = jQuery;
-
 export {
-  jQuery, $,
-  angular,
   Pace
 };
 

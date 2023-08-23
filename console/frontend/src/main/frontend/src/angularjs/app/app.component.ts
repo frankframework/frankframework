@@ -1,9 +1,9 @@
 
 import { ApiService, AuthService, DebugService, HooksService, MiscService, NotificationService, PollerService, SessionService, SweetAlertService } from 'src/app/services.types';
-import { angular, Pace } from '../deps';
+import { Pace } from '../deps';
 import { AppConstants, appModule } from "./app.module";
-import { StateService } from 'angular-ui-router';
 import { Adapter, AppService, Configuration } from './app.service';
+import { StateService } from '@uirouter/angularjs';
 
 export type IAFRelease = {
   url: string,
@@ -81,7 +81,7 @@ class AppController {
     private SweetAlert: SweetAlertService,
     private $timeout: angular.ITimeoutService,
     private appService: AppService
-  ) { setTimeout(() => { this.dtapSide = "TEST" }, 5000) }
+  ) {}
 
   $onInit() {
     /* state controller */
@@ -337,6 +337,12 @@ class AppController {
           angular.element(".loading").hide();
         }
 
+        this.appService.dtapStage = data["dtap.stage"];
+        this.dtapStage = data["dtap.stage"];
+        this.dtapSide = data["dtap.side"];
+        // appService.userName = data["userName"];
+        this.userName = data["userName"];
+
         var serverTime = Date.parse(new Date(data.serverTime).toUTCString());
         var localTime = Date.parse(new Date().toUTCString());
         this.appConstants['timeOffset'] = serverTime - localTime;
@@ -348,12 +354,6 @@ class AppController {
         }
         this.$interval(updateTime, 1000);
         updateTime();
-
-        this.appService.dtapStage = data["dtap.stage"];
-        this.dtapStage = data["dtap.stage"];
-        this.dtapSide = data["dtap.side"];
-        // appService.userName = data["userName"];
-        this.userName = data["userName"];
 
         this.appService.updateInstanceName(data.instance.name);
         angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);

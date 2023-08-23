@@ -23,8 +23,6 @@
       "ES2022",
       "dom"
     ],
-    /* temp angularjs upgrade fix */
-    // "noImplicitAny": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

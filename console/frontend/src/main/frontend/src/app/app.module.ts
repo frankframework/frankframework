@@ -27,7 +27,7 @@ import { ChildComponent } from './child.component';
 export class AppModule implements DoBootstrap {
   constructor(private upgrade: UpgradeModule) {}
   ngDoBootstrap() {
-    this.upgrade.bootstrap(document.body, ['iaf.beheerconsole']);
+    this.upgrade.bootstrap(document.documentElement, ['iaf.beheerconsole']);
     // this.upgrade.bootstrap(document.body, ['iaf.beheerconsole'], { strictDi: true });
   }
 }

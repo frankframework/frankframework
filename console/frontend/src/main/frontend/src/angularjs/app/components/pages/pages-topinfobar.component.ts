@@ -1,4 +1,4 @@
-import { StateService } from "angular-ui-router";
+import { StateService } from "@uirouter/angularjs";
 import {appModule} from "../../app.module";
 
 class PagesTopinfobarController {

@@ -1,4 +1,4 @@
-import { angular } from "../deps";
+import '../deps';
 
 var server: string; //Try and see if serverurl has been defined, if not try to deduct from local url;
 try {

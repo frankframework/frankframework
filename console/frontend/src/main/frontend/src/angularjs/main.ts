@@ -1,7 +1,6 @@
 import * as Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-highlight/prism-line-highlight';
-import { $, angular } from './deps';
 
 if (location.hostname != "localhost") {
   window.console.log("%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.", "font-weight: bold; font-size: 14px;");
@@ -82,9 +81,9 @@ $(function () {
     }
   });
 
-  $(window).on("scroll", function () {
+  $(window).on("scroll", function (this: JQuery<HTMLElement>) {
     var scroll2top = $(".scroll-to-top").stop(true);
-    if ($(this as JQuery<HTMLElement>).scrollTop()! > 100) {
+    if ($(this).scrollTop()! > 100) {
       if (parseInt(scroll2top.css("opacity")) === 0) {
         scroll2top.animate({ "opacity": 1, "z-index": 10000 }, 50, "linear");
       }

@@ -12,9 +12,6 @@ class PagesTopnavbarController {
 			this.notificationCount = this.Notification.getCount();
 			this.notificationList = this.Notification.getLatest(5);
 		});
-
-    // @ts-expect-error bindings
-    console.log('dtapSide dtapStage', this.dtapSide, this.dtapStage);
 	}
 
 	hoverFeedback(rating: number) {
