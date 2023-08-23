@@ -75,14 +75,7 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Transfer-Encoding".equals(name)) {
-				try {
-					Charset charset = Charset.forName(header.getValue());
-					result.withCharset(charset);
-				} catch (Exception e) {
-					LOG.warn("Could not determine charset", e);
-				}
-			} else if("Content-Type".equals(name)) {
+			if("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
