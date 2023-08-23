@@ -58,7 +58,7 @@ public abstract class MessageUtils {
 		result.withSize(contentLength);
 		String contentType = request.getContentType();
 		if(StringUtils.isNotEmpty(contentType)) {
-			result.withMimeType(request.getContentType());
+			result.withMimeType(contentType);
 		}
 
 		Enumeration<String> names = request.getHeaderNames();
