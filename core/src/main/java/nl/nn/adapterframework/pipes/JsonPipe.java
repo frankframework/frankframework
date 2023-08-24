@@ -153,7 +153,8 @@ public class JsonPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * When true, and direction is json2xml, it wraps a root element around the converted message
+	 * When direction is JSON2XML, it wraps a root element around the converted message. 
+	 * When direction is XML2JSON, it includes the name of the root element as a key in the converted message.
 	 * @ff.default TRUE when JSON2XML and FALSE when XML2JSON
 	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
