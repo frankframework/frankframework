@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import jakarta.json.Json;
@@ -29,7 +31,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentUtils;
 import nl.nn.adapterframework.stream.document.XmlDocumentBuilder;
@@ -44,7 +45,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
-	private @Getter boolean addXmlRootElement=true;
+	private Boolean addXmlRootElement = null;
 
 	private TransformerPool tpXml2Json;
 
@@ -60,6 +61,9 @@ public class JsonPipe extends FixedForwardPipe {
 		Direction dir = getDirection();
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
+		}
+		if(addXmlRootElement == null) {
+			addXmlRootElement = dir == Direction.JSON2XML;
 		}
 		if (dir == Direction.XML2JSON) {
 			tpXml2Json = TransformerPool.configureStyleSheetTransformer(getLogPrefix(null), this, "/xml/xsl/xml2json.xsl", 0);
@@ -90,7 +94,7 @@ public class JsonPipe extends FixedForwardPipe {
 					String root="root";
 					StringWriter writer = new StringWriter();
 					if (jValue instanceof JsonObject) {
-						if (!isAddXmlRootElement()) {
+						if (!addXmlRootElement) {
 							JsonObject jObj = (JsonObject)jValue;
 							if (jObj.size()>1) {
 								throw new PipeRunException(this, "Cannot extract root element name from object with ["+jObj.size()+"] names");
@@ -103,7 +107,7 @@ public class JsonPipe extends FixedForwardPipe {
 							DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 						}
 					} else {
-						if (isAddXmlRootElement()) {
+						if (addXmlRootElement) {
 							try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder(root, writer)) {
 								DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 							}
@@ -119,7 +123,9 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 				break;
 			case XML2JSON:
-				stringResult = tpXml2Json.transform(message,null);
+				Map<String, Object> parameterValues = new HashMap<>(1);
+				parameterValues.put("includeRootElement", addXmlRootElement);
+				stringResult = tpXml2Json.transform(message, parameterValues);
 				break;
 			default:
 				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
@@ -131,14 +137,25 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 	}
 
-
-
-	@IbisDoc({"Direction of the transformation.", "JSON2XML"})
+	/**
+	 * Direction of the transformation.
+	 * @ff.default JSON2XML
+	 */
 	public void setDirection(Direction value) {
 		direction = value;
 	}
 
-	@IbisDoc({"When true, and direction is json2xml, it wraps a root element around the converted message", "true"})
+	@Deprecated
+	public void setVersion(String version) {
+		if("2".equals(version)) {
+			setAddXmlRootElement(true);
+		}
+	}
+
+	/**
+	 * When true, and direction is json2xml, it wraps a root element around the converted message
+	 * @ff.default TRUE when JSON2XML and FALSE when XML2JSON
+	 */
 	public void setAddXmlRootElement(boolean addXmlRootElement) {
 		this.addXmlRootElement = addXmlRootElement;
 	}
