@@ -1,7 +1,7 @@
 import { IRequestShortcutConfig } from "angular";
 import { SweetAlertOptions } from "sweetalert2";
 
-export interface AlertService {
+/* export interface AlertService {
   add: (level: string | number, message: any, non_repeditive: boolean) => void;
   get: (preserveList: boolean) => {
     type: string,
@@ -10,7 +10,7 @@ export interface AlertService {
   }[];
   getCount: () => number;
   checkIfExists: (message: any) => boolean;
-}
+} */
 
 export interface ApiService {
   Get: (uri: string, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void, httpOptions?: IRequestShortcutConfig, intercept?: boolean) => Promise<void>;
@@ -131,12 +131,12 @@ export interface PollerService {
   }
 }
 
-export interface SessionService {
-  get: (key: string) => Record<string, any>;
-  set: (key: string, value: Record<string, any>) => void;
+/* export interface SessionService {
+  get: (key: string) => any;
+  set: (key: string, value: any) => void;
   remove: (key: string) => void;
   clear: () => void;
-}
+} */
 
 export interface SweetAlertService {
   defaultSettings: Record<string, any>;

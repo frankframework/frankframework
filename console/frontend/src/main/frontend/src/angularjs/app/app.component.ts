@@ -1,9 +1,10 @@
 
-import { ApiService, AuthService, DebugService, HooksService, MiscService, NotificationService, PollerService, SessionService, SweetAlertService } from 'src/app/services.types';
+import { ApiService, AuthService, DebugService, HooksService, MiscService, NotificationService, PollerService, SweetAlertService } from 'src/app/services.types';
 import { Pace } from '../deps';
 import { AppConstants, appModule } from "./app.module";
 import { Adapter, AppService, Configuration } from './app.service';
 import { StateService } from '@uirouter/angularjs';
+import { SessionService } from './services/session.service';
 
 export type IAFRelease = {
   url: string,
