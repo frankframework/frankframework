@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 @ElementType(ElementTypes.TRANSLATOR)
 public class JsonPipe extends FixedForwardPipe {
 	private @Getter Direction direction = Direction.JSON2XML;
-	private @Getter Boolean addXmlRootElement = null;
+	private Boolean addXmlRootElement = null;
 	private @Getter boolean prettyPrint = false;
 
 	private TransformerPool tpXml2Json;
