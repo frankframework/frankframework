@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -11,6 +10,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
+import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
@@ -70,7 +70,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertXmlEquals("<root><occupation nil=\"true\"/><name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
+		MatchUtils.assertXmlEquals("<root><occupation nil=\"true\"/><name>Lars</name><female>false</female><age>15</age><male>true</male></root>", result);
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 		String result = prr.getResult().asString();
 		String expected = "<root><item>Wie</item><item>dit leest</item><item>is gek</item></root>";
-		assertXmlEquals(expected, result);
+		MatchUtils.assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -172,7 +172,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertXmlEquals(expected, result);
+		MatchUtils.assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertXmlEquals(expected, result);
+		MatchUtils.assertXmlEquals(expected, result);
 	}
 
 	@Test
@@ -201,6 +201,6 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 		PipeRunResult prr = doPipe(pipe, input, session);
 
 		String result = prr.getResult().asString();
-		assertXmlEquals(expected, result);
+		MatchUtils.assertXmlEquals(expected, result);
 	}
 }
