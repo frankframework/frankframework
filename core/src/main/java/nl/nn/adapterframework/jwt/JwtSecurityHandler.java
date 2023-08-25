@@ -82,13 +82,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
 			Optional<Map.Entry<String, String>> nonMatchingClaim = StringUtil.splitToStream(exactMatchClaims)
 					.map(s -> StringUtil.split(s, "="))
-					.filter(pair -> {
-						if(pair.size() != 2 || !pair.stream().noneMatch(String::isEmpty)) {
-							log.warn("skipping exactMatch claim validation for ["+pair+"] because it's not a valid key/value pair!");
-							return false;
-						}
-						return true;
-					})
+					.filter(this::isValidKeyValuePair)
 					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
 					.entrySet()
 					.stream()
@@ -106,14 +100,11 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
 			Map<String, HashSet<String>> multiMap = new HashMap<>();
 
-			StringUtil.splitToStream(matchOneOfClaims).forEach(s -> {
-				List<String> pair = StringUtil.split(s, "=");
-				if(pair.size() == 2 && pair.stream().noneMatch(String::isEmpty)) {
-					multiMap.computeIfAbsent(pair.get(0), key -> new HashSet<>()).add(pair.get(1));
-				} else {
-					log.warn("skipping matchOneOf claim validation for ["+s+"] because it's not a valid key/value pair!");
-				}
-			});
+			StringUtil.splitToStream(matchOneOfClaims)
+					.map(s -> StringUtil.split(s, "="))
+					.filter(this::isValidKeyValuePair)
+					.forEach(pair -> multiMap.computeIfAbsent(pair.get(0), key -> new HashSet<>()).add(pair.get(1)));
+
 			boolean matchesOneOf = multiMap.keySet().stream().anyMatch(key -> multiMap.get(key).contains((String) claimsSet.get(key)));
 
 			if(!matchesOneOf){
@@ -122,12 +113,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
-		return StringUtil.splitToStream(claimsToSplit)
-				.map(s -> StringUtil.split(s, "="))
-				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
-				.entrySet()
-				.stream();
+	private boolean isValidKeyValuePair(List<String> pair) {
+		if (pair.size() != 2 || pair.stream().anyMatch(String::isEmpty)) {
+			log.warn("Skipping claim validation for [" + pair + "] because it's not a valid key/value pair!");
+			return false;
+		}
+		return true;
 	}
 
 }
