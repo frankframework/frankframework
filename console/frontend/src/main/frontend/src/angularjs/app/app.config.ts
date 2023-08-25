@@ -4,7 +4,7 @@ import { StateProvider, UrlRouterProvider } from "@uirouter/angularjs";
 import { StateService, Trace } from "@uirouter/angularjs";
 
 appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvider) {
-	$httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants: AppConstants, $q: angular.IQService, Misc: MiscService, Toastr: ToastrService, $location: angular.ILocationService) {
+  $httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants: AppConstants, $q: angular.IQService, Misc: MiscService, Toastr: ToastrService, $location: angular.ILocationService): angular.IHttpInterceptor {
 		var errorCount = 0;
 		return {
 			request: function (config) {

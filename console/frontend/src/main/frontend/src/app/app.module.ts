@@ -15,6 +15,22 @@ import '../angularjs/components';
 
 import { ChildComponent } from './child.component';
 
+import {
+  alertServiceProvider,
+  apiServiceProvider,
+  authServiceProvider,
+  base64ServiceProvider,
+  cookiesServiceProvider,
+  debugServiceProvider,
+  gdprServiceProvider,
+  miscServiceProvider,
+  notificationServiceProvider,
+  pollerServiceProvider,
+  sessionServiceProvider,
+  sweetalertServiceProvider,
+  toastrServiceProvider
+} from './ajs-upgraded-services';
+
 @NgModule({
   declarations: [ChildComponent],
   imports: [
@@ -22,7 +38,21 @@ import { ChildComponent } from './child.component';
     UpgradeModule,
     // AppRoutingModule
   ],
-  providers: [],
+  providers: [
+    alertServiceProvider,
+    apiServiceProvider,
+    authServiceProvider,
+    base64ServiceProvider,
+    cookiesServiceProvider,
+    debugServiceProvider,
+    gdprServiceProvider,
+    miscServiceProvider,
+    notificationServiceProvider,
+    pollerServiceProvider,
+    sessionServiceProvider,
+    sweetalertServiceProvider,
+    toastrServiceProvider
+  ],
 })
 export class AppModule implements DoBootstrap {
   constructor(private upgrade: UpgradeModule) {}

@@ -1,4 +1,3 @@
-import { IRequestShortcutConfig } from "angular";
 import { SweetAlertOptions } from "sweetalert2";
 
 /* export interface AlertService {
@@ -12,25 +11,25 @@ import { SweetAlertOptions } from "sweetalert2";
   checkIfExists: (message: any) => boolean;
 } */
 
-export interface ApiService {
-  Get: (uri: string, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void, httpOptions?: IRequestShortcutConfig, intercept?: boolean) => Promise<void>;
+/* export interface ApiService {
+  Get: (uri: string, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void, httpOptions?: angular.IRequestShortcutConfig, intercept?: boolean) => Promise<void>;
   Post: (uri: string, object: any, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void, intercept?: boolean, responseType?: string | undefined) => Promise<void>;
   Put: (uri: string, object: any, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void, intercept?: boolean) => Promise<void>;
   Delete: (uri: string, object?: any, callback?: (data: any) => void, error?: (data: any, status: number, statusText: string) => void) => Promise<void>;
-}
+} */
 
-export interface AuthService {
+/* export interface AuthService {
   login: (username: string, password: string) => void;
   loggedin: () => void;
   logout: () => void;
-}
+} */
 
-export interface Base64Service {
+/* export interface Base64Service {
   encode: (input: string) => string;
   decode: (input: string) => string;
-}
+} */
 
-export interface CookiesService {
+/* export interface CookiesService {
   cache: Record<string, any>;
   addToCache: (key: string, value: any) => void;
   flushCache: () => void;
@@ -39,9 +38,9 @@ export interface CookiesService {
   set: (key: string, value: any) => void;
   remove: (key: string) => void;
   clear: () => void;
-}
+} */
 
-export interface DebugService {
+/* export interface DebugService {
   getLevel: () => number;
   setLevel: (l: number) => void;
   head: (level: number) => string;
@@ -51,9 +50,9 @@ export interface DebugService {
   info: (...args: any[]) => void;
   warn: (...args: any[]) => void;
   error: (...args: any[]) => void;
-}
+} */
 
-export interface GDPRService {
+/* export interface GDPRService {
   settings: Record<string, any>;
   defaults: { necessary: boolean, functional: boolean, personalization: boolean };
   cookieName: string;
@@ -63,22 +62,22 @@ export interface GDPRService {
   allowFunctional: () => boolean;
   allowPersonalization: () => boolean;
   setSettings: (settings: Record<string, any>) => void;
-}
+} */
 
 export interface HooksService {
   call: (...args: any[]) => void;
   register: (...args: any[]) => void;
 }
 
-export interface MiscService {
+/* export interface MiscService {
   getServerPath: () => string;
   escapeURL: (uri: string | number | boolean) => string;
   isMobile: () => boolean;
   getUID: (serverInfo: Record<string, any>) => string;
   compare_version: (v1: string | number, v2: string | number, operator?: '>' | 'gt' | '>=' | 'ge' | '<=' | 'le' | '===' | '=' | 'eq' | '<>' | '!==' | 'ne' | '' | '<' | 'lt') => boolean;
-}
+} */
 
-export interface NotificationService {
+/* export interface NotificationService {
   list: {
     icon: string,
     title: string,
@@ -92,9 +91,9 @@ export interface NotificationService {
   resetCount: () => void;
   getCount: () => number;
   getLatest: (amount: number) => NotificationService["list"];
-}
+} */
 
-interface PollerObject {
+/* interface PollerObject {
   uri: string;
   waiting: boolean;
   pollerInterval: number;
@@ -129,7 +128,7 @@ export interface PollerService {
     remove: () => void;
     list: () => string[];
   }
-}
+} */
 
 /* export interface SessionService {
   get: (key: string) => any;
@@ -138,7 +137,7 @@ export interface PollerService {
   clear: () => void;
 } */
 
-export interface SweetAlertService {
+/* export interface SweetAlertService {
   defaultSettings: Record<string, any>;
   defaults: (title: string | SweetAlertOptions, text: string | (() => void)) => SweetAlertOptions;
   Input: (...args: any[]) => Promise<any>;
@@ -147,9 +146,9 @@ export interface SweetAlertService {
   Warning: (...args: any[]) => Promise<any>;
   Error: (...args: any[]) => Promise<any>;
   Success: (...args: any[]) => Promise<any>;
-}
+} */
 
-interface ToastObject {
+/* interface ToastObject {
   type?: string,
   title: string,
   body?: string,
@@ -164,4 +163,4 @@ export interface ToastrService {
   error: (title: string | ToastObject, text?: string) => void;
   success: (title: string | ToastObject, text?: string) => void;
   warning: (title: string | ToastObject, text?: string) => void;
-}
+} */
