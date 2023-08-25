@@ -137,7 +137,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
 			Optional<String> invalidClaim = StringUtil.splitToStream(claimAttributeToValidate)
-					.filter(claim -> claim.split("=").length != 2)
+					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
 					.findFirst();
 
 			if(invalidClaim.isPresent()){
