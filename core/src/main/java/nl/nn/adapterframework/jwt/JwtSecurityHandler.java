@@ -67,24 +67,25 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
-			for (String claim : claims) {
-				if(!claimsSet.containsKey(claim)) {
-					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
-				}
+			Optional<String> missingClaim  = StringUtil.splitToStream(requiredClaims)
+					.filter(claim -> !claimsSet.containsKey(claim))
+					.findFirst();
+
+			if(missingClaim.isPresent()){
+				throw new AuthorizationException("JWT missing required claims: ["+missingClaim.get()+"]");
 			}
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
-					.map(s -> s.split("\\s*=\\s*")).collect(Collectors.toMap(item -> item[0], item -> item[1]));
-			for (String key : claims.keySet()) {
-				String expectedValue = claims.get(key);
-				Object value = claimsSet.get(key);
-				if(!expectedValue.equals(value)) { //Value may be a List<String>, Long or String
-					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
-				}
+			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
+					.findFirst();
+
+			if(nonMatchingClaim.isPresent()){
+				String key = nonMatchingClaim.get().getKey();
+				String expectedValue = nonMatchingClaim.get().getValue();
+				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
 			}
 		}
 
@@ -104,6 +105,14 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				throw new AuthorizationException("JWT does not match one of: ["+matchOneOfClaims+"]");
 			}
 		}
+	}
+
+	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
+		return StringUtil.splitToStream(claimsToSplit)
+				.map(s -> StringUtil.split(s, "="))
+				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
+				.entrySet()
+				.stream();
 	}
 
 }
