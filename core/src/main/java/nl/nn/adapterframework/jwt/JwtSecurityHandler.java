@@ -16,11 +16,16 @@
 package nl.nn.adapterframework.jwt;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -62,44 +67,43 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			Optional<String> missingClaim  = StringUtil.splitToStream(requiredClaims)
-					.filter(claim -> !claimsSet.containsKey(claim))
-					.findFirst();
-
-			if(missingClaim.isPresent()){
-				throw new AuthorizationException("JWT missing required claims: ["+missingClaim.get()+"]");
+			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
+			for (String claim : claims) {
+				if(!claimsSet.containsKey(claim)) {
+					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
+				}
 			}
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
-					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
-					.findFirst();
-
-			if(nonMatchingClaim.isPresent()){
-				String key = nonMatchingClaim.get().getKey();
-				String expectedValue = nonMatchingClaim.get().getValue();
-				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
+			Map<String, String> claims = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
+					.map(s -> s.split("\\s*=\\s*")).collect(Collectors.toMap(item -> item[0], item -> item[1]));
+			for (String key : claims.keySet()) {
+				String expectedValue = claims.get(key);
+				Object value = claimsSet.get(key);
+				if(!expectedValue.equals(value)) { //Value may be a List<String>, Long or String
+					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
+				}
 			}
 		}
 
+		// verify matchOneOf claims
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
-			boolean noneMatch = splitClaims(matchOneOfClaims)
-					.noneMatch(entry -> claimsSet.get(entry.getKey()).equals(entry.getValue()));
+			Map<String, HashSet<String>> multiMap = new HashMap<>();
 
-			if(noneMatch){
-				throw new AuthorizationException("JWT does not contain any of the following claims ["+matchOneOfClaims+"]");
+			Stream.of(matchOneOfClaims.split("\\s*,\\s*")).forEach(s -> {
+				String[] pair = s.split("\\s*=\\s*");
+				if(pair.length == 2 && Arrays.stream(pair).noneMatch(String::isEmpty)) {
+					multiMap.computeIfAbsent(pair[0], key -> new HashSet<>()).add(pair[1]);
+				}
+			});
+			boolean matchesOneOf = multiMap.keySet().stream().anyMatch(key -> multiMap.get(key).contains((String) claimsSet.get(key)));
+
+			if(!matchesOneOf){
+				throw new AuthorizationException("JWT does not match one of: ["+matchOneOfClaims+"]");
 			}
 		}
-	}
-
-	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
-		return StringUtil.splitToStream(claimsToSplit)
-				.map(s -> StringUtil.split(s, "="))
-				.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
-				.entrySet()
-				.stream();
 	}
 
 }
