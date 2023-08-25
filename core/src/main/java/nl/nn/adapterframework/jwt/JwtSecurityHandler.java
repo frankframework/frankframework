@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.jwt;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,16 +24,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.StringUtil;
+
+import org.apache.logging.log4j.Logger;
 
 public class JwtSecurityHandler implements ISecurityHandler {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private final @Getter Map<String, Object> claimsSet;
 	private final @Getter String roleClaim;
@@ -78,7 +80,18 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+			Optional<Map.Entry<String, String>> nonMatchingClaim = StringUtil.splitToStream(exactMatchClaims)
+					.map(s -> StringUtil.split(s, "="))
+					.filter(pair -> {
+						if(pair.size() != 2 || !pair.stream().noneMatch(String::isEmpty)) {
+							log.warn("skipping exactMatch claim validation for ["+pair+"] because it's not a valid key/value pair!");
+							return false;
+						}
+						return true;
+					})
+					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
+					.entrySet()
+					.stream()
 					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
 					.findFirst();
 
@@ -93,10 +106,12 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
 			Map<String, HashSet<String>> multiMap = new HashMap<>();
 
-			Stream.of(matchOneOfClaims.split("\\s*,\\s*")).forEach(s -> {
-				String[] pair = s.split("\\s*=\\s*");
-				if(pair.length == 2 && Arrays.stream(pair).noneMatch(String::isEmpty)) {
-					multiMap.computeIfAbsent(pair[0], key -> new HashSet<>()).add(pair[1]);
+			StringUtil.splitToStream(matchOneOfClaims).forEach(s -> {
+				List<String> pair = StringUtil.split(s, "=");
+				if(pair.size() == 2 && pair.stream().noneMatch(String::isEmpty)) {
+					multiMap.computeIfAbsent(pair.get(0), key -> new HashSet<>()).add(pair.get(1));
+				} else {
+					log.warn("skipping matchOneOf claim validation for ["+s+"] because it's not a valid key/value pair!");
 				}
 			});
 			boolean matchesOneOf = multiMap.keySet().stream().anyMatch(key -> multiMap.get(key).contains((String) claimsSet.get(key)));

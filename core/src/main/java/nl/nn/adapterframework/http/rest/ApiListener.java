@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -118,14 +119,33 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
-		if(getAuthenticationMethod() == AuthenticationMethods.JWT && StringUtils.isEmpty(getJwksUrl())) {
-			throw new ConfigurationException("jwksUrl cannot be empty");
+		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
+			if(StringUtils.isEmpty(getJwksUrl())){
+				throw new ConfigurationException("jwksUrl cannot be empty");
+			}
+
+			// validate if these attributes are configured as valid key/value pairs, i.e: "appid=abc,appid=xyz" to prevent exceptions.
+			validateClaimAttribute(matchOneOfClaims, "matchOneOfClaims");
+			validateClaimAttribute(exactMatchClaims, "exactMatchClaims");
 		}
 
 		contentType = produces.getMimeType(charset);
 
 		buildPhysicalDestinationName();
 	}
+
+	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
+		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
+			Optional<String> invalidClaim = StringUtil.splitToStream(claimAttributeToValidate)
+					.filter(claim -> claim.split("=").length != 2)
+					.findFirst();
+
+			if(invalidClaim.isPresent()){
+				throw new ConfigurationException("["+invalidClaim.get()+"] is not a valid key/value pair for ["+claimAttributeName+"].");
+			}
+		}
+	}
+
 
 	@Override
 	public void open() throws ListenerException {
