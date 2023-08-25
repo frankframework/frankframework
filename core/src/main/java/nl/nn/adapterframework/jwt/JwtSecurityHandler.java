@@ -80,9 +80,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Optional<Map.Entry<String, String>> nonMatchingClaim = StringUtil.splitToStream(exactMatchClaims)
-					.map(s -> StringUtil.split(s, "="))
-					.filter(this::isValidKeyValuePair)
+			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
 					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
 					.entrySet()
 					.stream()
@@ -98,19 +96,22 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify matchOneOf claims
 		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
-			Map<String, HashSet<String>> multiMap = new HashMap<>();
-
-			StringUtil.splitToStream(matchOneOfClaims)
-					.map(s -> StringUtil.split(s, "="))
-					.filter(this::isValidKeyValuePair)
-					.forEach(pair -> multiMap.computeIfAbsent(pair.get(0), key -> new HashSet<>()).add(pair.get(1)));
-
-			boolean matchesOneOf = multiMap.keySet().stream().anyMatch(key -> multiMap.get(key).contains((String) claimsSet.get(key)));
+			boolean matchesOneOf = splitClaims(matchOneOfClaims)
+					.collect(Collectors.groupingBy(pair -> pair.get(0), Collectors.mapping(pair -> pair.get(1), Collectors.toList())))
+					.entrySet()
+					.stream()
+					.anyMatch(entry -> entry.getValue().contains((String) claimsSet.get(entry.getKey())));
 
 			if(!matchesOneOf){
 				throw new AuthorizationException("JWT does not match one of: ["+matchOneOfClaims+"]");
 			}
 		}
+	}
+
+	private Stream<List<String>> splitClaims(String claimsToSplit){
+		return StringUtil.splitToStream(claimsToSplit)
+				.map(s -> StringUtil.split(s, "="))
+				.filter(this::isValidKeyValuePair);
 	}
 
 	private boolean isValidKeyValuePair(List<String> pair) {
