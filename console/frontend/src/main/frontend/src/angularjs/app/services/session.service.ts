@@ -1,5 +1,5 @@
-import { DebugService } from "src/app/services.types";
 import { appModule } from "../app.module";
+import { DebugService } from "./debug.service";
 
 export class SessionService {
   constructor(private Debug: DebugService){}

@@ -1,10 +1,17 @@
 
-import { ApiService, AuthService, DebugService, HooksService, MiscService, NotificationService, PollerService, SweetAlertService } from 'src/app/services.types';
+import { HooksService } from 'src/app/services.types';
 import { Pace } from '../deps';
 import { AppConstants, appModule } from "./app.module";
 import { Adapter, AppService, Configuration } from './app.service';
 import { StateService } from '@uirouter/angularjs';
 import { SessionService } from './services/session.service';
+import { ApiService } from './services/api.service';
+import { AuthService } from './services/authservice.service';
+import { DebugService } from './services/debug.service';
+import { MiscService } from './services/misc.service';
+import { NotificationService } from './services/notification.service';
+import { PollerService } from './services/poller.service';
+import { SweetAlertService } from './services/sweetalert.service';
 
 export type IAFRelease = {
   url: string,
@@ -144,7 +151,7 @@ class AppController {
 
         var newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
         var currentVersion = this.appConstants["application.version"];
-        var version = this.Misc.compare_version(newVersion, currentVersion);
+        var version = this.Misc.compare_version(newVersion, currentVersion) || 0;
         console.log("Comparing version: '" + currentVersion + "' with latest release: '" + newVersion + "'.");
         this.Session.remove("IAF-Release");
 

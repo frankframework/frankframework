@@ -1,6 +1,6 @@
-import { ApiService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { StateService } from "@uirouter/angularjs";
+import { ApiService } from "../../services/api.service";
 
 class LoadingController {
   constructor(

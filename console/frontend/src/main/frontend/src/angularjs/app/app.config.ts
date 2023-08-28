@@ -1,7 +1,9 @@
-import { DebugService, MiscService, ToastrService } from "src/app/services.types";
 import { AppConstants, appModule } from "./app.module";
 import { StateProvider, UrlRouterProvider } from "@uirouter/angularjs";
 import { StateService, Trace } from "@uirouter/angularjs";
+import { DebugService } from "./services/debug.service";
+import { MiscService } from "./services/misc.service";
+import { ToastrService } from "./services/toastr.service";
 
 appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvider) {
   $httpProvider.interceptors.push(['appConstants', '$q', 'Misc', 'Toastr', '$location', function (appConstants: AppConstants, $q: angular.IQService, Misc: MiscService, Toastr: ToastrService, $location: angular.ILocationService): angular.IHttpInterceptor {

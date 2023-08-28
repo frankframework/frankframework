@@ -28,8 +28,10 @@ class PollerObject {
       return undefined;
     }
   };
+  private poller?: number;
+  private lastPolled?: number;
 
-  constructor(public uri: string, private appConstants: AppConstants, private callback?: (data: any) => void) { }
+  constructor(private uri: string, private Debug: DebugService, private Api: ApiService, private appConstants: AppConstants, private callback?: (data: any) => void) { }
 
   addError(): void {
     this.errorList.push({
@@ -59,31 +61,29 @@ class PollerObject {
     delete this.poller;
   }
 
-  fn(runOnce?: boolean = false): void {
-    var poller = this.data[this.uri];
-    poller.fired++;
+  fn(runOnce: boolean = false): void {
+    this.fired++;
     this.Api.Get(this.uri, this.callback, () => {
-      poller.addError();
+      this.addError();
 
       var e = 0;
-      for (const x in poller.errorList) {
-        var y = poller.errorList[x];
-        if (poller.fired == y.fired || poller.fired - 1 == y.fired || poller.fired - 2 == y.fired)
+      for (const x in this.errorList) {
+        var y = this.errorList[x];
+        if (this.fired == y.fired || this.fired - 1 == y.fired || this.fired - 2 == y.fired)
           e++;
       }
-      this.Debug.info("Encountered unhandled exception, poller[" + uri + "] eventId[" + poller.fired + "] retries[" + e + "]");
+      this.Debug.info("Encountered unhandled exception, poller[" + this.uri + "] eventId[" + this.fired + "] retries[" + e + "]");
       if (e < 3) return;
 
-      this.Debug.warn("Max retries reached. Stopping poller [" + this.uri + "]", poller);
+      this.Debug.warn("Max retries reached. Stopping poller [" + this.uri + "]", this);
 
       runOnce = true;
-      this.data[this.uri].stop();
-    }, { poller: true }).then(function () {
+      this.stop();
+    }, { poller: true }).then(() => {
       if (runOnce) return;
 
-      var p = this.data[uri];
-      if (p && p.waiting)
-        p.start();
+      if (this.waiting)
+        this.start();
     });
   }
 
@@ -105,15 +105,15 @@ class PollerObject {
           return;
         }
       }
-      this.poller = setTimeout(this.fn, this.pollerInterval);
+      this.poller = window.setTimeout(() => this.fn(), this.pollerInterval);
       this.lastPolled = now;
     }
     else
-      this.poller = setInterval(this.fn, this.pollerInterval);
+      this.poller = window.setInterval(() => this.fn(), this.pollerInterval);
   }
 
   setInterval(interval: number, restart?: boolean): void {
-    Debug.info("Interval for " + this.uri + " changed to [" + interval + "] restart [" + restart + "]");
+    this.Debug.info("Interval for " + this.uri + " changed to [" + interval + "] restart [" + restart + "]");
     this.pollerInterval = interval;
     if (restart)
       this.restart();
@@ -154,7 +154,7 @@ export class PollerService {
   add(uri: string, callback?: (data: any) => void, autoStart?: boolean, interval?: number): PollerObject | void {
     if (!this.data[uri]) {
       this.Debug.log("Adding new poller [" + uri + "] autoStart [" + !!autoStart + "] interval [" + interval + "]");
-      var poller = new this.createPollerObject(uri, this.appConstants, callback);
+      var poller = new this.createPollerObject(uri, this.Debug, this.Api, this.appConstants, callback);
       this.data[uri] = poller;
       if (!!autoStart)
         poller.fn();
@@ -212,10 +212,7 @@ export class PollerService {
         this.data = {};
       },
       list: () => {
-        for (const uri in this.data) {
-          this.list.push(uri);
-        }
-        return this.list;
+        return Object.keys(this.data);
       }
     }
   }

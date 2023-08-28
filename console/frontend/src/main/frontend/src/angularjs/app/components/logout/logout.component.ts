@@ -1,5 +1,6 @@
-import { AuthService, PollerService } from "src/app/services.types";
 import { appModule } from "../../app.module";
+import { AuthService } from "../../services/authservice.service";
+import { PollerService } from "../../services/poller.service";
 
 class LogoutController {
   constructor(

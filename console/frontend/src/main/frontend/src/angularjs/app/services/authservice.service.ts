@@ -1,6 +1,6 @@
-import { MiscService } from "src/app/services.types";
 import { AppConstants, appModule } from "../app.module";
 import { Base64Service } from "./base64.service";
+import { MiscService } from "./misc.service";
 
 export class AuthService {
 

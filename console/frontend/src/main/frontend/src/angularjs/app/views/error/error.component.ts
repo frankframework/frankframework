@@ -1,7 +1,7 @@
-import { ApiService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { StateService } from "@uirouter/angularjs";
 import { AppService } from "../../app.service";
+import { ApiService } from "../../services/api.service";
 
 export type ServerError = {
   status: string,

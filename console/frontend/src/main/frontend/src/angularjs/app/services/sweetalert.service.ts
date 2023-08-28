@@ -1,6 +1,6 @@
 import Swal, { SweetAlertOptions } from 'sweetalert2';
 import { appModule } from '../app.module';
-import { DebugService } from 'src/app/services.types';
+import { DebugService } from './debug.service';
 
 type SweetAlertSettings = SweetAlertOptions & { callback?: (value: any) => void };
 

@@ -1,5 +1,5 @@
-import { NotificationService } from "src/app/services.types";
 import { appModule } from "../../app.module";
+import { NotificationService } from "../../services/notification.service";
 
 class PagesTopnavbarController {
   notificationCount: number = 0;

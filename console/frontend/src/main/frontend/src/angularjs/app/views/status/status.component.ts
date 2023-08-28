@@ -1,8 +1,10 @@
 import { StateService } from "@uirouter/angularjs";
-import { ApiService, MiscService, PollerService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { Adapter, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from "../../app.service";
 import { ConfigurationFilter } from "../../filters/configuration-filter.filter";
+import { ApiService } from "../../services/api.service";
+import { PollerService } from "../../services/poller.service";
+import { MiscService } from "../../services/misc.service";
 
 type Filter = Record<'started' | 'stopped' | 'warning', boolean>;
 
