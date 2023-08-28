@@ -148,8 +148,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
-		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(new UrlMessage(input), session);
+		Message input = MessageTestUtils.getBinaryMessage(fileToConvert, false);
+		pipe.doPipe(input, session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getString("documents");
