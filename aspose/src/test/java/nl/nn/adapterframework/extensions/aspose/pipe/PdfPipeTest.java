@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.testautomationguru.utility.CompareMode;
 import com.testautomationguru.utility.PDFUtil;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -65,6 +66,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
 
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("Europe/Amsterdam");
+
 	private Path pdfOutputLocation;
 
 	@Override
@@ -123,9 +125,10 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
+			pdfUtil.setCompareMode(CompareMode.VISUAL_MODE);
 			//remove Aspose evaluation copy information
 			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
-//			pdfUtil.enableLog();
+			pdfUtil.enableLog();
 			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
 			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
 		}
