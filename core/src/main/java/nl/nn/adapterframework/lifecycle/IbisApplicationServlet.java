@@ -36,8 +36,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class IbisApplicationServlet extends HttpServlet {
 	private static final long serialVersionUID = 2L;
-	private final Logger log = LogUtil.getLogger(this);
-	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
+	private static final Logger LOG = LogUtil.getLogger(IbisApplicationServlet.class);
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	public static final String CONTEXT_KEY = "IbisContext";
 	private IbisContext ibisContext;
 	private static final String EXCEPTION_KEY = "StartupException";
@@ -53,13 +53,13 @@ public class IbisApplicationServlet extends HttpServlet {
 		if (realPath != null) {
 			appConstants.put("webapp.realpath", realPath);
 		} else {
-			log.warn("Could not determine webapp.realpath");
+			LOG.warn("Could not determine webapp.realpath");
 		}
 		String projectBaseDir = Misc.getProjectBaseDir();
 		if (projectBaseDir != null) {
 			appConstants.put("project.basedir", projectBaseDir);
 		} else {
-			log.info("Could not determine project.basedir");
+			LOG.info("Could not determine project.basedir");
 		}
 
 		ApplicationContext parentContext = null;
@@ -70,28 +70,24 @@ public class IbisApplicationServlet extends HttpServlet {
 			}
 		} catch (Throwable t) {
 			servletContext.setAttribute(EXCEPTION_KEY, t);
-			applicationLog.fatal("IBIS WebApplicationInitializer failed to initialize", t);
+			APPLICATION_LOG.fatal("IBIS WebApplicationInitializer failed to initialize", t);
 			throw t; //If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
 		}
 
-		servletContext.log("Starting IbisContext");
+		APPLICATION_LOG.info("IbisApplicationServlet starting IbisContext");
 		ibisContext = new IbisContext();
 		ibisContext.setParentContext(parentContext);
 		ibisContext.init();
 
 		Exception startupException = ibisContext.getStartupException();
 		if(startupException != null) { //Check if there are any problems initializing Spring
-			String msg = ClassUtils.classNameOf(this)+" finished without successfully initializing the IbisContext";
-			applicationLog.fatal(msg, startupException);
-
-			//We can't call servletContext.log(message, Exception) as it will prevent the servlet from starting up
-			servletContext.log(String.format("%s, check ibis logs for more information! (%s) %s", msg, startupException.getClass().getName(), startupException.getMessage()));
+			APPLICATION_LOG.fatal("IbisApplicationServlet finished without successfully initializing: "+ClassUtils.classNameOf(ibisContext), startupException);
 		}
 
 		// save the IbisContext in the ServletContext
 		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
-		log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
-		applicationLog.info("Initialized {}", ClassUtils.classNameOf(this));
+		LOG.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
+		APPLICATION_LOG.info("Initialized {}", ClassUtils.classNameOf(this));
 	}
 
 	/**
@@ -115,8 +111,7 @@ public class IbisApplicationServlet extends HttpServlet {
 
 	@Override
 	public void destroy() {
-		applicationLog.info("Shutting down {}", ClassUtils.classNameOf(this));
-		getServletContext().log("Shutting down IbisContext");
+		APPLICATION_LOG.info("Shutting down {}", ClassUtils.classNameOf(ibisContext));
 		if(ibisContext != null) {
 			ibisContext.close();
 		}

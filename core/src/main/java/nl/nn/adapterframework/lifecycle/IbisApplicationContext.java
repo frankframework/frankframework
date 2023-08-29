@@ -71,7 +71,7 @@ public class IbisApplicationContext implements Closeable {
 	private ApplicationContext parentContext = null;
 
 	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
 	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 	private final Map<String, String> iafModules = new HashMap<>();
@@ -105,7 +105,7 @@ public class IbisApplicationContext implements Closeable {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if (parentContext != null) {
-				log.info("found Spring rootContext [{}]", parentContext);
+				LOG.info("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -136,7 +136,7 @@ public class IbisApplicationContext implements Closeable {
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
 		addJmxConfigurationIfEnabled(springConfigurationFiles);
 
-		log.info("loading Spring configuration files {}", springConfigurationFiles);
+		LOG.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
@@ -151,7 +151,7 @@ public class IbisApplicationContext implements Closeable {
 	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
 		URL fileURL = classLoader.getResource(filename);
 		if (fileURL == null) {
-			log.error("unable to locate Spring configuration file [{}]", filename);
+			LOG.error("unable to locate Spring configuration file [{}]", filename);
 		}
 		return fileURL != null;
 	}
@@ -201,7 +201,7 @@ public class IbisApplicationContext implements Closeable {
 	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getId();
-			log.info("closing IbisApplicationContext [{}]", oldContextName);
+			LOG.info("closing IbisApplicationContext [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
