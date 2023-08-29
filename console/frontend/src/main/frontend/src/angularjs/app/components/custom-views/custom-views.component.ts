@@ -1,4 +1,5 @@
 import { AppConstants, appModule } from "../../app.module";
+import { AppService } from "../../app.service";
 
 class CustomViewsController {
   customViews: {
@@ -7,10 +8,10 @@ class CustomViewsController {
     url: string
   }[] = [];
 
-  constructor(private $scope: angular.IScope, private appConstants: AppConstants){}
+  constructor(private appService: AppService, private appConstants: AppConstants){}
 
 	$onInit() {
-		this.$scope.$on('appConstants', () => {
+    this.appService.appConstants$.subscribe(() => {
 			var customViews = this.appConstants["customViews.names"];
 			if (customViews == undefined)
 				return;
@@ -33,7 +34,7 @@ class CustomViewsController {
 }
 
 appModule.component('customViews', {
-	controller: ['$scope', 'appConstants', CustomViewsController],
+	controller: ['appService', 'appConstants', CustomViewsController],
 	template: '<li ng-repeat="view in customViews" ui-sref-active="active">' +
 		'<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>' +
 		'</li>'

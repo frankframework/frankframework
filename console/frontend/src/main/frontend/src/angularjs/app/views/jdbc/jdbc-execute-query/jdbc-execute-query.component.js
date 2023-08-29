@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const JdbcExecuteQueryController = function ($scope, Api, $timeout, $state, Cookies, appConstants) {
+const JdbcExecuteQueryController = function (appService, Api, $timeout, $state, Cookies, appConstants) {
 	const ctrl = this;
 
 	ctrl.datasources = {};
@@ -9,7 +9,7 @@ const JdbcExecuteQueryController = function ($scope, Api, $timeout, $state, Cook
 	ctrl.processingMessage = false;
 	ctrl.form = {};
 
-	$scope.$on('appConstants', function () {
+  appService.appConstants$.subscribe(function () {
 		ctrl.form.datasource = appConstants['jdbc.datasource.default'];
 	});
 
@@ -69,6 +69,6 @@ const JdbcExecuteQueryController = function ($scope, Api, $timeout, $state, Cook
 };
 
 appModule.component('jdbcExecuteQuery', {
-	controller: ['$scope', 'Api', '$timeout', '$state', 'Cookies', 'appConstants', JdbcExecuteQueryController],
+	controller: ['appService', 'Api', '$timeout', '$state', 'Cookies', 'appConstants', JdbcExecuteQueryController],
 	templateUrl: 'js/app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component.html'
 });

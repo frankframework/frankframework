@@ -1,4 +1,5 @@
 import { appModule } from "../app.module";
+import { AppService } from "../app.service";
 import { DebugService } from "./debug.service";
 import { GDPRService } from "./gdpr.service";
 
@@ -10,7 +11,7 @@ export class CookiesService {
     private Debug: DebugService,
     private $cookies: angular.cookies.ICookiesService,
     private GDPR: GDPRService,
-    private $rootScope: angular.IRootScopeService
+    private appService: AppService
   ){
     const date = new Date();
     date.setDate(date.getDate() + 7);
@@ -20,7 +21,7 @@ export class CookiesService {
     };
 
     //Runs everytime the GDPR settings update
-    $rootScope.$on('GDPR', () => {
+    this.appService.GDPR$.subscribe(() => {
       this.flushCache();
     });
   }
@@ -74,4 +75,4 @@ export class CookiesService {
   };
 }
 
-appModule.service('Cookies', ['Debug', '$cookies', 'GDPR', '$rootScope', CookiesService]);
+appModule.service('Cookies', ['Debug', '$cookies', 'GDPR', 'appService', CookiesService]);

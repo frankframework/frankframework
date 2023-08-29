@@ -1,19 +1,20 @@
 import { StateService } from "@uirouter/angularjs";
 import {appModule} from "../../app.module";
+import { AppService } from "../../app.service";
 
 class PagesTopinfobarController {
-	loading = false;
+	loading = true;
 
-  constructor(private $scope: angular.IScope, private $state: StateService){
+  constructor(private appService: AppService, private $state: StateService){
     this.$state = $state; // not really needed, just to make sure nothing breaks
   }
 
 	$onInit(){
-		this.$scope.$on('loading', (event, loading) => { this.loading = loading; });
+    this.appService.loading$.subscribe(loading => this.loading = loading);
 	}
 }
 
 appModule.component('pagesTopinfobar', {
-	controller: ['$scope', '$state', PagesTopinfobarController],
+	controller: ['appService', '$state', PagesTopinfobarController],
   templateUrl: 'angularjs/app/components/pages/pages-topinfobar.component.html',
 });

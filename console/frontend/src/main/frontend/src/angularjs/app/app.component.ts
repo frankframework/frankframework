@@ -283,7 +283,8 @@ class AppController {
       this.Api.Get("adapters", (data: Record<string, Adapter>) => pollerCallback(data));
       this.$timeout(() => {
         this.Poller.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
-        this.$scope.$broadcast('loading', false);
+        this.appService.updateLoading(false);
+        this.loading = false;
       }, 3000);
     });
 
@@ -398,7 +399,8 @@ class AppController {
             this.Idle.unwatch();
           }
           this.appService.updateDatabaseSchedulesEnabled((this.appConstants["loadDatabaseSchedules.active"] === 'true'));
-          this.$rootScope.$broadcast('appConstants');
+          // this.$rootScope.$broadcast('appConstants');
+          this.appService.triggerAppConstants();
         }
       });
     }

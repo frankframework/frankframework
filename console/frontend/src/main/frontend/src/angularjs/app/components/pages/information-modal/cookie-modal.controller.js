@@ -1,9 +1,9 @@
 import { appModule } from "../../../app.module";
 
-appModule.controller('CookieModalCtrl', ['$scope', 'GDPR', 'appConstants', '$rootScope', '$uibModalInstance', function ($scope, GDPR, appConstants, $rootScope, $uibModalInstance) {
+appModule.controller('CookieModalCtrl', ['$scope', 'GDPR', 'appConstants', 'appService', '$uibModalInstance', function ($scope, GDPR, appConstants, appService, $uibModalInstance) {
 	$scope.cookies = GDPR.defaults;
 
-	$rootScope.$on('appConstants', function () {
+  appService.appConstants$.subscribe(function () {
 		$scope.cookies = {
 			necessary: true,
 			personalization: appConstants.getBoolean("console.cookies.personalization", true),

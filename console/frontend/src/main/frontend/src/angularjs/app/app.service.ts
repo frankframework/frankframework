@@ -1,5 +1,6 @@
 import { StateService } from "@uirouter/angularjs";
 import { appModule } from "./app.module";
+import { Subject } from "rxjs";
 
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading'
@@ -99,30 +100,37 @@ export type MessageSummary = {
 
 export class AppService {
   constructor(
-    private $rootScope: angular.IRootScopeService,
     private $state: StateService
   ){}
 
-  private lastUpdated = 0;
-  private timeout?: number;
+  private loadingSubject = new Subject<boolean>();
+  private appConstantsSubject = new Subject<void>();
+  private adaptersSubject = new Subject<Record<string, Adapter>>();
+  private alertsSubject = new Subject<Alert[]>();
+  private startupErrorSubject = new Subject<string | null>();
+  private configurationsSubject = new Subject<Configuration[]>();
+  private messageLogSubject = new Subject<Record<string, MessageLog>>();
+  private instanceNameSubject = new Subject<string>();
+  private dtapStageSubject = new Subject<string>();
+  private databaseSchedulesEnabledSubject = new Subject<boolean>();
+  private summariesSubject = new Subject<void>();
+  private GDPRSubject = new Subject<void>();
+
+  loading$ = this.loadingSubject.asObservable();
+  appConstants$ = this.appConstantsSubject.asObservable();
+  adapters$ = this.adaptersSubject.asObservable();
+  alerts$ = this.alertsSubject.asObservable();
+  startupError$ = this.startupErrorSubject.asObservable();
+  configurations$ = this.configurationsSubject.asObservable();
+  messageLog$ = this.messageLogSubject.asObservable();
+  instanceName$ = this.instanceNameSubject.asObservable();
+  dtapStage$ = this.dtapStageSubject.asObservable();
+  databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
+  summaries$ = this.summariesSubject.asObservable();
+  GDPR$ = this.GDPRSubject.asObservable();
 
   adapters: Record<string, Adapter> = {};
-	updateAdapters(adapters: Record<string, Adapter>) {
-    this.adapters = adapters;
-    this.$rootScope.$broadcast('adapters', adapters);
-  }
-
   alerts: Alert[] = [];
-	updateAlerts(alerts: Alert[]) {
-    this.alerts = alerts;
-    this.$rootScope.$broadcast('alerts', alerts);
-  }
-
-	startupError: string | null = null;
-  updateStartupError(startupError: string) {
-    this.startupError = startupError;
-    this.$rootScope.$broadcast('startupError', startupError);
-  }
 
   adapterSummary: Summary = {
     started: 0,
@@ -138,11 +146,45 @@ export class AppService {
     stopping: 0,
     error: 0
   };
-	messageSummary: MessageSummary = {
+  messageSummary: MessageSummary = {
     info: 0,
     warn: 0,
     error: 0
   };
+
+  private lastUpdated = 0;
+  private timeout?: number;
+
+  updateLoading(loading: boolean) {
+    this.loadingSubject.next(loading);
+  }
+
+  triggerAppConstants(){
+    this.appConstantsSubject.next();
+  }
+
+  triggerGDPR(){
+    this.GDPRSubject.next();
+  }
+
+	updateAdapters(adapters: Record<string, Adapter>) {
+    this.adapters = adapters;
+    // this.$rootScope.$broadcast('adapters', adapters);
+    this.adaptersSubject.next(adapters);
+  }
+
+	updateAlerts(alerts: Alert[]) {
+    this.alerts = alerts;
+    // this.$rootScope.$broadcast('alerts', alerts);
+    this.alertsSubject.next(alerts);
+  }
+
+	startupError: string | null = null;
+  updateStartupError(startupError: string) {
+    this.startupError = startupError;
+    // this.$rootScope.$broadcast('startupError', startupError);
+    this.startupErrorSubject.next(startupError);
+  }
 
   configurations: Configuration[] = [];
   updateConfigurations(configurations: Configuration[]) {
@@ -155,64 +197,37 @@ export class AppService {
         updatedConfigurations.push(config);
     }
     this.configurations = updatedConfigurations;
-    this.$rootScope.$broadcast('configurations', updatedConfigurations);
+    // this.$rootScope.$broadcast('configurations', updatedConfigurations);
+    this.configurationsSubject.next(updatedConfigurations);
   }
 
 	messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>) {
     this.messageLog = messageLog;
-    this.$rootScope.$broadcast('messageLog', messageLog);
+    // this.$rootScope.$broadcast('messageLog', messageLog);
+    this.messageLogSubject.next(messageLog);
   }
 
 	instanceName = "";
 	updateInstanceName(instanceName: string) {
     this.instanceName = instanceName;
-    this.$rootScope.$broadcast('instanceName', instanceName);
+    // this.$rootScope.$broadcast('instanceName', instanceName);
+    this.instanceNameSubject.next(instanceName);
   }
 
 	dtapStage = "";
   updateDtapStage(dtapStage: string) {
     this.dtapStage = dtapStage;
-    this.$rootScope.$broadcast('dtapStage', dtapStage);
+    // this.$rootScope.$broadcast('dtapStage', dtapStage);
+    this.dtapStageSubject.next(dtapStage);
   }
 
 	databaseSchedulesEnabled = false;
 	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
-    this.$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
+    // this.$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
+    this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
   }
-
-	getProcessStateIcon(processState: string) {
-    switch (processState) {
-      case "Available":
-        return "fa-server";
-      case "InProcess":
-        return "fa-gears";
-      case "Done":
-        return "fa-sign-in";
-      case "Hold":
-        return "fa-pause-circle";
-      case "Error":
-      default:
-        return "fa-times-circle";
-    }
-  };
-
-	getProcessStateIconColor(processState: string) {
-    switch (processState) {
-      case "Available":
-        return "success";
-      case "InProcess":
-        return "success";
-      case "Done":
-        return "success";
-      case "Hold":
-        return "warning";
-      case "Error":
-      default:
-        return "danger";
-    }
-  };
 
 	updateAdapterSummary(configurationName?: string) {
     var updated = (new Date().getTime());
@@ -268,13 +283,43 @@ export class AppService {
     this.receiverSummary = receiverSummary;
     this.messageSummary = messageSummary;
     this.lastUpdated = updated;
-    this.$rootScope.$broadcast('summaries');
+    // this.$rootScope.$broadcast('summaries');
+    this.summariesSubject.next();
   };
+
+  getProcessStateIcon(processState: string) {
+    switch (processState) {
+      case "Available":
+        return "fa-server";
+      case "InProcess":
+        return "fa-gears";
+      case "Done":
+        return "fa-sign-in";
+      case "Hold":
+        return "fa-pause-circle";
+      case "Error":
+      default:
+        return "fa-times-circle";
+    }
+  }
+
+  getProcessStateIconColor(processState: string) {
+    switch (processState) {
+      case "Available":
+        return "success";
+      case "InProcess":
+        return "success";
+      case "Done":
+        return "success";
+      case "Hold":
+        return "warning";
+      case "Error":
+      default:
+        return "danger";
+    }
+  }
 }
 
-appModule.factory('appService', ['$rootScope', '$state', function ($rootScope: angular.IRootScopeService, $state: StateService) {
-  const service = new AppService($rootScope, $state);
-
-
-	return service;
+appModule.factory('appService', ['$state', function ($state: StateService) {
+	return new AppService($state);
 }]);

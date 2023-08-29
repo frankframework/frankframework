@@ -1,4 +1,5 @@
 import { appModule } from "../app.module";
+import { AppService } from "../app.service";
 import { DebugService } from "./debug.service";
 
 export class GDPRService {
@@ -13,7 +14,7 @@ export class GDPRService {
 
   constructor(
     private $cookies: angular.cookies.ICookiesService,
-    private $rootScope: angular.IRootScopeService,
+    private appService: AppService,
     private Debug: DebugService
   ){
     var date = new Date();
@@ -63,9 +64,10 @@ export class GDPRService {
     this.settings = settings;
     this.$cookies.putObject(this.cookieName, settings, this.options);
 
-    this.$rootScope.$broadcast('GDPR');
+    // this.$rootScope.$broadcast('GDPR');
+    this.appService.triggerGDPR();
   };
 
 }
 
-appModule.service('GDPR', ['$cookies', '$rootScope', 'Debug', GDPRService]);
+appModule.service('GDPR', ['$cookies', 'appService', 'Debug', GDPRService]);

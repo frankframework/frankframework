@@ -1,12 +1,12 @@
 import { appModule } from "../../../app.module";
 
-const ConfigurationsUploadController = function ($scope, Api, appConstants, $rootScope) {
+const ConfigurationsUploadController = function ($scope, Api, appConstants, appService) {
 	const ctrl = this;
 
 	ctrl.datasources = {};
 	ctrl.form = {};
 
-	$rootScope.$on('appConstants', function () {
+  appService.appConstants$.subscribe(function () {
 		ctrl.form.datasource = appConstants['jdbc.datasource.default'];
 	});
 
@@ -89,6 +89,6 @@ const ConfigurationsUploadController = function ($scope, Api, appConstants, $roo
 };
 
 appModule.component('configurationsUpload', {
-	controller: ['$scope', 'Api', 'appConstants', '$rootScope', ConfigurationsUploadController],
+	controller: ['$scope', 'Api', 'appConstants', 'appService', ConfigurationsUploadController],
 	templateUrl: 'js/app/views/configurations/configurations-upload/configurations-upload.component.html',
 });

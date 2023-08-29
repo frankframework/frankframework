@@ -9,7 +9,7 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+    appService.configurations$.subscribe(function () { ctrl.configurations = appService.configurations; });
 		ctrl.getConfiguration();
 	};
 

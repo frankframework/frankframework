@@ -24,7 +24,7 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
 		}
 
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+      appService.configurations$.subscribe(function () { ctrl.configurations = appService.configurations; });
 
         Api.Get("environmentvariables", function (data) {
             var instanceName = null;

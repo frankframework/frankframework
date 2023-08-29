@@ -1,12 +1,12 @@
 import { appModule } from "../../../app.module";
 
 //** Ctrls **//
-const ConfigurationsManagaController = function ($rootScope, Api, appService) {
+const ConfigurationsManagaController = function (Api, appService) {
 	const ctrl = this;
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+    appService.configurations$.subscribe(function () { ctrl.configurations = appService.configurations; });
 		Api.Get("server/configurations", function (data) {
 			appService.updateConfigurations(data);
 		});
@@ -14,6 +14,6 @@ const ConfigurationsManagaController = function ($rootScope, Api, appService) {
 };
 
 appModule.component('configurationsManage', {
-	controller: ['$rootScope', 'Api', 'appService', ConfigurationsManagaController],
+	controller: ['Api', 'appService', ConfigurationsManagaController],
 	templateUrl: "js/app/views/configurations/configurations-manage/configurations-manage.component.html",
 });

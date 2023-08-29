@@ -11,14 +11,14 @@ const MonitorsController = function (Api, $state, Misc, $rootScope, appService) 
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () {
+    appService.configurations$.subscribe(function () {
 			ctrl.configurations = appService.configurations;
 
 			if (ctrl.configurations.length > 0) {
 				ctrl.updateConfigurations();
 			}
 		});
-		
+
 		if (ctrl.configurations.length > 0) {
 			ctrl.updateConfigurations();
 		}
