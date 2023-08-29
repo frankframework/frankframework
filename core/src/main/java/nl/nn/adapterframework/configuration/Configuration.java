@@ -81,6 +81,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
+	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	private Boolean autoStart = null;
 	private boolean enabledAutowiredPostProcessing = false;
@@ -279,7 +280,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
-		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
+		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
+		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
 	}
 
@@ -326,7 +328,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if(event instanceof ContextClosedEvent) {
-			secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] closed");
+			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
 
