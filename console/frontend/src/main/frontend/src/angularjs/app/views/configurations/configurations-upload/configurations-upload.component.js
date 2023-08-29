@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const ConfigurationsUploadController = function ($scope, Api, appConstants, appService) {
+const ConfigurationsUploadController = function (Api, appConstants, appService) {
 	const ctrl = this;
 
 	ctrl.datasources = {};
@@ -89,6 +89,6 @@ const ConfigurationsUploadController = function ($scope, Api, appConstants, appS
 };
 
 appModule.component('configurationsUpload', {
-	controller: ['$scope', 'Api', 'appConstants', 'appService', ConfigurationsUploadController],
+	controller: ['Api', 'appConstants', 'appService', ConfigurationsUploadController],
 	templateUrl: 'js/app/views/configurations/configurations-upload/configurations-upload.component.html',
 });

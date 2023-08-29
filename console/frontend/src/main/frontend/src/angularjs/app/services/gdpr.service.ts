@@ -64,7 +64,6 @@ export class GDPRService {
     this.settings = settings;
     this.$cookies.putObject(this.cookieName, settings, this.options);
 
-    // this.$rootScope.$broadcast('GDPR');
     this.appService.triggerGDPR();
   };
 

@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const SchedulerAddController = function ($scope, Api, $rootScope, appService) {
+const SchedulerAddController = function (Api, appService) {
   const ctrl = this;
 
   ctrl.state = [];
@@ -69,6 +69,6 @@ const SchedulerAddController = function ($scope, Api, $rootScope, appService) {
 };
 
 appModule.component('schedulerAdd', {
-  controller: ['$scope', 'Api', '$rootScope', 'appService', SchedulerAddController],
+  controller: [ 'Api', 'appService', SchedulerAddController],
   templateUrl: 'js/app/views/scheduler/scheduler-add-edit.component.html'
 });

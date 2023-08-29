@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const LoggingController = function ($scope, Api, Misc, $timeout, $state, $stateParams) {
+const LoggingController = function (Api, Misc, $timeout, $state, $stateParams) {
     const ctrl = this;
 
     ctrl.viewFile = false;
@@ -107,6 +107,6 @@ const LoggingController = function ($scope, Api, Misc, $timeout, $state, $stateP
 };
 
 appModule.component('logging', {
-    controller: ['$scope', 'Api', 'Misc', '$timeout', '$state', '$stateParams', LoggingController],
+    controller: ['Api', 'Misc', '$timeout', '$state', '$stateParams', LoggingController],
     templateUrl: 'js/app/views/logging/logging.component.html'
 });

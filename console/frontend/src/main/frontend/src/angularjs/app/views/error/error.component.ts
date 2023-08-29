@@ -11,11 +11,9 @@ export type ServerError = {
 
 class ErrorController {
   constructor(
-    private $scope: angular.IScope,
     private Api: ApiService,
     private $state: StateService,
     private $interval: angular.IIntervalService,
-    private $rootScope: angular.IRootScopeService,
     private $timeout: angular.ITimeoutService,
     private appService: AppService
   ) { }
@@ -60,6 +58,6 @@ class ErrorController {
 };
 
 appModule.component('error', {
-  controller: ['$scope', 'Api', '$state', '$interval', '$rootScope', '$timeout', 'appService', ErrorController],
+  controller: ['Api', '$state', '$interval', '$timeout', 'appService', ErrorController],
   templateUrl: 'angularjs/app/views/error/error.component.html'
 });

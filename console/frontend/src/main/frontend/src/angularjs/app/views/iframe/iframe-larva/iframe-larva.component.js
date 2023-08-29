@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const IframeLarvaController = function ($scope, Misc, $interval) {
+const IframeLarvaController = function (Misc) {
     const ctrl = this;
 
     ctrl.$onInit = function () {
@@ -9,6 +9,6 @@ const IframeLarvaController = function ($scope, Misc, $interval) {
 };
 
 appModule.component('iframeLarva', {
-    controller: ['$scope', 'Misc', '$interval', IframeLarvaController],
+    controller: ['Misc',IframeLarvaController],
     templateUrl: 'js/app/views/iframe/iframe.component.html'
 });

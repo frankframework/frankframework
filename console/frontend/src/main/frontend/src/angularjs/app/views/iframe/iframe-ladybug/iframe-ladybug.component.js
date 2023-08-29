@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const IframeLadybugController = function ($scope, Misc, $timeout) {
+const IframeLadybugController = function (Misc) {
     const ctrl = this;
 
     ctrl.$onInit = function () {
@@ -9,6 +9,6 @@ const IframeLadybugController = function ($scope, Misc, $timeout) {
 };
 
 appModule.component('iframeLadybug', {
-    controller: ['$scope', 'Misc', '$timeout', IframeLadybugController],
+    controller: ['Misc', IframeLadybugController],
     templateUrl: 'js/app/views/iframe/iframe.component.html'
 });

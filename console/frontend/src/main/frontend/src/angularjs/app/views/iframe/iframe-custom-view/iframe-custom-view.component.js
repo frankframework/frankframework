@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const IframeCustomViewController = function ($scope, Misc, $state, $window) {
+const IframeCustomViewController = function (Misc, $state, $window) {
     const ctrl = this;
 
     ctrl.$onInit = function () {
@@ -17,6 +17,6 @@ const IframeCustomViewController = function ($scope, Misc, $state, $window) {
 };
 
 appModule.component('iframeCustomView', {
-    controller: ['$scope', 'Misc', '$state', '$window', IframeCustomViewController],
+    controller: ['Misc', '$state', '$window', IframeCustomViewController],
     templateUrl: 'js/app/views/iframe/iframe.component.html'
 });

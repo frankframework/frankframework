@@ -69,7 +69,6 @@ class AppController {
 
   constructor(
     private $scope: angular.IScope,
-    private $rootScope: angular.IRootScopeService,
     private authService: AuthService,
     private appConstants: AppConstants,
     private Api: ApiService,
@@ -100,7 +99,6 @@ class AppController {
     /* state controller end */
 
     Pace.on("done", () => this.initializeFrankConsole());
-    this.$scope.$on('initializeFrankConsole', () => this.initializeFrankConsole());
     this.$timeout(() => this.initializeFrankConsole(), 250);
 
     this.$scope.$on('IdleStart', () => {
@@ -202,7 +200,7 @@ class AppController {
 
         this.appService.updateMessageLog(configurations);
 
-        this.$scope.$on('startupError', () => {
+        this.appService.startupError$.subscribe(() => {
           this.startupError = this.appService.startupError;
         })
       }, true, 60000);
@@ -273,7 +271,6 @@ class AppController {
 
             this.appService.updateAdapterSummary();
             this.Hooks.call("adapterUpdated", adapter);
-            //					$scope.$broadcast('adapterUpdated', adapter);
           }
         }
         this.appService.updateAdapters(this.appService.adapters);
@@ -399,7 +396,6 @@ class AppController {
             this.Idle.unwatch();
           }
           this.appService.updateDatabaseSchedulesEnabled((this.appConstants["loadDatabaseSchedules.active"] === 'true'));
-          // this.$rootScope.$broadcast('appConstants');
           this.appService.triggerAppConstants();
         }
       });
@@ -456,6 +452,6 @@ class AppController {
 }
 
 appModule.component('app', {
-  controller: ['$scope', '$rootScope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', 'appService', AppController],
+  controller: ['$scope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', 'appService', AppController],
   templateUrl: 'angularjs/app/app.component.html'
 });

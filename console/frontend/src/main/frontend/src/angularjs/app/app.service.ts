@@ -169,20 +169,17 @@ export class AppService {
 
 	updateAdapters(adapters: Record<string, Adapter>) {
     this.adapters = adapters;
-    // this.$rootScope.$broadcast('adapters', adapters);
     this.adaptersSubject.next(adapters);
   }
 
 	updateAlerts(alerts: Alert[]) {
     this.alerts = alerts;
-    // this.$rootScope.$broadcast('alerts', alerts);
     this.alertsSubject.next(alerts);
   }
 
 	startupError: string | null = null;
   updateStartupError(startupError: string) {
     this.startupError = startupError;
-    // this.$rootScope.$broadcast('startupError', startupError);
     this.startupErrorSubject.next(startupError);
   }
 
@@ -197,35 +194,30 @@ export class AppService {
         updatedConfigurations.push(config);
     }
     this.configurations = updatedConfigurations;
-    // this.$rootScope.$broadcast('configurations', updatedConfigurations);
     this.configurationsSubject.next(updatedConfigurations);
   }
 
 	messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>) {
     this.messageLog = messageLog;
-    // this.$rootScope.$broadcast('messageLog', messageLog);
     this.messageLogSubject.next(messageLog);
   }
 
 	instanceName = "";
 	updateInstanceName(instanceName: string) {
     this.instanceName = instanceName;
-    // this.$rootScope.$broadcast('instanceName', instanceName);
     this.instanceNameSubject.next(instanceName);
   }
 
 	dtapStage = "";
   updateDtapStage(dtapStage: string) {
     this.dtapStage = dtapStage;
-    // this.$rootScope.$broadcast('dtapStage', dtapStage);
     this.dtapStageSubject.next(dtapStage);
   }
 
 	databaseSchedulesEnabled = false;
 	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
-    // this.$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
     this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
   }
 
@@ -283,7 +275,6 @@ export class AppService {
     this.receiverSummary = receiverSummary;
     this.messageSummary = messageSummary;
     this.lastUpdated = updated;
-    // this.$rootScope.$broadcast('summaries');
     this.summariesSubject.next();
   };
 

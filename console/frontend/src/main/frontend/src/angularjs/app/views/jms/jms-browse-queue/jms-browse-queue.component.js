@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const JmsBrowseQueueController = function ($scope, Api, Cookies) {
+const JmsBrowseQueueController = function (Api, Cookies) {
     const ctrl = this;
 
     ctrl.destinationTypes = ["QUEUE", "TOPIC"];
@@ -59,6 +59,6 @@ const JmsBrowseQueueController = function ($scope, Api, Cookies) {
 };
 
 appModule.component('jmsBrowseQueue', {
-    controller: ['$scope', 'Api', 'Cookies', JmsBrowseQueueController],
+    controller: ['Api', 'Cookies', JmsBrowseQueueController],
     templateUrl: 'js/app/views/jms/jms-browse-queue/jms-browse-queue.component.html'
 });

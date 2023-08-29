@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const NotificationsController = function ($scope, Api, $stateParams, Hooks, Notification) {
+const NotificationsController = function ($stateParams, Hooks, Notification) {
     const ctrl = this;
 
     ctrl.$onInit = function () {
@@ -9,7 +9,7 @@ const NotificationsController = function ($scope, Api, $stateParams, Hooks, Noti
         } else {
             ctrl.text = ("Showing a list with all notifications!");
         }
-    
+
         Hooks.register("adapterUpdated:2", function (adapter) {
             console.warn("What is the scope of: ", adapter);
         });
@@ -17,6 +17,6 @@ const NotificationsController = function ($scope, Api, $stateParams, Hooks, Noti
 };
 
 appModule.component('notifications', {
-    controller: ['$scope', 'Api', '$stateParams', 'Hooks', 'Notification', NotificationsController],
+    controller: ['$stateParams', 'Hooks', 'Notification', NotificationsController],
     templateUrl: 'js/app/views/notifications/notifications.component.html'
 });

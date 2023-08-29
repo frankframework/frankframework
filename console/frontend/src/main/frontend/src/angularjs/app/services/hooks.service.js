@@ -3,7 +3,6 @@ import { appModule } from "../app.module";
 appModule.service('Hooks', ['$rootScope', '$timeout', function ($rootScope, $timeout) {
 	this.call = function () {
 		$rootScope.callHook.apply(this, arguments);
-		//$rootScope.$broadcast.apply(this, arguments);
 	};
 	this.register = function () {
 		$rootScope.registerHook.apply(this, arguments);

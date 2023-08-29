@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const ConfigurationsShowController = function ($scope, Api, $state, $location, $rootScope, appService) {
+const ConfigurationsShowController = function (Api, $state, $location, appService) {
 	const ctrl = this;
 
 	ctrl.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
@@ -64,6 +64,6 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 };
 
 appModule.component('configurationsShow', {
-	controller: ['$scope', 'Api', '$state', '$location', '$rootScope', 'appService', ConfigurationsShowController],
+	controller: ['Api', '$state', '$location', 'appService', ConfigurationsShowController],
 	templateUrl: 'js/app/views/configurations/configurations-show/configurations-show.component.html',
 });

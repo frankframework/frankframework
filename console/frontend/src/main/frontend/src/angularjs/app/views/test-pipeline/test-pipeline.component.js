@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const TestPipelineController = function ($scope, Api, Alert, $rootScope, appService) {
+const TestPipelineController = function (Api, appService) {
   const ctrl = this;
 
   ctrl.state = [];
@@ -113,6 +113,6 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
 };
 
 appModule.component('testPipeline', {
-  controller: ['$scope', 'Api', 'Alert', '$rootScope', 'appService', TestPipelineController],
+  controller: ['Api', 'appService', TestPipelineController],
   templateUrl: 'js/app/views/test-pipeline/test-pipeline.component.html'
 });
