@@ -165,7 +165,7 @@ public class ParameterValue {
 			return null;
 		}
 		try {
-			LOG.debug("rendering Parameter ["+getDefinition().getName()+"] value ["+value+"] as Collection");
+			LOG.debug("rendering Parameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
