@@ -12,55 +12,55 @@ import { SessionService } from "src/angularjs/app/services/session.service";
 import { SweetAlertService } from "src/angularjs/app/services/sweetalert.service";
 import { ToastrService } from "src/angularjs/app/services/toastr.service";
 
-export function alertServiceFactory($injector: any) {
+export function alertServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Alert');
 }
 
-export function apiServiceFactory($injector: any) {
+export function apiServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Api');
 }
 
-export function authServiceFactory($injector: any) {
+export function authServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('authService');
 }
 
-export function base64ServiceFactory($injector: any) {
+export function base64ServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Base64');
 }
 
-export function cookiesServiceFactory($injector: any) {
+export function cookiesServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Cookies');
 }
 
-export function debugServiceFactory($injector: any) {
+export function debugServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Debug');
 }
 
-export function gdprServiceFactory($injector: any) {
+export function gdprServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('GDPR');
 }
 
-export function miscServiceFactory($injector: any) {
+export function miscServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Misc');
 }
 
-export function notificationServiceFactory($injector: any) {
+export function notificationServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Notification');
 }
 
-export function pollerServiceFactory($injector: any) {
+export function pollerServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Poller');
 }
 
-export function sessionServiceFactory($injector: any) {
+export function sessionServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Session');
 }
 
-export function sweetalertServiceFactory($injector: any) {
+export function sweetalertServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('SweetAlert');
 }
 
-export function toastrServiceFactory($injector: any) {
+export function toastrServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Toastr');
 }
 
