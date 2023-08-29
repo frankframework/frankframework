@@ -215,7 +215,7 @@ public abstract class ClassUtils {
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			if(log.isDebugEnabled()) log.debug("trying to set method ["+method.getName()+"] with value ["+valueToSet+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(bean)+"]");
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, ()->valueToSet, ()->castValue.getClass().getCanonicalName(), ()->ClassUtils.nameOf(bean));
 
 			method.invoke(bean, castValue);
 		} catch (IllegalAccessException | InvocationTargetException e) {
