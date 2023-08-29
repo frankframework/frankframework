@@ -90,12 +90,11 @@ public class CorsFilter implements Filter {
 
 				// Allow caching cross-domain permission
 				response.setHeader("Access-Control-Max-Age", "3600");
-			}
-			else {
+			} else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
 				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+originHeader+"] but was blocked due to CORS restrictions");
 				log.warn("blocked request with origin [{}]", originHeader);
-				response.setStatus(500);
+				response.setStatus(400);
 				return; //actually block the request
 			}
 			//If we pass one of the valid domains, it can be used to spoof the connection

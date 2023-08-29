@@ -11,7 +11,8 @@ import java.util.Properties;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -42,14 +43,15 @@ public class CorsFilterTest {
 		return filter;
 	}
 
-	@Test
-	public void testCorsDisabled() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsDisabled(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "false");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
 
@@ -61,15 +63,16 @@ public class CorsFilterTest {
 		assertEquals(0, response.getHeaderNames().size(), "no cors origin, so no response headers");
 	}
 
-	@Test
-	public void testCorsFilterWithoutOrigin() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsFilterWithoutOrigin(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
 
@@ -81,15 +84,16 @@ public class CorsFilterTest {
 		assertEquals(0, response.getHeaderNames().size(), "no cors origin, so no response headers");
 	}
 
-	@Test
-	public void testCorsFilterWithOrigin() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsFilterWithOrigin(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		request.addHeader("Origin", "https://tornado.shrimp.com");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
@@ -102,15 +106,16 @@ public class CorsFilterTest {
 		assertEquals(0, response.getHeaderNames().size(), "no valid cors, so request aborted");
 	}
 
-	@Test
-	public void testCorsFilterWithMultipleAllowedOrigins() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsFilterWithMultipleAllowedOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345,http://torpedo.schrim.com,https://foo.bar/");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		request.addHeader("Origin", "http://torpedo.schrim.com");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
@@ -123,15 +128,16 @@ public class CorsFilterTest {
 		assertEquals(4, response.getHeaderNames().size(), "cors passed, so cors headers should be set");
 	}
 
-	@Test
-	public void testCorsWildcardOrigins() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsWildcardOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "https://domain.com:2345,http://*.schrim.com");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		request.addHeader("Origin", "http://torpedo.schrim.com");
 		request.addHeader("Access-Control-Request-Headers", "Allow");
 		MockHttpServletResponse response = new MockHttpServletResponse();
@@ -145,15 +151,16 @@ public class CorsFilterTest {
 		assertEquals(5, response.getHeaderNames().size(), "cors passed, so cors headers should be set");
 	}
 
-	@Test
-	public void testCorsWildcardOriginsAndPort() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsWildcardOriginsAndPort(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "http://*.schrim.com:2345");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		request.addHeader("Origin", "http://torpedo.schrim.com:2345");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
@@ -166,15 +173,16 @@ public class CorsFilterTest {
 		assertEquals(4, response.getHeaderNames().size(), "cors passed, so cors headers should be set");
 	}
 
-	@Test
-	public void testCorsAllOrigins() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testCorsAllOrigins(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
 		properties.setProperty("iaf-api.cors.allowOrigin", "*");
 		CorsFilter filter = createFilter(properties);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
+		MockHttpServletRequest request = new MockHttpServletRequest(method, "/dummy");
 		request.addHeader("Origin", "http://torpedo.schrim.com:2345");
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
@@ -187,8 +195,9 @@ public class CorsFilterTest {
 		assertEquals(4, response.getHeaderNames().size(), "cors passed, so cors headers should be set");
 	}
 
-	@Test
-	public void testOptionsRequest() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {"GET", "PUT", "POST"})
+	public void testOptionsRequest(String method) throws Exception {
 		// Arrange
 		Properties properties = new Properties();
 		properties.setProperty("iaf-api.cors.enforced", "true");
@@ -197,7 +206,7 @@ public class CorsFilterTest {
 
 		MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/dummy");
 		request.addHeader("Origin", "http://torpedo.schrim.com:2345");
-		request.addHeader("Access-Control-Request-Method", "GET");
+		request.addHeader("Access-Control-Request-Method", method);
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
 
