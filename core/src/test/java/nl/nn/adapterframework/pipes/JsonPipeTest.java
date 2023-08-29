@@ -146,7 +146,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Test
 	public void testXmlArray2JsonWithVersion() throws Exception {
-		pipe.setVersion("2");
+		pipe.setVersion("1");
 		pipe.setDirection(Direction.XML2JSON);
 		pipe.configure();
 		pipe.start();

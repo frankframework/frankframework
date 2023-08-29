@@ -151,7 +151,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	@Deprecated
 	public void setVersion(String version) {
-		if("2".equals(version)) {
+		if("1".equals(version)) {
 			setAddXmlRootElement(true);
 		}
 	}
