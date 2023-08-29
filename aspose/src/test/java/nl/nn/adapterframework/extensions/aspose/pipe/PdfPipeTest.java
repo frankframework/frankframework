@@ -129,12 +129,24 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			//remove Aspose evaluation copy information
 			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
 			pdfUtil.enableLog();
+			pdfUtil.highlightPdfDifference(true);
+			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
 			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
 			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
 		}
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
 		}
+	}
+
+	// Use surefire folder which is preserved by GitHub Actions
+	private static String getTargetTestDirectory() throws IOException {
+		File targetFolder = new File(".", "target");
+		File sftpTestFS = new File(targetFolder.getCanonicalPath(), "surefire-reports");
+		sftpTestFS.mkdir();
+		assertTrue(sftpTestFS.exists());
+
+		return sftpTestFS.getAbsolutePath();
 	}
 
 	public void expectUnsuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
