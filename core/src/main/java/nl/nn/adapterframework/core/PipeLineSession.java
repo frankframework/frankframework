@@ -27,13 +27,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
-	private final Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
 	public static final String ORIGINAL_MESSAGE_KEY = "originalMessage";
 	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
@@ -331,16 +331,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public void close() {
-		log.debug("Closing PipeLineSession");
+		LOG.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
 			Iterator<Entry<AutoCloseable, String>> it = closeables.entrySet().iterator();
 			Entry<AutoCloseable, String> entry = it.next();
 			AutoCloseable closeable = entry.getKey();
 			try {
-				log.info("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
+				LOG.debug("messageId [{}] auto closing resource [{}]", getMessageId(), entry.getValue());
 				closeable.close();
 			} catch (Exception e) {
-				log.warn("Exception closing resource", e);
+				LOG.warn("Exception closing resource, messageId [" + getMessageId() + "], resource [" + entry.getKey() + "] " + entry.getValue(), e);
 			} finally {
 				closeables.remove(closeable);
 			}

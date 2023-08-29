@@ -34,6 +34,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -57,7 +58,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -101,8 +101,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
 public class Parameter implements IConfigurable, IWithParameters {
-	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private static final Logger LOG = LogManager.getLogger(Parameter.class);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
@@ -297,7 +297,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
 		}
 		if(getType()==null) {
-			log.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");
+			LOG.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");
 			setType(ParameterType.STRING);
 		}
 		if(StringUtils.isEmpty(getFormatString())) {
@@ -408,7 +408,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	 */
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
-		if (log.isDebugEnabled()) log.debug("Calculating value for Parameter ["+getName()+"]");
+		if (LOG.isDebugEnabled()) LOG.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
@@ -469,19 +469,19 @@ public class Parameter implements IConfigurable, IWithParameters {
 							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
 						}
 						if (!sourceMsg.isEmpty()) {
-							if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
+							if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
 							source = sourceMsg.asSource();
 						} else {
-							if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
+							if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
 						}
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
 					String sourceString = formatPattern(alreadyResolvedParameters, session);
 					if (StringUtils.isNotEmpty(sourceString)) {
-						if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
+						if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
 					} else {
-						if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
+						if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
 				} else {
 					if (StringUtils.isNotEmpty(getContextKey())) {
@@ -527,10 +527,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (result instanceof Message && StringUtils.isNotEmpty(getContextKey())) {
 					result = ((Message)result).getContext().get(getContextKey());
 				}
-				if (log.isDebugEnabled() && (result==null ||
+				if (LOG.isDebugEnabled() && (result==null ||
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty())) {
-						log.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
+						LOG.debug("Parameter ["+getName()+"] session variable ["+requestedSessionKey+"] is empty");
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=formatPattern(alreadyResolvedParameters, session);
@@ -561,7 +561,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (result != null && !"".equals(result)) {
-			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
+			if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] resolved to ["+(isHidden() ? hide(result.toString()) : result)+"]");
 		} else {
 			// if result is empty then return specified default value
 			Object valueByDefault=null;
@@ -595,19 +595,19 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 			if (valueByDefault!=null) {
 				result = valueByDefault;
-				log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(result.toString()):result)+"]");
+				LOG.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden() ? hide(result.toString()) : result)+"]");
 			}
 		}
 		if (result instanceof String) {
 			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
 				if (((String)result).length()<getMinLength()) {
-					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] falls short of minLength ["+getMinLength()+"]" );
+					LOG.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] falls short of minLength ["+getMinLength()+"]" );
 					result = StringUtils.rightPad(((String)result), getMinLength());
 				}
 			}
 			if (getMaxLength()>=0) {
 				if (((String)result).length()>getMaxLength()) {
-					log.debug("Trimming parameter ["+getName()+"] because length ["+((String)result).length()+"] exceeds maxLength ["+getMaxLength()+"]" );
+					LOG.debug("Trimming parameter ["+getName()+"] because length ["+((String)result).length()+"] exceeds maxLength ["+getMaxLength()+"]" );
 					result = ((String)result).substring(0, getMaxLength());
 				}
 			}
@@ -617,16 +617,16 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		if (result instanceof Number) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
-				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusiveString()+"]" );
+				LOG.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusiveString()+"]" );
 				result = minInclusive;
 			}
 			if (getMaxInclusiveString()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
-				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusiveString()+"]" );
+				LOG.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusiveString()+"]" );
 				result = maxInclusive;
 			}
 		}
 		if (getType()==ParameterType.NUMBER && getMinLength()>=0 && (result+"").length()<getMinLength()) {
-			log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+			LOG.debug("Adding leading zeros to parameter ["+getName()+"]" );
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
 		return result;
@@ -651,7 +651,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 							return requestObject;
 						}
 						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
-						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+						if (LOG.isDebugEnabled()) LOG.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
 					}
@@ -665,7 +665,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 							return requestObject;
 						}
 						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
-						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+						if (LOG.isDebugEnabled()) LOG.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 					}
@@ -677,7 +677,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if(requestObject instanceof Date) {
 						return requestObject;
 					}
-					if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to Date using formatString ["+getFormatString()+"]" );
+					if (LOG.isDebugEnabled()) LOG.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to Date using formatString ["+getFormatString()+"]" );
 					DateFormat df = new SimpleDateFormat(getFormatString());
 					try {
 						result = df.parseObject(requestMessage.asString());
@@ -689,14 +689,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if(requestObject instanceof Date) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] from XML dateTime to Date" );
+					LOG.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] from XML dateTime to Date" );
 					result = DateUtils.parseXmlDateTime(requestMessage.asString());
 					break;
 				case NUMBER:
 					if(requestObject instanceof Number) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+					LOG.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
 					try {
@@ -710,7 +710,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if(requestObject instanceof Integer) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to integer" );
+					LOG.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to integer" );
 					try {
 						Integer i = Integer.parseInt(requestMessage.asString());
 						result = i;
@@ -722,7 +722,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if(requestObject instanceof Boolean) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to boolean" );
+					LOG.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to boolean" );
 					Boolean i = Boolean.parseBoolean(requestMessage.asString());
 					result = i;
 					break;

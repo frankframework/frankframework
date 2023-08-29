@@ -18,6 +18,7 @@ package nl.nn.adapterframework.parameters;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,15 +26,14 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
- * 
- * 
+ *
+ *
  * @author John Dekker
  */
 public class ParameterValue {
-	protected Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogManager.getLogger(ParameterValue.class);
 
 	private Object value;
 	private Parameter definition;
@@ -165,7 +165,7 @@ public class ParameterValue {
 			return null;
 		}
 		try {
-			log.debug("rendering Parameter ["+getDefinition().getName()+"] value ["+value+"] as Collection");
+			LOG.debug("rendering Parameter ["+getDefinition().getName()+"] value ["+value+"] as Collection");
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
