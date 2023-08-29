@@ -408,7 +408,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	 */
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
-		if (LOG.isDebugEnabled()) LOG.debug("Calculating value for Parameter ["+getName()+"]");
+		LOG.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
