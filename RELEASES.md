@@ -21,6 +21,7 @@ Upcoming (7.8)
   - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
   - default array element containers are '<item>' instead of '<array>'
   - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+  - The attribute addXmlRootElement now also allows XML root elements to be used when converting to JSON
 - MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained
   by setting defaultValueMethod="input".
