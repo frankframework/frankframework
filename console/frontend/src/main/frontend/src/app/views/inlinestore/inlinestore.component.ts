@@ -1,4 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 
 @Component({
@@ -8,12 +9,12 @@ import { ApiService } from 'src/angularjs/app/services/api.service';
 })
 export class InlinestoreComponent implements OnInit {
   result: any;
-  getProcessStateIcon?: "fa-server" | "fa-gears" | "fa-sign-in" | "fa-pause-circle" | "fa-times-circle";
-  getProcessStateIconColor?: "success" | "warning" | "danger";
+  getProcessStateIcon?: (processState: string) => "fa-server" | "fa-gears" | "fa-sign-in" | "fa-pause-circle" | "fa-times-circle";
+  getProcessStateIconColor?: (processState: string) => "success" | "warning" | "danger";
 
   constructor(
-    @Inject("apiService") private apiService: ApiService,
-    @Inject("appService") private appService: any,
+    private apiService: ApiService,
+    private appService: AppService,
   ) { };
 
   ngOnInit(): void {
@@ -21,7 +22,7 @@ export class InlinestoreComponent implements OnInit {
       this.result = data;
     });
 
-    this.getProcessStateIcon = this.appService["getProcessStateIconColor"];
+    this.getProcessStateIcon = this.appService["getProcessStateIcon"];
     this.getProcessStateIconColor = this.appService["getProcessStateIconColor"];
   };
 }
