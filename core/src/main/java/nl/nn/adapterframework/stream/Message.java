@@ -51,6 +51,7 @@ import javax.xml.transform.dom.DOMSource;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 import org.w3c.dom.Node;
@@ -66,7 +67,6 @@ import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamCaptureUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -78,7 +78,7 @@ public class Message implements Serializable, Closeable {
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
 
-	protected transient Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final long serialVersionUID = 437863352486501445L;
 
@@ -272,12 +272,12 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		if (request instanceof Reader) {
-			log.debug("preserving Reader {} as String", this::getObjectId);
+			LOG.debug("preserving Reader {} as String", this::getObjectId);
 			request = StreamUtil.readerToString((Reader) request, null);
 			return;
 		}
 		if (request instanceof InputStream) {
-			log.debug("preserving InputStream {} as byte[]", this::getObjectId);
+			LOG.debug("preserving InputStream {} as byte[]", this::getObjectId);
 			request = StreamUtil.streamToByteArray((InputStream) request, false);
 			return;
 		}
@@ -285,10 +285,10 @@ public class Message implements Serializable, Closeable {
 		// otherwise we rely on that File and URL can be repeatedly read
 		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
 			if (isBinary()) {
-				log.debug("deep preserving {} as byte[]", this::getObjectId);
+				LOG.debug("deep preserving {} as byte[]", this::getObjectId);
 				request = asByteArray();
 			} else {
-				log.debug("deep preserving {} as String", this::getObjectId);
+				LOG.debug("deep preserving {} as String", this::getObjectId);
 				request = asString();
 			}
 		}
@@ -305,10 +305,10 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		if (request instanceof Reader) {
-			log.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
+			LOG.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
 			request = SerializableFileReference.of((Reader) request, computeDecodingCharset(getCharset()));
 		} else if (request instanceof InputStream) {
-			log.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
+			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
 			request = SerializableFileReference.of((InputStream) request);
 		} else if (request instanceof String) {
 			request = SerializableFileReference.of((String) request, computeDecodingCharset(getCharset()));
@@ -316,10 +316,10 @@ public class Message implements Serializable, Closeable {
 			request = SerializableFileReference.of((byte[]) request);
 		} else if (deepPreserve) {
 			if (isBinary()) {
-				log.debug("preserving {} as SerializableFileReference", this::getObjectId);
+				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
 				request = SerializableFileReference.of(asInputStream());
 			} else {
-				log.debug("preserving {} as SerializableFileReference", this::getObjectId);
+				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
 				request = SerializableFileReference.of(asReader(), computeDecodingCharset(getCharset()));
 			}
 		}
@@ -360,7 +360,7 @@ public class Message implements Serializable, Closeable {
 				try {
 					((AutoCloseable) request).close();
 				} catch (Exception e) {
-					log.warn("Could not close request", e);
+					LOG.warn("Could not close request", e);
 				}
 				request = null;
 			}
@@ -370,7 +370,7 @@ public class Message implements Serializable, Closeable {
 					try {
 						r.close();
 					} catch (Exception e) {
-						log.warn("Could not close resource", e);
+						LOG.warn("Could not close resource", e);
 					}
 				});
 			}
@@ -392,16 +392,16 @@ public class Message implements Serializable, Closeable {
 		if (this.request == null || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
-		log.debug("registering Message [{}] for close on exit", this);
+		LOG.debug("registering Message [{}] for close on exit", this);
 		if (request instanceof InputStream) {
 			request = StreamUtil.onClose((InputStream) request, () -> {
-				log.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
+				LOG.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
 		if (request instanceof Reader) {
 			request = StreamUtil.onClose((Reader) request, () -> {
-				log.debug("closed Reader and unregistering Message [{}] from close on exit", this);
+				LOG.debug("closed Reader and unregistering Message [{}] from close on exit", this);
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
@@ -438,17 +438,17 @@ public class Message implements Serializable, Closeable {
 			return null;
 		}
 		if (request instanceof Reader) {
-			log.debug("returning Reader {} as Reader", this::getObjectId);
+			LOG.debug("returning Reader {} as Reader", this::getObjectId);
 			return (Reader) request;
 		}
 		if (request instanceof SerializableFileReference && !((SerializableFileReference)request).isBinary()) {
-			log.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
+			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
 			return ((SerializableFileReference)request).getReader();
 		}
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); //Don't overwrite the Message's charset unless it's set to AUTO
 
-			log.debug("returning InputStream {} as Reader", this::getObjectId);
+			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
@@ -461,10 +461,10 @@ public class Message implements Serializable, Closeable {
 			}
 		}
 		if (request instanceof Node) {
-			log.debug("returning Node {} as Reader", this::getObjectId);
+			LOG.debug("returning Node {} as Reader", this::getObjectId);
 			return new StringReader(Objects.requireNonNull(asString()));
 		}
-		log.debug("returning String {} as Reader", this::getObjectId);
+		LOG.debug("returning String {} as Reader", this::getObjectId);
 		return new StringReader(request.toString());
 	}
 
@@ -486,31 +486,31 @@ public class Message implements Serializable, Closeable {
 				return null;
 			}
 			if (request instanceof InputStream) {
-				log.debug("returning InputStream {} as InputStream", this::getObjectId);
+				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
 				return (InputStream) request;
 			}
 			if (request instanceof SerializableFileReference) {
-				log.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
+				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
 				return ((SerializableFileReference)request).getInputStream();
 			}
 			if (request instanceof ThrowingSupplier) {
-				log.debug("returning InputStream {} from supplier", this::getObjectId);
+				LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 				return ((ThrowingSupplier<InputStream, Exception>) request).get();
 			}
 			if (request instanceof byte[]) {
-				log.debug("returning byte[] {} as InputStream", this::getObjectId);
+				LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
 				return new ByteArrayInputStream((byte[]) request);
 			}
 			if (request instanceof Node) {
-				log.debug("returning Node {} as InputStream", this::getObjectId);
+				LOG.debug("returning Node {} as InputStream", this::getObjectId);
 				return new ByteArrayInputStream(asByteArray());
 			}
 			String charset = getEncodingCharset(defaultEncodingCharset);
 			if (request instanceof Reader) {
-				log.debug("returning Reader {} as InputStream", this::getObjectId);
+				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
 				return new ReaderInputStream((Reader) request, charset);
 			}
-			log.debug("returning String {} as InputStream", this::getObjectId);
+			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
 			onExceptionClose(e);
@@ -634,18 +634,18 @@ public class Message implements Serializable, Closeable {
 			return null;
 		}
 		if (request instanceof InputSource) {
-			log.debug("returning InputSource {} as InputSource", this::getObjectId);
+			LOG.debug("returning InputSource {} as InputSource", this::getObjectId);
 			return (InputSource) request;
 		}
 		if (request instanceof Reader) {
-			log.debug("returning Reader {} as InputSource", this::getObjectId);
+			LOG.debug("returning Reader {} as InputSource", this::getObjectId);
 			return new InputSource((Reader) request);
 		}
 		if (request instanceof String) {
-			log.debug("returning String {} as InputSource", this::getObjectId);
+			LOG.debug("returning String {} as InputSource", this::getObjectId);
 			return new InputSource(new StringReader((String) request));
 		}
-		log.debug("returning {} as InputSource", this::getObjectId);
+		LOG.debug("returning {} as InputSource", this::getObjectId);
 		if (isBinary()) {
 			return new InputSource(asInputStream());
 		}
@@ -661,14 +661,14 @@ public class Message implements Serializable, Closeable {
 			return null;
 		}
 		if (request instanceof Source) {
-			log.debug("returning Source {} as Source", this::getObjectId);
+			LOG.debug("returning Source {} as Source", this::getObjectId);
 			return (Source) request;
 		}
 		if (request instanceof Node) {
-			log.debug("returning Node {} as DOMSource", this::getObjectId);
+			LOG.debug("returning Node {} as DOMSource", this::getObjectId);
 			return new DOMSource((Node) request);
 		}
-		log.debug("returning {} as Source", this::getObjectId);
+		LOG.debug("returning {} as Source", this::getObjectId);
 		return XmlUtils.inputSourceToSAXSource(asInputSource());
 	}
 
@@ -690,7 +690,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Node) {
 			try {
-				log.warn("returning Node {} as byte[]; consider to avoid using Node or Document here to reduce memory footprint", this::getObjectId);
+				LOG.warn("returning Node {} as byte[]; consider to avoid using Node or Document here to reduce memory footprint", this::getObjectId);
 				return XmlUtils.nodeToByteArray((Node) request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
@@ -701,7 +701,7 @@ public class Message implements Serializable, Closeable {
 			return ((String) request).getBytes(charset);
 		}
 		if (request instanceof ThrowingSupplier) { // asInputStream handles the exception and cast for us.
-			log.debug("returning InputStream {} from supplier", this::getObjectId);
+			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 			return StreamUtil.streamToByteArray(asInputStream(), false, (int) size() + 32);
 		}
 		// save the generated byte array as the request before returning it
@@ -728,7 +728,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Node) {
 			try {
-				log.warn("returning Node {} as String; consider to avoid using Node or Document here to reduce memory footprint", this::getObjectId);
+				LOG.warn("returning Node {} as String; consider to avoid using Node or Document here to reduce memory footprint", this::getObjectId);
 				return XmlUtils.nodeToString((Node) request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
@@ -759,7 +759,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
-		if (context.isEmpty() || !log.isDebugEnabled()) {
+		if (context.isEmpty() || !LOG.isDebugEnabled()) {
 			return;
 		}
 		writer.append("context:\n");
@@ -940,8 +940,6 @@ public class Message implements Serializable, Closeable {
 	 * this method is used by Serializable, to deserialize objects from a stream.
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		log = LogUtil.getLogger(this);
-
 		String charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {
@@ -957,7 +955,7 @@ public class Message implements Serializable, Closeable {
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
-			log.warn("Could not read requestClass, using ClassUtils.nameOf(request) [" + requestClass + "], (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
+			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [" + requestClass + "], (" + ClassUtils.nameOf(e) + "): " + e.getMessage());
 		}
 
 		context = new MessageContext().withCharset(charset);
@@ -994,13 +992,13 @@ public class Message implements Serializable, Closeable {
 				FileInputStream fileStream = (FileInputStream) request;
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
-				log.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
+				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) ()->ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
 			}
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
-			log.debug("unable to determine size of Message [{}]", ()->ClassUtils.nameOf(request));
+			LOG.debug("unable to determine size of Message [{}]", ()->ClassUtils.nameOf(request));
 		}
 
 		return MESSAGE_SIZE_UNKNOWN;
@@ -1021,9 +1019,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
-		log.debug("creating capture of {}", ClassUtils.nameOf(request));
+		LOG.debug("creating capture of {}", ClassUtils.nameOf(request));
 		if (isRepeatable()) {
-			log.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
+			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (isBinary()) {
 			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize, true);
@@ -1051,9 +1049,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		log.debug("creating capture of {}", ()->ClassUtils.nameOf(request));
+		LOG.debug("creating capture of {}", ()->ClassUtils.nameOf(request));
 		if (isRepeatable()) {
-			log.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
+			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
 		}
 		if (!isBinary()) {
 			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize, true);
