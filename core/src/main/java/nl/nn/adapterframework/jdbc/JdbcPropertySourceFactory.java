@@ -36,6 +36,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * TODO use PropertySources (PropertiesPropertySource)
  */
 public class JdbcPropertySourceFactory implements ApplicationContextAware {
+	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	private @Setter ApplicationContext applicationContext;
 	private Logger log = LogUtil.getLogger(this);
 

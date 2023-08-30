@@ -54,7 +54,6 @@ public final class AppConstants extends Properties implements Serializable {
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
-	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
 
 	private static final Properties additionalProperties = new Properties();
@@ -95,17 +94,12 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @param cl ClassLoader to retrieve AppConstants from
 	 * @return AppConstants instance
 	 */
-	public static synchronized AppConstants getInstance(final ClassLoader cl) {
-		if(cl == null) {
+	public static synchronized AppConstants getInstance(final ClassLoader classLoader) {
+		if(classLoader == null) {
 			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
 		}
 
-		AppConstants instance = appConstantsMap.get(cl);
-		if(instance == null) {
-			instance = new AppConstants(cl);
-			appConstantsMap.put(cl, instance);
-		}
-		return instance;
+		return appConstantsMap.computeIfAbsent(classLoader, AppConstants::new);
 	}
 
 	public static void removeInstance() {
