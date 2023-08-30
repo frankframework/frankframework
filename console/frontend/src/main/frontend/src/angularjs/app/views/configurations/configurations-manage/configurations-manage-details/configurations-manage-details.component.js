@@ -1,6 +1,6 @@
 import { appModule } from "../../../../app.module";
 
-const ConfigurationsManageDetailsController = function ($scope, $state, Api, Debug, Misc, $interval, SweetAlert, Toastr) {
+const ConfigurationsManageDetailsController = function ($state, Api, Misc, $interval, SweetAlert, Toastr) {
 	const ctrl = this;
 
 	ctrl.loading = false;
@@ -82,6 +82,6 @@ const ConfigurationsManageDetailsController = function ($scope, $state, Api, Deb
 }
 
 appModule.component('configurationsManageDetails', {
-	controller: ['$scope', '$state', 'Api', 'Debug', 'Misc', '$interval', 'SweetAlert', 'Toastr', ConfigurationsManageDetailsController],
+	controller: ['$state', 'Api', 'Misc', '$interval', 'SweetAlert', 'Toastr', ConfigurationsManageDetailsController],
 	templateUrl: "js/app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component.html",
 });

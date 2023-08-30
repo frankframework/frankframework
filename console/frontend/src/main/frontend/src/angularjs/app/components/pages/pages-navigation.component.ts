@@ -1,8 +1,10 @@
+import { StateService } from "@uirouter/angularjs";
 import { appModule } from "../../app.module";
 
-const PagesNavigationController = function ($state) {
-	const ctrl = this;
-	ctrl.$state = $state;
+class PagesNavigationController {
+  constructor(private $state: StateService){
+    this.$state = $state; // not really needed, just to make sure nothing breaks
+  }
 }
 
 appModule.component('pagesNavigation', {

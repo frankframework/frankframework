@@ -1,10 +1,9 @@
-import { ApiService } from "src/app/services.types";
 import { appModule } from "../../app.module";
 import { StateService } from "@uirouter/angularjs";
+import { ApiService } from "../../services/api.service";
 
 class LoadingController {
   constructor(
-    private $scope: angular.IScope,
     private Api: ApiService,
     private $state: StateService
   ) { }
@@ -25,6 +24,6 @@ class LoadingController {
 };
 
 appModule.component('loading', {
-  controller: ['$scope', 'Api', '$state', LoadingController],
+  controller: ['Api', '$state', LoadingController],
   templateUrl: 'angularjs/app/views/loading/loading.component.html'
 });

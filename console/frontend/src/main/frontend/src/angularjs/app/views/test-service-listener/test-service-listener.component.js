@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const TestServiceListenerController = function ($scope, Api, Alert) {
+const TestServiceListenerController = function (Api) {
     const ctrl = this;
 
     ctrl.state = [];
@@ -61,6 +61,6 @@ const TestServiceListenerController = function ($scope, Api, Alert) {
 };
 
 appModule.component('testServiceListener', {
-    controller: ['$scope', 'Api', 'Alert', TestServiceListenerController],
+    controller: ['Api', TestServiceListenerController],
     templateUrl: 'js/app/views/test-service-listener/test-service-listener.component.html'
 });

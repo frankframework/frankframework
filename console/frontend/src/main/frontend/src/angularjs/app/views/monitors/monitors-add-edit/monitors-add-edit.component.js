@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const MonitorsAddEditController = function ($scope, Api, $state) {
+const MonitorsAddEditController = function (appService, Api, $state) {
 	const ctrl = this;
 	ctrl.loading = true;
 	ctrl.$state = $state;
@@ -17,9 +17,7 @@ const MonitorsAddEditController = function ($scope, Api, $state) {
 	}
 
 	ctrl.$onInit = function () {
-		$scope.$on('loading', function () {
-			ctrl.loading = false;
-		});
+    appService.loading$.subcribe(_ => ctrl.loading = false);
 
 		if ($state.params.configuration == "" || $state.params.monitor == "") {
 			$state.go('pages.monitors');
@@ -114,6 +112,6 @@ const MonitorsAddEditController = function ($scope, Api, $state) {
 };
 
 appModule.component('monitorsAddEdit', {
-	controller: ['$scope', 'Api', '$state', MonitorsAddEditController],
+	controller: ['appService', 'Api', '$state', MonitorsAddEditController],
 	templateUrl: 'js/app/views/monitors/monitors-add-edit/monitors-add-edit.component.html',
 });

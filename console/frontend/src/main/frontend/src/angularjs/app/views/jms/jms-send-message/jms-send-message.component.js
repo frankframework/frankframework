@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const JmsSendMessageController = function ($scope, Api) {
+const JmsSendMessageController = function (Api) {
     const ctrl = this;
 
     ctrl.destinationTypes = ["QUEUE", "TOPIC"];
@@ -84,6 +84,6 @@ const JmsSendMessageController = function ($scope, Api) {
 };
 
 appModule.component('jmsSendMessage', {
-    controller: ['$scope', 'Api', JmsSendMessageController],
+    controller: ['Api', JmsSendMessageController],
     templateUrl: 'js/app/views/jms/jms-send-message/jms-send-message.component.html'
 });

@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const ConnectionsController = function ($scope, Api) {
+const ConnectionsController = function (Api) {
     const ctrl = this;
 
     ctrl.dtOptions = {
@@ -53,6 +53,6 @@ const ConnectionsController = function ($scope, Api) {
 };
 
 appModule.component('connections', {
-    controller: ['$scope', 'Api', ConnectionsController],
+    controller: ['Api', ConnectionsController],
     templateUrl: 'js/app/views/connections/connections.component.html'
 });

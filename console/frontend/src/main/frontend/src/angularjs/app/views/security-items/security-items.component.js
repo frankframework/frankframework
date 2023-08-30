@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const SecurityItemsController = function ($scope, Api, $rootScope, appService) {
+const SecurityItemsController = function (Api, appService) {
     const ctrl = this;
 
     ctrl.sapSystems = [];
@@ -33,6 +33,6 @@ const SecurityItemsController = function ($scope, Api, $rootScope, appService) {
 };
 
 appModule.component('securityItems', {
-    controller: ['$scope', 'Api', '$rootScope', 'appService', SecurityItemsController],
+    controller: ['Api', 'appService', SecurityItemsController],
     templateUrl: 'js/app/views/security-items/security-items.component.html'
 });

@@ -1,4 +1,4 @@
-import { angular } from "../deps";
+import '../deps';
 
 var server: string; //Try and see if serverurl has been defined, if not try to deduct from local url;
 try {
@@ -15,7 +15,7 @@ catch (e) {
   server = path;
 }
 
-const appConstants = {
+const appConstants: AppConstants = {
   //Configure these in the server AppConstants!!!
   //The settings here are defaults and will be overwritten upon set in any .properties file.
 
@@ -40,10 +40,10 @@ const appConstants = {
   //These will automatically be updated.
   "timeOffset": 0,
   "init": -1,
-  getString: function (variable) {
+  getString: function (variable: keyof AppConstants) {
     return this[variable];
   },
-  getBoolean: function (variable, dfault) {
+  getBoolean: function (variable: keyof AppConstants, dfault: any) {
     if (this[variable] != undefined) return (this[variable] === "true");
     return dfault;
   }

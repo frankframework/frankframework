@@ -1,168 +1,316 @@
+import { StateService } from "@uirouter/angularjs";
 import { appModule } from "./app.module";
+import { Subject } from "rxjs";
 
-appModule.factory('appService', ['$rootScope', '$state', function ($rootScope, $state){
-	const service = {} as Record<string, any>;
+export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
+export type RunStateRuntime = RunState | 'loading'
+export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 
-	service["adapters"] = {};
-	service["updateAdapters"] = function (adapters) {
-		service["adapters"] = adapters;
-		$rootScope.$broadcast('adapters', adapters);
-	}
+export type Receiver = {
+  isEsbJmsFFListener: boolean,
+  name: string,
+  transactionalStores: Record<'DONE' | 'ERROR', { name: string, numberOfMessages: number }>,
+  listener: {
+    name: string,
+    destination: string,
+    class: string,
+    isRestListener: boolean
+  },
+  messages: {
+    retried: number,
+    rejected: number,
+    received: number
+  },
+  state: Lowercase<RunStateRuntime>,
+}
 
-	service["alerts"] = [];
-	service["updateAlerts"] = function(alerts){
-		service["alerts"] = alerts;
-		$rootScope.$broadcast('alerts', alerts);
-	}
+type Message = {
+  date: number,
+  level: MessageLevel,
+  message: string,
+}
 
-	service["startupError"] = null;
+export interface AdapterMessage extends Message {
+  capacity: number
+}
 
-	service["adapterSummary"] = {
-		started: 0,
-		stopped: 0,
-		starting: 0,
-		stopping: 0,
-		error: 0
-	};
-	service["receiverSummary"] = {
-		started: 0,
-		stopped: 0,
-		starting: 0,
-		stopping: 0,
-		error: 0
-	};
-	service["messageSummary"] = {
-		info: 0,
-		warn: 0,
-		error: 0
-	};
+export type Pipe = {
+  forwards: Record<'success' | 'exception', string>,
+  sender: string,
+  name: string,
+  destination: string,
+  isJdbcSender: boolean,
+  hasMessageLog?: boolean,
+  messageLogCount?: 'error' | string,
+  isSenderTransactionalStorage?: boolean
+}
 
-	service["lastUpdated"] = 0;
-	service["timeout"] = null;
+export type Adapter = {
+  configuration: string,
+  configured: boolean,
+  upSince: number,
+  name: string,
+  description: null | string,
+  started: boolean,
+  state: Lowercase<RunState>,
+  receivers?: Receiver[],
+  messages?: AdapterMessage[],
+  pipes?: Pipe[],
+  hasSender?: boolean,
+  status?: 'started' | 'warning' | 'stopped',
+  sendersMessageLogCount?: number,
+  senderTransactionalStorageMessageCount?: number,
+  receiverReachedMaxExceptions?: boolean
+}
 
-	service["configurations"] = [];
+export type Configuration = {
+  name: string,
+  stubbed: boolean,
+  state: RunState,
+  type: 'DatabaseClassLoader' | 'DirectoryClassLoader' | 'DummyClassLoader' | 'JarFileClassLoader' | 'ScanningDirectoryClassLoader' | 'WebAppClassLoader',
+  dbcMigrator: boolean
+}
 
-	service["messageLog"] = [];
-	service["updateMessageLog"] = function (messageLog) {
-		service["messageLog"] = messageLog;
-		$rootScope.$broadcast('messageLog', messageLog);
-	}
+export type Alert = {
+  link?: { name: string, '#': string },
+  type: string,
+  configuration: string,
+  message: string
+}
 
-	service["instanceName"] = "";
-	service["updateInstanceName"] = function (instanceName) {
-		service["instanceName"] = instanceName;
-		$rootScope.$broadcast('instanceName', instanceName);
-	}
+export type MessageLog = {
+  errorStoreCount: number,
+  messages: Message[],
+  messageLevel: MessageLevel,
+}
 
-	service["dtapStage"] = "";
+export type Summary = {
+  started: number,
+  stopped: number,
+  starting: number,
+  stopping: number,
+  error: number
+}
 
-	service["databaseSchedulesEnabled"] = false;
-	service["updateDatabaseSchedulesEnabled"] = function (databaseSchedulesEnabled) {
-		service["databaseSchedulesEnabled"] = databaseSchedulesEnabled;
-		$rootScope.$broadcast('databaseSchedulesEnabled', databaseSchedulesEnabled);
-	}
+export type MessageSummary = {
+  info: number,
+  warn: number,
+  error: number
+}
 
-	service["updateConfigurations"] = function (configurations) {
-		const updatedConfigurations = [] as any[];
-		for (var i in configurations) {
-			var config = configurations[i];
-			if (config.name.startsWith("IAF_"))
-				updatedConfigurations.unshift(config);
-			else
-				updatedConfigurations.push(config);
-		}
-		service["configurations"] = updatedConfigurations;
-		$rootScope.$broadcast('configurations', updatedConfigurations);
-	}
+export class AppService {
+  constructor(
+    private $state: StateService
+  ){}
 
-	service["getProcessStateIcon"] = function (processState) {
-		switch (processState) {
-			case "Available":
-				return "fa-server";
-			case "InProcess":
-				return "fa-gears";
-			case "Done":
-				return "fa-sign-in";
+  private loadingSubject = new Subject<boolean>();
+  private appConstantsSubject = new Subject<void>();
+  private adaptersSubject = new Subject<Record<string, Adapter>>();
+  private alertsSubject = new Subject<Alert[]>();
+  private startupErrorSubject = new Subject<string | null>();
+  private configurationsSubject = new Subject<Configuration[]>();
+  private messageLogSubject = new Subject<Record<string, MessageLog>>();
+  private instanceNameSubject = new Subject<string>();
+  private dtapStageSubject = new Subject<string>();
+  private databaseSchedulesEnabledSubject = new Subject<boolean>();
+  private summariesSubject = new Subject<void>();
+  private GDPRSubject = new Subject<void>();
+
+  loading$ = this.loadingSubject.asObservable();
+  appConstants$ = this.appConstantsSubject.asObservable();
+  adapters$ = this.adaptersSubject.asObservable();
+  alerts$ = this.alertsSubject.asObservable();
+  startupError$ = this.startupErrorSubject.asObservable();
+  configurations$ = this.configurationsSubject.asObservable();
+  messageLog$ = this.messageLogSubject.asObservable();
+  instanceName$ = this.instanceNameSubject.asObservable();
+  dtapStage$ = this.dtapStageSubject.asObservable();
+  databaseSchedulesEnabled$ = this.databaseSchedulesEnabledSubject.asObservable();
+  summaries$ = this.summariesSubject.asObservable();
+  GDPR$ = this.GDPRSubject.asObservable();
+
+  adapters: Record<string, Adapter> = {};
+  alerts: Alert[] = [];
+
+  adapterSummary: Summary = {
+    started: 0,
+    stopped: 0,
+    starting: 0,
+    stopping: 0,
+    error: 0
+  };
+  receiverSummary: Summary = {
+    started: 0,
+    stopped: 0,
+    starting: 0,
+    stopping: 0,
+    error: 0
+  };
+  messageSummary: MessageSummary = {
+    info: 0,
+    warn: 0,
+    error: 0
+  };
+
+  private lastUpdated = 0;
+  private timeout?: number;
+
+  updateLoading(loading: boolean) {
+    this.loadingSubject.next(loading);
+  }
+
+  triggerAppConstants(){
+    this.appConstantsSubject.next();
+  }
+
+  triggerGDPR(){
+    this.GDPRSubject.next();
+  }
+
+	updateAdapters(adapters: Record<string, Adapter>) {
+    this.adapters = adapters;
+    this.adaptersSubject.next(adapters);
+  }
+
+	updateAlerts(alerts: Alert[]) {
+    this.alerts = alerts;
+    this.alertsSubject.next(alerts);
+  }
+
+	startupError: string | null = null;
+  updateStartupError(startupError: string) {
+    this.startupError = startupError;
+    this.startupErrorSubject.next(startupError);
+  }
+
+  configurations: Configuration[] = [];
+  updateConfigurations(configurations: Configuration[]) {
+    const updatedConfigurations: Configuration[] = [];
+    for (var i in configurations) {
+      var config = configurations[i];
+      if (config.name.startsWith("IAF_"))
+        updatedConfigurations.unshift(config);
+      else
+        updatedConfigurations.push(config);
+    }
+    this.configurations = updatedConfigurations;
+    this.configurationsSubject.next(updatedConfigurations);
+  }
+
+	messageLog: Record<string, MessageLog> = {};
+  updateMessageLog(messageLog: Record<string, MessageLog>) {
+    this.messageLog = messageLog;
+    this.messageLogSubject.next(messageLog);
+  }
+
+	instanceName = "";
+	updateInstanceName(instanceName: string) {
+    this.instanceName = instanceName;
+    this.instanceNameSubject.next(instanceName);
+  }
+
+	dtapStage = "";
+  updateDtapStage(dtapStage: string) {
+    this.dtapStage = dtapStage;
+    this.dtapStageSubject.next(dtapStage);
+  }
+
+	databaseSchedulesEnabled = false;
+	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
+    this.databaseSchedulesEnabled = databaseSchedulesEnabled;
+    this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
+  }
+
+	updateAdapterSummary(configurationName?: string) {
+    var updated = (new Date().getTime());
+    if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
+      clearTimeout(this.timeout);
+      this.timeout = window.setTimeout(() => this.updateAdapterSummary(), 1000);
+      return;
+    }
+    if (configurationName == undefined)
+      configurationName = this.$state.params["configuration"];
+
+    var adapterSummary: Record<Lowercase<RunState>, number> = {
+      started: 0,
+      stopped: 0,
+      starting: 0,
+      stopping: 0,
+      exception_starting: 0,
+      exception_stopping: 0,
+      error: 0
+    };
+    var receiverSummary: Record<Lowercase<RunState>, number> = {
+      started: 0,
+      stopped: 0,
+      starting: 0,
+      stopping: 0,
+      exception_starting: 0,
+      exception_stopping: 0,
+      error: 0
+    };
+    var messageSummary: Record<Lowercase<MessageLevel>, number> = {
+      info: 0,
+      warn: 0,
+      error: 0
+    };
+
+    var allAdapters = this.adapters;
+    for (const adapterName in allAdapters) {
+      var adapter = allAdapters[adapterName];
+
+      if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
+        adapterSummary[adapter.state]++;
+        for (const i in adapter.receivers) {
+          receiverSummary[adapter.receivers[+i].state.toLowerCase() as Lowercase<RunState>]++;
+        }
+        for (const i in adapter.messages) {
+          var level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
+          messageSummary[level]++;
+        }
+      }
+    }
+
+    this.adapterSummary = adapterSummary;
+    this.receiverSummary = receiverSummary;
+    this.messageSummary = messageSummary;
+    this.lastUpdated = updated;
+    this.summariesSubject.next();
+  };
+
+  getProcessStateIcon(processState: string) {
+    switch (processState) {
+      case "Available":
+        return "fa-server";
+      case "InProcess":
+        return "fa-gears";
+      case "Done":
+        return "fa-sign-in";
       case "Hold":
         return "fa-pause-circle";
       case "Error":
       default:
         return "fa-times-circle";
-		}
-	};
+    }
+  }
 
-	service["getProcessStateIconColor"] = function (processState) {
-		switch (processState) {
-			case "Available":
-				return "success";
-			case "InProcess":
-				return "success";
-			case "Done":
-				return "success";
+  getProcessStateIconColor(processState: string) {
+    switch (processState) {
+      case "Available":
+        return "success";
+      case "InProcess":
+        return "success";
+      case "Done":
+        return "success";
       case "Hold":
         return "warning";
-			case "Error":
+      case "Error":
       default:
-				return "danger";
-		}
-	};
+        return "danger";
+    }
+  }
+}
 
-	service["updateAdapterSummary"] = function (configurationName) {
-		var updated = (new Date().getTime());
-		if (updated - 3000 < service["lastUpdated"] && !configurationName) { //3 seconds
-			clearTimeout(service["timeout"]);
-			service["timeout"] = setTimeout(service["updateAdapterSummary"], 1000);
-			return;
-		}
-		if (configurationName == undefined)
-			configurationName = $state.params.configuration;
-
-		var adapterSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			exception_starting: 0,
-			exception_stopping: 0,
-			error: 0
-		};
-		var receiverSummary = {
-			started: 0,
-			stopped: 0,
-			starting: 0,
-			stopping: 0,
-			exception_starting: 0,
-			exception_stopping: 0,
-			error: 0
-		};
-		var messageSummary = {
-			info: 0,
-			warn: 0,
-			error: 0
-		};
-
-		var allAdapters = service["adapters"];
-		for (const adapterName in allAdapters) {
-			var adapter = allAdapters[adapterName];
-
-			if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
-				adapterSummary[adapter.state]++;
-				for (const i in adapter.receivers) {
-					receiverSummary[adapter.receivers[i].state.toLowerCase()]++;
-				}
-				for (const i in adapter.messages) {
-					var level = adapter.messages[i].level.toLowerCase();
-					messageSummary[level]++;
-				}
-			}
-		}
-
-		service["adapterSummary"] = adapterSummary;
-		service["receiverSummary"] = receiverSummary;
-		service["messageSummary"] = messageSummary;
-		service["lastUpdated"] = updated;
-		$rootScope.$broadcast('summaries');
-	};
-
-	return service;
+appModule.factory('appService', ['$state', function ($state: StateService) {
+	return new AppService($state);
 }]);

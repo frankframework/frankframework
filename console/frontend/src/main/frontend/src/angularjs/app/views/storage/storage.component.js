@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const StorageController = function ($scope, Api, $state, SweetAlert, Misc) {
+const StorageController = function (Api, $state, SweetAlert, Misc) {
 	const ctrl = this;
 
 	ctrl.notes = [];
@@ -82,7 +82,7 @@ const StorageController = function ($scope, Api, $state, SweetAlert, Misc) {
 };
 
 appModule.component('storage', {
-	controller: ['$scope', 'Api', '$state', 'SweetAlert', 'Misc', StorageController],
+	controller: ['Api', '$state', 'SweetAlert', 'Misc', StorageController],
 	template: `
         <div ui-view
 			adapter-name="$ctrl.adapterName"

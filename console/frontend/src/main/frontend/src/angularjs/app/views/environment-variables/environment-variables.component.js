@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const EnvironmentVariablesController = function ($scope, Api, appConstants, $rootScope, appService) {
+const EnvironmentVariablesController = function (Api, appService) {
     const ctrl = this;
 
     ctrl.variables = {};
@@ -24,7 +24,7 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
 		}
 
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+      appService.configurations$.subscribe(function () { ctrl.configurations = appService.configurations; });
 
         Api.Get("environmentvariables", function (data) {
             var instanceName = null;
@@ -47,6 +47,6 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
 };
 
 appModule.component('environmentVariables', {
-    controller: ['$scope', 'Api', 'appConstants', '$rootScope', 'appService', EnvironmentVariablesController],
+    controller: ['Api', 'appService', EnvironmentVariablesController],
     templateUrl: 'js/app/views/environment-variables/environment-variables.component.html'
 });

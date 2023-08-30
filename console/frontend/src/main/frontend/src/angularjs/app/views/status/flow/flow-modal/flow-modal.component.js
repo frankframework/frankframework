@@ -1,6 +1,6 @@
 import { appModule } from "../../../../app.module";
 
-const FlowModalController = function ($scope, $uibModalInstance, xhr) {
+const FlowModalController = function ($uibModalInstance, xhr) {
     const ctrl = this;
 
     ctrl.adapter = xhr.adapter;
@@ -12,6 +12,6 @@ const FlowModalController = function ($scope, $uibModalInstance, xhr) {
 };
 
 appModule.component('flowModal', {
-    controller: ['$scope', '$uibModalInstance', 'xhr', FlowModalController],
+    controller: ['$uibModalInstance', 'xhr', FlowModalController],
     templateUrl: 'js/app/views/status/flow/flow-modal/flow-modal.component.html'
 });

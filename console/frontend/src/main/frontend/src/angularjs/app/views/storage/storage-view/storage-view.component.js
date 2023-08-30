@@ -1,6 +1,6 @@
 import { appModule } from "../../../app.module";
 
-const StorageViewController = function ($scope, Api, $state, SweetAlert) {
+const StorageViewController = function (Api, $state, SweetAlert) {
     const ctrl = this;
 
     ctrl.message = {};
@@ -61,6 +61,6 @@ appModule.component('storageView', {
 		onDoResendMessage: '&',
 		onDownloadMessage: '&',
     },
-    controller: ['$scope', 'Api', '$state', 'SweetAlert', StorageViewController],
+    controller: ['Api', '$state', 'SweetAlert', StorageViewController],
     templateUrl: 'js/app/views/storage/storage-view/storage-view.component.html',
 });

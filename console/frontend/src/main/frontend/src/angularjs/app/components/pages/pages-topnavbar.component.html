@@ -12,10 +12,10 @@
                 <span class="m-r-sm text-muted serverTime">{{$ctrl.serverTime}}</span>
             </li>
             <li>
-                <span class="m-r-sm stage">{{::$ctrl.dtapStage}}</span>
+                <span class="m-r-sm stage">{{$ctrl.dtapStage}}</span>
             </li>
-            <li ng-if="::$ctrl.dtapSide">
-                <span class="m-r-sm stage">({{::$ctrl.dtapSide}})</span>
+            <li ng-if="$ctrl.dtapSide">
+                <span class="m-r-sm stage">({{$ctrl.dtapSide}})</span>
             </li>
             <li uib-dropdown href ng-click="$ctrl.resetNotificationCount()">
                 <a class="count-info" href uib-dropdown-toggle>

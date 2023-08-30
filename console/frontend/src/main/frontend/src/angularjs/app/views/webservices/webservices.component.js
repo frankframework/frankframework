@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const WebservicesController = function ($scope, Api, Misc) {
+const WebservicesController = function (Api, Misc) {
     const ctrl = this;
 
 	ctrl.$onInit = function () {
@@ -17,6 +17,6 @@ const WebservicesController = function ($scope, Api, Misc) {
 };
 
 appModule.component('webservices', {
-    controller: ['$scope', 'Api', 'Misc', WebservicesController],
+    controller: ['Api', 'Misc', WebservicesController],
     templateUrl: 'js/app/views/webservices/webservices.component.html'
 });

@@ -1,7 +1,6 @@
-import Prism from 'prismjs';
+import * as Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-highlight/prism-line-highlight';
-import { $, angular } from './deps';
 
 if (location.hostname != "localhost") {
   window.console.log("%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.", "font-weight: bold; font-size: 14px;");
@@ -58,12 +57,12 @@ $(document).ready(function () {
 });
 
 //Foist: To force upon or impose fraudulently or unjustifiably
-function foist(callback) {
+function foist(callback: () => void) {
   // @ts-ignore
   angular.element(document.body).scope().foist(callback);
 }
 //Changes the log level to; 0 - error, 1 - warn, 2 - info, 3 - debug
-function setLogLevel(level) {
+function setLogLevel(level: number) {
   // @ts-ignore
   angular.element(document.body).scope().setLogLevel(level);
 }
@@ -82,9 +81,9 @@ $(function () {
     }
   });
 
-  $(window).on("scroll", function () {
+  $(window).on("scroll", function (this: JQuery<HTMLElement>) {
     var scroll2top = $(".scroll-to-top").stop(true);
-    if ($(this as JQuery<HTMLElement>).scrollTop()! > 100) {
+    if ($(this).scrollTop()! > 100) {
       if (parseInt(scroll2top.css("opacity")) === 0) {
         scroll2top.animate({ "opacity": 1, "z-index": 10000 }, 50, "linear");
       }
@@ -95,7 +94,7 @@ $(function () {
 
   Prism.hooks.add('after-highlight', function (env) {
     // works only for <code> wrapped inside <pre data-line-numbers> (not inline)
-    var pre = env.element.parentNode;
+    var pre = env.element.parentNode as HTMLElement;
     if (!pre || !/pre/i.test(pre.nodeName) || pre.className.indexOf('line-numbers') === -1) {
       return;
     }

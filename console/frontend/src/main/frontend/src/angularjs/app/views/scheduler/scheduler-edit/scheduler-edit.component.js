@@ -1,7 +1,7 @@
 import { appModule } from "../../../app.module";
 
 
-const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope, appService) {
+const SchedulerEditController = function (Api, $stateParams, appService) {
     const ctrl = this;
 
     ctrl.state = [];
@@ -24,10 +24,10 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
         var url = "schedules/" + $stateParams.group + "/jobs/" + $stateParams.name;
 
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+      appService.configurations$.subscribe(function () { ctrl.configurations = appService.configurations; });
 
         ctrl.adapters = appService.adapters;
-        $rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
+      appService.adapters$.subscribe(function () { ctrl.adapters = appService.adapters; });
 
         Api.Get(url, function (data) {
             ctrl.selectedConfiguration = data.configuration;
@@ -65,7 +65,7 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
 		fd.append("message", ctrl.form.message);
 		fd.append("description", ctrl.form.description);
 		fd.append("locker", ctrl.form.locker);
-        
+
 		if (ctrl.form.lockkey)
 			fd.append("lockkey", ctrl.form.lockkey);
 
@@ -83,6 +83,6 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
 };
 
 appModule.component('schedulerEdit', {
-    controller: ['$scope', 'Api', '$stateParams', '$rootScope', 'appService', SchedulerEditController],
+    controller: ['Api', '$stateParams', 'appService', SchedulerEditController],
     templateUrl: 'js/app/views/scheduler/scheduler-add-edit.component.html'
 });

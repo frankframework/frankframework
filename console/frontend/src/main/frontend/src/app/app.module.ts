@@ -25,6 +25,22 @@ import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/i
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 
+import {
+  alertServiceProvider,
+  apiServiceProvider,
+  authServiceProvider,
+  base64ServiceProvider,
+  cookiesServiceProvider,
+  debugServiceProvider,
+  gdprServiceProvider,
+  miscServiceProvider,
+  notificationServiceProvider,
+  pollerServiceProvider,
+  sessionServiceProvider,
+  sweetalertServiceProvider,
+  toastrServiceProvider
+} from './ajs-upgraded-services';
+
 @NgModule({
   declarations: [
     ChildComponent,
@@ -45,12 +61,26 @@ import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-s
     LaddaModule
     // AppRoutingModule
   ],
-  providers: [],
+  providers: [
+    alertServiceProvider,
+    apiServiceProvider,
+    authServiceProvider,
+    base64ServiceProvider,
+    cookiesServiceProvider,
+    debugServiceProvider,
+    gdprServiceProvider,
+    miscServiceProvider,
+    notificationServiceProvider,
+    pollerServiceProvider,
+    sessionServiceProvider,
+    sweetalertServiceProvider,
+    toastrServiceProvider
+  ],
 })
 export class AppModule implements DoBootstrap {
   constructor(private upgrade: UpgradeModule) { }
   ngDoBootstrap() {
-    this.upgrade.bootstrap(document.body, ['iaf.beheerconsole']);
+    this.upgrade.bootstrap(document.documentElement, ['iaf.beheerconsole']);
     // this.upgrade.bootstrap(document.body, ['iaf.beheerconsole'], { strictDi: true });
   }
 }

@@ -1,8 +1,7 @@
 import { appModule } from "../../app.module";
 
-const ScrollToTopController = function () {
-	const ctrl = this;
-	ctrl.scrollTop = function () {
+class ScrollToTopController {
+	scrollTop = function () {
 		$(window).scrollTop(0);
 	};
 };

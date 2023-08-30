@@ -1,6 +1,6 @@
 import { appModule } from "../../app.module";
 
-const LoginController = function ($scope, authService, $timeout, Alert) {
+const LoginController = function (authService, $timeout, Alert) {
     const ctrl = this;
 
     ctrl.credentials = {};
@@ -22,6 +22,6 @@ const LoginController = function ($scope, authService, $timeout, Alert) {
 };
 
 appModule.component('login', {
-    controller: ['$scope', 'authService', '$timeout', 'Alert', LoginController],
+    controller: ['authService', '$timeout', 'Alert', LoginController],
     templateUrl: 'js/app/views/login/login.component.html',
 });
