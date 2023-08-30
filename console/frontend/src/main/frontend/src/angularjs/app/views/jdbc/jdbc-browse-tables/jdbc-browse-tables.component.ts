@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import { AppConstants, appModule } from "../../../app.module";
 import { ApiService } from "src/app/services.types";
+import { StateService } from "angular-ui-router";
 
 class JdbcBrowseTablesController {
     datasources = {};
@@ -16,7 +17,7 @@ class JdbcBrowseTablesController {
         private $scope: angular.IScope,
         private Api: ApiService,
         private $timeout: angular.ITimeoutService,
-        private $state: any,
+        private $state: StateService,
         private appConstants: AppConstants
     ) { };
 

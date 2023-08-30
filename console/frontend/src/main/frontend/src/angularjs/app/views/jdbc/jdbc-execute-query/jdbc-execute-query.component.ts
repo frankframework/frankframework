@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import { AppConstants, appModule } from "../../../app.module";
 import { ApiService, CookiesService } from "src/app/services.types";
+import { StateService } from "angular-ui-router";
 
 class JdbcExecuteQueryController {
 	datasources = {};
@@ -14,7 +15,7 @@ class JdbcExecuteQueryController {
 		private $scope: angular.IScope,
 		private Api: ApiService,
 		private $timeout: angular.ITimeoutService,
-		private $state,
+		private $state: StateService,
 		private Cookies: CookiesService,
 		private appConstants: AppConstants
 	) { };
