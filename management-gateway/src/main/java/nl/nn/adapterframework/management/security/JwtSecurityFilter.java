@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
@@ -48,11 +49,15 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
+import lombok.Setter;
+
 public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRequestFilter
 	private static final String JWT_TOKEN_CONTEXT_KEY = "JWT_TOKEN_CONTEXT_KEY";
 	private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
 	private final Logger log = LogManager.getLogger(JwtSecurityFilter.class);
 
+	@Value("${management.gateway.http.jwks.endpoint}")
+	private @Setter String jwksEndpoint;
 
 	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
@@ -122,8 +127,11 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		URL url = new URL("http://localhost/iaf-console/iaf/management/jwks");
+		if(StringUtils.isBlank(jwksEndpoint)) {
+			throw new IllegalStateException("no JWKS endpoint specified");
+		}
 
+		URL url = new URL(jwksEndpoint);
 		JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(url).cacheForever().build();
 		jwtProcessor = new DefaultJWTProcessor<>();
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.ES256K, keySource);
