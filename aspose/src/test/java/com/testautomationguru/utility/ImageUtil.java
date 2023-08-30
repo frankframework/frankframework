@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-class ImageUtil {
+public class ImageUtil {
 
 	static Logger logger = Logger.getLogger(ImageUtil.class.getName());
 
@@ -17,8 +17,9 @@ class ImageUtil {
 		final int[] p1 = img1.getRGB(0, 0, w, h, null, 0, w);
 		final int[] p2 = img2.getRGB(0, 0, w, h, null, 0, w);
 
-		if(getDifferencePercent(img1, img2) > deviation) {
-			logger.warning("Image compared - does not match");
+		double diff = getDifferencePercent(img1, img2);
+		if(diff > deviation) {
+			logger.warning("Image compared - does not match, diff was: " + diff);
 			if(highlight) {
 				for(int i = 0; i < p1.length; i++) {
 					if(p1[i] != p2[i]) {
@@ -43,7 +44,7 @@ class ImageUtil {
 		}
 	}
 
-	private static double getDifferencePercent(BufferedImage img1, BufferedImage img2) {
+	public static double getDifferencePercent(BufferedImage img1, BufferedImage img2) {
 		int width = img1.getWidth();
 		int height = img1.getHeight();
 		int width2 = img2.getWidth();

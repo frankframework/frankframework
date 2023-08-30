@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -34,10 +35,13 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.testautomationguru.utility.CompareMode;
+import com.testautomationguru.utility.ImageUtil;
 import com.testautomationguru.utility.PDFUtil;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -116,7 +120,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			log.debug("found converted file ["+convertedFilePath+"]");
+			log.debug("found converted file [{}]", convertedFilePath);
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
@@ -126,6 +130,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 			PDFUtil pdfUtil = new PDFUtil();
 			pdfUtil.setCompareMode(CompareMode.VISUAL_MODE);
+			pdfUtil.setAllowedRGBDeviation(0.3); //In percents
 			//remove Aspose evaluation copy information
 			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
 			pdfUtil.enableLog();
@@ -137,6 +142,22 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
 		}
+	}
+
+	/*
+	 * The diff is 33% because green and blue are swapped. In these colors the RED channel remains 0, and the GREEN and BLUE channels are swapped.
+	 * Half the picture remains unchanged, of the remaining 50% only 66% differs. Thus a 33% total change.
+	 */
+	@Test
+	public void testImageDiff() throws IOException {
+		URL rbgw = TestFileUtils.getTestFileURL("/PdfPipe/imageDiffTest/rbgw.png");
+		URL rgbw = TestFileUtils.getTestFileURL("/PdfPipe/imageDiffTest/rgbw.png");
+		assertNotNull("unable to find [rbgw]", rbgw);
+		assertNotNull("unable to find [rgbw]", rgbw);
+		BufferedImage img1 = ImageIO.read(rbgw.openStream());
+		BufferedImage img2 = ImageIO.read(rgbw.openStream());
+		double deviation = ImageUtil.getDifferencePercent(img1, img2);
+		assertEquals(33, deviation, 0.1);
 	}
 
 	// Use surefire folder which is preserved by GitHub Actions
