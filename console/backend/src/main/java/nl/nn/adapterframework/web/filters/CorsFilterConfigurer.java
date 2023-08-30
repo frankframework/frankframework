@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.webcontrol;
+package nl.nn.adapterframework.web.filters;
 
 import java.util.EnumSet;
 
@@ -32,7 +32,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
 @WebListener
-public class CspFilterConfigurer implements ServletContextListener {
+public class CorsFilterConfigurer implements ServletContextListener {
 	private Logger log = LogManager.getLogger(this);
 
 	@Override
@@ -42,11 +42,11 @@ public class CspFilterConfigurer implements ServletContextListener {
 		try {
 			Dynamic filter = createFilter(context);
 
-			String[] urlMapping = new String[] {"/iaf/gui/*"};
+			String[] urlMapping = new String[] {"/iaf/api/*"};
 			filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, urlMapping);
 		} catch (Exception e) {
-			log.fatal("unable to create CSP filter", e);
-			context.log("unable to create CSP filter", e);
+			log.fatal("unable to create CORS filter", e);
+			context.log("unable to create CORS filter", e);
 		}
 	}
 
@@ -58,12 +58,12 @@ public class CspFilterConfigurer implements ServletContextListener {
 	private Dynamic createFilter(ServletContext context) {
 		WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(context);
 		if(wac != null) {
-			log.info("creating CspFilter through Application Context [{}]", wac::getDisplayName);
-			CspFilter filterInstance = SpringUtils.createBean(wac, CspFilter.class);
-			return context.addFilter("CspFilter", filterInstance);
+			log.info("creating CorsFilter through Application Context [{}]", wac::getDisplayName);
+			CorsFilter filterInstance = SpringUtils.createBean(wac, CorsFilter.class);
+			return context.addFilter("CorsFilter", filterInstance);
 		} else {
-			log.info("creating CspFilter without Application Context");
-			return context.addFilter("CspFilter", CspFilter.class);
+			log.info("creating CorsFilter without Application Context");
+			return context.addFilter("CorsFilter", CorsFilter.class);
 		}
 	}
 }
