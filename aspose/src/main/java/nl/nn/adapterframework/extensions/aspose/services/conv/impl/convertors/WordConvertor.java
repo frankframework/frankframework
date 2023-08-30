@@ -48,8 +48,6 @@ class WordConvertor extends AbstractConvertor {
 	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
 	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
-	private CisConfiguration cisConfiguration;
-
 	static {
 		Map<MediaType, Supplier<LoadOptions>> map = new HashMap<>();
 
@@ -74,7 +72,6 @@ class WordConvertor extends AbstractConvertor {
 
 	protected WordConvertor(CisConfiguration cisConfiguration) {
 		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
-		this.cisConfiguration = cisConfiguration;
 	}
 
 	@Override
@@ -89,14 +86,14 @@ class WordConvertor extends AbstractConvertor {
 			Supplier<LoadOptions> loadOptionsSupplier = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
 			if (loadOptionsSupplier!=null) {
 				loadOptions = loadOptionsSupplier.get();
-				if(!cisConfiguration.isLoadExternalResources()){
+				if(!configuration.isLoadExternalResources()){
 					OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
 					loadOptions.setResourceLoadingCallback(resourceLoader);
 				}
 			}
 
 			Document doc = new Document(inputStream, loadOptions);
-			new Fontsetter(cisConfiguration.getFontsDirectory()).setFontSettings(doc);
+			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 

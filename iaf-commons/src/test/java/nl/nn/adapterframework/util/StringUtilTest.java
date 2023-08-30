@@ -171,7 +171,8 @@ class StringUtilTest {
 				arguments("a,b", asList("a", "b")),
 				arguments(",a,,b,", asList("a", "b")),
 				arguments(" a , b ", asList("a", "b")),
-				arguments(null, Collections.emptyList())
+				arguments(null, Collections.emptyList()),
+				arguments("", Collections.emptyList())
 		);
 	}
 
@@ -188,6 +189,7 @@ class StringUtilTest {
 	public static Stream<Arguments> testSplitStringCustomDelimiters() {
 		return Stream.of(
 				arguments(null, "\\/", Collections.emptyList()),
+				arguments("", "\\/", Collections.emptyList()),
 				arguments("a,b;c", ";,", asList("a", "b", "c")),
 				arguments(";a,b;,c,", ";,", asList("a", "b", "c")),
 				arguments(" a , ;  b;,c ; ", ";,", asList("a", "b", "c")),

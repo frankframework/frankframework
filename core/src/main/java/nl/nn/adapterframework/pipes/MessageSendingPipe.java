@@ -243,7 +243,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("while configuring sender",e);
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
-				log.info("has sender on {}", ((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
+				log.debug("has sender on {}", () -> ((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
 			if (getListener() != null) {
 				if (getSender().isSynchronous()) {
@@ -255,7 +255,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new ConfigurationException("while configuring listener",e);
 				}
 				if (getListener() instanceof HasPhysicalDestination) {
-					log.info("has listener on {}", ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+					log.debug("has listener on {}", () -> ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
 			}
 
@@ -314,7 +314,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination) {
 				String msg = "has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName();
-				log.info(msg);
+				log.debug(msg);
 				if (getAdapter() != null)
 					getAdapter().getMessageKeeper().add(msg);
 			}

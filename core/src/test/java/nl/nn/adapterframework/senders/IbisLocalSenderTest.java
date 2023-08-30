@@ -146,17 +146,20 @@ class IbisLocalSenderTest {
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient();
 
 		try (PipeLineSession session = new PipeLineSession()) {
-			session.put("my-parameter", "parameter-value");
-			Message message = new Message("my-parameter");
+			session.put("my-parameter1", "parameter1-value");
+			session.put("my-parameter2", Message.asMessage("parameter2-value"));
+			Message message = new Message("my-parameter1");
 
 			// Act
 			SenderResult result = sender.sendMessage(message, session);
 
 			// Assert
 			assertAll(
-				() -> assertEquals("parameter-value", result.getResult().asString()),
-				() -> assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]"),
-				() -> assertEquals("parameter-value", session.get("my-parameter")),
+				() -> assertEquals("parameter1-value", result.getResult().asString()),
+				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+				() -> assertEquals("parameter1-value", session.getString("my-parameter1")),
+				() -> assertTrue(session.containsKey("my-parameter2"), "After request the pipeline-session should contain key [my-parameter2]"),
+				() -> assertEquals("parameter2-value", session.getString("my-parameter2")),
 				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
 				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
 				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'")
@@ -171,17 +174,17 @@ class IbisLocalSenderTest {
 		sender.setReturnedSessionKeys(null);
 
 		try (PipeLineSession session = new PipeLineSession()) {
-			session.put("my-parameter", "parameter-value");
-			Message message = new Message("my-parameter");
+			session.put("my-parameter1", "parameter1-value");
+			Message message = new Message("my-parameter1");
 
 			// Act
 			SenderResult result = sender.sendMessage(message, session);
 
 			// Assert
 			assertAll(
-				() -> assertEquals("parameter-value", result.getResult().asString()),
-				() -> assertTrue(session.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]"),
-				() -> assertEquals("parameter-value", session.get("my-parameter")),
+				() -> assertEquals("parameter1-value", result.getResult().asString()),
+				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
 				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
 			);
@@ -196,7 +199,7 @@ class IbisLocalSenderTest {
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
 			session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "400");
-			Message message = new Message("my-parameter");
+			Message message = new Message("my-parameter1");
 
 			// Act / Assert
 			SenderResult result = sender.sendMessage(message, session);
@@ -352,9 +355,10 @@ class IbisLocalSenderTest {
 		sender.setServiceName(SERVICE_NAME);
 		sender.setSynchronous(true);
 		sender.setIsolated(false);
-		sender.setReturnedSessionKeys("my-parameter,this-doesnt-exist");
+		sender.setReturnedSessionKeys("my-parameter1,this-doesnt-exist");
 
-		addParameter("my-parameter", sender);
+		addParameter("my-parameter1", sender);
+		addParameter("my-parameter2", sender);
 		addParameter(PipeLineSession.EXIT_STATE_CONTEXT_KEY, sender);
 		addParameter(PipeLineSession.EXIT_CODE_CONTEXT_KEY, sender);
 

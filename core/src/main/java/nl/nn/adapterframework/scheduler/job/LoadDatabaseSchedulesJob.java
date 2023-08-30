@@ -102,7 +102,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							try {
 								adapter = findAdapter(adapterName);
 							} catch (IllegalStateException e) {
-								getMessageKeeper().add("unable to add schedule ["+key+"]", e);
+								getMessageKeeper().add("unable to add schedule ["+key+"]: " + e.getMessage());
 								continue;
 							}
 

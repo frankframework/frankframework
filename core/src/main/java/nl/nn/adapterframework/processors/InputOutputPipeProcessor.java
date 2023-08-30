@@ -71,7 +71,6 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
-		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
 
 		IExtendedPipe pe=null;
@@ -93,14 +92,16 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 					if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
 					message.closeOnCloseOf(pipeLineSession, owner);
-					message=new Message(pe.getGetInputFromFixedValue());
+					message = Message.asMessage(pe.getGetInputFromFixedValue());
 				}
+
 				if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
 					if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing empty input for pipe ["+pe.getName()+"] with fixed value ["+pe.getEmptyInputReplacement()+"]");
-					message = new Message(pe.getEmptyInputReplacement());
+					message = Message.asMessage(pe.getEmptyInputReplacement());
 				}
 			}
 
+			PipeRunResult pipeRunResult = null;
 			if (pipe instanceof FixedForwardPipe) {
 				FixedForwardPipe ffPipe = (FixedForwardPipe) pipe;
 				if (ffPipe.skipPipe(message, pipeLineSession)) {
@@ -108,11 +109,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				}
 			}
 
-			if (pipeRunResult==null){
-				pipeRunResult=chain.apply(message);
+			if (pipeRunResult == null) {
+				pipeRunResult = chain.apply(message);
 			}
-			if (pipeRunResult==null){
-				throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");
+			if (pipeRunResult == null) {
+				throw new PipeRunException(pipe, "Pipeline of [" + pipeLine.getOwner().getName() + "] received null result from pipe [" + pipe.getName() + "]d");
 			}
 
 			if (pe !=null) {
