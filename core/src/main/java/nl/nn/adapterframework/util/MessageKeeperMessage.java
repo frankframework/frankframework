@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Set;
 /**
  * A message for the MessageKeeper. <br/>
  * Although this could be an inner class of the MessageKeeper,

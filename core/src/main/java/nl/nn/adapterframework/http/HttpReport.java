@@ -25,12 +25,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 public class HttpReport extends HttpEntityEnclosingRequestBase {

@@ -238,7 +238,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			if (session.getCorrelationId() != null) {
 				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, session.getCorrelationId());
 			}
-			if (paramList!=null) {
+			if (paramList != null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
 					subAdapterSession.putAll(paramValues);

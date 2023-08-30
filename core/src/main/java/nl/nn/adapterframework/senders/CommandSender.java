@@ -21,8 +21,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;

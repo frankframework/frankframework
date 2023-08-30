@@ -15,15 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.mqtt;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -34,6 +27,12 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";

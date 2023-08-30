@@ -16,6 +16,16 @@
 
 package nl.nn.adapterframework.http.rest;
 
+import java.io.IOException;
+import java.rmi.server.UID;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -25,15 +35,6 @@ import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.rmi.server.UID;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
 
 /**
 * Pipe to manage the ApiPrincipal handling

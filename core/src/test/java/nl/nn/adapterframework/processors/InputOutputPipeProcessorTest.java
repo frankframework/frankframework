@@ -22,8 +22,8 @@ public class InputOutputPipeProcessorTest {
 
 	private InputOutputPipeProcessor processor;
 	private PipeLine pipeLine;
-	private PipeLineSession session; 
-	
+	private PipeLineSession session;
+
 	@BeforeEach
 	public void setUp() {
 		processor = new InputOutputPipeProcessor();
@@ -39,17 +39,17 @@ public class InputOutputPipeProcessorTest {
 			}
 		};
 		processor.setPipeProcessor(chain);
-		
+
 		pipeLine = new PipeLine();
 		Adapter owner = new Adapter();
 		owner.setName("PipeLine owner");
 		pipeLine.setOwner(owner);
-		
+
 		session = new PipeLineSession();
 	}
 
 	public void testRestoreMovedElement(Object sessionVarContents) throws Exception {
-		
+
 		FixedResultPipe pipe = new FixedResultPipe();
 		pipe.setRestoreMovedElements(true);
 		pipe.setReturnString("result [{sessionKey:replaceThis}]");
@@ -58,16 +58,15 @@ public class InputOutputPipeProcessorTest {
 		pipe.registerForward(forward);
 		pipe.configure();
 		pipe.start();
-		
+
 		Message input = new Message("input");
-		
+
 		session.put("replaceThis", sessionVarContents);
-				
-		
+
 		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
-		
+
 		assertEquals("result [ReplacedValue]", prr.getResult().asString());
-		
+
 	}
 
 	@Test

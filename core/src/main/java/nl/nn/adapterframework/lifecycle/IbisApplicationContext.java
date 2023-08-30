@@ -69,7 +69,8 @@ public class IbisApplicationContext implements Closeable {
 	private ApplicationContext parentContext = null;
 
 	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
+	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 	private final Map<String, String> iafModules = new HashMap<>();
 
@@ -87,7 +88,7 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException If the Factory can not be created.
 	 */
 	protected void createApplicationContext() throws BeansException {
-		log.debug("creating Spring Application Context");
+		applicationLog.debug("Creating IbisApplicationContext");
 		if (!state.equals(BootState.FIRST_START)) {
 			state = BootState.STARTING;
 		}
@@ -102,7 +103,7 @@ public class IbisApplicationContext implements Closeable {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if (parentContext != null) {
-				log.debug("found Spring rootContext [{}]", parentContext);
+				LOG.info("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -112,7 +113,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		log.info("created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
+		applicationLog.info("Created IbisApplicationContext [{}] in {} ms", applicationContext::getId, () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -133,7 +134,7 @@ public class IbisApplicationContext implements Closeable {
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
 		addJmxConfigurationIfEnabled(springConfigurationFiles);
 
-		log.info("loading Spring configuration files {}", springConfigurationFiles);
+		LOG.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
@@ -148,7 +149,7 @@ public class IbisApplicationContext implements Closeable {
 	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
 		URL fileURL = classLoader.getResource(filename);
 		if (fileURL == null) {
-			log.error("unable to locate Spring configuration file [{}]", filename);
+			LOG.error("unable to locate Spring configuration file [{}]", filename);
 		}
 		return fileURL != null;
 	}
@@ -197,13 +198,13 @@ public class IbisApplicationContext implements Closeable {
 	@Override
 	public void close() {
 		if (applicationContext != null) {
-			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context [{}]", oldContextName);
+			String oldContextName = applicationContext.getId();
+			LOG.info("closing IbisApplicationContext [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context [{}]", oldContextName);
+			applicationLog.info("Closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
@@ -286,7 +287,7 @@ public class IbisApplicationContext implements Closeable {
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [{}] version [{}]", module, version);
+				applicationLog.debug("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}
