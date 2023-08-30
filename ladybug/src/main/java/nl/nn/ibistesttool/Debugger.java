@@ -53,7 +53,7 @@ import nl.nn.testtool.run.ReportRunner;
  * @author Jaco de Groot
  */
 public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEGY_NEVER = "Never";
@@ -64,7 +64,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private PipeDescriptionProvider pipeDescriptionProvider;
 	private List<String> testerRoles;
 
-	protected Set<String> inRerun = new HashSet<String>();
+	protected Set<String> inRerun = new HashSet<>();
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
@@ -207,7 +207,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
 		if (parameter.isHidden()) {
-			String hiddenValue=null;
+			String hiddenValue;
 			try {
 				hiddenValue = StringUtil.hide(Message.asString(value));
 			} catch (IOException e) {
