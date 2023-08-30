@@ -24,7 +24,9 @@ import static org.junit.Assume.assumeTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -183,7 +185,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
-		Message input = MessageTestUtils.getBinaryMessage(fileToConvert, false);
+		InputStream is = Message.asInputStream(TestFileUtils.getTestFileURL(fileToConvert));
+		Message input = Message.asMessage(new FilterInputStream(is) {});
 		pipe.doPipe(input, session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
