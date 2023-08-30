@@ -2,6 +2,7 @@ import { DoBootstrap, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule } from '@angular/upgrade/static';
 import { AppRoutingModule } from './app-routing.module';
+import { InjectionToken } from '@angular/core';
 
 import '../angularjs/main';
 import '../angularjs/app/app.module';
@@ -40,6 +41,9 @@ import {
   sweetalertServiceProvider,
   toastrServiceProvider
 } from './ajs-upgraded-services';
+import { AppConstants, appConstants } from '../angularjs/app/app.module';
+
+export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
 @NgModule({
   declarations: [
@@ -74,9 +78,12 @@ import {
     pollerServiceProvider,
     sessionServiceProvider,
     sweetalertServiceProvider,
-    toastrServiceProvider
+    toastrServiceProvider,
+    { provide: Window, useValue: window },
+    { provide: APP_APPCONSTANTS, useValue: appConstants } // Use AngularJS Injector to get value
   ],
 })
+
 export class AppModule implements DoBootstrap {
   constructor(private upgrade: UpgradeModule) { }
   ngDoBootstrap() {
