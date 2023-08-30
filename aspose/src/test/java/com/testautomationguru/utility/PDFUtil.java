@@ -93,7 +93,7 @@ public class PDFUtil {
 	public void setAllowedRGBDeviation(double deviation) {
 		this.allowedDeviation = deviation;
 	}
-	
+
    /**
    * This method is used to get the current comparison mode text/visual
    * @return CompareMode
