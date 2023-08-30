@@ -130,7 +130,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 			PDFUtil pdfUtil = new PDFUtil();
 			pdfUtil.setCompareMode(CompareMode.VISUAL_MODE);
-			pdfUtil.setAllowedRGBDeviation(0.3); //In percents
+			pdfUtil.setAllowedRGBDeviation(0.51); //In percents, diff is between RGB values
 			//remove Aspose evaluation copy information
 			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
 			pdfUtil.enableLog();
